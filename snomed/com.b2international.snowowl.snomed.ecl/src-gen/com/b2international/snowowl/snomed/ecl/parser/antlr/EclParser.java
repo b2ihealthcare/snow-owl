@@ -25,7 +25,7 @@ public class EclParser extends org.eclipse.xtext.parser.antlr.AbstractAntlrParse
 	
 	@Override 
 	protected String getDefaultRuleName() {
-		return "Expression";
+		return "ExpressionConstraint";
 	}
 	
 	public EclGrammarAccess getGrammarAccess() {

@@ -75,9 +75,9 @@ public class EclAdapterFactory extends AdapterFactoryImpl
     new EclSwitch<Adapter>()
     {
       @Override
-      public Adapter caseExpression(Expression object)
+      public Adapter caseExpressionConstraint(ExpressionConstraint object)
       {
-        return createExpressionAdapter();
+        return createExpressionConstraintAdapter();
       }
       @Override
       public Adapter caseConceptReference(ConceptReference object)
@@ -107,16 +107,16 @@ public class EclAdapterFactory extends AdapterFactoryImpl
 
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.Expression <em>Expression</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint <em>Expression Constraint</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.Expression
+   * @see com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint
    * @generated
    */
-  public Adapter createExpressionAdapter()
+  public Adapter createExpressionConstraintAdapter()
   {
     return null;
   }

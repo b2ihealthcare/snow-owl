@@ -72,10 +72,10 @@ public class EclSwitch<T> extends Switch<T>
   {
     switch (classifierID)
     {
-      case EclPackage.EXPRESSION:
+      case EclPackage.EXPRESSION_CONSTRAINT:
       {
-        Expression expression = (Expression)theEObject;
-        T result = caseExpression(expression);
+        ExpressionConstraint expressionConstraint = (ExpressionConstraint)theEObject;
+        T result = caseExpressionConstraint(expressionConstraint);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -91,17 +91,17 @@ public class EclSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Expression</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Expression Constraint</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Expression</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Expression Constraint</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseExpression(Expression object)
+  public T caseExpressionConstraint(ExpressionConstraint object)
   {
     return null;
   }

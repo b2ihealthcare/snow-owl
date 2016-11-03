@@ -23,13 +23,13 @@ public interface EclFactory extends EFactory
   EclFactory eINSTANCE = com.b2international.snowowl.snomed.ecl.ecl.impl.EclFactoryImpl.init();
 
   /**
-   * Returns a new object of class '<em>Expression</em>'.
+   * Returns a new object of class '<em>Expression Constraint</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Expression</em>'.
+   * @return a new object of class '<em>Expression Constraint</em>'.
    * @generated
    */
-  Expression createExpression();
+  ExpressionConstraint createExpressionConstraint();
 
   /**
    * Returns a new object of class '<em>Concept Reference</em>'.

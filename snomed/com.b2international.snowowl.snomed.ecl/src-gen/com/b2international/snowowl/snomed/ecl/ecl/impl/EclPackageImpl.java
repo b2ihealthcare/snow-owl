@@ -5,7 +5,7 @@ package com.b2international.snowowl.snomed.ecl.ecl.impl;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.EclFactory;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ecl.ecl.Expression;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
@@ -27,7 +27,7 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass expressionEClass = null;
+  private EClass expressionConstraintEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -104,9 +104,9 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EClass getExpression()
+  public EClass getExpressionConstraint()
   {
-    return expressionEClass;
+    return expressionConstraintEClass;
   }
 
   /**
@@ -114,9 +114,9 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getExpression_Expression()
+  public EReference getExpressionConstraint_Expression()
   {
-    return (EReference)expressionEClass.getEStructuralFeatures().get(0);
+    return (EReference)expressionConstraintEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -137,6 +137,16 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
   public EAttribute getConceptReference_Id()
   {
     return (EAttribute)conceptReferenceEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getConceptReference_Term()
+  {
+    return (EAttribute)conceptReferenceEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -169,11 +179,12 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     isCreated = true;
 
     // Create classes and their features
-    expressionEClass = createEClass(EXPRESSION);
-    createEReference(expressionEClass, EXPRESSION__EXPRESSION);
+    expressionConstraintEClass = createEClass(EXPRESSION_CONSTRAINT);
+    createEReference(expressionConstraintEClass, EXPRESSION_CONSTRAINT__EXPRESSION);
 
     conceptReferenceEClass = createEClass(CONCEPT_REFERENCE);
     createEAttribute(conceptReferenceEClass, CONCEPT_REFERENCE__ID);
+    createEAttribute(conceptReferenceEClass, CONCEPT_REFERENCE__TERM);
   }
 
   /**
@@ -207,11 +218,12 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     // Add supertypes to classes
 
     // Initialize classes and features; add operations and parameters
-    initEClass(expressionEClass, Expression.class, "Expression", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getExpression_Expression(), this.getConceptReference(), null, "expression", null, 0, 1, Expression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEClass(expressionConstraintEClass, ExpressionConstraint.class, "ExpressionConstraint", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getExpressionConstraint_Expression(), this.getConceptReference(), null, "expression", null, 0, 1, ExpressionConstraint.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(conceptReferenceEClass, ConceptReference.class, "ConceptReference", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getConceptReference_Id(), ecorePackage.getEString(), "id", null, 0, 1, ConceptReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getConceptReference_Term(), ecorePackage.getEString(), "term", null, 0, 1, ConceptReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     // Create resource
     createResource(eNS_URI);

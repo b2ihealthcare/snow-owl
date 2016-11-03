@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 
@@ -61,6 +61,13 @@ public class EclEvaluatorTest extends BaseRevisionIndexTest {
 	@Test
 	public void self() throws Exception {
 		final Expression actual = evaluator.evaluate(ROOT_ID).getSync();
+		final Expression expected = RevisionDocument.Expressions.id(ROOT_ID);
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void selfWithTerm() throws Exception {
+		final Expression actual = evaluator.evaluate(String.format("%s|SNOMED CT Root|", ROOT_ID)).getSync();
 		final Expression expected = RevisionDocument.Expressions.id(ROOT_ID);
 		assertEquals(expected, actual);
 	}

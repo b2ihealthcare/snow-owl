@@ -64,7 +64,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     switch (eClass.getClassifierID())
     {
-      case EclPackage.EXPRESSION: return createExpression();
+      case EclPackage.EXPRESSION_CONSTRAINT: return createExpressionConstraint();
       case EclPackage.CONCEPT_REFERENCE: return createConceptReference();
       default:
         throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
@@ -76,10 +76,10 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public Expression createExpression()
+  public ExpressionConstraint createExpressionConstraint()
   {
-    ExpressionImpl expression = new ExpressionImpl();
-    return expression;
+    ExpressionConstraintImpl expressionConstraint = new ExpressionConstraintImpl();
+    return expressionConstraint;
   }
 
   /**

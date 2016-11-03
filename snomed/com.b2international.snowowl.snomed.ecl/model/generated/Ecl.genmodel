@@ -8,11 +8,12 @@
     editorPluginID="com.b2international.snowowl.snomed.ecl.editor" runtimeVersion="2.10">
   <genPackages prefix="Ecl" basePackage="com.b2international.snowowl.snomed.ecl" disposableProviderFactory="true"
       fileExtensions="ecl" ecorePackage="Ecl.ecore#/">
-    <genClasses ecoreClass="Ecl.ecore#//Expression">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//Expression/expression"/>
+    <genClasses ecoreClass="Ecl.ecore#//ExpressionConstraint">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//ExpressionConstraint/expression"/>
     </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//ConceptReference">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//ConceptReference/id"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//ConceptReference/term"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

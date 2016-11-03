@@ -26,9 +26,19 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	@Override
 	protected String getUnassignedRuleCallToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if(ruleCall.getRule() == grammarAccess.getPIPERule())
+			return getPIPEToken(semanticObject, ruleCall, node);
 		return "";
 	}
 	
+	/**
+	 * terminal PIPE 					: '|';
+	 */
+	protected String getPIPEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "|";
+	}
 	
 	@Override
 	protected void emitUnassignedTokens(EObject semanticObject, ISynTransition transition, INode fromNode, INode toNode) {

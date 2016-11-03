@@ -8,12 +8,58 @@ ExpressionConstraint hidden(WS, SL_COMMENT, ML_COMMENT):
 	expression=ConceptReference;
 	
 ConceptReference:
-	id=SnomedIdentifier;
+	id=SnomedIdentifier (PIPE term=Term PIPE)?;
 
-SnomedIdentifier hidden(): DIGIT_NONZERO (DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)+;
+// hidden grammar rules
+SnomedIdentifier 	hidden() : DIGIT_NONZERO (DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)+;
+Term 				hidden() : (TermCharacter)+ (WS+ (TermCharacter)+)*;
+TermCharacter 		hidden() : DESCENDANT_OF|DESCENDANT_OR_SELF_OF
+								|AND|OR|NOT
+								|ZERO|DIGIT_NONZERO
+								|LETTER|CARET
+								|EQUAL|PLUS
+								|CURLY_OPEN|CURLY_CLOSE
+								|ROUND_OPEN|ROUND_CLOSE
+								|SQUARE_OPEN|SQUARE_CLOSE
+								|DOT|COLON|COMMA
+								|OTHER_CHARACTER;
 
-terminal ZERO : '0';
-terminal DIGIT_NONZERO  : '1'..'9';
-terminal WS : (' '|'\t'|'\n'|'\r');
-terminal ML_COMMENT	: '/*' -> '*/';
-terminal SL_COMMENT 	: '//' !('\n'|'\r')* ('\r'? '\n')?;
+// ---TERMINALS---
+
+// ECL terminals
+terminal DESCENDANT_OF 			: '<';
+terminal DESCENDANT_OR_SELF_OF 	: '<<';
+
+// bool operators
+terminal AND 					: 'AND';
+terminal OR 					: 'OR';
+
+// numeric terminals
+terminal ZERO 					: '0';
+terminal DIGIT_NONZERO  		: '1'..'9';
+
+// character terminals
+terminal LETTER					: ('a'..'z' | 'A'..'Z');
+terminal PIPE 					: '|';
+terminal COLON 					: ':';
+terminal CURLY_OPEN 			: '{';
+terminal CURLY_CLOSE			: '}';
+terminal EQUAL					: '=';
+terminal COMMA					: ',';
+terminal ROUND_OPEN 			: '(';
+terminal ROUND_CLOSE 			: ')';
+terminal SQUARE_OPEN 			: '[';
+terminal SQUARE_CLOSE 			: ']';
+terminal PLUS 					: '+';
+terminal CARET 					: '^';
+terminal NOT 					: '!';
+terminal DOT					: '.';
+terminal WILDCARD 				: '*';
+
+// comment terminals
+terminal WS 					: (' '|'\t'|'\n'|'\r');
+terminal ML_COMMENT				: '/*' -> '*/';
+terminal SL_COMMENT 			: '//' !('\n'|'\r')* ('\r'? '\n')?;
+
+// misc
+terminal OTHER_CHARACTER:		.;

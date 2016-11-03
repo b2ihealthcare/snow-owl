@@ -6,21 +6,21 @@ import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Expression</b></em>'.
+ * A representation of the model object '<em><b>Expression Constraint</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.Expression#getExpression <em>Expression</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint#getExpression <em>Expression</em>}</li>
  * </ul>
  * </p>
  *
- * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getExpression()
+ * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getExpressionConstraint()
  * @model
  * @generated
  */
-public interface Expression extends EObject
+public interface ExpressionConstraint extends EObject
 {
   /**
    * Returns the value of the '<em><b>Expression</b></em>' containment reference.
@@ -32,14 +32,14 @@ public interface Expression extends EObject
    * <!-- end-user-doc -->
    * @return the value of the '<em>Expression</em>' containment reference.
    * @see #setExpression(ConceptReference)
-   * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getExpression_Expression()
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getExpressionConstraint_Expression()
    * @model containment="true"
    * @generated
    */
   ConceptReference getExpression();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.Expression#getExpression <em>Expression</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint#getExpression <em>Expression</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Expression</em>' containment reference.
@@ -48,4 +48,4 @@ public interface Expression extends EObject
    */
   void setExpression(ConceptReference value);
 
-} // Expression
+} // ExpressionConstraint

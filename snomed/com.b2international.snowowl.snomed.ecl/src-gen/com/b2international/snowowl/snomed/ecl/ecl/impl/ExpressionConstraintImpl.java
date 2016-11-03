@@ -4,7 +4,7 @@ package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ecl.ecl.Expression;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -17,18 +17,18 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Expression</b></em>'.
+ * An implementation of the model object '<em><b>Expression Constraint</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ExpressionImpl#getExpression <em>Expression</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ExpressionConstraintImpl#getExpression <em>Expression</em>}</li>
  * </ul>
  * </p>
  *
  * @generated
  */
-public class ExpressionImpl extends MinimalEObjectImpl.Container implements Expression
+public class ExpressionConstraintImpl extends MinimalEObjectImpl.Container implements ExpressionConstraint
 {
   /**
    * The cached value of the '{@link #getExpression() <em>Expression</em>}' containment reference.
@@ -45,7 +45,7 @@ public class ExpressionImpl extends MinimalEObjectImpl.Container implements Expr
    * <!-- end-user-doc -->
    * @generated
    */
-  protected ExpressionImpl()
+  protected ExpressionConstraintImpl()
   {
     super();
   }
@@ -58,7 +58,7 @@ public class ExpressionImpl extends MinimalEObjectImpl.Container implements Expr
   @Override
   protected EClass eStaticClass()
   {
-    return EclPackage.Literals.EXPRESSION;
+    return EclPackage.Literals.EXPRESSION_CONSTRAINT;
   }
 
   /**
@@ -82,7 +82,7 @@ public class ExpressionImpl extends MinimalEObjectImpl.Container implements Expr
     expression = newExpression;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.EXPRESSION__EXPRESSION, oldExpression, newExpression);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION, oldExpression, newExpression);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -99,14 +99,14 @@ public class ExpressionImpl extends MinimalEObjectImpl.Container implements Expr
     {
       NotificationChain msgs = null;
       if (expression != null)
-        msgs = ((InternalEObject)expression).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.EXPRESSION__EXPRESSION, null, msgs);
+        msgs = ((InternalEObject)expression).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION, null, msgs);
       if (newExpression != null)
-        msgs = ((InternalEObject)newExpression).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.EXPRESSION__EXPRESSION, null, msgs);
+        msgs = ((InternalEObject)newExpression).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION, null, msgs);
       msgs = basicSetExpression(newExpression, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.EXPRESSION__EXPRESSION, newExpression, newExpression));
+      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION, newExpression, newExpression));
   }
 
   /**
@@ -119,7 +119,7 @@ public class ExpressionImpl extends MinimalEObjectImpl.Container implements Expr
   {
     switch (featureID)
     {
-      case EclPackage.EXPRESSION__EXPRESSION:
+      case EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION:
         return basicSetExpression(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
@@ -135,7 +135,7 @@ public class ExpressionImpl extends MinimalEObjectImpl.Container implements Expr
   {
     switch (featureID)
     {
-      case EclPackage.EXPRESSION__EXPRESSION:
+      case EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION:
         return getExpression();
     }
     return super.eGet(featureID, resolve, coreType);
@@ -151,7 +151,7 @@ public class ExpressionImpl extends MinimalEObjectImpl.Container implements Expr
   {
     switch (featureID)
     {
-      case EclPackage.EXPRESSION__EXPRESSION:
+      case EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION:
         setExpression((ConceptReference)newValue);
         return;
     }
@@ -168,7 +168,7 @@ public class ExpressionImpl extends MinimalEObjectImpl.Container implements Expr
   {
     switch (featureID)
     {
-      case EclPackage.EXPRESSION__EXPRESSION:
+      case EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION:
         setExpression((ConceptReference)null);
         return;
     }
@@ -185,10 +185,10 @@ public class ExpressionImpl extends MinimalEObjectImpl.Container implements Expr
   {
     switch (featureID)
     {
-      case EclPackage.EXPRESSION__EXPRESSION:
+      case EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION:
         return expression != null;
     }
     return super.eIsSet(featureID);
   }
 
-} //ExpressionImpl
+} //ExpressionConstraintImpl

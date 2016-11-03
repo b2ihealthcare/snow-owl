@@ -26,6 +26,7 @@ import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
@@ -68,7 +69,7 @@ public class DefaultEclEvaluator implements EclEvaluator {
 		throw new UnsupportedOperationException("Unhandled ECL grammar feature: " + eObject);
 	}
 	
-	protected Promise<Expression> eval(com.b2international.snowowl.snomed.ecl.ecl.Expression expression) {
+	protected Promise<Expression> eval(ExpressionConstraint expression) {
 		return evaluate(expression.getExpression());
 	}
 	

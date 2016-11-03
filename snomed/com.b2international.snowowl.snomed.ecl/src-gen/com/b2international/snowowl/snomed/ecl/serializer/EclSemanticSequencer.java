@@ -5,7 +5,7 @@ package com.b2international.snowowl.snomed.ecl.serializer;
 
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ecl.ecl.Expression;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.services.EclGrammarAccess;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -33,8 +33,8 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 			case EclPackage.CONCEPT_REFERENCE:
 				sequence_ConceptReference(context, (ConceptReference) semanticObject); 
 				return; 
-			case EclPackage.EXPRESSION:
-				sequence_Expression(context, (Expression) semanticObject); 
+			case EclPackage.EXPRESSION_CONSTRAINT:
+				sequence_ExpressionConstraint(context, (ExpressionConstraint) semanticObject); 
 				return; 
 			}
 		if (errorAcceptor != null) errorAcceptor.accept(diagnosticProvider.createInvalidContextOrTypeDiagnostic(semanticObject, context));
@@ -42,17 +42,10 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
-	 *     id=SnomedIdentifier
+	 *     (id=SnomedIdentifier term=Term?)
 	 */
 	protected void sequence_ConceptReference(EObject context, ConceptReference semanticObject) {
-		if(errorAcceptor != null) {
-			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.CONCEPT_REFERENCE__ID) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.CONCEPT_REFERENCE__ID));
-		}
-		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
-		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
-		feeder.accept(grammarAccess.getConceptReferenceAccess().getIdSnomedIdentifierParserRuleCall_0(), semanticObject.getId());
-		feeder.finish();
+		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	
@@ -60,14 +53,14 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 * Constraint:
 	 *     expression=ConceptReference
 	 */
-	protected void sequence_Expression(EObject context, Expression semanticObject) {
+	protected void sequence_ExpressionConstraint(EObject context, ExpressionConstraint semanticObject) {
 		if(errorAcceptor != null) {
-			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.EXPRESSION__EXPRESSION) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.EXPRESSION__EXPRESSION));
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.EXPRESSION_CONSTRAINT__EXPRESSION) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.EXPRESSION_CONSTRAINT__EXPRESSION));
 		}
 		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
 		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
-		feeder.accept(grammarAccess.getExpressionAccess().getExpressionConceptReferenceParserRuleCall_0(), semanticObject.getExpression());
+		feeder.accept(grammarAccess.getExpressionConstraintAccess().getExpressionConceptReferenceParserRuleCall_0(), semanticObject.getExpression());
 		feeder.finish();
 	}
 }

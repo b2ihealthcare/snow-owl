@@ -57,14 +57,14 @@ public interface EclPackage extends EPackage
   EclPackage eINSTANCE = com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl.init();
 
   /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ExpressionImpl <em>Expression</em>}' class.
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ExpressionConstraintImpl <em>Expression Constraint</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.ExpressionImpl
-   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getExpression()
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.ExpressionConstraintImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getExpressionConstraint()
    * @generated
    */
-  int EXPRESSION = 0;
+  int EXPRESSION_CONSTRAINT = 0;
 
   /**
    * The feature id for the '<em><b>Expression</b></em>' containment reference.
@@ -73,16 +73,16 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int EXPRESSION__EXPRESSION = 0;
+  int EXPRESSION_CONSTRAINT__EXPRESSION = 0;
 
   /**
-   * The number of structural features of the '<em>Expression</em>' class.
+   * The number of structural features of the '<em>Expression Constraint</em>' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int EXPRESSION_FEATURE_COUNT = 1;
+  int EXPRESSION_CONSTRAINT_FEATURE_COUNT = 1;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ConceptReferenceImpl <em>Concept Reference</em>}' class.
@@ -104,35 +104,44 @@ public interface EclPackage extends EPackage
   int CONCEPT_REFERENCE__ID = 0;
 
   /**
+   * The feature id for the '<em><b>Term</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int CONCEPT_REFERENCE__TERM = 1;
+
+  /**
    * The number of structural features of the '<em>Concept Reference</em>' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int CONCEPT_REFERENCE_FEATURE_COUNT = 1;
+  int CONCEPT_REFERENCE_FEATURE_COUNT = 2;
 
 
   /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.Expression <em>Expression</em>}'.
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint <em>Expression Constraint</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Expression</em>'.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.Expression
+   * @return the meta object for class '<em>Expression Constraint</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint
    * @generated
    */
-  EClass getExpression();
+  EClass getExpressionConstraint();
 
   /**
-   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.Expression#getExpression <em>Expression</em>}'.
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint#getExpression <em>Expression</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @return the meta object for the containment reference '<em>Expression</em>'.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.Expression#getExpression()
-   * @see #getExpression()
+   * @see com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint#getExpression()
+   * @see #getExpressionConstraint()
    * @generated
    */
-  EReference getExpression_Expression();
+  EReference getExpressionConstraint_Expression();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.ConceptReference <em>Concept Reference</em>}'.
@@ -154,6 +163,17 @@ public interface EclPackage extends EPackage
    * @generated
    */
   EAttribute getConceptReference_Id();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.ConceptReference#getTerm <em>Term</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Term</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.ConceptReference#getTerm()
+   * @see #getConceptReference()
+   * @generated
+   */
+  EAttribute getConceptReference_Term();
 
   /**
    * Returns the factory that creates the instances of the model.
@@ -179,14 +199,14 @@ public interface EclPackage extends EPackage
   interface Literals
   {
     /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ExpressionImpl <em>Expression</em>}' class.
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ExpressionConstraintImpl <em>Expression Constraint</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.ExpressionImpl
-     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getExpression()
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.ExpressionConstraintImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getExpressionConstraint()
      * @generated
      */
-    EClass EXPRESSION = eINSTANCE.getExpression();
+    EClass EXPRESSION_CONSTRAINT = eINSTANCE.getExpressionConstraint();
 
     /**
      * The meta object literal for the '<em><b>Expression</b></em>' containment reference feature.
@@ -194,7 +214,7 @@ public interface EclPackage extends EPackage
      * <!-- end-user-doc -->
      * @generated
      */
-    EReference EXPRESSION__EXPRESSION = eINSTANCE.getExpression_Expression();
+    EReference EXPRESSION_CONSTRAINT__EXPRESSION = eINSTANCE.getExpressionConstraint_Expression();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ConceptReferenceImpl <em>Concept Reference</em>}' class.
@@ -213,6 +233,14 @@ public interface EclPackage extends EPackage
      * @generated
      */
     EAttribute CONCEPT_REFERENCE__ID = eINSTANCE.getConceptReference_Id();
+
+    /**
+     * The meta object literal for the '<em><b>Term</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute CONCEPT_REFERENCE__TERM = eINSTANCE.getConceptReference_Term();
 
   }
 
