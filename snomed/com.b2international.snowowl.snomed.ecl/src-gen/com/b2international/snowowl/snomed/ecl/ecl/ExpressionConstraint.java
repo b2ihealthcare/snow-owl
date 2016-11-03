@@ -31,12 +31,12 @@ public interface ExpressionConstraint extends EObject
    * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Expression</em>' containment reference.
-   * @see #setExpression(ConceptReference)
+   * @see #setExpression(FocusConcept)
    * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getExpressionConstraint_Expression()
    * @model containment="true"
    * @generated
    */
-  ConceptReference getExpression();
+  FocusConcept getExpression();
 
   /**
    * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint#getExpression <em>Expression</em>}' containment reference.
@@ -46,6 +46,6 @@ public interface ExpressionConstraint extends EObject
    * @see #getExpression()
    * @generated
    */
-  void setExpression(ConceptReference value);
+  void setExpression(FocusConcept value);
 
 } // ExpressionConstraint

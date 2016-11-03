@@ -10,7 +10,6 @@ import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.ecore.EClass;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
@@ -26,7 +25,7 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  *
  * @generated
  */
-public class ConceptReferenceImpl extends MinimalEObjectImpl.Container implements ConceptReference
+public class ConceptReferenceImpl extends FocusConceptImpl implements ConceptReference
 {
   /**
    * The default value of the '{@link #getId() <em>Id</em>}' attribute.

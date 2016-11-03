@@ -3,11 +3,17 @@
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="ecl" nsURI="http://www.b2international.com/snowowl/snomed/Ecl"
     nsPrefix="ecl">
   <eClassifiers xsi:type="ecore:EClass" name="ExpressionConstraint">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//ConceptReference"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="expression" eType="#//FocusConcept"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ConceptReference">
+  <eClassifiers xsi:type="ecore:EClass" name="FocusConcept"/>
+  <eClassifiers xsi:type="ecore:EClass" name="MemberOf" eSuperTypes="#//FocusConcept">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="concept" eType="#//FocusConcept"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ConceptReference" eSuperTypes="#//FocusConcept">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="id" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="term" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Any" eSuperTypes="#//FocusConcept"/>
 </ecore:EPackage>

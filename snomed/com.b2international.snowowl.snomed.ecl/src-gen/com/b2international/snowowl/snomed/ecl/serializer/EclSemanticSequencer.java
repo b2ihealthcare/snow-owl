@@ -3,9 +3,11 @@
  */
 package com.b2international.snowowl.snomed.ecl.serializer;
 
+import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
 import com.b2international.snowowl.snomed.ecl.services.EclGrammarAccess;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -30,15 +32,30 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	@Override
 	public void createSequence(EObject context, EObject semanticObject) {
 		if(semanticObject.eClass().getEPackage() == EclPackage.eINSTANCE) switch(semanticObject.eClass().getClassifierID()) {
+			case EclPackage.ANY:
+				sequence_Any(context, (Any) semanticObject); 
+				return; 
 			case EclPackage.CONCEPT_REFERENCE:
 				sequence_ConceptReference(context, (ConceptReference) semanticObject); 
 				return; 
 			case EclPackage.EXPRESSION_CONSTRAINT:
 				sequence_ExpressionConstraint(context, (ExpressionConstraint) semanticObject); 
 				return; 
+			case EclPackage.MEMBER_OF:
+				sequence_MemberOf(context, (MemberOf) semanticObject); 
+				return; 
 			}
 		if (errorAcceptor != null) errorAcceptor.accept(diagnosticProvider.createInvalidContextOrTypeDiagnostic(semanticObject, context));
 	}
+	
+	/**
+	 * Constraint:
+	 *     {Any}
+	 */
+	protected void sequence_Any(EObject context, Any semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
 	
 	/**
 	 * Constraint:
@@ -51,7 +68,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
-	 *     expression=ConceptReference
+	 *     expression=FocusConcept
 	 */
 	protected void sequence_ExpressionConstraint(EObject context, ExpressionConstraint semanticObject) {
 		if(errorAcceptor != null) {
@@ -60,7 +77,16 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 		}
 		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
 		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
-		feeder.accept(grammarAccess.getExpressionConstraintAccess().getExpressionConceptReferenceParserRuleCall_0(), semanticObject.getExpression());
+		feeder.accept(grammarAccess.getExpressionConstraintAccess().getExpressionFocusConceptParserRuleCall_0(), semanticObject.getExpression());
 		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     (concept=ConceptReference | concept=Any)
+	 */
+	protected void sequence_MemberOf(EObject context, MemberOf semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
 	}
 }

@@ -85,6 +85,53 @@ public interface EclPackage extends EPackage
   int EXPRESSION_CONSTRAINT_FEATURE_COUNT = 1;
 
   /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.FocusConceptImpl <em>Focus Concept</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.FocusConceptImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getFocusConcept()
+   * @generated
+   */
+  int FOCUS_CONCEPT = 1;
+
+  /**
+   * The number of structural features of the '<em>Focus Concept</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int FOCUS_CONCEPT_FEATURE_COUNT = 0;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.MemberOfImpl <em>Member Of</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.MemberOfImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getMemberOf()
+   * @generated
+   */
+  int MEMBER_OF = 2;
+
+  /**
+   * The feature id for the '<em><b>Concept</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int MEMBER_OF__CONCEPT = FOCUS_CONCEPT_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Member Of</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int MEMBER_OF_FEATURE_COUNT = FOCUS_CONCEPT_FEATURE_COUNT + 1;
+
+  /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ConceptReferenceImpl <em>Concept Reference</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -92,7 +139,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getConceptReference()
    * @generated
    */
-  int CONCEPT_REFERENCE = 1;
+  int CONCEPT_REFERENCE = 3;
 
   /**
    * The feature id for the '<em><b>Id</b></em>' attribute.
@@ -101,7 +148,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int CONCEPT_REFERENCE__ID = 0;
+  int CONCEPT_REFERENCE__ID = FOCUS_CONCEPT_FEATURE_COUNT + 0;
 
   /**
    * The feature id for the '<em><b>Term</b></em>' attribute.
@@ -110,7 +157,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int CONCEPT_REFERENCE__TERM = 1;
+  int CONCEPT_REFERENCE__TERM = FOCUS_CONCEPT_FEATURE_COUNT + 1;
 
   /**
    * The number of structural features of the '<em>Concept Reference</em>' class.
@@ -119,7 +166,26 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int CONCEPT_REFERENCE_FEATURE_COUNT = 2;
+  int CONCEPT_REFERENCE_FEATURE_COUNT = FOCUS_CONCEPT_FEATURE_COUNT + 2;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AnyImpl <em>Any</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.AnyImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAny()
+   * @generated
+   */
+  int ANY = 4;
+
+  /**
+   * The number of structural features of the '<em>Any</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int ANY_FEATURE_COUNT = FOCUS_CONCEPT_FEATURE_COUNT + 0;
 
 
   /**
@@ -142,6 +208,37 @@ public interface EclPackage extends EPackage
    * @generated
    */
   EReference getExpressionConstraint_Expression();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.FocusConcept <em>Focus Concept</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Focus Concept</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.FocusConcept
+   * @generated
+   */
+  EClass getFocusConcept();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.MemberOf <em>Member Of</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Member Of</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.MemberOf
+   * @generated
+   */
+  EClass getMemberOf();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.MemberOf#getConcept <em>Concept</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Concept</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.MemberOf#getConcept()
+   * @see #getMemberOf()
+   * @generated
+   */
+  EReference getMemberOf_Concept();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.ConceptReference <em>Concept Reference</em>}'.
@@ -174,6 +271,16 @@ public interface EclPackage extends EPackage
    * @generated
    */
   EAttribute getConceptReference_Term();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.Any <em>Any</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Any</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.Any
+   * @generated
+   */
+  EClass getAny();
 
   /**
    * Returns the factory that creates the instances of the model.
@@ -217,6 +324,34 @@ public interface EclPackage extends EPackage
     EReference EXPRESSION_CONSTRAINT__EXPRESSION = eINSTANCE.getExpressionConstraint_Expression();
 
     /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.FocusConceptImpl <em>Focus Concept</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.FocusConceptImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getFocusConcept()
+     * @generated
+     */
+    EClass FOCUS_CONCEPT = eINSTANCE.getFocusConcept();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.MemberOfImpl <em>Member Of</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.MemberOfImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getMemberOf()
+     * @generated
+     */
+    EClass MEMBER_OF = eINSTANCE.getMemberOf();
+
+    /**
+     * The meta object literal for the '<em><b>Concept</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference MEMBER_OF__CONCEPT = eINSTANCE.getMemberOf_Concept();
+
+    /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ConceptReferenceImpl <em>Concept Reference</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -241,6 +376,16 @@ public interface EclPackage extends EPackage
      * @generated
      */
     EAttribute CONCEPT_REFERENCE__TERM = eINSTANCE.getConceptReference_Term();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AnyImpl <em>Any</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.AnyImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAny()
+     * @generated
+     */
+    EClass ANY = eINSTANCE.getAny();
 
   }
 

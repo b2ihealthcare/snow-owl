@@ -2,10 +2,13 @@
  */
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
+import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.EclFactory;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.FocusConcept;
+import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
@@ -34,7 +37,28 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  private EClass focusConceptEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass memberOfEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   private EClass conceptReferenceEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass anyEClass = null;
 
   /**
    * Creates an instance of the model <b>Package</b>, registered with
@@ -124,6 +148,36 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  public EClass getFocusConcept()
+  {
+    return focusConceptEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getMemberOf()
+  {
+    return memberOfEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getMemberOf_Concept()
+  {
+    return (EReference)memberOfEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public EClass getConceptReference()
   {
     return conceptReferenceEClass;
@@ -147,6 +201,16 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
   public EAttribute getConceptReference_Term()
   {
     return (EAttribute)conceptReferenceEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getAny()
+  {
+    return anyEClass;
   }
 
   /**
@@ -182,9 +246,16 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     expressionConstraintEClass = createEClass(EXPRESSION_CONSTRAINT);
     createEReference(expressionConstraintEClass, EXPRESSION_CONSTRAINT__EXPRESSION);
 
+    focusConceptEClass = createEClass(FOCUS_CONCEPT);
+
+    memberOfEClass = createEClass(MEMBER_OF);
+    createEReference(memberOfEClass, MEMBER_OF__CONCEPT);
+
     conceptReferenceEClass = createEClass(CONCEPT_REFERENCE);
     createEAttribute(conceptReferenceEClass, CONCEPT_REFERENCE__ID);
     createEAttribute(conceptReferenceEClass, CONCEPT_REFERENCE__TERM);
+
+    anyEClass = createEClass(ANY);
   }
 
   /**
@@ -216,14 +287,24 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     // Set bounds for type parameters
 
     // Add supertypes to classes
+    memberOfEClass.getESuperTypes().add(this.getFocusConcept());
+    conceptReferenceEClass.getESuperTypes().add(this.getFocusConcept());
+    anyEClass.getESuperTypes().add(this.getFocusConcept());
 
     // Initialize classes and features; add operations and parameters
     initEClass(expressionConstraintEClass, ExpressionConstraint.class, "ExpressionConstraint", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getExpressionConstraint_Expression(), this.getConceptReference(), null, "expression", null, 0, 1, ExpressionConstraint.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getExpressionConstraint_Expression(), this.getFocusConcept(), null, "expression", null, 0, 1, ExpressionConstraint.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(focusConceptEClass, FocusConcept.class, "FocusConcept", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(memberOfEClass, MemberOf.class, "MemberOf", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getMemberOf_Concept(), this.getFocusConcept(), null, "concept", null, 0, 1, MemberOf.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(conceptReferenceEClass, ConceptReference.class, "ConceptReference", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getConceptReference_Id(), ecorePackage.getEString(), "id", null, 0, 1, ConceptReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getConceptReference_Term(), ecorePackage.getEString(), "term", null, 0, 1, ConceptReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(anyEClass, Any.class, "Any", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     // Create resource
     createResource(eNS_URI);

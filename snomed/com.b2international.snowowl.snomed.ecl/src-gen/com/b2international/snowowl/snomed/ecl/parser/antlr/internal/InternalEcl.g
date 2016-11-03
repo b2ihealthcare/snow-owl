@@ -87,9 +87,9 @@ ruleExpressionConstraint returns [EObject current=null]
 (
 (
 		{ 
-	        newCompositeNode(grammarAccess.getExpressionConstraintAccess().getExpressionConceptReferenceParserRuleCall_0()); 
+	        newCompositeNode(grammarAccess.getExpressionConstraintAccess().getExpressionFocusConceptParserRuleCall_0()); 
 	    }
-		lv_expression_0_0=ruleConceptReference		{
+		lv_expression_0_0=ruleFocusConcept		{
 	        if ($current==null) {
 	            $current = createModelElementForParent(grammarAccess.getExpressionConstraintRule());
 	        }
@@ -97,7 +97,7 @@ ruleExpressionConstraint returns [EObject current=null]
        			$current, 
        			"expression",
         		lv_expression_0_0, 
-        		"ConceptReference");
+        		"FocusConcept");
 	        afterParserOrEnumRuleCall();
 	    }
 
@@ -107,6 +107,117 @@ ruleExpressionConstraint returns [EObject current=null]
 finally {
 	myHiddenTokenState.restore();
 }
+
+
+
+
+
+// Entry rule entryRuleFocusConcept
+entryRuleFocusConcept returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getFocusConceptRule()); }
+	 iv_ruleFocusConcept=ruleFocusConcept 
+	 { $current=$iv_ruleFocusConcept.current; } 
+	 EOF 
+;
+
+// Rule FocusConcept
+ruleFocusConcept returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(
+    { 
+        newCompositeNode(grammarAccess.getFocusConceptAccess().getMemberOfParserRuleCall_0()); 
+    }
+    this_MemberOf_0=ruleMemberOf
+    { 
+        $current = $this_MemberOf_0.current; 
+        afterParserOrEnumRuleCall();
+    }
+
+    |
+    { 
+        newCompositeNode(grammarAccess.getFocusConceptAccess().getConceptReferenceParserRuleCall_1()); 
+    }
+    this_ConceptReference_1=ruleConceptReference
+    { 
+        $current = $this_ConceptReference_1.current; 
+        afterParserOrEnumRuleCall();
+    }
+
+    |
+    { 
+        newCompositeNode(grammarAccess.getFocusConceptAccess().getAnyParserRuleCall_2()); 
+    }
+    this_Any_2=ruleAny
+    { 
+        $current = $this_Any_2.current; 
+        afterParserOrEnumRuleCall();
+    }
+)
+;
+
+
+
+
+
+// Entry rule entryRuleMemberOf
+entryRuleMemberOf returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getMemberOfRule()); }
+	 iv_ruleMemberOf=ruleMemberOf 
+	 { $current=$iv_ruleMemberOf.current; } 
+	 EOF 
+;
+
+// Rule MemberOf
+ruleMemberOf returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(this_CARET_0=RULE_CARET
+    { 
+    newLeafNode(this_CARET_0, grammarAccess.getMemberOfAccess().getCARETTerminalRuleCall_0()); 
+    }
+(
+(
+(
+		{ 
+	        newCompositeNode(grammarAccess.getMemberOfAccess().getConceptConceptReferenceParserRuleCall_1_0_0()); 
+	    }
+		lv_concept_1_1=ruleConceptReference		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getMemberOfRule());
+	        }
+       		set(
+       			$current, 
+       			"concept",
+        		lv_concept_1_1, 
+        		"ConceptReference");
+	        afterParserOrEnumRuleCall();
+	    }
+
+    |		{ 
+	        newCompositeNode(grammarAccess.getMemberOfAccess().getConceptAnyParserRuleCall_1_0_1()); 
+	    }
+		lv_concept_1_2=ruleAny		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getMemberOfRule());
+	        }
+       		set(
+       			$current, 
+       			"concept",
+        		lv_concept_1_2, 
+        		"Any");
+	        afterParserOrEnumRuleCall();
+	    }
+
+)
+
+)
+))
+;
 
 
 
@@ -171,6 +282,37 @@ ruleConceptReference returns [EObject current=null]
     newLeafNode(this_PIPE_3, grammarAccess.getConceptReferenceAccess().getPIPETerminalRuleCall_1_2()); 
     }
 )?)
+;
+
+
+
+
+
+// Entry rule entryRuleAny
+entryRuleAny returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getAnyRule()); }
+	 iv_ruleAny=ruleAny 
+	 { $current=$iv_ruleAny.current; } 
+	 EOF 
+;
+
+// Rule Any
+ruleAny returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(this_WILDCARD_0=RULE_WILDCARD
+    { 
+    newLeafNode(this_WILDCARD_0, grammarAccess.getAnyAccess().getWILDCARDTerminalRuleCall_0()); 
+    }
+(
+    {
+        $current = forceCreateModelElement(
+            grammarAccess.getAnyAccess().getAnyAction_1(),
+            $current);
+    }
+))
 ;
 
 

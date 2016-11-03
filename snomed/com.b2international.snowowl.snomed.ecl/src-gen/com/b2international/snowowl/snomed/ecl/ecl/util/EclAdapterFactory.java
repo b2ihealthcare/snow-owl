@@ -80,9 +80,24 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createExpressionConstraintAdapter();
       }
       @Override
+      public Adapter caseFocusConcept(FocusConcept object)
+      {
+        return createFocusConceptAdapter();
+      }
+      @Override
+      public Adapter caseMemberOf(MemberOf object)
+      {
+        return createMemberOfAdapter();
+      }
+      @Override
       public Adapter caseConceptReference(ConceptReference object)
       {
         return createConceptReferenceAdapter();
+      }
+      @Override
+      public Adapter caseAny(Any object)
+      {
+        return createAnyAdapter();
       }
       @Override
       public Adapter defaultCase(EObject object)
@@ -122,6 +137,36 @@ public class EclAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.FocusConcept <em>Focus Concept</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.FocusConcept
+   * @generated
+   */
+  public Adapter createFocusConceptAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.MemberOf <em>Member Of</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.MemberOf
+   * @generated
+   */
+  public Adapter createMemberOfAdapter()
+  {
+    return null;
+  }
+
+  /**
    * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.ConceptReference <em>Concept Reference</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
@@ -132,6 +177,21 @@ public class EclAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createConceptReferenceAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.Any <em>Any</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.Any
+   * @generated
+   */
+  public Adapter createAnyAdapter()
   {
     return null;
   }

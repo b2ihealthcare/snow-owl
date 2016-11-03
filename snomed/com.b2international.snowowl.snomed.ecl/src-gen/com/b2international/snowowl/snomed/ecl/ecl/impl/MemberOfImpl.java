@@ -3,8 +3,8 @@
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.FocusConcept;
+import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -13,39 +13,38 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Expression Constraint</b></em>'.
+ * An implementation of the model object '<em><b>Member Of</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ExpressionConstraintImpl#getExpression <em>Expression</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.MemberOfImpl#getConcept <em>Concept</em>}</li>
  * </ul>
  * </p>
  *
  * @generated
  */
-public class ExpressionConstraintImpl extends MinimalEObjectImpl.Container implements ExpressionConstraint
+public class MemberOfImpl extends FocusConceptImpl implements MemberOf
 {
   /**
-   * The cached value of the '{@link #getExpression() <em>Expression</em>}' containment reference.
+   * The cached value of the '{@link #getConcept() <em>Concept</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see #getExpression()
+   * @see #getConcept()
    * @generated
    * @ordered
    */
-  protected FocusConcept expression;
+  protected FocusConcept concept;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected ExpressionConstraintImpl()
+  protected MemberOfImpl()
   {
     super();
   }
@@ -58,7 +57,7 @@ public class ExpressionConstraintImpl extends MinimalEObjectImpl.Container imple
   @Override
   protected EClass eStaticClass()
   {
-    return EclPackage.Literals.EXPRESSION_CONSTRAINT;
+    return EclPackage.Literals.MEMBER_OF;
   }
 
   /**
@@ -66,9 +65,9 @@ public class ExpressionConstraintImpl extends MinimalEObjectImpl.Container imple
    * <!-- end-user-doc -->
    * @generated
    */
-  public FocusConcept getExpression()
+  public FocusConcept getConcept()
   {
-    return expression;
+    return concept;
   }
 
   /**
@@ -76,13 +75,13 @@ public class ExpressionConstraintImpl extends MinimalEObjectImpl.Container imple
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetExpression(FocusConcept newExpression, NotificationChain msgs)
+  public NotificationChain basicSetConcept(FocusConcept newConcept, NotificationChain msgs)
   {
-    FocusConcept oldExpression = expression;
-    expression = newExpression;
+    FocusConcept oldConcept = concept;
+    concept = newConcept;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION, oldExpression, newExpression);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.MEMBER_OF__CONCEPT, oldConcept, newConcept);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -93,20 +92,20 @@ public class ExpressionConstraintImpl extends MinimalEObjectImpl.Container imple
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setExpression(FocusConcept newExpression)
+  public void setConcept(FocusConcept newConcept)
   {
-    if (newExpression != expression)
+    if (newConcept != concept)
     {
       NotificationChain msgs = null;
-      if (expression != null)
-        msgs = ((InternalEObject)expression).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION, null, msgs);
-      if (newExpression != null)
-        msgs = ((InternalEObject)newExpression).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION, null, msgs);
-      msgs = basicSetExpression(newExpression, msgs);
+      if (concept != null)
+        msgs = ((InternalEObject)concept).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.MEMBER_OF__CONCEPT, null, msgs);
+      if (newConcept != null)
+        msgs = ((InternalEObject)newConcept).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.MEMBER_OF__CONCEPT, null, msgs);
+      msgs = basicSetConcept(newConcept, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION, newExpression, newExpression));
+      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.MEMBER_OF__CONCEPT, newConcept, newConcept));
   }
 
   /**
@@ -119,8 +118,8 @@ public class ExpressionConstraintImpl extends MinimalEObjectImpl.Container imple
   {
     switch (featureID)
     {
-      case EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION:
-        return basicSetExpression(null, msgs);
+      case EclPackage.MEMBER_OF__CONCEPT:
+        return basicSetConcept(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
   }
@@ -135,8 +134,8 @@ public class ExpressionConstraintImpl extends MinimalEObjectImpl.Container imple
   {
     switch (featureID)
     {
-      case EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION:
-        return getExpression();
+      case EclPackage.MEMBER_OF__CONCEPT:
+        return getConcept();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -151,8 +150,8 @@ public class ExpressionConstraintImpl extends MinimalEObjectImpl.Container imple
   {
     switch (featureID)
     {
-      case EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION:
-        setExpression((FocusConcept)newValue);
+      case EclPackage.MEMBER_OF__CONCEPT:
+        setConcept((FocusConcept)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -168,8 +167,8 @@ public class ExpressionConstraintImpl extends MinimalEObjectImpl.Container imple
   {
     switch (featureID)
     {
-      case EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION:
-        setExpression((FocusConcept)null);
+      case EclPackage.MEMBER_OF__CONCEPT:
+        setConcept((FocusConcept)null);
         return;
     }
     super.eUnset(featureID);
@@ -185,10 +184,10 @@ public class ExpressionConstraintImpl extends MinimalEObjectImpl.Container imple
   {
     switch (featureID)
     {
-      case EclPackage.EXPRESSION_CONSTRAINT__EXPRESSION:
-        return expression != null;
+      case EclPackage.MEMBER_OF__CONCEPT:
+        return concept != null;
     }
     return super.eIsSet(featureID);
   }
 
-} //ExpressionConstraintImpl
+} //MemberOfImpl

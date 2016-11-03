@@ -20,17 +20,73 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	public class ExpressionConstraintElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "ExpressionConstraint");
 		private final Assignment cExpressionAssignment = (Assignment)rule.eContents().get(1);
-		private final RuleCall cExpressionConceptReferenceParserRuleCall_0 = (RuleCall)cExpressionAssignment.eContents().get(0);
+		private final RuleCall cExpressionFocusConceptParserRuleCall_0 = (RuleCall)cExpressionAssignment.eContents().get(0);
 		
 		//ExpressionConstraint hidden(WS, SL_COMMENT, ML_COMMENT):
-		//	expression=ConceptReference;
+		//	expression=FocusConcept;
 		@Override public ParserRule getRule() { return rule; }
 
-		//expression=ConceptReference
+		//expression=FocusConcept
 		public Assignment getExpressionAssignment() { return cExpressionAssignment; }
 
+		//FocusConcept
+		public RuleCall getExpressionFocusConceptParserRuleCall_0() { return cExpressionFocusConceptParserRuleCall_0; }
+	}
+
+	public class FocusConceptElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "FocusConcept");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final RuleCall cMemberOfParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cConceptReferenceParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cAnyParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		
+		//FocusConcept:
+		//	MemberOf | ConceptReference | Any;
+		@Override public ParserRule getRule() { return rule; }
+
+		//MemberOf | ConceptReference | Any
+		public Alternatives getAlternatives() { return cAlternatives; }
+
+		//MemberOf
+		public RuleCall getMemberOfParserRuleCall_0() { return cMemberOfParserRuleCall_0; }
+
 		//ConceptReference
-		public RuleCall getExpressionConceptReferenceParserRuleCall_0() { return cExpressionConceptReferenceParserRuleCall_0; }
+		public RuleCall getConceptReferenceParserRuleCall_1() { return cConceptReferenceParserRuleCall_1; }
+
+		//Any
+		public RuleCall getAnyParserRuleCall_2() { return cAnyParserRuleCall_2; }
+	}
+
+	public class MemberOfElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "MemberOf");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cCARETTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cConceptAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final Alternatives cConceptAlternatives_1_0 = (Alternatives)cConceptAssignment_1.eContents().get(0);
+		private final RuleCall cConceptConceptReferenceParserRuleCall_1_0_0 = (RuleCall)cConceptAlternatives_1_0.eContents().get(0);
+		private final RuleCall cConceptAnyParserRuleCall_1_0_1 = (RuleCall)cConceptAlternatives_1_0.eContents().get(1);
+		
+		//MemberOf:
+		//	CARET concept=(ConceptReference | Any);
+		@Override public ParserRule getRule() { return rule; }
+
+		//CARET concept=(ConceptReference | Any)
+		public Group getGroup() { return cGroup; }
+
+		//CARET
+		public RuleCall getCARETTerminalRuleCall_0() { return cCARETTerminalRuleCall_0; }
+
+		//concept=(ConceptReference | Any)
+		public Assignment getConceptAssignment_1() { return cConceptAssignment_1; }
+
+		//ConceptReference | Any
+		public Alternatives getConceptAlternatives_1_0() { return cConceptAlternatives_1_0; }
+
+		//ConceptReference
+		public RuleCall getConceptConceptReferenceParserRuleCall_1_0_0() { return cConceptConceptReferenceParserRuleCall_1_0_0; }
+
+		//Any
+		public RuleCall getConceptAnyParserRuleCall_1_0_1() { return cConceptAnyParserRuleCall_1_0_1; }
 	}
 
 	public class ConceptReferenceElements extends AbstractParserRuleElementFinder {
@@ -73,6 +129,26 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		public RuleCall getPIPETerminalRuleCall_1_2() { return cPIPETerminalRuleCall_1_2; }
 	}
 
+	public class AnyElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "Any");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cWILDCARDTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Action cAnyAction_1 = (Action)cGroup.eContents().get(1);
+		
+		//Any:
+		//	WILDCARD {Any};
+		@Override public ParserRule getRule() { return rule; }
+
+		//WILDCARD {Any}
+		public Group getGroup() { return cGroup; }
+
+		//WILDCARD
+		public RuleCall getWILDCARDTerminalRuleCall_0() { return cWILDCARDTerminalRuleCall_0; }
+
+		//{Any}
+		public Action getAnyAction_1() { return cAnyAction_1; }
+	}
+
 	public class SnomedIdentifierElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "SnomedIdentifier");
 		private final Group cGroup = (Group)rule.eContents().get(1);
@@ -94,7 +170,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cZEROTerminalRuleCall_5_1 = (RuleCall)cAlternatives_5.eContents().get(1);
 		
 		//// hidden grammar rules
-		//SnomedIdentifier hidden():
+		// SnomedIdentifier hidden():
 		//	DIGIT_NONZERO (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO)
 		//	(DIGIT_NONZERO | ZERO)+;
 		@Override public ParserRule getRule() { return rule; }
@@ -282,7 +358,10 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	
 	
 	private final ExpressionConstraintElements pExpressionConstraint;
+	private final FocusConceptElements pFocusConcept;
+	private final MemberOfElements pMemberOf;
 	private final ConceptReferenceElements pConceptReference;
+	private final AnyElements pAny;
 	private final SnomedIdentifierElements pSnomedIdentifier;
 	private final TermElements pTerm;
 	private final TermCharacterElements pTermCharacter;
@@ -319,7 +398,10 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	public EclGrammarAccess(GrammarProvider grammarProvider) {
 		this.grammar = internalFindGrammar(grammarProvider);
 		this.pExpressionConstraint = new ExpressionConstraintElements();
+		this.pFocusConcept = new FocusConceptElements();
+		this.pMemberOf = new MemberOfElements();
 		this.pConceptReference = new ConceptReferenceElements();
+		this.pAny = new AnyElements();
 		this.pSnomedIdentifier = new SnomedIdentifierElements();
 		this.pTerm = new TermElements();
 		this.pTermCharacter = new TermCharacterElements();
@@ -375,13 +457,33 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 
 	
 	//ExpressionConstraint hidden(WS, SL_COMMENT, ML_COMMENT):
-	//	expression=ConceptReference;
+	//	expression=FocusConcept;
 	public ExpressionConstraintElements getExpressionConstraintAccess() {
 		return pExpressionConstraint;
 	}
 	
 	public ParserRule getExpressionConstraintRule() {
 		return getExpressionConstraintAccess().getRule();
+	}
+
+	//FocusConcept:
+	//	MemberOf | ConceptReference | Any;
+	public FocusConceptElements getFocusConceptAccess() {
+		return pFocusConcept;
+	}
+	
+	public ParserRule getFocusConceptRule() {
+		return getFocusConceptAccess().getRule();
+	}
+
+	//MemberOf:
+	//	CARET concept=(ConceptReference | Any);
+	public MemberOfElements getMemberOfAccess() {
+		return pMemberOf;
+	}
+	
+	public ParserRule getMemberOfRule() {
+		return getMemberOfAccess().getRule();
 	}
 
 	//ConceptReference:
@@ -394,8 +496,18 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return getConceptReferenceAccess().getRule();
 	}
 
+	//Any:
+	//	WILDCARD {Any};
+	public AnyElements getAnyAccess() {
+		return pAny;
+	}
+	
+	public ParserRule getAnyRule() {
+		return getAnyAccess().getRule();
+	}
+
 	//// hidden grammar rules
-	//SnomedIdentifier hidden():
+	// SnomedIdentifier hidden():
 	//	DIGIT_NONZERO (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO)
 	//	(DIGIT_NONZERO | ZERO)+;
 	public SnomedIdentifierElements getSnomedIdentifierAccess() {
@@ -429,8 +541,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//// ---TERMINALS---
-	//// ECL terminals
-	//terminal DESCENDANT_OF:
+	// // ECL terminals
+	// terminal DESCENDANT_OF:
 	//	"<";
 	public TerminalRule getDESCENDANT_OFRule() {
 		return tDESCENDANT_OF;
@@ -443,7 +555,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	} 
 
 	//// bool operators
-	//terminal AND:
+	// terminal AND:
 	//	"AND";
 	public TerminalRule getANDRule() {
 		return tAND;
@@ -456,7 +568,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	} 
 
 	//// numeric terminals
-	//terminal ZERO:
+	// terminal ZERO:
 	//	"0";
 	public TerminalRule getZERORule() {
 		return tZERO;
@@ -469,7 +581,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	} 
 
 	//// character terminals
-	//terminal LETTER:
+	// terminal LETTER:
 	//	"a".."z" | "A".."Z";
 	public TerminalRule getLETTERRule() {
 		return tLETTER;
@@ -566,7 +678,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	} 
 
 	//// comment terminals
-	//terminal WS:
+	// terminal WS:
 	//	" " | "\t" | "\n" | "\r";
 	public TerminalRule getWSRule() {
 		return tWS;
@@ -585,7 +697,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	} 
 
 	//// misc
-	//terminal OTHER_CHARACTER:
+	// terminal OTHER_CHARACTER:
 	//	.;
 	public TerminalRule getOTHER_CHARACTERRule() {
 		return tOTHER_CHARACTER;

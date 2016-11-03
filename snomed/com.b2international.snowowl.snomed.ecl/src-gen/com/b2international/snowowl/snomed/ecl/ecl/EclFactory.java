@@ -32,6 +32,24 @@ public interface EclFactory extends EFactory
   ExpressionConstraint createExpressionConstraint();
 
   /**
+   * Returns a new object of class '<em>Focus Concept</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Focus Concept</em>'.
+   * @generated
+   */
+  FocusConcept createFocusConcept();
+
+  /**
+   * Returns a new object of class '<em>Member Of</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Member Of</em>'.
+   * @generated
+   */
+  MemberOf createMemberOf();
+
+  /**
    * Returns a new object of class '<em>Concept Reference</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -39,6 +57,15 @@ public interface EclFactory extends EFactory
    * @generated
    */
   ConceptReference createConceptReference();
+
+  /**
+   * Returns a new object of class '<em>Any</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Any</em>'.
+   * @generated
+   */
+  Any createAny();
 
   /**
    * Returns the package supported by this factory.

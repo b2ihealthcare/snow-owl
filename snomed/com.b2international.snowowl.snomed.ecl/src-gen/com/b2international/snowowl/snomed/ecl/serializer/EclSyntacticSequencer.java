@@ -26,9 +26,22 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	@Override
 	protected String getUnassignedRuleCallToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if(ruleCall.getRule() == grammarAccess.getPIPERule())
+		if(ruleCall.getRule() == grammarAccess.getCARETRule())
+			return getCARETToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getPIPERule())
 			return getPIPEToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getWILDCARDRule())
+			return getWILDCARDToken(semanticObject, ruleCall, node);
 		return "";
+	}
+	
+	/**
+	 * terminal CARET 					: '^';
+	 */
+	protected String getCARETToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "^";
 	}
 	
 	/**
@@ -38,6 +51,15 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return "|";
+	}
+	
+	/**
+	 * terminal WILDCARD 				: '*';
+	 */
+	protected String getWILDCARDToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "*";
 	}
 	
 	@Override

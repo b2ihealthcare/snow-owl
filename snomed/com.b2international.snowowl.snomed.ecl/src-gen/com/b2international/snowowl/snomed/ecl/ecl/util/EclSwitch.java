@@ -79,10 +79,34 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case EclPackage.FOCUS_CONCEPT:
+      {
+        FocusConcept focusConcept = (FocusConcept)theEObject;
+        T result = caseFocusConcept(focusConcept);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.MEMBER_OF:
+      {
+        MemberOf memberOf = (MemberOf)theEObject;
+        T result = caseMemberOf(memberOf);
+        if (result == null) result = caseFocusConcept(memberOf);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case EclPackage.CONCEPT_REFERENCE:
       {
         ConceptReference conceptReference = (ConceptReference)theEObject;
         T result = caseConceptReference(conceptReference);
+        if (result == null) result = caseFocusConcept(conceptReference);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.ANY:
+      {
+        Any any = (Any)theEObject;
+        T result = caseAny(any);
+        if (result == null) result = caseFocusConcept(any);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -107,6 +131,38 @@ public class EclSwitch<T> extends Switch<T>
   }
 
   /**
+   * Returns the result of interpreting the object as an instance of '<em>Focus Concept</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Focus Concept</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseFocusConcept(FocusConcept object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Member Of</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Member Of</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseMemberOf(MemberOf object)
+  {
+    return null;
+  }
+
+  /**
    * Returns the result of interpreting the object as an instance of '<em>Concept Reference</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
@@ -118,6 +174,22 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseConceptReference(ConceptReference object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Any</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Any</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseAny(Any object)
   {
     return null;
   }

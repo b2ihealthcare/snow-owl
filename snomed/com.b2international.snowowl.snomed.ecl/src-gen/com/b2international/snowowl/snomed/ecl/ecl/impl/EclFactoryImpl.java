@@ -65,7 +65,10 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
     switch (eClass.getClassifierID())
     {
       case EclPackage.EXPRESSION_CONSTRAINT: return createExpressionConstraint();
+      case EclPackage.FOCUS_CONCEPT: return createFocusConcept();
+      case EclPackage.MEMBER_OF: return createMemberOf();
       case EclPackage.CONCEPT_REFERENCE: return createConceptReference();
+      case EclPackage.ANY: return createAny();
       default:
         throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
     }
@@ -87,10 +90,43 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  public FocusConcept createFocusConcept()
+  {
+    FocusConceptImpl focusConcept = new FocusConceptImpl();
+    return focusConcept;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public MemberOf createMemberOf()
+  {
+    MemberOfImpl memberOf = new MemberOfImpl();
+    return memberOf;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public ConceptReference createConceptReference()
   {
     ConceptReferenceImpl conceptReference = new ConceptReferenceImpl();
     return conceptReference;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public Any createAny()
+  {
+    AnyImpl any = new AnyImpl();
+    return any;
   }
 
   /**

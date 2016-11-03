@@ -2,7 +2,6 @@
  */
 package com.b2international.snowowl.snomed.ecl.ecl;
 
-import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
@@ -21,7 +20,7 @@ import org.eclipse.emf.ecore.EObject;
  * @model
  * @generated
  */
-public interface ConceptReference extends EObject
+public interface ConceptReference extends FocusConcept
 {
   /**
    * Returns the value of the '<em><b>Id</b></em>' attribute.
