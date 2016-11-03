@@ -252,5 +252,16 @@ public final class Promise<T> extends AbstractFuture<T> {
 		promise.resolve(value);
 		return promise;
 	}
+	
+	/**
+	 * Returns a {@link Promise} that will always fail with the given {@link Throwable}.
+	 * @param throwable
+	 * @return
+	 */
+	public static final <T> Promise<T> fail(Throwable throwable) {
+		final Promise<T> promise = new Promise<>();
+		promise.reject(throwable);
+		return promise;
+	}
 
 }
