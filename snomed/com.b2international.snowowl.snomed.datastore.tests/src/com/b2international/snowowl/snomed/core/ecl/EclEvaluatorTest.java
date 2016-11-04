@@ -16,8 +16,11 @@
 package com.b2international.snowowl.snomed.core.ecl;
 
 import static org.junit.Assert.*;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.*;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Fields.*;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.eclipse.xtext.parser.IParser;
 import org.junit.Before;
@@ -83,14 +86,35 @@ public class EclEvaluatorTest extends BaseRevisionIndexTest {
 	@Test
 	public void memberOf() throws Exception {
 		final Expression actual = evaluator.evaluate("^"+Concepts.REFSET_DESCRIPTION_TYPE).getSync();
-		final Expression expected = SnomedConceptDocument.Expressions.referringRefSet(Concepts.REFSET_DESCRIPTION_TYPE);
+		final Expression expected = referringRefSet(Concepts.REFSET_DESCRIPTION_TYPE);
 		assertEquals(expected, actual);
 	}
 	
 	@Test
 	public void memberOfAny() throws Exception {
 		final Expression actual = evaluator.evaluate("^*").getSync();
-		final Expression expected = Expressions.exists(SnomedConceptDocument.Fields.REFERRING_REFSETS);
+		final Expression expected = Expressions.exists(REFERRING_REFSETS);
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void descendantOf() throws Exception {
+		final Expression actual = evaluator.evaluate("<"+ROOT_ID).getSync();
+		final Expression expected = Expressions.builder()
+				.should(parents(Collections.singleton(ROOT_ID)))
+				.should(ancestors(Collections.singleton(ROOT_ID)))
+				.build();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void descendantOrSelfOf() throws Exception {
+		final Expression actual = evaluator.evaluate("<<"+ROOT_ID).getSync();
+		final Expression expected = Expressions.builder()
+				.should(ids(Collections.singleton(ROOT_ID)))
+				.should(parents(Collections.singleton(ROOT_ID)))
+				.should(ancestors(Collections.singleton(ROOT_ID)))
+				.build();
 		assertEquals(expected, actual);
 	}
 

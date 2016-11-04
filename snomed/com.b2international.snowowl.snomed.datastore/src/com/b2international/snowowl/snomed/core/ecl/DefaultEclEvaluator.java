@@ -15,11 +15,16 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.id;
+import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringRefSet;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
 
 import java.io.StringReader;
+import java.util.Collections;
+import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.parser.IParseResult;
@@ -28,12 +33,16 @@ import org.eclipse.xtext.util.PolymorphicDispatcher;
 
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.StringPredicate;
+import com.b2international.index.query.StringSetPredicate;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
-import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
+import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
@@ -76,11 +85,6 @@ public class DefaultEclEvaluator implements EclEvaluator {
 		return throwUnsupported(eObject);
 	}
 
-	protected Promise<Expression> eval(ExpressionConstraint expression) {
-		return evaluate(expression.getExpression());
-	}
-	
-	// handlers for FocusConcept subtypes
 	protected Promise<Expression> eval(Any any) {
 		return Promise.immediate(Expressions.matchAll());
 	}
@@ -90,18 +94,56 @@ public class DefaultEclEvaluator implements EclEvaluator {
 	}
 	
 	protected Promise<Expression> eval(MemberOf memberOf) {
-		if (memberOf.getConcept() instanceof ConceptReference) {
-			final ConceptReference concept = (ConceptReference) memberOf.getConcept();
+		if (memberOf.getConstraint() instanceof ConceptReference) {
+			final ConceptReference concept = (ConceptReference) memberOf.getConstraint();
 			return Promise.immediate(referringRefSet(concept.getId()));
-		} else if (memberOf.getConcept() instanceof Any) {
+		} else if (memberOf.getConstraint() instanceof Any) {
 			return Promise.immediate(Expressions.exists(REFERRING_REFSETS));
 		} else {
-			return throwUnsupported(memberOf.getConcept());
+			return throwUnsupported(memberOf.getConstraint());
 		}
+	}
+	
+	protected Promise<Expression> eval(final DescendantOf descendantOf) {
+		return evaluate(descendantOf.getConstraint())
+			.then(new Function<Expression, Expression>() {
+				@Override
+				public Expression apply(Expression inner) {
+					final Set<String> ids = extractIds(inner);
+					return Expressions.builder()
+							.should(parents(ids))
+							.should(ancestors(ids))
+							.build();
+				}
+			});
+	}
+	
+	protected Promise<Expression> eval(final DescendantOrSelfOf descendantOrSelfOf) {
+		return evaluate(descendantOrSelfOf.getConstraint())
+				.then(new Function<Expression, Expression>() {
+					@Override
+					public Expression apply(Expression inner) {
+						final Set<String> ids = extractIds(inner);
+						return Expressions.builder()
+								.should(ids(ids))
+								.should(parents(ids))
+								.should(ancestors(ids))
+								.build();
+					}
+				});
 	}
 	
 	private Promise<Expression> throwUnsupported(EObject eObject) {
 		throw new UnsupportedOperationException("Unhandled ECL grammar feature: " + eObject.eClass().getName());
+	}
+	
+	private static Set<String> extractIds(Expression expression) {
+		if (expression instanceof StringSetPredicate) {
+			return ((StringSetPredicate) expression).values();
+		} else if (expression instanceof StringPredicate) {
+			return Collections.singleton(((StringPredicate) expression).getArgument());
+		}
+		throw new UnsupportedOperationException("Cannot extract ID values from: " + expression);
 	}
 	
 }
