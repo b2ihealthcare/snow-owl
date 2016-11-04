@@ -91,9 +91,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 			// throw AlreadyExistsException if exists before trying to enter the sync block
 			throw new AlreadyExistsException(Branch.class.getSimpleName(), path);
 		} else {
-			final InternalBranch createdBranch = create(parent, name, metadata);
-			sendChangeEvent(createdBranch.path()); // Explicit notification (creation)
-			return createdBranch; 
+			return create(parent, name, metadata);
 		}
 	}
 	
@@ -109,7 +107,9 @@ public abstract class BranchManagerImpl implements BranchManager {
 				if (existingBranch != null) {
 					return (InternalBranch) existingBranch;
 				} else {
-					return doReopen(parent, name, metadata);
+					final InternalBranch createdBranch = doReopen(parent, name, metadata);
+					sendChangeEvent(createdBranch.path()); // Explicit notification (creation)
+					return createdBranch;
 				}
 			}
 		});
