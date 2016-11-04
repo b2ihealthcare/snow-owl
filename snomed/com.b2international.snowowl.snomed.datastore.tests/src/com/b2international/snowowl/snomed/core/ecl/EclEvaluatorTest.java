@@ -15,9 +15,13 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
-import static org.junit.Assert.*;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.*;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Fields.*;
+import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringRefSet;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -29,6 +33,7 @@ import org.junit.Test;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.revision.BaseRevisionIndexTest;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -116,6 +121,28 @@ public class EclEvaluatorTest extends BaseRevisionIndexTest {
 				.should(ancestors(Collections.singleton(ROOT_ID)))
 				.build();
 		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void descendantOfMemberOf() throws Exception {
+		try {
+			evaluator.evaluate("<^"+Concepts.REFSET_DESCRIPTION_TYPE).getSync();
+		} catch (SnowowlRuntimeException e) {
+			if (!(e.getCause() instanceof UnsupportedOperationException)) {
+				fail("Should throw UnsupportedOperationException until nested expression evaluation is not supported");
+			}
+		}
+	}
+	
+	@Test
+	public void descendantOrSelfOfMemberOf() throws Exception {
+		try {
+			evaluator.evaluate("<<^"+Concepts.REFSET_DESCRIPTION_TYPE).getSync();
+		} catch (SnowowlRuntimeException e) {
+			if (!(e.getCause() instanceof UnsupportedOperationException)) {
+				fail("Should throw UnsupportedOperationException until nested expression evaluation is not supported");
+			}
+		}
 	}
 
 }

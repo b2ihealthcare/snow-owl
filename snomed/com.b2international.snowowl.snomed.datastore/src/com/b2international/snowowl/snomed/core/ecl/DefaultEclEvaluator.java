@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.ecl;
 
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.id;
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
+import static com.b2international.snowowl.datastore.index.RevisionDocument.Fields.ID;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringRefSet;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
@@ -31,8 +32,10 @@ import org.eclipse.xtext.parser.IParseResult;
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
+import com.b2international.commons.ClassUtils;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Predicate;
 import com.b2international.index.query.StringPredicate;
 import com.b2international.index.query.StringSetPredicate;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -137,11 +140,15 @@ public class DefaultEclEvaluator implements EclEvaluator {
 		throw new UnsupportedOperationException("Unhandled ECL grammar feature: " + eObject.eClass().getName());
 	}
 	
+	/*Extract SNOMED CT IDs from the given expression if it is either a String/Long single/multi-valued predicate and the field is equal to RevisionDocument.Fields.ID*/
 	private static Set<String> extractIds(Expression expression) {
-		if (expression instanceof StringSetPredicate) {
-			return ((StringSetPredicate) expression).values();
-		} else if (expression instanceof StringPredicate) {
-			return Collections.singleton(((StringPredicate) expression).getArgument());
+		final Predicate predicate = ClassUtils.checkAndCast(expression, Predicate.class);
+		if (ID.equals(predicate.getField())) {
+			if (predicate instanceof StringSetPredicate) {
+				return ((StringSetPredicate) predicate).values();
+			} else if (predicate instanceof StringPredicate) {
+				return Collections.singleton(((StringPredicate) expression).getArgument());
+			}
 		}
 		throw new UnsupportedOperationException("Cannot extract ID values from: " + expression);
 	}
