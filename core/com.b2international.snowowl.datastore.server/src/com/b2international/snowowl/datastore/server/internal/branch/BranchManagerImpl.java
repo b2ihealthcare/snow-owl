@@ -128,14 +128,18 @@ public abstract class BranchManagerImpl implements BranchManager {
 		final ReentrantLock lock = locks.getUnchecked(lockPath);
 		try {
 			if (lock.tryLock(1L, TimeUnit.MINUTES)) {
-				return callable.call();
+				try {
+					return callable.call();
+				} finally {
+					lock.unlock();
+				}
 			} else {
 				throw new RequestTimeoutException();
 			}
+		} catch (RequestTimeoutException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new SnowowlRuntimeException(e);
-		} finally {
-			lock.unlock();
 		}
 	}
 
