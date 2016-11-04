@@ -119,7 +119,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 				final String name = branch.getName();
 				final long baseTimestamp = repository.getBaseTimestamp(branch);
 				final long headTimestamp = repository.getHeadTimestamp(branch);
-				reopen(parent.path(), name, existingBranch == null ? new MetadataImpl() : existingBranch.metadata(), baseTimestamp, headTimestamp, cdoBranchId);
+				doReopen(parent.path(), name, existingBranch == null ? new MetadataImpl() : existingBranch.metadata(), baseTimestamp, headTimestamp, cdoBranchId);
 			}
 		}
     }
@@ -261,14 +261,14 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 	}
     
     @Override
-    InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
+    InternalBranch doReopen(InternalBranch parent, String name, Metadata metadata) {
         final CDOBranch childCDOBranch = createCDOBranch(parent, name);
         final CDOBranchPoint[] basePath = childCDOBranch.getBasePath();
         final long timeStamp = basePath[basePath.length - 1].getTimeStamp();
-		return reopen(parent.path(), name, metadata, timeStamp, timeStamp, childCDOBranch.getID());
+		return doReopen(parent.path(), name, metadata, timeStamp, timeStamp, childCDOBranch.getID());
     }
 
-    private InternalBranch reopen(final String parentPath, final String name, final Metadata metadata, final long baseTimestamp, final long headTimestamp, final int cdoBranchId) {
+    private InternalBranch doReopen(final String parentPath, final String name, final Metadata metadata, final long baseTimestamp, final long headTimestamp, final int cdoBranchId) {
     	final Class<? extends InternalBranch> parentBranchClass = Branch.MAIN_PATH.equals(parentPath) ? CDOMainBranchImpl.class : CDOBranchImpl.class;
     	final Pair<Integer, Integer> nextTwoSegments = nextTwoSegments();
     	return commit(new IndexWrite<InternalBranch>() {

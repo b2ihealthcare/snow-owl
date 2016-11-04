@@ -74,7 +74,7 @@ public class BranchManagerTest {
 		}
 
 		@Override
-		InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
+		InternalBranch doReopen(InternalBranch parent, String name, Metadata metadata) {
 			final InternalBranch branch = new BranchImpl(name, parent.path(), clock.getTimestamp(), metadata);
 			return commit(create(branch));
 		}
