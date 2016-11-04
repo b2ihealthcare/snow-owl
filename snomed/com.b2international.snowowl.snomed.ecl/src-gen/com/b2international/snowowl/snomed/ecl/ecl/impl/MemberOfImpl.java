@@ -3,8 +3,8 @@
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
-import com.b2international.snowowl.snomed.ecl.ecl.SimpleExpressionConstraint;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -27,7 +27,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  *
  * @generated
  */
-public class MemberOfImpl extends SimpleExpressionConstraintImpl implements MemberOf
+public class MemberOfImpl extends ExpressionConstraintImpl implements MemberOf
 {
   /**
    * The cached value of the '{@link #getConstraint() <em>Constraint</em>}' containment reference.
@@ -37,7 +37,7 @@ public class MemberOfImpl extends SimpleExpressionConstraintImpl implements Memb
    * @generated
    * @ordered
    */
-  protected SimpleExpressionConstraint constraint;
+  protected ExpressionConstraint constraint;
 
   /**
    * <!-- begin-user-doc -->
@@ -65,7 +65,7 @@ public class MemberOfImpl extends SimpleExpressionConstraintImpl implements Memb
    * <!-- end-user-doc -->
    * @generated
    */
-  public SimpleExpressionConstraint getConstraint()
+  public ExpressionConstraint getConstraint()
   {
     return constraint;
   }
@@ -75,9 +75,9 @@ public class MemberOfImpl extends SimpleExpressionConstraintImpl implements Memb
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetConstraint(SimpleExpressionConstraint newConstraint, NotificationChain msgs)
+  public NotificationChain basicSetConstraint(ExpressionConstraint newConstraint, NotificationChain msgs)
   {
-    SimpleExpressionConstraint oldConstraint = constraint;
+    ExpressionConstraint oldConstraint = constraint;
     constraint = newConstraint;
     if (eNotificationRequired())
     {
@@ -92,7 +92,7 @@ public class MemberOfImpl extends SimpleExpressionConstraintImpl implements Memb
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setConstraint(SimpleExpressionConstraint newConstraint)
+  public void setConstraint(ExpressionConstraint newConstraint)
   {
     if (newConstraint != constraint)
     {
@@ -151,7 +151,7 @@ public class MemberOfImpl extends SimpleExpressionConstraintImpl implements Memb
     switch (featureID)
     {
       case EclPackage.MEMBER_OF__CONSTRAINT:
-        setConstraint((SimpleExpressionConstraint)newValue);
+        setConstraint((ExpressionConstraint)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -168,7 +168,7 @@ public class MemberOfImpl extends SimpleExpressionConstraintImpl implements Memb
     switch (featureID)
     {
       case EclPackage.MEMBER_OF__CONSTRAINT:
-        setConstraint((SimpleExpressionConstraint)null);
+        setConstraint((ExpressionConstraint)null);
         return;
     }
     super.eUnset(featureID);

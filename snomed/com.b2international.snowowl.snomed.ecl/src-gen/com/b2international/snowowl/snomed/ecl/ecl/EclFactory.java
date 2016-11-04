@@ -32,15 +32,6 @@ public interface EclFactory extends EFactory
   ExpressionConstraint createExpressionConstraint();
 
   /**
-   * Returns a new object of class '<em>Simple Expression Constraint</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Simple Expression Constraint</em>'.
-   * @generated
-   */
-  SimpleExpressionConstraint createSimpleExpressionConstraint();
-
-  /**
    * Returns a new object of class '<em>Descendant Of</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -93,6 +84,24 @@ public interface EclFactory extends EFactory
    * @generated
    */
   NestableExpression createNestableExpression();
+
+  /**
+   * Returns a new object of class '<em>Or Expression Constraint</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Or Expression Constraint</em>'.
+   * @generated
+   */
+  OrExpressionConstraint createOrExpressionConstraint();
+
+  /**
+   * Returns a new object of class '<em>And Expression Constraint</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>And Expression Constraint</em>'.
+   * @generated
+   */
+  AndExpressionConstraint createAndExpressionConstraint();
 
   /**
    * Returns the package supported by this factory.

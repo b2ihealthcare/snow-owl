@@ -19,14 +19,86 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public class ExpressionConstraintElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "ExpressionConstraint");
-		private final RuleCall cSimpleExpressionConstraintParserRuleCall = (RuleCall)rule.eContents().get(1);
+		private final RuleCall cOrExpressionConstraintParserRuleCall = (RuleCall)rule.eContents().get(1);
 		
 		//ExpressionConstraint hidden(WS, SL_COMMENT, ML_COMMENT):
-		//	SimpleExpressionConstraint;
+		//	OrExpressionConstraint;
 		@Override public ParserRule getRule() { return rule; }
 
+		//OrExpressionConstraint
+		public RuleCall getOrExpressionConstraintParserRuleCall() { return cOrExpressionConstraintParserRuleCall; }
+	}
+
+	public class OrExpressionConstraintElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "OrExpressionConstraint");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cAndExpressionConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
+		private final Action cOrExpressionConstraintLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
+		private final RuleCall cORTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
+		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
+		private final RuleCall cRightAndExpressionConstraintParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
+		
+		//OrExpressionConstraint returns ExpressionConstraint:
+		//	AndExpressionConstraint ({OrExpressionConstraint.left=current} OR right=AndExpressionConstraint)*;
+		@Override public ParserRule getRule() { return rule; }
+
+		//AndExpressionConstraint ({OrExpressionConstraint.left=current} OR right=AndExpressionConstraint)*
+		public Group getGroup() { return cGroup; }
+
+		//AndExpressionConstraint
+		public RuleCall getAndExpressionConstraintParserRuleCall_0() { return cAndExpressionConstraintParserRuleCall_0; }
+
+		//({OrExpressionConstraint.left=current} OR right=AndExpressionConstraint)*
+		public Group getGroup_1() { return cGroup_1; }
+
+		//{OrExpressionConstraint.left=current}
+		public Action getOrExpressionConstraintLeftAction_1_0() { return cOrExpressionConstraintLeftAction_1_0; }
+
+		//OR
+		public RuleCall getORTerminalRuleCall_1_1() { return cORTerminalRuleCall_1_1; }
+
+		//right=AndExpressionConstraint
+		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
+
+		//AndExpressionConstraint
+		public RuleCall getRightAndExpressionConstraintParserRuleCall_1_2_0() { return cRightAndExpressionConstraintParserRuleCall_1_2_0; }
+	}
+
+	public class AndExpressionConstraintElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AndExpressionConstraint");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cSimpleExpressionConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
+		private final Action cAndExpressionConstraintLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
+		private final RuleCall cANDTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
+		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
+		private final RuleCall cRightSimpleExpressionConstraintParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
+		
+		//AndExpressionConstraint returns ExpressionConstraint:
+		//	SimpleExpressionConstraint ({AndExpressionConstraint.left=current} AND right=SimpleExpressionConstraint)*;
+		@Override public ParserRule getRule() { return rule; }
+
+		//SimpleExpressionConstraint ({AndExpressionConstraint.left=current} AND right=SimpleExpressionConstraint)*
+		public Group getGroup() { return cGroup; }
+
 		//SimpleExpressionConstraint
-		public RuleCall getSimpleExpressionConstraintParserRuleCall() { return cSimpleExpressionConstraintParserRuleCall; }
+		public RuleCall getSimpleExpressionConstraintParserRuleCall_0() { return cSimpleExpressionConstraintParserRuleCall_0; }
+
+		//({AndExpressionConstraint.left=current} AND right=SimpleExpressionConstraint)*
+		public Group getGroup_1() { return cGroup_1; }
+
+		//{AndExpressionConstraint.left=current}
+		public Action getAndExpressionConstraintLeftAction_1_0() { return cAndExpressionConstraintLeftAction_1_0; }
+
+		//AND
+		public RuleCall getANDTerminalRuleCall_1_1() { return cANDTerminalRuleCall_1_1; }
+
+		//right=SimpleExpressionConstraint
+		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
+
+		//SimpleExpressionConstraint
+		public RuleCall getRightSimpleExpressionConstraintParserRuleCall_1_2_0() { return cRightSimpleExpressionConstraintParserRuleCall_1_2_0; }
 	}
 
 	public class SimpleExpressionConstraintElements extends AbstractParserRuleElementFinder {
@@ -36,7 +108,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cDescendantOrSelfOfParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
 		private final RuleCall cFocusConceptParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
 		
-		//SimpleExpressionConstraint:
+		//SimpleExpressionConstraint returns ExpressionConstraint:
 		//	DescendantOf | DescendantOrSelfOf | FocusConcept;
 		@Override public ParserRule getRule() { return rule; }
 
@@ -61,8 +133,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cAnyParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
 		
 		//// XXX FocusConcept Grouping rule no actual EObject present with this name
-		// FocusConcept returns
-		//SimpleExpressionConstraint:
+		// FocusConcept returns ExpressionConstraint:
 		//	MemberOf | ConceptReference | Any;
 		@Override public ParserRule getRule() { return rule; }
 
@@ -476,6 +547,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	
 	
 	private final ExpressionConstraintElements pExpressionConstraint;
+	private final OrExpressionConstraintElements pOrExpressionConstraint;
+	private final AndExpressionConstraintElements pAndExpressionConstraint;
 	private final SimpleExpressionConstraintElements pSimpleExpressionConstraint;
 	private final FocusConceptElements pFocusConcept;
 	private final DescendantOfElements pDescendantOf;
@@ -522,6 +595,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	public EclGrammarAccess(GrammarProvider grammarProvider) {
 		this.grammar = internalFindGrammar(grammarProvider);
 		this.pExpressionConstraint = new ExpressionConstraintElements();
+		this.pOrExpressionConstraint = new OrExpressionConstraintElements();
+		this.pAndExpressionConstraint = new AndExpressionConstraintElements();
 		this.pSimpleExpressionConstraint = new SimpleExpressionConstraintElements();
 		this.pFocusConcept = new FocusConceptElements();
 		this.pDescendantOf = new DescendantOfElements();
@@ -587,7 +662,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 
 	
 	//ExpressionConstraint hidden(WS, SL_COMMENT, ML_COMMENT):
-	//	SimpleExpressionConstraint;
+	//	OrExpressionConstraint;
 	public ExpressionConstraintElements getExpressionConstraintAccess() {
 		return pExpressionConstraint;
 	}
@@ -596,7 +671,27 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return getExpressionConstraintAccess().getRule();
 	}
 
-	//SimpleExpressionConstraint:
+	//OrExpressionConstraint returns ExpressionConstraint:
+	//	AndExpressionConstraint ({OrExpressionConstraint.left=current} OR right=AndExpressionConstraint)*;
+	public OrExpressionConstraintElements getOrExpressionConstraintAccess() {
+		return pOrExpressionConstraint;
+	}
+	
+	public ParserRule getOrExpressionConstraintRule() {
+		return getOrExpressionConstraintAccess().getRule();
+	}
+
+	//AndExpressionConstraint returns ExpressionConstraint:
+	//	SimpleExpressionConstraint ({AndExpressionConstraint.left=current} AND right=SimpleExpressionConstraint)*;
+	public AndExpressionConstraintElements getAndExpressionConstraintAccess() {
+		return pAndExpressionConstraint;
+	}
+	
+	public ParserRule getAndExpressionConstraintRule() {
+		return getAndExpressionConstraintAccess().getRule();
+	}
+
+	//SimpleExpressionConstraint returns ExpressionConstraint:
 	//	DescendantOf | DescendantOrSelfOf | FocusConcept;
 	public SimpleExpressionConstraintElements getSimpleExpressionConstraintAccess() {
 		return pSimpleExpressionConstraint;
@@ -607,8 +702,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//// XXX FocusConcept Grouping rule no actual EObject present with this name
-	// FocusConcept returns
-	//SimpleExpressionConstraint:
+	// FocusConcept returns ExpressionConstraint:
 	//	MemberOf | ConceptReference | Any;
 	public FocusConceptElements getFocusConceptAccess() {
 		return pFocusConcept;

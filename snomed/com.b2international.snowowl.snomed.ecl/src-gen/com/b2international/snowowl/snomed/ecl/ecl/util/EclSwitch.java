@@ -80,20 +80,10 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case EclPackage.SIMPLE_EXPRESSION_CONSTRAINT:
-      {
-        SimpleExpressionConstraint simpleExpressionConstraint = (SimpleExpressionConstraint)theEObject;
-        T result = caseSimpleExpressionConstraint(simpleExpressionConstraint);
-        if (result == null) result = caseExpressionConstraint(simpleExpressionConstraint);
-        if (result == null) result = caseNestableExpression(simpleExpressionConstraint);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
       case EclPackage.DESCENDANT_OF:
       {
         DescendantOf descendantOf = (DescendantOf)theEObject;
         T result = caseDescendantOf(descendantOf);
-        if (result == null) result = caseSimpleExpressionConstraint(descendantOf);
         if (result == null) result = caseExpressionConstraint(descendantOf);
         if (result == null) result = caseNestableExpression(descendantOf);
         if (result == null) result = defaultCase(theEObject);
@@ -103,7 +93,6 @@ public class EclSwitch<T> extends Switch<T>
       {
         DescendantOrSelfOf descendantOrSelfOf = (DescendantOrSelfOf)theEObject;
         T result = caseDescendantOrSelfOf(descendantOrSelfOf);
-        if (result == null) result = caseSimpleExpressionConstraint(descendantOrSelfOf);
         if (result == null) result = caseExpressionConstraint(descendantOrSelfOf);
         if (result == null) result = caseNestableExpression(descendantOrSelfOf);
         if (result == null) result = defaultCase(theEObject);
@@ -113,7 +102,6 @@ public class EclSwitch<T> extends Switch<T>
       {
         MemberOf memberOf = (MemberOf)theEObject;
         T result = caseMemberOf(memberOf);
-        if (result == null) result = caseSimpleExpressionConstraint(memberOf);
         if (result == null) result = caseExpressionConstraint(memberOf);
         if (result == null) result = caseNestableExpression(memberOf);
         if (result == null) result = defaultCase(theEObject);
@@ -123,7 +111,6 @@ public class EclSwitch<T> extends Switch<T>
       {
         ConceptReference conceptReference = (ConceptReference)theEObject;
         T result = caseConceptReference(conceptReference);
-        if (result == null) result = caseSimpleExpressionConstraint(conceptReference);
         if (result == null) result = caseExpressionConstraint(conceptReference);
         if (result == null) result = caseNestableExpression(conceptReference);
         if (result == null) result = defaultCase(theEObject);
@@ -133,7 +120,6 @@ public class EclSwitch<T> extends Switch<T>
       {
         Any any = (Any)theEObject;
         T result = caseAny(any);
-        if (result == null) result = caseSimpleExpressionConstraint(any);
         if (result == null) result = caseExpressionConstraint(any);
         if (result == null) result = caseNestableExpression(any);
         if (result == null) result = defaultCase(theEObject);
@@ -143,6 +129,24 @@ public class EclSwitch<T> extends Switch<T>
       {
         NestableExpression nestableExpression = (NestableExpression)theEObject;
         T result = caseNestableExpression(nestableExpression);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.OR_EXPRESSION_CONSTRAINT:
+      {
+        OrExpressionConstraint orExpressionConstraint = (OrExpressionConstraint)theEObject;
+        T result = caseOrExpressionConstraint(orExpressionConstraint);
+        if (result == null) result = caseExpressionConstraint(orExpressionConstraint);
+        if (result == null) result = caseNestableExpression(orExpressionConstraint);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.AND_EXPRESSION_CONSTRAINT:
+      {
+        AndExpressionConstraint andExpressionConstraint = (AndExpressionConstraint)theEObject;
+        T result = caseAndExpressionConstraint(andExpressionConstraint);
+        if (result == null) result = caseExpressionConstraint(andExpressionConstraint);
+        if (result == null) result = caseNestableExpression(andExpressionConstraint);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -162,22 +166,6 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseExpressionConstraint(ExpressionConstraint object)
-  {
-    return null;
-  }
-
-  /**
-   * Returns the result of interpreting the object as an instance of '<em>Simple Expression Constraint</em>'.
-   * <!-- begin-user-doc -->
-   * This implementation returns null;
-   * returning a non-null result will terminate the switch.
-   * <!-- end-user-doc -->
-   * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Simple Expression Constraint</em>'.
-   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-   * @generated
-   */
-  public T caseSimpleExpressionConstraint(SimpleExpressionConstraint object)
   {
     return null;
   }
@@ -274,6 +262,38 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseNestableExpression(NestableExpression object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Or Expression Constraint</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Or Expression Constraint</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseOrExpressionConstraint(OrExpressionConstraint object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>And Expression Constraint</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>And Expression Constraint</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseAndExpressionConstraint(AndExpressionConstraint object)
   {
     return null;
   }

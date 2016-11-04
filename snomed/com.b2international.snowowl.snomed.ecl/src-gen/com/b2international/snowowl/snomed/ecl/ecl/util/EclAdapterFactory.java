@@ -80,11 +80,6 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createExpressionConstraintAdapter();
       }
       @Override
-      public Adapter caseSimpleExpressionConstraint(SimpleExpressionConstraint object)
-      {
-        return createSimpleExpressionConstraintAdapter();
-      }
-      @Override
       public Adapter caseDescendantOf(DescendantOf object)
       {
         return createDescendantOfAdapter();
@@ -113,6 +108,16 @@ public class EclAdapterFactory extends AdapterFactoryImpl
       public Adapter caseNestableExpression(NestableExpression object)
       {
         return createNestableExpressionAdapter();
+      }
+      @Override
+      public Adapter caseOrExpressionConstraint(OrExpressionConstraint object)
+      {
+        return createOrExpressionConstraintAdapter();
+      }
+      @Override
+      public Adapter caseAndExpressionConstraint(AndExpressionConstraint object)
+      {
+        return createAndExpressionConstraintAdapter();
       }
       @Override
       public Adapter defaultCase(EObject object)
@@ -147,21 +152,6 @@ public class EclAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createExpressionConstraintAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.SimpleExpressionConstraint <em>Simple Expression Constraint</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.SimpleExpressionConstraint
-   * @generated
-   */
-  public Adapter createSimpleExpressionConstraintAdapter()
   {
     return null;
   }
@@ -252,6 +242,36 @@ public class EclAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createNestableExpressionAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint <em>Or Expression Constraint</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint
+   * @generated
+   */
+  public Adapter createOrExpressionConstraintAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint <em>And Expression Constraint</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint
+   * @generated
+   */
+  public Adapter createAndExpressionConstraintAdapter()
   {
     return null;
   }

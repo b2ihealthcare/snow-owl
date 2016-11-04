@@ -27,7 +27,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  *
  * @generated
  */
-public class DescendantOfImpl extends SimpleExpressionConstraintImpl implements DescendantOf
+public class DescendantOfImpl extends ExpressionConstraintImpl implements DescendantOf
 {
   /**
    * The cached value of the '{@link #getConstraint() <em>Constraint</em>}' containment reference.

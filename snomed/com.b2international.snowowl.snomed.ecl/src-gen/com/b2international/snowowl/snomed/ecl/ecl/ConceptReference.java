@@ -20,7 +20,7 @@ package com.b2international.snowowl.snomed.ecl.ecl;
  * @model
  * @generated
  */
-public interface ConceptReference extends SimpleExpressionConstraint
+public interface ConceptReference extends ExpressionConstraint
 {
   /**
    * Returns the value of the '<em><b>Id</b></em>' attribute.

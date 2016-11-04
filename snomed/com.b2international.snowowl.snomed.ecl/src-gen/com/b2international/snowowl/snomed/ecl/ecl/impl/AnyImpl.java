@@ -16,7 +16,7 @@ import org.eclipse.emf.ecore.EClass;
  *
  * @generated
  */
-public class AnyImpl extends SimpleExpressionConstraintImpl implements Any
+public class AnyImpl extends ExpressionConstraintImpl implements Any
 {
   /**
    * <!-- begin-user-doc -->

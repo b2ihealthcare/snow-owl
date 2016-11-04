@@ -9,7 +9,6 @@
   <genPackages prefix="Ecl" basePackage="com.b2international.snowowl.snomed.ecl" disposableProviderFactory="true"
       fileExtensions="ecl" ecorePackage="Ecl.ecore#/">
     <genClasses ecoreClass="Ecl.ecore#//ExpressionConstraint"/>
-    <genClasses ecoreClass="Ecl.ecore#//SimpleExpressionConstraint"/>
     <genClasses ecoreClass="Ecl.ecore#//DescendantOf">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//DescendantOf/constraint"/>
     </genClasses>
@@ -25,5 +24,13 @@
     </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//Any"/>
     <genClasses ecoreClass="Ecl.ecore#//NestableExpression"/>
+    <genClasses ecoreClass="Ecl.ecore#//OrExpressionConstraint">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//OrExpressionConstraint/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//OrExpressionConstraint/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Ecl.ecore#//AndExpressionConstraint">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//AndExpressionConstraint/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//AndExpressionConstraint/right"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

@@ -19,7 +19,7 @@ package com.b2international.snowowl.snomed.ecl.ecl;
  * @model
  * @generated
  */
-public interface DescendantOf extends SimpleExpressionConstraint
+public interface DescendantOf extends ExpressionConstraint
 {
   /**
    * Returns the value of the '<em><b>Constraint</b></em>' containment reference.

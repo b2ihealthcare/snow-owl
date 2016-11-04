@@ -86,11 +86,11 @@ ruleExpressionConstraint returns [EObject current=null]
     @after { leaveRule(); }:
 
     { 
-        newCompositeNode(grammarAccess.getExpressionConstraintAccess().getSimpleExpressionConstraintParserRuleCall()); 
+        newCompositeNode(grammarAccess.getExpressionConstraintAccess().getOrExpressionConstraintParserRuleCall()); 
     }
-    this_SimpleExpressionConstraint_0=ruleSimpleExpressionConstraint
+    this_OrExpressionConstraint_0=ruleOrExpressionConstraint
     { 
-        $current = $this_SimpleExpressionConstraint_0.current; 
+        $current = $this_OrExpressionConstraint_0.current; 
         afterParserOrEnumRuleCall();
     }
 
@@ -98,6 +98,122 @@ ruleExpressionConstraint returns [EObject current=null]
 finally {
 	myHiddenTokenState.restore();
 }
+
+
+
+
+
+// Entry rule entryRuleOrExpressionConstraint
+entryRuleOrExpressionConstraint returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getOrExpressionConstraintRule()); }
+	 iv_ruleOrExpressionConstraint=ruleOrExpressionConstraint 
+	 { $current=$iv_ruleOrExpressionConstraint.current; } 
+	 EOF 
+;
+
+// Rule OrExpressionConstraint
+ruleOrExpressionConstraint returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(
+    { 
+        newCompositeNode(grammarAccess.getOrExpressionConstraintAccess().getAndExpressionConstraintParserRuleCall_0()); 
+    }
+    this_AndExpressionConstraint_0=ruleAndExpressionConstraint
+    { 
+        $current = $this_AndExpressionConstraint_0.current; 
+        afterParserOrEnumRuleCall();
+    }
+((
+    {
+        $current = forceCreateModelElementAndSet(
+            grammarAccess.getOrExpressionConstraintAccess().getOrExpressionConstraintLeftAction_1_0(),
+            $current);
+    }
+)this_OR_2=RULE_OR
+    { 
+    newLeafNode(this_OR_2, grammarAccess.getOrExpressionConstraintAccess().getORTerminalRuleCall_1_1()); 
+    }
+(
+(
+		{ 
+	        newCompositeNode(grammarAccess.getOrExpressionConstraintAccess().getRightAndExpressionConstraintParserRuleCall_1_2_0()); 
+	    }
+		lv_right_3_0=ruleAndExpressionConstraint		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getOrExpressionConstraintRule());
+	        }
+       		set(
+       			$current, 
+       			"right",
+        		lv_right_3_0, 
+        		"AndExpressionConstraint");
+	        afterParserOrEnumRuleCall();
+	    }
+
+)
+))*)
+;
+
+
+
+
+
+// Entry rule entryRuleAndExpressionConstraint
+entryRuleAndExpressionConstraint returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getAndExpressionConstraintRule()); }
+	 iv_ruleAndExpressionConstraint=ruleAndExpressionConstraint 
+	 { $current=$iv_ruleAndExpressionConstraint.current; } 
+	 EOF 
+;
+
+// Rule AndExpressionConstraint
+ruleAndExpressionConstraint returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(
+    { 
+        newCompositeNode(grammarAccess.getAndExpressionConstraintAccess().getSimpleExpressionConstraintParserRuleCall_0()); 
+    }
+    this_SimpleExpressionConstraint_0=ruleSimpleExpressionConstraint
+    { 
+        $current = $this_SimpleExpressionConstraint_0.current; 
+        afterParserOrEnumRuleCall();
+    }
+((
+    {
+        $current = forceCreateModelElementAndSet(
+            grammarAccess.getAndExpressionConstraintAccess().getAndExpressionConstraintLeftAction_1_0(),
+            $current);
+    }
+)this_AND_2=RULE_AND
+    { 
+    newLeafNode(this_AND_2, grammarAccess.getAndExpressionConstraintAccess().getANDTerminalRuleCall_1_1()); 
+    }
+(
+(
+		{ 
+	        newCompositeNode(grammarAccess.getAndExpressionConstraintAccess().getRightSimpleExpressionConstraintParserRuleCall_1_2_0()); 
+	    }
+		lv_right_3_0=ruleSimpleExpressionConstraint		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getAndExpressionConstraintRule());
+	        }
+       		set(
+       			$current, 
+       			"right",
+        		lv_right_3_0, 
+        		"SimpleExpressionConstraint");
+	        afterParserOrEnumRuleCall();
+	    }
+
+)
+))*)
+;
 
 
 

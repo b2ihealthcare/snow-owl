@@ -26,12 +26,16 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	@Override
 	protected String getUnassignedRuleCallToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if(ruleCall.getRule() == grammarAccess.getCARETRule())
+		if(ruleCall.getRule() == grammarAccess.getANDRule())
+			return getANDToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getCARETRule())
 			return getCARETToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getDBL_LESS_THANRule())
 			return getDBL_LESS_THANToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getLESS_THANRule())
 			return getLESS_THANToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getORRule())
+			return getORToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getPIPERule())
 			return getPIPEToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getROUND_CLOSERule())
@@ -41,6 +45,15 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 		else if(ruleCall.getRule() == grammarAccess.getWILDCARDRule())
 			return getWILDCARDToken(semanticObject, ruleCall, node);
 		return "";
+	}
+	
+	/**
+	 * terminal AND 					: 'AND';
+	 */
+	protected String getANDToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "AND";
 	}
 	
 	/**
@@ -68,6 +81,15 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return "<";
+	}
+	
+	/**
+	 * terminal OR 					: 'OR';
+	 */
+	protected String getORToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "OR";
 	}
 	
 	/**

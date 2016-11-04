@@ -3,23 +3,34 @@
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="ecl" nsURI="http://www.b2international.com/snowowl/snomed/Ecl"
     nsPrefix="ecl">
   <eClassifiers xsi:type="ecore:EClass" name="ExpressionConstraint" eSuperTypes="#//NestableExpression"/>
-  <eClassifiers xsi:type="ecore:EClass" name="SimpleExpressionConstraint" eSuperTypes="#//ExpressionConstraint"/>
-  <eClassifiers xsi:type="ecore:EClass" name="DescendantOf" eSuperTypes="#//SimpleExpressionConstraint">
+  <eClassifiers xsi:type="ecore:EClass" name="DescendantOf" eSuperTypes="#//ExpressionConstraint">
     <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//NestableExpression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="DescendantOrSelfOf" eSuperTypes="#//SimpleExpressionConstraint">
+  <eClassifiers xsi:type="ecore:EClass" name="DescendantOrSelfOf" eSuperTypes="#//ExpressionConstraint">
     <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//NestableExpression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="MemberOf" eSuperTypes="#//SimpleExpressionConstraint">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//SimpleExpressionConstraint"
+  <eClassifiers xsi:type="ecore:EClass" name="MemberOf" eSuperTypes="#//ExpressionConstraint">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//ExpressionConstraint"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ConceptReference" eSuperTypes="#//SimpleExpressionConstraint">
+  <eClassifiers xsi:type="ecore:EClass" name="ConceptReference" eSuperTypes="#//ExpressionConstraint">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="id" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="term" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Any" eSuperTypes="#//SimpleExpressionConstraint"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Any" eSuperTypes="#//ExpressionConstraint"/>
   <eClassifiers xsi:type="ecore:EClass" name="NestableExpression"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OrExpressionConstraint" eSuperTypes="#//ExpressionConstraint">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//ExpressionConstraint"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//ExpressionConstraint"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AndExpressionConstraint" eSuperTypes="#//ExpressionConstraint">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//ExpressionConstraint"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//ExpressionConstraint"
+        containment="true"/>
+  </eClassifiers>
 </ecore:EPackage>

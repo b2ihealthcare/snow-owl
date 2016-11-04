@@ -19,7 +19,7 @@ package com.b2international.snowowl.snomed.ecl.ecl;
  * @model
  * @generated
  */
-public interface MemberOf extends SimpleExpressionConstraint
+public interface MemberOf extends ExpressionConstraint
 {
   /**
    * Returns the value of the '<em><b>Constraint</b></em>' containment reference.
@@ -30,12 +30,12 @@ public interface MemberOf extends SimpleExpressionConstraint
    * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Constraint</em>' containment reference.
-   * @see #setConstraint(SimpleExpressionConstraint)
+   * @see #setConstraint(ExpressionConstraint)
    * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getMemberOf_Constraint()
    * @model containment="true"
    * @generated
    */
-  SimpleExpressionConstraint getConstraint();
+  ExpressionConstraint getConstraint();
 
   /**
    * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.MemberOf#getConstraint <em>Constraint</em>}' containment reference.
@@ -45,6 +45,6 @@ public interface MemberOf extends SimpleExpressionConstraint
    * @see #getConstraint()
    * @generated
    */
-  void setConstraint(SimpleExpressionConstraint value);
+  void setConstraint(ExpressionConstraint value);
 
 } // MemberOf
