@@ -5,23 +5,21 @@ package com.b2international.snowowl.snomed.ecl.serializer;
 
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
+import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
+import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
 import com.b2international.snowowl.snomed.ecl.services.EclGrammarAccess;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.serializer.acceptor.ISemanticSequenceAcceptor;
-import org.eclipse.xtext.serializer.acceptor.SequenceFeeder;
 import org.eclipse.xtext.serializer.diagnostic.ISemanticSequencerDiagnosticProvider;
 import org.eclipse.xtext.serializer.diagnostic.ISerializationDiagnostic.Acceptor;
 import org.eclipse.xtext.serializer.sequencer.AbstractDelegatingSemanticSequencer;
 import org.eclipse.xtext.serializer.sequencer.GenericSequencer;
-import org.eclipse.xtext.serializer.sequencer.ISemanticNodeProvider.INodesForEObjectProvider;
 import org.eclipse.xtext.serializer.sequencer.ISemanticSequencer;
 import org.eclipse.xtext.serializer.sequencer.ITransientValueService;
-import org.eclipse.xtext.serializer.sequencer.ITransientValueService.ValueTransient;
 
 @SuppressWarnings("all")
 public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
@@ -38,8 +36,11 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 			case EclPackage.CONCEPT_REFERENCE:
 				sequence_ConceptReference(context, (ConceptReference) semanticObject); 
 				return; 
-			case EclPackage.EXPRESSION_CONSTRAINT:
-				sequence_ExpressionConstraint(context, (ExpressionConstraint) semanticObject); 
+			case EclPackage.DESCENDANT_OF:
+				sequence_DescendantOf(context, (DescendantOf) semanticObject); 
+				return; 
+			case EclPackage.DESCENDANT_OR_SELF_OF:
+				sequence_DescendantOrSelfOf(context, (DescendantOrSelfOf) semanticObject); 
 				return; 
 			case EclPackage.MEMBER_OF:
 				sequence_MemberOf(context, (MemberOf) semanticObject); 
@@ -68,23 +69,25 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
-	 *     expression=FocusConcept
+	 *     (constraint=FocusConcept | constraint=NestableExpression)
 	 */
-	protected void sequence_ExpressionConstraint(EObject context, ExpressionConstraint semanticObject) {
-		if(errorAcceptor != null) {
-			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.EXPRESSION_CONSTRAINT__EXPRESSION) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.EXPRESSION_CONSTRAINT__EXPRESSION));
-		}
-		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
-		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
-		feeder.accept(grammarAccess.getExpressionConstraintAccess().getExpressionFocusConceptParserRuleCall_0(), semanticObject.getExpression());
-		feeder.finish();
+	protected void sequence_DescendantOf(EObject context, DescendantOf semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	
 	/**
 	 * Constraint:
-	 *     (concept=ConceptReference | concept=Any)
+	 *     (constraint=FocusConcept | constraint=NestableExpression)
+	 */
+	protected void sequence_DescendantOrSelfOf(EObject context, DescendantOrSelfOf semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     (constraint=ConceptReference | constraint=Any)
 	 */
 	protected void sequence_MemberOf(EObject context, MemberOf semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);

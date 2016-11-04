@@ -19,18 +19,38 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public class ExpressionConstraintElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "ExpressionConstraint");
-		private final Assignment cExpressionAssignment = (Assignment)rule.eContents().get(1);
-		private final RuleCall cExpressionFocusConceptParserRuleCall_0 = (RuleCall)cExpressionAssignment.eContents().get(0);
+		private final RuleCall cSimpleExpressionConstraintParserRuleCall = (RuleCall)rule.eContents().get(1);
 		
 		//ExpressionConstraint hidden(WS, SL_COMMENT, ML_COMMENT):
-		//	expression=FocusConcept;
+		//	SimpleExpressionConstraint;
 		@Override public ParserRule getRule() { return rule; }
 
-		//expression=FocusConcept
-		public Assignment getExpressionAssignment() { return cExpressionAssignment; }
+		//SimpleExpressionConstraint
+		public RuleCall getSimpleExpressionConstraintParserRuleCall() { return cSimpleExpressionConstraintParserRuleCall; }
+	}
+
+	public class SimpleExpressionConstraintElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "SimpleExpressionConstraint");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final RuleCall cDescendantOfParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cDescendantOrSelfOfParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cFocusConceptParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		
+		//SimpleExpressionConstraint:
+		//	DescendantOf | DescendantOrSelfOf | FocusConcept;
+		@Override public ParserRule getRule() { return rule; }
+
+		//DescendantOf | DescendantOrSelfOf | FocusConcept
+		public Alternatives getAlternatives() { return cAlternatives; }
+
+		//DescendantOf
+		public RuleCall getDescendantOfParserRuleCall_0() { return cDescendantOfParserRuleCall_0; }
+
+		//DescendantOrSelfOf
+		public RuleCall getDescendantOrSelfOfParserRuleCall_1() { return cDescendantOrSelfOfParserRuleCall_1; }
 
 		//FocusConcept
-		public RuleCall getExpressionFocusConceptParserRuleCall_0() { return cExpressionFocusConceptParserRuleCall_0; }
+		public RuleCall getFocusConceptParserRuleCall_2() { return cFocusConceptParserRuleCall_2; }
 	}
 
 	public class FocusConceptElements extends AbstractParserRuleElementFinder {
@@ -40,7 +60,9 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cConceptReferenceParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
 		private final RuleCall cAnyParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
 		
-		//FocusConcept:
+		//// XXX FocusConcept Grouping rule no actual EObject present with this name
+		// FocusConcept returns
+		//SimpleExpressionConstraint:
 		//	MemberOf | ConceptReference | Any;
 		@Override public ParserRule getRule() { return rule; }
 
@@ -57,36 +79,100 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		public RuleCall getAnyParserRuleCall_2() { return cAnyParserRuleCall_2; }
 	}
 
+	public class DescendantOfElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "DescendantOf");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cLESS_THANTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final Alternatives cConstraintAlternatives_1_0 = (Alternatives)cConstraintAssignment_1.eContents().get(0);
+		private final RuleCall cConstraintFocusConceptParserRuleCall_1_0_0 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(0);
+		private final RuleCall cConstraintNestableExpressionParserRuleCall_1_0_1 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(1);
+		
+		//DescendantOf:
+		//	LESS_THAN constraint=(FocusConcept | NestableExpression);
+		@Override public ParserRule getRule() { return rule; }
+
+		//LESS_THAN constraint=(FocusConcept | NestableExpression)
+		public Group getGroup() { return cGroup; }
+
+		//LESS_THAN
+		public RuleCall getLESS_THANTerminalRuleCall_0() { return cLESS_THANTerminalRuleCall_0; }
+
+		//constraint=(FocusConcept | NestableExpression)
+		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
+
+		//FocusConcept | NestableExpression
+		public Alternatives getConstraintAlternatives_1_0() { return cConstraintAlternatives_1_0; }
+
+		//FocusConcept
+		public RuleCall getConstraintFocusConceptParserRuleCall_1_0_0() { return cConstraintFocusConceptParserRuleCall_1_0_0; }
+
+		//NestableExpression
+		public RuleCall getConstraintNestableExpressionParserRuleCall_1_0_1() { return cConstraintNestableExpressionParserRuleCall_1_0_1; }
+	}
+
+	public class DescendantOrSelfOfElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "DescendantOrSelfOf");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cDBL_LESS_THANTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final Alternatives cConstraintAlternatives_1_0 = (Alternatives)cConstraintAssignment_1.eContents().get(0);
+		private final RuleCall cConstraintFocusConceptParserRuleCall_1_0_0 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(0);
+		private final RuleCall cConstraintNestableExpressionParserRuleCall_1_0_1 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(1);
+		
+		//DescendantOrSelfOf:
+		//	DBL_LESS_THAN constraint=(FocusConcept | NestableExpression);
+		@Override public ParserRule getRule() { return rule; }
+
+		//DBL_LESS_THAN constraint=(FocusConcept | NestableExpression)
+		public Group getGroup() { return cGroup; }
+
+		//DBL_LESS_THAN
+		public RuleCall getDBL_LESS_THANTerminalRuleCall_0() { return cDBL_LESS_THANTerminalRuleCall_0; }
+
+		//constraint=(FocusConcept | NestableExpression)
+		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
+
+		//FocusConcept | NestableExpression
+		public Alternatives getConstraintAlternatives_1_0() { return cConstraintAlternatives_1_0; }
+
+		//FocusConcept
+		public RuleCall getConstraintFocusConceptParserRuleCall_1_0_0() { return cConstraintFocusConceptParserRuleCall_1_0_0; }
+
+		//NestableExpression
+		public RuleCall getConstraintNestableExpressionParserRuleCall_1_0_1() { return cConstraintNestableExpressionParserRuleCall_1_0_1; }
+	}
+
 	public class MemberOfElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "MemberOf");
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final RuleCall cCARETTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
-		private final Assignment cConceptAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final Alternatives cConceptAlternatives_1_0 = (Alternatives)cConceptAssignment_1.eContents().get(0);
-		private final RuleCall cConceptConceptReferenceParserRuleCall_1_0_0 = (RuleCall)cConceptAlternatives_1_0.eContents().get(0);
-		private final RuleCall cConceptAnyParserRuleCall_1_0_1 = (RuleCall)cConceptAlternatives_1_0.eContents().get(1);
+		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final Alternatives cConstraintAlternatives_1_0 = (Alternatives)cConstraintAssignment_1.eContents().get(0);
+		private final RuleCall cConstraintConceptReferenceParserRuleCall_1_0_0 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(0);
+		private final RuleCall cConstraintAnyParserRuleCall_1_0_1 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(1);
 		
 		//MemberOf:
-		//	CARET concept=(ConceptReference | Any);
+		//	CARET constraint=(ConceptReference | Any);
 		@Override public ParserRule getRule() { return rule; }
 
-		//CARET concept=(ConceptReference | Any)
+		//CARET constraint=(ConceptReference | Any)
 		public Group getGroup() { return cGroup; }
 
 		//CARET
 		public RuleCall getCARETTerminalRuleCall_0() { return cCARETTerminalRuleCall_0; }
 
-		//concept=(ConceptReference | Any)
-		public Assignment getConceptAssignment_1() { return cConceptAssignment_1; }
+		//constraint=(ConceptReference | Any)
+		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
 
 		//ConceptReference | Any
-		public Alternatives getConceptAlternatives_1_0() { return cConceptAlternatives_1_0; }
+		public Alternatives getConstraintAlternatives_1_0() { return cConstraintAlternatives_1_0; }
 
 		//ConceptReference
-		public RuleCall getConceptConceptReferenceParserRuleCall_1_0_0() { return cConceptConceptReferenceParserRuleCall_1_0_0; }
+		public RuleCall getConstraintConceptReferenceParserRuleCall_1_0_0() { return cConstraintConceptReferenceParserRuleCall_1_0_0; }
 
 		//Any
-		public RuleCall getConceptAnyParserRuleCall_1_0_1() { return cConceptAnyParserRuleCall_1_0_1; }
+		public RuleCall getConstraintAnyParserRuleCall_1_0_1() { return cConstraintAnyParserRuleCall_1_0_1; }
 	}
 
 	public class ConceptReferenceElements extends AbstractParserRuleElementFinder {
@@ -147,6 +233,30 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 
 		//{Any}
 		public Action getAnyAction_1() { return cAnyAction_1; }
+	}
+
+	public class NestableExpressionElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "NestableExpression");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cROUND_OPENTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cExpressionConstraintParserRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final RuleCall cROUND_CLOSETerminalRuleCall_2 = (RuleCall)cGroup.eContents().get(2);
+		
+		//NestableExpression:
+		//	ROUND_OPEN ExpressionConstraint ROUND_CLOSE;
+		@Override public ParserRule getRule() { return rule; }
+
+		//ROUND_OPEN ExpressionConstraint ROUND_CLOSE
+		public Group getGroup() { return cGroup; }
+
+		//ROUND_OPEN
+		public RuleCall getROUND_OPENTerminalRuleCall_0() { return cROUND_OPENTerminalRuleCall_0; }
+
+		//ExpressionConstraint
+		public RuleCall getExpressionConstraintParserRuleCall_1() { return cExpressionConstraintParserRuleCall_1; }
+
+		//ROUND_CLOSE
+		public RuleCall getROUND_CLOSETerminalRuleCall_2() { return cROUND_CLOSETerminalRuleCall_2; }
 	}
 
 	public class SnomedIdentifierElements extends AbstractParserRuleElementFinder {
@@ -259,114 +369,124 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	public class TermCharacterElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "TermCharacter");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
-		private final RuleCall cDESCENDANT_OFTerminalRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final RuleCall cDESCENDANT_OR_SELF_OFTerminalRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
-		private final RuleCall cANDTerminalRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
-		private final RuleCall cORTerminalRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
-		private final RuleCall cNOTTerminalRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
-		private final RuleCall cZEROTerminalRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
-		private final RuleCall cDIGIT_NONZEROTerminalRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
-		private final RuleCall cLETTERTerminalRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
-		private final RuleCall cCARETTerminalRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
-		private final RuleCall cEQUALTerminalRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
-		private final RuleCall cPLUSTerminalRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
-		private final RuleCall cCURLY_OPENTerminalRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
-		private final RuleCall cCURLY_CLOSETerminalRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
-		private final RuleCall cROUND_OPENTerminalRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
-		private final RuleCall cROUND_CLOSETerminalRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
-		private final RuleCall cSQUARE_OPENTerminalRuleCall_15 = (RuleCall)cAlternatives.eContents().get(15);
-		private final RuleCall cSQUARE_CLOSETerminalRuleCall_16 = (RuleCall)cAlternatives.eContents().get(16);
-		private final RuleCall cDOTTerminalRuleCall_17 = (RuleCall)cAlternatives.eContents().get(17);
-		private final RuleCall cCOLONTerminalRuleCall_18 = (RuleCall)cAlternatives.eContents().get(18);
-		private final RuleCall cCOMMATerminalRuleCall_19 = (RuleCall)cAlternatives.eContents().get(19);
-		private final RuleCall cOTHER_CHARACTERTerminalRuleCall_20 = (RuleCall)cAlternatives.eContents().get(20);
+		private final RuleCall cLESS_THANTerminalRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cGREATER_THANTerminalRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cDBL_LESS_THANTerminalRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		private final RuleCall cDBL_GREATER_THANTerminalRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
+		private final RuleCall cANDTerminalRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
+		private final RuleCall cORTerminalRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
+		private final RuleCall cNOTTerminalRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
+		private final RuleCall cZEROTerminalRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
+		private final RuleCall cDIGIT_NONZEROTerminalRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
+		private final RuleCall cLETTERTerminalRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
+		private final RuleCall cCARETTerminalRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
+		private final RuleCall cEQUALTerminalRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
+		private final RuleCall cPLUSTerminalRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
+		private final RuleCall cCURLY_OPENTerminalRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
+		private final RuleCall cCURLY_CLOSETerminalRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
+		private final RuleCall cROUND_OPENTerminalRuleCall_15 = (RuleCall)cAlternatives.eContents().get(15);
+		private final RuleCall cROUND_CLOSETerminalRuleCall_16 = (RuleCall)cAlternatives.eContents().get(16);
+		private final RuleCall cSQUARE_OPENTerminalRuleCall_17 = (RuleCall)cAlternatives.eContents().get(17);
+		private final RuleCall cSQUARE_CLOSETerminalRuleCall_18 = (RuleCall)cAlternatives.eContents().get(18);
+		private final RuleCall cDOTTerminalRuleCall_19 = (RuleCall)cAlternatives.eContents().get(19);
+		private final RuleCall cCOLONTerminalRuleCall_20 = (RuleCall)cAlternatives.eContents().get(20);
+		private final RuleCall cCOMMATerminalRuleCall_21 = (RuleCall)cAlternatives.eContents().get(21);
+		private final RuleCall cOTHER_CHARACTERTerminalRuleCall_22 = (RuleCall)cAlternatives.eContents().get(22);
 		
 		//TermCharacter hidden():
-		//	DESCENDANT_OF | DESCENDANT_OR_SELF_OF | AND | OR | NOT | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL | PLUS |
-		//	CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON | COMMA |
-		//	OTHER_CHARACTER;
+		//	LESS_THAN | GREATER_THAN | DBL_LESS_THAN | DBL_GREATER_THAN | AND | OR | NOT | ZERO | DIGIT_NONZERO | LETTER | CARET
+		//	| EQUAL | PLUS | CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON |
+		//	COMMA | OTHER_CHARACTER;
 		@Override public ParserRule getRule() { return rule; }
 
-		//DESCENDANT_OF | DESCENDANT_OR_SELF_OF | AND | OR | NOT | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL | PLUS |
-		//CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON | COMMA |
-		//OTHER_CHARACTER
+		//LESS_THAN | GREATER_THAN | DBL_LESS_THAN | DBL_GREATER_THAN | AND | OR | NOT | ZERO | DIGIT_NONZERO | LETTER | CARET |
+		//EQUAL | PLUS | CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON | COMMA
+		//| OTHER_CHARACTER
 		public Alternatives getAlternatives() { return cAlternatives; }
 
-		//DESCENDANT_OF
-		public RuleCall getDESCENDANT_OFTerminalRuleCall_0() { return cDESCENDANT_OFTerminalRuleCall_0; }
+		//LESS_THAN
+		public RuleCall getLESS_THANTerminalRuleCall_0() { return cLESS_THANTerminalRuleCall_0; }
 
-		//DESCENDANT_OR_SELF_OF
-		public RuleCall getDESCENDANT_OR_SELF_OFTerminalRuleCall_1() { return cDESCENDANT_OR_SELF_OFTerminalRuleCall_1; }
+		//GREATER_THAN
+		public RuleCall getGREATER_THANTerminalRuleCall_1() { return cGREATER_THANTerminalRuleCall_1; }
+
+		//DBL_LESS_THAN
+		public RuleCall getDBL_LESS_THANTerminalRuleCall_2() { return cDBL_LESS_THANTerminalRuleCall_2; }
+
+		//DBL_GREATER_THAN
+		public RuleCall getDBL_GREATER_THANTerminalRuleCall_3() { return cDBL_GREATER_THANTerminalRuleCall_3; }
 
 		//AND
-		public RuleCall getANDTerminalRuleCall_2() { return cANDTerminalRuleCall_2; }
+		public RuleCall getANDTerminalRuleCall_4() { return cANDTerminalRuleCall_4; }
 
 		//OR
-		public RuleCall getORTerminalRuleCall_3() { return cORTerminalRuleCall_3; }
+		public RuleCall getORTerminalRuleCall_5() { return cORTerminalRuleCall_5; }
 
 		//NOT
-		public RuleCall getNOTTerminalRuleCall_4() { return cNOTTerminalRuleCall_4; }
+		public RuleCall getNOTTerminalRuleCall_6() { return cNOTTerminalRuleCall_6; }
 
 		//ZERO
-		public RuleCall getZEROTerminalRuleCall_5() { return cZEROTerminalRuleCall_5; }
+		public RuleCall getZEROTerminalRuleCall_7() { return cZEROTerminalRuleCall_7; }
 
 		//DIGIT_NONZERO
-		public RuleCall getDIGIT_NONZEROTerminalRuleCall_6() { return cDIGIT_NONZEROTerminalRuleCall_6; }
+		public RuleCall getDIGIT_NONZEROTerminalRuleCall_8() { return cDIGIT_NONZEROTerminalRuleCall_8; }
 
 		//LETTER
-		public RuleCall getLETTERTerminalRuleCall_7() { return cLETTERTerminalRuleCall_7; }
+		public RuleCall getLETTERTerminalRuleCall_9() { return cLETTERTerminalRuleCall_9; }
 
 		//CARET
-		public RuleCall getCARETTerminalRuleCall_8() { return cCARETTerminalRuleCall_8; }
+		public RuleCall getCARETTerminalRuleCall_10() { return cCARETTerminalRuleCall_10; }
 
 		//EQUAL
-		public RuleCall getEQUALTerminalRuleCall_9() { return cEQUALTerminalRuleCall_9; }
+		public RuleCall getEQUALTerminalRuleCall_11() { return cEQUALTerminalRuleCall_11; }
 
 		//PLUS
-		public RuleCall getPLUSTerminalRuleCall_10() { return cPLUSTerminalRuleCall_10; }
+		public RuleCall getPLUSTerminalRuleCall_12() { return cPLUSTerminalRuleCall_12; }
 
 		//CURLY_OPEN
-		public RuleCall getCURLY_OPENTerminalRuleCall_11() { return cCURLY_OPENTerminalRuleCall_11; }
+		public RuleCall getCURLY_OPENTerminalRuleCall_13() { return cCURLY_OPENTerminalRuleCall_13; }
 
 		//CURLY_CLOSE
-		public RuleCall getCURLY_CLOSETerminalRuleCall_12() { return cCURLY_CLOSETerminalRuleCall_12; }
+		public RuleCall getCURLY_CLOSETerminalRuleCall_14() { return cCURLY_CLOSETerminalRuleCall_14; }
 
 		//ROUND_OPEN
-		public RuleCall getROUND_OPENTerminalRuleCall_13() { return cROUND_OPENTerminalRuleCall_13; }
+		public RuleCall getROUND_OPENTerminalRuleCall_15() { return cROUND_OPENTerminalRuleCall_15; }
 
 		//ROUND_CLOSE
-		public RuleCall getROUND_CLOSETerminalRuleCall_14() { return cROUND_CLOSETerminalRuleCall_14; }
+		public RuleCall getROUND_CLOSETerminalRuleCall_16() { return cROUND_CLOSETerminalRuleCall_16; }
 
 		//SQUARE_OPEN
-		public RuleCall getSQUARE_OPENTerminalRuleCall_15() { return cSQUARE_OPENTerminalRuleCall_15; }
+		public RuleCall getSQUARE_OPENTerminalRuleCall_17() { return cSQUARE_OPENTerminalRuleCall_17; }
 
 		//SQUARE_CLOSE
-		public RuleCall getSQUARE_CLOSETerminalRuleCall_16() { return cSQUARE_CLOSETerminalRuleCall_16; }
+		public RuleCall getSQUARE_CLOSETerminalRuleCall_18() { return cSQUARE_CLOSETerminalRuleCall_18; }
 
 		//DOT
-		public RuleCall getDOTTerminalRuleCall_17() { return cDOTTerminalRuleCall_17; }
+		public RuleCall getDOTTerminalRuleCall_19() { return cDOTTerminalRuleCall_19; }
 
 		//COLON
-		public RuleCall getCOLONTerminalRuleCall_18() { return cCOLONTerminalRuleCall_18; }
+		public RuleCall getCOLONTerminalRuleCall_20() { return cCOLONTerminalRuleCall_20; }
 
 		//COMMA
-		public RuleCall getCOMMATerminalRuleCall_19() { return cCOMMATerminalRuleCall_19; }
+		public RuleCall getCOMMATerminalRuleCall_21() { return cCOMMATerminalRuleCall_21; }
 
 		//OTHER_CHARACTER
-		public RuleCall getOTHER_CHARACTERTerminalRuleCall_20() { return cOTHER_CHARACTERTerminalRuleCall_20; }
+		public RuleCall getOTHER_CHARACTERTerminalRuleCall_22() { return cOTHER_CHARACTERTerminalRuleCall_22; }
 	}
 	
 	
 	private final ExpressionConstraintElements pExpressionConstraint;
+	private final SimpleExpressionConstraintElements pSimpleExpressionConstraint;
 	private final FocusConceptElements pFocusConcept;
+	private final DescendantOfElements pDescendantOf;
+	private final DescendantOrSelfOfElements pDescendantOrSelfOf;
 	private final MemberOfElements pMemberOf;
 	private final ConceptReferenceElements pConceptReference;
 	private final AnyElements pAny;
+	private final NestableExpressionElements pNestableExpression;
 	private final SnomedIdentifierElements pSnomedIdentifier;
 	private final TermElements pTerm;
 	private final TermCharacterElements pTermCharacter;
-	private final TerminalRule tDESCENDANT_OF;
-	private final TerminalRule tDESCENDANT_OR_SELF_OF;
 	private final TerminalRule tAND;
 	private final TerminalRule tOR;
 	private final TerminalRule tZERO;
@@ -387,6 +507,10 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final TerminalRule tNOT;
 	private final TerminalRule tDOT;
 	private final TerminalRule tWILDCARD;
+	private final TerminalRule tLESS_THAN;
+	private final TerminalRule tGREATER_THAN;
+	private final TerminalRule tDBL_LESS_THAN;
+	private final TerminalRule tDBL_GREATER_THAN;
 	private final TerminalRule tWS;
 	private final TerminalRule tML_COMMENT;
 	private final TerminalRule tSL_COMMENT;
@@ -398,15 +522,17 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	public EclGrammarAccess(GrammarProvider grammarProvider) {
 		this.grammar = internalFindGrammar(grammarProvider);
 		this.pExpressionConstraint = new ExpressionConstraintElements();
+		this.pSimpleExpressionConstraint = new SimpleExpressionConstraintElements();
 		this.pFocusConcept = new FocusConceptElements();
+		this.pDescendantOf = new DescendantOfElements();
+		this.pDescendantOrSelfOf = new DescendantOrSelfOfElements();
 		this.pMemberOf = new MemberOfElements();
 		this.pConceptReference = new ConceptReferenceElements();
 		this.pAny = new AnyElements();
+		this.pNestableExpression = new NestableExpressionElements();
 		this.pSnomedIdentifier = new SnomedIdentifierElements();
 		this.pTerm = new TermElements();
 		this.pTermCharacter = new TermCharacterElements();
-		this.tDESCENDANT_OF = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "DESCENDANT_OF");
-		this.tDESCENDANT_OR_SELF_OF = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "DESCENDANT_OR_SELF_OF");
 		this.tAND = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "AND");
 		this.tOR = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "OR");
 		this.tZERO = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "ZERO");
@@ -427,6 +553,10 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.tNOT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "NOT");
 		this.tDOT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "DOT");
 		this.tWILDCARD = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "WILDCARD");
+		this.tLESS_THAN = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "LESS_THAN");
+		this.tGREATER_THAN = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "GREATER_THAN");
+		this.tDBL_LESS_THAN = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "DBL_LESS_THAN");
+		this.tDBL_GREATER_THAN = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "DBL_GREATER_THAN");
 		this.tWS = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "WS");
 		this.tML_COMMENT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "ML_COMMENT");
 		this.tSL_COMMENT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "SL_COMMENT");
@@ -457,7 +587,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 
 	
 	//ExpressionConstraint hidden(WS, SL_COMMENT, ML_COMMENT):
-	//	expression=FocusConcept;
+	//	SimpleExpressionConstraint;
 	public ExpressionConstraintElements getExpressionConstraintAccess() {
 		return pExpressionConstraint;
 	}
@@ -466,7 +596,19 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return getExpressionConstraintAccess().getRule();
 	}
 
-	//FocusConcept:
+	//SimpleExpressionConstraint:
+	//	DescendantOf | DescendantOrSelfOf | FocusConcept;
+	public SimpleExpressionConstraintElements getSimpleExpressionConstraintAccess() {
+		return pSimpleExpressionConstraint;
+	}
+	
+	public ParserRule getSimpleExpressionConstraintRule() {
+		return getSimpleExpressionConstraintAccess().getRule();
+	}
+
+	//// XXX FocusConcept Grouping rule no actual EObject present with this name
+	// FocusConcept returns
+	//SimpleExpressionConstraint:
 	//	MemberOf | ConceptReference | Any;
 	public FocusConceptElements getFocusConceptAccess() {
 		return pFocusConcept;
@@ -476,8 +618,28 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return getFocusConceptAccess().getRule();
 	}
 
+	//DescendantOf:
+	//	LESS_THAN constraint=(FocusConcept | NestableExpression);
+	public DescendantOfElements getDescendantOfAccess() {
+		return pDescendantOf;
+	}
+	
+	public ParserRule getDescendantOfRule() {
+		return getDescendantOfAccess().getRule();
+	}
+
+	//DescendantOrSelfOf:
+	//	DBL_LESS_THAN constraint=(FocusConcept | NestableExpression);
+	public DescendantOrSelfOfElements getDescendantOrSelfOfAccess() {
+		return pDescendantOrSelfOf;
+	}
+	
+	public ParserRule getDescendantOrSelfOfRule() {
+		return getDescendantOrSelfOfAccess().getRule();
+	}
+
 	//MemberOf:
-	//	CARET concept=(ConceptReference | Any);
+	//	CARET constraint=(ConceptReference | Any);
 	public MemberOfElements getMemberOfAccess() {
 		return pMemberOf;
 	}
@@ -506,6 +668,16 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return getAnyAccess().getRule();
 	}
 
+	//NestableExpression:
+	//	ROUND_OPEN ExpressionConstraint ROUND_CLOSE;
+	public NestableExpressionElements getNestableExpressionAccess() {
+		return pNestableExpression;
+	}
+	
+	public ParserRule getNestableExpressionRule() {
+		return getNestableExpressionAccess().getRule();
+	}
+
 	//// hidden grammar rules
 	// SnomedIdentifier hidden():
 	//	DIGIT_NONZERO (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO)
@@ -529,9 +701,9 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//TermCharacter hidden():
-	//	DESCENDANT_OF | DESCENDANT_OR_SELF_OF | AND | OR | NOT | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL | PLUS |
-	//	CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON | COMMA |
-	//	OTHER_CHARACTER;
+	//	LESS_THAN | GREATER_THAN | DBL_LESS_THAN | DBL_GREATER_THAN | AND | OR | NOT | ZERO | DIGIT_NONZERO | LETTER | CARET
+	//	| EQUAL | PLUS | CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON |
+	//	COMMA | OTHER_CHARACTER;
 	public TermCharacterElements getTermCharacterAccess() {
 		return pTermCharacter;
 	}
@@ -541,20 +713,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//// ---TERMINALS---
-	// // ECL terminals
-	// terminal DESCENDANT_OF:
-	//	"<";
-	public TerminalRule getDESCENDANT_OFRule() {
-		return tDESCENDANT_OF;
-	} 
-
-	//terminal DESCENDANT_OR_SELF_OF:
-	//	"<<";
-	public TerminalRule getDESCENDANT_OR_SELF_OFRule() {
-		return tDESCENDANT_OR_SELF_OF;
-	} 
-
-	//// bool operators
+	// // bool operators
 	// terminal AND:
 	//	"AND";
 	public TerminalRule getANDRule() {
@@ -675,6 +834,30 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	//	"*";
 	public TerminalRule getWILDCARDRule() {
 		return tWILDCARD;
+	} 
+
+	//terminal LESS_THAN:
+	//	"<";
+	public TerminalRule getLESS_THANRule() {
+		return tLESS_THAN;
+	} 
+
+	//terminal GREATER_THAN:
+	//	">";
+	public TerminalRule getGREATER_THANRule() {
+		return tGREATER_THAN;
+	} 
+
+	//terminal DBL_LESS_THAN:
+	//	"<<";
+	public TerminalRule getDBL_LESS_THANRule() {
+		return tDBL_LESS_THAN;
+	} 
+
+	//terminal DBL_GREATER_THAN:
+	//	">>";
+	public TerminalRule getDBL_GREATER_THANRule() {
+		return tDBL_GREATER_THAN;
 	} 
 
 	//// comment terminals

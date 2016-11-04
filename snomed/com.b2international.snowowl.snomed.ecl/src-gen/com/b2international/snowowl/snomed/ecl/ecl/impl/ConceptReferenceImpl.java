@@ -25,7 +25,7 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  *
  * @generated
  */
-public class ConceptReferenceImpl extends FocusConceptImpl implements ConceptReference
+public class ConceptReferenceImpl extends SimpleExpressionConstraintImpl implements ConceptReference
 {
   /**
    * The default value of the '{@link #getId() <em>Id</em>}' attribute.

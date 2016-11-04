@@ -2,9 +2,9 @@
  */
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
+import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
-import com.b2international.snowowl.snomed.ecl.ecl.SimpleExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.NestableExpression;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -16,18 +16,18 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Member Of</b></em>'.
+ * An implementation of the model object '<em><b>Descendant Of</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.MemberOfImpl#getConstraint <em>Constraint</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DescendantOfImpl#getConstraint <em>Constraint</em>}</li>
  * </ul>
  * </p>
  *
  * @generated
  */
-public class MemberOfImpl extends SimpleExpressionConstraintImpl implements MemberOf
+public class DescendantOfImpl extends SimpleExpressionConstraintImpl implements DescendantOf
 {
   /**
    * The cached value of the '{@link #getConstraint() <em>Constraint</em>}' containment reference.
@@ -37,14 +37,14 @@ public class MemberOfImpl extends SimpleExpressionConstraintImpl implements Memb
    * @generated
    * @ordered
    */
-  protected SimpleExpressionConstraint constraint;
+  protected NestableExpression constraint;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected MemberOfImpl()
+  protected DescendantOfImpl()
   {
     super();
   }
@@ -57,7 +57,7 @@ public class MemberOfImpl extends SimpleExpressionConstraintImpl implements Memb
   @Override
   protected EClass eStaticClass()
   {
-    return EclPackage.Literals.MEMBER_OF;
+    return EclPackage.Literals.DESCENDANT_OF;
   }
 
   /**
@@ -65,7 +65,7 @@ public class MemberOfImpl extends SimpleExpressionConstraintImpl implements Memb
    * <!-- end-user-doc -->
    * @generated
    */
-  public SimpleExpressionConstraint getConstraint()
+  public NestableExpression getConstraint()
   {
     return constraint;
   }
@@ -75,13 +75,13 @@ public class MemberOfImpl extends SimpleExpressionConstraintImpl implements Memb
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetConstraint(SimpleExpressionConstraint newConstraint, NotificationChain msgs)
+  public NotificationChain basicSetConstraint(NestableExpression newConstraint, NotificationChain msgs)
   {
-    SimpleExpressionConstraint oldConstraint = constraint;
+    NestableExpression oldConstraint = constraint;
     constraint = newConstraint;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.MEMBER_OF__CONSTRAINT, oldConstraint, newConstraint);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.DESCENDANT_OF__CONSTRAINT, oldConstraint, newConstraint);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -92,20 +92,20 @@ public class MemberOfImpl extends SimpleExpressionConstraintImpl implements Memb
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setConstraint(SimpleExpressionConstraint newConstraint)
+  public void setConstraint(NestableExpression newConstraint)
   {
     if (newConstraint != constraint)
     {
       NotificationChain msgs = null;
       if (constraint != null)
-        msgs = ((InternalEObject)constraint).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.MEMBER_OF__CONSTRAINT, null, msgs);
+        msgs = ((InternalEObject)constraint).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.DESCENDANT_OF__CONSTRAINT, null, msgs);
       if (newConstraint != null)
-        msgs = ((InternalEObject)newConstraint).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.MEMBER_OF__CONSTRAINT, null, msgs);
+        msgs = ((InternalEObject)newConstraint).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.DESCENDANT_OF__CONSTRAINT, null, msgs);
       msgs = basicSetConstraint(newConstraint, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.MEMBER_OF__CONSTRAINT, newConstraint, newConstraint));
+      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.DESCENDANT_OF__CONSTRAINT, newConstraint, newConstraint));
   }
 
   /**
@@ -118,7 +118,7 @@ public class MemberOfImpl extends SimpleExpressionConstraintImpl implements Memb
   {
     switch (featureID)
     {
-      case EclPackage.MEMBER_OF__CONSTRAINT:
+      case EclPackage.DESCENDANT_OF__CONSTRAINT:
         return basicSetConstraint(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
@@ -134,7 +134,7 @@ public class MemberOfImpl extends SimpleExpressionConstraintImpl implements Memb
   {
     switch (featureID)
     {
-      case EclPackage.MEMBER_OF__CONSTRAINT:
+      case EclPackage.DESCENDANT_OF__CONSTRAINT:
         return getConstraint();
     }
     return super.eGet(featureID, resolve, coreType);
@@ -150,8 +150,8 @@ public class MemberOfImpl extends SimpleExpressionConstraintImpl implements Memb
   {
     switch (featureID)
     {
-      case EclPackage.MEMBER_OF__CONSTRAINT:
-        setConstraint((SimpleExpressionConstraint)newValue);
+      case EclPackage.DESCENDANT_OF__CONSTRAINT:
+        setConstraint((NestableExpression)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -167,8 +167,8 @@ public class MemberOfImpl extends SimpleExpressionConstraintImpl implements Memb
   {
     switch (featureID)
     {
-      case EclPackage.MEMBER_OF__CONSTRAINT:
-        setConstraint((SimpleExpressionConstraint)null);
+      case EclPackage.DESCENDANT_OF__CONSTRAINT:
+        setConstraint((NestableExpression)null);
         return;
     }
     super.eUnset(featureID);
@@ -184,10 +184,10 @@ public class MemberOfImpl extends SimpleExpressionConstraintImpl implements Memb
   {
     switch (featureID)
     {
-      case EclPackage.MEMBER_OF__CONSTRAINT:
+      case EclPackage.DESCENDANT_OF__CONSTRAINT:
         return constraint != null;
     }
     return super.eIsSet(featureID);
   }
 
-} //MemberOfImpl
+} //DescendantOfImpl

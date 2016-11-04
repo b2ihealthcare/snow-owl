@@ -65,10 +65,13 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
     switch (eClass.getClassifierID())
     {
       case EclPackage.EXPRESSION_CONSTRAINT: return createExpressionConstraint();
-      case EclPackage.FOCUS_CONCEPT: return createFocusConcept();
+      case EclPackage.SIMPLE_EXPRESSION_CONSTRAINT: return createSimpleExpressionConstraint();
+      case EclPackage.DESCENDANT_OF: return createDescendantOf();
+      case EclPackage.DESCENDANT_OR_SELF_OF: return createDescendantOrSelfOf();
       case EclPackage.MEMBER_OF: return createMemberOf();
       case EclPackage.CONCEPT_REFERENCE: return createConceptReference();
       case EclPackage.ANY: return createAny();
+      case EclPackage.NESTABLE_EXPRESSION: return createNestableExpression();
       default:
         throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
     }
@@ -90,10 +93,32 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public FocusConcept createFocusConcept()
+  public SimpleExpressionConstraint createSimpleExpressionConstraint()
   {
-    FocusConceptImpl focusConcept = new FocusConceptImpl();
-    return focusConcept;
+    SimpleExpressionConstraintImpl simpleExpressionConstraint = new SimpleExpressionConstraintImpl();
+    return simpleExpressionConstraint;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public DescendantOf createDescendantOf()
+  {
+    DescendantOfImpl descendantOf = new DescendantOfImpl();
+    return descendantOf;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public DescendantOrSelfOf createDescendantOrSelfOf()
+  {
+    DescendantOrSelfOfImpl descendantOrSelfOf = new DescendantOrSelfOfImpl();
+    return descendantOrSelfOf;
   }
 
   /**
@@ -127,6 +152,17 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     AnyImpl any = new AnyImpl();
     return any;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public NestableExpression createNestableExpression()
+  {
+    NestableExpressionImpl nestableExpression = new NestableExpressionImpl();
+    return nestableExpression;
   }
 
   /**

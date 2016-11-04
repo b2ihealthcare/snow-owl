@@ -32,13 +32,31 @@ public interface EclFactory extends EFactory
   ExpressionConstraint createExpressionConstraint();
 
   /**
-   * Returns a new object of class '<em>Focus Concept</em>'.
+   * Returns a new object of class '<em>Simple Expression Constraint</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Focus Concept</em>'.
+   * @return a new object of class '<em>Simple Expression Constraint</em>'.
    * @generated
    */
-  FocusConcept createFocusConcept();
+  SimpleExpressionConstraint createSimpleExpressionConstraint();
+
+  /**
+   * Returns a new object of class '<em>Descendant Of</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Descendant Of</em>'.
+   * @generated
+   */
+  DescendantOf createDescendantOf();
+
+  /**
+   * Returns a new object of class '<em>Descendant Or Self Of</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Descendant Or Self Of</em>'.
+   * @generated
+   */
+  DescendantOrSelfOf createDescendantOrSelfOf();
 
   /**
    * Returns a new object of class '<em>Member Of</em>'.
@@ -66,6 +84,15 @@ public interface EclFactory extends EFactory
    * @generated
    */
   Any createAny();
+
+  /**
+   * Returns a new object of class '<em>Nestable Expression</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Nestable Expression</em>'.
+   * @generated
+   */
+  NestableExpression createNestableExpression();
 
   /**
    * Returns the package supported by this factory.

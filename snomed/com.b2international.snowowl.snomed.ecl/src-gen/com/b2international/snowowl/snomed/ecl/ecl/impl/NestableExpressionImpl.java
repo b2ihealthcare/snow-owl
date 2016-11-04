@@ -3,27 +3,29 @@
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.NestableExpression;
 
 import org.eclipse.emf.ecore.EClass;
 
+import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
+
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Expression Constraint</b></em>'.
+ * An implementation of the model object '<em><b>Nestable Expression</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * </p>
  *
  * @generated
  */
-public class ExpressionConstraintImpl extends NestableExpressionImpl implements ExpressionConstraint
+public class NestableExpressionImpl extends MinimalEObjectImpl.Container implements NestableExpression
 {
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected ExpressionConstraintImpl()
+  protected NestableExpressionImpl()
   {
     super();
   }
@@ -36,7 +38,7 @@ public class ExpressionConstraintImpl extends NestableExpressionImpl implements 
   @Override
   protected EClass eStaticClass()
   {
-    return EclPackage.Literals.EXPRESSION_CONSTRAINT;
+    return EclPackage.Literals.NESTABLE_EXPRESSION;
   }
 
-} //ExpressionConstraintImpl
+} //NestableExpressionImpl

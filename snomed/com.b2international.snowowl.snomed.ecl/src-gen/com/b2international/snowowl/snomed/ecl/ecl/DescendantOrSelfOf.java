@@ -5,21 +5,21 @@ package com.b2international.snowowl.snomed.ecl.ecl;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Member Of</b></em>'.
+ * A representation of the model object '<em><b>Descendant Or Self Of</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.MemberOf#getConstraint <em>Constraint</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf#getConstraint <em>Constraint</em>}</li>
  * </ul>
  * </p>
  *
- * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getMemberOf()
+ * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getDescendantOrSelfOf()
  * @model
  * @generated
  */
-public interface MemberOf extends SimpleExpressionConstraint
+public interface DescendantOrSelfOf extends SimpleExpressionConstraint
 {
   /**
    * Returns the value of the '<em><b>Constraint</b></em>' containment reference.
@@ -30,21 +30,21 @@ public interface MemberOf extends SimpleExpressionConstraint
    * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Constraint</em>' containment reference.
-   * @see #setConstraint(SimpleExpressionConstraint)
-   * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getMemberOf_Constraint()
+   * @see #setConstraint(NestableExpression)
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getDescendantOrSelfOf_Constraint()
    * @model containment="true"
    * @generated
    */
-  SimpleExpressionConstraint getConstraint();
+  NestableExpression getConstraint();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.MemberOf#getConstraint <em>Constraint</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf#getConstraint <em>Constraint</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Constraint</em>' containment reference.
    * @see #getConstraint()
    * @generated
    */
-  void setConstraint(SimpleExpressionConstraint value);
+  void setConstraint(NestableExpression value);
 
-} // MemberOf
+} // DescendantOrSelfOf

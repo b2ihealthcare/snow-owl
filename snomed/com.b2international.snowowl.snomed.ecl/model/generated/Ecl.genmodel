@@ -8,17 +8,22 @@
     editorPluginID="com.b2international.snowowl.snomed.ecl.editor" runtimeVersion="2.10">
   <genPackages prefix="Ecl" basePackage="com.b2international.snowowl.snomed.ecl" disposableProviderFactory="true"
       fileExtensions="ecl" ecorePackage="Ecl.ecore#/">
-    <genClasses ecoreClass="Ecl.ecore#//ExpressionConstraint">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//ExpressionConstraint/expression"/>
+    <genClasses ecoreClass="Ecl.ecore#//ExpressionConstraint"/>
+    <genClasses ecoreClass="Ecl.ecore#//SimpleExpressionConstraint"/>
+    <genClasses ecoreClass="Ecl.ecore#//DescendantOf">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//DescendantOf/constraint"/>
     </genClasses>
-    <genClasses ecoreClass="Ecl.ecore#//FocusConcept"/>
+    <genClasses ecoreClass="Ecl.ecore#//DescendantOrSelfOf">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//DescendantOrSelfOf/constraint"/>
+    </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//MemberOf">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//MemberOf/concept"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//MemberOf/constraint"/>
     </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//ConceptReference">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//ConceptReference/id"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//ConceptReference/term"/>
     </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//Any"/>
+    <genClasses ecoreClass="Ecl.ecore#//NestableExpression"/>
   </genPackages>
 </genmodel:GenModel>

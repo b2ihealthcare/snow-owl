@@ -28,8 +28,16 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	protected String getUnassignedRuleCallToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if(ruleCall.getRule() == grammarAccess.getCARETRule())
 			return getCARETToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getDBL_LESS_THANRule())
+			return getDBL_LESS_THANToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getLESS_THANRule())
+			return getLESS_THANToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getPIPERule())
 			return getPIPEToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getROUND_CLOSERule())
+			return getROUND_CLOSEToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getROUND_OPENRule())
+			return getROUND_OPENToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getWILDCARDRule())
 			return getWILDCARDToken(semanticObject, ruleCall, node);
 		return "";
@@ -45,12 +53,48 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
+	 * terminal DBL_LESS_THAN			: '<<';
+	 */
+	protected String getDBL_LESS_THANToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "<<";
+	}
+	
+	/**
+	 * terminal LESS_THAN				: '<';
+	 */
+	protected String getLESS_THANToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "<";
+	}
+	
+	/**
 	 * terminal PIPE 					: '|';
 	 */
 	protected String getPIPEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
 			return getTokenText(node);
 		return "|";
+	}
+	
+	/**
+	 * terminal ROUND_CLOSE 			: ')';
+	 */
+	protected String getROUND_CLOSEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return ")";
+	}
+	
+	/**
+	 * terminal ROUND_OPEN 			: '(';
+	 */
+	protected String getROUND_OPENToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "(";
 	}
 	
 	/**

@@ -16,6 +16,7 @@
 package com.b2international.index.query;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @since 4.7
@@ -57,6 +58,24 @@ public final class BoolExpression implements Expression {
 	
 	public List<Expression> filterClauses() {
 		return filterClauses;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(mustClauses, mustNotClauses, shouldClauses, filterClauses, minShouldMatch);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		BoolExpression other = (BoolExpression) obj;
+		return Objects.equals(mustClauses, other.mustClauses)
+				&& Objects.equals(mustNotClauses, other.mustNotClauses)
+				&& Objects.equals(shouldClauses, other.shouldClauses)
+				&& Objects.equals(filterClauses, other.filterClauses)
+				&& Objects.equals(minShouldMatch, other.minShouldMatch);
 	}
 	
 	@Override

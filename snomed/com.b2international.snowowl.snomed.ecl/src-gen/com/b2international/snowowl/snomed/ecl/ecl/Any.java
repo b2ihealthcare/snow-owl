@@ -13,6 +13,6 @@ package com.b2international.snowowl.snomed.ecl.ecl;
  * @model
  * @generated
  */
-public interface Any extends FocusConcept
+public interface Any extends SimpleExpressionConstraint
 {
 } // Any

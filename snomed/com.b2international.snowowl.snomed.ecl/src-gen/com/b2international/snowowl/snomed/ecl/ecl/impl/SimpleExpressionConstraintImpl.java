@@ -3,29 +3,27 @@
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ecl.ecl.FocusConcept;
+import com.b2international.snowowl.snomed.ecl.ecl.SimpleExpressionConstraint;
 
 import org.eclipse.emf.ecore.EClass;
 
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
-
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Focus Concept</b></em>'.
+ * An implementation of the model object '<em><b>Simple Expression Constraint</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * </p>
  *
  * @generated
  */
-public class FocusConceptImpl extends MinimalEObjectImpl.Container implements FocusConcept
+public class SimpleExpressionConstraintImpl extends ExpressionConstraintImpl implements SimpleExpressionConstraint
 {
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected FocusConceptImpl()
+  protected SimpleExpressionConstraintImpl()
   {
     super();
   }
@@ -38,7 +36,7 @@ public class FocusConceptImpl extends MinimalEObjectImpl.Container implements Fo
   @Override
   protected EClass eStaticClass()
   {
-    return EclPackage.Literals.FOCUS_CONCEPT;
+    return EclPackage.Literals.SIMPLE_EXPRESSION_CONSTRAINT;
   }
 
-} //FocusConceptImpl
+} //SimpleExpressionConstraintImpl

@@ -80,9 +80,19 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createExpressionConstraintAdapter();
       }
       @Override
-      public Adapter caseFocusConcept(FocusConcept object)
+      public Adapter caseSimpleExpressionConstraint(SimpleExpressionConstraint object)
       {
-        return createFocusConceptAdapter();
+        return createSimpleExpressionConstraintAdapter();
+      }
+      @Override
+      public Adapter caseDescendantOf(DescendantOf object)
+      {
+        return createDescendantOfAdapter();
+      }
+      @Override
+      public Adapter caseDescendantOrSelfOf(DescendantOrSelfOf object)
+      {
+        return createDescendantOrSelfOfAdapter();
       }
       @Override
       public Adapter caseMemberOf(MemberOf object)
@@ -98,6 +108,11 @@ public class EclAdapterFactory extends AdapterFactoryImpl
       public Adapter caseAny(Any object)
       {
         return createAnyAdapter();
+      }
+      @Override
+      public Adapter caseNestableExpression(NestableExpression object)
+      {
+        return createNestableExpressionAdapter();
       }
       @Override
       public Adapter defaultCase(EObject object)
@@ -137,16 +152,46 @@ public class EclAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.FocusConcept <em>Focus Concept</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.SimpleExpressionConstraint <em>Simple Expression Constraint</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.FocusConcept
+   * @see com.b2international.snowowl.snomed.ecl.ecl.SimpleExpressionConstraint
    * @generated
    */
-  public Adapter createFocusConceptAdapter()
+  public Adapter createSimpleExpressionConstraintAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.DescendantOf <em>Descendant Of</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DescendantOf
+   * @generated
+   */
+  public Adapter createDescendantOfAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf <em>Descendant Or Self Of</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf
+   * @generated
+   */
+  public Adapter createDescendantOrSelfOfAdapter()
   {
     return null;
   }
@@ -192,6 +237,21 @@ public class EclAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createAnyAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.NestableExpression <em>Nestable Expression</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.NestableExpression
+   * @generated
+   */
+  public Adapter createNestableExpressionAdapter()
   {
     return null;
   }
