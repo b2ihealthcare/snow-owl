@@ -25,6 +25,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCon
 
 import java.io.StringReader;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
@@ -40,11 +41,13 @@ import com.b2international.index.query.StringPredicate;
 import com.b2international.index.query.StringSetPredicate;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
+import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
@@ -131,6 +134,40 @@ public class DefaultEclEvaluator implements EclEvaluator {
 								.should(ids(ids))
 								.should(parents(ids))
 								.should(ancestors(ids))
+								.build();
+					}
+				});
+	}
+	
+	protected Promise<Expression> eval(final AndExpressionConstraint and) {
+		return Promise.all(evaluate(and.getLeft()), evaluate(and.getRight()))
+				.then(new Function<List<Object>, Expression>() {
+					@Override
+					public Expression apply(List<Object> innerExpressions) {
+						final Expression left = (Expression) innerExpressions.get(0);
+						final Expression right = (Expression) innerExpressions.get(1);
+						final Set<String> leftIds = extractIds(left);
+						final Set<String> rightIds = extractIds(right);
+						return Expressions.builder()
+								.must(ids(leftIds))
+								.must(ids(rightIds))
+								.build();
+					}
+				});
+	}
+	
+	protected Promise<Expression> eval(final OrExpressionConstraint or) {
+		return Promise.all(evaluate(or.getLeft()), evaluate(or.getRight()))
+				.then(new Function<List<Object>, Expression>() {
+					@Override
+					public Expression apply(List<Object> innerExpressions) {
+						final Expression left = (Expression) innerExpressions.get(0);
+						final Expression right = (Expression) innerExpressions.get(1);
+						final Set<String> leftIds = extractIds(left);
+						final Set<String> rightIds = extractIds(right);
+						return Expressions.builder()
+								.should(ids(leftIds))
+								.should(ids(rightIds))
 								.build();
 					}
 				});

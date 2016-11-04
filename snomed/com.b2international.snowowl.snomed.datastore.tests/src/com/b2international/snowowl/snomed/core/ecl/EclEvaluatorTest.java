@@ -20,8 +20,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCom
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -48,6 +47,7 @@ import com.google.inject.Injector;
 public class EclEvaluatorTest extends BaseRevisionIndexTest {
 
 	private static final String ROOT_ID = Concepts.ROOT_CONCEPT;
+	private static final String OTHER_ID = Concepts.ABBREVIATION;
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
@@ -143,6 +143,28 @@ public class EclEvaluatorTest extends BaseRevisionIndexTest {
 				fail("Should throw UnsupportedOperationException until nested expression evaluation is not supported");
 			}
 		}
+	}
+	
+	@Test
+	public void selfAndOther() throws Exception {
+		// while this is logically incorrect, the grammar allows it
+		final Expression actual = evaluator.evaluate(ROOT_ID + " AND " + OTHER_ID).getSync();
+		final Expression expected = Expressions.builder()
+				.must(ids(Collections.singleton(ROOT_ID)))
+				.must(ids(Collections.singleton(OTHER_ID)))
+				.build();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void selfOrOther() throws Exception {
+		// while this is logically incorrect, the grammar allows it
+		final Expression actual = evaluator.evaluate(ROOT_ID + " OR " + OTHER_ID).getSync();
+		final Expression expected = Expressions.builder()
+				.should(ids(Collections.singleton(ROOT_ID)))
+				.should(ids(Collections.singleton(OTHER_ID)))
+				.build();
+		assertEquals(expected, actual);
 	}
 
 }
