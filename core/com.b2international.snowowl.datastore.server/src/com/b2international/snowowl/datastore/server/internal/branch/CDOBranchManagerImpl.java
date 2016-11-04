@@ -286,7 +286,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 				update(parent.getClass(), parentPath, new Function<InternalBranch, InternalBranch>() {
 					@Override
 					public InternalBranch apply(InternalBranch input) {
-						return parentBranch.withSegmentId(nextTwoSegments.getB());
+						return ((InternalCDOBasedBranch) input).withSegmentId(nextTwoSegments.getB());
 					}
 				}).execute(index);
 				return childBranch;
