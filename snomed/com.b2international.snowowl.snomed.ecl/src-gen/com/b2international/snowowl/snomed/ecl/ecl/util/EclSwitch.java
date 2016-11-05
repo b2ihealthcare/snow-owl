@@ -80,6 +80,15 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case EclPackage.CHILD_OF:
+      {
+        ChildOf childOf = (ChildOf)theEObject;
+        T result = caseChildOf(childOf);
+        if (result == null) result = caseExpressionConstraint(childOf);
+        if (result == null) result = caseNestableExpression(childOf);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case EclPackage.DESCENDANT_OF:
       {
         DescendantOf descendantOf = (DescendantOf)theEObject;
@@ -95,6 +104,15 @@ public class EclSwitch<T> extends Switch<T>
         T result = caseDescendantOrSelfOf(descendantOrSelfOf);
         if (result == null) result = caseExpressionConstraint(descendantOrSelfOf);
         if (result == null) result = caseNestableExpression(descendantOrSelfOf);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.PARENT_OF:
+      {
+        ParentOf parentOf = (ParentOf)theEObject;
+        T result = caseParentOf(parentOf);
+        if (result == null) result = caseExpressionConstraint(parentOf);
+        if (result == null) result = caseNestableExpression(parentOf);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -180,6 +198,22 @@ public class EclSwitch<T> extends Switch<T>
   }
 
   /**
+   * Returns the result of interpreting the object as an instance of '<em>Child Of</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Child Of</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseChildOf(ChildOf object)
+  {
+    return null;
+  }
+
+  /**
    * Returns the result of interpreting the object as an instance of '<em>Descendant Of</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
@@ -207,6 +241,22 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseDescendantOrSelfOf(DescendantOrSelfOf object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Parent Of</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Parent Of</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseParentOf(ParentOf object)
   {
     return null;
   }

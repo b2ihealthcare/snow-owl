@@ -64,7 +64,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getNestableExpression()
    * @generated
    */
-  int NESTABLE_EXPRESSION = 6;
+  int NESTABLE_EXPRESSION = 8;
 
   /**
    * The number of structural features of the '<em>Nestable Expression</em>' class.
@@ -95,6 +95,34 @@ public interface EclPackage extends EPackage
   int EXPRESSION_CONSTRAINT_FEATURE_COUNT = NESTABLE_EXPRESSION_FEATURE_COUNT + 0;
 
   /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ChildOfImpl <em>Child Of</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.ChildOfImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getChildOf()
+   * @generated
+   */
+  int CHILD_OF = 1;
+
+  /**
+   * The feature id for the '<em><b>Constraint</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int CHILD_OF__CONSTRAINT = EXPRESSION_CONSTRAINT_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Child Of</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int CHILD_OF_FEATURE_COUNT = EXPRESSION_CONSTRAINT_FEATURE_COUNT + 1;
+
+  /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DescendantOfImpl <em>Descendant Of</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -102,7 +130,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDescendantOf()
    * @generated
    */
-  int DESCENDANT_OF = 1;
+  int DESCENDANT_OF = 2;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -130,7 +158,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDescendantOrSelfOf()
    * @generated
    */
-  int DESCENDANT_OR_SELF_OF = 2;
+  int DESCENDANT_OR_SELF_OF = 3;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -151,6 +179,34 @@ public interface EclPackage extends EPackage
   int DESCENDANT_OR_SELF_OF_FEATURE_COUNT = EXPRESSION_CONSTRAINT_FEATURE_COUNT + 1;
 
   /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ParentOfImpl <em>Parent Of</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.ParentOfImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getParentOf()
+   * @generated
+   */
+  int PARENT_OF = 4;
+
+  /**
+   * The feature id for the '<em><b>Constraint</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PARENT_OF__CONSTRAINT = EXPRESSION_CONSTRAINT_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Parent Of</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PARENT_OF_FEATURE_COUNT = EXPRESSION_CONSTRAINT_FEATURE_COUNT + 1;
+
+  /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.MemberOfImpl <em>Member Of</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -158,7 +214,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getMemberOf()
    * @generated
    */
-  int MEMBER_OF = 3;
+  int MEMBER_OF = 5;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -186,7 +242,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getConceptReference()
    * @generated
    */
-  int CONCEPT_REFERENCE = 4;
+  int CONCEPT_REFERENCE = 6;
 
   /**
    * The feature id for the '<em><b>Id</b></em>' attribute.
@@ -223,7 +279,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAny()
    * @generated
    */
-  int ANY = 5;
+  int ANY = 7;
 
   /**
    * The number of structural features of the '<em>Any</em>' class.
@@ -242,7 +298,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getOrExpressionConstraint()
    * @generated
    */
-  int OR_EXPRESSION_CONSTRAINT = 7;
+  int OR_EXPRESSION_CONSTRAINT = 9;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -279,7 +335,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAndExpressionConstraint()
    * @generated
    */
-  int AND_EXPRESSION_CONSTRAINT = 8;
+  int AND_EXPRESSION_CONSTRAINT = 10;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -316,7 +372,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getExclusionExpressionConstraint()
    * @generated
    */
-  int EXCLUSION_EXPRESSION_CONSTRAINT = 9;
+  int EXCLUSION_EXPRESSION_CONSTRAINT = 11;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -355,6 +411,27 @@ public interface EclPackage extends EPackage
    * @generated
    */
   EClass getExpressionConstraint();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.ChildOf <em>Child Of</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Child Of</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.ChildOf
+   * @generated
+   */
+  EClass getChildOf();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.ChildOf#getConstraint <em>Constraint</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Constraint</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.ChildOf#getConstraint()
+   * @see #getChildOf()
+   * @generated
+   */
+  EReference getChildOf_Constraint();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.DescendantOf <em>Descendant Of</em>}'.
@@ -397,6 +474,27 @@ public interface EclPackage extends EPackage
    * @generated
    */
   EReference getDescendantOrSelfOf_Constraint();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.ParentOf <em>Parent Of</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Parent Of</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.ParentOf
+   * @generated
+   */
+  EClass getParentOf();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.ParentOf#getConstraint <em>Constraint</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Constraint</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.ParentOf#getConstraint()
+   * @see #getParentOf()
+   * @generated
+   */
+  EReference getParentOf_Constraint();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.MemberOf <em>Member Of</em>}'.
@@ -601,6 +699,24 @@ public interface EclPackage extends EPackage
     EClass EXPRESSION_CONSTRAINT = eINSTANCE.getExpressionConstraint();
 
     /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ChildOfImpl <em>Child Of</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.ChildOfImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getChildOf()
+     * @generated
+     */
+    EClass CHILD_OF = eINSTANCE.getChildOf();
+
+    /**
+     * The meta object literal for the '<em><b>Constraint</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference CHILD_OF__CONSTRAINT = eINSTANCE.getChildOf_Constraint();
+
+    /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DescendantOfImpl <em>Descendant Of</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -635,6 +751,24 @@ public interface EclPackage extends EPackage
      * @generated
      */
     EReference DESCENDANT_OR_SELF_OF__CONSTRAINT = eINSTANCE.getDescendantOrSelfOf_Constraint();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ParentOfImpl <em>Parent Of</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.ParentOfImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getParentOf()
+     * @generated
+     */
+    EClass PARENT_OF = eINSTANCE.getParentOf();
+
+    /**
+     * The meta object literal for the '<em><b>Constraint</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference PARENT_OF__CONSTRAINT = eINSTANCE.getParentOf_Constraint();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.MemberOfImpl <em>Member Of</em>}' class.

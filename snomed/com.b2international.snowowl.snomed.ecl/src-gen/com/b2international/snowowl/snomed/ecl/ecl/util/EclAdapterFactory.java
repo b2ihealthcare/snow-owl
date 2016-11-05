@@ -80,6 +80,11 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createExpressionConstraintAdapter();
       }
       @Override
+      public Adapter caseChildOf(ChildOf object)
+      {
+        return createChildOfAdapter();
+      }
+      @Override
       public Adapter caseDescendantOf(DescendantOf object)
       {
         return createDescendantOfAdapter();
@@ -88,6 +93,11 @@ public class EclAdapterFactory extends AdapterFactoryImpl
       public Adapter caseDescendantOrSelfOf(DescendantOrSelfOf object)
       {
         return createDescendantOrSelfOfAdapter();
+      }
+      @Override
+      public Adapter caseParentOf(ParentOf object)
+      {
+        return createParentOfAdapter();
       }
       @Override
       public Adapter caseMemberOf(MemberOf object)
@@ -162,6 +172,21 @@ public class EclAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.ChildOf <em>Child Of</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.ChildOf
+   * @generated
+   */
+  public Adapter createChildOfAdapter()
+  {
+    return null;
+  }
+
+  /**
    * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.DescendantOf <em>Descendant Of</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
@@ -187,6 +212,21 @@ public class EclAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createDescendantOrSelfOfAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.ParentOf <em>Parent Of</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.ParentOf
+   * @generated
+   */
+  public Adapter createParentOfAdapter()
   {
     return null;
   }

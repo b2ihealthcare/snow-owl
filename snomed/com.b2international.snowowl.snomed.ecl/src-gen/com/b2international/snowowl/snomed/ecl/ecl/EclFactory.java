@@ -32,6 +32,15 @@ public interface EclFactory extends EFactory
   ExpressionConstraint createExpressionConstraint();
 
   /**
+   * Returns a new object of class '<em>Child Of</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Child Of</em>'.
+   * @generated
+   */
+  ChildOf createChildOf();
+
+  /**
    * Returns a new object of class '<em>Descendant Of</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -48,6 +57,15 @@ public interface EclFactory extends EFactory
    * @generated
    */
   DescendantOrSelfOf createDescendantOrSelfOf();
+
+  /**
+   * Returns a new object of class '<em>Parent Of</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Parent Of</em>'.
+   * @generated
+   */
+  ParentOf createParentOf();
 
   /**
    * Returns a new object of class '<em>Member Of</em>'.

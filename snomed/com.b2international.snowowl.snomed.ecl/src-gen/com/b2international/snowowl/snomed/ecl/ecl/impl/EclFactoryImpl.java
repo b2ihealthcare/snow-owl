@@ -65,8 +65,10 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
     switch (eClass.getClassifierID())
     {
       case EclPackage.EXPRESSION_CONSTRAINT: return createExpressionConstraint();
+      case EclPackage.CHILD_OF: return createChildOf();
       case EclPackage.DESCENDANT_OF: return createDescendantOf();
       case EclPackage.DESCENDANT_OR_SELF_OF: return createDescendantOrSelfOf();
+      case EclPackage.PARENT_OF: return createParentOf();
       case EclPackage.MEMBER_OF: return createMemberOf();
       case EclPackage.CONCEPT_REFERENCE: return createConceptReference();
       case EclPackage.ANY: return createAny();
@@ -95,6 +97,17 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  public ChildOf createChildOf()
+  {
+    ChildOfImpl childOf = new ChildOfImpl();
+    return childOf;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public DescendantOf createDescendantOf()
   {
     DescendantOfImpl descendantOf = new DescendantOfImpl();
@@ -110,6 +123,17 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     DescendantOrSelfOfImpl descendantOrSelfOf = new DescendantOrSelfOfImpl();
     return descendantOrSelfOf;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public ParentOf createParentOf()
+  {
+    ParentOfImpl parentOf = new ParentOfImpl();
+    return parentOf;
   }
 
   /**

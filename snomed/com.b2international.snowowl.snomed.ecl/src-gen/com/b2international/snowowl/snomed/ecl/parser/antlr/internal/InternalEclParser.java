@@ -21,38 +21,40 @@ import java.util.ArrayList;
 @SuppressWarnings("all")
 public class InternalEclParser extends AbstractInternalAntlrParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "RULE_OR", "RULE_AND", "RULE_MINUS", "RULE_LESS_THAN", "RULE_DBL_LESS_THAN", "RULE_CARET", "RULE_PIPE", "RULE_WILDCARD", "RULE_ROUND_OPEN", "RULE_ROUND_CLOSE", "RULE_DIGIT_NONZERO", "RULE_ZERO", "RULE_WS", "RULE_GREATER_THAN", "RULE_DBL_GREATER_THAN", "RULE_NOT", "RULE_LETTER", "RULE_EQUAL", "RULE_PLUS", "RULE_CURLY_OPEN", "RULE_CURLY_CLOSE", "RULE_SQUARE_OPEN", "RULE_SQUARE_CLOSE", "RULE_DOT", "RULE_COLON", "RULE_COMMA", "RULE_OTHER_CHARACTER", "RULE_ML_COMMENT", "RULE_SL_COMMENT"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "RULE_OR", "RULE_AND", "RULE_MINUS", "RULE_LT_EM", "RULE_LT", "RULE_DBL_LT", "RULE_GT_EM", "RULE_CARET", "RULE_PIPE", "RULE_WILDCARD", "RULE_ROUND_OPEN", "RULE_ROUND_CLOSE", "RULE_DIGIT_NONZERO", "RULE_ZERO", "RULE_WS", "RULE_GT", "RULE_DBL_GT", "RULE_NOT", "RULE_LETTER", "RULE_EQUAL", "RULE_PLUS", "RULE_CURLY_OPEN", "RULE_CURLY_CLOSE", "RULE_SQUARE_OPEN", "RULE_SQUARE_CLOSE", "RULE_DOT", "RULE_COLON", "RULE_COMMA", "RULE_OTHER_CHARACTER", "RULE_ML_COMMENT", "RULE_SL_COMMENT"
     };
-    public static final int RULE_DIGIT_NONZERO=14;
-    public static final int RULE_CURLY_OPEN=23;
-    public static final int RULE_ROUND_CLOSE=13;
-    public static final int RULE_NOT=19;
+    public static final int RULE_DIGIT_NONZERO=16;
+    public static final int RULE_CURLY_OPEN=25;
+    public static final int RULE_ROUND_CLOSE=15;
+    public static final int RULE_DBL_GT=20;
+    public static final int RULE_GT=19;
+    public static final int RULE_NOT=21;
     public static final int RULE_AND=5;
-    public static final int RULE_SL_COMMENT=32;
-    public static final int RULE_ROUND_OPEN=12;
-    public static final int RULE_OTHER_CHARACTER=30;
-    public static final int RULE_GREATER_THAN=17;
-    public static final int RULE_PLUS=22;
+    public static final int RULE_SL_COMMENT=34;
+    public static final int RULE_ROUND_OPEN=14;
+    public static final int RULE_OTHER_CHARACTER=32;
+    public static final int RULE_DBL_LT=9;
+    public static final int RULE_PLUS=24;
     public static final int RULE_OR=4;
-    public static final int RULE_DOT=27;
+    public static final int RULE_DOT=29;
     public static final int EOF=-1;
-    public static final int RULE_LESS_THAN=7;
-    public static final int RULE_DBL_LESS_THAN=8;
-    public static final int RULE_SQUARE_CLOSE=26;
-    public static final int RULE_EQUAL=21;
-    public static final int RULE_SQUARE_OPEN=25;
-    public static final int RULE_WS=16;
-    public static final int RULE_COMMA=29;
-    public static final int RULE_CURLY_CLOSE=24;
-    public static final int RULE_ZERO=15;
-    public static final int RULE_COLON=28;
+    public static final int RULE_SQUARE_CLOSE=28;
+    public static final int RULE_EQUAL=23;
+    public static final int RULE_SQUARE_OPEN=27;
+    public static final int RULE_LT_EM=7;
+    public static final int RULE_GT_EM=10;
+    public static final int RULE_WS=18;
+    public static final int RULE_COMMA=31;
+    public static final int RULE_CURLY_CLOSE=26;
+    public static final int RULE_ZERO=17;
+    public static final int RULE_COLON=30;
     public static final int RULE_MINUS=6;
-    public static final int RULE_LETTER=20;
-    public static final int RULE_CARET=9;
-    public static final int RULE_PIPE=10;
-    public static final int RULE_ML_COMMENT=31;
-    public static final int RULE_WILDCARD=11;
-    public static final int RULE_DBL_GREATER_THAN=18;
+    public static final int RULE_LETTER=22;
+    public static final int RULE_LT=8;
+    public static final int RULE_CARET=11;
+    public static final int RULE_PIPE=12;
+    public static final int RULE_ML_COMMENT=33;
+    public static final int RULE_WILDCARD=13;
 
     // delegates
     // delegators
@@ -685,41 +687,55 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleSimpleExpressionConstraint"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:290:1: ruleSimpleExpressionConstraint returns [EObject current=null] : (this_DescendantOf_0= ruleDescendantOf | this_DescendantOrSelfOf_1= ruleDescendantOrSelfOf | this_FocusConcept_2= ruleFocusConcept ) ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:290:1: ruleSimpleExpressionConstraint returns [EObject current=null] : (this_ChildOf_0= ruleChildOf | this_DescendantOf_1= ruleDescendantOf | this_DescendantOrSelfOf_2= ruleDescendantOrSelfOf | this_ParentOf_3= ruleParentOf | this_FocusConcept_4= ruleFocusConcept ) ;
     public final EObject ruleSimpleExpressionConstraint() throws RecognitionException {
         EObject current = null;
 
-        EObject this_DescendantOf_0 = null;
+        EObject this_ChildOf_0 = null;
 
-        EObject this_DescendantOrSelfOf_1 = null;
+        EObject this_DescendantOf_1 = null;
 
-        EObject this_FocusConcept_2 = null;
+        EObject this_DescendantOrSelfOf_2 = null;
+
+        EObject this_ParentOf_3 = null;
+
+        EObject this_FocusConcept_4 = null;
 
 
          enterRule(); 
             
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:293:28: ( (this_DescendantOf_0= ruleDescendantOf | this_DescendantOrSelfOf_1= ruleDescendantOrSelfOf | this_FocusConcept_2= ruleFocusConcept ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:294:1: (this_DescendantOf_0= ruleDescendantOf | this_DescendantOrSelfOf_1= ruleDescendantOrSelfOf | this_FocusConcept_2= ruleFocusConcept )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:293:28: ( (this_ChildOf_0= ruleChildOf | this_DescendantOf_1= ruleDescendantOf | this_DescendantOrSelfOf_2= ruleDescendantOrSelfOf | this_ParentOf_3= ruleParentOf | this_FocusConcept_4= ruleFocusConcept ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:294:1: (this_ChildOf_0= ruleChildOf | this_DescendantOf_1= ruleDescendantOf | this_DescendantOrSelfOf_2= ruleDescendantOrSelfOf | this_ParentOf_3= ruleParentOf | this_FocusConcept_4= ruleFocusConcept )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:294:1: (this_DescendantOf_0= ruleDescendantOf | this_DescendantOrSelfOf_1= ruleDescendantOrSelfOf | this_FocusConcept_2= ruleFocusConcept )
-            int alt4=3;
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:294:1: (this_ChildOf_0= ruleChildOf | this_DescendantOf_1= ruleDescendantOf | this_DescendantOrSelfOf_2= ruleDescendantOrSelfOf | this_ParentOf_3= ruleParentOf | this_FocusConcept_4= ruleFocusConcept )
+            int alt4=5;
             switch ( input.LA(1) ) {
-            case RULE_LESS_THAN:
+            case RULE_LT_EM:
                 {
                 alt4=1;
                 }
                 break;
-            case RULE_DBL_LESS_THAN:
+            case RULE_LT:
                 {
                 alt4=2;
+                }
+                break;
+            case RULE_DBL_LT:
+                {
+                alt4=3;
+                }
+                break;
+            case RULE_GT_EM:
+                {
+                alt4=4;
                 }
                 break;
             case RULE_CARET:
             case RULE_WILDCARD:
             case RULE_DIGIT_NONZERO:
                 {
-                alt4=3;
+                alt4=5;
                 }
                 break;
             default:
@@ -731,54 +747,90 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
             switch (alt4) {
                 case 1 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:295:5: this_DescendantOf_0= ruleDescendantOf
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:295:5: this_ChildOf_0= ruleChildOf
                     {
                      
-                            newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getDescendantOfParserRuleCall_0()); 
+                            newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getChildOfParserRuleCall_0()); 
                         
-                    pushFollow(FOLLOW_ruleDescendantOf_in_ruleSimpleExpressionConstraint641);
-                    this_DescendantOf_0=ruleDescendantOf();
+                    pushFollow(FOLLOW_ruleChildOf_in_ruleSimpleExpressionConstraint641);
+                    this_ChildOf_0=ruleChildOf();
 
                     state._fsp--;
 
                      
-                            current = this_DescendantOf_0; 
+                            current = this_ChildOf_0; 
                             afterParserOrEnumRuleCall();
                         
 
                     }
                     break;
                 case 2 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:305:5: this_DescendantOrSelfOf_1= ruleDescendantOrSelfOf
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:305:5: this_DescendantOf_1= ruleDescendantOf
                     {
                      
-                            newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getDescendantOrSelfOfParserRuleCall_1()); 
+                            newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getDescendantOfParserRuleCall_1()); 
                         
-                    pushFollow(FOLLOW_ruleDescendantOrSelfOf_in_ruleSimpleExpressionConstraint668);
-                    this_DescendantOrSelfOf_1=ruleDescendantOrSelfOf();
+                    pushFollow(FOLLOW_ruleDescendantOf_in_ruleSimpleExpressionConstraint668);
+                    this_DescendantOf_1=ruleDescendantOf();
 
                     state._fsp--;
 
                      
-                            current = this_DescendantOrSelfOf_1; 
+                            current = this_DescendantOf_1; 
                             afterParserOrEnumRuleCall();
                         
 
                     }
                     break;
                 case 3 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:315:5: this_FocusConcept_2= ruleFocusConcept
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:315:5: this_DescendantOrSelfOf_2= ruleDescendantOrSelfOf
                     {
                      
-                            newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getFocusConceptParserRuleCall_2()); 
+                            newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getDescendantOrSelfOfParserRuleCall_2()); 
                         
-                    pushFollow(FOLLOW_ruleFocusConcept_in_ruleSimpleExpressionConstraint695);
-                    this_FocusConcept_2=ruleFocusConcept();
+                    pushFollow(FOLLOW_ruleDescendantOrSelfOf_in_ruleSimpleExpressionConstraint695);
+                    this_DescendantOrSelfOf_2=ruleDescendantOrSelfOf();
 
                     state._fsp--;
 
                      
-                            current = this_FocusConcept_2; 
+                            current = this_DescendantOrSelfOf_2; 
+                            afterParserOrEnumRuleCall();
+                        
+
+                    }
+                    break;
+                case 4 :
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:325:5: this_ParentOf_3= ruleParentOf
+                    {
+                     
+                            newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getParentOfParserRuleCall_3()); 
+                        
+                    pushFollow(FOLLOW_ruleParentOf_in_ruleSimpleExpressionConstraint722);
+                    this_ParentOf_3=ruleParentOf();
+
+                    state._fsp--;
+
+                     
+                            current = this_ParentOf_3; 
+                            afterParserOrEnumRuleCall();
+                        
+
+                    }
+                    break;
+                case 5 :
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:335:5: this_FocusConcept_4= ruleFocusConcept
+                    {
+                     
+                            newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getFocusConceptParserRuleCall_4()); 
+                        
+                    pushFollow(FOLLOW_ruleFocusConcept_in_ruleSimpleExpressionConstraint749);
+                    this_FocusConcept_4=ruleFocusConcept();
+
+                    state._fsp--;
+
+                     
+                            current = this_FocusConcept_4; 
                             afterParserOrEnumRuleCall();
                         
 
@@ -805,7 +857,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "entryRuleFocusConcept"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:331:1: entryRuleFocusConcept returns [EObject current=null] : iv_ruleFocusConcept= ruleFocusConcept EOF ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:351:1: entryRuleFocusConcept returns [EObject current=null] : iv_ruleFocusConcept= ruleFocusConcept EOF ;
     public final EObject entryRuleFocusConcept() throws RecognitionException {
         EObject current = null;
 
@@ -813,17 +865,17 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:332:2: (iv_ruleFocusConcept= ruleFocusConcept EOF )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:333:2: iv_ruleFocusConcept= ruleFocusConcept EOF
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:352:2: (iv_ruleFocusConcept= ruleFocusConcept EOF )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:353:2: iv_ruleFocusConcept= ruleFocusConcept EOF
             {
              newCompositeNode(grammarAccess.getFocusConceptRule()); 
-            pushFollow(FOLLOW_ruleFocusConcept_in_entryRuleFocusConcept730);
+            pushFollow(FOLLOW_ruleFocusConcept_in_entryRuleFocusConcept784);
             iv_ruleFocusConcept=ruleFocusConcept();
 
             state._fsp--;
 
              current =iv_ruleFocusConcept; 
-            match(input,EOF,FOLLOW_EOF_in_entryRuleFocusConcept740); 
+            match(input,EOF,FOLLOW_EOF_in_entryRuleFocusConcept794); 
 
             }
 
@@ -841,7 +893,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleFocusConcept"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:340:1: ruleFocusConcept returns [EObject current=null] : (this_MemberOf_0= ruleMemberOf | this_ConceptReference_1= ruleConceptReference | this_Any_2= ruleAny ) ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:360:1: ruleFocusConcept returns [EObject current=null] : (this_MemberOf_0= ruleMemberOf | this_ConceptReference_1= ruleConceptReference | this_Any_2= ruleAny ) ;
     public final EObject ruleFocusConcept() throws RecognitionException {
         EObject current = null;
 
@@ -855,10 +907,10 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
          enterRule(); 
             
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:343:28: ( (this_MemberOf_0= ruleMemberOf | this_ConceptReference_1= ruleConceptReference | this_Any_2= ruleAny ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:344:1: (this_MemberOf_0= ruleMemberOf | this_ConceptReference_1= ruleConceptReference | this_Any_2= ruleAny )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:363:28: ( (this_MemberOf_0= ruleMemberOf | this_ConceptReference_1= ruleConceptReference | this_Any_2= ruleAny ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:364:1: (this_MemberOf_0= ruleMemberOf | this_ConceptReference_1= ruleConceptReference | this_Any_2= ruleAny )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:344:1: (this_MemberOf_0= ruleMemberOf | this_ConceptReference_1= ruleConceptReference | this_Any_2= ruleAny )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:364:1: (this_MemberOf_0= ruleMemberOf | this_ConceptReference_1= ruleConceptReference | this_Any_2= ruleAny )
             int alt5=3;
             switch ( input.LA(1) ) {
             case RULE_CARET:
@@ -885,12 +937,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
             switch (alt5) {
                 case 1 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:345:5: this_MemberOf_0= ruleMemberOf
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:365:5: this_MemberOf_0= ruleMemberOf
                     {
                      
                             newCompositeNode(grammarAccess.getFocusConceptAccess().getMemberOfParserRuleCall_0()); 
                         
-                    pushFollow(FOLLOW_ruleMemberOf_in_ruleFocusConcept787);
+                    pushFollow(FOLLOW_ruleMemberOf_in_ruleFocusConcept841);
                     this_MemberOf_0=ruleMemberOf();
 
                     state._fsp--;
@@ -903,12 +955,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 2 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:355:5: this_ConceptReference_1= ruleConceptReference
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:375:5: this_ConceptReference_1= ruleConceptReference
                     {
                      
                             newCompositeNode(grammarAccess.getFocusConceptAccess().getConceptReferenceParserRuleCall_1()); 
                         
-                    pushFollow(FOLLOW_ruleConceptReference_in_ruleFocusConcept814);
+                    pushFollow(FOLLOW_ruleConceptReference_in_ruleFocusConcept868);
                     this_ConceptReference_1=ruleConceptReference();
 
                     state._fsp--;
@@ -921,12 +973,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 3 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:365:5: this_Any_2= ruleAny
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:385:5: this_Any_2= ruleAny
                     {
                      
                             newCompositeNode(grammarAccess.getFocusConceptAccess().getAnyParserRuleCall_2()); 
                         
-                    pushFollow(FOLLOW_ruleAny_in_ruleFocusConcept841);
+                    pushFollow(FOLLOW_ruleAny_in_ruleFocusConcept895);
                     this_Any_2=ruleAny();
 
                     state._fsp--;
@@ -958,26 +1010,26 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
     // $ANTLR end "ruleFocusConcept"
 
 
-    // $ANTLR start "entryRuleDescendantOf"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:381:1: entryRuleDescendantOf returns [EObject current=null] : iv_ruleDescendantOf= ruleDescendantOf EOF ;
-    public final EObject entryRuleDescendantOf() throws RecognitionException {
+    // $ANTLR start "entryRuleChildOf"
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:401:1: entryRuleChildOf returns [EObject current=null] : iv_ruleChildOf= ruleChildOf EOF ;
+    public final EObject entryRuleChildOf() throws RecognitionException {
         EObject current = null;
 
-        EObject iv_ruleDescendantOf = null;
+        EObject iv_ruleChildOf = null;
 
 
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:382:2: (iv_ruleDescendantOf= ruleDescendantOf EOF )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:383:2: iv_ruleDescendantOf= ruleDescendantOf EOF
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:402:2: (iv_ruleChildOf= ruleChildOf EOF )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:403:2: iv_ruleChildOf= ruleChildOf EOF
             {
-             newCompositeNode(grammarAccess.getDescendantOfRule()); 
-            pushFollow(FOLLOW_ruleDescendantOf_in_entryRuleDescendantOf876);
-            iv_ruleDescendantOf=ruleDescendantOf();
+             newCompositeNode(grammarAccess.getChildOfRule()); 
+            pushFollow(FOLLOW_ruleChildOf_in_entryRuleChildOf930);
+            iv_ruleChildOf=ruleChildOf();
 
             state._fsp--;
 
-             current =iv_ruleDescendantOf; 
-            match(input,EOF,FOLLOW_EOF_in_entryRuleDescendantOf886); 
+             current =iv_ruleChildOf; 
+            match(input,EOF,FOLLOW_EOF_in_entryRuleChildOf940); 
 
             }
 
@@ -991,15 +1043,15 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         }
         return current;
     }
-    // $ANTLR end "entryRuleDescendantOf"
+    // $ANTLR end "entryRuleChildOf"
 
 
-    // $ANTLR start "ruleDescendantOf"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:390:1: ruleDescendantOf returns [EObject current=null] : (this_LESS_THAN_0= RULE_LESS_THAN ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) ) ;
-    public final EObject ruleDescendantOf() throws RecognitionException {
+    // $ANTLR start "ruleChildOf"
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:410:1: ruleChildOf returns [EObject current=null] : (this_LT_EM_0= RULE_LT_EM ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) ) ;
+    public final EObject ruleChildOf() throws RecognitionException {
         EObject current = null;
 
-        Token this_LESS_THAN_0=null;
+        Token this_LT_EM_0=null;
         EObject lv_constraint_1_1 = null;
 
         EObject lv_constraint_1_2 = null;
@@ -1008,23 +1060,23 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
          enterRule(); 
             
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:393:28: ( (this_LESS_THAN_0= RULE_LESS_THAN ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:394:1: (this_LESS_THAN_0= RULE_LESS_THAN ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:413:28: ( (this_LT_EM_0= RULE_LT_EM ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:414:1: (this_LT_EM_0= RULE_LT_EM ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:394:1: (this_LESS_THAN_0= RULE_LESS_THAN ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:394:2: this_LESS_THAN_0= RULE_LESS_THAN ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:414:1: (this_LT_EM_0= RULE_LT_EM ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:414:2: this_LT_EM_0= RULE_LT_EM ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) )
             {
-            this_LESS_THAN_0=(Token)match(input,RULE_LESS_THAN,FOLLOW_RULE_LESS_THAN_in_ruleDescendantOf922); 
+            this_LT_EM_0=(Token)match(input,RULE_LT_EM,FOLLOW_RULE_LT_EM_in_ruleChildOf976); 
              
-                newLeafNode(this_LESS_THAN_0, grammarAccess.getDescendantOfAccess().getLESS_THANTerminalRuleCall_0()); 
+                newLeafNode(this_LT_EM_0, grammarAccess.getChildOfAccess().getLT_EMTerminalRuleCall_0()); 
                 
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:398:1: ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:399:1: ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:418:1: ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:419:1: ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:399:1: ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:400:1: (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:419:1: ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:420:1: (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:400:1: (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:420:1: (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression )
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -1042,12 +1094,174 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             }
             switch (alt6) {
                 case 1 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:401:3: lv_constraint_1_1= ruleFocusConcept
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:421:3: lv_constraint_1_1= ruleFocusConcept
+                    {
+                     
+                    	        newCompositeNode(grammarAccess.getChildOfAccess().getConstraintFocusConceptParserRuleCall_1_0_0()); 
+                    	    
+                    pushFollow(FOLLOW_ruleFocusConcept_in_ruleChildOf998);
+                    lv_constraint_1_1=ruleFocusConcept();
+
+                    state._fsp--;
+
+
+                    	        if (current==null) {
+                    	            current = createModelElementForParent(grammarAccess.getChildOfRule());
+                    	        }
+                           		set(
+                           			current, 
+                           			"constraint",
+                            		lv_constraint_1_1, 
+                            		"FocusConcept");
+                    	        afterParserOrEnumRuleCall();
+                    	    
+
+                    }
+                    break;
+                case 2 :
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:436:8: lv_constraint_1_2= ruleNestableExpression
+                    {
+                     
+                    	        newCompositeNode(grammarAccess.getChildOfAccess().getConstraintNestableExpressionParserRuleCall_1_0_1()); 
+                    	    
+                    pushFollow(FOLLOW_ruleNestableExpression_in_ruleChildOf1017);
+                    lv_constraint_1_2=ruleNestableExpression();
+
+                    state._fsp--;
+
+
+                    	        if (current==null) {
+                    	            current = createModelElementForParent(grammarAccess.getChildOfRule());
+                    	        }
+                           		set(
+                           			current, 
+                           			"constraint",
+                            		lv_constraint_1_2, 
+                            		"NestableExpression");
+                    	        afterParserOrEnumRuleCall();
+                    	    
+
+                    }
+                    break;
+
+            }
+
+
+            }
+
+
+            }
+
+
+            }
+
+
+            }
+
+             leaveRule(); 
+        }
+         
+            catch (RecognitionException re) { 
+                recover(input,re); 
+                appendSkippedTokens();
+            } 
+        finally {
+        }
+        return current;
+    }
+    // $ANTLR end "ruleChildOf"
+
+
+    // $ANTLR start "entryRuleDescendantOf"
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:462:1: entryRuleDescendantOf returns [EObject current=null] : iv_ruleDescendantOf= ruleDescendantOf EOF ;
+    public final EObject entryRuleDescendantOf() throws RecognitionException {
+        EObject current = null;
+
+        EObject iv_ruleDescendantOf = null;
+
+
+        try {
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:463:2: (iv_ruleDescendantOf= ruleDescendantOf EOF )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:464:2: iv_ruleDescendantOf= ruleDescendantOf EOF
+            {
+             newCompositeNode(grammarAccess.getDescendantOfRule()); 
+            pushFollow(FOLLOW_ruleDescendantOf_in_entryRuleDescendantOf1056);
+            iv_ruleDescendantOf=ruleDescendantOf();
+
+            state._fsp--;
+
+             current =iv_ruleDescendantOf; 
+            match(input,EOF,FOLLOW_EOF_in_entryRuleDescendantOf1066); 
+
+            }
+
+        }
+         
+            catch (RecognitionException re) { 
+                recover(input,re); 
+                appendSkippedTokens();
+            } 
+        finally {
+        }
+        return current;
+    }
+    // $ANTLR end "entryRuleDescendantOf"
+
+
+    // $ANTLR start "ruleDescendantOf"
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:471:1: ruleDescendantOf returns [EObject current=null] : (this_LT_0= RULE_LT ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) ) ;
+    public final EObject ruleDescendantOf() throws RecognitionException {
+        EObject current = null;
+
+        Token this_LT_0=null;
+        EObject lv_constraint_1_1 = null;
+
+        EObject lv_constraint_1_2 = null;
+
+
+         enterRule(); 
+            
+        try {
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:474:28: ( (this_LT_0= RULE_LT ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:475:1: (this_LT_0= RULE_LT ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) )
+            {
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:475:1: (this_LT_0= RULE_LT ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:475:2: this_LT_0= RULE_LT ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) )
+            {
+            this_LT_0=(Token)match(input,RULE_LT,FOLLOW_RULE_LT_in_ruleDescendantOf1102); 
+             
+                newLeafNode(this_LT_0, grammarAccess.getDescendantOfAccess().getLTTerminalRuleCall_0()); 
+                
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:479:1: ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:480:1: ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) )
+            {
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:480:1: ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:481:1: (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression )
+            {
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:481:1: (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression )
+            int alt7=2;
+            int LA7_0 = input.LA(1);
+
+            if ( (LA7_0==RULE_CARET||LA7_0==RULE_WILDCARD||LA7_0==RULE_DIGIT_NONZERO) ) {
+                alt7=1;
+            }
+            else if ( (LA7_0==RULE_ROUND_OPEN) ) {
+                alt7=2;
+            }
+            else {
+                NoViableAltException nvae =
+                    new NoViableAltException("", 7, 0, input);
+
+                throw nvae;
+            }
+            switch (alt7) {
+                case 1 :
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:482:3: lv_constraint_1_1= ruleFocusConcept
                     {
                      
                     	        newCompositeNode(grammarAccess.getDescendantOfAccess().getConstraintFocusConceptParserRuleCall_1_0_0()); 
                     	    
-                    pushFollow(FOLLOW_ruleFocusConcept_in_ruleDescendantOf944);
+                    pushFollow(FOLLOW_ruleFocusConcept_in_ruleDescendantOf1124);
                     lv_constraint_1_1=ruleFocusConcept();
 
                     state._fsp--;
@@ -1067,12 +1281,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 2 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:416:8: lv_constraint_1_2= ruleNestableExpression
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:497:8: lv_constraint_1_2= ruleNestableExpression
                     {
                      
                     	        newCompositeNode(grammarAccess.getDescendantOfAccess().getConstraintNestableExpressionParserRuleCall_1_0_1()); 
                     	    
-                    pushFollow(FOLLOW_ruleNestableExpression_in_ruleDescendantOf963);
+                    pushFollow(FOLLOW_ruleNestableExpression_in_ruleDescendantOf1143);
                     lv_constraint_1_2=ruleNestableExpression();
 
                     state._fsp--;
@@ -1121,7 +1335,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "entryRuleDescendantOrSelfOf"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:442:1: entryRuleDescendantOrSelfOf returns [EObject current=null] : iv_ruleDescendantOrSelfOf= ruleDescendantOrSelfOf EOF ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:523:1: entryRuleDescendantOrSelfOf returns [EObject current=null] : iv_ruleDescendantOrSelfOf= ruleDescendantOrSelfOf EOF ;
     public final EObject entryRuleDescendantOrSelfOf() throws RecognitionException {
         EObject current = null;
 
@@ -1129,17 +1343,17 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:443:2: (iv_ruleDescendantOrSelfOf= ruleDescendantOrSelfOf EOF )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:444:2: iv_ruleDescendantOrSelfOf= ruleDescendantOrSelfOf EOF
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:524:2: (iv_ruleDescendantOrSelfOf= ruleDescendantOrSelfOf EOF )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:525:2: iv_ruleDescendantOrSelfOf= ruleDescendantOrSelfOf EOF
             {
              newCompositeNode(grammarAccess.getDescendantOrSelfOfRule()); 
-            pushFollow(FOLLOW_ruleDescendantOrSelfOf_in_entryRuleDescendantOrSelfOf1002);
+            pushFollow(FOLLOW_ruleDescendantOrSelfOf_in_entryRuleDescendantOrSelfOf1182);
             iv_ruleDescendantOrSelfOf=ruleDescendantOrSelfOf();
 
             state._fsp--;
 
              current =iv_ruleDescendantOrSelfOf; 
-            match(input,EOF,FOLLOW_EOF_in_entryRuleDescendantOrSelfOf1012); 
+            match(input,EOF,FOLLOW_EOF_in_entryRuleDescendantOrSelfOf1192); 
 
             }
 
@@ -1157,11 +1371,11 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleDescendantOrSelfOf"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:451:1: ruleDescendantOrSelfOf returns [EObject current=null] : (this_DBL_LESS_THAN_0= RULE_DBL_LESS_THAN ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) ) ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:532:1: ruleDescendantOrSelfOf returns [EObject current=null] : (this_DBL_LT_0= RULE_DBL_LT ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) ) ;
     public final EObject ruleDescendantOrSelfOf() throws RecognitionException {
         EObject current = null;
 
-        Token this_DBL_LESS_THAN_0=null;
+        Token this_DBL_LT_0=null;
         EObject lv_constraint_1_1 = null;
 
         EObject lv_constraint_1_2 = null;
@@ -1170,46 +1384,46 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
          enterRule(); 
             
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:454:28: ( (this_DBL_LESS_THAN_0= RULE_DBL_LESS_THAN ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:455:1: (this_DBL_LESS_THAN_0= RULE_DBL_LESS_THAN ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:535:28: ( (this_DBL_LT_0= RULE_DBL_LT ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:536:1: (this_DBL_LT_0= RULE_DBL_LT ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:455:1: (this_DBL_LESS_THAN_0= RULE_DBL_LESS_THAN ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:455:2: this_DBL_LESS_THAN_0= RULE_DBL_LESS_THAN ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:536:1: (this_DBL_LT_0= RULE_DBL_LT ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:536:2: this_DBL_LT_0= RULE_DBL_LT ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) )
             {
-            this_DBL_LESS_THAN_0=(Token)match(input,RULE_DBL_LESS_THAN,FOLLOW_RULE_DBL_LESS_THAN_in_ruleDescendantOrSelfOf1048); 
+            this_DBL_LT_0=(Token)match(input,RULE_DBL_LT,FOLLOW_RULE_DBL_LT_in_ruleDescendantOrSelfOf1228); 
              
-                newLeafNode(this_DBL_LESS_THAN_0, grammarAccess.getDescendantOrSelfOfAccess().getDBL_LESS_THANTerminalRuleCall_0()); 
+                newLeafNode(this_DBL_LT_0, grammarAccess.getDescendantOrSelfOfAccess().getDBL_LTTerminalRuleCall_0()); 
                 
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:459:1: ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:460:1: ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:540:1: ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:541:1: ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:460:1: ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:461:1: (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:541:1: ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:542:1: (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:461:1: (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression )
-            int alt7=2;
-            int LA7_0 = input.LA(1);
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:542:1: (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression )
+            int alt8=2;
+            int LA8_0 = input.LA(1);
 
-            if ( (LA7_0==RULE_CARET||LA7_0==RULE_WILDCARD||LA7_0==RULE_DIGIT_NONZERO) ) {
-                alt7=1;
+            if ( (LA8_0==RULE_CARET||LA8_0==RULE_WILDCARD||LA8_0==RULE_DIGIT_NONZERO) ) {
+                alt8=1;
             }
-            else if ( (LA7_0==RULE_ROUND_OPEN) ) {
-                alt7=2;
+            else if ( (LA8_0==RULE_ROUND_OPEN) ) {
+                alt8=2;
             }
             else {
                 NoViableAltException nvae =
-                    new NoViableAltException("", 7, 0, input);
+                    new NoViableAltException("", 8, 0, input);
 
                 throw nvae;
             }
-            switch (alt7) {
+            switch (alt8) {
                 case 1 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:462:3: lv_constraint_1_1= ruleFocusConcept
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:543:3: lv_constraint_1_1= ruleFocusConcept
                     {
                      
                     	        newCompositeNode(grammarAccess.getDescendantOrSelfOfAccess().getConstraintFocusConceptParserRuleCall_1_0_0()); 
                     	    
-                    pushFollow(FOLLOW_ruleFocusConcept_in_ruleDescendantOrSelfOf1070);
+                    pushFollow(FOLLOW_ruleFocusConcept_in_ruleDescendantOrSelfOf1250);
                     lv_constraint_1_1=ruleFocusConcept();
 
                     state._fsp--;
@@ -1229,12 +1443,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 2 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:477:8: lv_constraint_1_2= ruleNestableExpression
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:558:8: lv_constraint_1_2= ruleNestableExpression
                     {
                      
                     	        newCompositeNode(grammarAccess.getDescendantOrSelfOfAccess().getConstraintNestableExpressionParserRuleCall_1_0_1()); 
                     	    
-                    pushFollow(FOLLOW_ruleNestableExpression_in_ruleDescendantOrSelfOf1089);
+                    pushFollow(FOLLOW_ruleNestableExpression_in_ruleDescendantOrSelfOf1269);
                     lv_constraint_1_2=ruleNestableExpression();
 
                     state._fsp--;
@@ -1282,8 +1496,170 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
     // $ANTLR end "ruleDescendantOrSelfOf"
 
 
+    // $ANTLR start "entryRuleParentOf"
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:584:1: entryRuleParentOf returns [EObject current=null] : iv_ruleParentOf= ruleParentOf EOF ;
+    public final EObject entryRuleParentOf() throws RecognitionException {
+        EObject current = null;
+
+        EObject iv_ruleParentOf = null;
+
+
+        try {
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:585:2: (iv_ruleParentOf= ruleParentOf EOF )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:586:2: iv_ruleParentOf= ruleParentOf EOF
+            {
+             newCompositeNode(grammarAccess.getParentOfRule()); 
+            pushFollow(FOLLOW_ruleParentOf_in_entryRuleParentOf1308);
+            iv_ruleParentOf=ruleParentOf();
+
+            state._fsp--;
+
+             current =iv_ruleParentOf; 
+            match(input,EOF,FOLLOW_EOF_in_entryRuleParentOf1318); 
+
+            }
+
+        }
+         
+            catch (RecognitionException re) { 
+                recover(input,re); 
+                appendSkippedTokens();
+            } 
+        finally {
+        }
+        return current;
+    }
+    // $ANTLR end "entryRuleParentOf"
+
+
+    // $ANTLR start "ruleParentOf"
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:593:1: ruleParentOf returns [EObject current=null] : (this_GT_EM_0= RULE_GT_EM ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) ) ;
+    public final EObject ruleParentOf() throws RecognitionException {
+        EObject current = null;
+
+        Token this_GT_EM_0=null;
+        EObject lv_constraint_1_1 = null;
+
+        EObject lv_constraint_1_2 = null;
+
+
+         enterRule(); 
+            
+        try {
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:596:28: ( (this_GT_EM_0= RULE_GT_EM ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:597:1: (this_GT_EM_0= RULE_GT_EM ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) )
+            {
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:597:1: (this_GT_EM_0= RULE_GT_EM ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:597:2: this_GT_EM_0= RULE_GT_EM ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) )
+            {
+            this_GT_EM_0=(Token)match(input,RULE_GT_EM,FOLLOW_RULE_GT_EM_in_ruleParentOf1354); 
+             
+                newLeafNode(this_GT_EM_0, grammarAccess.getParentOfAccess().getGT_EMTerminalRuleCall_0()); 
+                
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:601:1: ( ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:602:1: ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) )
+            {
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:602:1: ( (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:603:1: (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression )
+            {
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:603:1: (lv_constraint_1_1= ruleFocusConcept | lv_constraint_1_2= ruleNestableExpression )
+            int alt9=2;
+            int LA9_0 = input.LA(1);
+
+            if ( (LA9_0==RULE_CARET||LA9_0==RULE_WILDCARD||LA9_0==RULE_DIGIT_NONZERO) ) {
+                alt9=1;
+            }
+            else if ( (LA9_0==RULE_ROUND_OPEN) ) {
+                alt9=2;
+            }
+            else {
+                NoViableAltException nvae =
+                    new NoViableAltException("", 9, 0, input);
+
+                throw nvae;
+            }
+            switch (alt9) {
+                case 1 :
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:604:3: lv_constraint_1_1= ruleFocusConcept
+                    {
+                     
+                    	        newCompositeNode(grammarAccess.getParentOfAccess().getConstraintFocusConceptParserRuleCall_1_0_0()); 
+                    	    
+                    pushFollow(FOLLOW_ruleFocusConcept_in_ruleParentOf1376);
+                    lv_constraint_1_1=ruleFocusConcept();
+
+                    state._fsp--;
+
+
+                    	        if (current==null) {
+                    	            current = createModelElementForParent(grammarAccess.getParentOfRule());
+                    	        }
+                           		set(
+                           			current, 
+                           			"constraint",
+                            		lv_constraint_1_1, 
+                            		"FocusConcept");
+                    	        afterParserOrEnumRuleCall();
+                    	    
+
+                    }
+                    break;
+                case 2 :
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:619:8: lv_constraint_1_2= ruleNestableExpression
+                    {
+                     
+                    	        newCompositeNode(grammarAccess.getParentOfAccess().getConstraintNestableExpressionParserRuleCall_1_0_1()); 
+                    	    
+                    pushFollow(FOLLOW_ruleNestableExpression_in_ruleParentOf1395);
+                    lv_constraint_1_2=ruleNestableExpression();
+
+                    state._fsp--;
+
+
+                    	        if (current==null) {
+                    	            current = createModelElementForParent(grammarAccess.getParentOfRule());
+                    	        }
+                           		set(
+                           			current, 
+                           			"constraint",
+                            		lv_constraint_1_2, 
+                            		"NestableExpression");
+                    	        afterParserOrEnumRuleCall();
+                    	    
+
+                    }
+                    break;
+
+            }
+
+
+            }
+
+
+            }
+
+
+            }
+
+
+            }
+
+             leaveRule(); 
+        }
+         
+            catch (RecognitionException re) { 
+                recover(input,re); 
+                appendSkippedTokens();
+            } 
+        finally {
+        }
+        return current;
+    }
+    // $ANTLR end "ruleParentOf"
+
+
     // $ANTLR start "entryRuleMemberOf"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:503:1: entryRuleMemberOf returns [EObject current=null] : iv_ruleMemberOf= ruleMemberOf EOF ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:645:1: entryRuleMemberOf returns [EObject current=null] : iv_ruleMemberOf= ruleMemberOf EOF ;
     public final EObject entryRuleMemberOf() throws RecognitionException {
         EObject current = null;
 
@@ -1291,17 +1667,17 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:504:2: (iv_ruleMemberOf= ruleMemberOf EOF )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:505:2: iv_ruleMemberOf= ruleMemberOf EOF
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:646:2: (iv_ruleMemberOf= ruleMemberOf EOF )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:647:2: iv_ruleMemberOf= ruleMemberOf EOF
             {
              newCompositeNode(grammarAccess.getMemberOfRule()); 
-            pushFollow(FOLLOW_ruleMemberOf_in_entryRuleMemberOf1128);
+            pushFollow(FOLLOW_ruleMemberOf_in_entryRuleMemberOf1434);
             iv_ruleMemberOf=ruleMemberOf();
 
             state._fsp--;
 
              current =iv_ruleMemberOf; 
-            match(input,EOF,FOLLOW_EOF_in_entryRuleMemberOf1138); 
+            match(input,EOF,FOLLOW_EOF_in_entryRuleMemberOf1444); 
 
             }
 
@@ -1319,7 +1695,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleMemberOf"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:512:1: ruleMemberOf returns [EObject current=null] : (this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny ) ) ) ) ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:654:1: ruleMemberOf returns [EObject current=null] : (this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny ) ) ) ) ;
     public final EObject ruleMemberOf() throws RecognitionException {
         EObject current = null;
 
@@ -1332,46 +1708,46 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
          enterRule(); 
             
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:515:28: ( (this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny ) ) ) ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:516:1: (this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny ) ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:657:28: ( (this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny ) ) ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:658:1: (this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny ) ) ) )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:516:1: (this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny ) ) ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:516:2: this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:658:1: (this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny ) ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:658:2: this_CARET_0= RULE_CARET ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny ) ) )
             {
-            this_CARET_0=(Token)match(input,RULE_CARET,FOLLOW_RULE_CARET_in_ruleMemberOf1174); 
+            this_CARET_0=(Token)match(input,RULE_CARET,FOLLOW_RULE_CARET_in_ruleMemberOf1480); 
              
                 newLeafNode(this_CARET_0, grammarAccess.getMemberOfAccess().getCARETTerminalRuleCall_0()); 
                 
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:520:1: ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny ) ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:521:1: ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:662:1: ( ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny ) ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:663:1: ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny ) )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:521:1: ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:522:1: (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:663:1: ( (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:664:1: (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:522:1: (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny )
-            int alt8=2;
-            int LA8_0 = input.LA(1);
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:664:1: (lv_constraint_1_1= ruleConceptReference | lv_constraint_1_2= ruleAny )
+            int alt10=2;
+            int LA10_0 = input.LA(1);
 
-            if ( (LA8_0==RULE_DIGIT_NONZERO) ) {
-                alt8=1;
+            if ( (LA10_0==RULE_DIGIT_NONZERO) ) {
+                alt10=1;
             }
-            else if ( (LA8_0==RULE_WILDCARD) ) {
-                alt8=2;
+            else if ( (LA10_0==RULE_WILDCARD) ) {
+                alt10=2;
             }
             else {
                 NoViableAltException nvae =
-                    new NoViableAltException("", 8, 0, input);
+                    new NoViableAltException("", 10, 0, input);
 
                 throw nvae;
             }
-            switch (alt8) {
+            switch (alt10) {
                 case 1 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:523:3: lv_constraint_1_1= ruleConceptReference
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:665:3: lv_constraint_1_1= ruleConceptReference
                     {
                      
                     	        newCompositeNode(grammarAccess.getMemberOfAccess().getConstraintConceptReferenceParserRuleCall_1_0_0()); 
                     	    
-                    pushFollow(FOLLOW_ruleConceptReference_in_ruleMemberOf1196);
+                    pushFollow(FOLLOW_ruleConceptReference_in_ruleMemberOf1502);
                     lv_constraint_1_1=ruleConceptReference();
 
                     state._fsp--;
@@ -1391,12 +1767,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 2 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:538:8: lv_constraint_1_2= ruleAny
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:680:8: lv_constraint_1_2= ruleAny
                     {
                      
                     	        newCompositeNode(grammarAccess.getMemberOfAccess().getConstraintAnyParserRuleCall_1_0_1()); 
                     	    
-                    pushFollow(FOLLOW_ruleAny_in_ruleMemberOf1215);
+                    pushFollow(FOLLOW_ruleAny_in_ruleMemberOf1521);
                     lv_constraint_1_2=ruleAny();
 
                     state._fsp--;
@@ -1445,7 +1821,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "entryRuleConceptReference"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:564:1: entryRuleConceptReference returns [EObject current=null] : iv_ruleConceptReference= ruleConceptReference EOF ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:706:1: entryRuleConceptReference returns [EObject current=null] : iv_ruleConceptReference= ruleConceptReference EOF ;
     public final EObject entryRuleConceptReference() throws RecognitionException {
         EObject current = null;
 
@@ -1453,17 +1829,17 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:565:2: (iv_ruleConceptReference= ruleConceptReference EOF )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:566:2: iv_ruleConceptReference= ruleConceptReference EOF
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:707:2: (iv_ruleConceptReference= ruleConceptReference EOF )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:708:2: iv_ruleConceptReference= ruleConceptReference EOF
             {
              newCompositeNode(grammarAccess.getConceptReferenceRule()); 
-            pushFollow(FOLLOW_ruleConceptReference_in_entryRuleConceptReference1254);
+            pushFollow(FOLLOW_ruleConceptReference_in_entryRuleConceptReference1560);
             iv_ruleConceptReference=ruleConceptReference();
 
             state._fsp--;
 
              current =iv_ruleConceptReference; 
-            match(input,EOF,FOLLOW_EOF_in_entryRuleConceptReference1264); 
+            match(input,EOF,FOLLOW_EOF_in_entryRuleConceptReference1570); 
 
             }
 
@@ -1481,7 +1857,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleConceptReference"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:573:1: ruleConceptReference returns [EObject current=null] : ( ( (lv_id_0_0= ruleSnomedIdentifier ) ) (this_PIPE_1= RULE_PIPE ( (lv_term_2_0= ruleTerm ) ) this_PIPE_3= RULE_PIPE )? ) ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:715:1: ruleConceptReference returns [EObject current=null] : ( ( (lv_id_0_0= ruleSnomedIdentifier ) ) (this_PIPE_1= RULE_PIPE ( (lv_term_2_0= ruleTerm ) ) this_PIPE_3= RULE_PIPE )? ) ;
     public final EObject ruleConceptReference() throws RecognitionException {
         EObject current = null;
 
@@ -1495,22 +1871,22 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
          enterRule(); 
             
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:576:28: ( ( ( (lv_id_0_0= ruleSnomedIdentifier ) ) (this_PIPE_1= RULE_PIPE ( (lv_term_2_0= ruleTerm ) ) this_PIPE_3= RULE_PIPE )? ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:577:1: ( ( (lv_id_0_0= ruleSnomedIdentifier ) ) (this_PIPE_1= RULE_PIPE ( (lv_term_2_0= ruleTerm ) ) this_PIPE_3= RULE_PIPE )? )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:718:28: ( ( ( (lv_id_0_0= ruleSnomedIdentifier ) ) (this_PIPE_1= RULE_PIPE ( (lv_term_2_0= ruleTerm ) ) this_PIPE_3= RULE_PIPE )? ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:719:1: ( ( (lv_id_0_0= ruleSnomedIdentifier ) ) (this_PIPE_1= RULE_PIPE ( (lv_term_2_0= ruleTerm ) ) this_PIPE_3= RULE_PIPE )? )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:577:1: ( ( (lv_id_0_0= ruleSnomedIdentifier ) ) (this_PIPE_1= RULE_PIPE ( (lv_term_2_0= ruleTerm ) ) this_PIPE_3= RULE_PIPE )? )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:577:2: ( (lv_id_0_0= ruleSnomedIdentifier ) ) (this_PIPE_1= RULE_PIPE ( (lv_term_2_0= ruleTerm ) ) this_PIPE_3= RULE_PIPE )?
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:719:1: ( ( (lv_id_0_0= ruleSnomedIdentifier ) ) (this_PIPE_1= RULE_PIPE ( (lv_term_2_0= ruleTerm ) ) this_PIPE_3= RULE_PIPE )? )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:719:2: ( (lv_id_0_0= ruleSnomedIdentifier ) ) (this_PIPE_1= RULE_PIPE ( (lv_term_2_0= ruleTerm ) ) this_PIPE_3= RULE_PIPE )?
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:577:2: ( (lv_id_0_0= ruleSnomedIdentifier ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:578:1: (lv_id_0_0= ruleSnomedIdentifier )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:719:2: ( (lv_id_0_0= ruleSnomedIdentifier ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:720:1: (lv_id_0_0= ruleSnomedIdentifier )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:578:1: (lv_id_0_0= ruleSnomedIdentifier )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:579:3: lv_id_0_0= ruleSnomedIdentifier
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:720:1: (lv_id_0_0= ruleSnomedIdentifier )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:721:3: lv_id_0_0= ruleSnomedIdentifier
             {
              
             	        newCompositeNode(grammarAccess.getConceptReferenceAccess().getIdSnomedIdentifierParserRuleCall_0_0()); 
             	    
-            pushFollow(FOLLOW_ruleSnomedIdentifier_in_ruleConceptReference1310);
+            pushFollow(FOLLOW_ruleSnomedIdentifier_in_ruleConceptReference1616);
             lv_id_0_0=ruleSnomedIdentifier();
 
             state._fsp--;
@@ -1532,31 +1908,31 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
             }
 
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:595:2: (this_PIPE_1= RULE_PIPE ( (lv_term_2_0= ruleTerm ) ) this_PIPE_3= RULE_PIPE )?
-            int alt9=2;
-            int LA9_0 = input.LA(1);
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:737:2: (this_PIPE_1= RULE_PIPE ( (lv_term_2_0= ruleTerm ) ) this_PIPE_3= RULE_PIPE )?
+            int alt11=2;
+            int LA11_0 = input.LA(1);
 
-            if ( (LA9_0==RULE_PIPE) ) {
-                alt9=1;
+            if ( (LA11_0==RULE_PIPE) ) {
+                alt11=1;
             }
-            switch (alt9) {
+            switch (alt11) {
                 case 1 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:595:3: this_PIPE_1= RULE_PIPE ( (lv_term_2_0= ruleTerm ) ) this_PIPE_3= RULE_PIPE
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:737:3: this_PIPE_1= RULE_PIPE ( (lv_term_2_0= ruleTerm ) ) this_PIPE_3= RULE_PIPE
                     {
-                    this_PIPE_1=(Token)match(input,RULE_PIPE,FOLLOW_RULE_PIPE_in_ruleConceptReference1322); 
+                    this_PIPE_1=(Token)match(input,RULE_PIPE,FOLLOW_RULE_PIPE_in_ruleConceptReference1628); 
                      
                         newLeafNode(this_PIPE_1, grammarAccess.getConceptReferenceAccess().getPIPETerminalRuleCall_1_0()); 
                         
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:599:1: ( (lv_term_2_0= ruleTerm ) )
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:600:1: (lv_term_2_0= ruleTerm )
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:741:1: ( (lv_term_2_0= ruleTerm ) )
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:742:1: (lv_term_2_0= ruleTerm )
                     {
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:600:1: (lv_term_2_0= ruleTerm )
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:601:3: lv_term_2_0= ruleTerm
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:742:1: (lv_term_2_0= ruleTerm )
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:743:3: lv_term_2_0= ruleTerm
                     {
                      
                     	        newCompositeNode(grammarAccess.getConceptReferenceAccess().getTermTermParserRuleCall_1_1_0()); 
                     	    
-                    pushFollow(FOLLOW_ruleTerm_in_ruleConceptReference1342);
+                    pushFollow(FOLLOW_ruleTerm_in_ruleConceptReference1648);
                     lv_term_2_0=ruleTerm();
 
                     state._fsp--;
@@ -1578,7 +1954,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
                     }
 
-                    this_PIPE_3=(Token)match(input,RULE_PIPE,FOLLOW_RULE_PIPE_in_ruleConceptReference1353); 
+                    this_PIPE_3=(Token)match(input,RULE_PIPE,FOLLOW_RULE_PIPE_in_ruleConceptReference1659); 
                      
                         newLeafNode(this_PIPE_3, grammarAccess.getConceptReferenceAccess().getPIPETerminalRuleCall_1_2()); 
                         
@@ -1609,7 +1985,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "entryRuleAny"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:629:1: entryRuleAny returns [EObject current=null] : iv_ruleAny= ruleAny EOF ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:771:1: entryRuleAny returns [EObject current=null] : iv_ruleAny= ruleAny EOF ;
     public final EObject entryRuleAny() throws RecognitionException {
         EObject current = null;
 
@@ -1617,17 +1993,17 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:630:2: (iv_ruleAny= ruleAny EOF )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:631:2: iv_ruleAny= ruleAny EOF
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:772:2: (iv_ruleAny= ruleAny EOF )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:773:2: iv_ruleAny= ruleAny EOF
             {
              newCompositeNode(grammarAccess.getAnyRule()); 
-            pushFollow(FOLLOW_ruleAny_in_entryRuleAny1390);
+            pushFollow(FOLLOW_ruleAny_in_entryRuleAny1696);
             iv_ruleAny=ruleAny();
 
             state._fsp--;
 
              current =iv_ruleAny; 
-            match(input,EOF,FOLLOW_EOF_in_entryRuleAny1400); 
+            match(input,EOF,FOLLOW_EOF_in_entryRuleAny1706); 
 
             }
 
@@ -1645,7 +2021,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleAny"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:638:1: ruleAny returns [EObject current=null] : (this_WILDCARD_0= RULE_WILDCARD () ) ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:780:1: ruleAny returns [EObject current=null] : (this_WILDCARD_0= RULE_WILDCARD () ) ;
     public final EObject ruleAny() throws RecognitionException {
         EObject current = null;
 
@@ -1654,18 +2030,18 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
          enterRule(); 
             
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:641:28: ( (this_WILDCARD_0= RULE_WILDCARD () ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:642:1: (this_WILDCARD_0= RULE_WILDCARD () )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:783:28: ( (this_WILDCARD_0= RULE_WILDCARD () ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:784:1: (this_WILDCARD_0= RULE_WILDCARD () )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:642:1: (this_WILDCARD_0= RULE_WILDCARD () )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:642:2: this_WILDCARD_0= RULE_WILDCARD ()
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:784:1: (this_WILDCARD_0= RULE_WILDCARD () )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:784:2: this_WILDCARD_0= RULE_WILDCARD ()
             {
-            this_WILDCARD_0=(Token)match(input,RULE_WILDCARD,FOLLOW_RULE_WILDCARD_in_ruleAny1436); 
+            this_WILDCARD_0=(Token)match(input,RULE_WILDCARD,FOLLOW_RULE_WILDCARD_in_ruleAny1742); 
              
                 newLeafNode(this_WILDCARD_0, grammarAccess.getAnyAccess().getWILDCARDTerminalRuleCall_0()); 
                 
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:646:1: ()
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:647:5: 
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:788:1: ()
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:789:5: 
             {
 
                     current = forceCreateModelElement(
@@ -1696,7 +2072,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "entryRuleNestableExpression"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:660:1: entryRuleNestableExpression returns [EObject current=null] : iv_ruleNestableExpression= ruleNestableExpression EOF ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:802:1: entryRuleNestableExpression returns [EObject current=null] : iv_ruleNestableExpression= ruleNestableExpression EOF ;
     public final EObject entryRuleNestableExpression() throws RecognitionException {
         EObject current = null;
 
@@ -1704,17 +2080,17 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:661:2: (iv_ruleNestableExpression= ruleNestableExpression EOF )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:662:2: iv_ruleNestableExpression= ruleNestableExpression EOF
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:803:2: (iv_ruleNestableExpression= ruleNestableExpression EOF )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:804:2: iv_ruleNestableExpression= ruleNestableExpression EOF
             {
              newCompositeNode(grammarAccess.getNestableExpressionRule()); 
-            pushFollow(FOLLOW_ruleNestableExpression_in_entryRuleNestableExpression1480);
+            pushFollow(FOLLOW_ruleNestableExpression_in_entryRuleNestableExpression1786);
             iv_ruleNestableExpression=ruleNestableExpression();
 
             state._fsp--;
 
              current =iv_ruleNestableExpression; 
-            match(input,EOF,FOLLOW_EOF_in_entryRuleNestableExpression1490); 
+            match(input,EOF,FOLLOW_EOF_in_entryRuleNestableExpression1796); 
 
             }
 
@@ -1732,7 +2108,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleNestableExpression"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:669:1: ruleNestableExpression returns [EObject current=null] : (this_ROUND_OPEN_0= RULE_ROUND_OPEN this_ExpressionConstraint_1= ruleExpressionConstraint this_ROUND_CLOSE_2= RULE_ROUND_CLOSE ) ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:811:1: ruleNestableExpression returns [EObject current=null] : (this_ROUND_OPEN_0= RULE_ROUND_OPEN this_ExpressionConstraint_1= ruleExpressionConstraint this_ROUND_CLOSE_2= RULE_ROUND_CLOSE ) ;
     public final EObject ruleNestableExpression() throws RecognitionException {
         EObject current = null;
 
@@ -1744,20 +2120,20 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
          enterRule(); 
             
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:672:28: ( (this_ROUND_OPEN_0= RULE_ROUND_OPEN this_ExpressionConstraint_1= ruleExpressionConstraint this_ROUND_CLOSE_2= RULE_ROUND_CLOSE ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:673:1: (this_ROUND_OPEN_0= RULE_ROUND_OPEN this_ExpressionConstraint_1= ruleExpressionConstraint this_ROUND_CLOSE_2= RULE_ROUND_CLOSE )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:814:28: ( (this_ROUND_OPEN_0= RULE_ROUND_OPEN this_ExpressionConstraint_1= ruleExpressionConstraint this_ROUND_CLOSE_2= RULE_ROUND_CLOSE ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:815:1: (this_ROUND_OPEN_0= RULE_ROUND_OPEN this_ExpressionConstraint_1= ruleExpressionConstraint this_ROUND_CLOSE_2= RULE_ROUND_CLOSE )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:673:1: (this_ROUND_OPEN_0= RULE_ROUND_OPEN this_ExpressionConstraint_1= ruleExpressionConstraint this_ROUND_CLOSE_2= RULE_ROUND_CLOSE )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:673:2: this_ROUND_OPEN_0= RULE_ROUND_OPEN this_ExpressionConstraint_1= ruleExpressionConstraint this_ROUND_CLOSE_2= RULE_ROUND_CLOSE
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:815:1: (this_ROUND_OPEN_0= RULE_ROUND_OPEN this_ExpressionConstraint_1= ruleExpressionConstraint this_ROUND_CLOSE_2= RULE_ROUND_CLOSE )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:815:2: this_ROUND_OPEN_0= RULE_ROUND_OPEN this_ExpressionConstraint_1= ruleExpressionConstraint this_ROUND_CLOSE_2= RULE_ROUND_CLOSE
             {
-            this_ROUND_OPEN_0=(Token)match(input,RULE_ROUND_OPEN,FOLLOW_RULE_ROUND_OPEN_in_ruleNestableExpression1526); 
+            this_ROUND_OPEN_0=(Token)match(input,RULE_ROUND_OPEN,FOLLOW_RULE_ROUND_OPEN_in_ruleNestableExpression1832); 
              
                 newLeafNode(this_ROUND_OPEN_0, grammarAccess.getNestableExpressionAccess().getROUND_OPENTerminalRuleCall_0()); 
                 
              
                     newCompositeNode(grammarAccess.getNestableExpressionAccess().getExpressionConstraintParserRuleCall_1()); 
                 
-            pushFollow(FOLLOW_ruleExpressionConstraint_in_ruleNestableExpression1547);
+            pushFollow(FOLLOW_ruleExpressionConstraint_in_ruleNestableExpression1853);
             this_ExpressionConstraint_1=ruleExpressionConstraint();
 
             state._fsp--;
@@ -1766,7 +2142,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     current = this_ExpressionConstraint_1; 
                     afterParserOrEnumRuleCall();
                 
-            this_ROUND_CLOSE_2=(Token)match(input,RULE_ROUND_CLOSE,FOLLOW_RULE_ROUND_CLOSE_in_ruleNestableExpression1557); 
+            this_ROUND_CLOSE_2=(Token)match(input,RULE_ROUND_CLOSE,FOLLOW_RULE_ROUND_CLOSE_in_ruleNestableExpression1863); 
              
                 newLeafNode(this_ROUND_CLOSE_2, grammarAccess.getNestableExpressionAccess().getROUND_CLOSETerminalRuleCall_2()); 
                 
@@ -1791,7 +2167,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "entryRuleSnomedIdentifier"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:698:1: entryRuleSnomedIdentifier returns [String current=null] : iv_ruleSnomedIdentifier= ruleSnomedIdentifier EOF ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:840:1: entryRuleSnomedIdentifier returns [String current=null] : iv_ruleSnomedIdentifier= ruleSnomedIdentifier EOF ;
     public final String entryRuleSnomedIdentifier() throws RecognitionException {
         String current = null;
 
@@ -1802,17 +2178,17 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         		HiddenTokens myHiddenTokenState = ((XtextTokenStream)input).setHiddenTokens();
         	
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:702:2: (iv_ruleSnomedIdentifier= ruleSnomedIdentifier EOF )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:703:2: iv_ruleSnomedIdentifier= ruleSnomedIdentifier EOF
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:844:2: (iv_ruleSnomedIdentifier= ruleSnomedIdentifier EOF )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:845:2: iv_ruleSnomedIdentifier= ruleSnomedIdentifier EOF
             {
              newCompositeNode(grammarAccess.getSnomedIdentifierRule()); 
-            pushFollow(FOLLOW_ruleSnomedIdentifier_in_entryRuleSnomedIdentifier1599);
+            pushFollow(FOLLOW_ruleSnomedIdentifier_in_entryRuleSnomedIdentifier1905);
             iv_ruleSnomedIdentifier=ruleSnomedIdentifier();
 
             state._fsp--;
 
              current =iv_ruleSnomedIdentifier.getText(); 
-            match(input,EOF,FOLLOW_EOF_in_entryRuleSnomedIdentifier1610); 
+            match(input,EOF,FOLLOW_EOF_in_entryRuleSnomedIdentifier1916); 
 
             }
 
@@ -1833,7 +2209,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleSnomedIdentifier"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:713:1: ruleSnomedIdentifier returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()] : (this_DIGIT_NONZERO_0= RULE_DIGIT_NONZERO (this_DIGIT_NONZERO_1= RULE_DIGIT_NONZERO | this_ZERO_2= RULE_ZERO ) (this_DIGIT_NONZERO_3= RULE_DIGIT_NONZERO | this_ZERO_4= RULE_ZERO ) (this_DIGIT_NONZERO_5= RULE_DIGIT_NONZERO | this_ZERO_6= RULE_ZERO ) (this_DIGIT_NONZERO_7= RULE_DIGIT_NONZERO | this_ZERO_8= RULE_ZERO ) (this_DIGIT_NONZERO_9= RULE_DIGIT_NONZERO | this_ZERO_10= RULE_ZERO )+ ) ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:855:1: ruleSnomedIdentifier returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()] : (this_DIGIT_NONZERO_0= RULE_DIGIT_NONZERO (this_DIGIT_NONZERO_1= RULE_DIGIT_NONZERO | this_ZERO_2= RULE_ZERO ) (this_DIGIT_NONZERO_3= RULE_DIGIT_NONZERO | this_ZERO_4= RULE_ZERO ) (this_DIGIT_NONZERO_5= RULE_DIGIT_NONZERO | this_ZERO_6= RULE_ZERO ) (this_DIGIT_NONZERO_7= RULE_DIGIT_NONZERO | this_ZERO_8= RULE_ZERO ) (this_DIGIT_NONZERO_9= RULE_DIGIT_NONZERO | this_ZERO_10= RULE_ZERO )+ ) ;
     public final AntlrDatatypeRuleToken ruleSnomedIdentifier() throws RecognitionException {
         AntlrDatatypeRuleToken current = new AntlrDatatypeRuleToken();
 
@@ -1853,112 +2229,20 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         		HiddenTokens myHiddenTokenState = ((XtextTokenStream)input).setHiddenTokens();
             
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:717:28: ( (this_DIGIT_NONZERO_0= RULE_DIGIT_NONZERO (this_DIGIT_NONZERO_1= RULE_DIGIT_NONZERO | this_ZERO_2= RULE_ZERO ) (this_DIGIT_NONZERO_3= RULE_DIGIT_NONZERO | this_ZERO_4= RULE_ZERO ) (this_DIGIT_NONZERO_5= RULE_DIGIT_NONZERO | this_ZERO_6= RULE_ZERO ) (this_DIGIT_NONZERO_7= RULE_DIGIT_NONZERO | this_ZERO_8= RULE_ZERO ) (this_DIGIT_NONZERO_9= RULE_DIGIT_NONZERO | this_ZERO_10= RULE_ZERO )+ ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:718:1: (this_DIGIT_NONZERO_0= RULE_DIGIT_NONZERO (this_DIGIT_NONZERO_1= RULE_DIGIT_NONZERO | this_ZERO_2= RULE_ZERO ) (this_DIGIT_NONZERO_3= RULE_DIGIT_NONZERO | this_ZERO_4= RULE_ZERO ) (this_DIGIT_NONZERO_5= RULE_DIGIT_NONZERO | this_ZERO_6= RULE_ZERO ) (this_DIGIT_NONZERO_7= RULE_DIGIT_NONZERO | this_ZERO_8= RULE_ZERO ) (this_DIGIT_NONZERO_9= RULE_DIGIT_NONZERO | this_ZERO_10= RULE_ZERO )+ )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:859:28: ( (this_DIGIT_NONZERO_0= RULE_DIGIT_NONZERO (this_DIGIT_NONZERO_1= RULE_DIGIT_NONZERO | this_ZERO_2= RULE_ZERO ) (this_DIGIT_NONZERO_3= RULE_DIGIT_NONZERO | this_ZERO_4= RULE_ZERO ) (this_DIGIT_NONZERO_5= RULE_DIGIT_NONZERO | this_ZERO_6= RULE_ZERO ) (this_DIGIT_NONZERO_7= RULE_DIGIT_NONZERO | this_ZERO_8= RULE_ZERO ) (this_DIGIT_NONZERO_9= RULE_DIGIT_NONZERO | this_ZERO_10= RULE_ZERO )+ ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:860:1: (this_DIGIT_NONZERO_0= RULE_DIGIT_NONZERO (this_DIGIT_NONZERO_1= RULE_DIGIT_NONZERO | this_ZERO_2= RULE_ZERO ) (this_DIGIT_NONZERO_3= RULE_DIGIT_NONZERO | this_ZERO_4= RULE_ZERO ) (this_DIGIT_NONZERO_5= RULE_DIGIT_NONZERO | this_ZERO_6= RULE_ZERO ) (this_DIGIT_NONZERO_7= RULE_DIGIT_NONZERO | this_ZERO_8= RULE_ZERO ) (this_DIGIT_NONZERO_9= RULE_DIGIT_NONZERO | this_ZERO_10= RULE_ZERO )+ )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:718:1: (this_DIGIT_NONZERO_0= RULE_DIGIT_NONZERO (this_DIGIT_NONZERO_1= RULE_DIGIT_NONZERO | this_ZERO_2= RULE_ZERO ) (this_DIGIT_NONZERO_3= RULE_DIGIT_NONZERO | this_ZERO_4= RULE_ZERO ) (this_DIGIT_NONZERO_5= RULE_DIGIT_NONZERO | this_ZERO_6= RULE_ZERO ) (this_DIGIT_NONZERO_7= RULE_DIGIT_NONZERO | this_ZERO_8= RULE_ZERO ) (this_DIGIT_NONZERO_9= RULE_DIGIT_NONZERO | this_ZERO_10= RULE_ZERO )+ )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:718:6: this_DIGIT_NONZERO_0= RULE_DIGIT_NONZERO (this_DIGIT_NONZERO_1= RULE_DIGIT_NONZERO | this_ZERO_2= RULE_ZERO ) (this_DIGIT_NONZERO_3= RULE_DIGIT_NONZERO | this_ZERO_4= RULE_ZERO ) (this_DIGIT_NONZERO_5= RULE_DIGIT_NONZERO | this_ZERO_6= RULE_ZERO ) (this_DIGIT_NONZERO_7= RULE_DIGIT_NONZERO | this_ZERO_8= RULE_ZERO ) (this_DIGIT_NONZERO_9= RULE_DIGIT_NONZERO | this_ZERO_10= RULE_ZERO )+
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:860:1: (this_DIGIT_NONZERO_0= RULE_DIGIT_NONZERO (this_DIGIT_NONZERO_1= RULE_DIGIT_NONZERO | this_ZERO_2= RULE_ZERO ) (this_DIGIT_NONZERO_3= RULE_DIGIT_NONZERO | this_ZERO_4= RULE_ZERO ) (this_DIGIT_NONZERO_5= RULE_DIGIT_NONZERO | this_ZERO_6= RULE_ZERO ) (this_DIGIT_NONZERO_7= RULE_DIGIT_NONZERO | this_ZERO_8= RULE_ZERO ) (this_DIGIT_NONZERO_9= RULE_DIGIT_NONZERO | this_ZERO_10= RULE_ZERO )+ )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:860:6: this_DIGIT_NONZERO_0= RULE_DIGIT_NONZERO (this_DIGIT_NONZERO_1= RULE_DIGIT_NONZERO | this_ZERO_2= RULE_ZERO ) (this_DIGIT_NONZERO_3= RULE_DIGIT_NONZERO | this_ZERO_4= RULE_ZERO ) (this_DIGIT_NONZERO_5= RULE_DIGIT_NONZERO | this_ZERO_6= RULE_ZERO ) (this_DIGIT_NONZERO_7= RULE_DIGIT_NONZERO | this_ZERO_8= RULE_ZERO ) (this_DIGIT_NONZERO_9= RULE_DIGIT_NONZERO | this_ZERO_10= RULE_ZERO )+
             {
-            this_DIGIT_NONZERO_0=(Token)match(input,RULE_DIGIT_NONZERO,FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier1654); 
+            this_DIGIT_NONZERO_0=(Token)match(input,RULE_DIGIT_NONZERO,FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier1960); 
 
             		current.merge(this_DIGIT_NONZERO_0);
                 
              
                 newLeafNode(this_DIGIT_NONZERO_0, grammarAccess.getSnomedIdentifierAccess().getDIGIT_NONZEROTerminalRuleCall_0()); 
                 
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:725:1: (this_DIGIT_NONZERO_1= RULE_DIGIT_NONZERO | this_ZERO_2= RULE_ZERO )
-            int alt10=2;
-            int LA10_0 = input.LA(1);
-
-            if ( (LA10_0==RULE_DIGIT_NONZERO) ) {
-                alt10=1;
-            }
-            else if ( (LA10_0==RULE_ZERO) ) {
-                alt10=2;
-            }
-            else {
-                NoViableAltException nvae =
-                    new NoViableAltException("", 10, 0, input);
-
-                throw nvae;
-            }
-            switch (alt10) {
-                case 1 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:725:6: this_DIGIT_NONZERO_1= RULE_DIGIT_NONZERO
-                    {
-                    this_DIGIT_NONZERO_1=(Token)match(input,RULE_DIGIT_NONZERO,FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier1675); 
-
-                    		current.merge(this_DIGIT_NONZERO_1);
-                        
-                     
-                        newLeafNode(this_DIGIT_NONZERO_1, grammarAccess.getSnomedIdentifierAccess().getDIGIT_NONZEROTerminalRuleCall_1_0()); 
-                        
-
-                    }
-                    break;
-                case 2 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:733:10: this_ZERO_2= RULE_ZERO
-                    {
-                    this_ZERO_2=(Token)match(input,RULE_ZERO,FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier1701); 
-
-                    		current.merge(this_ZERO_2);
-                        
-                     
-                        newLeafNode(this_ZERO_2, grammarAccess.getSnomedIdentifierAccess().getZEROTerminalRuleCall_1_1()); 
-                        
-
-                    }
-                    break;
-
-            }
-
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:740:2: (this_DIGIT_NONZERO_3= RULE_DIGIT_NONZERO | this_ZERO_4= RULE_ZERO )
-            int alt11=2;
-            int LA11_0 = input.LA(1);
-
-            if ( (LA11_0==RULE_DIGIT_NONZERO) ) {
-                alt11=1;
-            }
-            else if ( (LA11_0==RULE_ZERO) ) {
-                alt11=2;
-            }
-            else {
-                NoViableAltException nvae =
-                    new NoViableAltException("", 11, 0, input);
-
-                throw nvae;
-            }
-            switch (alt11) {
-                case 1 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:740:7: this_DIGIT_NONZERO_3= RULE_DIGIT_NONZERO
-                    {
-                    this_DIGIT_NONZERO_3=(Token)match(input,RULE_DIGIT_NONZERO,FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier1723); 
-
-                    		current.merge(this_DIGIT_NONZERO_3);
-                        
-                     
-                        newLeafNode(this_DIGIT_NONZERO_3, grammarAccess.getSnomedIdentifierAccess().getDIGIT_NONZEROTerminalRuleCall_2_0()); 
-                        
-
-                    }
-                    break;
-                case 2 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:748:10: this_ZERO_4= RULE_ZERO
-                    {
-                    this_ZERO_4=(Token)match(input,RULE_ZERO,FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier1749); 
-
-                    		current.merge(this_ZERO_4);
-                        
-                     
-                        newLeafNode(this_ZERO_4, grammarAccess.getSnomedIdentifierAccess().getZEROTerminalRuleCall_2_1()); 
-                        
-
-                    }
-                    break;
-
-            }
-
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:755:2: (this_DIGIT_NONZERO_5= RULE_DIGIT_NONZERO | this_ZERO_6= RULE_ZERO )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:867:1: (this_DIGIT_NONZERO_1= RULE_DIGIT_NONZERO | this_ZERO_2= RULE_ZERO )
             int alt12=2;
             int LA12_0 = input.LA(1);
 
@@ -1976,27 +2260,27 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             }
             switch (alt12) {
                 case 1 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:755:7: this_DIGIT_NONZERO_5= RULE_DIGIT_NONZERO
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:867:6: this_DIGIT_NONZERO_1= RULE_DIGIT_NONZERO
                     {
-                    this_DIGIT_NONZERO_5=(Token)match(input,RULE_DIGIT_NONZERO,FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier1771); 
+                    this_DIGIT_NONZERO_1=(Token)match(input,RULE_DIGIT_NONZERO,FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier1981); 
 
-                    		current.merge(this_DIGIT_NONZERO_5);
+                    		current.merge(this_DIGIT_NONZERO_1);
                         
                      
-                        newLeafNode(this_DIGIT_NONZERO_5, grammarAccess.getSnomedIdentifierAccess().getDIGIT_NONZEROTerminalRuleCall_3_0()); 
+                        newLeafNode(this_DIGIT_NONZERO_1, grammarAccess.getSnomedIdentifierAccess().getDIGIT_NONZEROTerminalRuleCall_1_0()); 
                         
 
                     }
                     break;
                 case 2 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:763:10: this_ZERO_6= RULE_ZERO
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:875:10: this_ZERO_2= RULE_ZERO
                     {
-                    this_ZERO_6=(Token)match(input,RULE_ZERO,FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier1797); 
+                    this_ZERO_2=(Token)match(input,RULE_ZERO,FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier2007); 
 
-                    		current.merge(this_ZERO_6);
+                    		current.merge(this_ZERO_2);
                         
                      
-                        newLeafNode(this_ZERO_6, grammarAccess.getSnomedIdentifierAccess().getZEROTerminalRuleCall_3_1()); 
+                        newLeafNode(this_ZERO_2, grammarAccess.getSnomedIdentifierAccess().getZEROTerminalRuleCall_1_1()); 
                         
 
                     }
@@ -2004,7 +2288,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
             }
 
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:770:2: (this_DIGIT_NONZERO_7= RULE_DIGIT_NONZERO | this_ZERO_8= RULE_ZERO )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:882:2: (this_DIGIT_NONZERO_3= RULE_DIGIT_NONZERO | this_ZERO_4= RULE_ZERO )
             int alt13=2;
             int LA13_0 = input.LA(1);
 
@@ -2022,9 +2306,101 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             }
             switch (alt13) {
                 case 1 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:770:7: this_DIGIT_NONZERO_7= RULE_DIGIT_NONZERO
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:882:7: this_DIGIT_NONZERO_3= RULE_DIGIT_NONZERO
                     {
-                    this_DIGIT_NONZERO_7=(Token)match(input,RULE_DIGIT_NONZERO,FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier1819); 
+                    this_DIGIT_NONZERO_3=(Token)match(input,RULE_DIGIT_NONZERO,FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier2029); 
+
+                    		current.merge(this_DIGIT_NONZERO_3);
+                        
+                     
+                        newLeafNode(this_DIGIT_NONZERO_3, grammarAccess.getSnomedIdentifierAccess().getDIGIT_NONZEROTerminalRuleCall_2_0()); 
+                        
+
+                    }
+                    break;
+                case 2 :
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:890:10: this_ZERO_4= RULE_ZERO
+                    {
+                    this_ZERO_4=(Token)match(input,RULE_ZERO,FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier2055); 
+
+                    		current.merge(this_ZERO_4);
+                        
+                     
+                        newLeafNode(this_ZERO_4, grammarAccess.getSnomedIdentifierAccess().getZEROTerminalRuleCall_2_1()); 
+                        
+
+                    }
+                    break;
+
+            }
+
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:897:2: (this_DIGIT_NONZERO_5= RULE_DIGIT_NONZERO | this_ZERO_6= RULE_ZERO )
+            int alt14=2;
+            int LA14_0 = input.LA(1);
+
+            if ( (LA14_0==RULE_DIGIT_NONZERO) ) {
+                alt14=1;
+            }
+            else if ( (LA14_0==RULE_ZERO) ) {
+                alt14=2;
+            }
+            else {
+                NoViableAltException nvae =
+                    new NoViableAltException("", 14, 0, input);
+
+                throw nvae;
+            }
+            switch (alt14) {
+                case 1 :
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:897:7: this_DIGIT_NONZERO_5= RULE_DIGIT_NONZERO
+                    {
+                    this_DIGIT_NONZERO_5=(Token)match(input,RULE_DIGIT_NONZERO,FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier2077); 
+
+                    		current.merge(this_DIGIT_NONZERO_5);
+                        
+                     
+                        newLeafNode(this_DIGIT_NONZERO_5, grammarAccess.getSnomedIdentifierAccess().getDIGIT_NONZEROTerminalRuleCall_3_0()); 
+                        
+
+                    }
+                    break;
+                case 2 :
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:905:10: this_ZERO_6= RULE_ZERO
+                    {
+                    this_ZERO_6=(Token)match(input,RULE_ZERO,FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier2103); 
+
+                    		current.merge(this_ZERO_6);
+                        
+                     
+                        newLeafNode(this_ZERO_6, grammarAccess.getSnomedIdentifierAccess().getZEROTerminalRuleCall_3_1()); 
+                        
+
+                    }
+                    break;
+
+            }
+
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:912:2: (this_DIGIT_NONZERO_7= RULE_DIGIT_NONZERO | this_ZERO_8= RULE_ZERO )
+            int alt15=2;
+            int LA15_0 = input.LA(1);
+
+            if ( (LA15_0==RULE_DIGIT_NONZERO) ) {
+                alt15=1;
+            }
+            else if ( (LA15_0==RULE_ZERO) ) {
+                alt15=2;
+            }
+            else {
+                NoViableAltException nvae =
+                    new NoViableAltException("", 15, 0, input);
+
+                throw nvae;
+            }
+            switch (alt15) {
+                case 1 :
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:912:7: this_DIGIT_NONZERO_7= RULE_DIGIT_NONZERO
+                    {
+                    this_DIGIT_NONZERO_7=(Token)match(input,RULE_DIGIT_NONZERO,FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier2125); 
 
                     		current.merge(this_DIGIT_NONZERO_7);
                         
@@ -2035,9 +2411,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 2 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:778:10: this_ZERO_8= RULE_ZERO
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:920:10: this_ZERO_8= RULE_ZERO
                     {
-                    this_ZERO_8=(Token)match(input,RULE_ZERO,FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier1845); 
+                    this_ZERO_8=(Token)match(input,RULE_ZERO,FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier2151); 
 
                     		current.merge(this_ZERO_8);
                         
@@ -2050,26 +2426,26 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
             }
 
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:785:2: (this_DIGIT_NONZERO_9= RULE_DIGIT_NONZERO | this_ZERO_10= RULE_ZERO )+
-            int cnt14=0;
-            loop14:
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:927:2: (this_DIGIT_NONZERO_9= RULE_DIGIT_NONZERO | this_ZERO_10= RULE_ZERO )+
+            int cnt16=0;
+            loop16:
             do {
-                int alt14=3;
-                int LA14_0 = input.LA(1);
+                int alt16=3;
+                int LA16_0 = input.LA(1);
 
-                if ( (LA14_0==RULE_DIGIT_NONZERO) ) {
-                    alt14=1;
+                if ( (LA16_0==RULE_DIGIT_NONZERO) ) {
+                    alt16=1;
                 }
-                else if ( (LA14_0==RULE_ZERO) ) {
-                    alt14=2;
+                else if ( (LA16_0==RULE_ZERO) ) {
+                    alt16=2;
                 }
 
 
-                switch (alt14) {
+                switch (alt16) {
             	case 1 :
-            	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:785:7: this_DIGIT_NONZERO_9= RULE_DIGIT_NONZERO
+            	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:927:7: this_DIGIT_NONZERO_9= RULE_DIGIT_NONZERO
             	    {
-            	    this_DIGIT_NONZERO_9=(Token)match(input,RULE_DIGIT_NONZERO,FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier1867); 
+            	    this_DIGIT_NONZERO_9=(Token)match(input,RULE_DIGIT_NONZERO,FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier2173); 
 
             	    		current.merge(this_DIGIT_NONZERO_9);
             	        
@@ -2080,9 +2456,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             	    }
             	    break;
             	case 2 :
-            	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:793:10: this_ZERO_10= RULE_ZERO
+            	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:935:10: this_ZERO_10= RULE_ZERO
             	    {
-            	    this_ZERO_10=(Token)match(input,RULE_ZERO,FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier1893); 
+            	    this_ZERO_10=(Token)match(input,RULE_ZERO,FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier2199); 
 
             	    		current.merge(this_ZERO_10);
             	        
@@ -2094,12 +2470,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             	    break;
 
             	default :
-            	    if ( cnt14 >= 1 ) break loop14;
+            	    if ( cnt16 >= 1 ) break loop16;
                         EarlyExitException eee =
-                            new EarlyExitException(14, input);
+                            new EarlyExitException(16, input);
                         throw eee;
                 }
-                cnt14++;
+                cnt16++;
             } while (true);
 
 
@@ -2126,7 +2502,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "entryRuleTerm"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:811:1: entryRuleTerm returns [String current=null] : iv_ruleTerm= ruleTerm EOF ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:953:1: entryRuleTerm returns [String current=null] : iv_ruleTerm= ruleTerm EOF ;
     public final String entryRuleTerm() throws RecognitionException {
         String current = null;
 
@@ -2137,17 +2513,17 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         		HiddenTokens myHiddenTokenState = ((XtextTokenStream)input).setHiddenTokens();
         	
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:815:2: (iv_ruleTerm= ruleTerm EOF )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:816:2: iv_ruleTerm= ruleTerm EOF
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:957:2: (iv_ruleTerm= ruleTerm EOF )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:958:2: iv_ruleTerm= ruleTerm EOF
             {
              newCompositeNode(grammarAccess.getTermRule()); 
-            pushFollow(FOLLOW_ruleTerm_in_entryRuleTerm1951);
+            pushFollow(FOLLOW_ruleTerm_in_entryRuleTerm2257);
             iv_ruleTerm=ruleTerm();
 
             state._fsp--;
 
              current =iv_ruleTerm.getText(); 
-            match(input,EOF,FOLLOW_EOF_in_entryRuleTerm1962); 
+            match(input,EOF,FOLLOW_EOF_in_entryRuleTerm2268); 
 
             }
 
@@ -2168,7 +2544,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleTerm"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:826:1: ruleTerm returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()] : ( (this_TermCharacter_0= ruleTermCharacter )+ ( (this_WS_1= RULE_WS )+ (this_TermCharacter_2= ruleTermCharacter )+ )* ) ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:968:1: ruleTerm returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()] : ( (this_TermCharacter_0= ruleTermCharacter )+ ( (this_WS_1= RULE_WS )+ (this_TermCharacter_2= ruleTermCharacter )+ )* ) ;
     public final AntlrDatatypeRuleToken ruleTerm() throws RecognitionException {
         AntlrDatatypeRuleToken current = new AntlrDatatypeRuleToken();
 
@@ -2182,32 +2558,32 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         		HiddenTokens myHiddenTokenState = ((XtextTokenStream)input).setHiddenTokens();
             
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:830:28: ( ( (this_TermCharacter_0= ruleTermCharacter )+ ( (this_WS_1= RULE_WS )+ (this_TermCharacter_2= ruleTermCharacter )+ )* ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:831:1: ( (this_TermCharacter_0= ruleTermCharacter )+ ( (this_WS_1= RULE_WS )+ (this_TermCharacter_2= ruleTermCharacter )+ )* )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:972:28: ( ( (this_TermCharacter_0= ruleTermCharacter )+ ( (this_WS_1= RULE_WS )+ (this_TermCharacter_2= ruleTermCharacter )+ )* ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:973:1: ( (this_TermCharacter_0= ruleTermCharacter )+ ( (this_WS_1= RULE_WS )+ (this_TermCharacter_2= ruleTermCharacter )+ )* )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:831:1: ( (this_TermCharacter_0= ruleTermCharacter )+ ( (this_WS_1= RULE_WS )+ (this_TermCharacter_2= ruleTermCharacter )+ )* )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:831:2: (this_TermCharacter_0= ruleTermCharacter )+ ( (this_WS_1= RULE_WS )+ (this_TermCharacter_2= ruleTermCharacter )+ )*
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:973:1: ( (this_TermCharacter_0= ruleTermCharacter )+ ( (this_WS_1= RULE_WS )+ (this_TermCharacter_2= ruleTermCharacter )+ )* )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:973:2: (this_TermCharacter_0= ruleTermCharacter )+ ( (this_WS_1= RULE_WS )+ (this_TermCharacter_2= ruleTermCharacter )+ )*
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:831:2: (this_TermCharacter_0= ruleTermCharacter )+
-            int cnt15=0;
-            loop15:
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:973:2: (this_TermCharacter_0= ruleTermCharacter )+
+            int cnt17=0;
+            loop17:
             do {
-                int alt15=2;
-                int LA15_0 = input.LA(1);
+                int alt17=2;
+                int LA17_0 = input.LA(1);
 
-                if ( ((LA15_0>=RULE_OR && LA15_0<=RULE_AND)||(LA15_0>=RULE_LESS_THAN && LA15_0<=RULE_CARET)||(LA15_0>=RULE_ROUND_OPEN && LA15_0<=RULE_ZERO)||(LA15_0>=RULE_GREATER_THAN && LA15_0<=RULE_OTHER_CHARACTER)) ) {
-                    alt15=1;
+                if ( ((LA17_0>=RULE_OR && LA17_0<=RULE_AND)||(LA17_0>=RULE_LT && LA17_0<=RULE_DBL_LT)||LA17_0==RULE_CARET||(LA17_0>=RULE_ROUND_OPEN && LA17_0<=RULE_ZERO)||(LA17_0>=RULE_GT && LA17_0<=RULE_OTHER_CHARACTER)) ) {
+                    alt17=1;
                 }
 
 
-                switch (alt15) {
+                switch (alt17) {
             	case 1 :
-            	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:832:5: this_TermCharacter_0= ruleTermCharacter
+            	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:974:5: this_TermCharacter_0= ruleTermCharacter
             	    {
             	     
             	            newCompositeNode(grammarAccess.getTermAccess().getTermCharacterParserRuleCall_0()); 
             	        
-            	    pushFollow(FOLLOW_ruleTermCharacter_in_ruleTerm2014);
+            	    pushFollow(FOLLOW_ruleTermCharacter_in_ruleTerm2320);
             	    this_TermCharacter_0=ruleTermCharacter();
 
             	    state._fsp--;
@@ -2223,46 +2599,46 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             	    break;
 
             	default :
-            	    if ( cnt15 >= 1 ) break loop15;
+            	    if ( cnt17 >= 1 ) break loop17;
                         EarlyExitException eee =
-                            new EarlyExitException(15, input);
+                            new EarlyExitException(17, input);
                         throw eee;
                 }
-                cnt15++;
+                cnt17++;
             } while (true);
 
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:842:3: ( (this_WS_1= RULE_WS )+ (this_TermCharacter_2= ruleTermCharacter )+ )*
-            loop18:
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:984:3: ( (this_WS_1= RULE_WS )+ (this_TermCharacter_2= ruleTermCharacter )+ )*
+            loop20:
             do {
-                int alt18=2;
-                int LA18_0 = input.LA(1);
+                int alt20=2;
+                int LA20_0 = input.LA(1);
 
-                if ( (LA18_0==RULE_WS) ) {
-                    alt18=1;
+                if ( (LA20_0==RULE_WS) ) {
+                    alt20=1;
                 }
 
 
-                switch (alt18) {
+                switch (alt20) {
             	case 1 :
-            	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:842:4: (this_WS_1= RULE_WS )+ (this_TermCharacter_2= ruleTermCharacter )+
+            	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:984:4: (this_WS_1= RULE_WS )+ (this_TermCharacter_2= ruleTermCharacter )+
             	    {
-            	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:842:4: (this_WS_1= RULE_WS )+
-            	    int cnt16=0;
-            	    loop16:
+            	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:984:4: (this_WS_1= RULE_WS )+
+            	    int cnt18=0;
+            	    loop18:
             	    do {
-            	        int alt16=2;
-            	        int LA16_0 = input.LA(1);
+            	        int alt18=2;
+            	        int LA18_0 = input.LA(1);
 
-            	        if ( (LA16_0==RULE_WS) ) {
-            	            alt16=1;
+            	        if ( (LA18_0==RULE_WS) ) {
+            	            alt18=1;
             	        }
 
 
-            	        switch (alt16) {
+            	        switch (alt18) {
             	    	case 1 :
-            	    	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:842:9: this_WS_1= RULE_WS
+            	    	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:984:9: this_WS_1= RULE_WS
             	    	    {
-            	    	    this_WS_1=(Token)match(input,RULE_WS,FOLLOW_RULE_WS_in_ruleTerm2038); 
+            	    	    this_WS_1=(Token)match(input,RULE_WS,FOLLOW_RULE_WS_in_ruleTerm2344); 
 
             	    	    		current.merge(this_WS_1);
             	    	        
@@ -2274,34 +2650,34 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             	    	    break;
 
             	    	default :
-            	    	    if ( cnt16 >= 1 ) break loop16;
+            	    	    if ( cnt18 >= 1 ) break loop18;
             	                EarlyExitException eee =
-            	                    new EarlyExitException(16, input);
+            	                    new EarlyExitException(18, input);
             	                throw eee;
             	        }
-            	        cnt16++;
+            	        cnt18++;
             	    } while (true);
 
-            	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:849:3: (this_TermCharacter_2= ruleTermCharacter )+
-            	    int cnt17=0;
-            	    loop17:
+            	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:991:3: (this_TermCharacter_2= ruleTermCharacter )+
+            	    int cnt19=0;
+            	    loop19:
             	    do {
-            	        int alt17=2;
-            	        int LA17_0 = input.LA(1);
+            	        int alt19=2;
+            	        int LA19_0 = input.LA(1);
 
-            	        if ( ((LA17_0>=RULE_OR && LA17_0<=RULE_AND)||(LA17_0>=RULE_LESS_THAN && LA17_0<=RULE_CARET)||(LA17_0>=RULE_ROUND_OPEN && LA17_0<=RULE_ZERO)||(LA17_0>=RULE_GREATER_THAN && LA17_0<=RULE_OTHER_CHARACTER)) ) {
-            	            alt17=1;
+            	        if ( ((LA19_0>=RULE_OR && LA19_0<=RULE_AND)||(LA19_0>=RULE_LT && LA19_0<=RULE_DBL_LT)||LA19_0==RULE_CARET||(LA19_0>=RULE_ROUND_OPEN && LA19_0<=RULE_ZERO)||(LA19_0>=RULE_GT && LA19_0<=RULE_OTHER_CHARACTER)) ) {
+            	            alt19=1;
             	        }
 
 
-            	        switch (alt17) {
+            	        switch (alt19) {
             	    	case 1 :
-            	    	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:850:5: this_TermCharacter_2= ruleTermCharacter
+            	    	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:992:5: this_TermCharacter_2= ruleTermCharacter
             	    	    {
             	    	     
             	    	            newCompositeNode(grammarAccess.getTermAccess().getTermCharacterParserRuleCall_1_1()); 
             	    	        
-            	    	    pushFollow(FOLLOW_ruleTermCharacter_in_ruleTerm2068);
+            	    	    pushFollow(FOLLOW_ruleTermCharacter_in_ruleTerm2374);
             	    	    this_TermCharacter_2=ruleTermCharacter();
 
             	    	    state._fsp--;
@@ -2317,12 +2693,12 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             	    	    break;
 
             	    	default :
-            	    	    if ( cnt17 >= 1 ) break loop17;
+            	    	    if ( cnt19 >= 1 ) break loop19;
             	                EarlyExitException eee =
-            	                    new EarlyExitException(17, input);
+            	                    new EarlyExitException(19, input);
             	                throw eee;
             	        }
-            	        cnt17++;
+            	        cnt19++;
             	    } while (true);
 
 
@@ -2330,7 +2706,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
             	    break;
 
             	default :
-            	    break loop18;
+            	    break loop20;
                 }
             } while (true);
 
@@ -2358,7 +2734,7 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "entryRuleTermCharacter"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:871:1: entryRuleTermCharacter returns [String current=null] : iv_ruleTermCharacter= ruleTermCharacter EOF ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1013:1: entryRuleTermCharacter returns [String current=null] : iv_ruleTermCharacter= ruleTermCharacter EOF ;
     public final String entryRuleTermCharacter() throws RecognitionException {
         String current = null;
 
@@ -2369,17 +2745,17 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         		HiddenTokens myHiddenTokenState = ((XtextTokenStream)input).setHiddenTokens();
         	
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:875:2: (iv_ruleTermCharacter= ruleTermCharacter EOF )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:876:2: iv_ruleTermCharacter= ruleTermCharacter EOF
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1017:2: (iv_ruleTermCharacter= ruleTermCharacter EOF )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1018:2: iv_ruleTermCharacter= ruleTermCharacter EOF
             {
              newCompositeNode(grammarAccess.getTermCharacterRule()); 
-            pushFollow(FOLLOW_ruleTermCharacter_in_entryRuleTermCharacter2128);
+            pushFollow(FOLLOW_ruleTermCharacter_in_entryRuleTermCharacter2434);
             iv_ruleTermCharacter=ruleTermCharacter();
 
             state._fsp--;
 
              current =iv_ruleTermCharacter.getText(); 
-            match(input,EOF,FOLLOW_EOF_in_entryRuleTermCharacter2139); 
+            match(input,EOF,FOLLOW_EOF_in_entryRuleTermCharacter2445); 
 
             }
 
@@ -2400,14 +2776,14 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleTermCharacter"
-    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:886:1: ruleTermCharacter returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()] : (this_LESS_THAN_0= RULE_LESS_THAN | this_GREATER_THAN_1= RULE_GREATER_THAN | this_DBL_LESS_THAN_2= RULE_DBL_LESS_THAN | this_DBL_GREATER_THAN_3= RULE_DBL_GREATER_THAN | this_AND_4= RULE_AND | this_OR_5= RULE_OR | this_NOT_6= RULE_NOT | this_ZERO_7= RULE_ZERO | this_DIGIT_NONZERO_8= RULE_DIGIT_NONZERO | this_LETTER_9= RULE_LETTER | this_CARET_10= RULE_CARET | this_EQUAL_11= RULE_EQUAL | this_PLUS_12= RULE_PLUS | this_CURLY_OPEN_13= RULE_CURLY_OPEN | this_CURLY_CLOSE_14= RULE_CURLY_CLOSE | this_ROUND_OPEN_15= RULE_ROUND_OPEN | this_ROUND_CLOSE_16= RULE_ROUND_CLOSE | this_SQUARE_OPEN_17= RULE_SQUARE_OPEN | this_SQUARE_CLOSE_18= RULE_SQUARE_CLOSE | this_DOT_19= RULE_DOT | this_COLON_20= RULE_COLON | this_COMMA_21= RULE_COMMA | this_OTHER_CHARACTER_22= RULE_OTHER_CHARACTER ) ;
+    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1028:1: ruleTermCharacter returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()] : (this_LT_0= RULE_LT | this_GT_1= RULE_GT | this_DBL_LT_2= RULE_DBL_LT | this_DBL_GT_3= RULE_DBL_GT | this_AND_4= RULE_AND | this_OR_5= RULE_OR | this_NOT_6= RULE_NOT | this_ZERO_7= RULE_ZERO | this_DIGIT_NONZERO_8= RULE_DIGIT_NONZERO | this_LETTER_9= RULE_LETTER | this_CARET_10= RULE_CARET | this_EQUAL_11= RULE_EQUAL | this_PLUS_12= RULE_PLUS | this_CURLY_OPEN_13= RULE_CURLY_OPEN | this_CURLY_CLOSE_14= RULE_CURLY_CLOSE | this_ROUND_OPEN_15= RULE_ROUND_OPEN | this_ROUND_CLOSE_16= RULE_ROUND_CLOSE | this_SQUARE_OPEN_17= RULE_SQUARE_OPEN | this_SQUARE_CLOSE_18= RULE_SQUARE_CLOSE | this_DOT_19= RULE_DOT | this_COLON_20= RULE_COLON | this_COMMA_21= RULE_COMMA | this_OTHER_CHARACTER_22= RULE_OTHER_CHARACTER ) ;
     public final AntlrDatatypeRuleToken ruleTermCharacter() throws RecognitionException {
         AntlrDatatypeRuleToken current = new AntlrDatatypeRuleToken();
 
-        Token this_LESS_THAN_0=null;
-        Token this_GREATER_THAN_1=null;
-        Token this_DBL_LESS_THAN_2=null;
-        Token this_DBL_GREATER_THAN_3=null;
+        Token this_LT_0=null;
+        Token this_GT_1=null;
+        Token this_DBL_LT_2=null;
+        Token this_DBL_GT_3=null;
         Token this_AND_4=null;
         Token this_OR_5=null;
         Token this_NOT_6=null;
@@ -2432,191 +2808,191 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
         		HiddenTokens myHiddenTokenState = ((XtextTokenStream)input).setHiddenTokens();
             
         try {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:890:28: ( (this_LESS_THAN_0= RULE_LESS_THAN | this_GREATER_THAN_1= RULE_GREATER_THAN | this_DBL_LESS_THAN_2= RULE_DBL_LESS_THAN | this_DBL_GREATER_THAN_3= RULE_DBL_GREATER_THAN | this_AND_4= RULE_AND | this_OR_5= RULE_OR | this_NOT_6= RULE_NOT | this_ZERO_7= RULE_ZERO | this_DIGIT_NONZERO_8= RULE_DIGIT_NONZERO | this_LETTER_9= RULE_LETTER | this_CARET_10= RULE_CARET | this_EQUAL_11= RULE_EQUAL | this_PLUS_12= RULE_PLUS | this_CURLY_OPEN_13= RULE_CURLY_OPEN | this_CURLY_CLOSE_14= RULE_CURLY_CLOSE | this_ROUND_OPEN_15= RULE_ROUND_OPEN | this_ROUND_CLOSE_16= RULE_ROUND_CLOSE | this_SQUARE_OPEN_17= RULE_SQUARE_OPEN | this_SQUARE_CLOSE_18= RULE_SQUARE_CLOSE | this_DOT_19= RULE_DOT | this_COLON_20= RULE_COLON | this_COMMA_21= RULE_COMMA | this_OTHER_CHARACTER_22= RULE_OTHER_CHARACTER ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:891:1: (this_LESS_THAN_0= RULE_LESS_THAN | this_GREATER_THAN_1= RULE_GREATER_THAN | this_DBL_LESS_THAN_2= RULE_DBL_LESS_THAN | this_DBL_GREATER_THAN_3= RULE_DBL_GREATER_THAN | this_AND_4= RULE_AND | this_OR_5= RULE_OR | this_NOT_6= RULE_NOT | this_ZERO_7= RULE_ZERO | this_DIGIT_NONZERO_8= RULE_DIGIT_NONZERO | this_LETTER_9= RULE_LETTER | this_CARET_10= RULE_CARET | this_EQUAL_11= RULE_EQUAL | this_PLUS_12= RULE_PLUS | this_CURLY_OPEN_13= RULE_CURLY_OPEN | this_CURLY_CLOSE_14= RULE_CURLY_CLOSE | this_ROUND_OPEN_15= RULE_ROUND_OPEN | this_ROUND_CLOSE_16= RULE_ROUND_CLOSE | this_SQUARE_OPEN_17= RULE_SQUARE_OPEN | this_SQUARE_CLOSE_18= RULE_SQUARE_CLOSE | this_DOT_19= RULE_DOT | this_COLON_20= RULE_COLON | this_COMMA_21= RULE_COMMA | this_OTHER_CHARACTER_22= RULE_OTHER_CHARACTER )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1032:28: ( (this_LT_0= RULE_LT | this_GT_1= RULE_GT | this_DBL_LT_2= RULE_DBL_LT | this_DBL_GT_3= RULE_DBL_GT | this_AND_4= RULE_AND | this_OR_5= RULE_OR | this_NOT_6= RULE_NOT | this_ZERO_7= RULE_ZERO | this_DIGIT_NONZERO_8= RULE_DIGIT_NONZERO | this_LETTER_9= RULE_LETTER | this_CARET_10= RULE_CARET | this_EQUAL_11= RULE_EQUAL | this_PLUS_12= RULE_PLUS | this_CURLY_OPEN_13= RULE_CURLY_OPEN | this_CURLY_CLOSE_14= RULE_CURLY_CLOSE | this_ROUND_OPEN_15= RULE_ROUND_OPEN | this_ROUND_CLOSE_16= RULE_ROUND_CLOSE | this_SQUARE_OPEN_17= RULE_SQUARE_OPEN | this_SQUARE_CLOSE_18= RULE_SQUARE_CLOSE | this_DOT_19= RULE_DOT | this_COLON_20= RULE_COLON | this_COMMA_21= RULE_COMMA | this_OTHER_CHARACTER_22= RULE_OTHER_CHARACTER ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1033:1: (this_LT_0= RULE_LT | this_GT_1= RULE_GT | this_DBL_LT_2= RULE_DBL_LT | this_DBL_GT_3= RULE_DBL_GT | this_AND_4= RULE_AND | this_OR_5= RULE_OR | this_NOT_6= RULE_NOT | this_ZERO_7= RULE_ZERO | this_DIGIT_NONZERO_8= RULE_DIGIT_NONZERO | this_LETTER_9= RULE_LETTER | this_CARET_10= RULE_CARET | this_EQUAL_11= RULE_EQUAL | this_PLUS_12= RULE_PLUS | this_CURLY_OPEN_13= RULE_CURLY_OPEN | this_CURLY_CLOSE_14= RULE_CURLY_CLOSE | this_ROUND_OPEN_15= RULE_ROUND_OPEN | this_ROUND_CLOSE_16= RULE_ROUND_CLOSE | this_SQUARE_OPEN_17= RULE_SQUARE_OPEN | this_SQUARE_CLOSE_18= RULE_SQUARE_CLOSE | this_DOT_19= RULE_DOT | this_COLON_20= RULE_COLON | this_COMMA_21= RULE_COMMA | this_OTHER_CHARACTER_22= RULE_OTHER_CHARACTER )
             {
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:891:1: (this_LESS_THAN_0= RULE_LESS_THAN | this_GREATER_THAN_1= RULE_GREATER_THAN | this_DBL_LESS_THAN_2= RULE_DBL_LESS_THAN | this_DBL_GREATER_THAN_3= RULE_DBL_GREATER_THAN | this_AND_4= RULE_AND | this_OR_5= RULE_OR | this_NOT_6= RULE_NOT | this_ZERO_7= RULE_ZERO | this_DIGIT_NONZERO_8= RULE_DIGIT_NONZERO | this_LETTER_9= RULE_LETTER | this_CARET_10= RULE_CARET | this_EQUAL_11= RULE_EQUAL | this_PLUS_12= RULE_PLUS | this_CURLY_OPEN_13= RULE_CURLY_OPEN | this_CURLY_CLOSE_14= RULE_CURLY_CLOSE | this_ROUND_OPEN_15= RULE_ROUND_OPEN | this_ROUND_CLOSE_16= RULE_ROUND_CLOSE | this_SQUARE_OPEN_17= RULE_SQUARE_OPEN | this_SQUARE_CLOSE_18= RULE_SQUARE_CLOSE | this_DOT_19= RULE_DOT | this_COLON_20= RULE_COLON | this_COMMA_21= RULE_COMMA | this_OTHER_CHARACTER_22= RULE_OTHER_CHARACTER )
-            int alt19=23;
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1033:1: (this_LT_0= RULE_LT | this_GT_1= RULE_GT | this_DBL_LT_2= RULE_DBL_LT | this_DBL_GT_3= RULE_DBL_GT | this_AND_4= RULE_AND | this_OR_5= RULE_OR | this_NOT_6= RULE_NOT | this_ZERO_7= RULE_ZERO | this_DIGIT_NONZERO_8= RULE_DIGIT_NONZERO | this_LETTER_9= RULE_LETTER | this_CARET_10= RULE_CARET | this_EQUAL_11= RULE_EQUAL | this_PLUS_12= RULE_PLUS | this_CURLY_OPEN_13= RULE_CURLY_OPEN | this_CURLY_CLOSE_14= RULE_CURLY_CLOSE | this_ROUND_OPEN_15= RULE_ROUND_OPEN | this_ROUND_CLOSE_16= RULE_ROUND_CLOSE | this_SQUARE_OPEN_17= RULE_SQUARE_OPEN | this_SQUARE_CLOSE_18= RULE_SQUARE_CLOSE | this_DOT_19= RULE_DOT | this_COLON_20= RULE_COLON | this_COMMA_21= RULE_COMMA | this_OTHER_CHARACTER_22= RULE_OTHER_CHARACTER )
+            int alt21=23;
             switch ( input.LA(1) ) {
-            case RULE_LESS_THAN:
+            case RULE_LT:
                 {
-                alt19=1;
+                alt21=1;
                 }
                 break;
-            case RULE_GREATER_THAN:
+            case RULE_GT:
                 {
-                alt19=2;
+                alt21=2;
                 }
                 break;
-            case RULE_DBL_LESS_THAN:
+            case RULE_DBL_LT:
                 {
-                alt19=3;
+                alt21=3;
                 }
                 break;
-            case RULE_DBL_GREATER_THAN:
+            case RULE_DBL_GT:
                 {
-                alt19=4;
+                alt21=4;
                 }
                 break;
             case RULE_AND:
                 {
-                alt19=5;
+                alt21=5;
                 }
                 break;
             case RULE_OR:
                 {
-                alt19=6;
+                alt21=6;
                 }
                 break;
             case RULE_NOT:
                 {
-                alt19=7;
+                alt21=7;
                 }
                 break;
             case RULE_ZERO:
                 {
-                alt19=8;
+                alt21=8;
                 }
                 break;
             case RULE_DIGIT_NONZERO:
                 {
-                alt19=9;
+                alt21=9;
                 }
                 break;
             case RULE_LETTER:
                 {
-                alt19=10;
+                alt21=10;
                 }
                 break;
             case RULE_CARET:
                 {
-                alt19=11;
+                alt21=11;
                 }
                 break;
             case RULE_EQUAL:
                 {
-                alt19=12;
+                alt21=12;
                 }
                 break;
             case RULE_PLUS:
                 {
-                alt19=13;
+                alt21=13;
                 }
                 break;
             case RULE_CURLY_OPEN:
                 {
-                alt19=14;
+                alt21=14;
                 }
                 break;
             case RULE_CURLY_CLOSE:
                 {
-                alt19=15;
+                alt21=15;
                 }
                 break;
             case RULE_ROUND_OPEN:
                 {
-                alt19=16;
+                alt21=16;
                 }
                 break;
             case RULE_ROUND_CLOSE:
                 {
-                alt19=17;
+                alt21=17;
                 }
                 break;
             case RULE_SQUARE_OPEN:
                 {
-                alt19=18;
+                alt21=18;
                 }
                 break;
             case RULE_SQUARE_CLOSE:
                 {
-                alt19=19;
+                alt21=19;
                 }
                 break;
             case RULE_DOT:
                 {
-                alt19=20;
+                alt21=20;
                 }
                 break;
             case RULE_COLON:
                 {
-                alt19=21;
+                alt21=21;
                 }
                 break;
             case RULE_COMMA:
                 {
-                alt19=22;
+                alt21=22;
                 }
                 break;
             case RULE_OTHER_CHARACTER:
                 {
-                alt19=23;
+                alt21=23;
                 }
                 break;
             default:
                 NoViableAltException nvae =
-                    new NoViableAltException("", 19, 0, input);
+                    new NoViableAltException("", 21, 0, input);
 
                 throw nvae;
             }
 
-            switch (alt19) {
+            switch (alt21) {
                 case 1 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:891:6: this_LESS_THAN_0= RULE_LESS_THAN
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1033:6: this_LT_0= RULE_LT
                     {
-                    this_LESS_THAN_0=(Token)match(input,RULE_LESS_THAN,FOLLOW_RULE_LESS_THAN_in_ruleTermCharacter2183); 
+                    this_LT_0=(Token)match(input,RULE_LT,FOLLOW_RULE_LT_in_ruleTermCharacter2489); 
 
-                    		current.merge(this_LESS_THAN_0);
+                    		current.merge(this_LT_0);
                         
                      
-                        newLeafNode(this_LESS_THAN_0, grammarAccess.getTermCharacterAccess().getLESS_THANTerminalRuleCall_0()); 
+                        newLeafNode(this_LT_0, grammarAccess.getTermCharacterAccess().getLTTerminalRuleCall_0()); 
                         
 
                     }
                     break;
                 case 2 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:899:10: this_GREATER_THAN_1= RULE_GREATER_THAN
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1041:10: this_GT_1= RULE_GT
                     {
-                    this_GREATER_THAN_1=(Token)match(input,RULE_GREATER_THAN,FOLLOW_RULE_GREATER_THAN_in_ruleTermCharacter2209); 
+                    this_GT_1=(Token)match(input,RULE_GT,FOLLOW_RULE_GT_in_ruleTermCharacter2515); 
 
-                    		current.merge(this_GREATER_THAN_1);
+                    		current.merge(this_GT_1);
                         
                      
-                        newLeafNode(this_GREATER_THAN_1, grammarAccess.getTermCharacterAccess().getGREATER_THANTerminalRuleCall_1()); 
+                        newLeafNode(this_GT_1, grammarAccess.getTermCharacterAccess().getGTTerminalRuleCall_1()); 
                         
 
                     }
                     break;
                 case 3 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:907:10: this_DBL_LESS_THAN_2= RULE_DBL_LESS_THAN
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1049:10: this_DBL_LT_2= RULE_DBL_LT
                     {
-                    this_DBL_LESS_THAN_2=(Token)match(input,RULE_DBL_LESS_THAN,FOLLOW_RULE_DBL_LESS_THAN_in_ruleTermCharacter2235); 
+                    this_DBL_LT_2=(Token)match(input,RULE_DBL_LT,FOLLOW_RULE_DBL_LT_in_ruleTermCharacter2541); 
 
-                    		current.merge(this_DBL_LESS_THAN_2);
+                    		current.merge(this_DBL_LT_2);
                         
                      
-                        newLeafNode(this_DBL_LESS_THAN_2, grammarAccess.getTermCharacterAccess().getDBL_LESS_THANTerminalRuleCall_2()); 
+                        newLeafNode(this_DBL_LT_2, grammarAccess.getTermCharacterAccess().getDBL_LTTerminalRuleCall_2()); 
                         
 
                     }
                     break;
                 case 4 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:915:10: this_DBL_GREATER_THAN_3= RULE_DBL_GREATER_THAN
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1057:10: this_DBL_GT_3= RULE_DBL_GT
                     {
-                    this_DBL_GREATER_THAN_3=(Token)match(input,RULE_DBL_GREATER_THAN,FOLLOW_RULE_DBL_GREATER_THAN_in_ruleTermCharacter2261); 
+                    this_DBL_GT_3=(Token)match(input,RULE_DBL_GT,FOLLOW_RULE_DBL_GT_in_ruleTermCharacter2567); 
 
-                    		current.merge(this_DBL_GREATER_THAN_3);
+                    		current.merge(this_DBL_GT_3);
                         
                      
-                        newLeafNode(this_DBL_GREATER_THAN_3, grammarAccess.getTermCharacterAccess().getDBL_GREATER_THANTerminalRuleCall_3()); 
+                        newLeafNode(this_DBL_GT_3, grammarAccess.getTermCharacterAccess().getDBL_GTTerminalRuleCall_3()); 
                         
 
                     }
                     break;
                 case 5 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:923:10: this_AND_4= RULE_AND
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1065:10: this_AND_4= RULE_AND
                     {
-                    this_AND_4=(Token)match(input,RULE_AND,FOLLOW_RULE_AND_in_ruleTermCharacter2287); 
+                    this_AND_4=(Token)match(input,RULE_AND,FOLLOW_RULE_AND_in_ruleTermCharacter2593); 
 
                     		current.merge(this_AND_4);
                         
@@ -2627,9 +3003,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 6 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:931:10: this_OR_5= RULE_OR
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1073:10: this_OR_5= RULE_OR
                     {
-                    this_OR_5=(Token)match(input,RULE_OR,FOLLOW_RULE_OR_in_ruleTermCharacter2313); 
+                    this_OR_5=(Token)match(input,RULE_OR,FOLLOW_RULE_OR_in_ruleTermCharacter2619); 
 
                     		current.merge(this_OR_5);
                         
@@ -2640,9 +3016,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 7 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:939:10: this_NOT_6= RULE_NOT
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1081:10: this_NOT_6= RULE_NOT
                     {
-                    this_NOT_6=(Token)match(input,RULE_NOT,FOLLOW_RULE_NOT_in_ruleTermCharacter2339); 
+                    this_NOT_6=(Token)match(input,RULE_NOT,FOLLOW_RULE_NOT_in_ruleTermCharacter2645); 
 
                     		current.merge(this_NOT_6);
                         
@@ -2653,9 +3029,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 8 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:947:10: this_ZERO_7= RULE_ZERO
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1089:10: this_ZERO_7= RULE_ZERO
                     {
-                    this_ZERO_7=(Token)match(input,RULE_ZERO,FOLLOW_RULE_ZERO_in_ruleTermCharacter2365); 
+                    this_ZERO_7=(Token)match(input,RULE_ZERO,FOLLOW_RULE_ZERO_in_ruleTermCharacter2671); 
 
                     		current.merge(this_ZERO_7);
                         
@@ -2666,9 +3042,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 9 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:955:10: this_DIGIT_NONZERO_8= RULE_DIGIT_NONZERO
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1097:10: this_DIGIT_NONZERO_8= RULE_DIGIT_NONZERO
                     {
-                    this_DIGIT_NONZERO_8=(Token)match(input,RULE_DIGIT_NONZERO,FOLLOW_RULE_DIGIT_NONZERO_in_ruleTermCharacter2391); 
+                    this_DIGIT_NONZERO_8=(Token)match(input,RULE_DIGIT_NONZERO,FOLLOW_RULE_DIGIT_NONZERO_in_ruleTermCharacter2697); 
 
                     		current.merge(this_DIGIT_NONZERO_8);
                         
@@ -2679,9 +3055,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 10 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:963:10: this_LETTER_9= RULE_LETTER
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1105:10: this_LETTER_9= RULE_LETTER
                     {
-                    this_LETTER_9=(Token)match(input,RULE_LETTER,FOLLOW_RULE_LETTER_in_ruleTermCharacter2417); 
+                    this_LETTER_9=(Token)match(input,RULE_LETTER,FOLLOW_RULE_LETTER_in_ruleTermCharacter2723); 
 
                     		current.merge(this_LETTER_9);
                         
@@ -2692,9 +3068,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 11 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:971:10: this_CARET_10= RULE_CARET
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1113:10: this_CARET_10= RULE_CARET
                     {
-                    this_CARET_10=(Token)match(input,RULE_CARET,FOLLOW_RULE_CARET_in_ruleTermCharacter2443); 
+                    this_CARET_10=(Token)match(input,RULE_CARET,FOLLOW_RULE_CARET_in_ruleTermCharacter2749); 
 
                     		current.merge(this_CARET_10);
                         
@@ -2705,9 +3081,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 12 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:979:10: this_EQUAL_11= RULE_EQUAL
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1121:10: this_EQUAL_11= RULE_EQUAL
                     {
-                    this_EQUAL_11=(Token)match(input,RULE_EQUAL,FOLLOW_RULE_EQUAL_in_ruleTermCharacter2469); 
+                    this_EQUAL_11=(Token)match(input,RULE_EQUAL,FOLLOW_RULE_EQUAL_in_ruleTermCharacter2775); 
 
                     		current.merge(this_EQUAL_11);
                         
@@ -2718,9 +3094,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 13 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:987:10: this_PLUS_12= RULE_PLUS
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1129:10: this_PLUS_12= RULE_PLUS
                     {
-                    this_PLUS_12=(Token)match(input,RULE_PLUS,FOLLOW_RULE_PLUS_in_ruleTermCharacter2495); 
+                    this_PLUS_12=(Token)match(input,RULE_PLUS,FOLLOW_RULE_PLUS_in_ruleTermCharacter2801); 
 
                     		current.merge(this_PLUS_12);
                         
@@ -2731,9 +3107,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 14 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:995:10: this_CURLY_OPEN_13= RULE_CURLY_OPEN
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1137:10: this_CURLY_OPEN_13= RULE_CURLY_OPEN
                     {
-                    this_CURLY_OPEN_13=(Token)match(input,RULE_CURLY_OPEN,FOLLOW_RULE_CURLY_OPEN_in_ruleTermCharacter2521); 
+                    this_CURLY_OPEN_13=(Token)match(input,RULE_CURLY_OPEN,FOLLOW_RULE_CURLY_OPEN_in_ruleTermCharacter2827); 
 
                     		current.merge(this_CURLY_OPEN_13);
                         
@@ -2744,9 +3120,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 15 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1003:10: this_CURLY_CLOSE_14= RULE_CURLY_CLOSE
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1145:10: this_CURLY_CLOSE_14= RULE_CURLY_CLOSE
                     {
-                    this_CURLY_CLOSE_14=(Token)match(input,RULE_CURLY_CLOSE,FOLLOW_RULE_CURLY_CLOSE_in_ruleTermCharacter2547); 
+                    this_CURLY_CLOSE_14=(Token)match(input,RULE_CURLY_CLOSE,FOLLOW_RULE_CURLY_CLOSE_in_ruleTermCharacter2853); 
 
                     		current.merge(this_CURLY_CLOSE_14);
                         
@@ -2757,9 +3133,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 16 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1011:10: this_ROUND_OPEN_15= RULE_ROUND_OPEN
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1153:10: this_ROUND_OPEN_15= RULE_ROUND_OPEN
                     {
-                    this_ROUND_OPEN_15=(Token)match(input,RULE_ROUND_OPEN,FOLLOW_RULE_ROUND_OPEN_in_ruleTermCharacter2573); 
+                    this_ROUND_OPEN_15=(Token)match(input,RULE_ROUND_OPEN,FOLLOW_RULE_ROUND_OPEN_in_ruleTermCharacter2879); 
 
                     		current.merge(this_ROUND_OPEN_15);
                         
@@ -2770,9 +3146,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 17 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1019:10: this_ROUND_CLOSE_16= RULE_ROUND_CLOSE
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1161:10: this_ROUND_CLOSE_16= RULE_ROUND_CLOSE
                     {
-                    this_ROUND_CLOSE_16=(Token)match(input,RULE_ROUND_CLOSE,FOLLOW_RULE_ROUND_CLOSE_in_ruleTermCharacter2599); 
+                    this_ROUND_CLOSE_16=(Token)match(input,RULE_ROUND_CLOSE,FOLLOW_RULE_ROUND_CLOSE_in_ruleTermCharacter2905); 
 
                     		current.merge(this_ROUND_CLOSE_16);
                         
@@ -2783,9 +3159,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 18 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1027:10: this_SQUARE_OPEN_17= RULE_SQUARE_OPEN
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1169:10: this_SQUARE_OPEN_17= RULE_SQUARE_OPEN
                     {
-                    this_SQUARE_OPEN_17=(Token)match(input,RULE_SQUARE_OPEN,FOLLOW_RULE_SQUARE_OPEN_in_ruleTermCharacter2625); 
+                    this_SQUARE_OPEN_17=(Token)match(input,RULE_SQUARE_OPEN,FOLLOW_RULE_SQUARE_OPEN_in_ruleTermCharacter2931); 
 
                     		current.merge(this_SQUARE_OPEN_17);
                         
@@ -2796,9 +3172,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 19 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1035:10: this_SQUARE_CLOSE_18= RULE_SQUARE_CLOSE
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1177:10: this_SQUARE_CLOSE_18= RULE_SQUARE_CLOSE
                     {
-                    this_SQUARE_CLOSE_18=(Token)match(input,RULE_SQUARE_CLOSE,FOLLOW_RULE_SQUARE_CLOSE_in_ruleTermCharacter2651); 
+                    this_SQUARE_CLOSE_18=(Token)match(input,RULE_SQUARE_CLOSE,FOLLOW_RULE_SQUARE_CLOSE_in_ruleTermCharacter2957); 
 
                     		current.merge(this_SQUARE_CLOSE_18);
                         
@@ -2809,9 +3185,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 20 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1043:10: this_DOT_19= RULE_DOT
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1185:10: this_DOT_19= RULE_DOT
                     {
-                    this_DOT_19=(Token)match(input,RULE_DOT,FOLLOW_RULE_DOT_in_ruleTermCharacter2677); 
+                    this_DOT_19=(Token)match(input,RULE_DOT,FOLLOW_RULE_DOT_in_ruleTermCharacter2983); 
 
                     		current.merge(this_DOT_19);
                         
@@ -2822,9 +3198,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 21 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1051:10: this_COLON_20= RULE_COLON
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1193:10: this_COLON_20= RULE_COLON
                     {
-                    this_COLON_20=(Token)match(input,RULE_COLON,FOLLOW_RULE_COLON_in_ruleTermCharacter2703); 
+                    this_COLON_20=(Token)match(input,RULE_COLON,FOLLOW_RULE_COLON_in_ruleTermCharacter3009); 
 
                     		current.merge(this_COLON_20);
                         
@@ -2835,9 +3211,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 22 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1059:10: this_COMMA_21= RULE_COMMA
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1201:10: this_COMMA_21= RULE_COMMA
                     {
-                    this_COMMA_21=(Token)match(input,RULE_COMMA,FOLLOW_RULE_COMMA_in_ruleTermCharacter2729); 
+                    this_COMMA_21=(Token)match(input,RULE_COMMA,FOLLOW_RULE_COMMA_in_ruleTermCharacter3035); 
 
                     		current.merge(this_COMMA_21);
                         
@@ -2848,9 +3224,9 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 23 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1067:10: this_OTHER_CHARACTER_22= RULE_OTHER_CHARACTER
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1209:10: this_OTHER_CHARACTER_22= RULE_OTHER_CHARACTER
                     {
-                    this_OTHER_CHARACTER_22=(Token)match(input,RULE_OTHER_CHARACTER,FOLLOW_RULE_OTHER_CHARACTER_in_ruleTermCharacter2755); 
+                    this_OTHER_CHARACTER_22=(Token)match(input,RULE_OTHER_CHARACTER,FOLLOW_RULE_OTHER_CHARACTER_in_ruleTermCharacter3061); 
 
                     		current.merge(this_OTHER_CHARACTER_22);
                         
@@ -2893,99 +3269,111 @@ public class InternalEclParser extends AbstractInternalAntlrParser {
     public static final BitSet FOLLOW_ruleOrExpressionConstraint_in_entryRuleOrExpressionConstraint179 = new BitSet(new long[]{0x0000000000000000L});
     public static final BitSet FOLLOW_EOF_in_entryRuleOrExpressionConstraint189 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_ruleAndExpressionConstraint_in_ruleOrExpressionConstraint236 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_RULE_OR_in_ruleOrExpressionConstraint256 = new BitSet(new long[]{0x0000000000004B80L});
+    public static final BitSet FOLLOW_RULE_OR_in_ruleOrExpressionConstraint256 = new BitSet(new long[]{0x0000000000012F80L});
     public static final BitSet FOLLOW_ruleAndExpressionConstraint_in_ruleOrExpressionConstraint276 = new BitSet(new long[]{0x0000000000000012L});
     public static final BitSet FOLLOW_ruleAndExpressionConstraint_in_entryRuleAndExpressionConstraint314 = new BitSet(new long[]{0x0000000000000000L});
     public static final BitSet FOLLOW_EOF_in_entryRuleAndExpressionConstraint324 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_ruleExclusionExpressionConstraint_in_ruleAndExpressionConstraint371 = new BitSet(new long[]{0x0000000000000022L});
-    public static final BitSet FOLLOW_RULE_AND_in_ruleAndExpressionConstraint391 = new BitSet(new long[]{0x0000000000004B80L});
+    public static final BitSet FOLLOW_RULE_AND_in_ruleAndExpressionConstraint391 = new BitSet(new long[]{0x0000000000012F80L});
     public static final BitSet FOLLOW_ruleExclusionExpressionConstraint_in_ruleAndExpressionConstraint411 = new BitSet(new long[]{0x0000000000000022L});
     public static final BitSet FOLLOW_ruleExclusionExpressionConstraint_in_entryRuleExclusionExpressionConstraint449 = new BitSet(new long[]{0x0000000000000000L});
     public static final BitSet FOLLOW_EOF_in_entryRuleExclusionExpressionConstraint459 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_ruleSimpleExpressionConstraint_in_ruleExclusionExpressionConstraint506 = new BitSet(new long[]{0x0000000000000042L});
-    public static final BitSet FOLLOW_RULE_MINUS_in_ruleExclusionExpressionConstraint526 = new BitSet(new long[]{0x0000000000004B80L});
+    public static final BitSet FOLLOW_RULE_MINUS_in_ruleExclusionExpressionConstraint526 = new BitSet(new long[]{0x0000000000012F80L});
     public static final BitSet FOLLOW_ruleSimpleExpressionConstraint_in_ruleExclusionExpressionConstraint546 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_ruleSimpleExpressionConstraint_in_entryRuleSimpleExpressionConstraint584 = new BitSet(new long[]{0x0000000000000000L});
     public static final BitSet FOLLOW_EOF_in_entryRuleSimpleExpressionConstraint594 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleDescendantOf_in_ruleSimpleExpressionConstraint641 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleDescendantOrSelfOf_in_ruleSimpleExpressionConstraint668 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleFocusConcept_in_ruleSimpleExpressionConstraint695 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleFocusConcept_in_entryRuleFocusConcept730 = new BitSet(new long[]{0x0000000000000000L});
-    public static final BitSet FOLLOW_EOF_in_entryRuleFocusConcept740 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleMemberOf_in_ruleFocusConcept787 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleConceptReference_in_ruleFocusConcept814 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleAny_in_ruleFocusConcept841 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleDescendantOf_in_entryRuleDescendantOf876 = new BitSet(new long[]{0x0000000000000000L});
-    public static final BitSet FOLLOW_EOF_in_entryRuleDescendantOf886 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_LESS_THAN_in_ruleDescendantOf922 = new BitSet(new long[]{0x0000000000005B80L});
-    public static final BitSet FOLLOW_ruleFocusConcept_in_ruleDescendantOf944 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleNestableExpression_in_ruleDescendantOf963 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleDescendantOrSelfOf_in_entryRuleDescendantOrSelfOf1002 = new BitSet(new long[]{0x0000000000000000L});
-    public static final BitSet FOLLOW_EOF_in_entryRuleDescendantOrSelfOf1012 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_DBL_LESS_THAN_in_ruleDescendantOrSelfOf1048 = new BitSet(new long[]{0x0000000000005B80L});
-    public static final BitSet FOLLOW_ruleFocusConcept_in_ruleDescendantOrSelfOf1070 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleNestableExpression_in_ruleDescendantOrSelfOf1089 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleMemberOf_in_entryRuleMemberOf1128 = new BitSet(new long[]{0x0000000000000000L});
-    public static final BitSet FOLLOW_EOF_in_entryRuleMemberOf1138 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_CARET_in_ruleMemberOf1174 = new BitSet(new long[]{0x0000000000004B80L});
-    public static final BitSet FOLLOW_ruleConceptReference_in_ruleMemberOf1196 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleAny_in_ruleMemberOf1215 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleConceptReference_in_entryRuleConceptReference1254 = new BitSet(new long[]{0x0000000000000000L});
-    public static final BitSet FOLLOW_EOF_in_entryRuleConceptReference1264 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleSnomedIdentifier_in_ruleConceptReference1310 = new BitSet(new long[]{0x0000000000000402L});
-    public static final BitSet FOLLOW_RULE_PIPE_in_ruleConceptReference1322 = new BitSet(new long[]{0x000000007FFEF3B0L});
-    public static final BitSet FOLLOW_ruleTerm_in_ruleConceptReference1342 = new BitSet(new long[]{0x0000000000000400L});
-    public static final BitSet FOLLOW_RULE_PIPE_in_ruleConceptReference1353 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleAny_in_entryRuleAny1390 = new BitSet(new long[]{0x0000000000000000L});
-    public static final BitSet FOLLOW_EOF_in_entryRuleAny1400 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_WILDCARD_in_ruleAny1436 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleNestableExpression_in_entryRuleNestableExpression1480 = new BitSet(new long[]{0x0000000000000000L});
-    public static final BitSet FOLLOW_EOF_in_entryRuleNestableExpression1490 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_ROUND_OPEN_in_ruleNestableExpression1526 = new BitSet(new long[]{0x0000000000004B80L});
-    public static final BitSet FOLLOW_ruleExpressionConstraint_in_ruleNestableExpression1547 = new BitSet(new long[]{0x0000000000002000L});
-    public static final BitSet FOLLOW_RULE_ROUND_CLOSE_in_ruleNestableExpression1557 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleSnomedIdentifier_in_entryRuleSnomedIdentifier1599 = new BitSet(new long[]{0x0000000000000000L});
-    public static final BitSet FOLLOW_EOF_in_entryRuleSnomedIdentifier1610 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier1654 = new BitSet(new long[]{0x000000000000C000L});
-    public static final BitSet FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier1675 = new BitSet(new long[]{0x000000000000C000L});
-    public static final BitSet FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier1701 = new BitSet(new long[]{0x000000000000C000L});
-    public static final BitSet FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier1723 = new BitSet(new long[]{0x000000000000C000L});
-    public static final BitSet FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier1749 = new BitSet(new long[]{0x000000000000C000L});
-    public static final BitSet FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier1771 = new BitSet(new long[]{0x000000000000C000L});
-    public static final BitSet FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier1797 = new BitSet(new long[]{0x000000000000C000L});
-    public static final BitSet FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier1819 = new BitSet(new long[]{0x000000000000C000L});
-    public static final BitSet FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier1845 = new BitSet(new long[]{0x000000000000C000L});
-    public static final BitSet FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier1867 = new BitSet(new long[]{0x000000000000C002L});
-    public static final BitSet FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier1893 = new BitSet(new long[]{0x000000000000C002L});
-    public static final BitSet FOLLOW_ruleTerm_in_entryRuleTerm1951 = new BitSet(new long[]{0x0000000000000000L});
-    public static final BitSet FOLLOW_EOF_in_entryRuleTerm1962 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ruleTermCharacter_in_ruleTerm2014 = new BitSet(new long[]{0x000000007FFFF3B2L});
-    public static final BitSet FOLLOW_RULE_WS_in_ruleTerm2038 = new BitSet(new long[]{0x000000007FFFF3B0L});
-    public static final BitSet FOLLOW_ruleTermCharacter_in_ruleTerm2068 = new BitSet(new long[]{0x000000007FFFF3B2L});
-    public static final BitSet FOLLOW_ruleTermCharacter_in_entryRuleTermCharacter2128 = new BitSet(new long[]{0x0000000000000000L});
-    public static final BitSet FOLLOW_EOF_in_entryRuleTermCharacter2139 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_LESS_THAN_in_ruleTermCharacter2183 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_GREATER_THAN_in_ruleTermCharacter2209 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_DBL_LESS_THAN_in_ruleTermCharacter2235 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_DBL_GREATER_THAN_in_ruleTermCharacter2261 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_AND_in_ruleTermCharacter2287 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_OR_in_ruleTermCharacter2313 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_NOT_in_ruleTermCharacter2339 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_ZERO_in_ruleTermCharacter2365 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_DIGIT_NONZERO_in_ruleTermCharacter2391 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_LETTER_in_ruleTermCharacter2417 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_CARET_in_ruleTermCharacter2443 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_EQUAL_in_ruleTermCharacter2469 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_PLUS_in_ruleTermCharacter2495 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_CURLY_OPEN_in_ruleTermCharacter2521 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_CURLY_CLOSE_in_ruleTermCharacter2547 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_ROUND_OPEN_in_ruleTermCharacter2573 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_ROUND_CLOSE_in_ruleTermCharacter2599 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_SQUARE_OPEN_in_ruleTermCharacter2625 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_SQUARE_CLOSE_in_ruleTermCharacter2651 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_DOT_in_ruleTermCharacter2677 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_COLON_in_ruleTermCharacter2703 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_COMMA_in_ruleTermCharacter2729 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_RULE_OTHER_CHARACTER_in_ruleTermCharacter2755 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleChildOf_in_ruleSimpleExpressionConstraint641 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleDescendantOf_in_ruleSimpleExpressionConstraint668 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleDescendantOrSelfOf_in_ruleSimpleExpressionConstraint695 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleParentOf_in_ruleSimpleExpressionConstraint722 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleFocusConcept_in_ruleSimpleExpressionConstraint749 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleFocusConcept_in_entryRuleFocusConcept784 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_entryRuleFocusConcept794 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleMemberOf_in_ruleFocusConcept841 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleConceptReference_in_ruleFocusConcept868 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleAny_in_ruleFocusConcept895 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleChildOf_in_entryRuleChildOf930 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_entryRuleChildOf940 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_LT_EM_in_ruleChildOf976 = new BitSet(new long[]{0x0000000000016F80L});
+    public static final BitSet FOLLOW_ruleFocusConcept_in_ruleChildOf998 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleNestableExpression_in_ruleChildOf1017 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleDescendantOf_in_entryRuleDescendantOf1056 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_entryRuleDescendantOf1066 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_LT_in_ruleDescendantOf1102 = new BitSet(new long[]{0x0000000000016F80L});
+    public static final BitSet FOLLOW_ruleFocusConcept_in_ruleDescendantOf1124 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleNestableExpression_in_ruleDescendantOf1143 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleDescendantOrSelfOf_in_entryRuleDescendantOrSelfOf1182 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_entryRuleDescendantOrSelfOf1192 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_DBL_LT_in_ruleDescendantOrSelfOf1228 = new BitSet(new long[]{0x0000000000016F80L});
+    public static final BitSet FOLLOW_ruleFocusConcept_in_ruleDescendantOrSelfOf1250 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleNestableExpression_in_ruleDescendantOrSelfOf1269 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleParentOf_in_entryRuleParentOf1308 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_entryRuleParentOf1318 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_GT_EM_in_ruleParentOf1354 = new BitSet(new long[]{0x0000000000016F80L});
+    public static final BitSet FOLLOW_ruleFocusConcept_in_ruleParentOf1376 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleNestableExpression_in_ruleParentOf1395 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleMemberOf_in_entryRuleMemberOf1434 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_entryRuleMemberOf1444 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_CARET_in_ruleMemberOf1480 = new BitSet(new long[]{0x0000000000012F80L});
+    public static final BitSet FOLLOW_ruleConceptReference_in_ruleMemberOf1502 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleAny_in_ruleMemberOf1521 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleConceptReference_in_entryRuleConceptReference1560 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_entryRuleConceptReference1570 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleSnomedIdentifier_in_ruleConceptReference1616 = new BitSet(new long[]{0x0000000000001002L});
+    public static final BitSet FOLLOW_RULE_PIPE_in_ruleConceptReference1628 = new BitSet(new long[]{0x00000001FFFBCB30L});
+    public static final BitSet FOLLOW_ruleTerm_in_ruleConceptReference1648 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_RULE_PIPE_in_ruleConceptReference1659 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleAny_in_entryRuleAny1696 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_entryRuleAny1706 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_WILDCARD_in_ruleAny1742 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleNestableExpression_in_entryRuleNestableExpression1786 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_entryRuleNestableExpression1796 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_ROUND_OPEN_in_ruleNestableExpression1832 = new BitSet(new long[]{0x0000000000012F80L});
+    public static final BitSet FOLLOW_ruleExpressionConstraint_in_ruleNestableExpression1853 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_RULE_ROUND_CLOSE_in_ruleNestableExpression1863 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleSnomedIdentifier_in_entryRuleSnomedIdentifier1905 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_entryRuleSnomedIdentifier1916 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier1960 = new BitSet(new long[]{0x0000000000030000L});
+    public static final BitSet FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier1981 = new BitSet(new long[]{0x0000000000030000L});
+    public static final BitSet FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier2007 = new BitSet(new long[]{0x0000000000030000L});
+    public static final BitSet FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier2029 = new BitSet(new long[]{0x0000000000030000L});
+    public static final BitSet FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier2055 = new BitSet(new long[]{0x0000000000030000L});
+    public static final BitSet FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier2077 = new BitSet(new long[]{0x0000000000030000L});
+    public static final BitSet FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier2103 = new BitSet(new long[]{0x0000000000030000L});
+    public static final BitSet FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier2125 = new BitSet(new long[]{0x0000000000030000L});
+    public static final BitSet FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier2151 = new BitSet(new long[]{0x0000000000030000L});
+    public static final BitSet FOLLOW_RULE_DIGIT_NONZERO_in_ruleSnomedIdentifier2173 = new BitSet(new long[]{0x0000000000030002L});
+    public static final BitSet FOLLOW_RULE_ZERO_in_ruleSnomedIdentifier2199 = new BitSet(new long[]{0x0000000000030002L});
+    public static final BitSet FOLLOW_ruleTerm_in_entryRuleTerm2257 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_entryRuleTerm2268 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ruleTermCharacter_in_ruleTerm2320 = new BitSet(new long[]{0x00000001FFFFCB32L});
+    public static final BitSet FOLLOW_RULE_WS_in_ruleTerm2344 = new BitSet(new long[]{0x00000001FFFFCB30L});
+    public static final BitSet FOLLOW_ruleTermCharacter_in_ruleTerm2374 = new BitSet(new long[]{0x00000001FFFFCB32L});
+    public static final BitSet FOLLOW_ruleTermCharacter_in_entryRuleTermCharacter2434 = new BitSet(new long[]{0x0000000000000000L});
+    public static final BitSet FOLLOW_EOF_in_entryRuleTermCharacter2445 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_LT_in_ruleTermCharacter2489 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_GT_in_ruleTermCharacter2515 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_DBL_LT_in_ruleTermCharacter2541 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_DBL_GT_in_ruleTermCharacter2567 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_AND_in_ruleTermCharacter2593 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_OR_in_ruleTermCharacter2619 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_NOT_in_ruleTermCharacter2645 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_ZERO_in_ruleTermCharacter2671 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_DIGIT_NONZERO_in_ruleTermCharacter2697 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_LETTER_in_ruleTermCharacter2723 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_CARET_in_ruleTermCharacter2749 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_EQUAL_in_ruleTermCharacter2775 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_PLUS_in_ruleTermCharacter2801 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_CURLY_OPEN_in_ruleTermCharacter2827 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_CURLY_CLOSE_in_ruleTermCharacter2853 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_ROUND_OPEN_in_ruleTermCharacter2879 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_ROUND_CLOSE_in_ruleTermCharacter2905 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_SQUARE_OPEN_in_ruleTermCharacter2931 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_SQUARE_CLOSE_in_ruleTermCharacter2957 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_DOT_in_ruleTermCharacter2983 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_COLON_in_ruleTermCharacter3009 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_COMMA_in_ruleTermCharacter3035 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_RULE_OTHER_CHARACTER_in_ruleTermCharacter3061 = new BitSet(new long[]{0x0000000000000002L});
 
 }

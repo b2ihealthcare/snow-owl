@@ -30,10 +30,14 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getANDToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getCARETRule())
 			return getCARETToken(semanticObject, ruleCall, node);
-		else if(ruleCall.getRule() == grammarAccess.getDBL_LESS_THANRule())
-			return getDBL_LESS_THANToken(semanticObject, ruleCall, node);
-		else if(ruleCall.getRule() == grammarAccess.getLESS_THANRule())
-			return getLESS_THANToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getDBL_LTRule())
+			return getDBL_LTToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getGT_EMRule())
+			return getGT_EMToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getLTRule())
+			return getLTToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getLT_EMRule())
+			return getLT_EMToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getMINUSRule())
 			return getMINUSToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getORRule())
@@ -68,21 +72,39 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal DBL_LESS_THAN			: '<<';
+	 * terminal DBL_LT					: '<<';
 	 */
-	protected String getDBL_LESS_THANToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+	protected String getDBL_LTToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
 			return getTokenText(node);
 		return "<<";
 	}
 	
 	/**
-	 * terminal LESS_THAN				: '<';
+	 * terminal GT_EM					: '>!';
 	 */
-	protected String getLESS_THANToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+	protected String getGT_EMToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return ">!";
+	}
+	
+	/**
+	 * terminal LT						: '<';
+	 */
+	protected String getLTToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
 			return getTokenText(node);
 		return "<";
+	}
+	
+	/**
+	 * terminal LT_EM					: '<!';
+	 */
+	protected String getLT_EMToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "<!";
 	}
 	
 	/**

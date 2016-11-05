@@ -5,6 +5,7 @@ package com.b2international.snowowl.snomed.ecl.serializer;
 
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
+import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
@@ -12,6 +13,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
 import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
 import com.b2international.snowowl.snomed.ecl.services.EclGrammarAccess;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -42,6 +44,9 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 			case EclPackage.ANY:
 				sequence_Any(context, (Any) semanticObject); 
 				return; 
+			case EclPackage.CHILD_OF:
+				sequence_ChildOf(context, (ChildOf) semanticObject); 
+				return; 
 			case EclPackage.CONCEPT_REFERENCE:
 				sequence_ConceptReference(context, (ConceptReference) semanticObject); 
 				return; 
@@ -59,6 +64,9 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				return; 
 			case EclPackage.OR_EXPRESSION_CONSTRAINT:
 				sequence_OrExpressionConstraint(context, (OrExpressionConstraint) semanticObject); 
+				return; 
+			case EclPackage.PARENT_OF:
+				sequence_ParentOf(context, (ParentOf) semanticObject); 
 				return; 
 			}
 		if (errorAcceptor != null) errorAcceptor.accept(diagnosticProvider.createInvalidContextOrTypeDiagnostic(semanticObject, context));
@@ -88,6 +96,15 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     {Any}
 	 */
 	protected void sequence_Any(EObject context, Any semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     (constraint=FocusConcept | constraint=NestableExpression)
+	 */
+	protected void sequence_ChildOf(EObject context, ChildOf semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -163,5 +180,14 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 		feeder.accept(grammarAccess.getOrExpressionConstraintAccess().getOrExpressionConstraintLeftAction_1_0(), semanticObject.getLeft());
 		feeder.accept(grammarAccess.getOrExpressionConstraintAccess().getRightAndExpressionConstraintParserRuleCall_1_2_0(), semanticObject.getRight());
 		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     (constraint=FocusConcept | constraint=NestableExpression)
+	 */
+	protected void sequence_ParentOf(EObject context, ParentOf semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
 	}
 }

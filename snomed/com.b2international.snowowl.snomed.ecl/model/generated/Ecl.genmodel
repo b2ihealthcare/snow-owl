@@ -9,11 +9,17 @@
   <genPackages prefix="Ecl" basePackage="com.b2international.snowowl.snomed.ecl" disposableProviderFactory="true"
       fileExtensions="ecl" ecorePackage="Ecl.ecore#/">
     <genClasses ecoreClass="Ecl.ecore#//ExpressionConstraint"/>
+    <genClasses ecoreClass="Ecl.ecore#//ChildOf">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//ChildOf/constraint"/>
+    </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//DescendantOf">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//DescendantOf/constraint"/>
     </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//DescendantOrSelfOf">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//DescendantOrSelfOf/constraint"/>
+    </genClasses>
+    <genClasses ecoreClass="Ecl.ecore#//ParentOf">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//ParentOf/constraint"/>
     </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//MemberOf">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//MemberOf/constraint"/>

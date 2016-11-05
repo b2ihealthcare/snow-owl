@@ -17,16 +17,22 @@ ExclusionExpressionConstraint returns ExpressionConstraint:
 	SimpleExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=SimpleExpressionConstraint)?;
 	
 SimpleExpressionConstraint returns ExpressionConstraint:
-	DescendantOf | DescendantOrSelfOf | FocusConcept;
+	ChildOf| DescendantOf | DescendantOrSelfOf | ParentOf | FocusConcept;
 	
 FocusConcept returns ExpressionConstraint:
 	MemberOf | ConceptReference | Any;
 
+ChildOf:
+	LT_EM constraint=(FocusConcept | NestableExpression);
+
 DescendantOf:
-	LESS_THAN constraint=(FocusConcept | NestableExpression);
+	LT constraint=(FocusConcept | NestableExpression);
 
 DescendantOrSelfOf:
-	DBL_LESS_THAN constraint=(FocusConcept | NestableExpression);
+	DBL_LT constraint=(FocusConcept | NestableExpression);
+
+ParentOf:
+	GT_EM constraint=(FocusConcept | NestableExpression);
 
 MemberOf:
 	CARET constraint=(ConceptReference | Any);
@@ -43,8 +49,8 @@ NestableExpression:
 // hidden grammar rules
 SnomedIdentifier 	hidden() : DIGIT_NONZERO (DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)+;
 Term 				hidden() : (TermCharacter)+ (WS+ (TermCharacter)+)*;
-TermCharacter 		hidden() : LESS_THAN|GREATER_THAN
-								|DBL_LESS_THAN|DBL_GREATER_THAN
+TermCharacter 		hidden() : LT|GT
+								|DBL_LT|DBL_GT
 								|AND|OR|NOT
 								|ZERO|DIGIT_NONZERO
 								|LETTER|CARET
@@ -83,10 +89,12 @@ terminal CARET 					: '^';
 terminal NOT 					: '!';
 terminal DOT					: '.';
 terminal WILDCARD 				: '*';
-terminal LESS_THAN				: '<';
-terminal GREATER_THAN			: '>';
-terminal DBL_LESS_THAN			: '<<';
-terminal DBL_GREATER_THAN		: '>>';
+terminal LT						: '<';
+terminal GT						: '>';
+terminal DBL_LT					: '<<';
+terminal DBL_GT					: '>>';
+terminal LT_EM					: '<!';
+terminal GT_EM					: '>!';
 
 // comment terminals
 terminal WS 					: (' '|'\t'|'\n'|'\r');
