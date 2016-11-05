@@ -146,6 +146,19 @@ public class EclEvaluatorTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
+	public void childOf() throws Exception {
+		final Expression actual = evaluator.evaluate("<!"+ROOT_ID).getSync();
+		final Expression expected = parents(Collections.singleton(ROOT_ID));
+		assertEquals(expected, actual);
+	}
+	
+	@Test(expected = UnsupportedOperationException.class)
+	public void parentOf() throws Exception {
+		// Should throw UnsupportedOperationException until nested expression evaluation is not supported
+		evaluator.evaluate(">!"+ROOT_ID).getSync();
+	}
+	
+	@Test
 	public void selfAndOther() throws Exception {
 		final Expression actual = evaluator.evaluate(ROOT_ID + " AND " + OTHER_ID).getSync();
 		final Expression expected = Expressions.builder()

@@ -43,6 +43,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
+import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
@@ -136,6 +137,17 @@ public class DefaultEclEvaluator implements EclEvaluator {
 								.should(parents(ids))
 								.should(ancestors(ids))
 								.build();
+					}
+				});
+	}
+	
+	protected Promise<Expression> eval(final ChildOf childOf) {
+		return evaluate(childOf.getConstraint())
+				.then(new Function<Expression, Expression>() {
+					@Override
+					public Expression apply(Expression inner) {
+						final Set<String> ids = extractIds(inner);
+						return parents(ids);
 					}
 				});
 	}
