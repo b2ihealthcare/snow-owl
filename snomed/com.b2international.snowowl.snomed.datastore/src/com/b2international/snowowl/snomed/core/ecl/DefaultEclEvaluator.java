@@ -146,11 +146,9 @@ public class DefaultEclEvaluator implements EclEvaluator {
 					public Expression apply(List<Object> innerExpressions) {
 						final Expression left = (Expression) innerExpressions.get(0);
 						final Expression right = (Expression) innerExpressions.get(1);
-						final Set<String> leftIds = extractIds(left);
-						final Set<String> rightIds = extractIds(right);
 						return Expressions.builder()
-								.must(ids(leftIds))
-								.must(ids(rightIds))
+								.must(left)
+								.must(right)
 								.build();
 					}
 				});
@@ -163,11 +161,9 @@ public class DefaultEclEvaluator implements EclEvaluator {
 					public Expression apply(List<Object> innerExpressions) {
 						final Expression left = (Expression) innerExpressions.get(0);
 						final Expression right = (Expression) innerExpressions.get(1);
-						final Set<String> leftIds = extractIds(left);
-						final Set<String> rightIds = extractIds(right);
 						return Expressions.builder()
-								.should(ids(leftIds))
-								.should(ids(rightIds))
+								.should(left)
+								.should(right)
 								.build();
 					}
 				});

@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
-import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
+import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.*;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringRefSet;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
@@ -147,22 +147,20 @@ public class EclEvaluatorTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void selfAndOther() throws Exception {
-		// while this is logically incorrect, the grammar allows it
 		final Expression actual = evaluator.evaluate(ROOT_ID + " AND " + OTHER_ID).getSync();
 		final Expression expected = Expressions.builder()
-				.must(ids(Collections.singleton(ROOT_ID)))
-				.must(ids(Collections.singleton(OTHER_ID)))
+				.must(id(ROOT_ID))
+				.must(id(OTHER_ID))
 				.build();
 		assertEquals(expected, actual);
 	}
 	
 	@Test
 	public void selfOrOther() throws Exception {
-		// while this is logically incorrect, the grammar allows it
 		final Expression actual = evaluator.evaluate(ROOT_ID + " OR " + OTHER_ID).getSync();
 		final Expression expected = Expressions.builder()
-				.should(ids(Collections.singleton(ROOT_ID)))
-				.should(ids(Collections.singleton(OTHER_ID)))
+				.should(id(ROOT_ID))
+				.should(id(OTHER_ID))
 				.build();
 		assertEquals(expected, actual);
 	}
