@@ -46,6 +46,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
+import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
 import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
 import com.google.common.base.Function;
@@ -164,6 +165,21 @@ public class DefaultEclEvaluator implements EclEvaluator {
 						return Expressions.builder()
 								.should(left)
 								.should(right)
+								.build();
+					}
+				});
+	}
+	
+	protected Promise<Expression> eval(final ExclusionExpressionConstraint exclusion) {
+		return Promise.all(evaluate(exclusion.getLeft()), evaluate(exclusion.getRight()))
+				.then(new Function<List<Object>, Expression>() {
+					@Override
+					public Expression apply(List<Object> innerExpressions) {
+						final Expression left = (Expression) innerExpressions.get(0);
+						final Expression right = (Expression) innerExpressions.get(1);
+						return Expressions.builder()
+								.must(left)
+								.mustNot(right)
 								.build();
 					}
 				});

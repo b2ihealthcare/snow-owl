@@ -164,5 +164,15 @@ public class EclEvaluatorTest extends BaseRevisionIndexTest {
 				.build();
 		assertEquals(expected, actual);
 	}
+	
+	@Test
+	public void selfAndNotOther() throws Exception {
+		final Expression actual = evaluator.evaluate(ROOT_ID + " MINUS " + OTHER_ID).getSync();
+		final Expression expected = Expressions.builder()
+				.must(id(ROOT_ID))
+				.mustNot(id(OTHER_ID))
+				.build();
+		assertEquals(expected, actual);
+	}
 
 }
