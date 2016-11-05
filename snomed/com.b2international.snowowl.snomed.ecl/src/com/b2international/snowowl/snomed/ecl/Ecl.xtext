@@ -11,12 +11,14 @@ OrExpressionConstraint returns ExpressionConstraint:
 	AndExpressionConstraint ({OrExpressionConstraint.left=current} OR right=AndExpressionConstraint)*;
 	
 AndExpressionConstraint returns ExpressionConstraint:
-	SimpleExpressionConstraint ({AndExpressionConstraint.left=current} AND right=SimpleExpressionConstraint)*;
+	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} AND right=ExclusionExpressionConstraint)*;
+	
+ExclusionExpressionConstraint returns ExpressionConstraint:
+	SimpleExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=SimpleExpressionConstraint)?;
 	
 SimpleExpressionConstraint returns ExpressionConstraint:
 	DescendantOf | DescendantOrSelfOf | FocusConcept;
 	
-// XXX FocusConcept Grouping rule no actual EObject present with this name
 FocusConcept returns ExpressionConstraint:
 	MemberOf | ConceptReference | Any;
 
@@ -58,6 +60,7 @@ TermCharacter 		hidden() : LESS_THAN|GREATER_THAN
 // bool operators
 terminal AND 					: 'AND';
 terminal OR 					: 'OR';
+terminal MINUS					: 'MINUS';
 
 // numeric terminals
 terminal ZERO 					: '0';

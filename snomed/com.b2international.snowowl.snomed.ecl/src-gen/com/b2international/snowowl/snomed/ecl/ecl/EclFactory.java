@@ -104,6 +104,15 @@ public interface EclFactory extends EFactory
   AndExpressionConstraint createAndExpressionConstraint();
 
   /**
+   * Returns a new object of class '<em>Exclusion Expression Constraint</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Exclusion Expression Constraint</em>'.
+   * @generated
+   */
+  ExclusionExpressionConstraint createExclusionExpressionConstraint();
+
+  /**
    * Returns the package supported by this factory.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

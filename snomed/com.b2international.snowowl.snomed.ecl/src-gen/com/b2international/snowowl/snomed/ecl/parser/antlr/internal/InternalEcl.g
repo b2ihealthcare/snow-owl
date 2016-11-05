@@ -177,11 +177,11 @@ ruleAndExpressionConstraint returns [EObject current=null]
     @after { leaveRule(); }:
 (
     { 
-        newCompositeNode(grammarAccess.getAndExpressionConstraintAccess().getSimpleExpressionConstraintParserRuleCall_0()); 
+        newCompositeNode(grammarAccess.getAndExpressionConstraintAccess().getExclusionExpressionConstraintParserRuleCall_0()); 
     }
-    this_SimpleExpressionConstraint_0=ruleSimpleExpressionConstraint
+    this_ExclusionExpressionConstraint_0=ruleExclusionExpressionConstraint
     { 
-        $current = $this_SimpleExpressionConstraint_0.current; 
+        $current = $this_ExclusionExpressionConstraint_0.current; 
         afterParserOrEnumRuleCall();
     }
 ((
@@ -197,11 +197,69 @@ ruleAndExpressionConstraint returns [EObject current=null]
 (
 (
 		{ 
-	        newCompositeNode(grammarAccess.getAndExpressionConstraintAccess().getRightSimpleExpressionConstraintParserRuleCall_1_2_0()); 
+	        newCompositeNode(grammarAccess.getAndExpressionConstraintAccess().getRightExclusionExpressionConstraintParserRuleCall_1_2_0()); 
+	    }
+		lv_right_3_0=ruleExclusionExpressionConstraint		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getAndExpressionConstraintRule());
+	        }
+       		set(
+       			$current, 
+       			"right",
+        		lv_right_3_0, 
+        		"ExclusionExpressionConstraint");
+	        afterParserOrEnumRuleCall();
+	    }
+
+)
+))*)
+;
+
+
+
+
+
+// Entry rule entryRuleExclusionExpressionConstraint
+entryRuleExclusionExpressionConstraint returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getExclusionExpressionConstraintRule()); }
+	 iv_ruleExclusionExpressionConstraint=ruleExclusionExpressionConstraint 
+	 { $current=$iv_ruleExclusionExpressionConstraint.current; } 
+	 EOF 
+;
+
+// Rule ExclusionExpressionConstraint
+ruleExclusionExpressionConstraint returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(
+    { 
+        newCompositeNode(grammarAccess.getExclusionExpressionConstraintAccess().getSimpleExpressionConstraintParserRuleCall_0()); 
+    }
+    this_SimpleExpressionConstraint_0=ruleSimpleExpressionConstraint
+    { 
+        $current = $this_SimpleExpressionConstraint_0.current; 
+        afterParserOrEnumRuleCall();
+    }
+((
+    {
+        $current = forceCreateModelElementAndSet(
+            grammarAccess.getExclusionExpressionConstraintAccess().getExclusionExpressionConstraintLeftAction_1_0(),
+            $current);
+    }
+)this_MINUS_2=RULE_MINUS
+    { 
+    newLeafNode(this_MINUS_2, grammarAccess.getExclusionExpressionConstraintAccess().getMINUSTerminalRuleCall_1_1()); 
+    }
+(
+(
+		{ 
+	        newCompositeNode(grammarAccess.getExclusionExpressionConstraintAccess().getRightSimpleExpressionConstraintParserRuleCall_1_2_0()); 
 	    }
 		lv_right_3_0=ruleSimpleExpressionConstraint		{
 	        if ($current==null) {
-	            $current = createModelElementForParent(grammarAccess.getAndExpressionConstraintRule());
+	            $current = createModelElementForParent(grammarAccess.getExclusionExpressionConstraintRule());
 	        }
        		set(
        			$current, 
@@ -212,7 +270,7 @@ ruleAndExpressionConstraint returns [EObject current=null]
 	    }
 
 )
-))*)
+))?)
 ;
 
 
@@ -1026,6 +1084,8 @@ finally {
 RULE_AND : 'AND';
 
 RULE_OR : 'OR';
+
+RULE_MINUS : 'MINUS';
 
 RULE_ZERO : '0';
 

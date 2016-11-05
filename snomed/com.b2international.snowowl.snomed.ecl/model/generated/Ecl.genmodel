@@ -32,5 +32,9 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//AndExpressionConstraint/left"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//AndExpressionConstraint/right"/>
     </genClasses>
+    <genClasses ecoreClass="Ecl.ecore#//ExclusionExpressionConstraint">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//ExclusionExpressionConstraint/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//ExclusionExpressionConstraint/right"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

@@ -34,6 +34,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getDBL_LESS_THANToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getLESS_THANRule())
 			return getLESS_THANToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getMINUSRule())
+			return getMINUSToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getORRule())
 			return getORToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getPIPERule())
@@ -81,6 +83,15 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return "<";
+	}
+	
+	/**
+	 * terminal MINUS					: 'MINUS';
+	 */
+	protected String getMINUSToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "MINUS";
 	}
 	
 	/**

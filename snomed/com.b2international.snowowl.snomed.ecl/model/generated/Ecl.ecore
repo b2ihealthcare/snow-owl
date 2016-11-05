@@ -33,4 +33,10 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//ExpressionConstraint"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ExclusionExpressionConstraint" eSuperTypes="#//ExpressionConstraint">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//ExpressionConstraint"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//ExpressionConstraint"
+        containment="true"/>
+  </eClassifiers>
 </ecore:EPackage>

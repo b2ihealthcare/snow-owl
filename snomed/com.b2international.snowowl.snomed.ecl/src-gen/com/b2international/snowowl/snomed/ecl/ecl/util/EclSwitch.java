@@ -150,6 +150,15 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case EclPackage.EXCLUSION_EXPRESSION_CONSTRAINT:
+      {
+        ExclusionExpressionConstraint exclusionExpressionConstraint = (ExclusionExpressionConstraint)theEObject;
+        T result = caseExclusionExpressionConstraint(exclusionExpressionConstraint);
+        if (result == null) result = caseExpressionConstraint(exclusionExpressionConstraint);
+        if (result == null) result = caseNestableExpression(exclusionExpressionConstraint);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       default: return defaultCase(theEObject);
     }
   }
@@ -294,6 +303,22 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseAndExpressionConstraint(AndExpressionConstraint object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Exclusion Expression Constraint</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Exclusion Expression Constraint</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseExclusionExpressionConstraint(ExclusionExpressionConstraint object)
   {
     return null;
   }
