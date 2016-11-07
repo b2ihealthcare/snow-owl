@@ -71,28 +71,38 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cExclusionExpressionConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Action cAndExpressionConstraintLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
-		private final RuleCall cANDTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
+		private final Alternatives cAlternatives_1_1 = (Alternatives)cGroup_1.eContents().get(1);
+		private final RuleCall cANDTerminalRuleCall_1_1_0 = (RuleCall)cAlternatives_1_1.eContents().get(0);
+		private final RuleCall cCOMMATerminalRuleCall_1_1_1 = (RuleCall)cAlternatives_1_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
 		private final RuleCall cRightExclusionExpressionConstraintParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
 		//AndExpressionConstraint returns ExpressionConstraint:
-		//	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} AND right=ExclusionExpressionConstraint)*;
+		//	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} (AND | COMMA)
+		//	right=ExclusionExpressionConstraint)*;
 		@Override public ParserRule getRule() { return rule; }
 
-		//ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} AND right=ExclusionExpressionConstraint)*
+		//ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} (AND | COMMA)
+		//right=ExclusionExpressionConstraint)*
 		public Group getGroup() { return cGroup; }
 
 		//ExclusionExpressionConstraint
 		public RuleCall getExclusionExpressionConstraintParserRuleCall_0() { return cExclusionExpressionConstraintParserRuleCall_0; }
 
-		//({AndExpressionConstraint.left=current} AND right=ExclusionExpressionConstraint)*
+		//({AndExpressionConstraint.left=current} (AND | COMMA) right=ExclusionExpressionConstraint)*
 		public Group getGroup_1() { return cGroup_1; }
 
 		//{AndExpressionConstraint.left=current}
 		public Action getAndExpressionConstraintLeftAction_1_0() { return cAndExpressionConstraintLeftAction_1_0; }
 
+		//AND | COMMA
+		public Alternatives getAlternatives_1_1() { return cAlternatives_1_1; }
+
 		//AND
-		public RuleCall getANDTerminalRuleCall_1_1() { return cANDTerminalRuleCall_1_1; }
+		public RuleCall getANDTerminalRuleCall_1_1_0() { return cANDTerminalRuleCall_1_1_0; }
+
+		//COMMA
+		public RuleCall getCOMMATerminalRuleCall_1_1_1() { return cCOMMATerminalRuleCall_1_1_1; }
 
 		//right=ExclusionExpressionConstraint
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
@@ -875,7 +885,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//AndExpressionConstraint returns ExpressionConstraint:
-	//	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} AND right=ExclusionExpressionConstraint)*;
+	//	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} (AND | COMMA)
+	//	right=ExclusionExpressionConstraint)*;
 	public AndExpressionConstraintElements getAndExpressionConstraintAccess() {
 		return pAndExpressionConstraint;
 	}

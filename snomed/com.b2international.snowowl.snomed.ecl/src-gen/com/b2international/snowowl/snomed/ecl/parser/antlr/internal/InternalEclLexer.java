@@ -12,38 +12,38 @@ import java.util.ArrayList;
 
 @SuppressWarnings("all")
 public class InternalEclLexer extends Lexer {
-    public static final int RULE_DIGIT_NONZERO=18;
-    public static final int RULE_CURLY_OPEN=25;
-    public static final int RULE_DBL_GT=12;
-    public static final int RULE_ROUND_CLOSE=17;
-    public static final int RULE_GT=11;
-    public static final int RULE_NOT=21;
+    public static final int RULE_DIGIT_NONZERO=19;
+    public static final int RULE_CURLY_OPEN=26;
+    public static final int RULE_DBL_GT=13;
+    public static final int RULE_ROUND_CLOSE=18;
+    public static final int RULE_GT=12;
+    public static final int RULE_NOT=22;
     public static final int RULE_AND=5;
     public static final int RULE_SL_COMMENT=34;
-    public static final int RULE_ROUND_OPEN=16;
+    public static final int RULE_ROUND_OPEN=17;
     public static final int RULE_OTHER_CHARACTER=32;
-    public static final int RULE_DBL_LT=9;
-    public static final int RULE_PLUS=24;
+    public static final int RULE_DBL_LT=10;
+    public static final int RULE_PLUS=25;
     public static final int RULE_OR=4;
-    public static final int RULE_DOT=29;
+    public static final int RULE_DOT=30;
     public static final int EOF=-1;
-    public static final int RULE_SQUARE_CLOSE=28;
-    public static final int RULE_EQUAL=23;
-    public static final int RULE_SQUARE_OPEN=27;
-    public static final int RULE_LT_EM=7;
-    public static final int RULE_GT_EM=10;
-    public static final int RULE_WS=20;
-    public static final int RULE_COMMA=31;
-    public static final int RULE_CURLY_CLOSE=26;
-    public static final int RULE_ZERO=19;
-    public static final int RULE_COLON=30;
-    public static final int RULE_MINUS=6;
-    public static final int RULE_LETTER=22;
-    public static final int RULE_LT=8;
-    public static final int RULE_CARET=13;
-    public static final int RULE_PIPE=14;
+    public static final int RULE_SQUARE_CLOSE=29;
+    public static final int RULE_EQUAL=24;
+    public static final int RULE_SQUARE_OPEN=28;
+    public static final int RULE_COMMA=6;
+    public static final int RULE_LT_EM=8;
+    public static final int RULE_GT_EM=11;
+    public static final int RULE_WS=21;
+    public static final int RULE_CURLY_CLOSE=27;
+    public static final int RULE_ZERO=20;
+    public static final int RULE_COLON=31;
+    public static final int RULE_MINUS=7;
+    public static final int RULE_LETTER=23;
+    public static final int RULE_LT=9;
+    public static final int RULE_CARET=14;
+    public static final int RULE_PIPE=15;
     public static final int RULE_ML_COMMENT=33;
-    public static final int RULE_WILDCARD=15;
+    public static final int RULE_WILDCARD=16;
 
     // delegates
     // delegators
@@ -63,8 +63,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_AND;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1368:10: ( 'AND' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1368:12: 'AND'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1373:10: ( 'AND' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1373:12: 'AND'
             {
             match("AND"); 
 
@@ -84,8 +84,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_OR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1370:9: ( 'OR' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1370:11: 'OR'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1375:9: ( 'OR' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1375:11: 'OR'
             {
             match("OR"); 
 
@@ -105,8 +105,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_MINUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1372:12: ( 'MINUS' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1372:14: 'MINUS'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1377:12: ( 'MINUS' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1377:14: 'MINUS'
             {
             match("MINUS"); 
 
@@ -126,8 +126,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_ZERO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1374:11: ( '0' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1374:13: '0'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1379:11: ( '0' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1379:13: '0'
             {
             match('0'); 
 
@@ -146,8 +146,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_DIGIT_NONZERO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1376:20: ( '1' .. '9' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1376:22: '1' .. '9'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1381:20: ( '1' .. '9' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1381:22: '1' .. '9'
             {
             matchRange('1','9'); 
 
@@ -166,8 +166,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_LETTER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1378:13: ( ( 'a' .. 'z' | 'A' .. 'Z' ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1378:15: ( 'a' .. 'z' | 'A' .. 'Z' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1383:13: ( ( 'a' .. 'z' | 'A' .. 'Z' ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1383:15: ( 'a' .. 'z' | 'A' .. 'Z' )
             {
             if ( (input.LA(1)>='A' && input.LA(1)<='Z')||(input.LA(1)>='a' && input.LA(1)<='z') ) {
                 input.consume();
@@ -194,8 +194,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_PIPE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1380:11: ( '|' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1380:13: '|'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1385:11: ( '|' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1385:13: '|'
             {
             match('|'); 
 
@@ -214,8 +214,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_COLON;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1382:12: ( ':' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1382:14: ':'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1387:12: ( ':' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1387:14: ':'
             {
             match(':'); 
 
@@ -234,8 +234,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_CURLY_OPEN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1384:17: ( '{' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1384:19: '{'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1389:17: ( '{' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1389:19: '{'
             {
             match('{'); 
 
@@ -254,8 +254,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_CURLY_CLOSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1386:18: ( '}' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1386:20: '}'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1391:18: ( '}' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1391:20: '}'
             {
             match('}'); 
 
@@ -274,8 +274,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_EQUAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1388:12: ( '=' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1388:14: '='
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1393:12: ( '=' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1393:14: '='
             {
             match('='); 
 
@@ -294,8 +294,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_COMMA;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1390:12: ( ',' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1390:14: ','
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1395:12: ( ',' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1395:14: ','
             {
             match(','); 
 
@@ -314,8 +314,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_ROUND_OPEN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1392:17: ( '(' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1392:19: '('
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1397:17: ( '(' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1397:19: '('
             {
             match('('); 
 
@@ -334,8 +334,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_ROUND_CLOSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1394:18: ( ')' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1394:20: ')'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1399:18: ( ')' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1399:20: ')'
             {
             match(')'); 
 
@@ -354,8 +354,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_SQUARE_OPEN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1396:18: ( '[' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1396:20: '['
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1401:18: ( '[' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1401:20: '['
             {
             match('['); 
 
@@ -374,8 +374,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_SQUARE_CLOSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1398:19: ( ']' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1398:21: ']'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1403:19: ( ']' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1403:21: ']'
             {
             match(']'); 
 
@@ -394,8 +394,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_PLUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1400:11: ( '+' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1400:13: '+'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1405:11: ( '+' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1405:13: '+'
             {
             match('+'); 
 
@@ -414,8 +414,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_CARET;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1402:12: ( '^' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1402:14: '^'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1407:12: ( '^' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1407:14: '^'
             {
             match('^'); 
 
@@ -434,8 +434,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_NOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1404:10: ( '!' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1404:12: '!'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1409:10: ( '!' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1409:12: '!'
             {
             match('!'); 
 
@@ -454,8 +454,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_DOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1406:10: ( '.' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1406:12: '.'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1411:10: ( '.' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1411:12: '.'
             {
             match('.'); 
 
@@ -474,8 +474,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_WILDCARD;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1408:15: ( '*' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1408:17: '*'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1413:15: ( '*' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1413:17: '*'
             {
             match('*'); 
 
@@ -494,8 +494,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_LT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1410:9: ( '<' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1410:11: '<'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1415:9: ( '<' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1415:11: '<'
             {
             match('<'); 
 
@@ -514,8 +514,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_GT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1412:9: ( '>' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1412:11: '>'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1417:9: ( '>' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1417:11: '>'
             {
             match('>'); 
 
@@ -534,8 +534,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_DBL_LT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1414:13: ( '<<' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1414:15: '<<'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1419:13: ( '<<' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1419:15: '<<'
             {
             match("<<"); 
 
@@ -555,8 +555,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_DBL_GT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1416:13: ( '>>' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1416:15: '>>'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1421:13: ( '>>' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1421:15: '>>'
             {
             match(">>"); 
 
@@ -576,8 +576,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_LT_EM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1418:12: ( '<!' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1418:14: '<!'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1423:12: ( '<!' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1423:14: '<!'
             {
             match("<!"); 
 
@@ -597,8 +597,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_GT_EM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1420:12: ( '>!' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1420:14: '>!'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1425:12: ( '>!' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1425:14: '>!'
             {
             match(">!"); 
 
@@ -618,8 +618,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1422:9: ( ( ' ' | '\\t' | '\\n' | '\\r' ) )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1422:11: ( ' ' | '\\t' | '\\n' | '\\r' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1427:9: ( ( ' ' | '\\t' | '\\n' | '\\r' ) )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1427:11: ( ' ' | '\\t' | '\\n' | '\\r' )
             {
             if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
                 input.consume();
@@ -646,12 +646,12 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1424:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1424:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1429:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1429:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1424:24: ( options {greedy=false; } : . )*
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1429:24: ( options {greedy=false; } : . )*
             loop1:
             do {
                 int alt1=2;
@@ -676,7 +676,7 @@ public class InternalEclLexer extends Lexer {
 
                 switch (alt1) {
             	case 1 :
-            	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1424:52: .
+            	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1429:52: .
             	    {
             	    matchAny(); 
 
@@ -706,12 +706,12 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1426:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1426:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1431:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1431:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match("//"); 
 
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1426:24: (~ ( ( '\\n' | '\\r' ) ) )*
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1431:24: (~ ( ( '\\n' | '\\r' ) ) )*
             loop2:
             do {
                 int alt2=2;
@@ -724,7 +724,7 @@ public class InternalEclLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1426:24: ~ ( ( '\\n' | '\\r' ) )
+            	    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1431:24: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -744,7 +744,7 @@ public class InternalEclLexer extends Lexer {
                 }
             } while (true);
 
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1426:40: ( ( '\\r' )? '\\n' )?
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1431:40: ( ( '\\r' )? '\\n' )?
             int alt4=2;
             int LA4_0 = input.LA(1);
 
@@ -753,9 +753,9 @@ public class InternalEclLexer extends Lexer {
             }
             switch (alt4) {
                 case 1 :
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1426:41: ( '\\r' )? '\\n'
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1431:41: ( '\\r' )? '\\n'
                     {
-                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1426:41: ( '\\r' )?
+                    // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1431:41: ( '\\r' )?
                     int alt3=2;
                     int LA3_0 = input.LA(1);
 
@@ -764,7 +764,7 @@ public class InternalEclLexer extends Lexer {
                     }
                     switch (alt3) {
                         case 1 :
-                            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1426:41: '\\r'
+                            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1431:41: '\\r'
                             {
                             match('\r'); 
 
@@ -796,8 +796,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_OTHER_CHARACTER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1428:22: ( . )
-            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1428:24: .
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1433:22: ( . )
+            // ../com.b2international.snowowl.snomed.ecl/src-gen/com/b2international/snowowl/snomed/ecl/parser/antlr/internal/InternalEcl.g:1433:24: .
             {
             matchAny(); 
 

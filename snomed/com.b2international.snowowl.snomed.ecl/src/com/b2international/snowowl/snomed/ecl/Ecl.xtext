@@ -11,7 +11,7 @@ OrExpressionConstraint returns ExpressionConstraint:
 	AndExpressionConstraint ({OrExpressionConstraint.left=current} OR right=AndExpressionConstraint)*;
 	
 AndExpressionConstraint returns ExpressionConstraint:
-	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} AND right=ExclusionExpressionConstraint)*;
+	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} (AND | COMMA) right=ExclusionExpressionConstraint)*;
 	
 ExclusionExpressionConstraint returns ExpressionConstraint:
 	SimpleExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=SimpleExpressionConstraint)?;

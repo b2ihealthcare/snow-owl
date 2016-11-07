@@ -190,23 +190,28 @@ ruleAndExpressionConstraint returns [EObject current=null]
             grammarAccess.getAndExpressionConstraintAccess().getAndExpressionConstraintLeftAction_1_0(),
             $current);
     }
-)this_AND_2=RULE_AND
+)(this_AND_2=RULE_AND
     { 
-    newLeafNode(this_AND_2, grammarAccess.getAndExpressionConstraintAccess().getANDTerminalRuleCall_1_1()); 
+    newLeafNode(this_AND_2, grammarAccess.getAndExpressionConstraintAccess().getANDTerminalRuleCall_1_1_0()); 
     }
-(
+
+    |this_COMMA_3=RULE_COMMA
+    { 
+    newLeafNode(this_COMMA_3, grammarAccess.getAndExpressionConstraintAccess().getCOMMATerminalRuleCall_1_1_1()); 
+    }
+)(
 (
 		{ 
 	        newCompositeNode(grammarAccess.getAndExpressionConstraintAccess().getRightExclusionExpressionConstraintParserRuleCall_1_2_0()); 
 	    }
-		lv_right_3_0=ruleExclusionExpressionConstraint		{
+		lv_right_4_0=ruleExclusionExpressionConstraint		{
 	        if ($current==null) {
 	            $current = createModelElementForParent(grammarAccess.getAndExpressionConstraintRule());
 	        }
        		set(
        			$current, 
        			"right",
-        		lv_right_3_0, 
+        		lv_right_4_0, 
         		"ExclusionExpressionConstraint");
 	        afterParserOrEnumRuleCall();
 	    }
