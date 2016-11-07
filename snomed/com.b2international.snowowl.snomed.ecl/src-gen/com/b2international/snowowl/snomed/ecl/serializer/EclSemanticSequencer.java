@@ -7,6 +7,8 @@ import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
+import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
@@ -16,6 +18,8 @@ import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
 import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
+import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
 import com.b2international.snowowl.snomed.ecl.services.EclGrammarAccess;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -52,6 +56,12 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 			case EclPackage.ANY:
 				sequence_Any(context, (Any) semanticObject); 
 				return; 
+			case EclPackage.ATTRIBUTE_VALUE_EQUALS:
+				sequence_AttributeValueEquals(context, (AttributeValueEquals) semanticObject); 
+				return; 
+			case EclPackage.ATTRIBUTE_VALUE_NOT_EQUALS:
+				sequence_AttributeValueNotEquals(context, (AttributeValueNotEquals) semanticObject); 
+				return; 
 			case EclPackage.CHILD_OF:
 				sequence_ChildOf(context, (ChildOf) semanticObject); 
 				return; 
@@ -75,6 +85,12 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				return; 
 			case EclPackage.PARENT_OF:
 				sequence_ParentOf(context, (ParentOf) semanticObject); 
+				return; 
+			case EclPackage.REFINED_EXPRESSION_CONSTRAINT:
+				sequence_RefinedExpressionConstraint(context, (RefinedExpressionConstraint) semanticObject); 
+				return; 
+			case EclPackage.REFINEMENT:
+				sequence_AttributeConstraint(context, (Refinement) semanticObject); 
 				return; 
 			}
 		if (errorAcceptor != null) errorAcceptor.accept(diagnosticProvider.createInvalidContextOrTypeDiagnostic(semanticObject, context));
@@ -128,6 +144,47 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
+	 *     ((attribute=ConceptReference | attribute=Any) comparison=Comparison)
+	 */
+	protected void sequence_AttributeConstraint(EObject context, Refinement semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     constraint=SimpleExpressionConstraint
+	 */
+	protected void sequence_AttributeValueEquals(EObject context, AttributeValueEquals semanticObject) {
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.COMPARISON__CONSTRAINT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.COMPARISON__CONSTRAINT));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getAttributeValueEqualsAccess().getConstraintSimpleExpressionConstraintParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     constraint=SimpleExpressionConstraint
+	 */
+	protected void sequence_AttributeValueNotEquals(EObject context, AttributeValueNotEquals semanticObject) {
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.COMPARISON__CONSTRAINT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.COMPARISON__CONSTRAINT));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getAttributeValueNotEqualsAccess().getConstraintSimpleExpressionConstraintParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
 	 *     (constraint=FocusConcept | constraint=NestableExpression)
 	 */
 	protected void sequence_ChildOf(EObject context, ChildOf semanticObject) {
@@ -164,7 +221,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
-	 *     (left=ExclusionExpressionConstraint_ExclusionExpressionConstraint_1_0 right=SimpleExpressionConstraint)
+	 *     (left=ExclusionExpressionConstraint_ExclusionExpressionConstraint_1_0 right=RefinedExpressionConstraint)
 	 */
 	protected void sequence_ExclusionExpressionConstraint(EObject context, ExclusionExpressionConstraint semanticObject) {
 		if(errorAcceptor != null) {
@@ -176,7 +233,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
 		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
 		feeder.accept(grammarAccess.getExclusionExpressionConstraintAccess().getExclusionExpressionConstraintLeftAction_1_0(), semanticObject.getLeft());
-		feeder.accept(grammarAccess.getExclusionExpressionConstraintAccess().getRightSimpleExpressionConstraintParserRuleCall_1_2_0(), semanticObject.getRight());
+		feeder.accept(grammarAccess.getExclusionExpressionConstraintAccess().getRightRefinedExpressionConstraintParserRuleCall_1_2_0(), semanticObject.getRight());
 		feeder.finish();
 	}
 	
@@ -214,6 +271,15 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     (constraint=FocusConcept | constraint=NestableExpression)
 	 */
 	protected void sequence_ParentOf(EObject context, ParentOf semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     (constraint=SimpleExpressionConstraint refinement=Refinement?)
+	 */
+	protected void sequence_RefinedExpressionConstraint(EObject context, RefinedExpressionConstraint semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 }

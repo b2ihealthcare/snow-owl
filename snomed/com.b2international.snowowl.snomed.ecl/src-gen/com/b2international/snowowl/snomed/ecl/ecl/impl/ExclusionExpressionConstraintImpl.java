@@ -4,7 +4,7 @@ package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -38,7 +38,7 @@ public class ExclusionExpressionConstraintImpl extends ExpressionConstraintImpl 
    * @generated
    * @ordered
    */
-  protected ExpressionConstraint left;
+  protected RefinedExpressionConstraint left;
 
   /**
    * The cached value of the '{@link #getRight() <em>Right</em>}' containment reference.
@@ -48,7 +48,7 @@ public class ExclusionExpressionConstraintImpl extends ExpressionConstraintImpl 
    * @generated
    * @ordered
    */
-  protected ExpressionConstraint right;
+  protected RefinedExpressionConstraint right;
 
   /**
    * <!-- begin-user-doc -->
@@ -76,7 +76,7 @@ public class ExclusionExpressionConstraintImpl extends ExpressionConstraintImpl 
    * <!-- end-user-doc -->
    * @generated
    */
-  public ExpressionConstraint getLeft()
+  public RefinedExpressionConstraint getLeft()
   {
     return left;
   }
@@ -86,9 +86,9 @@ public class ExclusionExpressionConstraintImpl extends ExpressionConstraintImpl 
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetLeft(ExpressionConstraint newLeft, NotificationChain msgs)
+  public NotificationChain basicSetLeft(RefinedExpressionConstraint newLeft, NotificationChain msgs)
   {
-    ExpressionConstraint oldLeft = left;
+    RefinedExpressionConstraint oldLeft = left;
     left = newLeft;
     if (eNotificationRequired())
     {
@@ -103,7 +103,7 @@ public class ExclusionExpressionConstraintImpl extends ExpressionConstraintImpl 
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setLeft(ExpressionConstraint newLeft)
+  public void setLeft(RefinedExpressionConstraint newLeft)
   {
     if (newLeft != left)
     {
@@ -124,7 +124,7 @@ public class ExclusionExpressionConstraintImpl extends ExpressionConstraintImpl 
    * <!-- end-user-doc -->
    * @generated
    */
-  public ExpressionConstraint getRight()
+  public RefinedExpressionConstraint getRight()
   {
     return right;
   }
@@ -134,9 +134,9 @@ public class ExclusionExpressionConstraintImpl extends ExpressionConstraintImpl 
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetRight(ExpressionConstraint newRight, NotificationChain msgs)
+  public NotificationChain basicSetRight(RefinedExpressionConstraint newRight, NotificationChain msgs)
   {
-    ExpressionConstraint oldRight = right;
+    RefinedExpressionConstraint oldRight = right;
     right = newRight;
     if (eNotificationRequired())
     {
@@ -151,7 +151,7 @@ public class ExclusionExpressionConstraintImpl extends ExpressionConstraintImpl 
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setRight(ExpressionConstraint newRight)
+  public void setRight(RefinedExpressionConstraint newRight)
   {
     if (newRight != right)
     {
@@ -214,10 +214,10 @@ public class ExclusionExpressionConstraintImpl extends ExpressionConstraintImpl 
     switch (featureID)
     {
       case EclPackage.EXCLUSION_EXPRESSION_CONSTRAINT__LEFT:
-        setLeft((ExpressionConstraint)newValue);
+        setLeft((RefinedExpressionConstraint)newValue);
         return;
       case EclPackage.EXCLUSION_EXPRESSION_CONSTRAINT__RIGHT:
-        setRight((ExpressionConstraint)newValue);
+        setRight((RefinedExpressionConstraint)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -234,10 +234,10 @@ public class ExclusionExpressionConstraintImpl extends ExpressionConstraintImpl 
     switch (featureID)
     {
       case EclPackage.EXCLUSION_EXPRESSION_CONSTRAINT__LEFT:
-        setLeft((ExpressionConstraint)null);
+        setLeft((RefinedExpressionConstraint)null);
         return;
       case EclPackage.EXCLUSION_EXPRESSION_CONSTRAINT__RIGHT:
-        setRight((ExpressionConstraint)null);
+        setRight((RefinedExpressionConstraint)null);
         return;
     }
     super.eUnset(featureID);

@@ -65,6 +65,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
     switch (eClass.getClassifierID())
     {
       case EclPackage.EXPRESSION_CONSTRAINT: return createExpressionConstraint();
+      case EclPackage.REFINED_EXPRESSION_CONSTRAINT: return createRefinedExpressionConstraint();
       case EclPackage.CHILD_OF: return createChildOf();
       case EclPackage.DESCENDANT_OF: return createDescendantOf();
       case EclPackage.DESCENDANT_OR_SELF_OF: return createDescendantOrSelfOf();
@@ -74,6 +75,10 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
       case EclPackage.MEMBER_OF: return createMemberOf();
       case EclPackage.CONCEPT_REFERENCE: return createConceptReference();
       case EclPackage.ANY: return createAny();
+      case EclPackage.REFINEMENT: return createRefinement();
+      case EclPackage.COMPARISON: return createComparison();
+      case EclPackage.ATTRIBUTE_VALUE_EQUALS: return createAttributeValueEquals();
+      case EclPackage.ATTRIBUTE_VALUE_NOT_EQUALS: return createAttributeValueNotEquals();
       case EclPackage.NESTABLE_EXPRESSION: return createNestableExpression();
       case EclPackage.OR_EXPRESSION_CONSTRAINT: return createOrExpressionConstraint();
       case EclPackage.AND_EXPRESSION_CONSTRAINT: return createAndExpressionConstraint();
@@ -92,6 +97,17 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     ExpressionConstraintImpl expressionConstraint = new ExpressionConstraintImpl();
     return expressionConstraint;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public RefinedExpressionConstraint createRefinedExpressionConstraint()
+  {
+    RefinedExpressionConstraintImpl refinedExpressionConstraint = new RefinedExpressionConstraintImpl();
+    return refinedExpressionConstraint;
   }
 
   /**
@@ -191,6 +207,50 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     AnyImpl any = new AnyImpl();
     return any;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public Refinement createRefinement()
+  {
+    RefinementImpl refinement = new RefinementImpl();
+    return refinement;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public Comparison createComparison()
+  {
+    ComparisonImpl comparison = new ComparisonImpl();
+    return comparison;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public AttributeValueEquals createAttributeValueEquals()
+  {
+    AttributeValueEqualsImpl attributeValueEquals = new AttributeValueEqualsImpl();
+    return attributeValueEquals;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public AttributeValueNotEquals createAttributeValueNotEquals()
+  {
+    AttributeValueNotEqualsImpl attributeValueNotEquals = new AttributeValueNotEqualsImpl();
+    return attributeValueNotEquals;
   }
 
   /**

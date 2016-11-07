@@ -32,6 +32,15 @@ public interface EclFactory extends EFactory
   ExpressionConstraint createExpressionConstraint();
 
   /**
+   * Returns a new object of class '<em>Refined Expression Constraint</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Refined Expression Constraint</em>'.
+   * @generated
+   */
+  RefinedExpressionConstraint createRefinedExpressionConstraint();
+
+  /**
    * Returns a new object of class '<em>Child Of</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -111,6 +120,42 @@ public interface EclFactory extends EFactory
    * @generated
    */
   Any createAny();
+
+  /**
+   * Returns a new object of class '<em>Refinement</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Refinement</em>'.
+   * @generated
+   */
+  Refinement createRefinement();
+
+  /**
+   * Returns a new object of class '<em>Comparison</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Comparison</em>'.
+   * @generated
+   */
+  Comparison createComparison();
+
+  /**
+   * Returns a new object of class '<em>Attribute Value Equals</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Attribute Value Equals</em>'.
+   * @generated
+   */
+  AttributeValueEquals createAttributeValueEquals();
+
+  /**
+   * Returns a new object of class '<em>Attribute Value Not Equals</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Attribute Value Not Equals</em>'.
+   * @generated
+   */
+  AttributeValueNotEquals createAttributeValueNotEquals();
 
   /**
    * Returns a new object of class '<em>Nestable Expression</em>'.

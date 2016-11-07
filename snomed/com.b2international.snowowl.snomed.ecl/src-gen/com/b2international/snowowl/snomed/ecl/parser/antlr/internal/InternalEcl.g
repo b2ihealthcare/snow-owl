@@ -240,11 +240,11 @@ ruleExclusionExpressionConstraint returns [EObject current=null]
     @after { leaveRule(); }:
 (
     { 
-        newCompositeNode(grammarAccess.getExclusionExpressionConstraintAccess().getSimpleExpressionConstraintParserRuleCall_0()); 
+        newCompositeNode(grammarAccess.getExclusionExpressionConstraintAccess().getRefinedExpressionConstraintParserRuleCall_0()); 
     }
-    this_SimpleExpressionConstraint_0=ruleSimpleExpressionConstraint
+    this_RefinedExpressionConstraint_0=ruleRefinedExpressionConstraint
     { 
-        $current = $this_SimpleExpressionConstraint_0.current; 
+        $current = $this_RefinedExpressionConstraint_0.current; 
         afterParserOrEnumRuleCall();
     }
 ((
@@ -260,9 +260,9 @@ ruleExclusionExpressionConstraint returns [EObject current=null]
 (
 (
 		{ 
-	        newCompositeNode(grammarAccess.getExclusionExpressionConstraintAccess().getRightSimpleExpressionConstraintParserRuleCall_1_2_0()); 
+	        newCompositeNode(grammarAccess.getExclusionExpressionConstraintAccess().getRightRefinedExpressionConstraintParserRuleCall_1_2_0()); 
 	    }
-		lv_right_3_0=ruleSimpleExpressionConstraint		{
+		lv_right_3_0=ruleRefinedExpressionConstraint		{
 	        if ($current==null) {
 	            $current = createModelElementForParent(grammarAccess.getExclusionExpressionConstraintRule());
 	        }
@@ -270,7 +270,68 @@ ruleExclusionExpressionConstraint returns [EObject current=null]
        			$current, 
        			"right",
         		lv_right_3_0, 
+        		"RefinedExpressionConstraint");
+	        afterParserOrEnumRuleCall();
+	    }
+
+)
+))?)
+;
+
+
+
+
+
+// Entry rule entryRuleRefinedExpressionConstraint
+entryRuleRefinedExpressionConstraint returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getRefinedExpressionConstraintRule()); }
+	 iv_ruleRefinedExpressionConstraint=ruleRefinedExpressionConstraint 
+	 { $current=$iv_ruleRefinedExpressionConstraint.current; } 
+	 EOF 
+;
+
+// Rule RefinedExpressionConstraint
+ruleRefinedExpressionConstraint returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+((
+(
+		{ 
+	        newCompositeNode(grammarAccess.getRefinedExpressionConstraintAccess().getConstraintSimpleExpressionConstraintParserRuleCall_0_0()); 
+	    }
+		lv_constraint_0_0=ruleSimpleExpressionConstraint		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getRefinedExpressionConstraintRule());
+	        }
+       		set(
+       			$current, 
+       			"constraint",
+        		lv_constraint_0_0, 
         		"SimpleExpressionConstraint");
+	        afterParserOrEnumRuleCall();
+	    }
+
+)
+)(this_COLON_1=RULE_COLON
+    { 
+    newLeafNode(this_COLON_1, grammarAccess.getRefinedExpressionConstraintAccess().getCOLONTerminalRuleCall_1_0()); 
+    }
+(
+(
+		{ 
+	        newCompositeNode(grammarAccess.getRefinedExpressionConstraintAccess().getRefinementRefinementParserRuleCall_1_1_0()); 
+	    }
+		lv_refinement_2_0=ruleRefinement		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getRefinedExpressionConstraintRule());
+	        }
+       		set(
+       			$current, 
+       			"refinement",
+        		lv_refinement_2_0, 
+        		"Refinement");
 	        afterParserOrEnumRuleCall();
 	    }
 
@@ -945,6 +1006,237 @@ ruleAny returns [EObject current=null]
 
 
 
+// Entry rule entryRuleRefinement
+entryRuleRefinement returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getRefinementRule()); }
+	 iv_ruleRefinement=ruleRefinement 
+	 { $current=$iv_ruleRefinement.current; } 
+	 EOF 
+;
+
+// Rule Refinement
+ruleRefinement returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+
+    { 
+        newCompositeNode(grammarAccess.getRefinementAccess().getAttributeConstraintParserRuleCall()); 
+    }
+    this_AttributeConstraint_0=ruleAttributeConstraint
+    { 
+        $current = $this_AttributeConstraint_0.current; 
+        afterParserOrEnumRuleCall();
+    }
+
+;
+
+
+
+
+
+// Entry rule entryRuleAttributeConstraint
+entryRuleAttributeConstraint returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getAttributeConstraintRule()); }
+	 iv_ruleAttributeConstraint=ruleAttributeConstraint 
+	 { $current=$iv_ruleAttributeConstraint.current; } 
+	 EOF 
+;
+
+// Rule AttributeConstraint
+ruleAttributeConstraint returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+((
+(
+(
+		{ 
+	        newCompositeNode(grammarAccess.getAttributeConstraintAccess().getAttributeConceptReferenceParserRuleCall_0_0_0()); 
+	    }
+		lv_attribute_0_1=ruleConceptReference		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getAttributeConstraintRule());
+	        }
+       		set(
+       			$current, 
+       			"attribute",
+        		lv_attribute_0_1, 
+        		"ConceptReference");
+	        afterParserOrEnumRuleCall();
+	    }
+
+    |		{ 
+	        newCompositeNode(grammarAccess.getAttributeConstraintAccess().getAttributeAnyParserRuleCall_0_0_1()); 
+	    }
+		lv_attribute_0_2=ruleAny		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getAttributeConstraintRule());
+	        }
+       		set(
+       			$current, 
+       			"attribute",
+        		lv_attribute_0_2, 
+        		"Any");
+	        afterParserOrEnumRuleCall();
+	    }
+
+)
+
+)
+)(
+(
+		{ 
+	        newCompositeNode(grammarAccess.getAttributeConstraintAccess().getComparisonComparisonParserRuleCall_1_0()); 
+	    }
+		lv_comparison_1_0=ruleComparison		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getAttributeConstraintRule());
+	        }
+       		set(
+       			$current, 
+       			"comparison",
+        		lv_comparison_1_0, 
+        		"Comparison");
+	        afterParserOrEnumRuleCall();
+	    }
+
+)
+))
+;
+
+
+
+
+
+// Entry rule entryRuleComparison
+entryRuleComparison returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getComparisonRule()); }
+	 iv_ruleComparison=ruleComparison 
+	 { $current=$iv_ruleComparison.current; } 
+	 EOF 
+;
+
+// Rule Comparison
+ruleComparison returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(
+    { 
+        newCompositeNode(grammarAccess.getComparisonAccess().getAttributeValueEqualsParserRuleCall_0()); 
+    }
+    this_AttributeValueEquals_0=ruleAttributeValueEquals
+    { 
+        $current = $this_AttributeValueEquals_0.current; 
+        afterParserOrEnumRuleCall();
+    }
+
+    |
+    { 
+        newCompositeNode(grammarAccess.getComparisonAccess().getAttributeValueNotEqualsParserRuleCall_1()); 
+    }
+    this_AttributeValueNotEquals_1=ruleAttributeValueNotEquals
+    { 
+        $current = $this_AttributeValueNotEquals_1.current; 
+        afterParserOrEnumRuleCall();
+    }
+)
+;
+
+
+
+
+
+// Entry rule entryRuleAttributeValueEquals
+entryRuleAttributeValueEquals returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getAttributeValueEqualsRule()); }
+	 iv_ruleAttributeValueEquals=ruleAttributeValueEquals 
+	 { $current=$iv_ruleAttributeValueEquals.current; } 
+	 EOF 
+;
+
+// Rule AttributeValueEquals
+ruleAttributeValueEquals returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(this_EQUAL_0=RULE_EQUAL
+    { 
+    newLeafNode(this_EQUAL_0, grammarAccess.getAttributeValueEqualsAccess().getEQUALTerminalRuleCall_0()); 
+    }
+(
+(
+		{ 
+	        newCompositeNode(grammarAccess.getAttributeValueEqualsAccess().getConstraintSimpleExpressionConstraintParserRuleCall_1_0()); 
+	    }
+		lv_constraint_1_0=ruleSimpleExpressionConstraint		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getAttributeValueEqualsRule());
+	        }
+       		set(
+       			$current, 
+       			"constraint",
+        		lv_constraint_1_0, 
+        		"SimpleExpressionConstraint");
+	        afterParserOrEnumRuleCall();
+	    }
+
+)
+))
+;
+
+
+
+
+
+// Entry rule entryRuleAttributeValueNotEquals
+entryRuleAttributeValueNotEquals returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getAttributeValueNotEqualsRule()); }
+	 iv_ruleAttributeValueNotEquals=ruleAttributeValueNotEquals 
+	 { $current=$iv_ruleAttributeValueNotEquals.current; } 
+	 EOF 
+;
+
+// Rule AttributeValueNotEquals
+ruleAttributeValueNotEquals returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(this_NOT_EQUAL_0=RULE_NOT_EQUAL
+    { 
+    newLeafNode(this_NOT_EQUAL_0, grammarAccess.getAttributeValueNotEqualsAccess().getNOT_EQUALTerminalRuleCall_0()); 
+    }
+(
+(
+		{ 
+	        newCompositeNode(grammarAccess.getAttributeValueNotEqualsAccess().getConstraintSimpleExpressionConstraintParserRuleCall_1_0()); 
+	    }
+		lv_constraint_1_0=ruleSimpleExpressionConstraint		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getAttributeValueNotEqualsRule());
+	        }
+       		set(
+       			$current, 
+       			"constraint",
+        		lv_constraint_1_0, 
+        		"SimpleExpressionConstraint");
+	        afterParserOrEnumRuleCall();
+	    }
+
+)
+))
+;
+
+
+
+
+
 // Entry rule entryRuleNestableExpression
 entryRuleNestableExpression returns [EObject current=null] 
 	:
@@ -1390,8 +1682,6 @@ RULE_CURLY_OPEN : '{';
 
 RULE_CURLY_CLOSE : '}';
 
-RULE_EQUAL : '=';
-
 RULE_COMMA : ',';
 
 RULE_ROUND_OPEN : '(';
@@ -1411,6 +1701,10 @@ RULE_NOT : '!';
 RULE_DOT : '.';
 
 RULE_WILDCARD : '*';
+
+RULE_EQUAL : '=';
+
+RULE_NOT_EQUAL : '!=';
 
 RULE_LT : '<';
 

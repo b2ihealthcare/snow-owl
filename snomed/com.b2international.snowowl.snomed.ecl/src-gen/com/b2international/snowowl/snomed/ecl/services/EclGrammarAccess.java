@@ -114,24 +114,24 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	public class ExclusionExpressionConstraintElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "ExclusionExpressionConstraint");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cSimpleExpressionConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cRefinedExpressionConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Action cExclusionExpressionConstraintLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
 		private final RuleCall cMINUSTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
-		private final RuleCall cRightSimpleExpressionConstraintParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
+		private final RuleCall cRightRefinedExpressionConstraintParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
 		//ExclusionExpressionConstraint returns ExpressionConstraint:
-		//	SimpleExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=SimpleExpressionConstraint)?;
+		//	RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=RefinedExpressionConstraint)?;
 		@Override public ParserRule getRule() { return rule; }
 
-		//SimpleExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=SimpleExpressionConstraint)?
+		//RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=RefinedExpressionConstraint)?
 		public Group getGroup() { return cGroup; }
 
-		//SimpleExpressionConstraint
-		public RuleCall getSimpleExpressionConstraintParserRuleCall_0() { return cSimpleExpressionConstraintParserRuleCall_0; }
+		//RefinedExpressionConstraint
+		public RuleCall getRefinedExpressionConstraintParserRuleCall_0() { return cRefinedExpressionConstraintParserRuleCall_0; }
 
-		//({ExclusionExpressionConstraint.left=current} MINUS right=SimpleExpressionConstraint)?
+		//({ExclusionExpressionConstraint.left=current} MINUS right=RefinedExpressionConstraint)?
 		public Group getGroup_1() { return cGroup_1; }
 
 		//{ExclusionExpressionConstraint.left=current}
@@ -140,11 +140,47 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		//MINUS
 		public RuleCall getMINUSTerminalRuleCall_1_1() { return cMINUSTerminalRuleCall_1_1; }
 
-		//right=SimpleExpressionConstraint
+		//right=RefinedExpressionConstraint
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
 
+		//RefinedExpressionConstraint
+		public RuleCall getRightRefinedExpressionConstraintParserRuleCall_1_2_0() { return cRightRefinedExpressionConstraintParserRuleCall_1_2_0; }
+	}
+
+	public class RefinedExpressionConstraintElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "RefinedExpressionConstraint");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Assignment cConstraintAssignment_0 = (Assignment)cGroup.eContents().get(0);
+		private final RuleCall cConstraintSimpleExpressionConstraintParserRuleCall_0_0 = (RuleCall)cConstraintAssignment_0.eContents().get(0);
+		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
+		private final RuleCall cCOLONTerminalRuleCall_1_0 = (RuleCall)cGroup_1.eContents().get(0);
+		private final Assignment cRefinementAssignment_1_1 = (Assignment)cGroup_1.eContents().get(1);
+		private final RuleCall cRefinementRefinementParserRuleCall_1_1_0 = (RuleCall)cRefinementAssignment_1_1.eContents().get(0);
+		
+		//RefinedExpressionConstraint:
+		//	constraint=SimpleExpressionConstraint (COLON refinement=Refinement)?;
+		@Override public ParserRule getRule() { return rule; }
+
+		//constraint=SimpleExpressionConstraint (COLON refinement=Refinement)?
+		public Group getGroup() { return cGroup; }
+
+		//constraint=SimpleExpressionConstraint
+		public Assignment getConstraintAssignment_0() { return cConstraintAssignment_0; }
+
 		//SimpleExpressionConstraint
-		public RuleCall getRightSimpleExpressionConstraintParserRuleCall_1_2_0() { return cRightSimpleExpressionConstraintParserRuleCall_1_2_0; }
+		public RuleCall getConstraintSimpleExpressionConstraintParserRuleCall_0_0() { return cConstraintSimpleExpressionConstraintParserRuleCall_0_0; }
+
+		//(COLON refinement=Refinement)?
+		public Group getGroup_1() { return cGroup_1; }
+
+		//COLON
+		public RuleCall getCOLONTerminalRuleCall_1_0() { return cCOLONTerminalRuleCall_1_0; }
+
+		//refinement=Refinement
+		public Assignment getRefinementAssignment_1_1() { return cRefinementAssignment_1_1; }
+
+		//Refinement
+		public RuleCall getRefinementRefinementParserRuleCall_1_1_0() { return cRefinementRefinementParserRuleCall_1_1_0; }
 	}
 
 	public class SimpleExpressionConstraintElements extends AbstractParserRuleElementFinder {
@@ -495,6 +531,122 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		public Action getAnyAction_1() { return cAnyAction_1; }
 	}
 
+	public class RefinementElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "Refinement");
+		private final RuleCall cAttributeConstraintParserRuleCall = (RuleCall)rule.eContents().get(1);
+		
+		//Refinement:
+		//	AttributeConstraint;
+		@Override public ParserRule getRule() { return rule; }
+
+		//AttributeConstraint
+		public RuleCall getAttributeConstraintParserRuleCall() { return cAttributeConstraintParserRuleCall; }
+	}
+
+	public class AttributeConstraintElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AttributeConstraint");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Assignment cAttributeAssignment_0 = (Assignment)cGroup.eContents().get(0);
+		private final Alternatives cAttributeAlternatives_0_0 = (Alternatives)cAttributeAssignment_0.eContents().get(0);
+		private final RuleCall cAttributeConceptReferenceParserRuleCall_0_0_0 = (RuleCall)cAttributeAlternatives_0_0.eContents().get(0);
+		private final RuleCall cAttributeAnyParserRuleCall_0_0_1 = (RuleCall)cAttributeAlternatives_0_0.eContents().get(1);
+		private final Assignment cComparisonAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cComparisonComparisonParserRuleCall_1_0 = (RuleCall)cComparisonAssignment_1.eContents().get(0);
+		
+		//AttributeConstraint returns Refinement:
+		//	attribute=(ConceptReference | Any) comparison=Comparison;
+		@Override public ParserRule getRule() { return rule; }
+
+		//attribute=(ConceptReference | Any) comparison=Comparison
+		public Group getGroup() { return cGroup; }
+
+		//attribute=(ConceptReference | Any)
+		public Assignment getAttributeAssignment_0() { return cAttributeAssignment_0; }
+
+		//ConceptReference | Any
+		public Alternatives getAttributeAlternatives_0_0() { return cAttributeAlternatives_0_0; }
+
+		//ConceptReference
+		public RuleCall getAttributeConceptReferenceParserRuleCall_0_0_0() { return cAttributeConceptReferenceParserRuleCall_0_0_0; }
+
+		//Any
+		public RuleCall getAttributeAnyParserRuleCall_0_0_1() { return cAttributeAnyParserRuleCall_0_0_1; }
+
+		//comparison=Comparison
+		public Assignment getComparisonAssignment_1() { return cComparisonAssignment_1; }
+
+		//Comparison
+		public RuleCall getComparisonComparisonParserRuleCall_1_0() { return cComparisonComparisonParserRuleCall_1_0; }
+	}
+
+	public class ComparisonElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "Comparison");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final RuleCall cAttributeValueEqualsParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cAttributeValueNotEqualsParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		
+		/// *| NumericValueComparison | StringValueComparison* / Comparison:
+		//	AttributeValueEquals | AttributeValueNotEquals;
+		@Override public ParserRule getRule() { return rule; }
+
+		//AttributeValueEquals | AttributeValueNotEquals
+		public Alternatives getAlternatives() { return cAlternatives; }
+
+		//AttributeValueEquals
+		public RuleCall getAttributeValueEqualsParserRuleCall_0() { return cAttributeValueEqualsParserRuleCall_0; }
+
+		//AttributeValueNotEquals
+		public RuleCall getAttributeValueNotEqualsParserRuleCall_1() { return cAttributeValueNotEqualsParserRuleCall_1; }
+	}
+
+	public class AttributeValueEqualsElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AttributeValueEquals");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cEQUALTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cConstraintSimpleExpressionConstraintParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
+		
+		//AttributeValueEquals:
+		//	EQUAL constraint=SimpleExpressionConstraint;
+		@Override public ParserRule getRule() { return rule; }
+
+		//EQUAL constraint=SimpleExpressionConstraint
+		public Group getGroup() { return cGroup; }
+
+		//EQUAL
+		public RuleCall getEQUALTerminalRuleCall_0() { return cEQUALTerminalRuleCall_0; }
+
+		//constraint=SimpleExpressionConstraint
+		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
+
+		//SimpleExpressionConstraint
+		public RuleCall getConstraintSimpleExpressionConstraintParserRuleCall_1_0() { return cConstraintSimpleExpressionConstraintParserRuleCall_1_0; }
+	}
+
+	public class AttributeValueNotEqualsElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AttributeValueNotEquals");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cNOT_EQUALTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cConstraintSimpleExpressionConstraintParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
+		
+		//AttributeValueNotEquals:
+		//	NOT_EQUAL constraint=SimpleExpressionConstraint;
+		@Override public ParserRule getRule() { return rule; }
+
+		//NOT_EQUAL constraint=SimpleExpressionConstraint
+		public Group getGroup() { return cGroup; }
+
+		//NOT_EQUAL
+		public RuleCall getNOT_EQUALTerminalRuleCall_0() { return cNOT_EQUALTerminalRuleCall_0; }
+
+		//constraint=SimpleExpressionConstraint
+		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
+
+		//SimpleExpressionConstraint
+		public RuleCall getConstraintSimpleExpressionConstraintParserRuleCall_1_0() { return cConstraintSimpleExpressionConstraintParserRuleCall_1_0; }
+	}
+
 	public class NestableExpressionElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "NestableExpression");
 		private final Group cGroup = (Group)rule.eContents().get(1);
@@ -737,6 +889,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final OrExpressionConstraintElements pOrExpressionConstraint;
 	private final AndExpressionConstraintElements pAndExpressionConstraint;
 	private final ExclusionExpressionConstraintElements pExclusionExpressionConstraint;
+	private final RefinedExpressionConstraintElements pRefinedExpressionConstraint;
 	private final SimpleExpressionConstraintElements pSimpleExpressionConstraint;
 	private final FocusConceptElements pFocusConcept;
 	private final ChildOfElements pChildOf;
@@ -748,6 +901,11 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final MemberOfElements pMemberOf;
 	private final ConceptReferenceElements pConceptReference;
 	private final AnyElements pAny;
+	private final RefinementElements pRefinement;
+	private final AttributeConstraintElements pAttributeConstraint;
+	private final ComparisonElements pComparison;
+	private final AttributeValueEqualsElements pAttributeValueEquals;
+	private final AttributeValueNotEqualsElements pAttributeValueNotEquals;
 	private final NestableExpressionElements pNestableExpression;
 	private final SnomedIdentifierElements pSnomedIdentifier;
 	private final TermElements pTerm;
@@ -762,7 +920,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final TerminalRule tCOLON;
 	private final TerminalRule tCURLY_OPEN;
 	private final TerminalRule tCURLY_CLOSE;
-	private final TerminalRule tEQUAL;
 	private final TerminalRule tCOMMA;
 	private final TerminalRule tROUND_OPEN;
 	private final TerminalRule tROUND_CLOSE;
@@ -773,6 +930,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final TerminalRule tNOT;
 	private final TerminalRule tDOT;
 	private final TerminalRule tWILDCARD;
+	private final TerminalRule tEQUAL;
+	private final TerminalRule tNOT_EQUAL;
 	private final TerminalRule tLT;
 	private final TerminalRule tGT;
 	private final TerminalRule tDBL_LT;
@@ -793,6 +952,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pOrExpressionConstraint = new OrExpressionConstraintElements();
 		this.pAndExpressionConstraint = new AndExpressionConstraintElements();
 		this.pExclusionExpressionConstraint = new ExclusionExpressionConstraintElements();
+		this.pRefinedExpressionConstraint = new RefinedExpressionConstraintElements();
 		this.pSimpleExpressionConstraint = new SimpleExpressionConstraintElements();
 		this.pFocusConcept = new FocusConceptElements();
 		this.pChildOf = new ChildOfElements();
@@ -804,6 +964,11 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pMemberOf = new MemberOfElements();
 		this.pConceptReference = new ConceptReferenceElements();
 		this.pAny = new AnyElements();
+		this.pRefinement = new RefinementElements();
+		this.pAttributeConstraint = new AttributeConstraintElements();
+		this.pComparison = new ComparisonElements();
+		this.pAttributeValueEquals = new AttributeValueEqualsElements();
+		this.pAttributeValueNotEquals = new AttributeValueNotEqualsElements();
 		this.pNestableExpression = new NestableExpressionElements();
 		this.pSnomedIdentifier = new SnomedIdentifierElements();
 		this.pTerm = new TermElements();
@@ -818,7 +983,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.tCOLON = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "COLON");
 		this.tCURLY_OPEN = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "CURLY_OPEN");
 		this.tCURLY_CLOSE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "CURLY_CLOSE");
-		this.tEQUAL = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "EQUAL");
 		this.tCOMMA = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "COMMA");
 		this.tROUND_OPEN = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "ROUND_OPEN");
 		this.tROUND_CLOSE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "ROUND_CLOSE");
@@ -829,6 +993,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.tNOT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "NOT");
 		this.tDOT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "DOT");
 		this.tWILDCARD = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "WILDCARD");
+		this.tEQUAL = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "EQUAL");
+		this.tNOT_EQUAL = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "NOT_EQUAL");
 		this.tLT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "LT");
 		this.tGT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "GT");
 		this.tDBL_LT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "DBL_LT");
@@ -896,13 +1062,23 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//ExclusionExpressionConstraint returns ExpressionConstraint:
-	//	SimpleExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=SimpleExpressionConstraint)?;
+	//	RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=RefinedExpressionConstraint)?;
 	public ExclusionExpressionConstraintElements getExclusionExpressionConstraintAccess() {
 		return pExclusionExpressionConstraint;
 	}
 	
 	public ParserRule getExclusionExpressionConstraintRule() {
 		return getExclusionExpressionConstraintAccess().getRule();
+	}
+
+	//RefinedExpressionConstraint:
+	//	constraint=SimpleExpressionConstraint (COLON refinement=Refinement)?;
+	public RefinedExpressionConstraintElements getRefinedExpressionConstraintAccess() {
+		return pRefinedExpressionConstraint;
+	}
+	
+	public ParserRule getRefinedExpressionConstraintRule() {
+		return getRefinedExpressionConstraintAccess().getRule();
 	}
 
 	//SimpleExpressionConstraint returns ExpressionConstraint:
@@ -1015,6 +1191,56 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return getAnyAccess().getRule();
 	}
 
+	//Refinement:
+	//	AttributeConstraint;
+	public RefinementElements getRefinementAccess() {
+		return pRefinement;
+	}
+	
+	public ParserRule getRefinementRule() {
+		return getRefinementAccess().getRule();
+	}
+
+	//AttributeConstraint returns Refinement:
+	//	attribute=(ConceptReference | Any) comparison=Comparison;
+	public AttributeConstraintElements getAttributeConstraintAccess() {
+		return pAttributeConstraint;
+	}
+	
+	public ParserRule getAttributeConstraintRule() {
+		return getAttributeConstraintAccess().getRule();
+	}
+
+	/// *| NumericValueComparison | StringValueComparison* / Comparison:
+	//	AttributeValueEquals | AttributeValueNotEquals;
+	public ComparisonElements getComparisonAccess() {
+		return pComparison;
+	}
+	
+	public ParserRule getComparisonRule() {
+		return getComparisonAccess().getRule();
+	}
+
+	//AttributeValueEquals:
+	//	EQUAL constraint=SimpleExpressionConstraint;
+	public AttributeValueEqualsElements getAttributeValueEqualsAccess() {
+		return pAttributeValueEquals;
+	}
+	
+	public ParserRule getAttributeValueEqualsRule() {
+		return getAttributeValueEqualsAccess().getRule();
+	}
+
+	//AttributeValueNotEquals:
+	//	NOT_EQUAL constraint=SimpleExpressionConstraint;
+	public AttributeValueNotEqualsElements getAttributeValueNotEqualsAccess() {
+		return pAttributeValueNotEquals;
+	}
+	
+	public ParserRule getAttributeValueNotEqualsRule() {
+		return getAttributeValueNotEqualsAccess().getRule();
+	}
+
 	//NestableExpression:
 	//	ROUND_OPEN ExpressionConstraint ROUND_CLOSE;
 	public NestableExpressionElements getNestableExpressionAccess() {
@@ -1122,12 +1348,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return tCURLY_CLOSE;
 	} 
 
-	//terminal EQUAL:
-	//	"=";
-	public TerminalRule getEQUALRule() {
-		return tEQUAL;
-	} 
-
 	//terminal COMMA:
 	//	",";
 	public TerminalRule getCOMMARule() {
@@ -1186,6 +1406,18 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	//	"*";
 	public TerminalRule getWILDCARDRule() {
 		return tWILDCARD;
+	} 
+
+	//terminal EQUAL:
+	//	"=";
+	public TerminalRule getEQUALRule() {
+		return tEQUAL;
+	} 
+
+	//terminal NOT_EQUAL:
+	//	"!=";
+	public TerminalRule getNOT_EQUALRule() {
+		return tNOT_EQUAL;
 	} 
 
 	//terminal LT:

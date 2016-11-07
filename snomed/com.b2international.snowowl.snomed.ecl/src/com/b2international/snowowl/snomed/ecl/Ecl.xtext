@@ -14,8 +14,11 @@ AndExpressionConstraint returns ExpressionConstraint:
 	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} (AND | COMMA) right=ExclusionExpressionConstraint)*;
 	
 ExclusionExpressionConstraint returns ExpressionConstraint:
-	SimpleExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=SimpleExpressionConstraint)?;
-	
+	RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=RefinedExpressionConstraint)?;
+
+RefinedExpressionConstraint:
+	constraint=SimpleExpressionConstraint (COLON refinement=Refinement)?;
+
 SimpleExpressionConstraint returns ExpressionConstraint:
 	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | FocusConcept;
 	
@@ -48,6 +51,21 @@ ConceptReference:
 	
 Any: 
 	WILDCARD {Any};
+
+Refinement:
+	AttributeConstraint;
+	
+AttributeConstraint returns Refinement:
+	attribute=(ConceptReference | Any) comparison=Comparison;
+	
+Comparison:
+	AttributeValueEquals | AttributeValueNotEquals /*| NumericValueComparison | StringValueComparison*/;
+
+AttributeValueEquals:
+	EQUAL constraint=SimpleExpressionConstraint;
+
+AttributeValueNotEquals:
+	NOT_EQUAL constraint=SimpleExpressionConstraint;
 	
 NestableExpression:
 	ROUND_OPEN ExpressionConstraint ROUND_CLOSE;
@@ -84,7 +102,6 @@ terminal PIPE 					: '|';
 terminal COLON 					: ':';
 terminal CURLY_OPEN 			: '{';
 terminal CURLY_CLOSE			: '}';
-terminal EQUAL					: '=';
 terminal COMMA					: ',';
 terminal ROUND_OPEN 			: '(';
 terminal ROUND_CLOSE 			: ')';
@@ -95,6 +112,8 @@ terminal CARET 					: '^';
 terminal NOT 					: '!';
 terminal DOT					: '.';
 terminal WILDCARD 				: '*';
+terminal EQUAL					: '=';
+terminal NOT_EQUAL				: '!=';
 terminal LT						: '<';
 terminal GT						: '>';
 terminal DBL_LT					: '<<';

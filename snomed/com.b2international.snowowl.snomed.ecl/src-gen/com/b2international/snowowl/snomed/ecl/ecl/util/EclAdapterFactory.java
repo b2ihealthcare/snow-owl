@@ -80,6 +80,11 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createExpressionConstraintAdapter();
       }
       @Override
+      public Adapter caseRefinedExpressionConstraint(RefinedExpressionConstraint object)
+      {
+        return createRefinedExpressionConstraintAdapter();
+      }
+      @Override
       public Adapter caseChildOf(ChildOf object)
       {
         return createChildOfAdapter();
@@ -123,6 +128,26 @@ public class EclAdapterFactory extends AdapterFactoryImpl
       public Adapter caseAny(Any object)
       {
         return createAnyAdapter();
+      }
+      @Override
+      public Adapter caseRefinement(Refinement object)
+      {
+        return createRefinementAdapter();
+      }
+      @Override
+      public Adapter caseComparison(Comparison object)
+      {
+        return createComparisonAdapter();
+      }
+      @Override
+      public Adapter caseAttributeValueEquals(AttributeValueEquals object)
+      {
+        return createAttributeValueEqualsAdapter();
+      }
+      @Override
+      public Adapter caseAttributeValueNotEquals(AttributeValueNotEquals object)
+      {
+        return createAttributeValueNotEqualsAdapter();
       }
       @Override
       public Adapter caseNestableExpression(NestableExpression object)
@@ -177,6 +202,21 @@ public class EclAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createExpressionConstraintAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint <em>Refined Expression Constraint</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint
+   * @generated
+   */
+  public Adapter createRefinedExpressionConstraintAdapter()
   {
     return null;
   }
@@ -312,6 +352,66 @@ public class EclAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createAnyAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.Refinement <em>Refinement</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.Refinement
+   * @generated
+   */
+  public Adapter createRefinementAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.Comparison <em>Comparison</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.Comparison
+   * @generated
+   */
+  public Adapter createComparisonAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals <em>Attribute Value Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals
+   * @generated
+   */
+  public Adapter createAttributeValueEqualsAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals <em>Attribute Value Not Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals
+   * @generated
+   */
+  public Adapter createAttributeValueNotEqualsAdapter()
   {
     return null;
   }

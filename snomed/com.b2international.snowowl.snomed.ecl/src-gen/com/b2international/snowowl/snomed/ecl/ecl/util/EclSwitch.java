@@ -80,6 +80,15 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case EclPackage.REFINED_EXPRESSION_CONSTRAINT:
+      {
+        RefinedExpressionConstraint refinedExpressionConstraint = (RefinedExpressionConstraint)theEObject;
+        T result = caseRefinedExpressionConstraint(refinedExpressionConstraint);
+        if (result == null) result = caseExpressionConstraint(refinedExpressionConstraint);
+        if (result == null) result = caseNestableExpression(refinedExpressionConstraint);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case EclPackage.CHILD_OF:
       {
         ChildOf childOf = (ChildOf)theEObject;
@@ -161,6 +170,36 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case EclPackage.REFINEMENT:
+      {
+        Refinement refinement = (Refinement)theEObject;
+        T result = caseRefinement(refinement);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.COMPARISON:
+      {
+        Comparison comparison = (Comparison)theEObject;
+        T result = caseComparison(comparison);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.ATTRIBUTE_VALUE_EQUALS:
+      {
+        AttributeValueEquals attributeValueEquals = (AttributeValueEquals)theEObject;
+        T result = caseAttributeValueEquals(attributeValueEquals);
+        if (result == null) result = caseComparison(attributeValueEquals);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.ATTRIBUTE_VALUE_NOT_EQUALS:
+      {
+        AttributeValueNotEquals attributeValueNotEquals = (AttributeValueNotEquals)theEObject;
+        T result = caseAttributeValueNotEquals(attributeValueNotEquals);
+        if (result == null) result = caseComparison(attributeValueNotEquals);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case EclPackage.NESTABLE_EXPRESSION:
       {
         NestableExpression nestableExpression = (NestableExpression)theEObject;
@@ -211,6 +250,22 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseExpressionConstraint(ExpressionConstraint object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Refined Expression Constraint</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Refined Expression Constraint</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseRefinedExpressionConstraint(RefinedExpressionConstraint object)
   {
     return null;
   }
@@ -355,6 +410,70 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseAny(Any object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Refinement</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Refinement</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseRefinement(Refinement object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Comparison</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Comparison</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseComparison(Comparison object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Attribute Value Equals</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Attribute Value Equals</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseAttributeValueEquals(AttributeValueEquals object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Attribute Value Not Equals</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Attribute Value Not Equals</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseAttributeValueNotEquals(AttributeValueNotEquals object)
   {
     return null;
   }

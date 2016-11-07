@@ -35,12 +35,16 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getANDToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getCARETRule())
 			return getCARETToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getCOLONRule())
+			return getCOLONToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getCOMMARule())
 			return getCOMMAToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getDBL_GTRule())
 			return getDBL_GTToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getDBL_LTRule())
 			return getDBL_LTToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getEQUALRule())
+			return getEQUALToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getGTRule())
 			return getGTToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getGT_EMRule())
@@ -51,6 +55,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getLT_EMToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getMINUSRule())
 			return getMINUSToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getNOT_EQUALRule())
+			return getNOT_EQUALToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getORRule())
 			return getORToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getPIPERule())
@@ -83,6 +89,15 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
+	 * terminal COLON 					: ':';
+	 */
+	protected String getCOLONToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return ":";
+	}
+	
+	/**
 	 * terminal COMMA					: ',';
 	 */
 	protected String getCOMMAToken(EObject semanticObject, RuleCall ruleCall, INode node) {
@@ -107,6 +122,15 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return "<<";
+	}
+	
+	/**
+	 * terminal EQUAL					: '=';
+	 */
+	protected String getEQUALToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "=";
 	}
 	
 	/**
@@ -152,6 +176,15 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return "MINUS";
+	}
+	
+	/**
+	 * terminal NOT_EQUAL				: '!=';
+	 */
+	protected String getNOT_EQUALToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "!=";
 	}
 	
 	/**

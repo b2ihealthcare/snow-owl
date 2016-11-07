@@ -9,6 +9,10 @@
   <genPackages prefix="Ecl" basePackage="com.b2international.snowowl.snomed.ecl" disposableProviderFactory="true"
       fileExtensions="ecl" ecorePackage="Ecl.ecore#/">
     <genClasses ecoreClass="Ecl.ecore#//ExpressionConstraint"/>
+    <genClasses ecoreClass="Ecl.ecore#//RefinedExpressionConstraint">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//RefinedExpressionConstraint/constraint"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//RefinedExpressionConstraint/refinement"/>
+    </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//ChildOf">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//ChildOf/constraint"/>
     </genClasses>
@@ -35,6 +39,15 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//ConceptReference/term"/>
     </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//Any"/>
+    <genClasses ecoreClass="Ecl.ecore#//Refinement">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//Refinement/attribute"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//Refinement/comparison"/>
+    </genClasses>
+    <genClasses ecoreClass="Ecl.ecore#//Comparison">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//Comparison/constraint"/>
+    </genClasses>
+    <genClasses ecoreClass="Ecl.ecore#//AttributeValueEquals"/>
+    <genClasses ecoreClass="Ecl.ecore#//AttributeValueNotEquals"/>
     <genClasses ecoreClass="Ecl.ecore#//NestableExpression"/>
     <genClasses ecoreClass="Ecl.ecore#//OrExpressionConstraint">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//OrExpressionConstraint/left"/>
