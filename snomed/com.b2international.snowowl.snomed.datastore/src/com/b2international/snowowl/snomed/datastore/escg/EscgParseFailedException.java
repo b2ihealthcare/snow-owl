@@ -20,6 +20,7 @@ package com.b2international.snowowl.snomed.datastore.escg;
  * <p>
  * This exception is thrown by {@link IndexQueryQueryEvaluator}. If occurs, clients should attempt to resolve ESCG evaluation with
  * {@link ConceptIdQueryEvaluator2} service.
+ * @deprecated - see {@link IEscgQueryEvaluatorService}
  */
 public class EscgParseFailedException extends IllegalArgumentException {
 

@@ -19,6 +19,7 @@ import com.b2international.snowowl.snomed.dsl.query.RValue;
 
 /**
  * @since 4.6
+ * @deprecated - see {@link IEscgQueryEvaluatorService}
  */
 public interface EscgRewriter {
 

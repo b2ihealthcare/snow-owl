@@ -86,9 +86,15 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 
 		/**
 		 * ESCG expression to match
+		 * @deprecated
 		 */
 		ESCG,
-
+		
+		/**
+		 * ECL expression to match
+		 */
+		ECL,
+		
 		/**
 		 * Namespace part of concept ID to match (?)
 		 */
@@ -199,6 +205,11 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 				final LongCollection matchingConceptIds = new ConceptIdQueryEvaluator2(searcher).evaluate(expression);
 				queryBuilder.must(ids(LongSets.toStringSet(matchingConceptIds)));
 			}
+		}
+		
+		if (containsKey(OptionKey.ECL)) {
+			final String ecl = getString(OptionKey.ECL);
+			queryBuilder.must(SnomedRequests.prepareEclEvaluation(ecl).build().execute(context).getSync());
 		}
 		
 		Expression searchProfileQuery = null;
