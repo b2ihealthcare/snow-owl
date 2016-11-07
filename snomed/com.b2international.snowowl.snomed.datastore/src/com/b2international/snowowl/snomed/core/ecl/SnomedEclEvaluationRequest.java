@@ -41,6 +41,7 @@ import com.b2international.index.query.StringSetPredicate;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
@@ -213,7 +214,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	}
 	
 	private Promise<Expression> throwUnsupported(EObject eObject) {
-		throw new UnsupportedOperationException("Unhandled ECL grammar feature: " + eObject.eClass().getName());
+		throw new NotImplementedException("Not implemented ECL feature: %s", eObject.eClass().getName());
 	}
 	
 	/*Extract SNOMED CT IDs from the given expression if it is either a String/Long single/multi-valued predicate and the field is equal to RevisionDocument.Fields.ID*/

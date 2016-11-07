@@ -37,6 +37,7 @@ import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -161,18 +162,18 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		assertEquals(expected, actual);
 	}
 	
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = NotImplementedException.class)
 	public void parentOf() throws Exception {
 		// Should throw UnsupportedOperationException until nested expression evaluation is not supported
 		eval(">!"+ROOT_ID);
 	}
 	
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = NotImplementedException.class)
 	public void ancestorOf() throws Exception {
 		eval(">"+ROOT_ID);
 	}
 	
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = NotImplementedException.class)
 	public void ancestorOrSelfOf() throws Exception {
 		eval(">>"+ROOT_ID);
 	}
