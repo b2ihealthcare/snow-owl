@@ -2,6 +2,8 @@
  */
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
+import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
+import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
@@ -66,6 +68,20 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * @generated
    */
   private EClass parentOfEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass ancestorOfEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass ancestorOrSelfOfEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -274,6 +290,46 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  public EClass getAncestorOf()
+  {
+    return ancestorOfEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getAncestorOf_Constraint()
+  {
+    return (EReference)ancestorOfEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getAncestorOrSelfOf()
+  {
+    return ancestorOrSelfOfEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getAncestorOrSelfOf_Constraint()
+  {
+    return (EReference)ancestorOrSelfOfEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public EClass getMemberOf()
   {
     return memberOfEClass;
@@ -473,6 +529,12 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     parentOfEClass = createEClass(PARENT_OF);
     createEReference(parentOfEClass, PARENT_OF__CONSTRAINT);
 
+    ancestorOfEClass = createEClass(ANCESTOR_OF);
+    createEReference(ancestorOfEClass, ANCESTOR_OF__CONSTRAINT);
+
+    ancestorOrSelfOfEClass = createEClass(ANCESTOR_OR_SELF_OF);
+    createEReference(ancestorOrSelfOfEClass, ANCESTOR_OR_SELF_OF__CONSTRAINT);
+
     memberOfEClass = createEClass(MEMBER_OF);
     createEReference(memberOfEClass, MEMBER_OF__CONSTRAINT);
 
@@ -531,6 +593,8 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     descendantOfEClass.getESuperTypes().add(this.getExpressionConstraint());
     descendantOrSelfOfEClass.getESuperTypes().add(this.getExpressionConstraint());
     parentOfEClass.getESuperTypes().add(this.getExpressionConstraint());
+    ancestorOfEClass.getESuperTypes().add(this.getExpressionConstraint());
+    ancestorOrSelfOfEClass.getESuperTypes().add(this.getExpressionConstraint());
     memberOfEClass.getESuperTypes().add(this.getExpressionConstraint());
     conceptReferenceEClass.getESuperTypes().add(this.getExpressionConstraint());
     anyEClass.getESuperTypes().add(this.getExpressionConstraint());
@@ -552,6 +616,12 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
 
     initEClass(parentOfEClass, ParentOf.class, "ParentOf", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getParentOf_Constraint(), this.getNestableExpression(), null, "constraint", null, 0, 1, ParentOf.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(ancestorOfEClass, AncestorOf.class, "AncestorOf", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getAncestorOf_Constraint(), this.getNestableExpression(), null, "constraint", null, 0, 1, AncestorOf.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(ancestorOrSelfOfEClass, AncestorOrSelfOf.class, "AncestorOrSelfOf", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getAncestorOrSelfOf_Constraint(), this.getNestableExpression(), null, "constraint", null, 0, 1, AncestorOrSelfOf.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(memberOfEClass, MemberOf.class, "MemberOf", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getMemberOf_Constraint(), this.getExpressionConstraint(), null, "constraint", null, 0, 1, MemberOf.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

@@ -333,11 +333,31 @@ ruleSimpleExpressionConstraint returns [EObject current=null]
 
     |
     { 
-        newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getFocusConceptParserRuleCall_4()); 
+        newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getAncestorOfParserRuleCall_4()); 
     }
-    this_FocusConcept_4=ruleFocusConcept
+    this_AncestorOf_4=ruleAncestorOf
     { 
-        $current = $this_FocusConcept_4.current; 
+        $current = $this_AncestorOf_4.current; 
+        afterParserOrEnumRuleCall();
+    }
+
+    |
+    { 
+        newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getAncestorOrSelfOfParserRuleCall_5()); 
+    }
+    this_AncestorOrSelfOf_5=ruleAncestorOrSelfOf
+    { 
+        $current = $this_AncestorOrSelfOf_5.current; 
+        afterParserOrEnumRuleCall();
+    }
+
+    |
+    { 
+        newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getFocusConceptParserRuleCall_6()); 
+    }
+    this_FocusConcept_6=ruleFocusConcept
+    { 
+        $current = $this_FocusConcept_6.current; 
         afterParserOrEnumRuleCall();
     }
 )
@@ -622,6 +642,128 @@ ruleParentOf returns [EObject current=null]
 		lv_constraint_1_2=ruleNestableExpression		{
 	        if ($current==null) {
 	            $current = createModelElementForParent(grammarAccess.getParentOfRule());
+	        }
+       		set(
+       			$current, 
+       			"constraint",
+        		lv_constraint_1_2, 
+        		"NestableExpression");
+	        afterParserOrEnumRuleCall();
+	    }
+
+)
+
+)
+))
+;
+
+
+
+
+
+// Entry rule entryRuleAncestorOf
+entryRuleAncestorOf returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getAncestorOfRule()); }
+	 iv_ruleAncestorOf=ruleAncestorOf 
+	 { $current=$iv_ruleAncestorOf.current; } 
+	 EOF 
+;
+
+// Rule AncestorOf
+ruleAncestorOf returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(this_GT_0=RULE_GT
+    { 
+    newLeafNode(this_GT_0, grammarAccess.getAncestorOfAccess().getGTTerminalRuleCall_0()); 
+    }
+(
+(
+(
+		{ 
+	        newCompositeNode(grammarAccess.getAncestorOfAccess().getConstraintFocusConceptParserRuleCall_1_0_0()); 
+	    }
+		lv_constraint_1_1=ruleFocusConcept		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getAncestorOfRule());
+	        }
+       		set(
+       			$current, 
+       			"constraint",
+        		lv_constraint_1_1, 
+        		"FocusConcept");
+	        afterParserOrEnumRuleCall();
+	    }
+
+    |		{ 
+	        newCompositeNode(grammarAccess.getAncestorOfAccess().getConstraintNestableExpressionParserRuleCall_1_0_1()); 
+	    }
+		lv_constraint_1_2=ruleNestableExpression		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getAncestorOfRule());
+	        }
+       		set(
+       			$current, 
+       			"constraint",
+        		lv_constraint_1_2, 
+        		"NestableExpression");
+	        afterParserOrEnumRuleCall();
+	    }
+
+)
+
+)
+))
+;
+
+
+
+
+
+// Entry rule entryRuleAncestorOrSelfOf
+entryRuleAncestorOrSelfOf returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getAncestorOrSelfOfRule()); }
+	 iv_ruleAncestorOrSelfOf=ruleAncestorOrSelfOf 
+	 { $current=$iv_ruleAncestorOrSelfOf.current; } 
+	 EOF 
+;
+
+// Rule AncestorOrSelfOf
+ruleAncestorOrSelfOf returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(this_DBL_GT_0=RULE_DBL_GT
+    { 
+    newLeafNode(this_DBL_GT_0, grammarAccess.getAncestorOrSelfOfAccess().getDBL_GTTerminalRuleCall_0()); 
+    }
+(
+(
+(
+		{ 
+	        newCompositeNode(grammarAccess.getAncestorOrSelfOfAccess().getConstraintFocusConceptParserRuleCall_1_0_0()); 
+	    }
+		lv_constraint_1_1=ruleFocusConcept		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getAncestorOrSelfOfRule());
+	        }
+       		set(
+       			$current, 
+       			"constraint",
+        		lv_constraint_1_1, 
+        		"FocusConcept");
+	        afterParserOrEnumRuleCall();
+	    }
+
+    |		{ 
+	        newCompositeNode(grammarAccess.getAncestorOrSelfOfAccess().getConstraintNestableExpressionParserRuleCall_1_0_1()); 
+	    }
+		lv_constraint_1_2=ruleNestableExpression		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getAncestorOrSelfOfRule());
 	        }
        		set(
        			$current, 

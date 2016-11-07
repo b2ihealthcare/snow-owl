@@ -21,6 +21,12 @@
     <genClasses ecoreClass="Ecl.ecore#//ParentOf">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//ParentOf/constraint"/>
     </genClasses>
+    <genClasses ecoreClass="Ecl.ecore#//AncestorOf">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//AncestorOf/constraint"/>
+    </genClasses>
+    <genClasses ecoreClass="Ecl.ecore#//AncestorOrSelfOf">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//AncestorOrSelfOf/constraint"/>
+    </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//MemberOf">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//MemberOf/constraint"/>
     </genClasses>

@@ -30,8 +30,12 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getANDToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getCARETRule())
 			return getCARETToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getDBL_GTRule())
+			return getDBL_GTToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getDBL_LTRule())
 			return getDBL_LTToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getGTRule())
+			return getGTToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getGT_EMRule())
 			return getGT_EMToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getLTRule())
@@ -72,12 +76,30 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
+	 * terminal DBL_GT					: '>>';
+	 */
+	protected String getDBL_GTToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return ">>";
+	}
+	
+	/**
 	 * terminal DBL_LT					: '<<';
 	 */
 	protected String getDBL_LTToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
 			return getTokenText(node);
 		return "<<";
+	}
+	
+	/**
+	 * terminal GT						: '>';
+	 */
+	protected String getGTToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return ">";
 	}
 	
 	/**

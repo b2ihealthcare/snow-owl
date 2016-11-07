@@ -69,6 +69,8 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
       case EclPackage.DESCENDANT_OF: return createDescendantOf();
       case EclPackage.DESCENDANT_OR_SELF_OF: return createDescendantOrSelfOf();
       case EclPackage.PARENT_OF: return createParentOf();
+      case EclPackage.ANCESTOR_OF: return createAncestorOf();
+      case EclPackage.ANCESTOR_OR_SELF_OF: return createAncestorOrSelfOf();
       case EclPackage.MEMBER_OF: return createMemberOf();
       case EclPackage.CONCEPT_REFERENCE: return createConceptReference();
       case EclPackage.ANY: return createAny();
@@ -134,6 +136,28 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     ParentOfImpl parentOf = new ParentOfImpl();
     return parentOf;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public AncestorOf createAncestorOf()
+  {
+    AncestorOfImpl ancestorOf = new AncestorOfImpl();
+    return ancestorOf;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public AncestorOrSelfOf createAncestorOrSelfOf()
+  {
+    AncestorOrSelfOfImpl ancestorOrSelfOf = new AncestorOrSelfOfImpl();
+    return ancestorOrSelfOf;
   }
 
   /**

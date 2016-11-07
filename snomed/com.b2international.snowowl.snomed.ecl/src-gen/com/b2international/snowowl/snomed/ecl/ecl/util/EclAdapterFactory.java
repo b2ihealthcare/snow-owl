@@ -100,6 +100,16 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createParentOfAdapter();
       }
       @Override
+      public Adapter caseAncestorOf(AncestorOf object)
+      {
+        return createAncestorOfAdapter();
+      }
+      @Override
+      public Adapter caseAncestorOrSelfOf(AncestorOrSelfOf object)
+      {
+        return createAncestorOrSelfOfAdapter();
+      }
+      @Override
       public Adapter caseMemberOf(MemberOf object)
       {
         return createMemberOfAdapter();
@@ -227,6 +237,36 @@ public class EclAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createParentOfAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.AncestorOf <em>Ancestor Of</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AncestorOf
+   * @generated
+   */
+  public Adapter createAncestorOfAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf <em>Ancestor Or Self Of</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf
+   * @generated
+   */
+  public Adapter createAncestorOrSelfOfAdapter()
   {
     return null;
   }

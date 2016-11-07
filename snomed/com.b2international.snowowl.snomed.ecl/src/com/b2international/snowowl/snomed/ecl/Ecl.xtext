@@ -17,7 +17,7 @@ ExclusionExpressionConstraint returns ExpressionConstraint:
 	SimpleExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=SimpleExpressionConstraint)?;
 	
 SimpleExpressionConstraint returns ExpressionConstraint:
-	ChildOf| DescendantOf | DescendantOrSelfOf | ParentOf | FocusConcept;
+	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | FocusConcept;
 	
 FocusConcept returns ExpressionConstraint:
 	MemberOf | ConceptReference | Any;
@@ -33,6 +33,12 @@ DescendantOrSelfOf:
 
 ParentOf:
 	GT_EM constraint=(FocusConcept | NestableExpression);
+	
+AncestorOf:
+	GT constraint=(FocusConcept | NestableExpression);
+	
+AncestorOrSelfOf:
+	DBL_GT constraint=(FocusConcept | NestableExpression);
 
 MemberOf:
 	CARET constraint=(ConceptReference | Any);

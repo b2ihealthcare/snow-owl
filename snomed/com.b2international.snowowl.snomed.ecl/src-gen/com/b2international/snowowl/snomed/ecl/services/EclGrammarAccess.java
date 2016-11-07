@@ -144,13 +144,15 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cDescendantOfParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
 		private final RuleCall cDescendantOrSelfOfParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
 		private final RuleCall cParentOfParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
-		private final RuleCall cFocusConceptParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
+		private final RuleCall cAncestorOfParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
+		private final RuleCall cAncestorOrSelfOfParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
+		private final RuleCall cFocusConceptParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
 		
 		//SimpleExpressionConstraint returns ExpressionConstraint:
-		//	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | FocusConcept;
+		//	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | FocusConcept;
 		@Override public ParserRule getRule() { return rule; }
 
-		//ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | FocusConcept
+		//ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | FocusConcept
 		public Alternatives getAlternatives() { return cAlternatives; }
 
 		//ChildOf
@@ -165,8 +167,14 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		//ParentOf
 		public RuleCall getParentOfParserRuleCall_3() { return cParentOfParserRuleCall_3; }
 
+		//AncestorOf
+		public RuleCall getAncestorOfParserRuleCall_4() { return cAncestorOfParserRuleCall_4; }
+
+		//AncestorOrSelfOf
+		public RuleCall getAncestorOrSelfOfParserRuleCall_5() { return cAncestorOrSelfOfParserRuleCall_5; }
+
 		//FocusConcept
-		public RuleCall getFocusConceptParserRuleCall_4() { return cFocusConceptParserRuleCall_4; }
+		public RuleCall getFocusConceptParserRuleCall_6() { return cFocusConceptParserRuleCall_6; }
 	}
 
 	public class FocusConceptElements extends AbstractParserRuleElementFinder {
@@ -321,6 +329,70 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		public RuleCall getConstraintNestableExpressionParserRuleCall_1_0_1() { return cConstraintNestableExpressionParserRuleCall_1_0_1; }
 	}
 
+	public class AncestorOfElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AncestorOf");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cGTTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final Alternatives cConstraintAlternatives_1_0 = (Alternatives)cConstraintAssignment_1.eContents().get(0);
+		private final RuleCall cConstraintFocusConceptParserRuleCall_1_0_0 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(0);
+		private final RuleCall cConstraintNestableExpressionParserRuleCall_1_0_1 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(1);
+		
+		//AncestorOf:
+		//	GT constraint=(FocusConcept | NestableExpression);
+		@Override public ParserRule getRule() { return rule; }
+
+		//GT constraint=(FocusConcept | NestableExpression)
+		public Group getGroup() { return cGroup; }
+
+		//GT
+		public RuleCall getGTTerminalRuleCall_0() { return cGTTerminalRuleCall_0; }
+
+		//constraint=(FocusConcept | NestableExpression)
+		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
+
+		//FocusConcept | NestableExpression
+		public Alternatives getConstraintAlternatives_1_0() { return cConstraintAlternatives_1_0; }
+
+		//FocusConcept
+		public RuleCall getConstraintFocusConceptParserRuleCall_1_0_0() { return cConstraintFocusConceptParserRuleCall_1_0_0; }
+
+		//NestableExpression
+		public RuleCall getConstraintNestableExpressionParserRuleCall_1_0_1() { return cConstraintNestableExpressionParserRuleCall_1_0_1; }
+	}
+
+	public class AncestorOrSelfOfElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AncestorOrSelfOf");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cDBL_GTTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final Alternatives cConstraintAlternatives_1_0 = (Alternatives)cConstraintAssignment_1.eContents().get(0);
+		private final RuleCall cConstraintFocusConceptParserRuleCall_1_0_0 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(0);
+		private final RuleCall cConstraintNestableExpressionParserRuleCall_1_0_1 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(1);
+		
+		//AncestorOrSelfOf:
+		//	DBL_GT constraint=(FocusConcept | NestableExpression);
+		@Override public ParserRule getRule() { return rule; }
+
+		//DBL_GT constraint=(FocusConcept | NestableExpression)
+		public Group getGroup() { return cGroup; }
+
+		//DBL_GT
+		public RuleCall getDBL_GTTerminalRuleCall_0() { return cDBL_GTTerminalRuleCall_0; }
+
+		//constraint=(FocusConcept | NestableExpression)
+		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
+
+		//FocusConcept | NestableExpression
+		public Alternatives getConstraintAlternatives_1_0() { return cConstraintAlternatives_1_0; }
+
+		//FocusConcept
+		public RuleCall getConstraintFocusConceptParserRuleCall_1_0_0() { return cConstraintFocusConceptParserRuleCall_1_0_0; }
+
+		//NestableExpression
+		public RuleCall getConstraintNestableExpressionParserRuleCall_1_0_1() { return cConstraintNestableExpressionParserRuleCall_1_0_1; }
+	}
+
 	public class MemberOfElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "MemberOf");
 		private final Group cGroup = (Group)rule.eContents().get(1);
@@ -458,7 +530,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cZEROTerminalRuleCall_5_1 = (RuleCall)cAlternatives_5.eContents().get(1);
 		
 		//// hidden grammar rules
-		// SnomedIdentifier hidden():
+		//SnomedIdentifier hidden():
 		//	DIGIT_NONZERO (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO)
 		//	(DIGIT_NONZERO | ZERO)+;
 		@Override public ParserRule getRule() { return rule; }
@@ -661,6 +733,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final DescendantOfElements pDescendantOf;
 	private final DescendantOrSelfOfElements pDescendantOrSelfOf;
 	private final ParentOfElements pParentOf;
+	private final AncestorOfElements pAncestorOf;
+	private final AncestorOrSelfOfElements pAncestorOrSelfOf;
 	private final MemberOfElements pMemberOf;
 	private final ConceptReferenceElements pConceptReference;
 	private final AnyElements pAny;
@@ -715,6 +789,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pDescendantOf = new DescendantOfElements();
 		this.pDescendantOrSelfOf = new DescendantOrSelfOfElements();
 		this.pParentOf = new ParentOfElements();
+		this.pAncestorOf = new AncestorOfElements();
+		this.pAncestorOrSelfOf = new AncestorOrSelfOfElements();
 		this.pMemberOf = new MemberOfElements();
 		this.pConceptReference = new ConceptReferenceElements();
 		this.pAny = new AnyElements();
@@ -819,7 +895,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//SimpleExpressionConstraint returns ExpressionConstraint:
-	//	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | FocusConcept;
+	//	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | FocusConcept;
 	public SimpleExpressionConstraintElements getSimpleExpressionConstraintAccess() {
 		return pSimpleExpressionConstraint;
 	}
@@ -878,6 +954,26 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return getParentOfAccess().getRule();
 	}
 
+	//AncestorOf:
+	//	GT constraint=(FocusConcept | NestableExpression);
+	public AncestorOfElements getAncestorOfAccess() {
+		return pAncestorOf;
+	}
+	
+	public ParserRule getAncestorOfRule() {
+		return getAncestorOfAccess().getRule();
+	}
+
+	//AncestorOrSelfOf:
+	//	DBL_GT constraint=(FocusConcept | NestableExpression);
+	public AncestorOrSelfOfElements getAncestorOrSelfOfAccess() {
+		return pAncestorOrSelfOf;
+	}
+	
+	public ParserRule getAncestorOrSelfOfRule() {
+		return getAncestorOrSelfOfAccess().getRule();
+	}
+
 	//MemberOf:
 	//	CARET constraint=(ConceptReference | Any);
 	public MemberOfElements getMemberOfAccess() {
@@ -919,7 +1015,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//// hidden grammar rules
-	// SnomedIdentifier hidden():
+	//SnomedIdentifier hidden():
 	//	DIGIT_NONZERO (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO)
 	//	(DIGIT_NONZERO | ZERO)+;
 	public SnomedIdentifierElements getSnomedIdentifierAccess() {
@@ -952,8 +1048,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//// ---TERMINALS---
-	// // bool operators
-	// terminal AND:
+	//// bool operators
+	//terminal AND:
 	//	"AND";
 	public TerminalRule getANDRule() {
 		return tAND;
@@ -972,7 +1068,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	} 
 
 	//// numeric terminals
-	// terminal ZERO:
+	//terminal ZERO:
 	//	"0";
 	public TerminalRule getZERORule() {
 		return tZERO;
@@ -985,7 +1081,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	} 
 
 	//// character terminals
-	// terminal LETTER:
+	//terminal LETTER:
 	//	"a".."z" | "A".."Z";
 	public TerminalRule getLETTERRule() {
 		return tLETTER;
@@ -1118,7 +1214,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	} 
 
 	//// comment terminals
-	// terminal WS:
+	//terminal WS:
 	//	" " | "\t" | "\n" | "\r";
 	public TerminalRule getWSRule() {
 		return tWS;
@@ -1137,7 +1233,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	} 
 
 	//// misc
-	// terminal OTHER_CHARACTER:
+	//terminal OTHER_CHARACTER:
 	//	.;
 	public TerminalRule getOTHER_CHARACTERRule() {
 		return tOTHER_CHARACTER;

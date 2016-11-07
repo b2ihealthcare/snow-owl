@@ -3,6 +3,8 @@
  */
 package com.b2international.snowowl.snomed.ecl.serializer;
 
+import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
+import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
@@ -38,6 +40,12 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	@Override
 	public void createSequence(EObject context, EObject semanticObject) {
 		if(semanticObject.eClass().getEPackage() == EclPackage.eINSTANCE) switch(semanticObject.eClass().getClassifierID()) {
+			case EclPackage.ANCESTOR_OF:
+				sequence_AncestorOf(context, (AncestorOf) semanticObject); 
+				return; 
+			case EclPackage.ANCESTOR_OR_SELF_OF:
+				sequence_AncestorOrSelfOf(context, (AncestorOrSelfOf) semanticObject); 
+				return; 
 			case EclPackage.AND_EXPRESSION_CONSTRAINT:
 				sequence_AndExpressionConstraint(context, (AndExpressionConstraint) semanticObject); 
 				return; 
@@ -71,6 +79,24 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 			}
 		if (errorAcceptor != null) errorAcceptor.accept(diagnosticProvider.createInvalidContextOrTypeDiagnostic(semanticObject, context));
 	}
+	
+	/**
+	 * Constraint:
+	 *     (constraint=FocusConcept | constraint=NestableExpression)
+	 */
+	protected void sequence_AncestorOf(EObject context, AncestorOf semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     (constraint=FocusConcept | constraint=NestableExpression)
+	 */
+	protected void sequence_AncestorOrSelfOf(EObject context, AncestorOrSelfOf semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
 	
 	/**
 	 * Constraint:

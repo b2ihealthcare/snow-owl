@@ -116,6 +116,24 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case EclPackage.ANCESTOR_OF:
+      {
+        AncestorOf ancestorOf = (AncestorOf)theEObject;
+        T result = caseAncestorOf(ancestorOf);
+        if (result == null) result = caseExpressionConstraint(ancestorOf);
+        if (result == null) result = caseNestableExpression(ancestorOf);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.ANCESTOR_OR_SELF_OF:
+      {
+        AncestorOrSelfOf ancestorOrSelfOf = (AncestorOrSelfOf)theEObject;
+        T result = caseAncestorOrSelfOf(ancestorOrSelfOf);
+        if (result == null) result = caseExpressionConstraint(ancestorOrSelfOf);
+        if (result == null) result = caseNestableExpression(ancestorOrSelfOf);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case EclPackage.MEMBER_OF:
       {
         MemberOf memberOf = (MemberOf)theEObject;
@@ -257,6 +275,38 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseParentOf(ParentOf object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Ancestor Of</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Ancestor Of</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseAncestorOf(AncestorOf object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Ancestor Or Self Of</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Ancestor Or Self Of</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseAncestorOrSelfOf(AncestorOrSelfOf object)
   {
     return null;
   }

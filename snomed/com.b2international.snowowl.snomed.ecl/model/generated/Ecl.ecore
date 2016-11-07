@@ -19,6 +19,14 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//NestableExpression"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AncestorOf" eSuperTypes="#//ExpressionConstraint">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//NestableExpression"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AncestorOrSelfOf" eSuperTypes="#//ExpressionConstraint">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//NestableExpression"
+        containment="true"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MemberOf" eSuperTypes="#//ExpressionConstraint">
     <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//ExpressionConstraint"
         containment="true"/>
