@@ -158,6 +158,16 @@ public class EclEvaluatorTest extends BaseRevisionIndexTest {
 		evaluator.evaluate(">!"+ROOT_ID).getSync();
 	}
 	
+	@Test(expected = UnsupportedOperationException.class)
+	public void ancestorOf() throws Exception {
+		evaluator.evaluate(">"+ROOT_ID).getSync();
+	}
+	
+	@Test(expected = UnsupportedOperationException.class)
+	public void ancestorOrSelfOf() throws Exception {
+		evaluator.evaluate(">>"+ROOT_ID).getSync();
+	}
+	
 	@Test
 	public void selfAndOther() throws Exception {
 		final Expression actual = evaluator.evaluate(ROOT_ID + " AND " + OTHER_ID).getSync();
