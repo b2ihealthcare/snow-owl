@@ -22,6 +22,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCom
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,9 +40,16 @@ import com.b2international.index.query.Predicate;
 import com.b2international.index.query.StringPredicate;
 import com.b2international.index.query.StringSetPredicate;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
+import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
@@ -52,6 +60,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
 import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
 import com.google.common.base.Function;
 import com.google.common.reflect.TypeToken;
 
@@ -130,24 +139,24 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	
 	protected Promise<Expression> eval(BranchContext context, final DescendantOf descendantOf) {
 		return evaluate(context, descendantOf.getConstraint())
-			.then(new Function<Expression, Expression>() {
-				@Override
-				public Expression apply(Expression inner) {
-					final Set<String> ids = extractIds(inner);
-					return Expressions.builder()
-							.should(parents(ids))
-							.should(ancestors(ids))
-							.build();
-				}
-			});
+				.then(EXTRACT_IDS)
+				.then(new Function<Set<String>, Expression>() {
+					@Override
+					public Expression apply(Set<String> ids) {
+						return Expressions.builder()
+								.should(parents(ids))
+								.should(ancestors(ids))
+								.build();
+					}
+				});
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final DescendantOrSelfOf descendantOrSelfOf) {
 		return evaluate(context, descendantOrSelfOf.getConstraint())
-				.then(new Function<Expression, Expression>() {
+				.then(EXTRACT_IDS)
+				.then(new Function<Set<String>, Expression>() {
 					@Override
-					public Expression apply(Expression inner) {
-						final Set<String> ids = extractIds(inner);
+					public Expression apply(Set<String> ids) {
 						return Expressions.builder()
 								.should(ids(ids))
 								.should(parents(ids))
@@ -159,11 +168,62 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	
 	protected Promise<Expression> eval(BranchContext context, final ChildOf childOf) {
 		return evaluate(context, childOf.getConstraint())
-				.then(new Function<Expression, Expression>() {
+				.then(EXTRACT_IDS)
+				.then(new Function<Set<String>, Expression>() {
 					@Override
-					public Expression apply(Expression inner) {
-						final Set<String> ids = extractIds(inner);
+					public Expression apply(Set<String> ids) {
 						return parents(ids);
+					}
+				});
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final ParentOf parentOf) {
+		return evaluate(context, parentOf.getConstraint())
+				.then(EXTRACT_IDS)
+				.thenWith(fetchConcepts(context))
+				.then(new Function<SnomedConcepts, Expression>() {
+					@Override
+					public Expression apply(SnomedConcepts concepts) {
+						final Set<String> parents = newHashSet();
+						for (ISnomedConcept concept : concepts) {
+							addParentIds(concept, parents);
+						}
+						return parents.isEmpty() ? Expressions.matchNone() : ids(parents);
+					}
+				});
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final AncestorOf ancestorOf) {
+		return evaluate(context, ancestorOf.getConstraint())
+				.then(EXTRACT_IDS)
+				.thenWith(fetchConcepts(context))
+				.then(new Function<SnomedConcepts, Expression>() {
+					@Override
+					public Expression apply(SnomedConcepts concepts) {
+						final Set<String> ancestors = newHashSet();
+						for (ISnomedConcept concept : concepts) {
+							addParentIds(concept, ancestors);
+							addAncestorIds(concept, ancestors);
+						}
+						return ancestors.isEmpty() ? Expressions.matchNone() : ids(ancestors);
+					}
+				});
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final AncestorOrSelfOf ancestorOrSelfOf) {
+		return evaluate(context, ancestorOrSelfOf.getConstraint())
+				.then(EXTRACT_IDS)
+				.thenWith(fetchConcepts(context))
+				.then(new Function<SnomedConcepts, Expression>() {
+					@Override
+					public Expression apply(SnomedConcepts concepts) {
+						final Set<String> ancestors = newHashSet();
+						for (ISnomedConcept concept : concepts) {
+							ancestors.add(concept.getId());
+							addParentIds(concept, ancestors);
+							addAncestorIds(concept, ancestors);
+						}
+						return ancestors.isEmpty() ? Expressions.matchNone() : ids(ancestors);
 					}
 				});
 	}
@@ -228,6 +288,46 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 			}
 		}
 		throw new UnsupportedOperationException("Cannot extract ID values from: " + expression);
+	}
+	
+	private static Function<Expression, Set<String>> EXTRACT_IDS = new Function<Expression, Set<String>>() {
+		@Override
+		public Set<String> apply(Expression expression) {
+			return extractIds(expression);
+		}
+	};
+	
+	private static Function<Set<String>, Promise<SnomedConcepts>> fetchConcepts(final BranchContext context) {
+		return new Function<Set<String>, Promise<SnomedConcepts>>() {
+			@Override
+			public Promise<SnomedConcepts> apply(Set<String> ids) {
+				return SnomedRequests.prepareSearchConcept()
+						.setLimit(ids.size())
+						.setComponentIds(ids)
+						.build(context.id(), context.branch().path())
+						.execute(context.service(IEventBus.class));
+			}
+		};
+	}
+	
+	private static void addParentIds(ISnomedConcept concept, final Set<String> collection) {
+		if (concept.getParentIds() != null) {
+			for (long parent : concept.getParentIds()) {
+				if (IComponent.ROOT_IDL != parent) {
+					collection.add(Long.toString(parent));
+				}
+			}
+		}
+	}
+	
+	private static void addAncestorIds(ISnomedConcept concept, Set<String> collection) {
+		if (concept.getAncestorIds() != null) {
+			for (long ancestor : concept.getAncestorIds()) {
+				if (IComponent.ROOT_IDL != ancestor) {
+					collection.add(Long.toString(ancestor));
+				}
+			}
+		}		
 	}
 
 }

@@ -15,24 +15,48 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
+import static org.mockito.Mockito.when;
+
+import java.util.UUID;
+
+import org.eclipse.emf.common.util.WrappedException;
 import org.mockito.Mockito;
 
+import com.b2international.commons.ReflectionUtils;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.RepositoryContextProvider;
+import com.b2international.snowowl.core.events.DelegatingRequest;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.ApiException;
+import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.RepositoryRequest;
+import com.b2international.snowowl.eventbus.EventBusUtil;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.eventbus.IHandler;
+import com.b2international.snowowl.eventbus.IMessage;
 
 /**
  * @since 5.4
  */
-public final class TestBranchContext extends DelegatingServiceProvider implements BranchContext {
+public final class TestBranchContext extends DelegatingServiceProvider implements BranchContext, RepositoryContextProvider {
 
+	private final String repositoryId;
 	private final Branch branch;
 
-	private TestBranchContext(Branch branch) {
+	private TestBranchContext(String repositoryId, Branch branch) {
 		super(ServiceProvider.EMPTY);
+		this.repositoryId = repositoryId;
 		this.branch = branch;
+	}
+	
+	@Override
+	public RepositoryContext get(ServiceProvider context, String repositoryId) {
+		return this;
 	}
 	
 	@Override
@@ -47,7 +71,7 @@ public final class TestBranchContext extends DelegatingServiceProvider implement
 	
 	@Override
 	public String id() {
-		throw new UnsupportedOperationException();
+		return repositoryId;
 	}
 	
 	public static TestBranchContext.Builder on(String branch) {
@@ -59,8 +83,30 @@ public final class TestBranchContext extends DelegatingServiceProvider implement
 		private TestBranchContext context;
 		
 		Builder(String branch) {
+			final String repositoryId = UUID.randomUUID().toString();
 			final Branch mockBranch = Mockito.mock(Branch.class);
-			context = new TestBranchContext(mockBranch);
+			when(mockBranch.path()).thenReturn(branch);
+			context = new TestBranchContext(repositoryId, mockBranch);
+			final IEventBus bus = EventBusUtil.getWorkerBus(repositoryId, Runtime.getRuntime().availableProcessors());
+			bus.registerHandler("/"+repositoryId, new IHandler<IMessage>() {
+				@Override
+				public void handle(IMessage message) {
+					try {
+						final RepositoryRequest<?> repoReq = message.body(RepositoryRequest.class);
+						final BranchRequest<?> branchReq = ReflectionUtils.getField(DelegatingRequest.class, repoReq, "next");
+						final Request<BranchContext, ?> innerReq = ReflectionUtils.getField(DelegatingRequest.class, branchReq, "next");
+						message.reply(innerReq.execute(context));
+					} catch (WrappedException e) {
+						message.fail(e.getCause());
+					} catch (ApiException e) {
+						message.fail(e);
+					} catch (Throwable e) {
+						message.fail(e);
+					}
+				}
+			});
+			with(IEventBus.class, bus);
+			with(RepositoryContextProvider.class, context);
 		}
 		
 		public <T> Builder with(Class<T> type, T object) {
