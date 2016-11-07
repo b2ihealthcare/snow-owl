@@ -48,7 +48,7 @@ import com.google.inject.Injector;
 /**
  * @since 5.4
  */
-public class EclEvaluatorTest extends BaseRevisionIndexTest {
+public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 
 	private static final String ROOT_ID = Concepts.ROOT_CONCEPT;
 	private static final String OTHER_ID = Concepts.ABBREVIATION;
