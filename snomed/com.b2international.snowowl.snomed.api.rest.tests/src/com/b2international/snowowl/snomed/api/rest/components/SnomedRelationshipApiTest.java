@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.snomed.api.rest.components;
 
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
@@ -47,9 +47,6 @@ import com.google.common.collect.Maps;
  * @since 4.0
  */
 public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
-
-	private static final String TEMPORAL_CONTEXT = "410510008";
-	private static final String FINDING_CONTEXT = "408729009";
 
 	@Test
 	public void createRelationshipNonExistentBranch() {
