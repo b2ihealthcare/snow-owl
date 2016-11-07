@@ -68,7 +68,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 
 	private static final long serialVersionUID = 5891665196136989183L;
 	
-	private final PolymorphicDispatcher<Promise<Expression>> dispatcher = PolymorphicDispatcher.createForSingleTarget("eval", this);
+	private final PolymorphicDispatcher<Promise<Expression>> dispatcher = PolymorphicDispatcher.createForSingleTarget("eval", 2, 2, this);
 
 	@Nullable
 	private String expression;
@@ -98,26 +98,26 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	public Promise<Expression> execute(BranchContext context) {
 		final ExpressionConstraint currentExpression = expressionConstraint != null ? expressionConstraint
 				: context.service(EclParser.class).parse(expression);
-		return evaluate(currentExpression);
+		return evaluate(context, currentExpression);
 	}
 	
-	private Promise<Expression> evaluate(EObject expression) {
-		return dispatcher.invoke(expression);
+	private Promise<Expression> evaluate(BranchContext context, EObject expression) {
+		return dispatcher.invoke(context, expression);
 	}
 
-	protected Promise<Expression> eval(EObject eObject) {
+	protected Promise<Expression> eval(BranchContext context, EObject eObject) {
 		return throwUnsupported(eObject);
 	}
 
-	protected Promise<Expression> eval(Any any) {
+	protected Promise<Expression> eval(BranchContext context, Any any) {
 		return Promise.immediate(Expressions.matchAll());
 	}
 	
-	protected Promise<Expression> eval(ConceptReference concept) {
+	protected Promise<Expression> eval(BranchContext context, ConceptReference concept) {
 		return Promise.immediate(id(concept.getId()));
 	}
 	
-	protected Promise<Expression> eval(MemberOf memberOf) {
+	protected Promise<Expression> eval(BranchContext context, MemberOf memberOf) {
 		if (memberOf.getConstraint() instanceof ConceptReference) {
 			final ConceptReference concept = (ConceptReference) memberOf.getConstraint();
 			return Promise.immediate(referringRefSet(concept.getId()));
@@ -128,8 +128,8 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 		}
 	}
 	
-	protected Promise<Expression> eval(final DescendantOf descendantOf) {
-		return evaluate(descendantOf.getConstraint())
+	protected Promise<Expression> eval(BranchContext context, final DescendantOf descendantOf) {
+		return evaluate(context, descendantOf.getConstraint())
 			.then(new Function<Expression, Expression>() {
 				@Override
 				public Expression apply(Expression inner) {
@@ -142,8 +142,8 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 			});
 	}
 	
-	protected Promise<Expression> eval(final DescendantOrSelfOf descendantOrSelfOf) {
-		return evaluate(descendantOrSelfOf.getConstraint())
+	protected Promise<Expression> eval(BranchContext context, final DescendantOrSelfOf descendantOrSelfOf) {
+		return evaluate(context, descendantOrSelfOf.getConstraint())
 				.then(new Function<Expression, Expression>() {
 					@Override
 					public Expression apply(Expression inner) {
@@ -157,8 +157,8 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				});
 	}
 	
-	protected Promise<Expression> eval(final ChildOf childOf) {
-		return evaluate(childOf.getConstraint())
+	protected Promise<Expression> eval(BranchContext context, final ChildOf childOf) {
+		return evaluate(context, childOf.getConstraint())
 				.then(new Function<Expression, Expression>() {
 					@Override
 					public Expression apply(Expression inner) {
@@ -168,8 +168,8 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				});
 	}
 	
-	protected Promise<Expression> eval(final AndExpressionConstraint and) {
-		return Promise.all(evaluate(and.getLeft()), evaluate(and.getRight()))
+	protected Promise<Expression> eval(BranchContext context, final AndExpressionConstraint and) {
+		return Promise.all(evaluate(context, and.getLeft()), evaluate(context, and.getRight()))
 				.then(new Function<List<Object>, Expression>() {
 					@Override
 					public Expression apply(List<Object> innerExpressions) {
@@ -183,8 +183,8 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				});
 	}
 	
-	protected Promise<Expression> eval(final OrExpressionConstraint or) {
-		return Promise.all(evaluate(or.getLeft()), evaluate(or.getRight()))
+	protected Promise<Expression> eval(BranchContext context, final OrExpressionConstraint or) {
+		return Promise.all(evaluate(context, or.getLeft()), evaluate(context, or.getRight()))
 				.then(new Function<List<Object>, Expression>() {
 					@Override
 					public Expression apply(List<Object> innerExpressions) {
@@ -198,8 +198,8 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				});
 	}
 	
-	protected Promise<Expression> eval(final ExclusionExpressionConstraint exclusion) {
-		return Promise.all(evaluate(exclusion.getLeft()), evaluate(exclusion.getRight()))
+	protected Promise<Expression> eval(BranchContext context, final ExclusionExpressionConstraint exclusion) {
+		return Promise.all(evaluate(context, exclusion.getLeft()), evaluate(context, exclusion.getRight()))
 				.then(new Function<List<Object>, Expression>() {
 					@Override
 					public Expression apply(List<Object> innerExpressions) {
