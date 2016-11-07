@@ -150,9 +150,9 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createAttributeValueNotEqualsAdapter();
       }
       @Override
-      public Adapter caseNestableExpression(NestableExpression object)
+      public Adapter caseNestedExpression(NestedExpression object)
       {
-        return createNestableExpressionAdapter();
+        return createNestedExpressionAdapter();
       }
       @Override
       public Adapter caseOrExpressionConstraint(OrExpressionConstraint object)
@@ -417,16 +417,16 @@ public class EclAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.NestableExpression <em>Nestable Expression</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.NestedExpression <em>Nested Expression</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.NestableExpression
+   * @see com.b2international.snowowl.snomed.ecl.ecl.NestedExpression
    * @generated
    */
-  public Adapter createNestableExpressionAdapter()
+  public Adapter createNestedExpressionAdapter()
   {
     return null;
   }

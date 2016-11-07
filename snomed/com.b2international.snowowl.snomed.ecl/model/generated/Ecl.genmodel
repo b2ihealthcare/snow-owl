@@ -48,7 +48,9 @@
     </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//AttributeValueEquals"/>
     <genClasses ecoreClass="Ecl.ecore#//AttributeValueNotEquals"/>
-    <genClasses ecoreClass="Ecl.ecore#//NestableExpression"/>
+    <genClasses ecoreClass="Ecl.ecore#//NestedExpression">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//NestedExpression/nested"/>
+    </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//OrExpressionConstraint">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//OrExpressionConstraint/left"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//OrExpressionConstraint/right"/>

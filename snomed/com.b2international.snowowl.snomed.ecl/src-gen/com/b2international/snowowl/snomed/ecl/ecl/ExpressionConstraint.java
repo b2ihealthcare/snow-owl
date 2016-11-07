@@ -2,6 +2,7 @@
  */
 package com.b2international.snowowl.snomed.ecl.ecl;
 
+import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
@@ -13,6 +14,6 @@ package com.b2international.snowowl.snomed.ecl.ecl;
  * @model
  * @generated
  */
-public interface ExpressionConstraint extends NestableExpression
+public interface ExpressionConstraint extends EObject
 {
 } // ExpressionConstraint

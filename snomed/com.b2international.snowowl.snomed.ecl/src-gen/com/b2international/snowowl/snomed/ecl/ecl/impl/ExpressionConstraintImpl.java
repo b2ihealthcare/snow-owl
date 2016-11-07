@@ -7,6 +7,8 @@ import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 
 import org.eclipse.emf.ecore.EClass;
 
+import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
+
 /**
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>Expression Constraint</b></em>'.
@@ -16,7 +18,7 @@ import org.eclipse.emf.ecore.EClass;
  *
  * @generated
  */
-public class ExpressionConstraintImpl extends NestableExpressionImpl implements ExpressionConstraint
+public class ExpressionConstraintImpl extends MinimalEObjectImpl.Container implements ExpressionConstraint
 {
   /**
    * <!-- begin-user-doc -->

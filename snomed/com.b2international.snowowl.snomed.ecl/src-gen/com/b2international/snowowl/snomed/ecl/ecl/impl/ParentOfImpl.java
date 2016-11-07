@@ -3,7 +3,7 @@
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ecl.ecl.NestableExpression;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
 
 import org.eclipse.emf.common.notify.Notification;
@@ -37,7 +37,7 @@ public class ParentOfImpl extends ExpressionConstraintImpl implements ParentOf
    * @generated
    * @ordered
    */
-  protected NestableExpression constraint;
+  protected ExpressionConstraint constraint;
 
   /**
    * <!-- begin-user-doc -->
@@ -65,7 +65,7 @@ public class ParentOfImpl extends ExpressionConstraintImpl implements ParentOf
    * <!-- end-user-doc -->
    * @generated
    */
-  public NestableExpression getConstraint()
+  public ExpressionConstraint getConstraint()
   {
     return constraint;
   }
@@ -75,9 +75,9 @@ public class ParentOfImpl extends ExpressionConstraintImpl implements ParentOf
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetConstraint(NestableExpression newConstraint, NotificationChain msgs)
+  public NotificationChain basicSetConstraint(ExpressionConstraint newConstraint, NotificationChain msgs)
   {
-    NestableExpression oldConstraint = constraint;
+    ExpressionConstraint oldConstraint = constraint;
     constraint = newConstraint;
     if (eNotificationRequired())
     {
@@ -92,7 +92,7 @@ public class ParentOfImpl extends ExpressionConstraintImpl implements ParentOf
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setConstraint(NestableExpression newConstraint)
+  public void setConstraint(ExpressionConstraint newConstraint)
   {
     if (newConstraint != constraint)
     {
@@ -151,7 +151,7 @@ public class ParentOfImpl extends ExpressionConstraintImpl implements ParentOf
     switch (featureID)
     {
       case EclPackage.PARENT_OF__CONSTRAINT:
-        setConstraint((NestableExpression)newValue);
+        setConstraint((ExpressionConstraint)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -168,7 +168,7 @@ public class ParentOfImpl extends ExpressionConstraintImpl implements ParentOf
     switch (featureID)
     {
       case EclPackage.PARENT_OF__CONSTRAINT:
-        setConstraint((NestableExpression)null);
+        setConstraint((ExpressionConstraint)null);
         return;
     }
     super.eUnset(featureID);

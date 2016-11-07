@@ -76,7 +76,6 @@ public class EclSwitch<T> extends Switch<T>
       {
         ExpressionConstraint expressionConstraint = (ExpressionConstraint)theEObject;
         T result = caseExpressionConstraint(expressionConstraint);
-        if (result == null) result = caseNestableExpression(expressionConstraint);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -85,7 +84,6 @@ public class EclSwitch<T> extends Switch<T>
         RefinedExpressionConstraint refinedExpressionConstraint = (RefinedExpressionConstraint)theEObject;
         T result = caseRefinedExpressionConstraint(refinedExpressionConstraint);
         if (result == null) result = caseExpressionConstraint(refinedExpressionConstraint);
-        if (result == null) result = caseNestableExpression(refinedExpressionConstraint);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -94,7 +92,6 @@ public class EclSwitch<T> extends Switch<T>
         ChildOf childOf = (ChildOf)theEObject;
         T result = caseChildOf(childOf);
         if (result == null) result = caseExpressionConstraint(childOf);
-        if (result == null) result = caseNestableExpression(childOf);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -103,7 +100,6 @@ public class EclSwitch<T> extends Switch<T>
         DescendantOf descendantOf = (DescendantOf)theEObject;
         T result = caseDescendantOf(descendantOf);
         if (result == null) result = caseExpressionConstraint(descendantOf);
-        if (result == null) result = caseNestableExpression(descendantOf);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -112,7 +108,6 @@ public class EclSwitch<T> extends Switch<T>
         DescendantOrSelfOf descendantOrSelfOf = (DescendantOrSelfOf)theEObject;
         T result = caseDescendantOrSelfOf(descendantOrSelfOf);
         if (result == null) result = caseExpressionConstraint(descendantOrSelfOf);
-        if (result == null) result = caseNestableExpression(descendantOrSelfOf);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -121,7 +116,6 @@ public class EclSwitch<T> extends Switch<T>
         ParentOf parentOf = (ParentOf)theEObject;
         T result = caseParentOf(parentOf);
         if (result == null) result = caseExpressionConstraint(parentOf);
-        if (result == null) result = caseNestableExpression(parentOf);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -130,7 +124,6 @@ public class EclSwitch<T> extends Switch<T>
         AncestorOf ancestorOf = (AncestorOf)theEObject;
         T result = caseAncestorOf(ancestorOf);
         if (result == null) result = caseExpressionConstraint(ancestorOf);
-        if (result == null) result = caseNestableExpression(ancestorOf);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -139,7 +132,6 @@ public class EclSwitch<T> extends Switch<T>
         AncestorOrSelfOf ancestorOrSelfOf = (AncestorOrSelfOf)theEObject;
         T result = caseAncestorOrSelfOf(ancestorOrSelfOf);
         if (result == null) result = caseExpressionConstraint(ancestorOrSelfOf);
-        if (result == null) result = caseNestableExpression(ancestorOrSelfOf);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -148,7 +140,6 @@ public class EclSwitch<T> extends Switch<T>
         MemberOf memberOf = (MemberOf)theEObject;
         T result = caseMemberOf(memberOf);
         if (result == null) result = caseExpressionConstraint(memberOf);
-        if (result == null) result = caseNestableExpression(memberOf);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -157,7 +148,6 @@ public class EclSwitch<T> extends Switch<T>
         ConceptReference conceptReference = (ConceptReference)theEObject;
         T result = caseConceptReference(conceptReference);
         if (result == null) result = caseExpressionConstraint(conceptReference);
-        if (result == null) result = caseNestableExpression(conceptReference);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -166,7 +156,6 @@ public class EclSwitch<T> extends Switch<T>
         Any any = (Any)theEObject;
         T result = caseAny(any);
         if (result == null) result = caseExpressionConstraint(any);
-        if (result == null) result = caseNestableExpression(any);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -200,10 +189,11 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case EclPackage.NESTABLE_EXPRESSION:
+      case EclPackage.NESTED_EXPRESSION:
       {
-        NestableExpression nestableExpression = (NestableExpression)theEObject;
-        T result = caseNestableExpression(nestableExpression);
+        NestedExpression nestedExpression = (NestedExpression)theEObject;
+        T result = caseNestedExpression(nestedExpression);
+        if (result == null) result = caseExpressionConstraint(nestedExpression);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -212,7 +202,6 @@ public class EclSwitch<T> extends Switch<T>
         OrExpressionConstraint orExpressionConstraint = (OrExpressionConstraint)theEObject;
         T result = caseOrExpressionConstraint(orExpressionConstraint);
         if (result == null) result = caseExpressionConstraint(orExpressionConstraint);
-        if (result == null) result = caseNestableExpression(orExpressionConstraint);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -221,7 +210,6 @@ public class EclSwitch<T> extends Switch<T>
         AndExpressionConstraint andExpressionConstraint = (AndExpressionConstraint)theEObject;
         T result = caseAndExpressionConstraint(andExpressionConstraint);
         if (result == null) result = caseExpressionConstraint(andExpressionConstraint);
-        if (result == null) result = caseNestableExpression(andExpressionConstraint);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -230,7 +218,6 @@ public class EclSwitch<T> extends Switch<T>
         ExclusionExpressionConstraint exclusionExpressionConstraint = (ExclusionExpressionConstraint)theEObject;
         T result = caseExclusionExpressionConstraint(exclusionExpressionConstraint);
         if (result == null) result = caseExpressionConstraint(exclusionExpressionConstraint);
-        if (result == null) result = caseNestableExpression(exclusionExpressionConstraint);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -479,17 +466,17 @@ public class EclSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Nestable Expression</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Nested Expression</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Nestable Expression</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Nested Expression</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseNestableExpression(NestableExpression object)
+  public T caseNestedExpression(NestedExpression object)
   {
     return null;
   }

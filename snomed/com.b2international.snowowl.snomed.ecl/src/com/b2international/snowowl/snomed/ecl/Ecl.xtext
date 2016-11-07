@@ -23,25 +23,25 @@ SimpleExpressionConstraint returns ExpressionConstraint:
 	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | FocusConcept;
 	
 FocusConcept returns ExpressionConstraint:
-	MemberOf | ConceptReference | Any;
-
+	MemberOf | ConceptReference | Any | NestedExpression;
+	
 ChildOf:
-	LT_EM constraint=(FocusConcept | NestableExpression);
+	LT_EM constraint=FocusConcept;
 
 DescendantOf:
-	LT constraint=(FocusConcept | NestableExpression);
+	LT constraint=FocusConcept;
 
 DescendantOrSelfOf:
-	DBL_LT constraint=(FocusConcept | NestableExpression);
+	DBL_LT constraint=FocusConcept;
 
 ParentOf:
-	GT_EM constraint=(FocusConcept | NestableExpression);
+	GT_EM constraint=FocusConcept;
 	
 AncestorOf:
-	GT constraint=(FocusConcept | NestableExpression);
+	GT constraint=FocusConcept;
 	
 AncestorOrSelfOf:
-	DBL_GT constraint=(FocusConcept | NestableExpression);
+	DBL_GT constraint=FocusConcept;
 
 MemberOf:
 	CARET constraint=(ConceptReference | Any);
@@ -67,8 +67,8 @@ AttributeValueEquals:
 AttributeValueNotEquals:
 	NOT_EQUAL constraint=SimpleExpressionConstraint;
 	
-NestableExpression:
-	ROUND_OPEN ExpressionConstraint ROUND_CLOSE;
+NestedExpression:
+	ROUND_OPEN nested=ExpressionConstraint ROUND_CLOSE;
 
 // hidden grammar rules
 SnomedIdentifier 	hidden() : DIGIT_NONZERO (DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)+;

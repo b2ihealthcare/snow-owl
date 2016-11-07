@@ -79,7 +79,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
       case EclPackage.COMPARISON: return createComparison();
       case EclPackage.ATTRIBUTE_VALUE_EQUALS: return createAttributeValueEquals();
       case EclPackage.ATTRIBUTE_VALUE_NOT_EQUALS: return createAttributeValueNotEquals();
-      case EclPackage.NESTABLE_EXPRESSION: return createNestableExpression();
+      case EclPackage.NESTED_EXPRESSION: return createNestedExpression();
       case EclPackage.OR_EXPRESSION_CONSTRAINT: return createOrExpressionConstraint();
       case EclPackage.AND_EXPRESSION_CONSTRAINT: return createAndExpressionConstraint();
       case EclPackage.EXCLUSION_EXPRESSION_CONSTRAINT: return createExclusionExpressionConstraint();
@@ -258,10 +258,10 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public NestableExpression createNestableExpression()
+  public NestedExpression createNestedExpression()
   {
-    NestableExpressionImpl nestableExpression = new NestableExpressionImpl();
-    return nestableExpression;
+    NestedExpressionImpl nestedExpression = new NestedExpressionImpl();
+    return nestedExpression;
   }
 
   /**

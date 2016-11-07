@@ -57,25 +57,6 @@ public interface EclPackage extends EPackage
   EclPackage eINSTANCE = com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl.init();
 
   /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.NestableExpressionImpl <em>Nestable Expression</em>}' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.NestableExpressionImpl
-   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getNestableExpression()
-   * @generated
-   */
-  int NESTABLE_EXPRESSION = 15;
-
-  /**
-   * The number of structural features of the '<em>Nestable Expression</em>' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int NESTABLE_EXPRESSION_FEATURE_COUNT = 0;
-
-  /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ExpressionConstraintImpl <em>Expression Constraint</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -92,7 +73,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int EXPRESSION_CONSTRAINT_FEATURE_COUNT = NESTABLE_EXPRESSION_FEATURE_COUNT + 0;
+  int EXPRESSION_CONSTRAINT_FEATURE_COUNT = 0;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.RefinedExpressionConstraintImpl <em>Refined Expression Constraint</em>}' class.
@@ -503,6 +484,34 @@ public interface EclPackage extends EPackage
    * @ordered
    */
   int ATTRIBUTE_VALUE_NOT_EQUALS_FEATURE_COUNT = COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.NestedExpressionImpl <em>Nested Expression</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.NestedExpressionImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getNestedExpression()
+   * @generated
+   */
+  int NESTED_EXPRESSION = 15;
+
+  /**
+   * The feature id for the '<em><b>Nested</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int NESTED_EXPRESSION__NESTED = EXPRESSION_CONSTRAINT_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Nested Expression</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int NESTED_EXPRESSION_FEATURE_COUNT = EXPRESSION_CONSTRAINT_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.OrExpressionConstraintImpl <em>Or Expression Constraint</em>}' class.
@@ -921,14 +930,25 @@ public interface EclPackage extends EPackage
   EClass getAttributeValueNotEquals();
 
   /**
-   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.NestableExpression <em>Nestable Expression</em>}'.
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.NestedExpression <em>Nested Expression</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Nestable Expression</em>'.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.NestableExpression
+   * @return the meta object for class '<em>Nested Expression</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.NestedExpression
    * @generated
    */
-  EClass getNestableExpression();
+  EClass getNestedExpression();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.NestedExpression#getNested <em>Nested</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Nested</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.NestedExpression#getNested()
+   * @see #getNestedExpression()
+   * @generated
+   */
+  EReference getNestedExpression_Nested();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint <em>Or Expression Constraint</em>}'.
@@ -1312,14 +1332,22 @@ public interface EclPackage extends EPackage
     EClass ATTRIBUTE_VALUE_NOT_EQUALS = eINSTANCE.getAttributeValueNotEquals();
 
     /**
-     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.NestableExpressionImpl <em>Nestable Expression</em>}' class.
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.NestedExpressionImpl <em>Nested Expression</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
-     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.NestableExpressionImpl
-     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getNestableExpression()
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.NestedExpressionImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getNestedExpression()
      * @generated
      */
-    EClass NESTABLE_EXPRESSION = eINSTANCE.getNestableExpression();
+    EClass NESTED_EXPRESSION = eINSTANCE.getNestedExpression();
+
+    /**
+     * The meta object literal for the '<em><b>Nested</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference NESTED_EXPRESSION__NESTED = eINSTANCE.getNestedExpression_Nested();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.OrExpressionConstraintImpl <em>Or Expression Constraint</em>}' class.

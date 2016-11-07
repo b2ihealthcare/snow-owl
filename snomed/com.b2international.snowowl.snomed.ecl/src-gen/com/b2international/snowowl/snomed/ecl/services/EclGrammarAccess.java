@@ -229,12 +229,13 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cMemberOfParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
 		private final RuleCall cConceptReferenceParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
 		private final RuleCall cAnyParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		private final RuleCall cNestedExpressionParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
 		
 		//FocusConcept returns ExpressionConstraint:
-		//	MemberOf | ConceptReference | Any;
+		//	MemberOf | ConceptReference | Any | NestedExpression;
 		@Override public ParserRule getRule() { return rule; }
 
-		//MemberOf | ConceptReference | Any
+		//MemberOf | ConceptReference | Any | NestedExpression
 		public Alternatives getAlternatives() { return cAlternatives; }
 
 		//MemberOf
@@ -245,6 +246,9 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 
 		//Any
 		public RuleCall getAnyParserRuleCall_2() { return cAnyParserRuleCall_2; }
+
+		//NestedExpression
+		public RuleCall getNestedExpressionParserRuleCall_3() { return cNestedExpressionParserRuleCall_3; }
 	}
 
 	public class ChildOfElements extends AbstractParserRuleElementFinder {
@@ -252,31 +256,23 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final RuleCall cLT_EMTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final Alternatives cConstraintAlternatives_1_0 = (Alternatives)cConstraintAssignment_1.eContents().get(0);
-		private final RuleCall cConstraintFocusConceptParserRuleCall_1_0_0 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(0);
-		private final RuleCall cConstraintNestableExpressionParserRuleCall_1_0_1 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(1);
+		private final RuleCall cConstraintFocusConceptParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
 		
 		//ChildOf:
-		//	LT_EM constraint=(FocusConcept | NestableExpression);
+		//	LT_EM constraint=FocusConcept;
 		@Override public ParserRule getRule() { return rule; }
 
-		//LT_EM constraint=(FocusConcept | NestableExpression)
+		//LT_EM constraint=FocusConcept
 		public Group getGroup() { return cGroup; }
 
 		//LT_EM
 		public RuleCall getLT_EMTerminalRuleCall_0() { return cLT_EMTerminalRuleCall_0; }
 
-		//constraint=(FocusConcept | NestableExpression)
+		//constraint=FocusConcept
 		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
 
-		//FocusConcept | NestableExpression
-		public Alternatives getConstraintAlternatives_1_0() { return cConstraintAlternatives_1_0; }
-
 		//FocusConcept
-		public RuleCall getConstraintFocusConceptParserRuleCall_1_0_0() { return cConstraintFocusConceptParserRuleCall_1_0_0; }
-
-		//NestableExpression
-		public RuleCall getConstraintNestableExpressionParserRuleCall_1_0_1() { return cConstraintNestableExpressionParserRuleCall_1_0_1; }
+		public RuleCall getConstraintFocusConceptParserRuleCall_1_0() { return cConstraintFocusConceptParserRuleCall_1_0; }
 	}
 
 	public class DescendantOfElements extends AbstractParserRuleElementFinder {
@@ -284,31 +280,23 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final RuleCall cLTTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final Alternatives cConstraintAlternatives_1_0 = (Alternatives)cConstraintAssignment_1.eContents().get(0);
-		private final RuleCall cConstraintFocusConceptParserRuleCall_1_0_0 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(0);
-		private final RuleCall cConstraintNestableExpressionParserRuleCall_1_0_1 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(1);
+		private final RuleCall cConstraintFocusConceptParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
 		
 		//DescendantOf:
-		//	LT constraint=(FocusConcept | NestableExpression);
+		//	LT constraint=FocusConcept;
 		@Override public ParserRule getRule() { return rule; }
 
-		//LT constraint=(FocusConcept | NestableExpression)
+		//LT constraint=FocusConcept
 		public Group getGroup() { return cGroup; }
 
 		//LT
 		public RuleCall getLTTerminalRuleCall_0() { return cLTTerminalRuleCall_0; }
 
-		//constraint=(FocusConcept | NestableExpression)
+		//constraint=FocusConcept
 		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
 
-		//FocusConcept | NestableExpression
-		public Alternatives getConstraintAlternatives_1_0() { return cConstraintAlternatives_1_0; }
-
 		//FocusConcept
-		public RuleCall getConstraintFocusConceptParserRuleCall_1_0_0() { return cConstraintFocusConceptParserRuleCall_1_0_0; }
-
-		//NestableExpression
-		public RuleCall getConstraintNestableExpressionParserRuleCall_1_0_1() { return cConstraintNestableExpressionParserRuleCall_1_0_1; }
+		public RuleCall getConstraintFocusConceptParserRuleCall_1_0() { return cConstraintFocusConceptParserRuleCall_1_0; }
 	}
 
 	public class DescendantOrSelfOfElements extends AbstractParserRuleElementFinder {
@@ -316,31 +304,23 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final RuleCall cDBL_LTTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final Alternatives cConstraintAlternatives_1_0 = (Alternatives)cConstraintAssignment_1.eContents().get(0);
-		private final RuleCall cConstraintFocusConceptParserRuleCall_1_0_0 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(0);
-		private final RuleCall cConstraintNestableExpressionParserRuleCall_1_0_1 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(1);
+		private final RuleCall cConstraintFocusConceptParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
 		
 		//DescendantOrSelfOf:
-		//	DBL_LT constraint=(FocusConcept | NestableExpression);
+		//	DBL_LT constraint=FocusConcept;
 		@Override public ParserRule getRule() { return rule; }
 
-		//DBL_LT constraint=(FocusConcept | NestableExpression)
+		//DBL_LT constraint=FocusConcept
 		public Group getGroup() { return cGroup; }
 
 		//DBL_LT
 		public RuleCall getDBL_LTTerminalRuleCall_0() { return cDBL_LTTerminalRuleCall_0; }
 
-		//constraint=(FocusConcept | NestableExpression)
+		//constraint=FocusConcept
 		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
 
-		//FocusConcept | NestableExpression
-		public Alternatives getConstraintAlternatives_1_0() { return cConstraintAlternatives_1_0; }
-
 		//FocusConcept
-		public RuleCall getConstraintFocusConceptParserRuleCall_1_0_0() { return cConstraintFocusConceptParserRuleCall_1_0_0; }
-
-		//NestableExpression
-		public RuleCall getConstraintNestableExpressionParserRuleCall_1_0_1() { return cConstraintNestableExpressionParserRuleCall_1_0_1; }
+		public RuleCall getConstraintFocusConceptParserRuleCall_1_0() { return cConstraintFocusConceptParserRuleCall_1_0; }
 	}
 
 	public class ParentOfElements extends AbstractParserRuleElementFinder {
@@ -348,31 +328,23 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final RuleCall cGT_EMTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final Alternatives cConstraintAlternatives_1_0 = (Alternatives)cConstraintAssignment_1.eContents().get(0);
-		private final RuleCall cConstraintFocusConceptParserRuleCall_1_0_0 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(0);
-		private final RuleCall cConstraintNestableExpressionParserRuleCall_1_0_1 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(1);
+		private final RuleCall cConstraintFocusConceptParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
 		
 		//ParentOf:
-		//	GT_EM constraint=(FocusConcept | NestableExpression);
+		//	GT_EM constraint=FocusConcept;
 		@Override public ParserRule getRule() { return rule; }
 
-		//GT_EM constraint=(FocusConcept | NestableExpression)
+		//GT_EM constraint=FocusConcept
 		public Group getGroup() { return cGroup; }
 
 		//GT_EM
 		public RuleCall getGT_EMTerminalRuleCall_0() { return cGT_EMTerminalRuleCall_0; }
 
-		//constraint=(FocusConcept | NestableExpression)
+		//constraint=FocusConcept
 		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
 
-		//FocusConcept | NestableExpression
-		public Alternatives getConstraintAlternatives_1_0() { return cConstraintAlternatives_1_0; }
-
 		//FocusConcept
-		public RuleCall getConstraintFocusConceptParserRuleCall_1_0_0() { return cConstraintFocusConceptParserRuleCall_1_0_0; }
-
-		//NestableExpression
-		public RuleCall getConstraintNestableExpressionParserRuleCall_1_0_1() { return cConstraintNestableExpressionParserRuleCall_1_0_1; }
+		public RuleCall getConstraintFocusConceptParserRuleCall_1_0() { return cConstraintFocusConceptParserRuleCall_1_0; }
 	}
 
 	public class AncestorOfElements extends AbstractParserRuleElementFinder {
@@ -380,31 +352,23 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final RuleCall cGTTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final Alternatives cConstraintAlternatives_1_0 = (Alternatives)cConstraintAssignment_1.eContents().get(0);
-		private final RuleCall cConstraintFocusConceptParserRuleCall_1_0_0 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(0);
-		private final RuleCall cConstraintNestableExpressionParserRuleCall_1_0_1 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(1);
+		private final RuleCall cConstraintFocusConceptParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
 		
 		//AncestorOf:
-		//	GT constraint=(FocusConcept | NestableExpression);
+		//	GT constraint=FocusConcept;
 		@Override public ParserRule getRule() { return rule; }
 
-		//GT constraint=(FocusConcept | NestableExpression)
+		//GT constraint=FocusConcept
 		public Group getGroup() { return cGroup; }
 
 		//GT
 		public RuleCall getGTTerminalRuleCall_0() { return cGTTerminalRuleCall_0; }
 
-		//constraint=(FocusConcept | NestableExpression)
+		//constraint=FocusConcept
 		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
 
-		//FocusConcept | NestableExpression
-		public Alternatives getConstraintAlternatives_1_0() { return cConstraintAlternatives_1_0; }
-
 		//FocusConcept
-		public RuleCall getConstraintFocusConceptParserRuleCall_1_0_0() { return cConstraintFocusConceptParserRuleCall_1_0_0; }
-
-		//NestableExpression
-		public RuleCall getConstraintNestableExpressionParserRuleCall_1_0_1() { return cConstraintNestableExpressionParserRuleCall_1_0_1; }
+		public RuleCall getConstraintFocusConceptParserRuleCall_1_0() { return cConstraintFocusConceptParserRuleCall_1_0; }
 	}
 
 	public class AncestorOrSelfOfElements extends AbstractParserRuleElementFinder {
@@ -412,31 +376,23 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final RuleCall cDBL_GTTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final Alternatives cConstraintAlternatives_1_0 = (Alternatives)cConstraintAssignment_1.eContents().get(0);
-		private final RuleCall cConstraintFocusConceptParserRuleCall_1_0_0 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(0);
-		private final RuleCall cConstraintNestableExpressionParserRuleCall_1_0_1 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(1);
+		private final RuleCall cConstraintFocusConceptParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
 		
 		//AncestorOrSelfOf:
-		//	DBL_GT constraint=(FocusConcept | NestableExpression);
+		//	DBL_GT constraint=FocusConcept;
 		@Override public ParserRule getRule() { return rule; }
 
-		//DBL_GT constraint=(FocusConcept | NestableExpression)
+		//DBL_GT constraint=FocusConcept
 		public Group getGroup() { return cGroup; }
 
 		//DBL_GT
 		public RuleCall getDBL_GTTerminalRuleCall_0() { return cDBL_GTTerminalRuleCall_0; }
 
-		//constraint=(FocusConcept | NestableExpression)
+		//constraint=FocusConcept
 		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
 
-		//FocusConcept | NestableExpression
-		public Alternatives getConstraintAlternatives_1_0() { return cConstraintAlternatives_1_0; }
-
 		//FocusConcept
-		public RuleCall getConstraintFocusConceptParserRuleCall_1_0_0() { return cConstraintFocusConceptParserRuleCall_1_0_0; }
-
-		//NestableExpression
-		public RuleCall getConstraintNestableExpressionParserRuleCall_1_0_1() { return cConstraintNestableExpressionParserRuleCall_1_0_1; }
+		public RuleCall getConstraintFocusConceptParserRuleCall_1_0() { return cConstraintFocusConceptParserRuleCall_1_0; }
 	}
 
 	public class MemberOfElements extends AbstractParserRuleElementFinder {
@@ -647,25 +603,29 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		public RuleCall getConstraintSimpleExpressionConstraintParserRuleCall_1_0() { return cConstraintSimpleExpressionConstraintParserRuleCall_1_0; }
 	}
 
-	public class NestableExpressionElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "NestableExpression");
+	public class NestedExpressionElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "NestedExpression");
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final RuleCall cROUND_OPENTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
-		private final RuleCall cExpressionConstraintParserRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cNestedAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cNestedExpressionConstraintParserRuleCall_1_0 = (RuleCall)cNestedAssignment_1.eContents().get(0);
 		private final RuleCall cROUND_CLOSETerminalRuleCall_2 = (RuleCall)cGroup.eContents().get(2);
 		
-		//NestableExpression:
-		//	ROUND_OPEN ExpressionConstraint ROUND_CLOSE;
+		//NestedExpression:
+		//	ROUND_OPEN nested=ExpressionConstraint ROUND_CLOSE;
 		@Override public ParserRule getRule() { return rule; }
 
-		//ROUND_OPEN ExpressionConstraint ROUND_CLOSE
+		//ROUND_OPEN nested=ExpressionConstraint ROUND_CLOSE
 		public Group getGroup() { return cGroup; }
 
 		//ROUND_OPEN
 		public RuleCall getROUND_OPENTerminalRuleCall_0() { return cROUND_OPENTerminalRuleCall_0; }
 
+		//nested=ExpressionConstraint
+		public Assignment getNestedAssignment_1() { return cNestedAssignment_1; }
+
 		//ExpressionConstraint
-		public RuleCall getExpressionConstraintParserRuleCall_1() { return cExpressionConstraintParserRuleCall_1; }
+		public RuleCall getNestedExpressionConstraintParserRuleCall_1_0() { return cNestedExpressionConstraintParserRuleCall_1_0; }
 
 		//ROUND_CLOSE
 		public RuleCall getROUND_CLOSETerminalRuleCall_2() { return cROUND_CLOSETerminalRuleCall_2; }
@@ -906,7 +866,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final ComparisonElements pComparison;
 	private final AttributeValueEqualsElements pAttributeValueEquals;
 	private final AttributeValueNotEqualsElements pAttributeValueNotEquals;
-	private final NestableExpressionElements pNestableExpression;
+	private final NestedExpressionElements pNestedExpression;
 	private final SnomedIdentifierElements pSnomedIdentifier;
 	private final TermElements pTerm;
 	private final TermCharacterElements pTermCharacter;
@@ -969,7 +929,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pComparison = new ComparisonElements();
 		this.pAttributeValueEquals = new AttributeValueEqualsElements();
 		this.pAttributeValueNotEquals = new AttributeValueNotEqualsElements();
-		this.pNestableExpression = new NestableExpressionElements();
+		this.pNestedExpression = new NestedExpressionElements();
 		this.pSnomedIdentifier = new SnomedIdentifierElements();
 		this.pTerm = new TermElements();
 		this.pTermCharacter = new TermCharacterElements();
@@ -1092,7 +1052,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//FocusConcept returns ExpressionConstraint:
-	//	MemberOf | ConceptReference | Any;
+	//	MemberOf | ConceptReference | Any | NestedExpression;
 	public FocusConceptElements getFocusConceptAccess() {
 		return pFocusConcept;
 	}
@@ -1102,7 +1062,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//ChildOf:
-	//	LT_EM constraint=(FocusConcept | NestableExpression);
+	//	LT_EM constraint=FocusConcept;
 	public ChildOfElements getChildOfAccess() {
 		return pChildOf;
 	}
@@ -1112,7 +1072,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//DescendantOf:
-	//	LT constraint=(FocusConcept | NestableExpression);
+	//	LT constraint=FocusConcept;
 	public DescendantOfElements getDescendantOfAccess() {
 		return pDescendantOf;
 	}
@@ -1122,7 +1082,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//DescendantOrSelfOf:
-	//	DBL_LT constraint=(FocusConcept | NestableExpression);
+	//	DBL_LT constraint=FocusConcept;
 	public DescendantOrSelfOfElements getDescendantOrSelfOfAccess() {
 		return pDescendantOrSelfOf;
 	}
@@ -1132,7 +1092,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//ParentOf:
-	//	GT_EM constraint=(FocusConcept | NestableExpression);
+	//	GT_EM constraint=FocusConcept;
 	public ParentOfElements getParentOfAccess() {
 		return pParentOf;
 	}
@@ -1142,7 +1102,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//AncestorOf:
-	//	GT constraint=(FocusConcept | NestableExpression);
+	//	GT constraint=FocusConcept;
 	public AncestorOfElements getAncestorOfAccess() {
 		return pAncestorOf;
 	}
@@ -1152,7 +1112,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//AncestorOrSelfOf:
-	//	DBL_GT constraint=(FocusConcept | NestableExpression);
+	//	DBL_GT constraint=FocusConcept;
 	public AncestorOrSelfOfElements getAncestorOrSelfOfAccess() {
 		return pAncestorOrSelfOf;
 	}
@@ -1241,14 +1201,14 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return getAttributeValueNotEqualsAccess().getRule();
 	}
 
-	//NestableExpression:
-	//	ROUND_OPEN ExpressionConstraint ROUND_CLOSE;
-	public NestableExpressionElements getNestableExpressionAccess() {
-		return pNestableExpression;
+	//NestedExpression:
+	//	ROUND_OPEN nested=ExpressionConstraint ROUND_CLOSE;
+	public NestedExpressionElements getNestedExpressionAccess() {
+		return pNestedExpression;
 	}
 	
-	public ParserRule getNestableExpressionRule() {
-		return getNestableExpressionAccess().getRule();
+	public ParserRule getNestedExpressionRule() {
+		return getNestedExpressionAccess().getRule();
 	}
 
 	//// hidden grammar rules

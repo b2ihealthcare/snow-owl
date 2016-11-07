@@ -158,13 +158,13 @@ public interface EclFactory extends EFactory
   AttributeValueNotEquals createAttributeValueNotEquals();
 
   /**
-   * Returns a new object of class '<em>Nestable Expression</em>'.
+   * Returns a new object of class '<em>Nested Expression</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Nestable Expression</em>'.
+   * @return a new object of class '<em>Nested Expression</em>'.
    * @generated
    */
-  NestableExpression createNestableExpression();
+  NestedExpression createNestedExpression();
 
   /**
    * Returns a new object of class '<em>Or Expression Constraint</em>'.

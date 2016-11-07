@@ -30,12 +30,12 @@ public interface DescendantOf extends ExpressionConstraint
    * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Constraint</em>' containment reference.
-   * @see #setConstraint(NestableExpression)
+   * @see #setConstraint(ExpressionConstraint)
    * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getDescendantOf_Constraint()
    * @model containment="true"
    * @generated
    */
-  NestableExpression getConstraint();
+  ExpressionConstraint getConstraint();
 
   /**
    * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.DescendantOf#getConstraint <em>Constraint</em>}' containment reference.
@@ -45,6 +45,6 @@ public interface DescendantOf extends ExpressionConstraint
    * @see #getConstraint()
    * @generated
    */
-  void setConstraint(NestableExpression value);
+  void setConstraint(ExpressionConstraint value);
 
 } // DescendantOf

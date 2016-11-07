@@ -2,9 +2,9 @@
  */
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
-import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -16,35 +16,35 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Ancestor Of</b></em>'.
+ * An implementation of the model object '<em><b>Nested Expression</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AncestorOfImpl#getConstraint <em>Constraint</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.NestedExpressionImpl#getNested <em>Nested</em>}</li>
  * </ul>
  * </p>
  *
  * @generated
  */
-public class AncestorOfImpl extends ExpressionConstraintImpl implements AncestorOf
+public class NestedExpressionImpl extends ExpressionConstraintImpl implements NestedExpression
 {
   /**
-   * The cached value of the '{@link #getConstraint() <em>Constraint</em>}' containment reference.
+   * The cached value of the '{@link #getNested() <em>Nested</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see #getConstraint()
+   * @see #getNested()
    * @generated
    * @ordered
    */
-  protected ExpressionConstraint constraint;
+  protected ExpressionConstraint nested;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected AncestorOfImpl()
+  protected NestedExpressionImpl()
   {
     super();
   }
@@ -57,7 +57,7 @@ public class AncestorOfImpl extends ExpressionConstraintImpl implements Ancestor
   @Override
   protected EClass eStaticClass()
   {
-    return EclPackage.Literals.ANCESTOR_OF;
+    return EclPackage.Literals.NESTED_EXPRESSION;
   }
 
   /**
@@ -65,9 +65,9 @@ public class AncestorOfImpl extends ExpressionConstraintImpl implements Ancestor
    * <!-- end-user-doc -->
    * @generated
    */
-  public ExpressionConstraint getConstraint()
+  public ExpressionConstraint getNested()
   {
-    return constraint;
+    return nested;
   }
 
   /**
@@ -75,13 +75,13 @@ public class AncestorOfImpl extends ExpressionConstraintImpl implements Ancestor
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetConstraint(ExpressionConstraint newConstraint, NotificationChain msgs)
+  public NotificationChain basicSetNested(ExpressionConstraint newNested, NotificationChain msgs)
   {
-    ExpressionConstraint oldConstraint = constraint;
-    constraint = newConstraint;
+    ExpressionConstraint oldNested = nested;
+    nested = newNested;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.ANCESTOR_OF__CONSTRAINT, oldConstraint, newConstraint);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.NESTED_EXPRESSION__NESTED, oldNested, newNested);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -92,20 +92,20 @@ public class AncestorOfImpl extends ExpressionConstraintImpl implements Ancestor
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setConstraint(ExpressionConstraint newConstraint)
+  public void setNested(ExpressionConstraint newNested)
   {
-    if (newConstraint != constraint)
+    if (newNested != nested)
     {
       NotificationChain msgs = null;
-      if (constraint != null)
-        msgs = ((InternalEObject)constraint).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.ANCESTOR_OF__CONSTRAINT, null, msgs);
-      if (newConstraint != null)
-        msgs = ((InternalEObject)newConstraint).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.ANCESTOR_OF__CONSTRAINT, null, msgs);
-      msgs = basicSetConstraint(newConstraint, msgs);
+      if (nested != null)
+        msgs = ((InternalEObject)nested).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.NESTED_EXPRESSION__NESTED, null, msgs);
+      if (newNested != null)
+        msgs = ((InternalEObject)newNested).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.NESTED_EXPRESSION__NESTED, null, msgs);
+      msgs = basicSetNested(newNested, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.ANCESTOR_OF__CONSTRAINT, newConstraint, newConstraint));
+      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.NESTED_EXPRESSION__NESTED, newNested, newNested));
   }
 
   /**
@@ -118,8 +118,8 @@ public class AncestorOfImpl extends ExpressionConstraintImpl implements Ancestor
   {
     switch (featureID)
     {
-      case EclPackage.ANCESTOR_OF__CONSTRAINT:
-        return basicSetConstraint(null, msgs);
+      case EclPackage.NESTED_EXPRESSION__NESTED:
+        return basicSetNested(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
   }
@@ -134,8 +134,8 @@ public class AncestorOfImpl extends ExpressionConstraintImpl implements Ancestor
   {
     switch (featureID)
     {
-      case EclPackage.ANCESTOR_OF__CONSTRAINT:
-        return getConstraint();
+      case EclPackage.NESTED_EXPRESSION__NESTED:
+        return getNested();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -150,8 +150,8 @@ public class AncestorOfImpl extends ExpressionConstraintImpl implements Ancestor
   {
     switch (featureID)
     {
-      case EclPackage.ANCESTOR_OF__CONSTRAINT:
-        setConstraint((ExpressionConstraint)newValue);
+      case EclPackage.NESTED_EXPRESSION__NESTED:
+        setNested((ExpressionConstraint)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -167,8 +167,8 @@ public class AncestorOfImpl extends ExpressionConstraintImpl implements Ancestor
   {
     switch (featureID)
     {
-      case EclPackage.ANCESTOR_OF__CONSTRAINT:
-        setConstraint((ExpressionConstraint)null);
+      case EclPackage.NESTED_EXPRESSION__NESTED:
+        setNested((ExpressionConstraint)null);
         return;
     }
     super.eUnset(featureID);
@@ -184,10 +184,10 @@ public class AncestorOfImpl extends ExpressionConstraintImpl implements Ancestor
   {
     switch (featureID)
     {
-      case EclPackage.ANCESTOR_OF__CONSTRAINT:
-        return constraint != null;
+      case EclPackage.NESTED_EXPRESSION__NESTED:
+        return nested != null;
     }
     return super.eIsSet(featureID);
   }
 
-} //AncestorOfImpl
+} //NestedExpressionImpl

@@ -16,6 +16,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
+import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
 import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
 import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
@@ -80,6 +81,9 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 			case EclPackage.MEMBER_OF:
 				sequence_MemberOf(context, (MemberOf) semanticObject); 
 				return; 
+			case EclPackage.NESTED_EXPRESSION:
+				sequence_NestedExpression(context, (NestedExpression) semanticObject); 
+				return; 
 			case EclPackage.OR_EXPRESSION_CONSTRAINT:
 				sequence_OrExpressionConstraint(context, (OrExpressionConstraint) semanticObject); 
 				return; 
@@ -98,19 +102,33 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
-	 *     (constraint=FocusConcept | constraint=NestableExpression)
+	 *     constraint=FocusConcept
 	 */
 	protected void sequence_AncestorOf(EObject context, AncestorOf semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.ANCESTOR_OF__CONSTRAINT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.ANCESTOR_OF__CONSTRAINT));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getAncestorOfAccess().getConstraintFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.finish();
 	}
 	
 	
 	/**
 	 * Constraint:
-	 *     (constraint=FocusConcept | constraint=NestableExpression)
+	 *     constraint=FocusConcept
 	 */
 	protected void sequence_AncestorOrSelfOf(EObject context, AncestorOrSelfOf semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.ANCESTOR_OR_SELF_OF__CONSTRAINT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.ANCESTOR_OR_SELF_OF__CONSTRAINT));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getAncestorOrSelfOfAccess().getConstraintFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.finish();
 	}
 	
 	
@@ -185,10 +203,17 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
-	 *     (constraint=FocusConcept | constraint=NestableExpression)
+	 *     constraint=FocusConcept
 	 */
 	protected void sequence_ChildOf(EObject context, ChildOf semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.CHILD_OF__CONSTRAINT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.CHILD_OF__CONSTRAINT));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getChildOfAccess().getConstraintFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.finish();
 	}
 	
 	
@@ -203,19 +228,33 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
-	 *     (constraint=FocusConcept | constraint=NestableExpression)
+	 *     constraint=FocusConcept
 	 */
 	protected void sequence_DescendantOf(EObject context, DescendantOf semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.DESCENDANT_OF__CONSTRAINT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.DESCENDANT_OF__CONSTRAINT));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getDescendantOfAccess().getConstraintFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.finish();
 	}
 	
 	
 	/**
 	 * Constraint:
-	 *     (constraint=FocusConcept | constraint=NestableExpression)
+	 *     constraint=FocusConcept
 	 */
 	protected void sequence_DescendantOrSelfOf(EObject context, DescendantOrSelfOf semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.DESCENDANT_OR_SELF_OF__CONSTRAINT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.DESCENDANT_OR_SELF_OF__CONSTRAINT));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getDescendantOrSelfOfAccess().getConstraintFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.finish();
 	}
 	
 	
@@ -249,6 +288,22 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
+	 *     nested=ExpressionConstraint
+	 */
+	protected void sequence_NestedExpression(EObject context, NestedExpression semanticObject) {
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.NESTED_EXPRESSION__NESTED) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.NESTED_EXPRESSION__NESTED));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getNestedExpressionAccess().getNestedExpressionConstraintParserRuleCall_1_0(), semanticObject.getNested());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
 	 *     (left=OrExpressionConstraint_OrExpressionConstraint_1_0 right=AndExpressionConstraint)
 	 */
 	protected void sequence_OrExpressionConstraint(EObject context, OrExpressionConstraint semanticObject) {
@@ -268,10 +323,17 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
-	 *     (constraint=FocusConcept | constraint=NestableExpression)
+	 *     constraint=FocusConcept
 	 */
 	protected void sequence_ParentOf(EObject context, ParentOf semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.PARENT_OF__CONSTRAINT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.PARENT_OF__CONSTRAINT));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getParentOfAccess().getConstraintFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.finish();
 	}
 	
 	
