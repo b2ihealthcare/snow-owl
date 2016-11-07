@@ -169,6 +169,16 @@ public class EclEvaluatorTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
+	public void selfAndOtherWithCommaAsOperator() throws Exception {
+		final Expression actual = evaluator.evaluate(ROOT_ID + " , " + OTHER_ID).getSync();
+		final Expression expected = Expressions.builder()
+				.must(id(ROOT_ID))
+				.must(id(OTHER_ID))
+				.build();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void selfOrOther() throws Exception {
 		final Expression actual = evaluator.evaluate(ROOT_ID + " OR " + OTHER_ID).getSync();
 		final Expression expected = Expressions.builder()
