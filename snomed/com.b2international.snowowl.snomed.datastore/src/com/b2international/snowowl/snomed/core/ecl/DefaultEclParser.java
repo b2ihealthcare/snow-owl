@@ -29,7 +29,7 @@ import com.google.common.collect.Iterables;
 /**
  * @since 5.4
  */
-class DefaultEclParser implements EclParser {
+public class DefaultEclParser implements EclParser {
 
 	private final IParser eclParser;
 
