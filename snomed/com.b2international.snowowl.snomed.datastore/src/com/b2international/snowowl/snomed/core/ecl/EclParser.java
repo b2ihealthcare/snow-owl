@@ -15,20 +15,13 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
-import com.b2international.index.query.Expression;
-import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 
 /**
  * @since 5.4
  */
-public interface EclEvaluator {
+public interface EclParser {
 
-	/**
-	 * Evaluates the given ECL expression string to an executable {@link Expression query expression}.
-	 * 
-	 * @param expression
-	 * @return
-	 */
-	Promise<Expression> evaluate(String expression);
+	ExpressionConstraint parse(String expression);
 	
 }

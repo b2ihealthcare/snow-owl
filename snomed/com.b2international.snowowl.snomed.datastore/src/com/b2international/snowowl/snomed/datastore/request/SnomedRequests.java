@@ -41,8 +41,10 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
+import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
@@ -134,6 +136,14 @@ public abstract class SnomedRequests {
 	
 	public static SnomedRefSetGetRequestBuilder prepareGetReferenceSet() {
 		return new SnomedRefSetGetRequestBuilder();
+	}
+	
+	public static SnomedEclEvaluationRequestBuilder prepareEclEvaluation(String expression) {
+		return new SnomedEclEvaluationRequestBuilder(expression);
+	}
+	
+	public static SnomedEclEvaluationRequestBuilder prepareEclEvaluation(ExpressionConstraint expressionConstraint) {
+		return new SnomedEclEvaluationRequestBuilder(expressionConstraint);
 	}
 	
 	public static Branching branching() {

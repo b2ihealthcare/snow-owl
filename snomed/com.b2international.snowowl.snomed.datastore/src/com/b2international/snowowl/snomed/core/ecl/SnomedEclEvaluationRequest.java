@@ -23,14 +23,13 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCom
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
 
-import java.io.StringReader;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.xtext.parser.IParseResult;
-import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
 import com.b2international.commons.ClassUtils;
@@ -39,8 +38,9 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Predicate;
 import com.b2international.index.query.StringPredicate;
 import com.b2international.index.query.StringSetPredicate;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
@@ -48,41 +48,56 @@ import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
 import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
 import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import com.google.common.collect.Iterables;
+import com.google.common.reflect.TypeToken;
 
 /**
+ * Evaluates the given ECL expression {@link String} or parsed {@link ExpressionConstraint} to an executable {@link Expression query expression}.
+ * <p>
+ * <i>NOTE: This request implementation is currently not working in remote environments, when the request need to be sent over the network, because
+ * the {@link Expression expression API} is not serializable.</i>
+ * </p>
+ * 
  * @since 5.4
  */
-public class DefaultEclEvaluator implements EclEvaluator {
+final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promise<Expression>> {
 
-	private final PolymorphicDispatcher<Promise<Expression>> dispatcher = PolymorphicDispatcher.createForSingleTarget("eval", this);
-	private final IParser eclParser;
-
-	public DefaultEclEvaluator(IParser eclParser) {
-		this.eclParser = eclParser;
-	}
+	private static final long serialVersionUID = 5891665196136989183L;
 	
+	private final PolymorphicDispatcher<Promise<Expression>> dispatcher = PolymorphicDispatcher.createForSingleTarget("eval", this);
+
+	@Nullable
+	private String expression;
+
+	@Nullable
+	private ExpressionConstraint expressionConstraint;
+
+	SnomedEclEvaluationRequest() {
+	}
+
+	void setExpression(ExpressionConstraint expressionConstraint) {
+		this.expressionConstraint = expressionConstraint;
+	}
+
+	void setExpression(String expression) {
+		this.expression = expression;
+	}
+
 	@Override
-	public Promise<Expression> evaluate(String expression) {
-		if (Strings.isNullOrEmpty(expression)) {
-			return Promise.fail(new BadRequestException("Expression should be specified"));
-		} else {
-			try (final StringReader reader = new StringReader(expression)) {
-				final IParseResult parseResult = eclParser.parse(reader);
-				if (parseResult.hasSyntaxErrors()) {
-					final String message = Joiner.on("\n").join(Iterables.transform(parseResult.getSyntaxErrors(), (node) -> node.getSyntaxErrorMessage().getMessage()));
-					return Promise.fail(new BadRequestException(message));
-				} else {
-					// TODO validate
-					return evaluate(parseResult.getRootASTElement());
-				}
-			}
-		}
+	protected Class<Promise<Expression>> getReturnType() {
+		TypeToken<Promise<Expression>> exp = new TypeToken<Promise<Expression>>(){};
+		Class<Promise<Expression>> rawType = (Class<Promise<Expression>>) exp.getRawType();
+		return rawType;
+	}
+
+	@Override
+	public Promise<Expression> execute(BranchContext context) {
+		final ExpressionConstraint currentExpression = expressionConstraint != null ? expressionConstraint
+				: context.service(EclParser.class).parse(expression);
+		return evaluate(currentExpression);
 	}
 	
 	private Promise<Expression> evaluate(EObject expression) {
@@ -213,5 +228,5 @@ public class DefaultEclEvaluator implements EclEvaluator {
 		}
 		throw new UnsupportedOperationException("Cannot extract ID values from: " + expression);
 	}
-	
+
 }
