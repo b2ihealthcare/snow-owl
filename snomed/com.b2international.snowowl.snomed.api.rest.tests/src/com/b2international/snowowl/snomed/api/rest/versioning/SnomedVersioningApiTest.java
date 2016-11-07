@@ -49,11 +49,6 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 	
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
-	/**
-	 * The context-relative base URL for the administrative controller. 
-	 */
-	private static String ADMIN_API = "/admin";
-
 	@Test
 	public void getNonExistentVersion() {
 		assertVersionGetStatus("nonexistent", 404);

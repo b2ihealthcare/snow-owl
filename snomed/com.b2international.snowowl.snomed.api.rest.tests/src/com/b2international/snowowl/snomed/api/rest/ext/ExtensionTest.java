@@ -20,12 +20,9 @@ import static com.b2international.snowowl.snomed.api.rest.CodeSystemApiAssert.ge
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchExists;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.assertVersionPostStatus;
-import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.getEffectiveDates;
+import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.getDateForNewVersion;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.UUID;
 
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
@@ -65,25 +62,6 @@ public abstract class ExtensionTest {
 		givenBranchWithPath(branchPath);
 		
 		return branchPath;
-	}
-	
-	protected String getDateForNewVersion(final String uniqueId) {
-		try {
-			Date latestEffectiveDate = new Date();
-			for (final String effectiveDate : getEffectiveDates(uniqueId)) {
-				if (latestEffectiveDate.before(dateFormat.parse(effectiveDate))) {
-					latestEffectiveDate = dateFormat.parse(effectiveDate);
-				}
-			}
-
-			final Calendar calendar = Calendar.getInstance();
-			calendar.setTime(latestEffectiveDate);
-			calendar.add(Calendar.DATE, 1);
-
-			return dateFormat.format(calendar.getTime());
-		} catch (ParseException e) {
-			throw new RuntimeException(e);
-		}
 	}
 	
 }

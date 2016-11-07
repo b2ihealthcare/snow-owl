@@ -17,11 +17,15 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.Dates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.jayway.restassured.http.ContentType;
@@ -83,6 +87,7 @@ public class SnomedVersioningApiAssert {
 			return Collections.emptyList();
 		} else {
 			final List<String> effectiveDates = Lists.newArrayList();
+			@SuppressWarnings("unchecked")
 			final List<Map<?, ?>> items = (List<Map<?, ?>>) response.get("items");
 			for (final Map<?, ?> version : items) {
 				final String effectiveDate = (String) version.get("effectiveDate");
@@ -91,6 +96,22 @@ public class SnomedVersioningApiAssert {
 			
 			return effectiveDates;
 		}
+	}
+	
+	public static String getDateForNewVersion(final String uniqueId) {
+		Date latestEffectiveDate = new Date();
+		for (final String effectiveDate : getEffectiveDates(uniqueId)) {
+			Date effDate = Dates.parse(effectiveDate, DateFormats.SHORT);
+			if (latestEffectiveDate.before(effDate)) {
+				latestEffectiveDate = effDate;
+			}
+		}
+
+		final Calendar calendar = Calendar.getInstance();
+		calendar.setTime(latestEffectiveDate);
+		calendar.add(Calendar.DATE, 1);
+
+		return Dates.formatByGmt(calendar.getTime(), DateFormats.SHORT);
 	}
 	
 }
