@@ -45,8 +45,8 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -186,7 +186,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	@Test
 	public void parentOf() throws Exception {
 		// SCT Core module has a single parent in this test case
-		indexRevision(MAIN, STORAGE_KEY1, doc(Concepts.MODULE_SCT_CORE).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.MODULE_ROOT))).build());
+		indexRevision(MAIN, STORAGE_KEY1, concept(Concepts.MODULE_SCT_CORE).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.MODULE_ROOT))).build());
 		final Expression actual = eval(">!"+Concepts.MODULE_SCT_CORE);
 		final Expression expected = ids(Collections.singleton(Concepts.MODULE_ROOT));
 		assertEquals(expected, actual);
@@ -195,7 +195,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	@Test
 	public void ancestorOf() throws Exception {
 		// SCT Core module has a single parent and a single ancestor in this test case
-		indexRevision(MAIN, STORAGE_KEY1, doc(Concepts.MODULE_SCT_CORE)
+		indexRevision(MAIN, STORAGE_KEY1, concept(Concepts.MODULE_SCT_CORE)
 				.ancestors(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.ROOT_CONCEPT)))
 				.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.MODULE_ROOT)))
 				.build());
@@ -207,7 +207,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	@Test
 	public void ancestorOrSelfOf() throws Exception {
 		// SCT Core module has a single parent and a single ancestor in this test case
-		indexRevision(MAIN, STORAGE_KEY1, doc(Concepts.MODULE_SCT_CORE)
+		indexRevision(MAIN, STORAGE_KEY1, concept(Concepts.MODULE_SCT_CORE)
 				.ancestors(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.ROOT_CONCEPT)))
 				.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.MODULE_ROOT)))
 				.build());
@@ -256,7 +256,29 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		assertEquals(expected, actual);
 	}
 	
-	private Builder doc(final String id) {
+	@Test
+	public void refinementOfSingleConcept() throws Exception {
+		indexRevision(MAIN, STORAGE_KEY1, relationship(Concepts.MODULE_ROOT, Concepts.IS_A, ROOT_ID).build());
+		final Expression actual = eval(Concepts.MODULE_ROOT + " : " + Concepts.IS_A + " = " + ROOT_ID);
+		final Expression expected = ids(Collections.singleton(Concepts.MODULE_ROOT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementOfTwoConceptsWithAndGrouping() throws Exception {
+		try {
+			indexRevision(MAIN, STORAGE_KEY1, relationship(Concepts.MODULE_ROOT, Concepts.IS_A, ROOT_ID).build());
+			final Expression actual = eval(String.format("(%s OR %s):%s=%s", Concepts.MODULE_SCT_CORE, Concepts.MODULE_ROOT, Concepts.IS_A, ROOT_ID));
+			final Expression expected = ids(Collections.singleton(Concepts.MODULE_ROOT));
+			assertEquals(expected, actual);
+		} catch (SnowowlRuntimeException e) {
+			if (!(e.getCause() instanceof UnsupportedOperationException)) {
+				fail("Should throw UnsupportedOperationException until bool expression ID extraction is not implemented");
+			}
+		}
+	}
+	
+	private SnomedConceptDocument.Builder concept(final String id) {
 		return SnomedConceptDocument.builder()
 				.id(id)
 				.iconId(Concepts.ROOT_CONCEPT)
@@ -272,6 +294,18 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet())
 				.referringRefSets(Collections.<String>emptySet())
 				.referringMappingRefSets(Collections.<String>emptySet());
+	}
+	
+	private SnomedRelationshipIndexEntry.Builder relationship(final String source, final String type, final String destination) {
+		return SnomedRelationshipIndexEntry.builder()
+				.id(RandomSnomedIdentiferGenerator.generateRelationshipId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.sourceId(source)
+				.typeId(type)
+				.destinationId(destination)
+				.characteristicTypeId(Concepts.STATED_RELATIONSHIP)
+				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 	}
 
 }

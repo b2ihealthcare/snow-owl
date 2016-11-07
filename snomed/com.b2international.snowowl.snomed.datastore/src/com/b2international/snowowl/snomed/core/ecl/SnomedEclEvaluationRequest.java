@@ -23,6 +23,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCom
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
 import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.util.Collections;
 import java.util.List;
@@ -33,7 +34,6 @@ import javax.annotation.Nullable;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
-import com.b2international.commons.ClassUtils;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Predicate;
@@ -46,7 +46,9 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
@@ -59,8 +61,11 @@ import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
+import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
 import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
+import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
 import com.google.common.base.Function;
 import com.google.common.reflect.TypeToken;
 
@@ -273,18 +278,65 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				});
 	}
 	
+	protected Promise<Expression> eval(BranchContext context, final RefinedExpressionConstraint refined) {
+		final Refinement refinement = refined.getRefinement();
+		if (refinement == null) {
+			return evaluate(context, refined.getConstraint());
+		} else {
+			return Promise
+					.all(
+						// evaluate the substrate
+						evaluate(context, refined.getConstraint()),
+						// and the attribute substrate parallel
+						evaluate(context, refinement.getAttribute())
+					)
+					.thenWith(new Function<List<Object>, Promise<SnomedRelationships>>() {
+						@Override
+						public Promise<SnomedRelationships> apply(List<Object> substrateAndAttributeExpressions) {
+							final Expression substrate = (Expression) substrateAndAttributeExpressions.get(0);
+							final Expression attributeSubstrate = (Expression) substrateAndAttributeExpressions.get(1);
+							final Set<String> substrateIds = extractIds(substrate);
+							final Set<String> attributeIds = extractIds(attributeSubstrate);
+							return SnomedRequests.prepareSearchRelationship()
+									.all()
+									.filterByActive(true)
+									.filterBySource(substrateIds)
+									.filterByType(attributeIds)
+									.build(context.id(), context.branch().path())
+									.execute(context.service(IEventBus.class));
+						}
+					})
+					.then(new Function<SnomedRelationships, Expression>() {
+						@Override
+						public Expression apply(SnomedRelationships matchingAttributes) {
+							final Set<String> sourceIds = newHashSetWithExpectedSize(matchingAttributes.getItems().size());
+							for (ISnomedRelationship relationship : matchingAttributes) {
+								sourceIds.add(relationship.getSourceId());
+							}
+							return ids(sourceIds);
+						}
+					});
+		}
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final NestedExpression nested) {
+		return evaluate(context, nested.getNested());
+	}
+	
 	private Promise<Expression> throwUnsupported(EObject eObject) {
 		throw new NotImplementedException("Not implemented ECL feature: %s", eObject.eClass().getName());
 	}
 	
 	/*Extract SNOMED CT IDs from the given expression if it is either a String/Long single/multi-valued predicate and the field is equal to RevisionDocument.Fields.ID*/
 	private static Set<String> extractIds(Expression expression) {
-		final Predicate predicate = ClassUtils.checkAndCast(expression, Predicate.class);
-		if (ID.equals(predicate.getField())) {
-			if (predicate instanceof StringSetPredicate) {
-				return ((StringSetPredicate) predicate).values();
-			} else if (predicate instanceof StringPredicate) {
-				return Collections.singleton(((StringPredicate) expression).getArgument());
+		if (expression instanceof Predicate) {
+			final Predicate predicate = (Predicate) expression;
+			if (ID.equals(predicate.getField())) {
+				if (predicate instanceof StringSetPredicate) {
+					return ((StringSetPredicate) predicate).values();
+				} else if (predicate instanceof StringPredicate) {
+					return Collections.singleton(((StringPredicate) expression).getArgument());
+				}
 			}
 		}
 		throw new UnsupportedOperationException("Cannot extract ID values from: " + expression);
