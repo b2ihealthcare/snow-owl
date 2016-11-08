@@ -16,12 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.destinationIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.group;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.modifierIds;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.sourceIds;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.typeIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.unionGroup;
 
 import java.io.IOException;
@@ -63,22 +58,11 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 		addComponentIdFilter(queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
 		addActiveMemberOfClause(queryBuilder);
-		
-		if (containsKey(OptionKey.TYPE)) {
-			queryBuilder.must(typeIds(getCollection(OptionKey.TYPE, String.class)));
-		}
-		
-		if (containsKey(OptionKey.CHARACTERISTIC_TYPE)) {
-			queryBuilder.must(characteristicTypeIds(getCollection(OptionKey.CHARACTERISTIC_TYPE, String.class)));
-		}
-
-		if (containsKey(OptionKey.SOURCE)) {
-			queryBuilder.must(sourceIds(getCollection(OptionKey.SOURCE, String.class)));
-		}
-		
-		if (containsKey(OptionKey.DESTINATION)) {
-			queryBuilder.must(destinationIds(getCollection(OptionKey.DESTINATION, String.class)));
-		}
+		addEclFilter(context, queryBuilder, OptionKey.SOURCE, SnomedRelationshipIndexEntry.Expressions::sourceIds);
+		addEclFilter(context, queryBuilder, OptionKey.TYPE, SnomedRelationshipIndexEntry.Expressions::typeIds);
+		addEclFilter(context, queryBuilder, OptionKey.DESTINATION, SnomedRelationshipIndexEntry.Expressions::destinationIds);
+		addEclFilter(context, queryBuilder, OptionKey.CHARACTERISTIC_TYPE, SnomedRelationshipIndexEntry.Expressions::characteristicTypeIds);
+		addEclFilter(context, queryBuilder, OptionKey.MODIFIER, SnomedRelationshipIndexEntry.Expressions::modifierIds);
 		
 		if (containsKey(OptionKey.GROUP)) {
 			queryBuilder.must(group(get(OptionKey.GROUP, Integer.class)));
@@ -86,10 +70,6 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 		
 		if (containsKey(OptionKey.UNION_GROUP)) {
 			queryBuilder.must(unionGroup(get(OptionKey.UNION_GROUP, Integer.class)));
-		}
-		
-		if (containsKey(OptionKey.MODIFIER)) {
-			queryBuilder.must(modifierIds(getCollection(OptionKey.UNION_GROUP, String.class)));
 		}
 		
 		final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(Query.select(SnomedRelationshipIndexEntry.class)
