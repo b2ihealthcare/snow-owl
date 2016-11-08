@@ -121,7 +121,13 @@ public abstract class SnomedSearchRequest<R> extends RevisionSearchRequest<R> {
 	
 	protected final void addEclFilter(final BranchContext context, final ExpressionBuilder queryBuilder, Enum<?> eclCapableOptionKey, Function<Collection<String>, Expression> matchingIdsToExpression) {
 		if (containsKey(eclCapableOptionKey)) {
-			Collection<String> idFilter = getCollection(eclCapableOptionKey, String.class);
+			// trim all input values before using them
+			Collection<String> idFilter = FluentIterable.from(getCollection(eclCapableOptionKey, String.class)).transform(new Function<String, String>() {
+				@Override
+				public String apply(String input) {
+					return input.trim();
+				}
+			}).toSet();
 			if (idFilter.size() == 1) {
 				// if only a single item is available in the typeIdFilter
 				final String expression = Iterables.getOnlyElement(idFilter);
