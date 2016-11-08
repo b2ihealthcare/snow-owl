@@ -150,37 +150,37 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	public class RefinedExpressionConstraintElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "RefinedExpressionConstraint");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final Assignment cConstraintAssignment_0 = (Assignment)cGroup.eContents().get(0);
-		private final RuleCall cConstraintSimpleExpressionConstraintParserRuleCall_0_0 = (RuleCall)cConstraintAssignment_0.eContents().get(0);
+		private final RuleCall cSimpleExpressionConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
-		private final RuleCall cCOLONTerminalRuleCall_1_0 = (RuleCall)cGroup_1.eContents().get(0);
-		private final Assignment cRefinementAssignment_1_1 = (Assignment)cGroup_1.eContents().get(1);
-		private final RuleCall cRefinementRefinementParserRuleCall_1_1_0 = (RuleCall)cRefinementAssignment_1_1.eContents().get(0);
+		private final Action cRefinedExpressionConstraintConstraintAction_1_0 = (Action)cGroup_1.eContents().get(0);
+		private final RuleCall cCOLONTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
+		private final Assignment cRefinementAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
+		private final RuleCall cRefinementRefinementParserRuleCall_1_2_0 = (RuleCall)cRefinementAssignment_1_2.eContents().get(0);
 		
-		//RefinedExpressionConstraint:
-		//	constraint=SimpleExpressionConstraint (COLON refinement=Refinement)?;
+		//RefinedExpressionConstraint returns ExpressionConstraint:
+		//	SimpleExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?;
 		@Override public ParserRule getRule() { return rule; }
 
-		//constraint=SimpleExpressionConstraint (COLON refinement=Refinement)?
+		//SimpleExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?
 		public Group getGroup() { return cGroup; }
 
-		//constraint=SimpleExpressionConstraint
-		public Assignment getConstraintAssignment_0() { return cConstraintAssignment_0; }
-
 		//SimpleExpressionConstraint
-		public RuleCall getConstraintSimpleExpressionConstraintParserRuleCall_0_0() { return cConstraintSimpleExpressionConstraintParserRuleCall_0_0; }
+		public RuleCall getSimpleExpressionConstraintParserRuleCall_0() { return cSimpleExpressionConstraintParserRuleCall_0; }
 
-		//(COLON refinement=Refinement)?
+		//({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?
 		public Group getGroup_1() { return cGroup_1; }
 
+		//{RefinedExpressionConstraint.constraint=current}
+		public Action getRefinedExpressionConstraintConstraintAction_1_0() { return cRefinedExpressionConstraintConstraintAction_1_0; }
+
 		//COLON
-		public RuleCall getCOLONTerminalRuleCall_1_0() { return cCOLONTerminalRuleCall_1_0; }
+		public RuleCall getCOLONTerminalRuleCall_1_1() { return cCOLONTerminalRuleCall_1_1; }
 
 		//refinement=Refinement
-		public Assignment getRefinementAssignment_1_1() { return cRefinementAssignment_1_1; }
+		public Assignment getRefinementAssignment_1_2() { return cRefinementAssignment_1_2; }
 
 		//Refinement
-		public RuleCall getRefinementRefinementParserRuleCall_1_1_0() { return cRefinementRefinementParserRuleCall_1_1_0; }
+		public RuleCall getRefinementRefinementParserRuleCall_1_2_0() { return cRefinementRefinementParserRuleCall_1_2_0; }
 	}
 
 	public class SimpleExpressionConstraintElements extends AbstractParserRuleElementFinder {
@@ -1031,8 +1031,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return getExclusionExpressionConstraintAccess().getRule();
 	}
 
-	//RefinedExpressionConstraint:
-	//	constraint=SimpleExpressionConstraint (COLON refinement=Refinement)?;
+	//RefinedExpressionConstraint returns ExpressionConstraint:
+	//	SimpleExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?;
 	public RefinedExpressionConstraintElements getRefinedExpressionConstraintAccess() {
 		return pRefinedExpressionConstraint;
 	}

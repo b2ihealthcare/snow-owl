@@ -79,14 +79,6 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case EclPackage.REFINED_EXPRESSION_CONSTRAINT:
-      {
-        RefinedExpressionConstraint refinedExpressionConstraint = (RefinedExpressionConstraint)theEObject;
-        T result = caseRefinedExpressionConstraint(refinedExpressionConstraint);
-        if (result == null) result = caseExpressionConstraint(refinedExpressionConstraint);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
       case EclPackage.CHILD_OF:
       {
         ChildOf childOf = (ChildOf)theEObject;
@@ -221,6 +213,14 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case EclPackage.REFINED_EXPRESSION_CONSTRAINT:
+      {
+        RefinedExpressionConstraint refinedExpressionConstraint = (RefinedExpressionConstraint)theEObject;
+        T result = caseRefinedExpressionConstraint(refinedExpressionConstraint);
+        if (result == null) result = caseExpressionConstraint(refinedExpressionConstraint);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       default: return defaultCase(theEObject);
     }
   }
@@ -237,22 +237,6 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseExpressionConstraint(ExpressionConstraint object)
-  {
-    return null;
-  }
-
-  /**
-   * Returns the result of interpreting the object as an instance of '<em>Refined Expression Constraint</em>'.
-   * <!-- begin-user-doc -->
-   * This implementation returns null;
-   * returning a non-null result will terminate the switch.
-   * <!-- end-user-doc -->
-   * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Refined Expression Constraint</em>'.
-   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-   * @generated
-   */
-  public T caseRefinedExpressionConstraint(RefinedExpressionConstraint object)
   {
     return null;
   }
@@ -525,6 +509,22 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseExclusionExpressionConstraint(ExclusionExpressionConstraint object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Refined Expression Constraint</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Refined Expression Constraint</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseRefinedExpressionConstraint(RefinedExpressionConstraint object)
   {
     return null;
   }

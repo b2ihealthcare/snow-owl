@@ -31,12 +31,12 @@ public interface ExclusionExpressionConstraint extends ExpressionConstraint
    * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Left</em>' containment reference.
-   * @see #setLeft(RefinedExpressionConstraint)
+   * @see #setLeft(ExpressionConstraint)
    * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getExclusionExpressionConstraint_Left()
    * @model containment="true"
    * @generated
    */
-  RefinedExpressionConstraint getLeft();
+  ExpressionConstraint getLeft();
 
   /**
    * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint#getLeft <em>Left</em>}' containment reference.
@@ -46,7 +46,7 @@ public interface ExclusionExpressionConstraint extends ExpressionConstraint
    * @see #getLeft()
    * @generated
    */
-  void setLeft(RefinedExpressionConstraint value);
+  void setLeft(ExpressionConstraint value);
 
   /**
    * Returns the value of the '<em><b>Right</b></em>' containment reference.
@@ -57,12 +57,12 @@ public interface ExclusionExpressionConstraint extends ExpressionConstraint
    * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Right</em>' containment reference.
-   * @see #setRight(RefinedExpressionConstraint)
+   * @see #setRight(ExpressionConstraint)
    * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getExclusionExpressionConstraint_Right()
    * @model containment="true"
    * @generated
    */
-  RefinedExpressionConstraint getRight();
+  ExpressionConstraint getRight();
 
   /**
    * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint#getRight <em>Right</em>}' containment reference.
@@ -72,6 +72,6 @@ public interface ExclusionExpressionConstraint extends ExpressionConstraint
    * @see #getRight()
    * @generated
    */
-  void setRight(RefinedExpressionConstraint value);
+  void setRight(ExpressionConstraint value);
 
 } // ExclusionExpressionConstraint

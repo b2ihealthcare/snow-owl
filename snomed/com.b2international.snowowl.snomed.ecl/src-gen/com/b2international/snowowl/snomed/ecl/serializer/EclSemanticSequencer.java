@@ -339,9 +339,19 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
-	 *     (constraint=SimpleExpressionConstraint refinement=Refinement?)
+	 *     (constraint=RefinedExpressionConstraint_RefinedExpressionConstraint_1_0 refinement=Refinement)
 	 */
 	protected void sequence_RefinedExpressionConstraint(EObject context, RefinedExpressionConstraint semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.REFINED_EXPRESSION_CONSTRAINT__CONSTRAINT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.REFINED_EXPRESSION_CONSTRAINT__CONSTRAINT));
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.REFINED_EXPRESSION_CONSTRAINT__REFINEMENT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.REFINED_EXPRESSION_CONSTRAINT__REFINEMENT));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getRefinedExpressionConstraintAccess().getRefinedExpressionConstraintConstraintAction_1_0(), semanticObject.getConstraint());
+		feeder.accept(grammarAccess.getRefinedExpressionConstraintAccess().getRefinementRefinementParserRuleCall_1_2_0(), semanticObject.getRefinement());
+		feeder.finish();
 	}
 }

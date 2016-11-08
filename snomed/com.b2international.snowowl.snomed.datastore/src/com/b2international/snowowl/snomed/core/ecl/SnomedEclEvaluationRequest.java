@@ -285,32 +285,27 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	
 	protected Promise<Expression> eval(BranchContext context, final RefinedExpressionConstraint refined) {
 		final Refinement refinement = refined.getRefinement();
-		if (refinement == null) {
-			// no refinement just evaluate the inner expression as is
-			return evaluate(context, refined.getConstraint());
-		} else {
-			// filterBySource, filterByType and filterByDestination accepts ECL expressions as well, so serialize them into ECL and pass as String
-			final ExpressionConstraint rewrittenComparison = rewrite(refined.getRefinement().getComparison());
-			final EclSerializer serializer = context.service(EclSerializer.class);
-			return SnomedRequests.prepareSearchRelationship()
-					.all()
-					.filterByActive(true)
-					.filterBySource(serializer.serialize(refined.getConstraint()))
-					.filterByType(serializer.serialize(refined.getRefinement().getAttribute()))
-					.filterByDestination(serializer.serialize(rewrittenComparison))
-					.build(context.id(), context.branch().path())
-					.execute(context.service(IEventBus.class))
-					.then(new Function<SnomedRelationships, Expression>() {
-						@Override
-						public Expression apply(SnomedRelationships matchingAttributes) {
-							final Set<String> sourceIds = newHashSetWithExpectedSize(matchingAttributes.getItems().size());
-							for (ISnomedRelationship relationship : matchingAttributes) {
-								sourceIds.add(relationship.getSourceId());
-							}
-							return ids(sourceIds);
+		// filterBySource, filterByType and filterByDestination accepts ECL expressions as well, so serialize them into ECL and pass as String
+		final ExpressionConstraint rewrittenComparison = rewrite(refinement.getComparison());
+		final EclSerializer serializer = context.service(EclSerializer.class);
+		return SnomedRequests.prepareSearchRelationship()
+				.all()
+				.filterByActive(true)
+				.filterBySource(serializer.serialize(refined.getConstraint()))
+				.filterByType(serializer.serialize(refinement.getAttribute()))
+				.filterByDestination(serializer.serialize(rewrittenComparison))
+				.build(context.id(), context.branch().path())
+				.execute(context.service(IEventBus.class))
+				.then(new Function<SnomedRelationships, Expression>() {
+					@Override
+					public Expression apply(SnomedRelationships matchingAttributes) {
+						final Set<String> sourceIds = newHashSetWithExpectedSize(matchingAttributes.getItems().size());
+						for (ISnomedRelationship relationship : matchingAttributes) {
+							sourceIds.add(relationship.getSourceId());
 						}
-					});
-		}
+						return ids(sourceIds);
+					}
+				});
 	}
 	
 	private ExpressionConstraint rewrite(Comparison comparison) {
@@ -318,20 +313,11 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 			return comparison.getConstraint();
 		} else if (comparison instanceof AttributeValueNotEquals) {
 			// convert != expression to exclusion constraint
-			final ExpressionConstraint constraint = comparison.getConstraint();
 			final ExclusionExpressionConstraint exclusion = ECL_FACTORY.createExclusionExpressionConstraint();
-			
 			// set Any as left of exclusion
-			final Any any = ECL_FACTORY.createAny();
-			final RefinedExpressionConstraint left = ECL_FACTORY.createRefinedExpressionConstraint();
-			left.setConstraint(any);
-			exclusion.setLeft(left);
-			
+			exclusion.setLeft(ECL_FACTORY.createAny());
 			// set original constraint as right of exclusion
-			final RefinedExpressionConstraint right = ECL_FACTORY.createRefinedExpressionConstraint();
-			right.setConstraint(constraint);
-			exclusion.setRight(right);
-			
+			exclusion.setRight(comparison.getConstraint());
 			return exclusion;
 		}
 		throw new UnsupportedOperationException("Cannot rewrite comparison: " + comparison);

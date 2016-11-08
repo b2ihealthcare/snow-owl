@@ -65,7 +65,6 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
     switch (eClass.getClassifierID())
     {
       case EclPackage.EXPRESSION_CONSTRAINT: return createExpressionConstraint();
-      case EclPackage.REFINED_EXPRESSION_CONSTRAINT: return createRefinedExpressionConstraint();
       case EclPackage.CHILD_OF: return createChildOf();
       case EclPackage.DESCENDANT_OF: return createDescendantOf();
       case EclPackage.DESCENDANT_OR_SELF_OF: return createDescendantOrSelfOf();
@@ -83,6 +82,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
       case EclPackage.OR_EXPRESSION_CONSTRAINT: return createOrExpressionConstraint();
       case EclPackage.AND_EXPRESSION_CONSTRAINT: return createAndExpressionConstraint();
       case EclPackage.EXCLUSION_EXPRESSION_CONSTRAINT: return createExclusionExpressionConstraint();
+      case EclPackage.REFINED_EXPRESSION_CONSTRAINT: return createRefinedExpressionConstraint();
       default:
         throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
     }
@@ -97,17 +97,6 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     ExpressionConstraintImpl expressionConstraint = new ExpressionConstraintImpl();
     return expressionConstraint;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public RefinedExpressionConstraint createRefinedExpressionConstraint()
-  {
-    RefinedExpressionConstraintImpl refinedExpressionConstraint = new RefinedExpressionConstraintImpl();
-    return refinedExpressionConstraint;
   }
 
   /**
@@ -295,6 +284,17 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     ExclusionExpressionConstraintImpl exclusionExpressionConstraint = new ExclusionExpressionConstraintImpl();
     return exclusionExpressionConstraint;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public RefinedExpressionConstraint createRefinedExpressionConstraint()
+  {
+    RefinedExpressionConstraintImpl refinedExpressionConstraint = new RefinedExpressionConstraintImpl();
+    return refinedExpressionConstraint;
   }
 
   /**

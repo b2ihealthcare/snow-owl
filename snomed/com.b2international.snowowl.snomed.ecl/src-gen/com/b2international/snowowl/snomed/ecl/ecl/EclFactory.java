@@ -32,15 +32,6 @@ public interface EclFactory extends EFactory
   ExpressionConstraint createExpressionConstraint();
 
   /**
-   * Returns a new object of class '<em>Refined Expression Constraint</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Refined Expression Constraint</em>'.
-   * @generated
-   */
-  RefinedExpressionConstraint createRefinedExpressionConstraint();
-
-  /**
    * Returns a new object of class '<em>Child Of</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -192,6 +183,15 @@ public interface EclFactory extends EFactory
    * @generated
    */
   ExclusionExpressionConstraint createExclusionExpressionConstraint();
+
+  /**
+   * Returns a new object of class '<em>Refined Expression Constraint</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Refined Expression Constraint</em>'.
+   * @generated
+   */
+  RefinedExpressionConstraint createRefinedExpressionConstraint();
 
   /**
    * Returns the package supported by this factory.

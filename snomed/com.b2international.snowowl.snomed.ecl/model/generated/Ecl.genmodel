@@ -9,10 +9,6 @@
   <genPackages prefix="Ecl" basePackage="com.b2international.snowowl.snomed.ecl" disposableProviderFactory="true"
       fileExtensions="ecl" ecorePackage="Ecl.ecore#/">
     <genClasses ecoreClass="Ecl.ecore#//ExpressionConstraint"/>
-    <genClasses ecoreClass="Ecl.ecore#//RefinedExpressionConstraint">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//RefinedExpressionConstraint/constraint"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//RefinedExpressionConstraint/refinement"/>
-    </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//ChildOf">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//ChildOf/constraint"/>
     </genClasses>
@@ -62,6 +58,10 @@
     <genClasses ecoreClass="Ecl.ecore#//ExclusionExpressionConstraint">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//ExclusionExpressionConstraint/left"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//ExclusionExpressionConstraint/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Ecl.ecore#//RefinedExpressionConstraint">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//RefinedExpressionConstraint/constraint"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//RefinedExpressionConstraint/refinement"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

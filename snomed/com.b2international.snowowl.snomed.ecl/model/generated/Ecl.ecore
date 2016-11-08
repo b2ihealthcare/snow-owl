@@ -3,12 +3,6 @@
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="ecl" nsURI="http://www.b2international.com/snowowl/snomed/Ecl"
     nsPrefix="ecl">
   <eClassifiers xsi:type="ecore:EClass" name="ExpressionConstraint"/>
-  <eClassifiers xsi:type="ecore:EClass" name="RefinedExpressionConstraint" eSuperTypes="#//ExpressionConstraint">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//ExpressionConstraint"
-        containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="refinement" eType="#//Refinement"
-        containment="true"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ChildOf" eSuperTypes="#//ExpressionConstraint">
     <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//ExpressionConstraint"
         containment="true"/>
@@ -71,9 +65,15 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ExclusionExpressionConstraint" eSuperTypes="#//ExpressionConstraint">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//RefinedExpressionConstraint"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//ExpressionConstraint"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//RefinedExpressionConstraint"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//ExpressionConstraint"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="RefinedExpressionConstraint" eSuperTypes="#//ExpressionConstraint">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//ExpressionConstraint"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="refinement" eType="#//Refinement"
         containment="true"/>
   </eClassifiers>
 </ecore:EPackage>

@@ -296,41 +296,38 @@ ruleRefinedExpressionConstraint returns [EObject current=null]
     @init { enterRule(); 
     }
     @after { leaveRule(); }:
-((
 (
-		{ 
-	        newCompositeNode(grammarAccess.getRefinedExpressionConstraintAccess().getConstraintSimpleExpressionConstraintParserRuleCall_0_0()); 
-	    }
-		lv_constraint_0_0=ruleSimpleExpressionConstraint		{
-	        if ($current==null) {
-	            $current = createModelElementForParent(grammarAccess.getRefinedExpressionConstraintRule());
-	        }
-       		set(
-       			$current, 
-       			"constraint",
-        		lv_constraint_0_0, 
-        		"SimpleExpressionConstraint");
-	        afterParserOrEnumRuleCall();
-	    }
-
-)
-)(this_COLON_1=RULE_COLON
     { 
-    newLeafNode(this_COLON_1, grammarAccess.getRefinedExpressionConstraintAccess().getCOLONTerminalRuleCall_1_0()); 
+        newCompositeNode(grammarAccess.getRefinedExpressionConstraintAccess().getSimpleExpressionConstraintParserRuleCall_0()); 
+    }
+    this_SimpleExpressionConstraint_0=ruleSimpleExpressionConstraint
+    { 
+        $current = $this_SimpleExpressionConstraint_0.current; 
+        afterParserOrEnumRuleCall();
+    }
+((
+    {
+        $current = forceCreateModelElementAndSet(
+            grammarAccess.getRefinedExpressionConstraintAccess().getRefinedExpressionConstraintConstraintAction_1_0(),
+            $current);
+    }
+)this_COLON_2=RULE_COLON
+    { 
+    newLeafNode(this_COLON_2, grammarAccess.getRefinedExpressionConstraintAccess().getCOLONTerminalRuleCall_1_1()); 
     }
 (
 (
 		{ 
-	        newCompositeNode(grammarAccess.getRefinedExpressionConstraintAccess().getRefinementRefinementParserRuleCall_1_1_0()); 
+	        newCompositeNode(grammarAccess.getRefinedExpressionConstraintAccess().getRefinementRefinementParserRuleCall_1_2_0()); 
 	    }
-		lv_refinement_2_0=ruleRefinement		{
+		lv_refinement_3_0=ruleRefinement		{
 	        if ($current==null) {
 	            $current = createModelElementForParent(grammarAccess.getRefinedExpressionConstraintRule());
 	        }
        		set(
        			$current, 
        			"refinement",
-        		lv_refinement_2_0, 
+        		lv_refinement_3_0, 
         		"Refinement");
 	        afterParserOrEnumRuleCall();
 	    }
