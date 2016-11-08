@@ -70,8 +70,10 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	
 	// random IDs
 	private static final String TRIPHASIL_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String PANADOL_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INGREDIENT1 = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INGREDIENT2 = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String HAS_BOSS = RandomSnomedIdentiferGenerator.generateConceptId();
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
@@ -308,6 +310,30 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2).build());
 		
 		final Expression actual = eval(String.format("<%s: R %s=%s", SUBSTANCE, HAS_ACTIVE_INGREDIENT, TRIPHASIL_TABLET));
+		final Expression expected = ids(ImmutableSet.of(INGREDIENT1, INGREDIENT2));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementAnyAttributeName() throws Exception {
+		indexRevision(MAIN, nextStorageKey(), concept(INGREDIENT1).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
+		indexRevision(MAIN, nextStorageKey(), concept(INGREDIENT2).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_BOSS, INGREDIENT2).build());
+		
+		final Expression actual = eval(String.format("<%s: R *=%s", SUBSTANCE, TRIPHASIL_TABLET));
+		final Expression expected = ids(ImmutableSet.of(INGREDIENT1, INGREDIENT2));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementAnyAttributeValue() throws Exception {
+		indexRevision(MAIN, nextStorageKey(), concept(INGREDIENT1).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
+		indexRevision(MAIN, nextStorageKey(), concept(INGREDIENT2).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(PANADOL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2).build());
+		
+		final Expression actual = eval(String.format("<%s: R %s=*", SUBSTANCE, HAS_ACTIVE_INGREDIENT));
 		final Expression expected = ids(ImmutableSet.of(INGREDIENT1, INGREDIENT2));
 		assertEquals(expected, actual);
 	}
