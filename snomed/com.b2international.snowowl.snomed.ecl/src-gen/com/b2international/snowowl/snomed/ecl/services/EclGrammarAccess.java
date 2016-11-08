@@ -502,45 +502,93 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	public class AttributeConstraintElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AttributeConstraint");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final Assignment cReversedAssignment_0 = (Assignment)cGroup.eContents().get(0);
-		private final RuleCall cReversedREVERSEDTerminalRuleCall_0_0 = (RuleCall)cReversedAssignment_0.eContents().get(0);
-		private final Assignment cAttributeAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final Alternatives cAttributeAlternatives_1_0 = (Alternatives)cAttributeAssignment_1.eContents().get(0);
-		private final RuleCall cAttributeConceptReferenceParserRuleCall_1_0_0 = (RuleCall)cAttributeAlternatives_1_0.eContents().get(0);
-		private final RuleCall cAttributeAnyParserRuleCall_1_0_1 = (RuleCall)cAttributeAlternatives_1_0.eContents().get(1);
-		private final Assignment cComparisonAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cComparisonComparisonParserRuleCall_2_0 = (RuleCall)cComparisonAssignment_2.eContents().get(0);
+		private final Assignment cCardinalityAssignment_0 = (Assignment)cGroup.eContents().get(0);
+		private final RuleCall cCardinalityCardinalityParserRuleCall_0_0 = (RuleCall)cCardinalityAssignment_0.eContents().get(0);
+		private final Assignment cReversedAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cReversedREVERSEDTerminalRuleCall_1_0 = (RuleCall)cReversedAssignment_1.eContents().get(0);
+		private final Assignment cAttributeAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final Alternatives cAttributeAlternatives_2_0 = (Alternatives)cAttributeAssignment_2.eContents().get(0);
+		private final RuleCall cAttributeConceptReferenceParserRuleCall_2_0_0 = (RuleCall)cAttributeAlternatives_2_0.eContents().get(0);
+		private final RuleCall cAttributeAnyParserRuleCall_2_0_1 = (RuleCall)cAttributeAlternatives_2_0.eContents().get(1);
+		private final Assignment cComparisonAssignment_3 = (Assignment)cGroup.eContents().get(3);
+		private final RuleCall cComparisonComparisonParserRuleCall_3_0 = (RuleCall)cComparisonAssignment_3.eContents().get(0);
 		
 		//AttributeConstraint returns Refinement:
-		//	reversed?=REVERSED? attribute=(ConceptReference | Any) comparison=Comparison;
+		//	cardinality=Cardinality? reversed?=REVERSED? attribute=(ConceptReference | Any) comparison=Comparison;
 		@Override public ParserRule getRule() { return rule; }
 
-		//reversed?=REVERSED? attribute=(ConceptReference | Any) comparison=Comparison
+		//cardinality=Cardinality? reversed?=REVERSED? attribute=(ConceptReference | Any) comparison=Comparison
 		public Group getGroup() { return cGroup; }
 
+		//cardinality=Cardinality?
+		public Assignment getCardinalityAssignment_0() { return cCardinalityAssignment_0; }
+
+		//Cardinality
+		public RuleCall getCardinalityCardinalityParserRuleCall_0_0() { return cCardinalityCardinalityParserRuleCall_0_0; }
+
 		//reversed?=REVERSED?
-		public Assignment getReversedAssignment_0() { return cReversedAssignment_0; }
+		public Assignment getReversedAssignment_1() { return cReversedAssignment_1; }
 
 		//REVERSED
-		public RuleCall getReversedREVERSEDTerminalRuleCall_0_0() { return cReversedREVERSEDTerminalRuleCall_0_0; }
+		public RuleCall getReversedREVERSEDTerminalRuleCall_1_0() { return cReversedREVERSEDTerminalRuleCall_1_0; }
 
 		//attribute=(ConceptReference | Any)
-		public Assignment getAttributeAssignment_1() { return cAttributeAssignment_1; }
+		public Assignment getAttributeAssignment_2() { return cAttributeAssignment_2; }
 
 		//ConceptReference | Any
-		public Alternatives getAttributeAlternatives_1_0() { return cAttributeAlternatives_1_0; }
+		public Alternatives getAttributeAlternatives_2_0() { return cAttributeAlternatives_2_0; }
 
 		//ConceptReference
-		public RuleCall getAttributeConceptReferenceParserRuleCall_1_0_0() { return cAttributeConceptReferenceParserRuleCall_1_0_0; }
+		public RuleCall getAttributeConceptReferenceParserRuleCall_2_0_0() { return cAttributeConceptReferenceParserRuleCall_2_0_0; }
 
 		//Any
-		public RuleCall getAttributeAnyParserRuleCall_1_0_1() { return cAttributeAnyParserRuleCall_1_0_1; }
+		public RuleCall getAttributeAnyParserRuleCall_2_0_1() { return cAttributeAnyParserRuleCall_2_0_1; }
 
 		//comparison=Comparison
-		public Assignment getComparisonAssignment_2() { return cComparisonAssignment_2; }
+		public Assignment getComparisonAssignment_3() { return cComparisonAssignment_3; }
 
 		//Comparison
-		public RuleCall getComparisonComparisonParserRuleCall_2_0() { return cComparisonComparisonParserRuleCall_2_0; }
+		public RuleCall getComparisonComparisonParserRuleCall_3_0() { return cComparisonComparisonParserRuleCall_3_0; }
+	}
+
+	public class CardinalityElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "Cardinality");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cSQUARE_OPENTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cMinAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cMinNonNegativeIntegerParserRuleCall_1_0 = (RuleCall)cMinAssignment_1.eContents().get(0);
+		private final RuleCall cTOTerminalRuleCall_2 = (RuleCall)cGroup.eContents().get(2);
+		private final Assignment cMaxAssignment_3 = (Assignment)cGroup.eContents().get(3);
+		private final RuleCall cMaxMaxValueParserRuleCall_3_0 = (RuleCall)cMaxAssignment_3.eContents().get(0);
+		private final RuleCall cSQUARE_CLOSETerminalRuleCall_4 = (RuleCall)cGroup.eContents().get(4);
+		
+		//Cardinality:
+		//	SQUARE_OPEN min=NonNegativeInteger TO max=MaxValue SQUARE_CLOSE;
+		@Override public ParserRule getRule() { return rule; }
+
+		//SQUARE_OPEN min=NonNegativeInteger TO max=MaxValue SQUARE_CLOSE
+		public Group getGroup() { return cGroup; }
+
+		//SQUARE_OPEN
+		public RuleCall getSQUARE_OPENTerminalRuleCall_0() { return cSQUARE_OPENTerminalRuleCall_0; }
+
+		//min=NonNegativeInteger
+		public Assignment getMinAssignment_1() { return cMinAssignment_1; }
+
+		//NonNegativeInteger
+		public RuleCall getMinNonNegativeIntegerParserRuleCall_1_0() { return cMinNonNegativeIntegerParserRuleCall_1_0; }
+
+		//TO
+		public RuleCall getTOTerminalRuleCall_2() { return cTOTerminalRuleCall_2; }
+
+		//max=MaxValue
+		public Assignment getMaxAssignment_3() { return cMaxAssignment_3; }
+
+		//MaxValue
+		public RuleCall getMaxMaxValueParserRuleCall_3_0() { return cMaxMaxValueParserRuleCall_3_0; }
+
+		//SQUARE_CLOSE
+		public RuleCall getSQUARE_CLOSETerminalRuleCall_4() { return cSQUARE_CLOSETerminalRuleCall_4; }
 	}
 
 	public class ComparisonElements extends AbstractParserRuleElementFinder {
@@ -758,33 +806,37 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cANDTerminalRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
 		private final RuleCall cORTerminalRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
 		private final RuleCall cNOTTerminalRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
-		private final RuleCall cZEROTerminalRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
-		private final RuleCall cDIGIT_NONZEROTerminalRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
-		private final RuleCall cLETTERTerminalRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
-		private final RuleCall cCARETTerminalRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
-		private final RuleCall cEQUALTerminalRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
-		private final RuleCall cPLUSTerminalRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
-		private final RuleCall cCURLY_OPENTerminalRuleCall_15 = (RuleCall)cAlternatives.eContents().get(15);
-		private final RuleCall cCURLY_CLOSETerminalRuleCall_16 = (RuleCall)cAlternatives.eContents().get(16);
-		private final RuleCall cROUND_OPENTerminalRuleCall_17 = (RuleCall)cAlternatives.eContents().get(17);
-		private final RuleCall cROUND_CLOSETerminalRuleCall_18 = (RuleCall)cAlternatives.eContents().get(18);
-		private final RuleCall cSQUARE_OPENTerminalRuleCall_19 = (RuleCall)cAlternatives.eContents().get(19);
-		private final RuleCall cSQUARE_CLOSETerminalRuleCall_20 = (RuleCall)cAlternatives.eContents().get(20);
-		private final RuleCall cDOTTerminalRuleCall_21 = (RuleCall)cAlternatives.eContents().get(21);
-		private final RuleCall cCOLONTerminalRuleCall_22 = (RuleCall)cAlternatives.eContents().get(22);
-		private final RuleCall cCOMMATerminalRuleCall_23 = (RuleCall)cAlternatives.eContents().get(23);
-		private final RuleCall cREVERSEDTerminalRuleCall_24 = (RuleCall)cAlternatives.eContents().get(24);
-		private final RuleCall cOTHER_CHARACTERTerminalRuleCall_25 = (RuleCall)cAlternatives.eContents().get(25);
+		private final RuleCall cMINUSTerminalRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
+		private final RuleCall cZEROTerminalRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
+		private final RuleCall cDIGIT_NONZEROTerminalRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
+		private final RuleCall cLETTERTerminalRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
+		private final RuleCall cCARETTerminalRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
+		private final RuleCall cEQUALTerminalRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
+		private final RuleCall cNOT_EQUALTerminalRuleCall_15 = (RuleCall)cAlternatives.eContents().get(15);
+		private final RuleCall cPLUSTerminalRuleCall_16 = (RuleCall)cAlternatives.eContents().get(16);
+		private final RuleCall cCURLY_OPENTerminalRuleCall_17 = (RuleCall)cAlternatives.eContents().get(17);
+		private final RuleCall cCURLY_CLOSETerminalRuleCall_18 = (RuleCall)cAlternatives.eContents().get(18);
+		private final RuleCall cROUND_OPENTerminalRuleCall_19 = (RuleCall)cAlternatives.eContents().get(19);
+		private final RuleCall cROUND_CLOSETerminalRuleCall_20 = (RuleCall)cAlternatives.eContents().get(20);
+		private final RuleCall cSQUARE_OPENTerminalRuleCall_21 = (RuleCall)cAlternatives.eContents().get(21);
+		private final RuleCall cSQUARE_CLOSETerminalRuleCall_22 = (RuleCall)cAlternatives.eContents().get(22);
+		private final RuleCall cDOTTerminalRuleCall_23 = (RuleCall)cAlternatives.eContents().get(23);
+		private final RuleCall cCOLONTerminalRuleCall_24 = (RuleCall)cAlternatives.eContents().get(24);
+		private final RuleCall cCOMMATerminalRuleCall_25 = (RuleCall)cAlternatives.eContents().get(25);
+		private final RuleCall cREVERSEDTerminalRuleCall_26 = (RuleCall)cAlternatives.eContents().get(26);
+		private final RuleCall cTOTerminalRuleCall_27 = (RuleCall)cAlternatives.eContents().get(27);
+		private final RuleCall cWILDCARDTerminalRuleCall_28 = (RuleCall)cAlternatives.eContents().get(28);
+		private final RuleCall cOTHER_CHARACTERTerminalRuleCall_29 = (RuleCall)cAlternatives.eContents().get(29);
 		
 		//TermCharacter hidden():
-		//	LT | GT | DBL_LT | DBL_GT | LT_EM | GT_EM | AND | OR | NOT | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL | PLUS |
-		//	CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON | COMMA | REVERSED |
-		//	OTHER_CHARACTER;
+		//	LT | GT | DBL_LT | DBL_GT | LT_EM | GT_EM | AND | OR | NOT | MINUS | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL |
+		//	NOT_EQUAL | PLUS | CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON |
+		//	COMMA | REVERSED | TO | WILDCARD | OTHER_CHARACTER;
 		@Override public ParserRule getRule() { return rule; }
 
-		//LT | GT | DBL_LT | DBL_GT | LT_EM | GT_EM | AND | OR | NOT | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL | PLUS |
-		//CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON | COMMA | REVERSED |
-		//OTHER_CHARACTER
+		//LT | GT | DBL_LT | DBL_GT | LT_EM | GT_EM | AND | OR | NOT | MINUS | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL |
+		//NOT_EQUAL | PLUS | CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON |
+		//COMMA | REVERSED | TO | WILDCARD | OTHER_CHARACTER
 		public Alternatives getAlternatives() { return cAlternatives; }
 
 		//LT
@@ -814,56 +866,124 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		//NOT
 		public RuleCall getNOTTerminalRuleCall_8() { return cNOTTerminalRuleCall_8; }
 
+		//MINUS
+		public RuleCall getMINUSTerminalRuleCall_9() { return cMINUSTerminalRuleCall_9; }
+
 		//ZERO
-		public RuleCall getZEROTerminalRuleCall_9() { return cZEROTerminalRuleCall_9; }
+		public RuleCall getZEROTerminalRuleCall_10() { return cZEROTerminalRuleCall_10; }
 
 		//DIGIT_NONZERO
-		public RuleCall getDIGIT_NONZEROTerminalRuleCall_10() { return cDIGIT_NONZEROTerminalRuleCall_10; }
+		public RuleCall getDIGIT_NONZEROTerminalRuleCall_11() { return cDIGIT_NONZEROTerminalRuleCall_11; }
 
 		//LETTER
-		public RuleCall getLETTERTerminalRuleCall_11() { return cLETTERTerminalRuleCall_11; }
+		public RuleCall getLETTERTerminalRuleCall_12() { return cLETTERTerminalRuleCall_12; }
 
 		//CARET
-		public RuleCall getCARETTerminalRuleCall_12() { return cCARETTerminalRuleCall_12; }
+		public RuleCall getCARETTerminalRuleCall_13() { return cCARETTerminalRuleCall_13; }
 
 		//EQUAL
-		public RuleCall getEQUALTerminalRuleCall_13() { return cEQUALTerminalRuleCall_13; }
+		public RuleCall getEQUALTerminalRuleCall_14() { return cEQUALTerminalRuleCall_14; }
+
+		//NOT_EQUAL
+		public RuleCall getNOT_EQUALTerminalRuleCall_15() { return cNOT_EQUALTerminalRuleCall_15; }
 
 		//PLUS
-		public RuleCall getPLUSTerminalRuleCall_14() { return cPLUSTerminalRuleCall_14; }
+		public RuleCall getPLUSTerminalRuleCall_16() { return cPLUSTerminalRuleCall_16; }
 
 		//CURLY_OPEN
-		public RuleCall getCURLY_OPENTerminalRuleCall_15() { return cCURLY_OPENTerminalRuleCall_15; }
+		public RuleCall getCURLY_OPENTerminalRuleCall_17() { return cCURLY_OPENTerminalRuleCall_17; }
 
 		//CURLY_CLOSE
-		public RuleCall getCURLY_CLOSETerminalRuleCall_16() { return cCURLY_CLOSETerminalRuleCall_16; }
+		public RuleCall getCURLY_CLOSETerminalRuleCall_18() { return cCURLY_CLOSETerminalRuleCall_18; }
 
 		//ROUND_OPEN
-		public RuleCall getROUND_OPENTerminalRuleCall_17() { return cROUND_OPENTerminalRuleCall_17; }
+		public RuleCall getROUND_OPENTerminalRuleCall_19() { return cROUND_OPENTerminalRuleCall_19; }
 
 		//ROUND_CLOSE
-		public RuleCall getROUND_CLOSETerminalRuleCall_18() { return cROUND_CLOSETerminalRuleCall_18; }
+		public RuleCall getROUND_CLOSETerminalRuleCall_20() { return cROUND_CLOSETerminalRuleCall_20; }
 
 		//SQUARE_OPEN
-		public RuleCall getSQUARE_OPENTerminalRuleCall_19() { return cSQUARE_OPENTerminalRuleCall_19; }
+		public RuleCall getSQUARE_OPENTerminalRuleCall_21() { return cSQUARE_OPENTerminalRuleCall_21; }
 
 		//SQUARE_CLOSE
-		public RuleCall getSQUARE_CLOSETerminalRuleCall_20() { return cSQUARE_CLOSETerminalRuleCall_20; }
+		public RuleCall getSQUARE_CLOSETerminalRuleCall_22() { return cSQUARE_CLOSETerminalRuleCall_22; }
 
 		//DOT
-		public RuleCall getDOTTerminalRuleCall_21() { return cDOTTerminalRuleCall_21; }
+		public RuleCall getDOTTerminalRuleCall_23() { return cDOTTerminalRuleCall_23; }
 
 		//COLON
-		public RuleCall getCOLONTerminalRuleCall_22() { return cCOLONTerminalRuleCall_22; }
+		public RuleCall getCOLONTerminalRuleCall_24() { return cCOLONTerminalRuleCall_24; }
 
 		//COMMA
-		public RuleCall getCOMMATerminalRuleCall_23() { return cCOMMATerminalRuleCall_23; }
+		public RuleCall getCOMMATerminalRuleCall_25() { return cCOMMATerminalRuleCall_25; }
 
 		//REVERSED
-		public RuleCall getREVERSEDTerminalRuleCall_24() { return cREVERSEDTerminalRuleCall_24; }
+		public RuleCall getREVERSEDTerminalRuleCall_26() { return cREVERSEDTerminalRuleCall_26; }
+
+		//TO
+		public RuleCall getTOTerminalRuleCall_27() { return cTOTerminalRuleCall_27; }
+
+		//WILDCARD
+		public RuleCall getWILDCARDTerminalRuleCall_28() { return cWILDCARDTerminalRuleCall_28; }
 
 		//OTHER_CHARACTER
-		public RuleCall getOTHER_CHARACTERTerminalRuleCall_25() { return cOTHER_CHARACTERTerminalRuleCall_25; }
+		public RuleCall getOTHER_CHARACTERTerminalRuleCall_29() { return cOTHER_CHARACTERTerminalRuleCall_29; }
+	}
+
+	public class NonNegativeIntegerElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "NonNegativeInteger");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final RuleCall cZEROTerminalRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final Group cGroup_1 = (Group)cAlternatives.eContents().get(1);
+		private final RuleCall cDIGIT_NONZEROTerminalRuleCall_1_0 = (RuleCall)cGroup_1.eContents().get(0);
+		private final Alternatives cAlternatives_1_1 = (Alternatives)cGroup_1.eContents().get(1);
+		private final RuleCall cDIGIT_NONZEROTerminalRuleCall_1_1_0 = (RuleCall)cAlternatives_1_1.eContents().get(0);
+		private final RuleCall cZEROTerminalRuleCall_1_1_1 = (RuleCall)cAlternatives_1_1.eContents().get(1);
+		
+		//NonNegativeInteger returns ecore::EInt hidden():
+		//	ZERO | DIGIT_NONZERO (DIGIT_NONZERO | ZERO)*;
+		@Override public ParserRule getRule() { return rule; }
+
+		//ZERO | DIGIT_NONZERO (DIGIT_NONZERO | ZERO)*
+		public Alternatives getAlternatives() { return cAlternatives; }
+
+		//ZERO
+		public RuleCall getZEROTerminalRuleCall_0() { return cZEROTerminalRuleCall_0; }
+
+		//DIGIT_NONZERO (DIGIT_NONZERO | ZERO)*
+		public Group getGroup_1() { return cGroup_1; }
+
+		//DIGIT_NONZERO
+		public RuleCall getDIGIT_NONZEROTerminalRuleCall_1_0() { return cDIGIT_NONZEROTerminalRuleCall_1_0; }
+
+		//(DIGIT_NONZERO | ZERO)*
+		public Alternatives getAlternatives_1_1() { return cAlternatives_1_1; }
+
+		//DIGIT_NONZERO
+		public RuleCall getDIGIT_NONZEROTerminalRuleCall_1_1_0() { return cDIGIT_NONZEROTerminalRuleCall_1_1_0; }
+
+		//ZERO
+		public RuleCall getZEROTerminalRuleCall_1_1_1() { return cZEROTerminalRuleCall_1_1_1; }
+	}
+
+	public class MaxValueElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "MaxValue");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final RuleCall cNonNegativeIntegerParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cWILDCARDTerminalRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		
+		//MaxValue returns ecore::EInt hidden():
+		//	NonNegativeInteger | WILDCARD;
+		@Override public ParserRule getRule() { return rule; }
+
+		//NonNegativeInteger | WILDCARD
+		public Alternatives getAlternatives() { return cAlternatives; }
+
+		//NonNegativeInteger
+		public RuleCall getNonNegativeIntegerParserRuleCall_0() { return cNonNegativeIntegerParserRuleCall_0; }
+
+		//WILDCARD
+		public RuleCall getWILDCARDTerminalRuleCall_1() { return cWILDCARDTerminalRuleCall_1; }
 	}
 	
 	
@@ -885,6 +1005,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final AnyElements pAny;
 	private final RefinementElements pRefinement;
 	private final AttributeConstraintElements pAttributeConstraint;
+	private final CardinalityElements pCardinality;
 	private final ComparisonElements pComparison;
 	private final AttributeValueEqualsElements pAttributeValueEquals;
 	private final AttributeValueNotEqualsElements pAttributeValueNotEquals;
@@ -892,7 +1013,10 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final SnomedIdentifierElements pSnomedIdentifier;
 	private final TermElements pTerm;
 	private final TermCharacterElements pTermCharacter;
+	private final NonNegativeIntegerElements pNonNegativeInteger;
+	private final MaxValueElements pMaxValue;
 	private final TerminalRule tREVERSED;
+	private final TerminalRule tTO;
 	private final TerminalRule tAND;
 	private final TerminalRule tOR;
 	private final TerminalRule tMINUS;
@@ -949,6 +1073,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pAny = new AnyElements();
 		this.pRefinement = new RefinementElements();
 		this.pAttributeConstraint = new AttributeConstraintElements();
+		this.pCardinality = new CardinalityElements();
 		this.pComparison = new ComparisonElements();
 		this.pAttributeValueEquals = new AttributeValueEqualsElements();
 		this.pAttributeValueNotEquals = new AttributeValueNotEqualsElements();
@@ -956,7 +1081,10 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pSnomedIdentifier = new SnomedIdentifierElements();
 		this.pTerm = new TermElements();
 		this.pTermCharacter = new TermCharacterElements();
+		this.pNonNegativeInteger = new NonNegativeIntegerElements();
+		this.pMaxValue = new MaxValueElements();
 		this.tREVERSED = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "REVERSED");
+		this.tTO = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "TO");
 		this.tAND = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "AND");
 		this.tOR = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "OR");
 		this.tMINUS = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "MINUS");
@@ -1186,13 +1314,23 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//AttributeConstraint returns Refinement:
-	//	reversed?=REVERSED? attribute=(ConceptReference | Any) comparison=Comparison;
+	//	cardinality=Cardinality? reversed?=REVERSED? attribute=(ConceptReference | Any) comparison=Comparison;
 	public AttributeConstraintElements getAttributeConstraintAccess() {
 		return pAttributeConstraint;
 	}
 	
 	public ParserRule getAttributeConstraintRule() {
 		return getAttributeConstraintAccess().getRule();
+	}
+
+	//Cardinality:
+	//	SQUARE_OPEN min=NonNegativeInteger TO max=MaxValue SQUARE_CLOSE;
+	public CardinalityElements getCardinalityAccess() {
+		return pCardinality;
+	}
+	
+	public ParserRule getCardinalityRule() {
+		return getCardinalityAccess().getRule();
 	}
 
 	/// *| NumericValueComparison | StringValueComparison* / Comparison:
@@ -1258,9 +1396,9 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//TermCharacter hidden():
-	//	LT | GT | DBL_LT | DBL_GT | LT_EM | GT_EM | AND | OR | NOT | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL | PLUS |
-	//	CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON | COMMA | REVERSED |
-	//	OTHER_CHARACTER;
+	//	LT | GT | DBL_LT | DBL_GT | LT_EM | GT_EM | AND | OR | NOT | MINUS | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL |
+	//	NOT_EQUAL | PLUS | CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON |
+	//	COMMA | REVERSED | TO | WILDCARD | OTHER_CHARACTER;
 	public TermCharacterElements getTermCharacterAccess() {
 		return pTermCharacter;
 	}
@@ -1269,12 +1407,38 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return getTermCharacterAccess().getRule();
 	}
 
+	//NonNegativeInteger returns ecore::EInt hidden():
+	//	ZERO | DIGIT_NONZERO (DIGIT_NONZERO | ZERO)*;
+	public NonNegativeIntegerElements getNonNegativeIntegerAccess() {
+		return pNonNegativeInteger;
+	}
+	
+	public ParserRule getNonNegativeIntegerRule() {
+		return getNonNegativeIntegerAccess().getRule();
+	}
+
+	//MaxValue returns ecore::EInt hidden():
+	//	NonNegativeInteger | WILDCARD;
+	public MaxValueElements getMaxValueAccess() {
+		return pMaxValue;
+	}
+	
+	public ParserRule getMaxValueRule() {
+		return getMaxValueAccess().getRule();
+	}
+
 	//// ---TERMINALS---
 	//// ECL terminals
 	//terminal REVERSED:
 	//	"R";
 	public TerminalRule getREVERSEDRule() {
 		return tREVERSED;
+	} 
+
+	//terminal TO:
+	//	"..";
+	public TerminalRule getTORule() {
+		return tTO;
 	} 
 
 	//// bool operators

@@ -130,6 +130,11 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createRefinementAdapter();
       }
       @Override
+      public Adapter caseCardinality(Cardinality object)
+      {
+        return createCardinalityAdapter();
+      }
+      @Override
       public Adapter caseComparison(Comparison object)
       {
         return createComparisonAdapter();
@@ -352,6 +357,21 @@ public class EclAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createRefinementAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.Cardinality <em>Cardinality</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.Cardinality
+   * @generated
+   */
+  public Adapter createCardinalityAdapter()
   {
     return null;
   }

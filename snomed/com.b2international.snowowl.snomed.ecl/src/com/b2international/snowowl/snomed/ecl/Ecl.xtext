@@ -56,7 +56,10 @@ Refinement:
 	AttributeConstraint;
 	
 AttributeConstraint returns Refinement:
-	(reversed?=REVERSED)? attribute=(ConceptReference | Any) comparison=Comparison;	
+	(cardinality=Cardinality)? (reversed?=REVERSED)? attribute=(ConceptReference | Any) comparison=Comparison;
+
+Cardinality:
+	SQUARE_OPEN min=NonNegativeInteger TO max=MaxValue SQUARE_CLOSE;
 
 Comparison:
 	AttributeValueEquals | AttributeValueNotEquals /*| NumericValueComparison | StringValueComparison*/;
@@ -76,21 +79,27 @@ Term 				hidden() : (TermCharacter)+ (WS+ (TermCharacter)+)*;
 TermCharacter 		hidden() : LT|GT
 								|DBL_LT|DBL_GT
 								|LT_EM|GT_EM
-								|AND|OR|NOT
+								|AND|OR|NOT|MINUS
 								|ZERO|DIGIT_NONZERO
 								|LETTER|CARET
-								|EQUAL|PLUS
+								|EQUAL|NOT_EQUAL|PLUS
 								|CURLY_OPEN|CURLY_CLOSE
 								|ROUND_OPEN|ROUND_CLOSE
 								|SQUARE_OPEN|SQUARE_CLOSE
 								|DOT|COLON|COMMA
-								|REVERSED
+								|REVERSED|TO
+								|WILDCARD
 								|OTHER_CHARACTER;
+NonNegativeInteger returns ecore::EInt
+					hidden() : ZERO | DIGIT_NONZERO (DIGIT_NONZERO|ZERO)*;
+MaxValue 		   returns ecore::EInt
+					hidden() : NonNegativeInteger | WILDCARD;
 
 // ---TERMINALS---
 
 // ECL terminals
 terminal REVERSED				: 'R';
+terminal TO						: '..';
 
 // bool operators
 terminal AND 					: 'AND';

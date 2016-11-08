@@ -67,6 +67,12 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getROUND_CLOSEToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getROUND_OPENRule())
 			return getROUND_OPENToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getSQUARE_CLOSERule())
+			return getSQUARE_CLOSEToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getSQUARE_OPENRule())
+			return getSQUARE_OPENToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getTORule())
+			return getTOToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getWILDCARDRule())
 			return getWILDCARDToken(semanticObject, ruleCall, node);
 		return "";
@@ -232,6 +238,33 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return "(";
+	}
+	
+	/**
+	 * terminal SQUARE_CLOSE 			: ']';
+	 */
+	protected String getSQUARE_CLOSEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "]";
+	}
+	
+	/**
+	 * terminal SQUARE_OPEN 			: '[';
+	 */
+	protected String getSQUARE_OPENToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "[";
+	}
+	
+	/**
+	 * terminal TO						: '..';
+	 */
+	protected String getTOToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "..";
 	}
 	
 	/**

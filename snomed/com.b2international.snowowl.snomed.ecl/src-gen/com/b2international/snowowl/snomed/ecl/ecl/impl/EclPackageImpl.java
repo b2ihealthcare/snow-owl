@@ -8,6 +8,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
 import com.b2international.snowowl.snomed.ecl.ecl.Comparison;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
@@ -115,6 +116,13 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * @generated
    */
   private EClass refinementEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass cardinalityEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -440,9 +448,19 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  public EReference getRefinement_Cardinality()
+  {
+    return (EReference)refinementEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public EAttribute getRefinement_Reversed()
   {
-    return (EAttribute)refinementEClass.getEStructuralFeatures().get(0);
+    return (EAttribute)refinementEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -452,7 +470,7 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    */
   public EReference getRefinement_Attribute()
   {
-    return (EReference)refinementEClass.getEStructuralFeatures().get(1);
+    return (EReference)refinementEClass.getEStructuralFeatures().get(2);
   }
 
   /**
@@ -462,7 +480,37 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    */
   public EReference getRefinement_Comparison()
   {
-    return (EReference)refinementEClass.getEStructuralFeatures().get(2);
+    return (EReference)refinementEClass.getEStructuralFeatures().get(3);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getCardinality()
+  {
+    return cardinalityEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getCardinality_Min()
+  {
+    return (EAttribute)cardinalityEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getCardinality_Max()
+  {
+    return (EAttribute)cardinalityEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -705,9 +753,14 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     anyEClass = createEClass(ANY);
 
     refinementEClass = createEClass(REFINEMENT);
+    createEReference(refinementEClass, REFINEMENT__CARDINALITY);
     createEAttribute(refinementEClass, REFINEMENT__REVERSED);
     createEReference(refinementEClass, REFINEMENT__ATTRIBUTE);
     createEReference(refinementEClass, REFINEMENT__COMPARISON);
+
+    cardinalityEClass = createEClass(CARDINALITY);
+    createEAttribute(cardinalityEClass, CARDINALITY__MIN);
+    createEAttribute(cardinalityEClass, CARDINALITY__MAX);
 
     comparisonEClass = createEClass(COMPARISON);
     createEReference(comparisonEClass, COMPARISON__CONSTRAINT);
@@ -813,9 +866,14 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     initEClass(anyEClass, Any.class, "Any", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(refinementEClass, Refinement.class, "Refinement", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getRefinement_Cardinality(), this.getCardinality(), null, "cardinality", null, 0, 1, Refinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getRefinement_Reversed(), ecorePackage.getEBoolean(), "reversed", null, 0, 1, Refinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEReference(getRefinement_Attribute(), this.getExpressionConstraint(), null, "attribute", null, 0, 1, Refinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEReference(getRefinement_Comparison(), this.getComparison(), null, "comparison", null, 0, 1, Refinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(cardinalityEClass, Cardinality.class, "Cardinality", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getCardinality_Min(), ecorePackage.getEInt(), "min", null, 0, 1, Cardinality.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getCardinality_Max(), ecorePackage.getEInt(), "max", null, 0, 1, Cardinality.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(comparisonEClass, Comparison.class, "Comparison", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getComparison_Constraint(), this.getExpressionConstraint(), null, "constraint", null, 0, 1, Comparison.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

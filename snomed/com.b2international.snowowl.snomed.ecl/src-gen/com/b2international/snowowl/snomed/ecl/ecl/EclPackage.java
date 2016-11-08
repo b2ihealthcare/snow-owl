@@ -338,13 +338,22 @@ public interface EclPackage extends EPackage
   int REFINEMENT = 10;
 
   /**
+   * The feature id for the '<em><b>Cardinality</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int REFINEMENT__CARDINALITY = 0;
+
+  /**
    * The feature id for the '<em><b>Reversed</b></em>' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int REFINEMENT__REVERSED = 0;
+  int REFINEMENT__REVERSED = 1;
 
   /**
    * The feature id for the '<em><b>Attribute</b></em>' containment reference.
@@ -353,7 +362,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int REFINEMENT__ATTRIBUTE = 1;
+  int REFINEMENT__ATTRIBUTE = 2;
 
   /**
    * The feature id for the '<em><b>Comparison</b></em>' containment reference.
@@ -362,7 +371,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int REFINEMENT__COMPARISON = 2;
+  int REFINEMENT__COMPARISON = 3;
 
   /**
    * The number of structural features of the '<em>Refinement</em>' class.
@@ -371,7 +380,44 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int REFINEMENT_FEATURE_COUNT = 3;
+  int REFINEMENT_FEATURE_COUNT = 4;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.CardinalityImpl <em>Cardinality</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.CardinalityImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getCardinality()
+   * @generated
+   */
+  int CARDINALITY = 11;
+
+  /**
+   * The feature id for the '<em><b>Min</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int CARDINALITY__MIN = 0;
+
+  /**
+   * The feature id for the '<em><b>Max</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int CARDINALITY__MAX = 1;
+
+  /**
+   * The number of structural features of the '<em>Cardinality</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int CARDINALITY_FEATURE_COUNT = 2;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ComparisonImpl <em>Comparison</em>}' class.
@@ -381,7 +427,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getComparison()
    * @generated
    */
-  int COMPARISON = 11;
+  int COMPARISON = 12;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -409,7 +455,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeValueEquals()
    * @generated
    */
-  int ATTRIBUTE_VALUE_EQUALS = 12;
+  int ATTRIBUTE_VALUE_EQUALS = 13;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -437,7 +483,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeValueNotEquals()
    * @generated
    */
-  int ATTRIBUTE_VALUE_NOT_EQUALS = 13;
+  int ATTRIBUTE_VALUE_NOT_EQUALS = 14;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -465,7 +511,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getNestedExpression()
    * @generated
    */
-  int NESTED_EXPRESSION = 14;
+  int NESTED_EXPRESSION = 15;
 
   /**
    * The feature id for the '<em><b>Nested</b></em>' containment reference.
@@ -493,7 +539,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getOrExpressionConstraint()
    * @generated
    */
-  int OR_EXPRESSION_CONSTRAINT = 15;
+  int OR_EXPRESSION_CONSTRAINT = 16;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -530,7 +576,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAndExpressionConstraint()
    * @generated
    */
-  int AND_EXPRESSION_CONSTRAINT = 16;
+  int AND_EXPRESSION_CONSTRAINT = 17;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -567,7 +613,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getExclusionExpressionConstraint()
    * @generated
    */
-  int EXCLUSION_EXPRESSION_CONSTRAINT = 17;
+  int EXCLUSION_EXPRESSION_CONSTRAINT = 18;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -604,7 +650,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getRefinedExpressionConstraint()
    * @generated
    */
-  int REFINED_EXPRESSION_CONSTRAINT = 18;
+  int REFINED_EXPRESSION_CONSTRAINT = 19;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -844,6 +890,17 @@ public interface EclPackage extends EPackage
   EClass getRefinement();
 
   /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.Refinement#getCardinality <em>Cardinality</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Cardinality</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.Refinement#getCardinality()
+   * @see #getRefinement()
+   * @generated
+   */
+  EReference getRefinement_Cardinality();
+
+  /**
    * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.Refinement#isReversed <em>Reversed</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -875,6 +932,38 @@ public interface EclPackage extends EPackage
    * @generated
    */
   EReference getRefinement_Comparison();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.Cardinality <em>Cardinality</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Cardinality</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.Cardinality
+   * @generated
+   */
+  EClass getCardinality();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.Cardinality#getMin <em>Min</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Min</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.Cardinality#getMin()
+   * @see #getCardinality()
+   * @generated
+   */
+  EAttribute getCardinality_Min();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.Cardinality#getMax <em>Max</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Max</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.Cardinality#getMax()
+   * @see #getCardinality()
+   * @generated
+   */
+  EAttribute getCardinality_Max();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.Comparison <em>Comparison</em>}'.
@@ -1272,6 +1361,14 @@ public interface EclPackage extends EPackage
     EClass REFINEMENT = eINSTANCE.getRefinement();
 
     /**
+     * The meta object literal for the '<em><b>Cardinality</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference REFINEMENT__CARDINALITY = eINSTANCE.getRefinement_Cardinality();
+
+    /**
      * The meta object literal for the '<em><b>Reversed</b></em>' attribute feature.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -1294,6 +1391,32 @@ public interface EclPackage extends EPackage
      * @generated
      */
     EReference REFINEMENT__COMPARISON = eINSTANCE.getRefinement_Comparison();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.CardinalityImpl <em>Cardinality</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.CardinalityImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getCardinality()
+     * @generated
+     */
+    EClass CARDINALITY = eINSTANCE.getCardinality();
+
+    /**
+     * The meta object literal for the '<em><b>Min</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute CARDINALITY__MIN = eINSTANCE.getCardinality_Min();
+
+    /**
+     * The meta object literal for the '<em><b>Max</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute CARDINALITY__MAX = eINSTANCE.getCardinality_Max();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ComparisonImpl <em>Comparison</em>}' class.

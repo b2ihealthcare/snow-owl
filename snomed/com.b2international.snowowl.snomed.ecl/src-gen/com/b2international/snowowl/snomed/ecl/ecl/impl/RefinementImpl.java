@@ -2,6 +2,7 @@
  */
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
+import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
 import com.b2international.snowowl.snomed.ecl.ecl.Comparison;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
@@ -23,6 +24,7 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  * <p>
  * The following features are implemented:
  * <ul>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.RefinementImpl#getCardinality <em>Cardinality</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.RefinementImpl#isReversed <em>Reversed</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.RefinementImpl#getAttribute <em>Attribute</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.RefinementImpl#getComparison <em>Comparison</em>}</li>
@@ -33,6 +35,16 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  */
 public class RefinementImpl extends MinimalEObjectImpl.Container implements Refinement
 {
+  /**
+   * The cached value of the '{@link #getCardinality() <em>Cardinality</em>}' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getCardinality()
+   * @generated
+   * @ordered
+   */
+  protected Cardinality cardinality;
+
   /**
    * The default value of the '{@link #isReversed() <em>Reversed</em>}' attribute.
    * <!-- begin-user-doc -->
@@ -92,6 +104,54 @@ public class RefinementImpl extends MinimalEObjectImpl.Container implements Refi
   protected EClass eStaticClass()
   {
     return EclPackage.Literals.REFINEMENT;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public Cardinality getCardinality()
+  {
+    return cardinality;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public NotificationChain basicSetCardinality(Cardinality newCardinality, NotificationChain msgs)
+  {
+    Cardinality oldCardinality = cardinality;
+    cardinality = newCardinality;
+    if (eNotificationRequired())
+    {
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.REFINEMENT__CARDINALITY, oldCardinality, newCardinality);
+      if (msgs == null) msgs = notification; else msgs.add(notification);
+    }
+    return msgs;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public void setCardinality(Cardinality newCardinality)
+  {
+    if (newCardinality != cardinality)
+    {
+      NotificationChain msgs = null;
+      if (cardinality != null)
+        msgs = ((InternalEObject)cardinality).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.REFINEMENT__CARDINALITY, null, msgs);
+      if (newCardinality != null)
+        msgs = ((InternalEObject)newCardinality).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.REFINEMENT__CARDINALITY, null, msgs);
+      msgs = basicSetCardinality(newCardinality, msgs);
+      if (msgs != null) msgs.dispatch();
+    }
+    else if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.REFINEMENT__CARDINALITY, newCardinality, newCardinality));
   }
 
   /**
@@ -223,6 +283,8 @@ public class RefinementImpl extends MinimalEObjectImpl.Container implements Refi
   {
     switch (featureID)
     {
+      case EclPackage.REFINEMENT__CARDINALITY:
+        return basicSetCardinality(null, msgs);
       case EclPackage.REFINEMENT__ATTRIBUTE:
         return basicSetAttribute(null, msgs);
       case EclPackage.REFINEMENT__COMPARISON:
@@ -241,6 +303,8 @@ public class RefinementImpl extends MinimalEObjectImpl.Container implements Refi
   {
     switch (featureID)
     {
+      case EclPackage.REFINEMENT__CARDINALITY:
+        return getCardinality();
       case EclPackage.REFINEMENT__REVERSED:
         return isReversed();
       case EclPackage.REFINEMENT__ATTRIBUTE:
@@ -261,6 +325,9 @@ public class RefinementImpl extends MinimalEObjectImpl.Container implements Refi
   {
     switch (featureID)
     {
+      case EclPackage.REFINEMENT__CARDINALITY:
+        setCardinality((Cardinality)newValue);
+        return;
       case EclPackage.REFINEMENT__REVERSED:
         setReversed((Boolean)newValue);
         return;
@@ -284,6 +351,9 @@ public class RefinementImpl extends MinimalEObjectImpl.Container implements Refi
   {
     switch (featureID)
     {
+      case EclPackage.REFINEMENT__CARDINALITY:
+        setCardinality((Cardinality)null);
+        return;
       case EclPackage.REFINEMENT__REVERSED:
         setReversed(REVERSED_EDEFAULT);
         return;
@@ -307,6 +377,8 @@ public class RefinementImpl extends MinimalEObjectImpl.Container implements Refi
   {
     switch (featureID)
     {
+      case EclPackage.REFINEMENT__CARDINALITY:
+        return cardinality != null;
       case EclPackage.REFINEMENT__REVERSED:
         return reversed != REVERSED_EDEFAULT;
       case EclPackage.REFINEMENT__ATTRIBUTE:

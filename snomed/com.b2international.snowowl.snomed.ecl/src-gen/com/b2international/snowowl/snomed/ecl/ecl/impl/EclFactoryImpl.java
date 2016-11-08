@@ -75,6 +75,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
       case EclPackage.CONCEPT_REFERENCE: return createConceptReference();
       case EclPackage.ANY: return createAny();
       case EclPackage.REFINEMENT: return createRefinement();
+      case EclPackage.CARDINALITY: return createCardinality();
       case EclPackage.COMPARISON: return createComparison();
       case EclPackage.ATTRIBUTE_VALUE_EQUALS: return createAttributeValueEquals();
       case EclPackage.ATTRIBUTE_VALUE_NOT_EQUALS: return createAttributeValueNotEquals();
@@ -207,6 +208,17 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     RefinementImpl refinement = new RefinementImpl();
     return refinement;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public Cardinality createCardinality()
+  {
+    CardinalityImpl cardinality = new CardinalityImpl();
+    return cardinality;
   }
 
   /**

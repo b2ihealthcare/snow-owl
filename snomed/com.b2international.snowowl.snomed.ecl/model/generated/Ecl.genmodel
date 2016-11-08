@@ -36,9 +36,14 @@
     </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//Any"/>
     <genClasses ecoreClass="Ecl.ecore#//Refinement">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//Refinement/cardinality"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//Refinement/reversed"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//Refinement/attribute"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//Refinement/comparison"/>
+    </genClasses>
+    <genClasses ecoreClass="Ecl.ecore#//Cardinality">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//Cardinality/min"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//Cardinality/max"/>
     </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//Comparison">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//Comparison/constraint"/>

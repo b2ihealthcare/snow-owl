@@ -12,6 +12,7 @@ import org.eclipse.emf.ecore.EObject;
  * <p>
  * The following features are supported:
  * <ul>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.Refinement#getCardinality <em>Cardinality</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.Refinement#isReversed <em>Reversed</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.Refinement#getAttribute <em>Attribute</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.Refinement#getComparison <em>Comparison</em>}</li>
@@ -24,6 +25,32 @@ import org.eclipse.emf.ecore.EObject;
  */
 public interface Refinement extends EObject
 {
+  /**
+   * Returns the value of the '<em><b>Cardinality</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <p>
+   * If the meaning of the '<em>Cardinality</em>' containment reference isn't clear,
+   * there really should be more of a description here...
+   * </p>
+   * <!-- end-user-doc -->
+   * @return the value of the '<em>Cardinality</em>' containment reference.
+   * @see #setCardinality(Cardinality)
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getRefinement_Cardinality()
+   * @model containment="true"
+   * @generated
+   */
+  Cardinality getCardinality();
+
+  /**
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.Refinement#getCardinality <em>Cardinality</em>}' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @param value the new value of the '<em>Cardinality</em>' containment reference.
+   * @see #getCardinality()
+   * @generated
+   */
+  void setCardinality(Cardinality value);
+
   /**
    * Returns the value of the '<em><b>Reversed</b></em>' attribute.
    * <!-- begin-user-doc -->
