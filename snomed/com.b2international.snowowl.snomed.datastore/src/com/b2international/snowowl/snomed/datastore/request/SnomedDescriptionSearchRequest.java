@@ -115,6 +115,11 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 			return search(context, searcher, "-1", offset(), limit());
 		}
 	}
+	
+	@Override
+	protected SnomedDescriptions createEmptyResult(int offset, int limit) {
+		return new SnomedDescriptions(offset, limit, 0);
+	}
 
 	private SnomedDescriptions search(BranchContext context, final RevisionSearcher searcher, String languageRefSetId, int offset, int limit) throws IOException {
 		final ExpressionBuilder queryBuilder = Expressions.builder();

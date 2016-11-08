@@ -178,6 +178,11 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		}
 
 	}
+	
+	@Override
+	protected SnomedReferenceSetMembers createEmptyResult(int offset, int limit) {
+		return new SnomedReferenceSetMembers(offset, limit, 0);
+	}
 
 	@Override
 	protected Class<SnomedReferenceSetMembers> getReturnType() {

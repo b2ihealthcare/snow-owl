@@ -85,6 +85,11 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 		
 		return SnomedConverters.newRelationshipConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), totalHits);
 	}
+	
+	@Override
+	protected SnomedRelationships createEmptyResult(int offset, int limit) {
+		return new SnomedRelationships(offset, limit, 0);
+	}
 
 	@Override
 	protected Class<SnomedRelationships> getReturnType() {

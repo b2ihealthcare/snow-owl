@@ -95,6 +95,11 @@ public class SnomedConstraintSearchRequest extends RevisionSearchRequest<SnomedC
 		final Hits<SnomedConstraintDocument> hits = searcher.search(query);
 		return new SnomedConstraints(hits.getHits(), offset(), limit(), hits.getTotal());
 	}
+	
+	@Override
+	protected SnomedConstraints createEmptyResult(int offset, int limit) {
+		return new SnomedConstraints(offset, limit, 0);
+	}
 
 	@Override
 	protected Class<SnomedConstraints> getReturnType() {
