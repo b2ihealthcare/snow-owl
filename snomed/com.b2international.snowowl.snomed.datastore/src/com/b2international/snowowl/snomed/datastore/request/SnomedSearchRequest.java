@@ -133,6 +133,12 @@ public abstract class SnomedSearchRequest<R> extends RevisionSearchRequest<R> {
 				final String expression = Iterables.getOnlyElement(idFilter);
 				if (!SnomedIdentifiers.isConceptIdentifier(expression)) {
 					// and it's not a CONCEPT_ID, then evaluate via SnomedConceptSearchRequest
+
+					// unless it is an Any ECL expression, which allows any value
+					if ("*".equals(expression)) {
+						return;
+					}
+					
 					// TODO replace sync call to concept search with async promise
 					SnomedConcepts matchingConcepts = SnomedRequests.prepareSearchConcept()
 						.all()
