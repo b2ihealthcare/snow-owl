@@ -42,18 +42,13 @@ import com.b2international.index.query.SortBy;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator2;
-import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.dsl.query.RValue;
-import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMultimap;
 
@@ -208,20 +203,6 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		}
 	}
 
-	private void addEscgFilter(BranchContext context, final ExpressionBuilder queryBuilder, OptionKey key, Function<LongSet, Expression> expressionProvider) {
-		if (containsKey(key)) {
-			try {
-				final String escg = getString(key);
-				final RValue expression = context.service(EscgRewriter.class).parseRewrite(escg);
-				final LongSet conceptIds = new ConceptIdQueryEvaluator2(context.service(RevisionSearcher.class)).evaluate(expression);
-				final Expression conceptFilter = expressionProvider.apply(conceptIds);
-				queryBuilder.must(conceptFilter);
-			} catch (SyntaxErrorException e) {
-				throw new IllegalQueryParameterException(e.getMessage());
-			}
-		}
-	}
-	
 	private void addLanguageFilter(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.LANGUAGE)) {
 			queryBuilder.must(languageCodes(getCollection(OptionKey.LANGUAGE, String.class)));
