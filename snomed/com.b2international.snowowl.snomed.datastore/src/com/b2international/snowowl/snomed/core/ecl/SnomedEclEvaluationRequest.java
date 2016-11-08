@@ -286,24 +286,31 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	protected Promise<Expression> eval(BranchContext context, final RefinedExpressionConstraint refined) {
 		final Refinement refinement = refined.getRefinement();
 		// filterBySource, filterByType and filterByDestination accepts ECL expressions as well, so serialize them into ECL and pass as String
-		final ExpressionConstraint rewrittenComparison = rewrite(refinement.getComparison());
 		final EclSerializer serializer = context.service(EclSerializer.class);
+		final String focusConceptExpression = serializer.serialize(refined.getConstraint());
+		final String attributeExpression = serializer.serialize(refinement.getAttribute());
+		final String valueExpression = serializer.serialize(rewrite(refinement.getComparison()));
 		return SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterByActive(true)
-				.filterBySource(serializer.serialize(refined.getConstraint()))
-				.filterByType(serializer.serialize(refinement.getAttribute()))
-				.filterByDestination(serializer.serialize(rewrittenComparison))
+				.filterBySource(refinement.isReversed() ? valueExpression : focusConceptExpression)
+				.filterByType(attributeExpression)
+				.filterByDestination(refinement.isReversed() ? focusConceptExpression : valueExpression)
 				.build(context.id(), context.branch().path())
 				.execute(context.service(IEventBus.class))
 				.then(new Function<SnomedRelationships, Expression>() {
 					@Override
 					public Expression apply(SnomedRelationships matchingAttributes) {
-						final Set<String> sourceIds = newHashSetWithExpectedSize(matchingAttributes.getItems().size());
+						final Set<String> ids = newHashSetWithExpectedSize(matchingAttributes.getItems().size());
 						for (ISnomedRelationship relationship : matchingAttributes) {
-							sourceIds.add(relationship.getSourceId());
+							// if reversed we're interested in the destination IDs
+							if (refinement.isReversed()) {
+								ids.add(relationship.getDestinationId());
+							} else {
+								ids.add(relationship.getSourceId());
+							}
 						}
-						return ids(sourceIds);
+						return ids.isEmpty() ? Expressions.matchNone() : ids(ids);
 					}
 				});
 	}

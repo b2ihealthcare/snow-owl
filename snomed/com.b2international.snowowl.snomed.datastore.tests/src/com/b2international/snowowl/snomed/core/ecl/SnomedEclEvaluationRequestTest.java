@@ -64,6 +64,14 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 
 	private static final String ROOT_ID = Concepts.ROOT_CONCEPT;
 	private static final String OTHER_ID = Concepts.ABBREVIATION;
+	private static final String HAS_ACTIVE_INGREDIENT = Concepts.HAS_ACTIVE_INGREDIENT;
+	private static final String SUBSTANCE = Concepts.SUBSTANCE;
+	
+	
+	// random IDs
+	private static final String TRIPHASIL_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String INGREDIENT1 = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String INGREDIENT2 = RandomSnomedIdentiferGenerator.generateConceptId();
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
@@ -289,6 +297,18 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		
 		final Expression actual = eval(String.format("(%s OR %s):%s!=%s", Concepts.MODULE_SCT_CORE, Concepts.MODULE_ROOT, Concepts.IS_A, ROOT_ID));
 		final Expression expected = ids(Collections.singleton(Concepts.MODULE_SCT_CORE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementReversedAttributeEquals() throws Exception {
+		indexRevision(MAIN, nextStorageKey(), concept(INGREDIENT1).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
+		indexRevision(MAIN, nextStorageKey(), concept(INGREDIENT2).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2).build());
+		
+		final Expression actual = eval(String.format("<%s: R %s=%s", SUBSTANCE, HAS_ACTIVE_INGREDIENT, TRIPHASIL_TABLET));
+		final Expression expected = ids(ImmutableSet.of(INGREDIENT1, INGREDIENT2));
 		assertEquals(expected, actual);
 	}
 	
