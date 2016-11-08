@@ -56,8 +56,8 @@ Refinement:
 	AttributeConstraint;
 	
 AttributeConstraint returns Refinement:
-	attribute=(ConceptReference | Any) comparison=Comparison;
-	
+	(reversed?=REVERSED)? attribute=(ConceptReference | Any) comparison=Comparison;	
+
 Comparison:
 	AttributeValueEquals | AttributeValueNotEquals /*| NumericValueComparison | StringValueComparison*/;
 
@@ -75,6 +75,7 @@ SnomedIdentifier 	hidden() : DIGIT_NONZERO (DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZE
 Term 				hidden() : (TermCharacter)+ (WS+ (TermCharacter)+)*;
 TermCharacter 		hidden() : LT|GT
 								|DBL_LT|DBL_GT
+								|LT_EM|GT_EM
 								|AND|OR|NOT
 								|ZERO|DIGIT_NONZERO
 								|LETTER|CARET
@@ -83,9 +84,13 @@ TermCharacter 		hidden() : LT|GT
 								|ROUND_OPEN|ROUND_CLOSE
 								|SQUARE_OPEN|SQUARE_CLOSE
 								|DOT|COLON|COMMA
+								|REVERSED
 								|OTHER_CHARACTER;
 
 // ---TERMINALS---
+
+// ECL terminals
+terminal REVERSED				: 'R';
 
 // bool operators
 terminal AND 					: 'AND';
@@ -127,4 +132,4 @@ terminal ML_COMMENT				: '/*' -> '*/';
 terminal SL_COMMENT 			: '//' !('\n'|'\r')* ('\r'? '\n')?;
 
 // misc
-terminal OTHER_CHARACTER:		.;
+terminal OTHER_CHARACTER		: !'|';

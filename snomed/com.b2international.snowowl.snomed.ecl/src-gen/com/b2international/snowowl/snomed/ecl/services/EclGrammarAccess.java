@@ -502,37 +502,45 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	public class AttributeConstraintElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AttributeConstraint");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final Assignment cAttributeAssignment_0 = (Assignment)cGroup.eContents().get(0);
-		private final Alternatives cAttributeAlternatives_0_0 = (Alternatives)cAttributeAssignment_0.eContents().get(0);
-		private final RuleCall cAttributeConceptReferenceParserRuleCall_0_0_0 = (RuleCall)cAttributeAlternatives_0_0.eContents().get(0);
-		private final RuleCall cAttributeAnyParserRuleCall_0_0_1 = (RuleCall)cAttributeAlternatives_0_0.eContents().get(1);
-		private final Assignment cComparisonAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final RuleCall cComparisonComparisonParserRuleCall_1_0 = (RuleCall)cComparisonAssignment_1.eContents().get(0);
+		private final Assignment cReversedAssignment_0 = (Assignment)cGroup.eContents().get(0);
+		private final RuleCall cReversedREVERSEDTerminalRuleCall_0_0 = (RuleCall)cReversedAssignment_0.eContents().get(0);
+		private final Assignment cAttributeAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final Alternatives cAttributeAlternatives_1_0 = (Alternatives)cAttributeAssignment_1.eContents().get(0);
+		private final RuleCall cAttributeConceptReferenceParserRuleCall_1_0_0 = (RuleCall)cAttributeAlternatives_1_0.eContents().get(0);
+		private final RuleCall cAttributeAnyParserRuleCall_1_0_1 = (RuleCall)cAttributeAlternatives_1_0.eContents().get(1);
+		private final Assignment cComparisonAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cComparisonComparisonParserRuleCall_2_0 = (RuleCall)cComparisonAssignment_2.eContents().get(0);
 		
 		//AttributeConstraint returns Refinement:
-		//	attribute=(ConceptReference | Any) comparison=Comparison;
+		//	reversed?=REVERSED? attribute=(ConceptReference | Any) comparison=Comparison;
 		@Override public ParserRule getRule() { return rule; }
 
-		//attribute=(ConceptReference | Any) comparison=Comparison
+		//reversed?=REVERSED? attribute=(ConceptReference | Any) comparison=Comparison
 		public Group getGroup() { return cGroup; }
 
+		//reversed?=REVERSED?
+		public Assignment getReversedAssignment_0() { return cReversedAssignment_0; }
+
+		//REVERSED
+		public RuleCall getReversedREVERSEDTerminalRuleCall_0_0() { return cReversedREVERSEDTerminalRuleCall_0_0; }
+
 		//attribute=(ConceptReference | Any)
-		public Assignment getAttributeAssignment_0() { return cAttributeAssignment_0; }
+		public Assignment getAttributeAssignment_1() { return cAttributeAssignment_1; }
 
 		//ConceptReference | Any
-		public Alternatives getAttributeAlternatives_0_0() { return cAttributeAlternatives_0_0; }
+		public Alternatives getAttributeAlternatives_1_0() { return cAttributeAlternatives_1_0; }
 
 		//ConceptReference
-		public RuleCall getAttributeConceptReferenceParserRuleCall_0_0_0() { return cAttributeConceptReferenceParserRuleCall_0_0_0; }
+		public RuleCall getAttributeConceptReferenceParserRuleCall_1_0_0() { return cAttributeConceptReferenceParserRuleCall_1_0_0; }
 
 		//Any
-		public RuleCall getAttributeAnyParserRuleCall_0_0_1() { return cAttributeAnyParserRuleCall_0_0_1; }
+		public RuleCall getAttributeAnyParserRuleCall_1_0_1() { return cAttributeAnyParserRuleCall_1_0_1; }
 
 		//comparison=Comparison
-		public Assignment getComparisonAssignment_1() { return cComparisonAssignment_1; }
+		public Assignment getComparisonAssignment_2() { return cComparisonAssignment_2; }
 
 		//Comparison
-		public RuleCall getComparisonComparisonParserRuleCall_1_0() { return cComparisonComparisonParserRuleCall_1_0; }
+		public RuleCall getComparisonComparisonParserRuleCall_2_0() { return cComparisonComparisonParserRuleCall_2_0; }
 	}
 
 	public class ComparisonElements extends AbstractParserRuleElementFinder {
@@ -745,33 +753,38 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cGTTerminalRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
 		private final RuleCall cDBL_LTTerminalRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
 		private final RuleCall cDBL_GTTerminalRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
-		private final RuleCall cANDTerminalRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
-		private final RuleCall cORTerminalRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
-		private final RuleCall cNOTTerminalRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
-		private final RuleCall cZEROTerminalRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
-		private final RuleCall cDIGIT_NONZEROTerminalRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
-		private final RuleCall cLETTERTerminalRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
-		private final RuleCall cCARETTerminalRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
-		private final RuleCall cEQUALTerminalRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
-		private final RuleCall cPLUSTerminalRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
-		private final RuleCall cCURLY_OPENTerminalRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
-		private final RuleCall cCURLY_CLOSETerminalRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
-		private final RuleCall cROUND_OPENTerminalRuleCall_15 = (RuleCall)cAlternatives.eContents().get(15);
-		private final RuleCall cROUND_CLOSETerminalRuleCall_16 = (RuleCall)cAlternatives.eContents().get(16);
-		private final RuleCall cSQUARE_OPENTerminalRuleCall_17 = (RuleCall)cAlternatives.eContents().get(17);
-		private final RuleCall cSQUARE_CLOSETerminalRuleCall_18 = (RuleCall)cAlternatives.eContents().get(18);
-		private final RuleCall cDOTTerminalRuleCall_19 = (RuleCall)cAlternatives.eContents().get(19);
-		private final RuleCall cCOLONTerminalRuleCall_20 = (RuleCall)cAlternatives.eContents().get(20);
-		private final RuleCall cCOMMATerminalRuleCall_21 = (RuleCall)cAlternatives.eContents().get(21);
-		private final RuleCall cOTHER_CHARACTERTerminalRuleCall_22 = (RuleCall)cAlternatives.eContents().get(22);
+		private final RuleCall cLT_EMTerminalRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
+		private final RuleCall cGT_EMTerminalRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
+		private final RuleCall cANDTerminalRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
+		private final RuleCall cORTerminalRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
+		private final RuleCall cNOTTerminalRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
+		private final RuleCall cZEROTerminalRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
+		private final RuleCall cDIGIT_NONZEROTerminalRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
+		private final RuleCall cLETTERTerminalRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
+		private final RuleCall cCARETTerminalRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
+		private final RuleCall cEQUALTerminalRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
+		private final RuleCall cPLUSTerminalRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
+		private final RuleCall cCURLY_OPENTerminalRuleCall_15 = (RuleCall)cAlternatives.eContents().get(15);
+		private final RuleCall cCURLY_CLOSETerminalRuleCall_16 = (RuleCall)cAlternatives.eContents().get(16);
+		private final RuleCall cROUND_OPENTerminalRuleCall_17 = (RuleCall)cAlternatives.eContents().get(17);
+		private final RuleCall cROUND_CLOSETerminalRuleCall_18 = (RuleCall)cAlternatives.eContents().get(18);
+		private final RuleCall cSQUARE_OPENTerminalRuleCall_19 = (RuleCall)cAlternatives.eContents().get(19);
+		private final RuleCall cSQUARE_CLOSETerminalRuleCall_20 = (RuleCall)cAlternatives.eContents().get(20);
+		private final RuleCall cDOTTerminalRuleCall_21 = (RuleCall)cAlternatives.eContents().get(21);
+		private final RuleCall cCOLONTerminalRuleCall_22 = (RuleCall)cAlternatives.eContents().get(22);
+		private final RuleCall cCOMMATerminalRuleCall_23 = (RuleCall)cAlternatives.eContents().get(23);
+		private final RuleCall cREVERSEDTerminalRuleCall_24 = (RuleCall)cAlternatives.eContents().get(24);
+		private final RuleCall cOTHER_CHARACTERTerminalRuleCall_25 = (RuleCall)cAlternatives.eContents().get(25);
 		
 		//TermCharacter hidden():
-		//	LT | GT | DBL_LT | DBL_GT | AND | OR | NOT | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL | PLUS | CURLY_OPEN |
-		//	CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON | COMMA | OTHER_CHARACTER;
+		//	LT | GT | DBL_LT | DBL_GT | LT_EM | GT_EM | AND | OR | NOT | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL | PLUS |
+		//	CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON | COMMA | REVERSED |
+		//	OTHER_CHARACTER;
 		@Override public ParserRule getRule() { return rule; }
 
-		//LT | GT | DBL_LT | DBL_GT | AND | OR | NOT | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL | PLUS | CURLY_OPEN |
-		//CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON | COMMA | OTHER_CHARACTER
+		//LT | GT | DBL_LT | DBL_GT | LT_EM | GT_EM | AND | OR | NOT | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL | PLUS |
+		//CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON | COMMA | REVERSED |
+		//OTHER_CHARACTER
 		public Alternatives getAlternatives() { return cAlternatives; }
 
 		//LT
@@ -786,62 +799,71 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		//DBL_GT
 		public RuleCall getDBL_GTTerminalRuleCall_3() { return cDBL_GTTerminalRuleCall_3; }
 
+		//LT_EM
+		public RuleCall getLT_EMTerminalRuleCall_4() { return cLT_EMTerminalRuleCall_4; }
+
+		//GT_EM
+		public RuleCall getGT_EMTerminalRuleCall_5() { return cGT_EMTerminalRuleCall_5; }
+
 		//AND
-		public RuleCall getANDTerminalRuleCall_4() { return cANDTerminalRuleCall_4; }
+		public RuleCall getANDTerminalRuleCall_6() { return cANDTerminalRuleCall_6; }
 
 		//OR
-		public RuleCall getORTerminalRuleCall_5() { return cORTerminalRuleCall_5; }
+		public RuleCall getORTerminalRuleCall_7() { return cORTerminalRuleCall_7; }
 
 		//NOT
-		public RuleCall getNOTTerminalRuleCall_6() { return cNOTTerminalRuleCall_6; }
+		public RuleCall getNOTTerminalRuleCall_8() { return cNOTTerminalRuleCall_8; }
 
 		//ZERO
-		public RuleCall getZEROTerminalRuleCall_7() { return cZEROTerminalRuleCall_7; }
+		public RuleCall getZEROTerminalRuleCall_9() { return cZEROTerminalRuleCall_9; }
 
 		//DIGIT_NONZERO
-		public RuleCall getDIGIT_NONZEROTerminalRuleCall_8() { return cDIGIT_NONZEROTerminalRuleCall_8; }
+		public RuleCall getDIGIT_NONZEROTerminalRuleCall_10() { return cDIGIT_NONZEROTerminalRuleCall_10; }
 
 		//LETTER
-		public RuleCall getLETTERTerminalRuleCall_9() { return cLETTERTerminalRuleCall_9; }
+		public RuleCall getLETTERTerminalRuleCall_11() { return cLETTERTerminalRuleCall_11; }
 
 		//CARET
-		public RuleCall getCARETTerminalRuleCall_10() { return cCARETTerminalRuleCall_10; }
+		public RuleCall getCARETTerminalRuleCall_12() { return cCARETTerminalRuleCall_12; }
 
 		//EQUAL
-		public RuleCall getEQUALTerminalRuleCall_11() { return cEQUALTerminalRuleCall_11; }
+		public RuleCall getEQUALTerminalRuleCall_13() { return cEQUALTerminalRuleCall_13; }
 
 		//PLUS
-		public RuleCall getPLUSTerminalRuleCall_12() { return cPLUSTerminalRuleCall_12; }
+		public RuleCall getPLUSTerminalRuleCall_14() { return cPLUSTerminalRuleCall_14; }
 
 		//CURLY_OPEN
-		public RuleCall getCURLY_OPENTerminalRuleCall_13() { return cCURLY_OPENTerminalRuleCall_13; }
+		public RuleCall getCURLY_OPENTerminalRuleCall_15() { return cCURLY_OPENTerminalRuleCall_15; }
 
 		//CURLY_CLOSE
-		public RuleCall getCURLY_CLOSETerminalRuleCall_14() { return cCURLY_CLOSETerminalRuleCall_14; }
+		public RuleCall getCURLY_CLOSETerminalRuleCall_16() { return cCURLY_CLOSETerminalRuleCall_16; }
 
 		//ROUND_OPEN
-		public RuleCall getROUND_OPENTerminalRuleCall_15() { return cROUND_OPENTerminalRuleCall_15; }
+		public RuleCall getROUND_OPENTerminalRuleCall_17() { return cROUND_OPENTerminalRuleCall_17; }
 
 		//ROUND_CLOSE
-		public RuleCall getROUND_CLOSETerminalRuleCall_16() { return cROUND_CLOSETerminalRuleCall_16; }
+		public RuleCall getROUND_CLOSETerminalRuleCall_18() { return cROUND_CLOSETerminalRuleCall_18; }
 
 		//SQUARE_OPEN
-		public RuleCall getSQUARE_OPENTerminalRuleCall_17() { return cSQUARE_OPENTerminalRuleCall_17; }
+		public RuleCall getSQUARE_OPENTerminalRuleCall_19() { return cSQUARE_OPENTerminalRuleCall_19; }
 
 		//SQUARE_CLOSE
-		public RuleCall getSQUARE_CLOSETerminalRuleCall_18() { return cSQUARE_CLOSETerminalRuleCall_18; }
+		public RuleCall getSQUARE_CLOSETerminalRuleCall_20() { return cSQUARE_CLOSETerminalRuleCall_20; }
 
 		//DOT
-		public RuleCall getDOTTerminalRuleCall_19() { return cDOTTerminalRuleCall_19; }
+		public RuleCall getDOTTerminalRuleCall_21() { return cDOTTerminalRuleCall_21; }
 
 		//COLON
-		public RuleCall getCOLONTerminalRuleCall_20() { return cCOLONTerminalRuleCall_20; }
+		public RuleCall getCOLONTerminalRuleCall_22() { return cCOLONTerminalRuleCall_22; }
 
 		//COMMA
-		public RuleCall getCOMMATerminalRuleCall_21() { return cCOMMATerminalRuleCall_21; }
+		public RuleCall getCOMMATerminalRuleCall_23() { return cCOMMATerminalRuleCall_23; }
+
+		//REVERSED
+		public RuleCall getREVERSEDTerminalRuleCall_24() { return cREVERSEDTerminalRuleCall_24; }
 
 		//OTHER_CHARACTER
-		public RuleCall getOTHER_CHARACTERTerminalRuleCall_22() { return cOTHER_CHARACTERTerminalRuleCall_22; }
+		public RuleCall getOTHER_CHARACTERTerminalRuleCall_25() { return cOTHER_CHARACTERTerminalRuleCall_25; }
 	}
 	
 	
@@ -870,6 +892,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final SnomedIdentifierElements pSnomedIdentifier;
 	private final TermElements pTerm;
 	private final TermCharacterElements pTermCharacter;
+	private final TerminalRule tREVERSED;
 	private final TerminalRule tAND;
 	private final TerminalRule tOR;
 	private final TerminalRule tMINUS;
@@ -933,6 +956,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pSnomedIdentifier = new SnomedIdentifierElements();
 		this.pTerm = new TermElements();
 		this.pTermCharacter = new TermCharacterElements();
+		this.tREVERSED = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "REVERSED");
 		this.tAND = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "AND");
 		this.tOR = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "OR");
 		this.tMINUS = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "MINUS");
@@ -1162,7 +1186,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//AttributeConstraint returns Refinement:
-	//	attribute=(ConceptReference | Any) comparison=Comparison;
+	//	reversed?=REVERSED? attribute=(ConceptReference | Any) comparison=Comparison;
 	public AttributeConstraintElements getAttributeConstraintAccess() {
 		return pAttributeConstraint;
 	}
@@ -1234,8 +1258,9 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//TermCharacter hidden():
-	//	LT | GT | DBL_LT | DBL_GT | AND | OR | NOT | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL | PLUS | CURLY_OPEN |
-	//	CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON | COMMA | OTHER_CHARACTER;
+	//	LT | GT | DBL_LT | DBL_GT | LT_EM | GT_EM | AND | OR | NOT | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL | PLUS |
+	//	CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON | COMMA | REVERSED |
+	//	OTHER_CHARACTER;
 	public TermCharacterElements getTermCharacterAccess() {
 		return pTermCharacter;
 	}
@@ -1245,6 +1270,13 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//// ---TERMINALS---
+	//// ECL terminals
+	//terminal REVERSED:
+	//	"R";
+	public TerminalRule getREVERSEDRule() {
+		return tREVERSED;
+	} 
+
 	//// bool operators
 	//terminal AND:
 	//	"AND";
@@ -1437,7 +1469,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 
 	//// misc
 	//terminal OTHER_CHARACTER:
-	//	.;
+	//	!"|";
 	public TerminalRule getOTHER_CHARACTERRule() {
 		return tOTHER_CHARACTER;
 	} 

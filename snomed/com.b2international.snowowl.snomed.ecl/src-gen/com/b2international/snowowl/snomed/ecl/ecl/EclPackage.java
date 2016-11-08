@@ -338,13 +338,22 @@ public interface EclPackage extends EPackage
   int REFINEMENT = 10;
 
   /**
+   * The feature id for the '<em><b>Reversed</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int REFINEMENT__REVERSED = 0;
+
+  /**
    * The feature id for the '<em><b>Attribute</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int REFINEMENT__ATTRIBUTE = 0;
+  int REFINEMENT__ATTRIBUTE = 1;
 
   /**
    * The feature id for the '<em><b>Comparison</b></em>' containment reference.
@@ -353,7 +362,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int REFINEMENT__COMPARISON = 1;
+  int REFINEMENT__COMPARISON = 2;
 
   /**
    * The number of structural features of the '<em>Refinement</em>' class.
@@ -362,7 +371,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int REFINEMENT_FEATURE_COUNT = 2;
+  int REFINEMENT_FEATURE_COUNT = 3;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ComparisonImpl <em>Comparison</em>}' class.
@@ -835,6 +844,17 @@ public interface EclPackage extends EPackage
   EClass getRefinement();
 
   /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.Refinement#isReversed <em>Reversed</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Reversed</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.Refinement#isReversed()
+   * @see #getRefinement()
+   * @generated
+   */
+  EAttribute getRefinement_Reversed();
+
+  /**
    * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.Refinement#getAttribute <em>Attribute</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1250,6 +1270,14 @@ public interface EclPackage extends EPackage
      * @generated
      */
     EClass REFINEMENT = eINSTANCE.getRefinement();
+
+    /**
+     * The meta object literal for the '<em><b>Reversed</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute REFINEMENT__REVERSED = eINSTANCE.getRefinement_Reversed();
 
     /**
      * The meta object literal for the '<em><b>Attribute</b></em>' containment reference feature.

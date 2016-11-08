@@ -12,6 +12,7 @@ import org.eclipse.emf.ecore.EObject;
  * <p>
  * The following features are supported:
  * <ul>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.Refinement#isReversed <em>Reversed</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.Refinement#getAttribute <em>Attribute</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.Refinement#getComparison <em>Comparison</em>}</li>
  * </ul>
@@ -23,6 +24,32 @@ import org.eclipse.emf.ecore.EObject;
  */
 public interface Refinement extends EObject
 {
+  /**
+   * Returns the value of the '<em><b>Reversed</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <p>
+   * If the meaning of the '<em>Reversed</em>' attribute isn't clear,
+   * there really should be more of a description here...
+   * </p>
+   * <!-- end-user-doc -->
+   * @return the value of the '<em>Reversed</em>' attribute.
+   * @see #setReversed(boolean)
+   * @see com.b2international.snowowl.snomed.ecl.ecl.EclPackage#getRefinement_Reversed()
+   * @model
+   * @generated
+   */
+  boolean isReversed();
+
+  /**
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ecl.ecl.Refinement#isReversed <em>Reversed</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @param value the new value of the '<em>Reversed</em>' attribute.
+   * @see #isReversed()
+   * @generated
+   */
+  void setReversed(boolean value);
+
   /**
    * Returns the value of the '<em><b>Attribute</b></em>' containment reference.
    * <!-- begin-user-doc -->

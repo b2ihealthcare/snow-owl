@@ -440,9 +440,19 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  public EAttribute getRefinement_Reversed()
+  {
+    return (EAttribute)refinementEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public EReference getRefinement_Attribute()
   {
-    return (EReference)refinementEClass.getEStructuralFeatures().get(0);
+    return (EReference)refinementEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -452,7 +462,7 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    */
   public EReference getRefinement_Comparison()
   {
-    return (EReference)refinementEClass.getEStructuralFeatures().get(1);
+    return (EReference)refinementEClass.getEStructuralFeatures().get(2);
   }
 
   /**
@@ -695,6 +705,7 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     anyEClass = createEClass(ANY);
 
     refinementEClass = createEClass(REFINEMENT);
+    createEAttribute(refinementEClass, REFINEMENT__REVERSED);
     createEReference(refinementEClass, REFINEMENT__ATTRIBUTE);
     createEReference(refinementEClass, REFINEMENT__COMPARISON);
 
@@ -802,6 +813,7 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     initEClass(anyEClass, Any.class, "Any", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(refinementEClass, Refinement.class, "Refinement", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getRefinement_Reversed(), ecorePackage.getEBoolean(), "reversed", null, 0, 1, Refinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEReference(getRefinement_Attribute(), this.getExpressionConstraint(), null, "attribute", null, 0, 1, Refinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEReference(getRefinement_Comparison(), this.getComparison(), null, "comparison", null, 0, 1, Refinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 

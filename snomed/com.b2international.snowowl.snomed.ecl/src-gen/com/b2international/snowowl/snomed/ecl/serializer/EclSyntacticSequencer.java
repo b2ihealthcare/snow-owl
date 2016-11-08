@@ -61,6 +61,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getORToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getPIPERule())
 			return getPIPEToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getREVERSEDRule())
+			return getREVERSEDToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getROUND_CLOSERule())
 			return getROUND_CLOSEToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getROUND_OPENRule())
@@ -203,6 +205,15 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return "|";
+	}
+	
+	/**
+	 * terminal REVERSED				: 'R';
+	 */
+	protected String getREVERSEDToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "R";
 	}
 	
 	/**

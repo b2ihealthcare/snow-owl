@@ -23,6 +23,7 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  * <p>
  * The following features are implemented:
  * <ul>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.RefinementImpl#isReversed <em>Reversed</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.RefinementImpl#getAttribute <em>Attribute</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.RefinementImpl#getComparison <em>Comparison</em>}</li>
  * </ul>
@@ -32,6 +33,26 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  */
 public class RefinementImpl extends MinimalEObjectImpl.Container implements Refinement
 {
+  /**
+   * The default value of the '{@link #isReversed() <em>Reversed</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #isReversed()
+   * @generated
+   * @ordered
+   */
+  protected static final boolean REVERSED_EDEFAULT = false;
+
+  /**
+   * The cached value of the '{@link #isReversed() <em>Reversed</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #isReversed()
+   * @generated
+   * @ordered
+   */
+  protected boolean reversed = REVERSED_EDEFAULT;
+
   /**
    * The cached value of the '{@link #getAttribute() <em>Attribute</em>}' containment reference.
    * <!-- begin-user-doc -->
@@ -71,6 +92,29 @@ public class RefinementImpl extends MinimalEObjectImpl.Container implements Refi
   protected EClass eStaticClass()
   {
     return EclPackage.Literals.REFINEMENT;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public boolean isReversed()
+  {
+    return reversed;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public void setReversed(boolean newReversed)
+  {
+    boolean oldReversed = reversed;
+    reversed = newReversed;
+    if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.REFINEMENT__REVERSED, oldReversed, reversed));
   }
 
   /**
@@ -197,6 +241,8 @@ public class RefinementImpl extends MinimalEObjectImpl.Container implements Refi
   {
     switch (featureID)
     {
+      case EclPackage.REFINEMENT__REVERSED:
+        return isReversed();
       case EclPackage.REFINEMENT__ATTRIBUTE:
         return getAttribute();
       case EclPackage.REFINEMENT__COMPARISON:
@@ -215,6 +261,9 @@ public class RefinementImpl extends MinimalEObjectImpl.Container implements Refi
   {
     switch (featureID)
     {
+      case EclPackage.REFINEMENT__REVERSED:
+        setReversed((Boolean)newValue);
+        return;
       case EclPackage.REFINEMENT__ATTRIBUTE:
         setAttribute((ExpressionConstraint)newValue);
         return;
@@ -235,6 +284,9 @@ public class RefinementImpl extends MinimalEObjectImpl.Container implements Refi
   {
     switch (featureID)
     {
+      case EclPackage.REFINEMENT__REVERSED:
+        setReversed(REVERSED_EDEFAULT);
+        return;
       case EclPackage.REFINEMENT__ATTRIBUTE:
         setAttribute((ExpressionConstraint)null);
         return;
@@ -255,12 +307,31 @@ public class RefinementImpl extends MinimalEObjectImpl.Container implements Refi
   {
     switch (featureID)
     {
+      case EclPackage.REFINEMENT__REVERSED:
+        return reversed != REVERSED_EDEFAULT;
       case EclPackage.REFINEMENT__ATTRIBUTE:
         return attribute != null;
       case EclPackage.REFINEMENT__COMPARISON:
         return comparison != null;
     }
     return super.eIsSet(featureID);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public String toString()
+  {
+    if (eIsProxy()) return super.toString();
+
+    StringBuffer result = new StringBuffer(super.toString());
+    result.append(" (reversed: ");
+    result.append(reversed);
+    result.append(')');
+    return result.toString();
   }
 
 } //RefinementImpl

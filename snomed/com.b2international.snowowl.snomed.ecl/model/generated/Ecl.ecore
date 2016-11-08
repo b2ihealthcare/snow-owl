@@ -37,6 +37,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Any" eSuperTypes="#//ExpressionConstraint"/>
   <eClassifiers xsi:type="ecore:EClass" name="Refinement">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="reversed" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="attribute" eType="#//ExpressionConstraint"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="comparison" eType="#//Comparison"

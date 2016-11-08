@@ -162,7 +162,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
-	 *     ((attribute=ConceptReference | attribute=Any) comparison=Comparison)
+	 *     (reversed?=REVERSED? (attribute=ConceptReference | attribute=Any) comparison=Comparison)
 	 */
 	protected void sequence_AttributeConstraint(EObject context, Refinement semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);

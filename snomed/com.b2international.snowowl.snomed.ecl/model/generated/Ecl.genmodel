@@ -36,6 +36,7 @@
     </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//Any"/>
     <genClasses ecoreClass="Ecl.ecore#//Refinement">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//Refinement/reversed"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//Refinement/attribute"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//Refinement/comparison"/>
     </genClasses>
