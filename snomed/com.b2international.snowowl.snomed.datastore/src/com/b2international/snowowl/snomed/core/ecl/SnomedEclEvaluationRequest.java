@@ -54,10 +54,14 @@ import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
+import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
+import com.b2international.snowowl.snomed.ecl.ecl.Comparison;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
+import com.b2international.snowowl.snomed.ecl.ecl.EclFactory;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
@@ -81,6 +85,7 @@ import com.google.common.reflect.TypeToken;
 final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promise<Expression>> {
 
 	private static final long serialVersionUID = 5891665196136989183L;
+	private static final EclFactory ECL_FACTORY = EclFactory.eINSTANCE;
 	
 	private final PolymorphicDispatcher<Promise<Expression>> dispatcher = PolymorphicDispatcher.createForSingleTarget("eval", 2, 2, this);
 
@@ -281,31 +286,20 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	protected Promise<Expression> eval(BranchContext context, final RefinedExpressionConstraint refined) {
 		final Refinement refinement = refined.getRefinement();
 		if (refinement == null) {
+			// no refinement just evaluate the inner expression as is
 			return evaluate(context, refined.getConstraint());
 		} else {
-			return Promise
-					.all(
-						// evaluate the substrate
-						evaluate(context, refined.getConstraint()),
-						// and the attribute substrate parallel
-						evaluate(context, refinement.getAttribute())
-					)
-					.thenWith(new Function<List<Object>, Promise<SnomedRelationships>>() {
-						@Override
-						public Promise<SnomedRelationships> apply(List<Object> substrateAndAttributeExpressions) {
-							final Expression substrate = (Expression) substrateAndAttributeExpressions.get(0);
-							final Expression attributeSubstrate = (Expression) substrateAndAttributeExpressions.get(1);
-							final Set<String> substrateIds = extractIds(substrate);
-							final Set<String> attributeIds = extractIds(attributeSubstrate);
-							return SnomedRequests.prepareSearchRelationship()
-									.all()
-									.filterByActive(true)
-									.filterBySource(substrateIds)
-									.filterByType(attributeIds)
-									.build(context.id(), context.branch().path())
-									.execute(context.service(IEventBus.class));
-						}
-					})
+			// filterBySource, filterByType and filterByDestination accepts ECL expressions as well, so serialize them into ECL and pass as String
+			final ExpressionConstraint rewrittenComparison = rewrite(refined.getRefinement().getComparison());
+			final EclSerializer serializer = context.service(EclSerializer.class);
+			return SnomedRequests.prepareSearchRelationship()
+					.all()
+					.filterByActive(true)
+					.filterBySource(serializer.serialize(refined.getConstraint()))
+					.filterByType(serializer.serialize(refined.getRefinement().getAttribute()))
+					.filterByDestination(serializer.serialize(rewrittenComparison))
+					.build(context.id(), context.branch().path())
+					.execute(context.service(IEventBus.class))
 					.then(new Function<SnomedRelationships, Expression>() {
 						@Override
 						public Expression apply(SnomedRelationships matchingAttributes) {
@@ -319,6 +313,30 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 		}
 	}
 	
+	private ExpressionConstraint rewrite(Comparison comparison) {
+		if (comparison instanceof AttributeValueEquals) {
+			return comparison.getConstraint();
+		} else if (comparison instanceof AttributeValueNotEquals) {
+			// convert != expression to exclusion constraint
+			final ExpressionConstraint constraint = comparison.getConstraint();
+			final ExclusionExpressionConstraint exclusion = ECL_FACTORY.createExclusionExpressionConstraint();
+			
+			// set Any as left of exclusion
+			final Any any = ECL_FACTORY.createAny();
+			final RefinedExpressionConstraint left = ECL_FACTORY.createRefinedExpressionConstraint();
+			left.setConstraint(any);
+			exclusion.setLeft(left);
+			
+			// set original constraint as right of exclusion
+			final RefinedExpressionConstraint right = ECL_FACTORY.createRefinedExpressionConstraint();
+			right.setConstraint(constraint);
+			exclusion.setRight(right);
+			
+			return exclusion;
+		}
+		throw new UnsupportedOperationException("Cannot rewrite comparison: " + comparison);
+	}
+
 	protected Promise<Expression> eval(BranchContext context, final NestedExpression nested) {
 		return evaluate(context, nested.getNested());
 	}

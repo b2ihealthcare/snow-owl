@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.eclipse.xtext.parser.IParser;
+import org.eclipse.xtext.serializer.ISerializer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -81,9 +82,9 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	public void setup() {
 		super.setup();
 		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
-		final IParser parser = injector.getInstance(IParser.class);
 		context = TestBranchContext.on(MAIN)
-				.with(EclParser.class, new DefaultEclParser(parser))
+				.with(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class)))
+				.with(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)))
 				.with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index())
 				.build();
@@ -257,25 +258,38 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void refinementOfSingleConcept() throws Exception {
+	public void refinementAttributeEquals() throws Exception {
 		indexRevision(MAIN, STORAGE_KEY1, relationship(Concepts.MODULE_ROOT, Concepts.IS_A, ROOT_ID).build());
-		final Expression actual = eval(Concepts.MODULE_ROOT + " : " + Concepts.IS_A + " = " + ROOT_ID);
+		final Expression actual = eval(String.format("%s:%s=%s", Concepts.MODULE_ROOT, Concepts.IS_A, ROOT_ID));
 		final Expression expected = ids(Collections.singleton(Concepts.MODULE_ROOT));
 		assertEquals(expected, actual);
 	}
 	
 	@Test
 	public void refinementOfTwoConceptsWithAndGrouping() throws Exception {
-		try {
-			indexRevision(MAIN, STORAGE_KEY1, relationship(Concepts.MODULE_ROOT, Concepts.IS_A, ROOT_ID).build());
-			final Expression actual = eval(String.format("(%s OR %s):%s=%s", Concepts.MODULE_SCT_CORE, Concepts.MODULE_ROOT, Concepts.IS_A, ROOT_ID));
-			final Expression expected = ids(Collections.singleton(Concepts.MODULE_ROOT));
-			assertEquals(expected, actual);
-		} catch (SnowowlRuntimeException e) {
-			if (!(e.getCause() instanceof UnsupportedOperationException)) {
-				fail("Should throw UnsupportedOperationException until bool expression ID extraction is not implemented");
-			}
-		}
+		indexRevision(MAIN, nextStorageKey(), concept(Concepts.MODULE_SCT_CORE).build());
+		indexRevision(MAIN, nextStorageKey(), concept(Concepts.MODULE_ROOT).build());
+		indexRevision(MAIN, nextStorageKey(), concept(Concepts.IS_A).build());
+		indexRevision(MAIN, nextStorageKey(), concept(ROOT_ID).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(Concepts.MODULE_ROOT, Concepts.IS_A, ROOT_ID).build());
+		
+		final Expression actual = eval(String.format("(%s OR %s):%s=%s", Concepts.MODULE_SCT_CORE, Concepts.MODULE_ROOT, Concepts.IS_A, ROOT_ID));
+		final Expression expected = ids(Collections.singleton(Concepts.MODULE_ROOT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementAttributeNotEquals() throws Exception {
+		indexRevision(MAIN, nextStorageKey(), concept(Concepts.MODULE_SCT_CORE).build());
+		indexRevision(MAIN, nextStorageKey(), concept(Concepts.MODULE_ROOT).build());
+		indexRevision(MAIN, nextStorageKey(), concept(Concepts.IS_A).build());
+		indexRevision(MAIN, nextStorageKey(), concept(ROOT_ID).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(Concepts.MODULE_ROOT, Concepts.IS_A, ROOT_ID).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(Concepts.MODULE_SCT_CORE, Concepts.IS_A, Concepts.MODULE_ROOT).build());
+		
+		final Expression actual = eval(String.format("(%s OR %s):%s!=%s", Concepts.MODULE_SCT_CORE, Concepts.MODULE_ROOT, Concepts.IS_A, ROOT_ID));
+		final Expression expected = ids(Collections.singleton(Concepts.MODULE_SCT_CORE));
+		assertEquals(expected, actual);
 	}
 	
 	private SnomedConceptDocument.Builder concept(final String id) {
