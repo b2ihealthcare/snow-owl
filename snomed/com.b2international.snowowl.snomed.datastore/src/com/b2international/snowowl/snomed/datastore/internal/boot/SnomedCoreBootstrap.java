@@ -17,13 +17,16 @@ package com.b2international.snowowl.snomed.datastore.internal.boot;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.xtext.parser.IParser;
+import org.eclipse.xtext.serializer.ISerializer;
 
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
+import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
+import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.core.lang.StaticLanguageSetting;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -43,6 +46,7 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 		env.services().registerService(LanguageSetting.class, new StaticLanguageSetting(coreConfig.getLanguage(), SnomedCoreConfiguration.DEFAULT_LANGUAGE));
 		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 		env.services().registerService(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class)));
+		env.services().registerService(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)));
 	}
 
 	@Override
