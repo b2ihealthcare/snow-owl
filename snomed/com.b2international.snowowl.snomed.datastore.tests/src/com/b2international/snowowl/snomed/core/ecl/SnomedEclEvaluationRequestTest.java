@@ -383,7 +383,6 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		assertEquals(expected, actual);
 	}
 	
-	@Ignore
 	@Test
 	public void refinementCardinalityZeroToZero() throws Exception {
 		indexRevision(MAIN, nextStorageKey(), concept(INGREDIENT1).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
@@ -396,7 +395,43 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, nextStorageKey(), relationship(PANADOL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).build());
 		
 		final Expression actual = eval(String.format("<%s: [0..0] %s=<%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
-		final Expression expected = ids(Collections.singleton(ABACAVIR_TABLET));
+		final Expression expected =	
+				Expressions.builder()
+					// focusConcepts
+					.must(
+						Expressions.builder()
+							.should(parents(Collections.singleton(DRUG_ROOT)))
+							.should(ancestors(Collections.singleton(DRUG_ROOT)))
+						.build()
+					)
+					.mustNot(ids(ImmutableSet.of(TRIPHASIL_TABLET, PANADOL_TABLET)))
+				.build();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementCardinalityZeroToOne() throws Exception {
+		indexRevision(MAIN, nextStorageKey(), concept(INGREDIENT1).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
+		indexRevision(MAIN, nextStorageKey(), concept(INGREDIENT2).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
+		indexRevision(MAIN, nextStorageKey(), concept(TRIPHASIL_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
+		indexRevision(MAIN, nextStorageKey(), concept(PANADOL_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
+		indexRevision(MAIN, nextStorageKey(), concept(ABACAVIR_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(PANADOL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).build());
+		
+		final Expression actual = eval(String.format("<%s: [0..1] %s=<%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
+		final Expression expected =	
+				Expressions.builder()
+					// focusConcepts
+					.must(
+						Expressions.builder()
+							.should(parents(Collections.singleton(DRUG_ROOT)))
+							.should(ancestors(Collections.singleton(DRUG_ROOT)))
+						.build()
+					)
+					.mustNot(ids(ImmutableSet.of(TRIPHASIL_TABLET)))
+				.build();
 		assertEquals(expected, actual);
 	}
 	

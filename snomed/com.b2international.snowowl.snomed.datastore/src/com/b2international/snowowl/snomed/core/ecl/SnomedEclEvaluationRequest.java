@@ -290,13 +290,15 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	protected Promise<Expression> eval(BranchContext context, final RefinedExpressionConstraint refined) {
 		final Refinement refinement = refined.getRefinement();
 		final Cardinality cardinality = refinement.getCardinality();
-		// filterBySource, filterByType and filterByDestination accepts ECL expressions as well, so serialize them into ECL and pass as String
+		// filterBySource, filterByType and filterByDestination accepts ECL expressions as well, so serialize them into ECL and pass as String when required
 		final EclSerializer serializer = context.service(EclSerializer.class);
 		final String sourceConceptExpression = serializer.serialize(refined.getConstraint());
 		final String typeConceptExpression = serializer.serialize(refinement.getAttribute());
 		final String destinationConceptExpression = serializer.serialize(rewrite(refinement.getComparison()));
 		final String focusConceptExpression = refinement.isReversed() ? destinationConceptExpression : sourceConceptExpression;
 		final String valueConceptExpression = refinement.isReversed() ? sourceConceptExpression : destinationConceptExpression;
+		// if reversed refinement, then we are interested in the destinationIds otherwise we need the sourceIds
+		final Function<ISnomedRelationship, String> idFunction = refinement.isReversed() ? ISnomedRelationship::getDestinationId : ISnomedRelationship::getSourceId;
 		
 		// the default cardinality is [1..*]
 		final boolean isUnbounded = cardinality == null ? true : cardinality.getMax() == -1;
@@ -309,43 +311,66 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				// zero and unbounded attributes, just match all focus concepts
 				return evaluate(context, refined.getConstraint());
 			} else {
-				// TODO otherwise evaluate to BOOL(MUST(focus) MUST_NOT(max+1))
-				return throwUnsupported(cardinality);
+				// otherwise evaluate to BOOL(MUST(focus) MUST_NOT(max+1))
+				// construct the positive side of the query with this allowed attribute range
+				final Range<Integer> positiveRange = Range.closed(max + 1, Integer.MAX_VALUE);
+				return Promise.all(
+						// eval the focusConcept expression
+						SnomedRequests.prepareEclEvaluation(focusConceptExpression)
+							.build(context.id(), context.branch().path())
+							.execute(context.service(IEventBus.class))
+							.thenWith(promise -> promise),
+						// eval the same expression with positive range
+						evalRefinement(context, focusConceptExpression, typeConceptExpression, valueConceptExpression, positiveRange, idFunction))
+						.then(new Function<List<Object>, Expression>() {
+							@Override
+							public Expression apply(List<Object> expressions) {
+								final Expression focusConcepts = (Expression) expressions.get(0);
+								final Expression positiveConcepts = (Expression) expressions.get(1);
+								// if positiveConcepts is match none, then don't add it to the expression and just return the focusConcepts
+								return Expressions.matchNone().equals(positiveConcepts) 
+										? focusConcepts
+										: Expressions.builder().must(focusConcepts).mustNot(positiveConcepts).build();
+							}
+						});
 			}
 		} else {
-			// if the cardinality either 0 or the min is at least one, then single relationship query is enough
-			return SnomedRequests.prepareSearchRelationship()
-					.all()
-					.filterByActive(true) 
-					.filterBySource(focusConceptExpression)
-					.filterByType(typeConceptExpression)
-					.filterByDestination(valueConceptExpression)
-					.build(context.id(), context.branch().path())
-					.execute(context.service(IEventBus.class))
-					.then(new Function<SnomedRelationships, Expression>() {
-						@Override
-						public Expression apply(SnomedRelationships matchingAttributes) {
-							final Set<String> ids = newHashSet();
-							// index the relationships based on the ID associated with the reversed flag
-							final Multimap<String, ISnomedRelationship> indexedByMatchingIds = Multimaps.index(matchingAttributes, new Function<ISnomedRelationship, String>() {
-								@Override
-								public String apply(ISnomedRelationship relationship) {
-									return refinement.isReversed() ? relationship.getDestinationId() : relationship.getSourceId();
-								}
-							});
-							
-							for (String matchingConceptId : indexedByMatchingIds.keySet()) {
-								final Collection<ISnomedRelationship> attributes = indexedByMatchingIds.get(matchingConceptId);
-								final int numberOfMatchingAttributes = attributes.size();
-								if (cardinalityRange.contains(numberOfMatchingAttributes)) {
-									ids.add(matchingConceptId);
-								}
-							}
-							return ids.isEmpty() ? Expressions.matchNone() : ids(ids);
-						}
-					});
+			// if the cardinality either 0 or the min is at least one, then the relationship query is enough
+			return evalRefinement(context, focusConceptExpression, typeConceptExpression, valueConceptExpression, cardinalityRange, idFunction); 
 		}
 		
+	}
+
+	private Promise<Expression> evalRefinement(final BranchContext context, 
+			final String sourceExpression, 
+			final String typeExpression,
+			final String destinationExpression,
+			final Range<Integer> cardinality,
+			final Function<ISnomedRelationship, String> idProvider) {
+		return SnomedRequests.prepareSearchRelationship()
+				.all()
+				.filterByActive(true) 
+				.filterBySource(sourceExpression)
+				.filterByType(typeExpression)
+				.filterByDestination(destinationExpression)
+				.build(context.id(), context.branch().path())
+				.execute(context.service(IEventBus.class))
+				.then(new Function<SnomedRelationships, Expression>() {
+					@Override
+					public Expression apply(SnomedRelationships matchingAttributes) {
+						final Set<String> ids = newHashSet();
+						final Multimap<String, ISnomedRelationship> indexedByMatchingIds = Multimaps.index(matchingAttributes, idProvider);
+						
+						for (String matchingConceptId : indexedByMatchingIds.keySet()) {
+							final Collection<ISnomedRelationship> attributes = indexedByMatchingIds.get(matchingConceptId);
+							final int numberOfMatchingAttributes = attributes.size();
+							if (cardinality.contains(numberOfMatchingAttributes)) {
+								ids.add(matchingConceptId);
+							}
+						}
+						return ids.isEmpty() ? Expressions.matchNone() : ids(ids);
+					}
+				});
 	}
 	
 	private ExpressionConstraint rewrite(Comparison comparison) {
