@@ -72,7 +72,7 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 			queryBuilder.must(unionGroup(get(OptionKey.UNION_GROUP, Integer.class)));
 		}
 		
-		final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(Query.select(SnomedRelationshipIndexEntry.class)
+		final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(Query.selectPartial(SnomedRelationshipIndexEntry.class, fields())
 				.where(queryBuilder.build())
 				.offset(offset())
 				.limit(limit())
