@@ -149,7 +149,7 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 				iconId);
 
 		checkArgument(effectiveTime >= EffectiveTimes.UNSET_EFFECTIVE_TIME, "Effective time argument '%s' is invalid.", effectiveTime);
-		this.moduleId = checkNotNull(moduleId, "Component module identifier may not be null.");
+		this.moduleId = moduleId;
 		this.released = released;
 		this.active = active;
 		this.effectiveTime = effectiveTime;

@@ -42,6 +42,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -200,7 +201,11 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 	}
 
 	private CharacteristicType toCharacteristicType(final String characteristicTypeId) {
-		return CharacteristicType.getByConceptId(characteristicTypeId);
+		if (Strings.isNullOrEmpty(characteristicTypeId)) {
+			return null;
+		} else {
+			return CharacteristicType.getByConceptId(characteristicTypeId);
+		}
 	}
 
 	private RelationshipModifier toRelationshipModifier(final boolean universal) {

@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -247,8 +246,8 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		private String characteristicTypeId;
 		private String modifierId;
 
-		private int group;
-		private int unionGroup;
+		private int group = -1;
+		private int unionGroup = -1;
 
 		private boolean destinationNegated;
 		
@@ -371,11 +370,11 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		checkArgument(group >= 0, String.format("Group number '%s' may not be negative (relationship ID: %s).", group, id));
 		checkArgument(unionGroup >= 0, String.format("Union group number '%s' may not be negative (relationship ID: %s).", unionGroup, id));
 
-		this.sourceId = checkNotNull(sourceId, "Relationship source identifier may not be null.");
-		this.typeId = checkNotNull(typeId, "Relationship type identifier may not be null.");
-		this.destinationId = checkNotNull(destinationId, "Relationship destination identifier may not be null.");
-		this.characteristicTypeId = checkNotNull(characteristicTypeId, "Relationship characteristic type identifier may not be null.");
-		this.modifierId = checkNotNull(modifierId, "Relationship modifier identifier may not be null.");
+		this.sourceId = sourceId;
+		this.typeId = typeId;
+		this.destinationId = destinationId;
+		this.characteristicTypeId = characteristicTypeId;
+		this.modifierId = modifierId;
 		this.group = group;
 		this.unionGroup = unionGroup;
 		this.destinationNegated = destinationNegated;
