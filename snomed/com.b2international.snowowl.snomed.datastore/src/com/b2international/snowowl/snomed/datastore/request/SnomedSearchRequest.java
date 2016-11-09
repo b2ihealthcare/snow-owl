@@ -31,11 +31,13 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator2;
 import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.dsl.query.RValue;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 /**
@@ -143,6 +145,7 @@ public abstract class SnomedSearchRequest<R> extends RevisionSearchRequest<R> {
 					SnomedConcepts matchingConcepts = SnomedRequests.prepareSearchConcept()
 						.all()
 						.filterByEcl(expression)
+						.setFields(ImmutableSet.of(SnomedConceptDocument.Fields.ID))
 						.build()
 						.execute(context);
 					idFilter = FluentIterable.from(matchingConcepts).transform(IComponent.ID_FUNCTION).toSet();

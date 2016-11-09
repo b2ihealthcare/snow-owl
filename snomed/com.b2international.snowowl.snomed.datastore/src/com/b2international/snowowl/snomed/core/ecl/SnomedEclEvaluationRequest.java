@@ -49,6 +49,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
@@ -72,6 +73,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
 import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Range;
@@ -353,6 +355,11 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				.filterBySource(sourceExpression)
 				.filterByType(typeExpression)
 				.filterByDestination(destinationExpression)
+				.setFields(ImmutableSet.of(
+					SnomedRelationshipIndexEntry.Fields.ID, 
+					SnomedRelationshipIndexEntry.Fields.SOURCE_ID, 
+					SnomedRelationshipIndexEntry.Fields.DESTINATION_ID
+				))
 				.build(context.id(), context.branch().path())
 				.execute(context.service(IEventBus.class))
 				.then(new Function<SnomedRelationships, Expression>() {
