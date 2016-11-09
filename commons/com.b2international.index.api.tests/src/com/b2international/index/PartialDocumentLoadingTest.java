@@ -15,7 +15,9 @@
  */
 package com.b2international.index;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.Collection;
 
@@ -49,6 +51,27 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		assertEquals(2, Iterables.size(hits));
 		assertEquals(PartialData.class, Iterables.get(hits, 0).getClass());
 		assertEquals(PartialData.class, Iterables.get(hits, 1).getClass());
+	}
+	
+	@Test
+	public void selectPartialWithFields() throws Exception {
+		final Data data1 = new Data("key1Field1", "key1Field2");
+		indexDocument(KEY, data1);
+		final Data data2 = new Data("key2Field1", "key2Field2");
+		indexDocument(KEY2, data2);
+		
+		final Query<Data> query = Query.selectPartial(Data.class, "field1")
+			.where(Expressions.matchAll())
+			.build();
+		final Hits<Data> hits = search(query);
+		assertThat(hits).hasSize(2);
+		
+		Data partialData1 = Iterables.get(hits, 0);
+		Data partialData2 = Iterables.get(hits, 1);
+		assertEquals("key1Field1", partialData1.getField1());
+		assertEquals("key2Field1", partialData2.getField1());
+		assertNull(partialData1.getField2());
+		assertNull(partialData2.getField2());
 	}
 
 }

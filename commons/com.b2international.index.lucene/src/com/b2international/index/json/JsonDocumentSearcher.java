@@ -17,6 +17,9 @@ package com.b2international.index.json;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
@@ -45,6 +48,8 @@ import com.b2international.index.query.slowlog.SlowLogConfig;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Ints;
 
@@ -93,16 +98,64 @@ public class JsonDocumentSearcher implements Searcher {
 
 	@Override
 	public <T> Hits<T> search(Query<T> query) throws IOException {
+		if (query.getFields() == null || query.getFields().isEmpty()) {
+			return searchDefault(query);
+		} else {
+			return searchByCollector(query);
+		}
+	}
+
+	private <T> Hits<T> searchByCollector(Query<T> query) throws IOException {
 		final QueryProfiler profiler = new QueryProfiler(query, slowLogConfig);
-		
+		try {
+			profiler.start(Phase.QUERY);
+			final Class<T> select = query.getSelect();
+			final Class<?> from = query.getFrom();
+			final org.apache.lucene.search.Query lq = toLuceneQuery(from, query);
+			
+			final int offset = query.getOffset();
+			int limit = query.getLimit();
+			
+			if (limit < 1) {
+				final int totalHits = searcher.count(lq);
+				return new Hits<>(Collections.emptyList(), offset, limit, totalHits);
+			} else {
+				if (limit == Integer.MAX_VALUE || limit == Integer.MAX_VALUE - 1 /*SearchRequest max value*/) {
+					// if all values required, or clients expect all values to be returned
+					// use collector instead of TopDocs, TODO bring back DocSourceCollector to life
+					// reduce limit to max. total hits
+					limit = searcher.count(lq);
+				} 
+				int maxDoc = searcher.getIndexReader().maxDoc();
+				if (maxDoc <= 0 || limit < 1) {
+					return new Hits<>(Collections.emptyList(), offset, limit, 0);
+				} else {
+					final Set<String> fields = query.getFields();
+					final List<Map<String, Object>> rawHits = searcher.search(lq, new DocValueCollectorManager(fields));
+					final List<T> hits = FluentIterable.from(rawHits)
+							.transform(new Function<Map<String, Object>, T>() {
+								@Override
+								public T apply(Map<String, Object> input) {
+									return mapper.convertValue(input, select);
+								}
+							}).toList();
+					return new Hits<>(hits, offset, limit, rawHits.size());
+				}
+			}
+		} finally {
+			profiler.end(Phase.QUERY);
+			profiler.log(log);
+		}
+	}
+
+	private <T> Hits<T> searchDefault(Query<T> query) throws IOException {
+		final QueryProfiler profiler = new QueryProfiler(query, slowLogConfig);
 		final Class<T> select = query.getSelect();
 		final Class<?> from = query.getFrom();
 		final org.apache.lucene.search.Query lq = toLuceneQuery(from, query);
+		
 		final int offset = query.getOffset();
 		int limit = query.getLimit();
-		
-		
-		
 		try {
 			// QUERY PHASE
 			profiler.start(Phase.QUERY);
