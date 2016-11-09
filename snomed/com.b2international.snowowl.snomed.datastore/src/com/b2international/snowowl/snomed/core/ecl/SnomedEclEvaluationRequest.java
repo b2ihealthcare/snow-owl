@@ -56,6 +56,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
 import com.b2international.snowowl.snomed.ecl.ecl.Comparison;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
@@ -71,6 +72,8 @@ import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
 import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
 import com.google.common.base.Function;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.reflect.TypeToken;
 
 /**
@@ -285,34 +288,58 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	
 	protected Promise<Expression> eval(BranchContext context, final RefinedExpressionConstraint refined) {
 		final Refinement refinement = refined.getRefinement();
+		final Cardinality cardinality = refinement.getCardinality();
 		// filterBySource, filterByType and filterByDestination accepts ECL expressions as well, so serialize them into ECL and pass as String
 		final EclSerializer serializer = context.service(EclSerializer.class);
-		final String focusConceptExpression = serializer.serialize(refined.getConstraint());
-		final String attributeExpression = serializer.serialize(refinement.getAttribute());
-		final String valueExpression = serializer.serialize(rewrite(refinement.getComparison()));
-		return SnomedRequests.prepareSearchRelationship()
-				.all()
-				.filterByActive(true)
-				.filterBySource(refinement.isReversed() ? valueExpression : focusConceptExpression)
-				.filterByType(attributeExpression)
-				.filterByDestination(refinement.isReversed() ? focusConceptExpression : valueExpression)
-				.build(context.id(), context.branch().path())
-				.execute(context.service(IEventBus.class))
-				.then(new Function<SnomedRelationships, Expression>() {
-					@Override
-					public Expression apply(SnomedRelationships matchingAttributes) {
-						final Set<String> ids = newHashSetWithExpectedSize(matchingAttributes.getItems().size());
-						for (ISnomedRelationship relationship : matchingAttributes) {
-							// if reversed we're interested in the destination IDs
-							if (refinement.isReversed()) {
-								ids.add(relationship.getDestinationId());
-							} else {
-								ids.add(relationship.getSourceId());
+		final String sourceConceptExpression = serializer.serialize(refined.getConstraint());
+		final String typeConceptExpression = serializer.serialize(refinement.getAttribute());
+		final String destinationConceptExpression = serializer.serialize(rewrite(refinement.getComparison()));
+		final String focusConceptExpression = refinement.isReversed() ? destinationConceptExpression : sourceConceptExpression;
+		final String valueConceptExpression = refinement.isReversed() ? sourceConceptExpression : destinationConceptExpression;
+		
+		if (cardinality != null && cardinality.getMin() == 0) {
+			if (cardinality.getMax() == -1) {
+				// zero and unbounded attributes, just match all focus concepts
+				return evaluate(context, refined.getConstraint());
+			} else {
+				// TODO otherwise evaluate to BOOL(MUST(focus) MUST_NOT(max+1))
+				return throwUnsupported(cardinality);
+			}
+		} else {
+			// if the cardinality either 0 or the min is at least one, then single relationship query is enough
+			return SnomedRequests.prepareSearchRelationship()
+					.all()
+					.filterByActive(true) 
+					.filterBySource(focusConceptExpression)
+					.filterByType(typeConceptExpression)
+					.filterByDestination(valueConceptExpression)
+					.build(context.id(), context.branch().path())
+					.execute(context.service(IEventBus.class))
+					.then(new Function<SnomedRelationships, Expression>() {
+						@Override
+						public Expression apply(SnomedRelationships matchingAttributes) {
+							final Set<String> ids = newHashSetWithExpectedSize(matchingAttributes.getItems().size());
+							// index the relationships based on the ID associated with the reversed flag
+							final Multimap<String, ISnomedRelationship> indexedByMatchingIds = Multimaps.index(matchingAttributes, new Function<ISnomedRelationship, String>() {
+								@Override
+								public String apply(ISnomedRelationship relationship) {
+									return refinement.isReversed() ? relationship.getDestinationId() : relationship.getSourceId();
+								}
+							});
+							
+							for (String matchingConceptId : indexedByMatchingIds.keySet()) {
+								if (cardinality == null || cardinality.getMax() == -1) {
+									// in case of no cardinality or unbounded cardinality add the ID immediately
+									ids.add(matchingConceptId);
+								} else {
+									throw new UnsupportedOperationException("Filter matches to have gt min lt max attributes");
+								}
 							}
+							return ids.isEmpty() ? Expressions.matchNone() : ids(ids);
 						}
-						return ids.isEmpty() ? Expressions.matchNone() : ids(ids);
-					}
-				});
+					});
+		}
+		
 	}
 	
 	private ExpressionConstraint rewrite(Comparison comparison) {
