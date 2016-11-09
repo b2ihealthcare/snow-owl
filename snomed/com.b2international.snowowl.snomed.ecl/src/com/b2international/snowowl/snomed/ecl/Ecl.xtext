@@ -46,7 +46,7 @@ AncestorOrSelfOf:
 MemberOf:
 	CARET constraint=(ConceptReference | Any);
 
-ConceptReference: 
+ConceptReference:
 	id=SnomedIdentifier (PIPE term=Term PIPE)?;
 	
 Any: 
@@ -56,7 +56,16 @@ Refinement:
 	AttributeConstraint;
 	
 AttributeConstraint returns Refinement:
-	(cardinality=Cardinality)? (reversed?=REVERSED)? attribute=(ConceptReference | Any) comparison=Comparison;
+	(cardinality=Cardinality)? (reversed?=REVERSED)? attribute=Attribute comparison=Comparison;
+	
+Attribute returns ExpressionConstraint:
+	AttributeDescendantOf | AttributeDescendantOrSelfOf | ConceptReference | Any;
+
+AttributeDescendantOf returns DescendantOf:
+	LT constraint=(ConceptReference | Any);
+	
+AttributeDescendantOrSelfOf returns DescendantOrSelfOf:
+	DBL_LT constraint=(ConceptReference | Any);
 
 Cardinality:
 	SQUARE_OPEN min=NonNegativeInteger TO max=MaxValue SQUARE_CLOSE;

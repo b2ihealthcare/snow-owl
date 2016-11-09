@@ -507,17 +507,15 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final Assignment cReversedAssignment_1 = (Assignment)cGroup.eContents().get(1);
 		private final RuleCall cReversedREVERSEDTerminalRuleCall_1_0 = (RuleCall)cReversedAssignment_1.eContents().get(0);
 		private final Assignment cAttributeAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final Alternatives cAttributeAlternatives_2_0 = (Alternatives)cAttributeAssignment_2.eContents().get(0);
-		private final RuleCall cAttributeConceptReferenceParserRuleCall_2_0_0 = (RuleCall)cAttributeAlternatives_2_0.eContents().get(0);
-		private final RuleCall cAttributeAnyParserRuleCall_2_0_1 = (RuleCall)cAttributeAlternatives_2_0.eContents().get(1);
+		private final RuleCall cAttributeAttributeParserRuleCall_2_0 = (RuleCall)cAttributeAssignment_2.eContents().get(0);
 		private final Assignment cComparisonAssignment_3 = (Assignment)cGroup.eContents().get(3);
 		private final RuleCall cComparisonComparisonParserRuleCall_3_0 = (RuleCall)cComparisonAssignment_3.eContents().get(0);
 		
 		//AttributeConstraint returns Refinement:
-		//	cardinality=Cardinality? reversed?=REVERSED? attribute=(ConceptReference | Any) comparison=Comparison;
+		//	cardinality=Cardinality? reversed?=REVERSED? attribute=Attribute comparison=Comparison;
 		@Override public ParserRule getRule() { return rule; }
 
-		//cardinality=Cardinality? reversed?=REVERSED? attribute=(ConceptReference | Any) comparison=Comparison
+		//cardinality=Cardinality? reversed?=REVERSED? attribute=Attribute comparison=Comparison
 		public Group getGroup() { return cGroup; }
 
 		//cardinality=Cardinality?
@@ -532,23 +530,109 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		//REVERSED
 		public RuleCall getReversedREVERSEDTerminalRuleCall_1_0() { return cReversedREVERSEDTerminalRuleCall_1_0; }
 
-		//attribute=(ConceptReference | Any)
+		//attribute=Attribute
 		public Assignment getAttributeAssignment_2() { return cAttributeAssignment_2; }
 
-		//ConceptReference | Any
-		public Alternatives getAttributeAlternatives_2_0() { return cAttributeAlternatives_2_0; }
-
-		//ConceptReference
-		public RuleCall getAttributeConceptReferenceParserRuleCall_2_0_0() { return cAttributeConceptReferenceParserRuleCall_2_0_0; }
-
-		//Any
-		public RuleCall getAttributeAnyParserRuleCall_2_0_1() { return cAttributeAnyParserRuleCall_2_0_1; }
+		//Attribute
+		public RuleCall getAttributeAttributeParserRuleCall_2_0() { return cAttributeAttributeParserRuleCall_2_0; }
 
 		//comparison=Comparison
 		public Assignment getComparisonAssignment_3() { return cComparisonAssignment_3; }
 
 		//Comparison
 		public RuleCall getComparisonComparisonParserRuleCall_3_0() { return cComparisonComparisonParserRuleCall_3_0; }
+	}
+
+	public class AttributeElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "Attribute");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final RuleCall cAttributeDescendantOfParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cAttributeDescendantOrSelfOfParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cConceptReferenceParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		private final RuleCall cAnyParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
+		
+		//Attribute returns ExpressionConstraint:
+		//	AttributeDescendantOf | AttributeDescendantOrSelfOf | ConceptReference | Any;
+		@Override public ParserRule getRule() { return rule; }
+
+		//AttributeDescendantOf | AttributeDescendantOrSelfOf | ConceptReference | Any
+		public Alternatives getAlternatives() { return cAlternatives; }
+
+		//AttributeDescendantOf
+		public RuleCall getAttributeDescendantOfParserRuleCall_0() { return cAttributeDescendantOfParserRuleCall_0; }
+
+		//AttributeDescendantOrSelfOf
+		public RuleCall getAttributeDescendantOrSelfOfParserRuleCall_1() { return cAttributeDescendantOrSelfOfParserRuleCall_1; }
+
+		//ConceptReference
+		public RuleCall getConceptReferenceParserRuleCall_2() { return cConceptReferenceParserRuleCall_2; }
+
+		//Any
+		public RuleCall getAnyParserRuleCall_3() { return cAnyParserRuleCall_3; }
+	}
+
+	public class AttributeDescendantOfElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AttributeDescendantOf");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cLTTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final Alternatives cConstraintAlternatives_1_0 = (Alternatives)cConstraintAssignment_1.eContents().get(0);
+		private final RuleCall cConstraintConceptReferenceParserRuleCall_1_0_0 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(0);
+		private final RuleCall cConstraintAnyParserRuleCall_1_0_1 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(1);
+		
+		//AttributeDescendantOf returns DescendantOf:
+		//	LT constraint=(ConceptReference | Any);
+		@Override public ParserRule getRule() { return rule; }
+
+		//LT constraint=(ConceptReference | Any)
+		public Group getGroup() { return cGroup; }
+
+		//LT
+		public RuleCall getLTTerminalRuleCall_0() { return cLTTerminalRuleCall_0; }
+
+		//constraint=(ConceptReference | Any)
+		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
+
+		//ConceptReference | Any
+		public Alternatives getConstraintAlternatives_1_0() { return cConstraintAlternatives_1_0; }
+
+		//ConceptReference
+		public RuleCall getConstraintConceptReferenceParserRuleCall_1_0_0() { return cConstraintConceptReferenceParserRuleCall_1_0_0; }
+
+		//Any
+		public RuleCall getConstraintAnyParserRuleCall_1_0_1() { return cConstraintAnyParserRuleCall_1_0_1; }
+	}
+
+	public class AttributeDescendantOrSelfOfElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AttributeDescendantOrSelfOf");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cDBL_LTTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final Alternatives cConstraintAlternatives_1_0 = (Alternatives)cConstraintAssignment_1.eContents().get(0);
+		private final RuleCall cConstraintConceptReferenceParserRuleCall_1_0_0 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(0);
+		private final RuleCall cConstraintAnyParserRuleCall_1_0_1 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(1);
+		
+		//AttributeDescendantOrSelfOf returns DescendantOrSelfOf:
+		//	DBL_LT constraint=(ConceptReference | Any);
+		@Override public ParserRule getRule() { return rule; }
+
+		//DBL_LT constraint=(ConceptReference | Any)
+		public Group getGroup() { return cGroup; }
+
+		//DBL_LT
+		public RuleCall getDBL_LTTerminalRuleCall_0() { return cDBL_LTTerminalRuleCall_0; }
+
+		//constraint=(ConceptReference | Any)
+		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
+
+		//ConceptReference | Any
+		public Alternatives getConstraintAlternatives_1_0() { return cConstraintAlternatives_1_0; }
+
+		//ConceptReference
+		public RuleCall getConstraintConceptReferenceParserRuleCall_1_0_0() { return cConstraintConceptReferenceParserRuleCall_1_0_0; }
+
+		//Any
+		public RuleCall getConstraintAnyParserRuleCall_1_0_1() { return cConstraintAnyParserRuleCall_1_0_1; }
 	}
 
 	public class CardinalityElements extends AbstractParserRuleElementFinder {
@@ -1005,6 +1089,9 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final AnyElements pAny;
 	private final RefinementElements pRefinement;
 	private final AttributeConstraintElements pAttributeConstraint;
+	private final AttributeElements pAttribute;
+	private final AttributeDescendantOfElements pAttributeDescendantOf;
+	private final AttributeDescendantOrSelfOfElements pAttributeDescendantOrSelfOf;
 	private final CardinalityElements pCardinality;
 	private final ComparisonElements pComparison;
 	private final AttributeValueEqualsElements pAttributeValueEquals;
@@ -1073,6 +1160,9 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pAny = new AnyElements();
 		this.pRefinement = new RefinementElements();
 		this.pAttributeConstraint = new AttributeConstraintElements();
+		this.pAttribute = new AttributeElements();
+		this.pAttributeDescendantOf = new AttributeDescendantOfElements();
+		this.pAttributeDescendantOrSelfOf = new AttributeDescendantOrSelfOfElements();
 		this.pCardinality = new CardinalityElements();
 		this.pComparison = new ComparisonElements();
 		this.pAttributeValueEquals = new AttributeValueEqualsElements();
@@ -1314,13 +1404,43 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//AttributeConstraint returns Refinement:
-	//	cardinality=Cardinality? reversed?=REVERSED? attribute=(ConceptReference | Any) comparison=Comparison;
+	//	cardinality=Cardinality? reversed?=REVERSED? attribute=Attribute comparison=Comparison;
 	public AttributeConstraintElements getAttributeConstraintAccess() {
 		return pAttributeConstraint;
 	}
 	
 	public ParserRule getAttributeConstraintRule() {
 		return getAttributeConstraintAccess().getRule();
+	}
+
+	//Attribute returns ExpressionConstraint:
+	//	AttributeDescendantOf | AttributeDescendantOrSelfOf | ConceptReference | Any;
+	public AttributeElements getAttributeAccess() {
+		return pAttribute;
+	}
+	
+	public ParserRule getAttributeRule() {
+		return getAttributeAccess().getRule();
+	}
+
+	//AttributeDescendantOf returns DescendantOf:
+	//	LT constraint=(ConceptReference | Any);
+	public AttributeDescendantOfElements getAttributeDescendantOfAccess() {
+		return pAttributeDescendantOf;
+	}
+	
+	public ParserRule getAttributeDescendantOfRule() {
+		return getAttributeDescendantOfAccess().getRule();
+	}
+
+	//AttributeDescendantOrSelfOf returns DescendantOrSelfOf:
+	//	DBL_LT constraint=(ConceptReference | Any);
+	public AttributeDescendantOrSelfOfElements getAttributeDescendantOrSelfOfAccess() {
+		return pAttributeDescendantOrSelfOf;
+	}
+	
+	public ParserRule getAttributeDescendantOrSelfOfRule() {
+		return getAttributeDescendantOrSelfOfAccess().getRule();
 	}
 
 	//Cardinality:
