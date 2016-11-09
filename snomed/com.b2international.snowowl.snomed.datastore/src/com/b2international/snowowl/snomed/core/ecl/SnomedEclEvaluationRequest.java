@@ -23,8 +23,8 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCom
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
 import static com.google.common.collect.Sets.newHashSet;
-import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -74,6 +74,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
 import com.google.common.base.Function;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.Range;
 import com.google.common.reflect.TypeToken;
 
 /**
@@ -297,8 +298,14 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 		final String focusConceptExpression = refinement.isReversed() ? destinationConceptExpression : sourceConceptExpression;
 		final String valueConceptExpression = refinement.isReversed() ? sourceConceptExpression : destinationConceptExpression;
 		
-		if (cardinality != null && cardinality.getMin() == 0) {
-			if (cardinality.getMax() == -1) {
+		// the default cardinality is [1..*]
+		final boolean isUnbounded = cardinality == null ? true : cardinality.getMax() == -1;
+		final int min = cardinality == null ? 1 : cardinality.getMin();
+		final int max = isUnbounded ? Integer.MAX_VALUE : cardinality.getMax();
+		final Range<Integer> cardinalityRange = Range.closed(min, max);
+		
+		if (min == 0) {
+			if (isUnbounded) {
 				// zero and unbounded attributes, just match all focus concepts
 				return evaluate(context, refined.getConstraint());
 			} else {
@@ -318,7 +325,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 					.then(new Function<SnomedRelationships, Expression>() {
 						@Override
 						public Expression apply(SnomedRelationships matchingAttributes) {
-							final Set<String> ids = newHashSetWithExpectedSize(matchingAttributes.getItems().size());
+							final Set<String> ids = newHashSet();
 							// index the relationships based on the ID associated with the reversed flag
 							final Multimap<String, ISnomedRelationship> indexedByMatchingIds = Multimaps.index(matchingAttributes, new Function<ISnomedRelationship, String>() {
 								@Override
@@ -328,11 +335,10 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 							});
 							
 							for (String matchingConceptId : indexedByMatchingIds.keySet()) {
-								if (cardinality == null || cardinality.getMax() == -1) {
-									// in case of no cardinality or unbounded cardinality add the ID immediately
+								final Collection<ISnomedRelationship> attributes = indexedByMatchingIds.get(matchingConceptId);
+								final int numberOfMatchingAttributes = attributes.size();
+								if (cardinalityRange.contains(numberOfMatchingAttributes)) {
 									ids.add(matchingConceptId);
-								} else {
-									throw new UnsupportedOperationException("Filter matches to have gt min lt max attributes");
 								}
 							}
 							return ids.isEmpty() ? Expressions.matchNone() : ids(ids);
