@@ -173,10 +173,10 @@ public abstract class DescriptionRequestHelper {
 	
 	private SnomedDescriptionSearchRequestBuilder prepareFsnSearchDefault(final Collection<String> conceptIds) {
 		return SnomedRequests.prepareSearchDescription()
+				.all()
 				.filterByActive(true)
 				.filterByConceptId(conceptIds)
-				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
-				.setLimit(conceptIds.size());
+				.filterByType(Concepts.FULLY_SPECIFIED_NAME);
 	}
 
 	// PT requests
@@ -193,14 +193,13 @@ public abstract class DescriptionRequestHelper {
 	
 	private SnomedDescriptionSearchRequestBuilder preparePtSearch(final Collection<String> conceptIds, final List<ExtendedLocale> locales) {
 		return SnomedRequests.prepareSearchDescription()
+				.all()
 				.filterByActive(true)
 				.filterByConceptId(conceptIds)
 				.filterByType("<<" + Concepts.SYNONYM)
 				.filterByAcceptability(Acceptability.PREFERRED)
-				.filterByExtendedLocales(locales)
-				.setLimit(conceptIds.size());
+				.filterByExtendedLocales(locales);
 	}
-	
 
 	private Map<String, ISnomedDescription> convertToMap(SnomedDescriptions descriptions) {
 		return extractFirstDescription(indexByConceptId(descriptions));
