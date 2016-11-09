@@ -3,9 +3,18 @@
  */
 package com.b2international.snowowl.snomed.ecl;
 
+import org.eclipse.xtext.conversion.IValueConverterService;
+
+import com.b2international.snowowl.snomed.ecl.converter.EclValueConverterService;
+
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
  */
 public class EclRuntimeModule extends com.b2international.snowowl.snomed.ecl.AbstractEclRuntimeModule {
 
+	@Override
+	public Class<? extends IValueConverterService> bindIValueConverterService() {
+		return EclValueConverterService.class;
+	}
+	
 }
