@@ -43,6 +43,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getDBL_GTToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getDBL_LTRule())
 			return getDBL_LTToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getDOTRule())
+			return getDOTToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getEQUALRule())
 			return getEQUALToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getGTRule())
@@ -130,6 +132,15 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return "<<";
+	}
+	
+	/**
+	 * terminal DOT					: '.';
+	 */
+	protected String getDOTToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return ".";
 	}
 	
 	/**

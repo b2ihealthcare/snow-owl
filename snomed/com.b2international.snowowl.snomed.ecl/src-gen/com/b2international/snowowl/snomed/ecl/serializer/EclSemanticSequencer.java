@@ -14,6 +14,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
+import com.b2international.snowowl.snomed.ecl.ecl.DottedExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
@@ -82,6 +83,8 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				else if(context == grammarAccess.getAndExpressionConstraintRule() ||
 				   context == grammarAccess.getAndExpressionConstraintAccess().getAndExpressionConstraintLeftAction_1_0() ||
 				   context == grammarAccess.getDescendantOfRule() ||
+				   context == grammarAccess.getDottedExpressionConstraintRule() ||
+				   context == grammarAccess.getDottedExpressionConstraintAccess().getDottedExpressionConstraintConstraintAction_1_0() ||
 				   context == grammarAccess.getExclusionExpressionConstraintRule() ||
 				   context == grammarAccess.getExclusionExpressionConstraintAccess().getExclusionExpressionConstraintLeftAction_1_0() ||
 				   context == grammarAccess.getExpressionConstraintRule() ||
@@ -103,6 +106,8 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				else if(context == grammarAccess.getAndExpressionConstraintRule() ||
 				   context == grammarAccess.getAndExpressionConstraintAccess().getAndExpressionConstraintLeftAction_1_0() ||
 				   context == grammarAccess.getDescendantOrSelfOfRule() ||
+				   context == grammarAccess.getDottedExpressionConstraintRule() ||
+				   context == grammarAccess.getDottedExpressionConstraintAccess().getDottedExpressionConstraintConstraintAction_1_0() ||
 				   context == grammarAccess.getExclusionExpressionConstraintRule() ||
 				   context == grammarAccess.getExclusionExpressionConstraintAccess().getExclusionExpressionConstraintLeftAction_1_0() ||
 				   context == grammarAccess.getExpressionConstraintRule() ||
@@ -115,6 +120,9 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 					return; 
 				}
 				else break;
+			case EclPackage.DOTTED_EXPRESSION_CONSTRAINT:
+				sequence_DottedExpressionConstraint(context, (DottedExpressionConstraint) semanticObject); 
+				return; 
 			case EclPackage.EXCLUSION_EXPRESSION_CONSTRAINT:
 				sequence_ExclusionExpressionConstraint(context, (ExclusionExpressionConstraint) semanticObject); 
 				return; 
@@ -331,6 +339,25 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
 		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
 		feeder.accept(grammarAccess.getDescendantOrSelfOfAccess().getConstraintFocusConceptParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     (constraint=DottedExpressionConstraint_DottedExpressionConstraint_1_0 attribute=Attribute)
+	 */
+	protected void sequence_DottedExpressionConstraint(EObject context, DottedExpressionConstraint semanticObject) {
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.DOTTED_EXPRESSION_CONSTRAINT__CONSTRAINT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.DOTTED_EXPRESSION_CONSTRAINT__CONSTRAINT));
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.DOTTED_EXPRESSION_CONSTRAINT__ATTRIBUTE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.DOTTED_EXPRESSION_CONSTRAINT__ATTRIBUTE));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getDottedExpressionConstraintAccess().getDottedExpressionConstraintConstraintAction_1_0(), semanticObject.getConstraint());
+		feeder.accept(grammarAccess.getDottedExpressionConstraintAccess().getAttributeAttributeParserRuleCall_1_2_0(), semanticObject.getAttribute());
 		feeder.finish();
 	}
 	

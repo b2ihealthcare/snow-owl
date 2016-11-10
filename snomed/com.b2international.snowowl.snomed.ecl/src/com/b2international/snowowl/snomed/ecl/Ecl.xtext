@@ -15,9 +15,12 @@ AndExpressionConstraint returns ExpressionConstraint:
 	
 ExclusionExpressionConstraint returns ExpressionConstraint:
 	RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=RefinedExpressionConstraint)?;
-
+	
 RefinedExpressionConstraint returns ExpressionConstraint:
-	SimpleExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?;
+	DottedExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?;
+	
+DottedExpressionConstraint returns ExpressionConstraint:
+	SimpleExpressionConstraint ({DottedExpressionConstraint.constraint=current} DOT attribute=Attribute)*;
 
 SimpleExpressionConstraint returns ExpressionConstraint:
 	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | FocusConcept;

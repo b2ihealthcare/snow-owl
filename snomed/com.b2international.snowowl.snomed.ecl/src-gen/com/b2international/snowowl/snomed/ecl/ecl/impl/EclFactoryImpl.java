@@ -84,6 +84,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
       case EclPackage.AND_EXPRESSION_CONSTRAINT: return createAndExpressionConstraint();
       case EclPackage.EXCLUSION_EXPRESSION_CONSTRAINT: return createExclusionExpressionConstraint();
       case EclPackage.REFINED_EXPRESSION_CONSTRAINT: return createRefinedExpressionConstraint();
+      case EclPackage.DOTTED_EXPRESSION_CONSTRAINT: return createDottedExpressionConstraint();
       default:
         throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
     }
@@ -307,6 +308,17 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     RefinedExpressionConstraintImpl refinedExpressionConstraint = new RefinedExpressionConstraintImpl();
     return refinedExpressionConstraint;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public DottedExpressionConstraint createDottedExpressionConstraint()
+  {
+    DottedExpressionConstraintImpl dottedExpressionConstraint = new DottedExpressionConstraintImpl();
+    return dottedExpressionConstraint;
   }
 
   /**

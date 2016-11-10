@@ -228,6 +228,14 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case EclPackage.DOTTED_EXPRESSION_CONSTRAINT:
+      {
+        DottedExpressionConstraint dottedExpressionConstraint = (DottedExpressionConstraint)theEObject;
+        T result = caseDottedExpressionConstraint(dottedExpressionConstraint);
+        if (result == null) result = caseExpressionConstraint(dottedExpressionConstraint);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       default: return defaultCase(theEObject);
     }
   }
@@ -548,6 +556,22 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseRefinedExpressionConstraint(RefinedExpressionConstraint object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Dotted Expression Constraint</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Dotted Expression Constraint</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseDottedExpressionConstraint(DottedExpressionConstraint object)
   {
     return null;
   }

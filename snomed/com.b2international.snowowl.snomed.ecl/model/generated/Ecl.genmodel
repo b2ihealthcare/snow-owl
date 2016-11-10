@@ -69,5 +69,9 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//RefinedExpressionConstraint/constraint"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//RefinedExpressionConstraint/refinement"/>
     </genClasses>
+    <genClasses ecoreClass="Ecl.ecore#//DottedExpressionConstraint">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//DottedExpressionConstraint/constraint"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//DottedExpressionConstraint/attribute"/>
+    </genClasses>
   </genPackages>
 </genmodel:GenModel>

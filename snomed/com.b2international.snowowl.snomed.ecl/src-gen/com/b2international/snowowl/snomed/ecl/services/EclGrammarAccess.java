@@ -150,7 +150,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	public class RefinedExpressionConstraintElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "RefinedExpressionConstraint");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cSimpleExpressionConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cDottedExpressionConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Action cRefinedExpressionConstraintConstraintAction_1_0 = (Action)cGroup_1.eContents().get(0);
 		private final RuleCall cCOLONTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
@@ -158,14 +158,14 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cRefinementRefinementParserRuleCall_1_2_0 = (RuleCall)cRefinementAssignment_1_2.eContents().get(0);
 		
 		//RefinedExpressionConstraint returns ExpressionConstraint:
-		//	SimpleExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?;
+		//	DottedExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?;
 		@Override public ParserRule getRule() { return rule; }
 
-		//SimpleExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?
+		//DottedExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?
 		public Group getGroup() { return cGroup; }
 
-		//SimpleExpressionConstraint
-		public RuleCall getSimpleExpressionConstraintParserRuleCall_0() { return cSimpleExpressionConstraintParserRuleCall_0; }
+		//DottedExpressionConstraint
+		public RuleCall getDottedExpressionConstraintParserRuleCall_0() { return cDottedExpressionConstraintParserRuleCall_0; }
 
 		//({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?
 		public Group getGroup_1() { return cGroup_1; }
@@ -181,6 +181,42 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 
 		//Refinement
 		public RuleCall getRefinementRefinementParserRuleCall_1_2_0() { return cRefinementRefinementParserRuleCall_1_2_0; }
+	}
+
+	public class DottedExpressionConstraintElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "DottedExpressionConstraint");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cSimpleExpressionConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
+		private final Action cDottedExpressionConstraintConstraintAction_1_0 = (Action)cGroup_1.eContents().get(0);
+		private final RuleCall cDOTTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
+		private final Assignment cAttributeAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
+		private final RuleCall cAttributeAttributeParserRuleCall_1_2_0 = (RuleCall)cAttributeAssignment_1_2.eContents().get(0);
+		
+		//DottedExpressionConstraint returns ExpressionConstraint:
+		//	SimpleExpressionConstraint ({DottedExpressionConstraint.constraint=current} DOT attribute=Attribute)*;
+		@Override public ParserRule getRule() { return rule; }
+
+		//SimpleExpressionConstraint ({DottedExpressionConstraint.constraint=current} DOT attribute=Attribute)*
+		public Group getGroup() { return cGroup; }
+
+		//SimpleExpressionConstraint
+		public RuleCall getSimpleExpressionConstraintParserRuleCall_0() { return cSimpleExpressionConstraintParserRuleCall_0; }
+
+		//({DottedExpressionConstraint.constraint=current} DOT attribute=Attribute)*
+		public Group getGroup_1() { return cGroup_1; }
+
+		//{DottedExpressionConstraint.constraint=current}
+		public Action getDottedExpressionConstraintConstraintAction_1_0() { return cDottedExpressionConstraintConstraintAction_1_0; }
+
+		//DOT
+		public RuleCall getDOTTerminalRuleCall_1_1() { return cDOTTerminalRuleCall_1_1; }
+
+		//attribute=Attribute
+		public Assignment getAttributeAssignment_1_2() { return cAttributeAssignment_1_2; }
+
+		//Attribute
+		public RuleCall getAttributeAttributeParserRuleCall_1_2_0() { return cAttributeAttributeParserRuleCall_1_2_0; }
 	}
 
 	public class SimpleExpressionConstraintElements extends AbstractParserRuleElementFinder {
@@ -1076,6 +1112,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final AndExpressionConstraintElements pAndExpressionConstraint;
 	private final ExclusionExpressionConstraintElements pExclusionExpressionConstraint;
 	private final RefinedExpressionConstraintElements pRefinedExpressionConstraint;
+	private final DottedExpressionConstraintElements pDottedExpressionConstraint;
 	private final SimpleExpressionConstraintElements pSimpleExpressionConstraint;
 	private final FocusConceptElements pFocusConcept;
 	private final ChildOfElements pChildOf;
@@ -1147,6 +1184,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pAndExpressionConstraint = new AndExpressionConstraintElements();
 		this.pExclusionExpressionConstraint = new ExclusionExpressionConstraintElements();
 		this.pRefinedExpressionConstraint = new RefinedExpressionConstraintElements();
+		this.pDottedExpressionConstraint = new DottedExpressionConstraintElements();
 		this.pSimpleExpressionConstraint = new SimpleExpressionConstraintElements();
 		this.pFocusConcept = new FocusConceptElements();
 		this.pChildOf = new ChildOfElements();
@@ -1274,13 +1312,23 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//RefinedExpressionConstraint returns ExpressionConstraint:
-	//	SimpleExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?;
+	//	DottedExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?;
 	public RefinedExpressionConstraintElements getRefinedExpressionConstraintAccess() {
 		return pRefinedExpressionConstraint;
 	}
 	
 	public ParserRule getRefinedExpressionConstraintRule() {
 		return getRefinedExpressionConstraintAccess().getRule();
+	}
+
+	//DottedExpressionConstraint returns ExpressionConstraint:
+	//	SimpleExpressionConstraint ({DottedExpressionConstraint.constraint=current} DOT attribute=Attribute)*;
+	public DottedExpressionConstraintElements getDottedExpressionConstraintAccess() {
+		return pDottedExpressionConstraint;
+	}
+	
+	public ParserRule getDottedExpressionConstraintRule() {
+		return getDottedExpressionConstraintAccess().getRule();
 	}
 
 	//SimpleExpressionConstraint returns ExpressionConstraint:

@@ -203,6 +203,15 @@ public interface EclFactory extends EFactory
   RefinedExpressionConstraint createRefinedExpressionConstraint();
 
   /**
+   * Returns a new object of class '<em>Dotted Expression Constraint</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Dotted Expression Constraint</em>'.
+   * @generated
+   */
+  DottedExpressionConstraint createDottedExpressionConstraint();
+
+  /**
    * Returns the package supported by this factory.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

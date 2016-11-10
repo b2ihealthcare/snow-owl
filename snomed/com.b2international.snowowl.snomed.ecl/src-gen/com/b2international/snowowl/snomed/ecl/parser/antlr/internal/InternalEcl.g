@@ -298,11 +298,11 @@ ruleRefinedExpressionConstraint returns [EObject current=null]
     @after { leaveRule(); }:
 (
     { 
-        newCompositeNode(grammarAccess.getRefinedExpressionConstraintAccess().getSimpleExpressionConstraintParserRuleCall_0()); 
+        newCompositeNode(grammarAccess.getRefinedExpressionConstraintAccess().getDottedExpressionConstraintParserRuleCall_0()); 
     }
-    this_SimpleExpressionConstraint_0=ruleSimpleExpressionConstraint
+    this_DottedExpressionConstraint_0=ruleDottedExpressionConstraint
     { 
-        $current = $this_SimpleExpressionConstraint_0.current; 
+        $current = $this_DottedExpressionConstraint_0.current; 
         afterParserOrEnumRuleCall();
     }
 ((
@@ -334,6 +334,64 @@ ruleRefinedExpressionConstraint returns [EObject current=null]
 
 )
 ))?)
+;
+
+
+
+
+
+// Entry rule entryRuleDottedExpressionConstraint
+entryRuleDottedExpressionConstraint returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getDottedExpressionConstraintRule()); }
+	 iv_ruleDottedExpressionConstraint=ruleDottedExpressionConstraint 
+	 { $current=$iv_ruleDottedExpressionConstraint.current; } 
+	 EOF 
+;
+
+// Rule DottedExpressionConstraint
+ruleDottedExpressionConstraint returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(
+    { 
+        newCompositeNode(grammarAccess.getDottedExpressionConstraintAccess().getSimpleExpressionConstraintParserRuleCall_0()); 
+    }
+    this_SimpleExpressionConstraint_0=ruleSimpleExpressionConstraint
+    { 
+        $current = $this_SimpleExpressionConstraint_0.current; 
+        afterParserOrEnumRuleCall();
+    }
+((
+    {
+        $current = forceCreateModelElementAndSet(
+            grammarAccess.getDottedExpressionConstraintAccess().getDottedExpressionConstraintConstraintAction_1_0(),
+            $current);
+    }
+)this_DOT_2=RULE_DOT
+    { 
+    newLeafNode(this_DOT_2, grammarAccess.getDottedExpressionConstraintAccess().getDOTTerminalRuleCall_1_1()); 
+    }
+(
+(
+		{ 
+	        newCompositeNode(grammarAccess.getDottedExpressionConstraintAccess().getAttributeAttributeParserRuleCall_1_2_0()); 
+	    }
+		lv_attribute_3_0=ruleAttribute		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getDottedExpressionConstraintRule());
+	        }
+       		set(
+       			$current, 
+       			"attribute",
+        		lv_attribute_3_0, 
+        		"Attribute");
+	        afterParserOrEnumRuleCall();
+	    }
+
+)
+))*)
 ;
 
 

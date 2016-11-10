@@ -83,4 +83,10 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="refinement" eType="#//Refinement"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DottedExpressionConstraint" eSuperTypes="#//ExpressionConstraint">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//ExpressionConstraint"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="attribute" eType="#//ExpressionConstraint"
+        containment="true"/>
+  </eClassifiers>
 </ecore:EPackage>
