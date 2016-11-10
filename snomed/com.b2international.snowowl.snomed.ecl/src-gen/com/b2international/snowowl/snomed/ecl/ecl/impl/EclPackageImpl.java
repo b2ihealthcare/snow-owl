@@ -5,7 +5,9 @@ package com.b2international.snowowl.snomed.ecl.ecl.impl;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
+import com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
@@ -22,6 +24,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
 import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
 import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
 import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
@@ -123,6 +126,13 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  private EClass attributeConstraintEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   private EClass cardinalityEClass = null;
 
   /**
@@ -187,6 +197,20 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * @generated
    */
   private EClass dottedExpressionConstraintEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass orRefinementEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass andRefinementEClass = null;
 
   /**
    * Creates an instance of the model <b>Package</b>, registered with
@@ -456,9 +480,9 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getRefinement_Cardinality()
+  public EClass getAttributeConstraint()
   {
-    return (EReference)refinementEClass.getEStructuralFeatures().get(0);
+    return attributeConstraintEClass;
   }
 
   /**
@@ -466,9 +490,9 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EAttribute getRefinement_Reversed()
+  public EReference getAttributeConstraint_Cardinality()
   {
-    return (EAttribute)refinementEClass.getEStructuralFeatures().get(1);
+    return (EReference)attributeConstraintEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -476,9 +500,9 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getRefinement_Attribute()
+  public EAttribute getAttributeConstraint_Reversed()
   {
-    return (EReference)refinementEClass.getEStructuralFeatures().get(2);
+    return (EAttribute)attributeConstraintEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -486,9 +510,19 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getRefinement_Comparison()
+  public EReference getAttributeConstraint_Attribute()
   {
-    return (EReference)refinementEClass.getEStructuralFeatures().get(3);
+    return (EReference)attributeConstraintEClass.getEStructuralFeatures().get(2);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getAttributeConstraint_Comparison()
+  {
+    return (EReference)attributeConstraintEClass.getEStructuralFeatures().get(3);
   }
 
   /**
@@ -736,6 +770,66 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  public EClass getOrRefinement()
+  {
+    return orRefinementEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getOrRefinement_Left()
+  {
+    return (EReference)orRefinementEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getOrRefinement_Right()
+  {
+    return (EReference)orRefinementEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getAndRefinement()
+  {
+    return andRefinementEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getAndRefinement_Left()
+  {
+    return (EReference)andRefinementEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getAndRefinement_Right()
+  {
+    return (EReference)andRefinementEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public EclFactory getEclFactory()
   {
     return (EclFactory)getEFactoryInstance();
@@ -791,10 +885,12 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     anyEClass = createEClass(ANY);
 
     refinementEClass = createEClass(REFINEMENT);
-    createEReference(refinementEClass, REFINEMENT__CARDINALITY);
-    createEAttribute(refinementEClass, REFINEMENT__REVERSED);
-    createEReference(refinementEClass, REFINEMENT__ATTRIBUTE);
-    createEReference(refinementEClass, REFINEMENT__COMPARISON);
+
+    attributeConstraintEClass = createEClass(ATTRIBUTE_CONSTRAINT);
+    createEReference(attributeConstraintEClass, ATTRIBUTE_CONSTRAINT__CARDINALITY);
+    createEAttribute(attributeConstraintEClass, ATTRIBUTE_CONSTRAINT__REVERSED);
+    createEReference(attributeConstraintEClass, ATTRIBUTE_CONSTRAINT__ATTRIBUTE);
+    createEReference(attributeConstraintEClass, ATTRIBUTE_CONSTRAINT__COMPARISON);
 
     cardinalityEClass = createEClass(CARDINALITY);
     createEAttribute(cardinalityEClass, CARDINALITY__MIN);
@@ -829,6 +925,14 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     dottedExpressionConstraintEClass = createEClass(DOTTED_EXPRESSION_CONSTRAINT);
     createEReference(dottedExpressionConstraintEClass, DOTTED_EXPRESSION_CONSTRAINT__CONSTRAINT);
     createEReference(dottedExpressionConstraintEClass, DOTTED_EXPRESSION_CONSTRAINT__ATTRIBUTE);
+
+    orRefinementEClass = createEClass(OR_REFINEMENT);
+    createEReference(orRefinementEClass, OR_REFINEMENT__LEFT);
+    createEReference(orRefinementEClass, OR_REFINEMENT__RIGHT);
+
+    andRefinementEClass = createEClass(AND_REFINEMENT);
+    createEReference(andRefinementEClass, AND_REFINEMENT__LEFT);
+    createEReference(andRefinementEClass, AND_REFINEMENT__RIGHT);
   }
 
   /**
@@ -869,6 +973,7 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     memberOfEClass.getESuperTypes().add(this.getExpressionConstraint());
     conceptReferenceEClass.getESuperTypes().add(this.getExpressionConstraint());
     anyEClass.getESuperTypes().add(this.getExpressionConstraint());
+    attributeConstraintEClass.getESuperTypes().add(this.getRefinement());
     attributeValueEqualsEClass.getESuperTypes().add(this.getComparison());
     attributeValueNotEqualsEClass.getESuperTypes().add(this.getComparison());
     nestedExpressionEClass.getESuperTypes().add(this.getExpressionConstraint());
@@ -877,6 +982,8 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     exclusionExpressionConstraintEClass.getESuperTypes().add(this.getExpressionConstraint());
     refinedExpressionConstraintEClass.getESuperTypes().add(this.getExpressionConstraint());
     dottedExpressionConstraintEClass.getESuperTypes().add(this.getExpressionConstraint());
+    orRefinementEClass.getESuperTypes().add(this.getRefinement());
+    andRefinementEClass.getESuperTypes().add(this.getRefinement());
 
     // Initialize classes and features; add operations and parameters
     initEClass(expressionConstraintEClass, ExpressionConstraint.class, "ExpressionConstraint", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -909,10 +1016,12 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     initEClass(anyEClass, Any.class, "Any", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(refinementEClass, Refinement.class, "Refinement", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getRefinement_Cardinality(), this.getCardinality(), null, "cardinality", null, 0, 1, Refinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getRefinement_Reversed(), ecorePackage.getEBoolean(), "reversed", null, 0, 1, Refinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getRefinement_Attribute(), this.getExpressionConstraint(), null, "attribute", null, 0, 1, Refinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getRefinement_Comparison(), this.getComparison(), null, "comparison", null, 0, 1, Refinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(attributeConstraintEClass, AttributeConstraint.class, "AttributeConstraint", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getAttributeConstraint_Cardinality(), this.getCardinality(), null, "cardinality", null, 0, 1, AttributeConstraint.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getAttributeConstraint_Reversed(), ecorePackage.getEBoolean(), "reversed", null, 0, 1, AttributeConstraint.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getAttributeConstraint_Attribute(), this.getExpressionConstraint(), null, "attribute", null, 0, 1, AttributeConstraint.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getAttributeConstraint_Comparison(), this.getComparison(), null, "comparison", null, 0, 1, AttributeConstraint.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(cardinalityEClass, Cardinality.class, "Cardinality", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getCardinality_Min(), ecorePackage.getEInt(), "min", null, 0, 1, Cardinality.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -947,6 +1056,14 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     initEClass(dottedExpressionConstraintEClass, DottedExpressionConstraint.class, "DottedExpressionConstraint", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getDottedExpressionConstraint_Constraint(), this.getExpressionConstraint(), null, "constraint", null, 0, 1, DottedExpressionConstraint.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEReference(getDottedExpressionConstraint_Attribute(), this.getExpressionConstraint(), null, "attribute", null, 0, 1, DottedExpressionConstraint.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(orRefinementEClass, OrRefinement.class, "OrRefinement", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getOrRefinement_Left(), this.getRefinement(), null, "left", null, 0, 1, OrRefinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getOrRefinement_Right(), this.getRefinement(), null, "right", null, 0, 1, OrRefinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(andRefinementEClass, AndRefinement.class, "AndRefinement", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getAndRefinement_Left(), this.getRefinement(), null, "left", null, 0, 1, AndRefinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getAndRefinement_Right(), this.getAttributeConstraint(), null, "right", null, 0, 1, AndRefinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     // Create resource
     createResource(eNS_URI);

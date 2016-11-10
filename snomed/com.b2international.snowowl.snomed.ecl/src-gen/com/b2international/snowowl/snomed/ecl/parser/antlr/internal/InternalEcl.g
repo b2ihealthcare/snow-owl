@@ -190,28 +190,27 @@ ruleAndExpressionConstraint returns [EObject current=null]
             grammarAccess.getAndExpressionConstraintAccess().getAndExpressionConstraintLeftAction_1_0(),
             $current);
     }
-)(this_AND_2=RULE_AND
+)
     { 
-    newLeafNode(this_AND_2, grammarAccess.getAndExpressionConstraintAccess().getANDTerminalRuleCall_1_1_0()); 
+        newCompositeNode(grammarAccess.getAndExpressionConstraintAccess().getAndOperatorParserRuleCall_1_1()); 
     }
-
-    |this_COMMA_3=RULE_COMMA
+ruleAndOperator
     { 
-    newLeafNode(this_COMMA_3, grammarAccess.getAndExpressionConstraintAccess().getCOMMATerminalRuleCall_1_1_1()); 
+        afterParserOrEnumRuleCall();
     }
-)(
+(
 (
 		{ 
 	        newCompositeNode(grammarAccess.getAndExpressionConstraintAccess().getRightExclusionExpressionConstraintParserRuleCall_1_2_0()); 
 	    }
-		lv_right_4_0=ruleExclusionExpressionConstraint		{
+		lv_right_3_0=ruleExclusionExpressionConstraint		{
 	        if ($current==null) {
 	            $current = createModelElementForParent(grammarAccess.getAndExpressionConstraintRule());
 	        }
        		set(
        			$current, 
        			"right",
-        		lv_right_4_0, 
+        		lv_right_3_0, 
         		"ExclusionExpressionConstraint");
 	        afterParserOrEnumRuleCall();
 	    }
@@ -979,14 +978,134 @@ ruleRefinement returns [EObject current=null]
     @after { leaveRule(); }:
 
     { 
-        newCompositeNode(grammarAccess.getRefinementAccess().getAttributeConstraintParserRuleCall()); 
+        newCompositeNode(grammarAccess.getRefinementAccess().getOrRefinementParserRuleCall()); 
+    }
+    this_OrRefinement_0=ruleOrRefinement
+    { 
+        $current = $this_OrRefinement_0.current; 
+        afterParserOrEnumRuleCall();
+    }
+
+;
+
+
+
+
+
+// Entry rule entryRuleOrRefinement
+entryRuleOrRefinement returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getOrRefinementRule()); }
+	 iv_ruleOrRefinement=ruleOrRefinement 
+	 { $current=$iv_ruleOrRefinement.current; } 
+	 EOF 
+;
+
+// Rule OrRefinement
+ruleOrRefinement returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(
+    { 
+        newCompositeNode(grammarAccess.getOrRefinementAccess().getAndRefinementParserRuleCall_0()); 
+    }
+    this_AndRefinement_0=ruleAndRefinement
+    { 
+        $current = $this_AndRefinement_0.current; 
+        afterParserOrEnumRuleCall();
+    }
+((
+    {
+        $current = forceCreateModelElementAndSet(
+            grammarAccess.getOrRefinementAccess().getOrRefinementLeftAction_1_0(),
+            $current);
+    }
+)this_OR_2=RULE_OR
+    { 
+    newLeafNode(this_OR_2, grammarAccess.getOrRefinementAccess().getORTerminalRuleCall_1_1()); 
+    }
+(
+(
+		{ 
+	        newCompositeNode(grammarAccess.getOrRefinementAccess().getRightAndRefinementParserRuleCall_1_2_0()); 
+	    }
+		lv_right_3_0=ruleAndRefinement		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getOrRefinementRule());
+	        }
+       		set(
+       			$current, 
+       			"right",
+        		lv_right_3_0, 
+        		"AndRefinement");
+	        afterParserOrEnumRuleCall();
+	    }
+
+)
+))*)
+;
+
+
+
+
+
+// Entry rule entryRuleAndRefinement
+entryRuleAndRefinement returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getAndRefinementRule()); }
+	 iv_ruleAndRefinement=ruleAndRefinement 
+	 { $current=$iv_ruleAndRefinement.current; } 
+	 EOF 
+;
+
+// Rule AndRefinement
+ruleAndRefinement returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(
+    { 
+        newCompositeNode(grammarAccess.getAndRefinementAccess().getAttributeConstraintParserRuleCall_0()); 
     }
     this_AttributeConstraint_0=ruleAttributeConstraint
     { 
         $current = $this_AttributeConstraint_0.current; 
         afterParserOrEnumRuleCall();
     }
+((
+    {
+        $current = forceCreateModelElementAndSet(
+            grammarAccess.getAndRefinementAccess().getAndRefinementLeftAction_1_0(),
+            $current);
+    }
+)
+    { 
+        newCompositeNode(grammarAccess.getAndRefinementAccess().getAndOperatorParserRuleCall_1_1()); 
+    }
+ruleAndOperator
+    { 
+        afterParserOrEnumRuleCall();
+    }
+(
+(
+		{ 
+	        newCompositeNode(grammarAccess.getAndRefinementAccess().getRightAttributeConstraintParserRuleCall_1_2_0()); 
+	    }
+		lv_right_3_0=ruleAttributeConstraint		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getAndRefinementRule());
+	        }
+       		set(
+       			$current, 
+       			"right",
+        		lv_right_3_0, 
+        		"AttributeConstraint");
+	        afterParserOrEnumRuleCall();
+	    }
 
+)
+))*)
 ;
 
 
@@ -2053,6 +2172,52 @@ ruleMaxValue returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken(
 
     { 
     newLeafNode(this_WILDCARD_1, grammarAccess.getMaxValueAccess().getWILDCARDTerminalRuleCall_1()); 
+    }
+)
+    ;
+finally {
+	myHiddenTokenState.restore();
+}
+
+
+
+
+
+// Entry rule entryRuleAndOperator
+entryRuleAndOperator returns [String current=null] 
+	@init { 
+		HiddenTokens myHiddenTokenState = ((XtextTokenStream)input).setHiddenTokens();
+	}
+	:
+	{ newCompositeNode(grammarAccess.getAndOperatorRule()); } 
+	 iv_ruleAndOperator=ruleAndOperator 
+	 { $current=$iv_ruleAndOperator.current.getText(); }  
+	 EOF 
+;
+finally {
+	myHiddenTokenState.restore();
+}
+
+// Rule AndOperator
+ruleAndOperator returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()] 
+    @init { enterRule(); 
+		HiddenTokens myHiddenTokenState = ((XtextTokenStream)input).setHiddenTokens();
+    }
+    @after { leaveRule(); }:
+(    this_AND_0=RULE_AND    {
+		$current.merge(this_AND_0);
+    }
+
+    { 
+    newLeafNode(this_AND_0, grammarAccess.getAndOperatorAccess().getANDTerminalRuleCall_0()); 
+    }
+
+    |    this_COMMA_1=RULE_COMMA    {
+		$current.merge(this_COMMA_1);
+    }
+
+    { 
+    newLeafNode(this_COMMA_1, grammarAccess.getAndOperatorAccess().getCOMMATerminalRuleCall_1()); 
     }
 )
     ;

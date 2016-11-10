@@ -75,6 +75,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
       case EclPackage.CONCEPT_REFERENCE: return createConceptReference();
       case EclPackage.ANY: return createAny();
       case EclPackage.REFINEMENT: return createRefinement();
+      case EclPackage.ATTRIBUTE_CONSTRAINT: return createAttributeConstraint();
       case EclPackage.CARDINALITY: return createCardinality();
       case EclPackage.COMPARISON: return createComparison();
       case EclPackage.ATTRIBUTE_VALUE_EQUALS: return createAttributeValueEquals();
@@ -85,6 +86,8 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
       case EclPackage.EXCLUSION_EXPRESSION_CONSTRAINT: return createExclusionExpressionConstraint();
       case EclPackage.REFINED_EXPRESSION_CONSTRAINT: return createRefinedExpressionConstraint();
       case EclPackage.DOTTED_EXPRESSION_CONSTRAINT: return createDottedExpressionConstraint();
+      case EclPackage.OR_REFINEMENT: return createOrRefinement();
+      case EclPackage.AND_REFINEMENT: return createAndRefinement();
       default:
         throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
     }
@@ -216,6 +219,17 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
+  public AttributeConstraint createAttributeConstraint()
+  {
+    AttributeConstraintImpl attributeConstraint = new AttributeConstraintImpl();
+    return attributeConstraint;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public Cardinality createCardinality()
   {
     CardinalityImpl cardinality = new CardinalityImpl();
@@ -319,6 +333,28 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     DottedExpressionConstraintImpl dottedExpressionConstraint = new DottedExpressionConstraintImpl();
     return dottedExpressionConstraint;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public OrRefinement createOrRefinement()
+  {
+    OrRefinementImpl orRefinement = new OrRefinementImpl();
+    return orRefinement;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public AndRefinement createAndRefinement()
+  {
+    AndRefinementImpl andRefinement = new AndRefinementImpl();
+    return andRefinement;
   }
 
   /**

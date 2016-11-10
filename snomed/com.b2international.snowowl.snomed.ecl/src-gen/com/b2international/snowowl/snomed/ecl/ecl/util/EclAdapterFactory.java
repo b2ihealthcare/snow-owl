@@ -130,6 +130,11 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createRefinementAdapter();
       }
       @Override
+      public Adapter caseAttributeConstraint(AttributeConstraint object)
+      {
+        return createAttributeConstraintAdapter();
+      }
+      @Override
       public Adapter caseCardinality(Cardinality object)
       {
         return createCardinalityAdapter();
@@ -178,6 +183,16 @@ public class EclAdapterFactory extends AdapterFactoryImpl
       public Adapter caseDottedExpressionConstraint(DottedExpressionConstraint object)
       {
         return createDottedExpressionConstraintAdapter();
+      }
+      @Override
+      public Adapter caseOrRefinement(OrRefinement object)
+      {
+        return createOrRefinementAdapter();
+      }
+      @Override
+      public Adapter caseAndRefinement(AndRefinement object)
+      {
+        return createAndRefinementAdapter();
       }
       @Override
       public Adapter defaultCase(EObject object)
@@ -367,6 +382,21 @@ public class EclAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint <em>Attribute Constraint</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint
+   * @generated
+   */
+  public Adapter createAttributeConstraintAdapter()
+  {
+    return null;
+  }
+
+  /**
    * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.Cardinality <em>Cardinality</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
@@ -512,6 +542,36 @@ public class EclAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createDottedExpressionConstraintAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.OrRefinement <em>Or Refinement</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.OrRefinement
+   * @generated
+   */
+  public Adapter createOrRefinementAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.AndRefinement <em>And Refinement</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AndRefinement
+   * @generated
+   */
+  public Adapter createAndRefinementAdapter()
   {
     return null;
   }

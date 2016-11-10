@@ -21,24 +21,22 @@ import org.eclipse.xtext.serializer.sequencer.AbstractSyntacticSequencer;
 public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 
 	protected EclGrammarAccess grammarAccess;
-	protected AbstractElementAlias match_AndExpressionConstraint_ANDTerminalRuleCall_1_1_0_or_COMMATerminalRuleCall_1_1_1;
+	protected AbstractElementAlias match_AndOperator_ANDTerminalRuleCall_0_or_COMMATerminalRuleCall_1;
 	
 	@Inject
 	protected void init(IGrammarAccess access) {
 		grammarAccess = (EclGrammarAccess) access;
-		match_AndExpressionConstraint_ANDTerminalRuleCall_1_1_0_or_COMMATerminalRuleCall_1_1_1 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndExpressionConstraintAccess().getANDTerminalRuleCall_1_1_0()), new TokenAlias(false, false, grammarAccess.getAndExpressionConstraintAccess().getCOMMATerminalRuleCall_1_1_1()));
+		match_AndOperator_ANDTerminalRuleCall_0_or_COMMATerminalRuleCall_1 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndOperatorAccess().getANDTerminalRuleCall_0()), new TokenAlias(false, false, grammarAccess.getAndOperatorAccess().getCOMMATerminalRuleCall_1()));
 	}
 	
 	@Override
 	protected String getUnassignedRuleCallToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if(ruleCall.getRule() == grammarAccess.getANDRule())
-			return getANDToken(semanticObject, ruleCall, node);
+		if(ruleCall.getRule() == grammarAccess.getAndOperatorRule())
+			return getAndOperatorToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getCARETRule())
 			return getCARETToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getCOLONRule())
 			return getCOLONToken(semanticObject, ruleCall, node);
-		else if(ruleCall.getRule() == grammarAccess.getCOMMARule())
-			return getCOMMAToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getDBL_GTRule())
 			return getDBL_GTToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getDBL_LTRule())
@@ -81,9 +79,9 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal AND 					: 'AND';
+	 * AndOperator			hidden() : AND | COMMA;
 	 */
-	protected String getANDToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+	protected String getAndOperatorToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
 			return getTokenText(node);
 		return "AND";
@@ -105,15 +103,6 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return ":";
-	}
-	
-	/**
-	 * terminal COMMA					: ',';
-	 */
-	protected String getCOMMAToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return ",";
 	}
 	
 	/**
@@ -293,8 +282,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 		List<INode> transitionNodes = collectNodes(fromNode, toNode);
 		for (AbstractElementAlias syntax : transition.getAmbiguousSyntaxes()) {
 			List<INode> syntaxNodes = getNodesFor(transitionNodes, syntax);
-			if(match_AndExpressionConstraint_ANDTerminalRuleCall_1_1_0_or_COMMATerminalRuleCall_1_1_1.equals(syntax))
-				emit_AndExpressionConstraint_ANDTerminalRuleCall_1_1_0_or_COMMATerminalRuleCall_1_1_1(semanticObject, getLastNavigableState(), syntaxNodes);
+			if(match_AndOperator_ANDTerminalRuleCall_0_or_COMMATerminalRuleCall_1.equals(syntax))
+				emit_AndOperator_ANDTerminalRuleCall_0_or_COMMATerminalRuleCall_1(semanticObject, getLastNavigableState(), syntaxNodes);
 			else acceptNodes(getLastNavigableState(), syntaxNodes);
 		}
 	}
@@ -304,9 +293,10 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	 *     AND | COMMA
 	 *
 	 * This ambiguous syntax occurs at:
-	 *     {AndExpressionConstraint.left=} (ambiguity) right=ExclusionExpressionConstraint
+	 *     {AndExpressionConstraint.left=} AndOperator (ambiguity) AndOperator right=ExclusionExpressionConstraint
+	 *     {AndRefinement.left=} AndOperator (ambiguity) AndOperator right=AttributeConstraint
 	 */
-	protected void emit_AndExpressionConstraint_ANDTerminalRuleCall_1_1_0_or_COMMATerminalRuleCall_1_1_1(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
+	protected void emit_AndOperator_ANDTerminalRuleCall_0_or_COMMATerminalRuleCall_1(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
 		acceptNodes(transition, nodes);
 	}
 	

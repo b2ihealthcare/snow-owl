@@ -71,38 +71,29 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cExclusionExpressionConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Action cAndExpressionConstraintLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
-		private final Alternatives cAlternatives_1_1 = (Alternatives)cGroup_1.eContents().get(1);
-		private final RuleCall cANDTerminalRuleCall_1_1_0 = (RuleCall)cAlternatives_1_1.eContents().get(0);
-		private final RuleCall cCOMMATerminalRuleCall_1_1_1 = (RuleCall)cAlternatives_1_1.eContents().get(1);
+		private final RuleCall cAndOperatorParserRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
 		private final RuleCall cRightExclusionExpressionConstraintParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
 		//AndExpressionConstraint returns ExpressionConstraint:
-		//	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} (AND | COMMA)
+		//	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} AndOperator
 		//	right=ExclusionExpressionConstraint)*;
 		@Override public ParserRule getRule() { return rule; }
 
-		//ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} (AND | COMMA)
-		//right=ExclusionExpressionConstraint)*
+		//ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} AndOperator right=ExclusionExpressionConstraint)*
 		public Group getGroup() { return cGroup; }
 
 		//ExclusionExpressionConstraint
 		public RuleCall getExclusionExpressionConstraintParserRuleCall_0() { return cExclusionExpressionConstraintParserRuleCall_0; }
 
-		//({AndExpressionConstraint.left=current} (AND | COMMA) right=ExclusionExpressionConstraint)*
+		//({AndExpressionConstraint.left=current} AndOperator right=ExclusionExpressionConstraint)*
 		public Group getGroup_1() { return cGroup_1; }
 
 		//{AndExpressionConstraint.left=current}
 		public Action getAndExpressionConstraintLeftAction_1_0() { return cAndExpressionConstraintLeftAction_1_0; }
 
-		//AND | COMMA
-		public Alternatives getAlternatives_1_1() { return cAlternatives_1_1; }
-
-		//AND
-		public RuleCall getANDTerminalRuleCall_1_1_0() { return cANDTerminalRuleCall_1_1_0; }
-
-		//COMMA
-		public RuleCall getCOMMATerminalRuleCall_1_1_1() { return cCOMMATerminalRuleCall_1_1_1; }
+		//AndOperator
+		public RuleCall getAndOperatorParserRuleCall_1_1() { return cAndOperatorParserRuleCall_1_1; }
 
 		//right=ExclusionExpressionConstraint
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
@@ -525,14 +516,86 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 
 	public class RefinementElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "Refinement");
-		private final RuleCall cAttributeConstraintParserRuleCall = (RuleCall)rule.eContents().get(1);
+		private final RuleCall cOrRefinementParserRuleCall = (RuleCall)rule.eContents().get(1);
 		
 		//Refinement:
-		//	AttributeConstraint;
+		//	OrRefinement;
 		@Override public ParserRule getRule() { return rule; }
 
+		//OrRefinement
+		public RuleCall getOrRefinementParserRuleCall() { return cOrRefinementParserRuleCall; }
+	}
+
+	public class OrRefinementElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "OrRefinement");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cAndRefinementParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
+		private final Action cOrRefinementLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
+		private final RuleCall cORTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
+		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
+		private final RuleCall cRightAndRefinementParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
+		
+		//OrRefinement returns Refinement:
+		//	AndRefinement ({OrRefinement.left=current} OR right=AndRefinement)*;
+		@Override public ParserRule getRule() { return rule; }
+
+		//AndRefinement ({OrRefinement.left=current} OR right=AndRefinement)*
+		public Group getGroup() { return cGroup; }
+
+		//AndRefinement
+		public RuleCall getAndRefinementParserRuleCall_0() { return cAndRefinementParserRuleCall_0; }
+
+		//({OrRefinement.left=current} OR right=AndRefinement)*
+		public Group getGroup_1() { return cGroup_1; }
+
+		//{OrRefinement.left=current}
+		public Action getOrRefinementLeftAction_1_0() { return cOrRefinementLeftAction_1_0; }
+
+		//OR
+		public RuleCall getORTerminalRuleCall_1_1() { return cORTerminalRuleCall_1_1; }
+
+		//right=AndRefinement
+		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
+
+		//AndRefinement
+		public RuleCall getRightAndRefinementParserRuleCall_1_2_0() { return cRightAndRefinementParserRuleCall_1_2_0; }
+	}
+
+	public class AndRefinementElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AndRefinement");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cAttributeConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
+		private final Action cAndRefinementLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
+		private final RuleCall cAndOperatorParserRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
+		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
+		private final RuleCall cRightAttributeConstraintParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
+		
+		//AndRefinement returns Refinement:
+		//	AttributeConstraint ({AndRefinement.left=current} AndOperator right=AttributeConstraint)*;
+		@Override public ParserRule getRule() { return rule; }
+
+		//AttributeConstraint ({AndRefinement.left=current} AndOperator right=AttributeConstraint)*
+		public Group getGroup() { return cGroup; }
+
 		//AttributeConstraint
-		public RuleCall getAttributeConstraintParserRuleCall() { return cAttributeConstraintParserRuleCall; }
+		public RuleCall getAttributeConstraintParserRuleCall_0() { return cAttributeConstraintParserRuleCall_0; }
+
+		//({AndRefinement.left=current} AndOperator right=AttributeConstraint)*
+		public Group getGroup_1() { return cGroup_1; }
+
+		//{AndRefinement.left=current}
+		public Action getAndRefinementLeftAction_1_0() { return cAndRefinementLeftAction_1_0; }
+
+		//AndOperator
+		public RuleCall getAndOperatorParserRuleCall_1_1() { return cAndOperatorParserRuleCall_1_1; }
+
+		//right=AttributeConstraint
+		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
+
+		//AttributeConstraint
+		public RuleCall getRightAttributeConstraintParserRuleCall_1_2_0() { return cRightAttributeConstraintParserRuleCall_1_2_0; }
 	}
 
 	public class AttributeConstraintElements extends AbstractParserRuleElementFinder {
@@ -547,7 +610,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final Assignment cComparisonAssignment_3 = (Assignment)cGroup.eContents().get(3);
 		private final RuleCall cComparisonComparisonParserRuleCall_3_0 = (RuleCall)cComparisonAssignment_3.eContents().get(0);
 		
-		//AttributeConstraint returns Refinement:
+		//AttributeConstraint:
 		//	cardinality=Cardinality? reversed?=REVERSED? attribute=Attribute comparison=Comparison;
 		@Override public ParserRule getRule() { return rule; }
 
@@ -1105,6 +1168,26 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		//WILDCARD
 		public RuleCall getWILDCARDTerminalRuleCall_1() { return cWILDCARDTerminalRuleCall_1; }
 	}
+
+	public class AndOperatorElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AndOperator");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final RuleCall cANDTerminalRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cCOMMATerminalRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		
+		//AndOperator hidden():
+		//	AND | COMMA;
+		@Override public ParserRule getRule() { return rule; }
+
+		//AND | COMMA
+		public Alternatives getAlternatives() { return cAlternatives; }
+
+		//AND
+		public RuleCall getANDTerminalRuleCall_0() { return cANDTerminalRuleCall_0; }
+
+		//COMMA
+		public RuleCall getCOMMATerminalRuleCall_1() { return cCOMMATerminalRuleCall_1; }
+	}
 	
 	
 	private final ExpressionConstraintElements pExpressionConstraint;
@@ -1125,6 +1208,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final ConceptReferenceElements pConceptReference;
 	private final AnyElements pAny;
 	private final RefinementElements pRefinement;
+	private final OrRefinementElements pOrRefinement;
+	private final AndRefinementElements pAndRefinement;
 	private final AttributeConstraintElements pAttributeConstraint;
 	private final AttributeElements pAttribute;
 	private final AttributeDescendantOfElements pAttributeDescendantOf;
@@ -1139,6 +1224,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final TermCharacterElements pTermCharacter;
 	private final NonNegativeIntegerElements pNonNegativeInteger;
 	private final MaxValueElements pMaxValue;
+	private final AndOperatorElements pAndOperator;
 	private final TerminalRule tREVERSED;
 	private final TerminalRule tTO;
 	private final TerminalRule tAND;
@@ -1197,6 +1283,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pConceptReference = new ConceptReferenceElements();
 		this.pAny = new AnyElements();
 		this.pRefinement = new RefinementElements();
+		this.pOrRefinement = new OrRefinementElements();
+		this.pAndRefinement = new AndRefinementElements();
 		this.pAttributeConstraint = new AttributeConstraintElements();
 		this.pAttribute = new AttributeElements();
 		this.pAttributeDescendantOf = new AttributeDescendantOfElements();
@@ -1211,6 +1299,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pTermCharacter = new TermCharacterElements();
 		this.pNonNegativeInteger = new NonNegativeIntegerElements();
 		this.pMaxValue = new MaxValueElements();
+		this.pAndOperator = new AndOperatorElements();
 		this.tREVERSED = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "REVERSED");
 		this.tTO = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "TO");
 		this.tAND = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "AND");
@@ -1291,7 +1380,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//AndExpressionConstraint returns ExpressionConstraint:
-	//	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} (AND | COMMA)
+	//	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} AndOperator
 	//	right=ExclusionExpressionConstraint)*;
 	public AndExpressionConstraintElements getAndExpressionConstraintAccess() {
 		return pAndExpressionConstraint;
@@ -1442,7 +1531,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//Refinement:
-	//	AttributeConstraint;
+	//	OrRefinement;
 	public RefinementElements getRefinementAccess() {
 		return pRefinement;
 	}
@@ -1451,7 +1540,27 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return getRefinementAccess().getRule();
 	}
 
-	//AttributeConstraint returns Refinement:
+	//OrRefinement returns Refinement:
+	//	AndRefinement ({OrRefinement.left=current} OR right=AndRefinement)*;
+	public OrRefinementElements getOrRefinementAccess() {
+		return pOrRefinement;
+	}
+	
+	public ParserRule getOrRefinementRule() {
+		return getOrRefinementAccess().getRule();
+	}
+
+	//AndRefinement returns Refinement:
+	//	AttributeConstraint ({AndRefinement.left=current} AndOperator right=AttributeConstraint)*;
+	public AndRefinementElements getAndRefinementAccess() {
+		return pAndRefinement;
+	}
+	
+	public ParserRule getAndRefinementRule() {
+		return getAndRefinementAccess().getRule();
+	}
+
+	//AttributeConstraint:
 	//	cardinality=Cardinality? reversed?=REVERSED? attribute=Attribute comparison=Comparison;
 	public AttributeConstraintElements getAttributeConstraintAccess() {
 		return pAttributeConstraint;
@@ -1593,6 +1702,16 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public ParserRule getMaxValueRule() {
 		return getMaxValueAccess().getRule();
+	}
+
+	//AndOperator hidden():
+	//	AND | COMMA;
+	public AndOperatorElements getAndOperatorAccess() {
+		return pAndOperator;
+	}
+	
+	public ParserRule getAndOperatorRule() {
+		return getAndOperatorAccess().getRule();
 	}
 
 	//// ---TERMINALS---

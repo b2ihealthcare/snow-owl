@@ -158,6 +158,14 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case EclPackage.ATTRIBUTE_CONSTRAINT:
+      {
+        AttributeConstraint attributeConstraint = (AttributeConstraint)theEObject;
+        T result = caseAttributeConstraint(attributeConstraint);
+        if (result == null) result = caseRefinement(attributeConstraint);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case EclPackage.CARDINALITY:
       {
         Cardinality cardinality = (Cardinality)theEObject;
@@ -233,6 +241,22 @@ public class EclSwitch<T> extends Switch<T>
         DottedExpressionConstraint dottedExpressionConstraint = (DottedExpressionConstraint)theEObject;
         T result = caseDottedExpressionConstraint(dottedExpressionConstraint);
         if (result == null) result = caseExpressionConstraint(dottedExpressionConstraint);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.OR_REFINEMENT:
+      {
+        OrRefinement orRefinement = (OrRefinement)theEObject;
+        T result = caseOrRefinement(orRefinement);
+        if (result == null) result = caseRefinement(orRefinement);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.AND_REFINEMENT:
+      {
+        AndRefinement andRefinement = (AndRefinement)theEObject;
+        T result = caseAndRefinement(andRefinement);
+        if (result == null) result = caseRefinement(andRefinement);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -417,6 +441,22 @@ public class EclSwitch<T> extends Switch<T>
   }
 
   /**
+   * Returns the result of interpreting the object as an instance of '<em>Attribute Constraint</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Attribute Constraint</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseAttributeConstraint(AttributeConstraint object)
+  {
+    return null;
+  }
+
+  /**
    * Returns the result of interpreting the object as an instance of '<em>Cardinality</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
@@ -572,6 +612,38 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseDottedExpressionConstraint(DottedExpressionConstraint object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Or Refinement</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Or Refinement</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseOrRefinement(OrRefinement object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>And Refinement</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>And Refinement</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseAndRefinement(AndRefinement object)
   {
     return null;
   }
