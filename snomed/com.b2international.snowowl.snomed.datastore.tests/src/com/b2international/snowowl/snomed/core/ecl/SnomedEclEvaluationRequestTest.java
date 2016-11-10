@@ -72,6 +72,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private static final String TRIPHASIL_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String PANADOL_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String ABACAVIR_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String AMOXICILLIN_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INGREDIENT1 = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INGREDIENT2 = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INGREDIENT3 = RandomSnomedIdentiferGenerator.generateConceptId();
@@ -450,8 +451,9 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	 * 	<li>Drugs (children of DRUG_ROOT):
 	 * 		<ul>
 	 * 			<li>ABACAVIR_TABLET (drug without any outgoing HAI relationships)</li>
-	 * 			<li>PANADOL_TABLET (drug with a single outgoing HAI relationship to INGREDIENT1)</li>
-	 * 			<li>TRIPHASIL_TABLET (drug with two outgoing HAI relationships, to INGREDIENT1 and 2, and one HAS_BOSS to INGREDIENT2)</li>
+	 * 			<li>PANADOL_TABLET (drug with a single outgoing inferred HAI relationship to INGREDIENT1)</li>
+	 * 			<li>TRIPHASIL_TABLET (drug with two outgoing inferred HAI relationships, to INGREDIENT1 and 2, and one HAS_BOSS to INGREDIENT2)</li>
+	 * 			<li>AMOXICILLIN_TABLET (drug with one outgoing stated HAI relationship to INGREDIENT1)</li>
 	 * 		</ul>
 	 * 	</li>
 	 * </ul>
@@ -465,11 +467,13 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, nextStorageKey(), concept(ABACAVIR_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
 		indexRevision(MAIN, nextStorageKey(), concept(PANADOL_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
 		indexRevision(MAIN, nextStorageKey(), concept(TRIPHASIL_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
+		indexRevision(MAIN, nextStorageKey(), concept(AMOXICILLIN_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
 		// has active ingredient relationships
 		indexRevision(MAIN, nextStorageKey(), relationship(PANADOL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).build());
 		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).build());
 		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2).build());
 		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_BOSS, INGREDIENT2).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(AMOXICILLIN_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).characteristicTypeId(Concepts.STATED_RELATIONSHIP).build());
 	}
 
 	private SnomedConceptDocument.Builder concept(final String id) {
@@ -498,7 +502,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 				.sourceId(source)
 				.typeId(type)
 				.destinationId(destination)
-				.characteristicTypeId(Concepts.STATED_RELATIONSHIP)
+				.characteristicTypeId(Concepts.INFERRED_RELATIONSHIP)
 				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 	}
 
