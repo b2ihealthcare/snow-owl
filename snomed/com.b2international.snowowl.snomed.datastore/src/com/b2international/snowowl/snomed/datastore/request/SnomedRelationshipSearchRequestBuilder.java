@@ -59,6 +59,10 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 		return addOption(OptionKey.CHARACTERISTIC_TYPE, characteristicType);
 	}
 	
+	public SnomedRelationshipSearchRequestBuilder filterByCharacteristicTypes(Collection<String> characteristicType) {
+		return addOption(OptionKey.CHARACTERISTIC_TYPE, characteristicType);
+	}
+	
 	public SnomedRelationshipSearchRequestBuilder filterByGroup(int group) {
 		return addOption(OptionKey.GROUP, group);
 	}
