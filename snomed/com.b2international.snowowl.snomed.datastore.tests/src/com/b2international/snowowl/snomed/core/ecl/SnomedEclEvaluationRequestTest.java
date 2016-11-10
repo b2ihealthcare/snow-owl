@@ -405,9 +405,35 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	public void refinementCardinalityOneOrTwo() throws Exception {
 		generateDrugHierarchy();
 		
-		
 		final Expression actual = eval(String.format("<%s: [1..2] %s=<%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
 		final Expression expected = ids(ImmutableSet.of(TRIPHASIL_TABLET, PANADOL_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void dotted() throws Exception {
+		generateDrugHierarchy();
+		
+		final Expression actual = eval(String.format("%s.%s", PANADOL_TABLET, HAS_ACTIVE_INGREDIENT));
+		final Expression expected = ids(ImmutableSet.of(INGREDIENT1));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void dottedWithDescendantOf() throws Exception {
+		generateDrugHierarchy();
+		
+		final Expression actual = eval(String.format("<%s.%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT));
+		final Expression expected = ids(ImmutableSet.of(INGREDIENT1, INGREDIENT2));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void dottedWithComplexLeftSide() throws Exception {
+		generateDrugHierarchy();
+		
+		final Expression actual = eval(String.format("(<%s MINUS %s).%s", DRUG_ROOT, TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT));
+		final Expression expected = ids(ImmutableSet.of(INGREDIENT1));
 		assertEquals(expected, actual);
 	}
 	

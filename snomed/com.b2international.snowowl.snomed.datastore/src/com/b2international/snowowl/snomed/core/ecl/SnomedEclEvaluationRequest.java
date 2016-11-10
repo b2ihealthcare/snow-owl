@@ -63,6 +63,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.Comparison;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
+import com.b2international.snowowl.snomed.ecl.ecl.DottedExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.EclFactory;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
@@ -378,6 +379,13 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 						return ids.isEmpty() ? Expressions.matchNone() : ids(ids);
 					}
 				});
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, DottedExpressionConstraint dotted) {
+		final EclSerializer serializer = context.service(EclSerializer.class);
+		final String sourceExpression = serializer.serialize(dotted.getConstraint());
+		final String typeExpression = serializer.serialize(dotted.getAttribute());
+		return evalRefinement(context, sourceExpression, typeExpression, "", Range.closed(1, Integer.MAX_VALUE), ISnomedRelationship::getDestinationId);
 	}
 	
 	private ExpressionConstraint rewrite(Comparison comparison) {
