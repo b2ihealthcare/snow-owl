@@ -68,7 +68,6 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 		result.setCharacteristicType(toCharacteristicType(input.getCharacteristicTypeId()));
 		result.setDestinationNegated(input.isDestinationNegated());
 		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTime()));
-		result.setGroup(input.getGroup());
 		result.setId(input.getId());
 		result.setModifier(toRelationshipModifier(input.isUniversal()));
 		result.setModuleId(input.getModuleId());
@@ -76,11 +75,12 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 		// XXX using optional refinability as default, will be expanded to the proper refinability if supported in expand
 		result.setRefinability(RelationshipRefinability.OPTIONAL);
 		result.setReleased(input.isReleased());
+		result.setGroup(input.getGroup());
 		result.setUnionGroup(input.getUnionGroup());
 		result.setDestination(new SnomedConcept(input.getDestinationId()));
 		result.setSource(new SnomedConcept(input.getSourceId()));
 		result.setType(new SnomedConcept(input.getTypeId()));
-//		result.setScore(input.getScore());
+		result.setScore(input.getScore());
 		return result;
 	}
 	

@@ -52,6 +52,9 @@ import com.google.common.collect.FluentIterable;
 public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument implements IStatement<String> {
 
 	private static final long serialVersionUID = -7873086925532169024L;
+	
+	public static final int DEFAULT_GROUP = -1;
+	public static final int DEFAULT_UNION_GROUP = -1;
 
 	public static Builder builder() {
 		return new Builder();
@@ -246,8 +249,8 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		private String characteristicTypeId;
 		private String modifierId;
 
-		private int group = -1;
-		private int unionGroup = -1;
+		private int group = DEFAULT_GROUP;
+		private int unionGroup = DEFAULT_UNION_GROUP;
 
 		private boolean destinationNegated;
 		
@@ -367,8 +370,9 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				referringRefSets,
 				referringMappingRefSets);
 
-		checkArgument(group >= 0, String.format("Group number '%s' may not be negative (relationship ID: %s).", group, id));
-		checkArgument(unionGroup >= 0, String.format("Union group number '%s' may not be negative (relationship ID: %s).", unionGroup, id));
+		// XXX -1 is the default value
+		checkArgument(group >= -1, String.format("Group number '%s' may not be negative (relationship ID: %s).", group, id));
+		checkArgument(unionGroup >= -1, String.format("Union group number '%s' may not be negative (relationship ID: %s).", unionGroup, id));
 
 		this.sourceId = sourceId;
 		this.typeId = typeId;
@@ -479,15 +483,15 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	/**
 	 * @return the relationship group
 	 */
-	public int getGroup() {
-		return group;
+	public Integer getGroup() {
+		return group == DEFAULT_GROUP ? null : group;
 	}
 
 	/**
 	 * @return the relationship union group
 	 */
-	public int getUnionGroup() {
-		return unionGroup;
+	public Integer getUnionGroup() {
+		return unionGroup == DEFAULT_UNION_GROUP ? null : unionGroup;
 	}
 
 	/**
