@@ -55,7 +55,9 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
+import com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
@@ -71,6 +73,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
 import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
 import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
 import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
@@ -292,7 +295,40 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final RefinedExpressionConstraint refined) {
-		final Refinement refinement = refined.getRefinement();
+		return eval(context, refined, refined.getRefinement());
+	}
+	
+	private Promise<Expression> eval(final BranchContext context, final RefinedExpressionConstraint refined, Refinement refinement) {
+		if (refinement instanceof AttributeConstraint) {
+			return evalRefinement(context, refined, (AttributeConstraint) refinement);
+		} else if (refinement instanceof AndRefinement) {
+			final AndRefinement and = (AndRefinement) refinement;
+			return Promise.all(eval(context, refined, and.getLeft()), eval(context, refined, and.getRight()))
+					.then(new Function<List<Object>, Expression>() {
+						@Override
+						public Expression apply(List<Object> input) {
+							final Expression left = (Expression) input.get(0);
+							final Expression right = (Expression) input.get(1);
+							return Expressions.builder().must(left).must(right).build();
+						}
+					});
+		} else if (refinement instanceof OrRefinement) {
+			final OrRefinement and = (OrRefinement) refinement;
+			return Promise.all(eval(context, refined, and.getLeft()), eval(context, refined, and.getRight()))
+					.then(new Function<List<Object>, Expression>() {
+						@Override
+						public Expression apply(List<Object> input) {
+							final Expression left = (Expression) input.get(0);
+							final Expression right = (Expression) input.get(1);
+							return Expressions.builder().should(left).should(right).build();
+						}
+					});
+		} else {
+			return throwUnsupported(refinement);
+		}
+	} 
+	
+	private Promise<Expression> evalRefinement(BranchContext context, final RefinedExpressionConstraint refined, AttributeConstraint refinement) {
 		final Cardinality cardinality = refinement.getCardinality();
 		// filterBySource, filterByType and filterByDestination accepts ECL expressions as well, so serialize them into ECL and pass as String when required
 		final EclSerializer serializer = context.service(EclSerializer.class);
@@ -321,9 +357,9 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				return Promise.all(
 						// eval the focusConcept expression
 						SnomedRequests.prepareEclEvaluation(focusConceptExpression)
-							.build(context.id(), context.branch().path())
-							.execute(context.service(IEventBus.class))
-							.thenWith(promise -> promise),
+						.build(context.id(), context.branch().path())
+						.execute(context.service(IEventBus.class))
+						.thenWith(promise -> promise),
 						// eval the same expression with positive range
 						evalRefinement(context, focusConceptExpression, typeConceptExpression, valueConceptExpression, positiveRange, idFunction))
 						.then(new Function<List<Object>, Expression>() {
@@ -334,7 +370,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 								// if positiveConcepts is match none, then don't add it to the expression and just return the focusConcepts
 								return Expressions.matchNone().equals(positiveConcepts) 
 										? focusConcepts
-										: Expressions.builder().must(focusConcepts).mustNot(positiveConcepts).build();
+												: Expressions.builder().must(focusConcepts).mustNot(positiveConcepts).build();
 							}
 						});
 			}
@@ -342,7 +378,6 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 			// if the cardinality either 0 or the min is at least one, then the relationship query is enough
 			return evalRefinement(context, focusConceptExpression, typeConceptExpression, valueConceptExpression, cardinalityRange, idFunction); 
 		}
-		
 	}
 
 	private Promise<Expression> evalRefinement(final BranchContext context, 

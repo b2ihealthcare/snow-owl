@@ -21,8 +21,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCom
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -73,9 +72,11 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private static final String PANADOL_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String ABACAVIR_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String AMOXICILLIN_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String TISSEL_KIT = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INGREDIENT1 = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INGREDIENT2 = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INGREDIENT3 = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String INGREDIENT4 = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String HAS_BOSS = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String DRUG_ROOT = RandomSnomedIdentiferGenerator.generateConceptId();
 	
@@ -412,6 +413,45 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
+	public void refinementWithAttributeConjunction() throws Exception {
+		generateDrugHierarchy();
+		final Expression actual = eval(String.format("<%s:%s=%s,%s=%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT1, HAS_ACTIVE_INGREDIENT, INGREDIENT2));
+		final Expression expected = Expressions.builder()
+				.must(ids(ImmutableSet.of(PANADOL_TABLET, TRIPHASIL_TABLET)))
+				.must(ids(ImmutableSet.of(TRIPHASIL_TABLET)))
+				.build();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementWithAttributeDisjunction() throws Exception {
+		generateDrugHierarchy();
+		generateTisselKit();
+		final Expression actual = eval(String.format("<%s:%s=%s OR %s=%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT2, HAS_ACTIVE_INGREDIENT, INGREDIENT4));
+		final Expression expected = Expressions.builder()
+				.should(ids(ImmutableSet.of(TRIPHASIL_TABLET)))
+				.should(ids(ImmutableSet.of(TISSEL_KIT)))
+				.build();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementWithComplexConjunctionDisjunction() throws Exception {
+		generateDrugHierarchy();
+		generateTisselKit();
+		final Expression actual = eval(String.format("<%s:%s=%s OR %s=%s AND %s=%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT2, HAS_ACTIVE_INGREDIENT, INGREDIENT4, HAS_ACTIVE_INGREDIENT, INGREDIENT2));
+		final Expression expected = Expressions.builder()
+				.should(ids(ImmutableSet.of(TRIPHASIL_TABLET)))
+				.should(
+					Expressions.builder()
+						.must(ids(ImmutableSet.of(TISSEL_KIT)))
+						.must(ids(ImmutableSet.of(TRIPHASIL_TABLET)))
+					.build())
+				.build();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void dotted() throws Exception {
 		generateDrugHierarchy();
 		
@@ -474,6 +514,27 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2).build());
 		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_BOSS, INGREDIENT2).build());
 		indexRevision(MAIN, nextStorageKey(), relationship(AMOXICILLIN_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).characteristicTypeId(Concepts.STATED_RELATIONSHIP).build());
+	}
+
+	/**
+	 * Generates the following test fixtures:
+	 * <ul>
+	 * 	<li>Substances (children of SUBSTANCE):
+	 * 		<ul>
+	 * 			<li>INGREDIENT4 (ingredient with one inbound HAI from TISSEL_KIT)</li>
+	 * 		</ul>
+	 * 	</li>
+	 * 	<li>Drugs (children of DRUG_ROOT):
+	 * 		<ul>
+	 * 			<li>TISSEL_KIT (drug with one outgoing inferred HAI relationship to INGREDIENT4)</li>
+	 * 		</ul>
+	 * 	</li>
+	 * </ul>
+	 */
+	private void generateTisselKit() {
+		indexRevision(MAIN, nextStorageKey(), concept(INGREDIENT4).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
+		indexRevision(MAIN, nextStorageKey(), concept(TISSEL_KIT).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(TISSEL_KIT, HAS_ACTIVE_INGREDIENT, INGREDIENT4).build());
 	}
 
 	private SnomedConceptDocument.Builder concept(final String id) {
