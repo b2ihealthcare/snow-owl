@@ -45,6 +45,7 @@ import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -356,6 +357,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				.filterBySource(sourceExpression)
 				.filterByType(typeExpression)
 				.filterByDestination(destinationExpression)
+				.filterByCharacteristicTypes(ImmutableSet.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP))
 				.setFields(ImmutableSet.of(
 					SnomedRelationshipIndexEntry.Fields.ID, 
 					SnomedRelationshipIndexEntry.Fields.SOURCE_ID, 
