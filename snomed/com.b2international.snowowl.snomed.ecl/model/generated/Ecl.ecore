@@ -37,7 +37,22 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Any" eSuperTypes="#//ExpressionConstraint"/>
   <eClassifiers xsi:type="ecore:EClass" name="Refinement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="AttributeConstraint" eSuperTypes="#//Refinement">
+  <eClassifiers xsi:type="ecore:EClass" name="NestedRefinement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="nested" eType="#//Refinement"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AttributeGroup" eSuperTypes="#//Refinement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="cardinality" eType="#//Cardinality"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="refinement" eType="#//Refinement"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AttributeSet" eSuperTypes="#//Refinement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="NestedAttributeSet">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="nested" eType="#//Refinement"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AttributeConstraint" eSuperTypes="#//Refinement #//AttributeSet">
     <eStructuralFeatures xsi:type="ecore:EReference" name="cardinality" eType="#//Cardinality"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="reversed" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
@@ -99,7 +114,19 @@
   <eClassifiers xsi:type="ecore:EClass" name="AndRefinement" eSuperTypes="#//Refinement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//Refinement"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//AttributeConstraint"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//Refinement"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="OrAttributeSet" eSuperTypes="#//AttributeSet">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//AttributeSet"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//AttributeSet"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AndAttributeSet" eSuperTypes="#//AttributeSet">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//AttributeSet"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//AttributeSet"
         containment="true"/>
   </eClassifiers>
 </ecore:EPackage>

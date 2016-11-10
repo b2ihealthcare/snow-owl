@@ -347,6 +347,118 @@ public interface EclPackage extends EPackage
   int REFINEMENT_FEATURE_COUNT = 0;
 
   /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.NestedRefinementImpl <em>Nested Refinement</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.NestedRefinementImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getNestedRefinement()
+   * @generated
+   */
+  int NESTED_REFINEMENT = 11;
+
+  /**
+   * The feature id for the '<em><b>Nested</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int NESTED_REFINEMENT__NESTED = 0;
+
+  /**
+   * The number of structural features of the '<em>Nested Refinement</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int NESTED_REFINEMENT_FEATURE_COUNT = 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeGroupImpl <em>Attribute Group</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeGroupImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeGroup()
+   * @generated
+   */
+  int ATTRIBUTE_GROUP = 12;
+
+  /**
+   * The feature id for the '<em><b>Cardinality</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int ATTRIBUTE_GROUP__CARDINALITY = REFINEMENT_FEATURE_COUNT + 0;
+
+  /**
+   * The feature id for the '<em><b>Refinement</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int ATTRIBUTE_GROUP__REFINEMENT = REFINEMENT_FEATURE_COUNT + 1;
+
+  /**
+   * The number of structural features of the '<em>Attribute Group</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int ATTRIBUTE_GROUP_FEATURE_COUNT = REFINEMENT_FEATURE_COUNT + 2;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeSetImpl <em>Attribute Set</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeSetImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeSet()
+   * @generated
+   */
+  int ATTRIBUTE_SET = 13;
+
+  /**
+   * The number of structural features of the '<em>Attribute Set</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int ATTRIBUTE_SET_FEATURE_COUNT = REFINEMENT_FEATURE_COUNT + 0;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.NestedAttributeSetImpl <em>Nested Attribute Set</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.NestedAttributeSetImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getNestedAttributeSet()
+   * @generated
+   */
+  int NESTED_ATTRIBUTE_SET = 14;
+
+  /**
+   * The feature id for the '<em><b>Nested</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int NESTED_ATTRIBUTE_SET__NESTED = 0;
+
+  /**
+   * The number of structural features of the '<em>Nested Attribute Set</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int NESTED_ATTRIBUTE_SET_FEATURE_COUNT = 1;
+
+  /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeConstraintImpl <em>Attribute Constraint</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -354,7 +466,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeConstraint()
    * @generated
    */
-  int ATTRIBUTE_CONSTRAINT = 11;
+  int ATTRIBUTE_CONSTRAINT = 15;
 
   /**
    * The feature id for the '<em><b>Cardinality</b></em>' containment reference.
@@ -409,7 +521,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getCardinality()
    * @generated
    */
-  int CARDINALITY = 12;
+  int CARDINALITY = 16;
 
   /**
    * The feature id for the '<em><b>Min</b></em>' attribute.
@@ -446,7 +558,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getComparison()
    * @generated
    */
-  int COMPARISON = 13;
+  int COMPARISON = 17;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -474,7 +586,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeValueEquals()
    * @generated
    */
-  int ATTRIBUTE_VALUE_EQUALS = 14;
+  int ATTRIBUTE_VALUE_EQUALS = 18;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -502,7 +614,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeValueNotEquals()
    * @generated
    */
-  int ATTRIBUTE_VALUE_NOT_EQUALS = 15;
+  int ATTRIBUTE_VALUE_NOT_EQUALS = 19;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -530,7 +642,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getNestedExpression()
    * @generated
    */
-  int NESTED_EXPRESSION = 16;
+  int NESTED_EXPRESSION = 20;
 
   /**
    * The feature id for the '<em><b>Nested</b></em>' containment reference.
@@ -558,7 +670,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getOrExpressionConstraint()
    * @generated
    */
-  int OR_EXPRESSION_CONSTRAINT = 17;
+  int OR_EXPRESSION_CONSTRAINT = 21;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -595,7 +707,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAndExpressionConstraint()
    * @generated
    */
-  int AND_EXPRESSION_CONSTRAINT = 18;
+  int AND_EXPRESSION_CONSTRAINT = 22;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -632,7 +744,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getExclusionExpressionConstraint()
    * @generated
    */
-  int EXCLUSION_EXPRESSION_CONSTRAINT = 19;
+  int EXCLUSION_EXPRESSION_CONSTRAINT = 23;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -669,7 +781,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getRefinedExpressionConstraint()
    * @generated
    */
-  int REFINED_EXPRESSION_CONSTRAINT = 20;
+  int REFINED_EXPRESSION_CONSTRAINT = 24;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -706,7 +818,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDottedExpressionConstraint()
    * @generated
    */
-  int DOTTED_EXPRESSION_CONSTRAINT = 21;
+  int DOTTED_EXPRESSION_CONSTRAINT = 25;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -743,7 +855,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getOrRefinement()
    * @generated
    */
-  int OR_REFINEMENT = 22;
+  int OR_REFINEMENT = 26;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -780,7 +892,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAndRefinement()
    * @generated
    */
-  int AND_REFINEMENT = 23;
+  int AND_REFINEMENT = 27;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -808,6 +920,80 @@ public interface EclPackage extends EPackage
    * @ordered
    */
   int AND_REFINEMENT_FEATURE_COUNT = REFINEMENT_FEATURE_COUNT + 2;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.OrAttributeSetImpl <em>Or Attribute Set</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.OrAttributeSetImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getOrAttributeSet()
+   * @generated
+   */
+  int OR_ATTRIBUTE_SET = 28;
+
+  /**
+   * The feature id for the '<em><b>Left</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int OR_ATTRIBUTE_SET__LEFT = ATTRIBUTE_SET_FEATURE_COUNT + 0;
+
+  /**
+   * The feature id for the '<em><b>Right</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int OR_ATTRIBUTE_SET__RIGHT = ATTRIBUTE_SET_FEATURE_COUNT + 1;
+
+  /**
+   * The number of structural features of the '<em>Or Attribute Set</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int OR_ATTRIBUTE_SET_FEATURE_COUNT = ATTRIBUTE_SET_FEATURE_COUNT + 2;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AndAttributeSetImpl <em>And Attribute Set</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.AndAttributeSetImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAndAttributeSet()
+   * @generated
+   */
+  int AND_ATTRIBUTE_SET = 29;
+
+  /**
+   * The feature id for the '<em><b>Left</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int AND_ATTRIBUTE_SET__LEFT = ATTRIBUTE_SET_FEATURE_COUNT + 0;
+
+  /**
+   * The feature id for the '<em><b>Right</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int AND_ATTRIBUTE_SET__RIGHT = ATTRIBUTE_SET_FEATURE_COUNT + 1;
+
+  /**
+   * The number of structural features of the '<em>And Attribute Set</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int AND_ATTRIBUTE_SET_FEATURE_COUNT = ATTRIBUTE_SET_FEATURE_COUNT + 2;
 
 
   /**
@@ -1018,6 +1204,90 @@ public interface EclPackage extends EPackage
    * @generated
    */
   EClass getRefinement();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement <em>Nested Refinement</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Nested Refinement</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement
+   * @generated
+   */
+  EClass getNestedRefinement();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement#getNested <em>Nested</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Nested</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement#getNested()
+   * @see #getNestedRefinement()
+   * @generated
+   */
+  EReference getNestedRefinement_Nested();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup <em>Attribute Group</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Attribute Group</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup
+   * @generated
+   */
+  EClass getAttributeGroup();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup#getCardinality <em>Cardinality</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Cardinality</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup#getCardinality()
+   * @see #getAttributeGroup()
+   * @generated
+   */
+  EReference getAttributeGroup_Cardinality();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup#getRefinement <em>Refinement</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Refinement</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup#getRefinement()
+   * @see #getAttributeGroup()
+   * @generated
+   */
+  EReference getAttributeGroup_Refinement();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeSet <em>Attribute Set</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Attribute Set</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeSet
+   * @generated
+   */
+  EClass getAttributeSet();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.NestedAttributeSet <em>Nested Attribute Set</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Nested Attribute Set</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.NestedAttributeSet
+   * @generated
+   */
+  EClass getNestedAttributeSet();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.NestedAttributeSet#getNested <em>Nested</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Nested</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.NestedAttributeSet#getNested()
+   * @see #getNestedAttributeSet()
+   * @generated
+   */
+  EReference getNestedAttributeSet_Nested();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint <em>Attribute Constraint</em>}'.
@@ -1392,6 +1662,70 @@ public interface EclPackage extends EPackage
   EReference getAndRefinement_Right();
 
   /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.OrAttributeSet <em>Or Attribute Set</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Or Attribute Set</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.OrAttributeSet
+   * @generated
+   */
+  EClass getOrAttributeSet();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.OrAttributeSet#getLeft <em>Left</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Left</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.OrAttributeSet#getLeft()
+   * @see #getOrAttributeSet()
+   * @generated
+   */
+  EReference getOrAttributeSet_Left();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.OrAttributeSet#getRight <em>Right</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Right</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.OrAttributeSet#getRight()
+   * @see #getOrAttributeSet()
+   * @generated
+   */
+  EReference getOrAttributeSet_Right();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.AndAttributeSet <em>And Attribute Set</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>And Attribute Set</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AndAttributeSet
+   * @generated
+   */
+  EClass getAndAttributeSet();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.AndAttributeSet#getLeft <em>Left</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Left</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AndAttributeSet#getLeft()
+   * @see #getAndAttributeSet()
+   * @generated
+   */
+  EReference getAndAttributeSet_Left();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.AndAttributeSet#getRight <em>Right</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Right</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AndAttributeSet#getRight()
+   * @see #getAndAttributeSet()
+   * @generated
+   */
+  EReference getAndAttributeSet_Right();
+
+  /**
    * Returns the factory that creates the instances of the model.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1595,6 +1929,78 @@ public interface EclPackage extends EPackage
      * @generated
      */
     EClass REFINEMENT = eINSTANCE.getRefinement();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.NestedRefinementImpl <em>Nested Refinement</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.NestedRefinementImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getNestedRefinement()
+     * @generated
+     */
+    EClass NESTED_REFINEMENT = eINSTANCE.getNestedRefinement();
+
+    /**
+     * The meta object literal for the '<em><b>Nested</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference NESTED_REFINEMENT__NESTED = eINSTANCE.getNestedRefinement_Nested();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeGroupImpl <em>Attribute Group</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeGroupImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeGroup()
+     * @generated
+     */
+    EClass ATTRIBUTE_GROUP = eINSTANCE.getAttributeGroup();
+
+    /**
+     * The meta object literal for the '<em><b>Cardinality</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference ATTRIBUTE_GROUP__CARDINALITY = eINSTANCE.getAttributeGroup_Cardinality();
+
+    /**
+     * The meta object literal for the '<em><b>Refinement</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference ATTRIBUTE_GROUP__REFINEMENT = eINSTANCE.getAttributeGroup_Refinement();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeSetImpl <em>Attribute Set</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeSetImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeSet()
+     * @generated
+     */
+    EClass ATTRIBUTE_SET = eINSTANCE.getAttributeSet();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.NestedAttributeSetImpl <em>Nested Attribute Set</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.NestedAttributeSetImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getNestedAttributeSet()
+     * @generated
+     */
+    EClass NESTED_ATTRIBUTE_SET = eINSTANCE.getNestedAttributeSet();
+
+    /**
+     * The meta object literal for the '<em><b>Nested</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference NESTED_ATTRIBUTE_SET__NESTED = eINSTANCE.getNestedAttributeSet_Nested();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeConstraintImpl <em>Attribute Constraint</em>}' class.
@@ -1901,6 +2307,58 @@ public interface EclPackage extends EPackage
      * @generated
      */
     EReference AND_REFINEMENT__RIGHT = eINSTANCE.getAndRefinement_Right();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.OrAttributeSetImpl <em>Or Attribute Set</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.OrAttributeSetImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getOrAttributeSet()
+     * @generated
+     */
+    EClass OR_ATTRIBUTE_SET = eINSTANCE.getOrAttributeSet();
+
+    /**
+     * The meta object literal for the '<em><b>Left</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference OR_ATTRIBUTE_SET__LEFT = eINSTANCE.getOrAttributeSet_Left();
+
+    /**
+     * The meta object literal for the '<em><b>Right</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference OR_ATTRIBUTE_SET__RIGHT = eINSTANCE.getOrAttributeSet_Right();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AndAttributeSetImpl <em>And Attribute Set</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.AndAttributeSetImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAndAttributeSet()
+     * @generated
+     */
+    EClass AND_ATTRIBUTE_SET = eINSTANCE.getAndAttributeSet();
+
+    /**
+     * The meta object literal for the '<em><b>Left</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference AND_ATTRIBUTE_SET__LEFT = eINSTANCE.getAndAttributeSet_Left();
+
+    /**
+     * The meta object literal for the '<em><b>Right</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference AND_ATTRIBUTE_SET__RIGHT = eINSTANCE.getAndAttributeSet_Right();
 
   }
 

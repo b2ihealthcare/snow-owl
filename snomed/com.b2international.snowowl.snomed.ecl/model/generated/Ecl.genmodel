@@ -36,6 +36,17 @@
     </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//Any"/>
     <genClasses ecoreClass="Ecl.ecore#//Refinement"/>
+    <genClasses ecoreClass="Ecl.ecore#//NestedRefinement">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//NestedRefinement/nested"/>
+    </genClasses>
+    <genClasses ecoreClass="Ecl.ecore#//AttributeGroup">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//AttributeGroup/cardinality"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//AttributeGroup/refinement"/>
+    </genClasses>
+    <genClasses ecoreClass="Ecl.ecore#//AttributeSet"/>
+    <genClasses ecoreClass="Ecl.ecore#//NestedAttributeSet">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//NestedAttributeSet/nested"/>
+    </genClasses>
     <genClasses ecoreClass="Ecl.ecore#//AttributeConstraint">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//AttributeConstraint/cardinality"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Ecl.ecore#//AttributeConstraint/reversed"/>
@@ -81,6 +92,14 @@
     <genClasses ecoreClass="Ecl.ecore#//AndRefinement">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//AndRefinement/left"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//AndRefinement/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Ecl.ecore#//OrAttributeSet">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//OrAttributeSet/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//OrAttributeSet/right"/>
+    </genClasses>
+    <genClasses ecoreClass="Ecl.ecore#//AndAttributeSet">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//AndAttributeSet/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Ecl.ecore#//AndAttributeSet/right"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

@@ -565,24 +565,24 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	public class AndRefinementElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AndRefinement");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cAttributeConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cSubRefinementParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Action cAndRefinementLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
 		private final RuleCall cAndOperatorParserRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
-		private final RuleCall cRightAttributeConstraintParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
+		private final RuleCall cRightSubRefinementParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
 		//AndRefinement returns Refinement:
-		//	AttributeConstraint ({AndRefinement.left=current} AndOperator right=AttributeConstraint)*;
+		//	SubRefinement ({AndRefinement.left=current} AndOperator right=SubRefinement)*;
 		@Override public ParserRule getRule() { return rule; }
 
-		//AttributeConstraint ({AndRefinement.left=current} AndOperator right=AttributeConstraint)*
+		//SubRefinement ({AndRefinement.left=current} AndOperator right=SubRefinement)*
 		public Group getGroup() { return cGroup; }
 
-		//AttributeConstraint
-		public RuleCall getAttributeConstraintParserRuleCall_0() { return cAttributeConstraintParserRuleCall_0; }
+		//SubRefinement
+		public RuleCall getSubRefinementParserRuleCall_0() { return cSubRefinementParserRuleCall_0; }
 
-		//({AndRefinement.left=current} AndOperator right=AttributeConstraint)*
+		//({AndRefinement.left=current} AndOperator right=SubRefinement)*
 		public Group getGroup_1() { return cGroup_1; }
 
 		//{AndRefinement.left=current}
@@ -591,11 +591,219 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		//AndOperator
 		public RuleCall getAndOperatorParserRuleCall_1_1() { return cAndOperatorParserRuleCall_1_1; }
 
-		//right=AttributeConstraint
+		//right=SubRefinement
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
 
+		//SubRefinement
+		public RuleCall getRightSubRefinementParserRuleCall_1_2_0() { return cRightSubRefinementParserRuleCall_1_2_0; }
+	}
+
+	public class SubRefinementElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "SubRefinement");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final RuleCall cAttributeConstraintParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cAttributeGroupParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		
+		/// *| NestedRefinement* / SubRefinement returns Refinement:
+		//	AttributeConstraint | AttributeGroup;
+		@Override public ParserRule getRule() { return rule; }
+
+		//AttributeConstraint | AttributeGroup
+		public Alternatives getAlternatives() { return cAlternatives; }
+
 		//AttributeConstraint
-		public RuleCall getRightAttributeConstraintParserRuleCall_1_2_0() { return cRightAttributeConstraintParserRuleCall_1_2_0; }
+		public RuleCall getAttributeConstraintParserRuleCall_0() { return cAttributeConstraintParserRuleCall_0; }
+
+		//AttributeGroup
+		public RuleCall getAttributeGroupParserRuleCall_1() { return cAttributeGroupParserRuleCall_1; }
+	}
+
+	public class NestedRefinementElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "NestedRefinement");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cROUND_OPENTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cNestedAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cNestedRefinementParserRuleCall_1_0 = (RuleCall)cNestedAssignment_1.eContents().get(0);
+		private final RuleCall cROUND_CLOSETerminalRuleCall_2 = (RuleCall)cGroup.eContents().get(2);
+		
+		//NestedRefinement:
+		//	ROUND_OPEN nested=Refinement ROUND_CLOSE;
+		@Override public ParserRule getRule() { return rule; }
+
+		//ROUND_OPEN nested=Refinement ROUND_CLOSE
+		public Group getGroup() { return cGroup; }
+
+		//ROUND_OPEN
+		public RuleCall getROUND_OPENTerminalRuleCall_0() { return cROUND_OPENTerminalRuleCall_0; }
+
+		//nested=Refinement
+		public Assignment getNestedAssignment_1() { return cNestedAssignment_1; }
+
+		//Refinement
+		public RuleCall getNestedRefinementParserRuleCall_1_0() { return cNestedRefinementParserRuleCall_1_0; }
+
+		//ROUND_CLOSE
+		public RuleCall getROUND_CLOSETerminalRuleCall_2() { return cROUND_CLOSETerminalRuleCall_2; }
+	}
+
+	public class AttributeGroupElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AttributeGroup");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Assignment cCardinalityAssignment_0 = (Assignment)cGroup.eContents().get(0);
+		private final RuleCall cCardinalityCardinalityParserRuleCall_0_0 = (RuleCall)cCardinalityAssignment_0.eContents().get(0);
+		private final RuleCall cCURLY_OPENTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cRefinementAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cRefinementAttributeSetParserRuleCall_2_0 = (RuleCall)cRefinementAssignment_2.eContents().get(0);
+		private final RuleCall cCURLY_CLOSETerminalRuleCall_3 = (RuleCall)cGroup.eContents().get(3);
+		
+		//AttributeGroup:
+		//	cardinality=Cardinality? CURLY_OPEN refinement=AttributeSet CURLY_CLOSE;
+		@Override public ParserRule getRule() { return rule; }
+
+		//cardinality=Cardinality? CURLY_OPEN refinement=AttributeSet CURLY_CLOSE
+		public Group getGroup() { return cGroup; }
+
+		//cardinality=Cardinality?
+		public Assignment getCardinalityAssignment_0() { return cCardinalityAssignment_0; }
+
+		//Cardinality
+		public RuleCall getCardinalityCardinalityParserRuleCall_0_0() { return cCardinalityCardinalityParserRuleCall_0_0; }
+
+		//CURLY_OPEN
+		public RuleCall getCURLY_OPENTerminalRuleCall_1() { return cCURLY_OPENTerminalRuleCall_1; }
+
+		//refinement=AttributeSet
+		public Assignment getRefinementAssignment_2() { return cRefinementAssignment_2; }
+
+		//AttributeSet
+		public RuleCall getRefinementAttributeSetParserRuleCall_2_0() { return cRefinementAttributeSetParserRuleCall_2_0; }
+
+		//CURLY_CLOSE
+		public RuleCall getCURLY_CLOSETerminalRuleCall_3() { return cCURLY_CLOSETerminalRuleCall_3; }
+	}
+
+	public class AttributeSetElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AttributeSet");
+		private final RuleCall cOrAttributeSetParserRuleCall = (RuleCall)rule.eContents().get(1);
+		
+		//AttributeSet returns Refinement:
+		//	OrAttributeSet;
+		@Override public ParserRule getRule() { return rule; }
+
+		//OrAttributeSet
+		public RuleCall getOrAttributeSetParserRuleCall() { return cOrAttributeSetParserRuleCall; }
+	}
+
+	public class OrAttributeSetElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "OrAttributeSet");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cAndAttributeSetParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
+		private final Action cOrAttributeSetLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
+		private final RuleCall cORTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
+		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
+		private final RuleCall cRightAndAttributeSetParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
+		
+		//OrAttributeSet returns AttributeSet:
+		//	AndAttributeSet ({OrAttributeSet.left=current} OR right=AndAttributeSet)*;
+		@Override public ParserRule getRule() { return rule; }
+
+		//AndAttributeSet ({OrAttributeSet.left=current} OR right=AndAttributeSet)*
+		public Group getGroup() { return cGroup; }
+
+		//AndAttributeSet
+		public RuleCall getAndAttributeSetParserRuleCall_0() { return cAndAttributeSetParserRuleCall_0; }
+
+		//({OrAttributeSet.left=current} OR right=AndAttributeSet)*
+		public Group getGroup_1() { return cGroup_1; }
+
+		//{OrAttributeSet.left=current}
+		public Action getOrAttributeSetLeftAction_1_0() { return cOrAttributeSetLeftAction_1_0; }
+
+		//OR
+		public RuleCall getORTerminalRuleCall_1_1() { return cORTerminalRuleCall_1_1; }
+
+		//right=AndAttributeSet
+		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
+
+		//AndAttributeSet
+		public RuleCall getRightAndAttributeSetParserRuleCall_1_2_0() { return cRightAndAttributeSetParserRuleCall_1_2_0; }
+	}
+
+	public class AndAttributeSetElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AndAttributeSet");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cSubAttributeSetParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
+		private final Action cAndAttributeSetLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
+		private final RuleCall cAndOperatorParserRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
+		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
+		private final RuleCall cRightSubAttributeSetParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
+		
+		//AndAttributeSet returns AttributeSet:
+		//	SubAttributeSet ({AndAttributeSet.left=current} AndOperator right=SubAttributeSet)*;
+		@Override public ParserRule getRule() { return rule; }
+
+		//SubAttributeSet ({AndAttributeSet.left=current} AndOperator right=SubAttributeSet)*
+		public Group getGroup() { return cGroup; }
+
+		//SubAttributeSet
+		public RuleCall getSubAttributeSetParserRuleCall_0() { return cSubAttributeSetParserRuleCall_0; }
+
+		//({AndAttributeSet.left=current} AndOperator right=SubAttributeSet)*
+		public Group getGroup_1() { return cGroup_1; }
+
+		//{AndAttributeSet.left=current}
+		public Action getAndAttributeSetLeftAction_1_0() { return cAndAttributeSetLeftAction_1_0; }
+
+		//AndOperator
+		public RuleCall getAndOperatorParserRuleCall_1_1() { return cAndOperatorParserRuleCall_1_1; }
+
+		//right=SubAttributeSet
+		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
+
+		//SubAttributeSet
+		public RuleCall getRightSubAttributeSetParserRuleCall_1_2_0() { return cRightSubAttributeSetParserRuleCall_1_2_0; }
+	}
+
+	public class SubAttributeSetElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "SubAttributeSet");
+		private final RuleCall cAttributeConstraintParserRuleCall = (RuleCall)rule.eContents().get(1);
+		
+		/// *| NestedAttributeSet* / SubAttributeSet returns AttributeSet:
+		//	AttributeConstraint;
+		@Override public ParserRule getRule() { return rule; }
+
+		//AttributeConstraint
+		public RuleCall getAttributeConstraintParserRuleCall() { return cAttributeConstraintParserRuleCall; }
+	}
+
+	public class NestedAttributeSetElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "NestedAttributeSet");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cROUND_OPENTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cNestedAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cNestedAttributeSetParserRuleCall_1_0 = (RuleCall)cNestedAssignment_1.eContents().get(0);
+		private final RuleCall cROUND_CLOSETerminalRuleCall_2 = (RuleCall)cGroup.eContents().get(2);
+		
+		//NestedAttributeSet:
+		//	ROUND_OPEN nested=AttributeSet ROUND_CLOSE;
+		@Override public ParserRule getRule() { return rule; }
+
+		//ROUND_OPEN nested=AttributeSet ROUND_CLOSE
+		public Group getGroup() { return cGroup; }
+
+		//ROUND_OPEN
+		public RuleCall getROUND_OPENTerminalRuleCall_0() { return cROUND_OPENTerminalRuleCall_0; }
+
+		//nested=AttributeSet
+		public Assignment getNestedAssignment_1() { return cNestedAssignment_1; }
+
+		//AttributeSet
+		public RuleCall getNestedAttributeSetParserRuleCall_1_0() { return cNestedAttributeSetParserRuleCall_1_0; }
+
+		//ROUND_CLOSE
+		public RuleCall getROUND_CLOSETerminalRuleCall_2() { return cROUND_CLOSETerminalRuleCall_2; }
 	}
 
 	public class AttributeConstraintElements extends AbstractParserRuleElementFinder {
@@ -1210,6 +1418,14 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final RefinementElements pRefinement;
 	private final OrRefinementElements pOrRefinement;
 	private final AndRefinementElements pAndRefinement;
+	private final SubRefinementElements pSubRefinement;
+	private final NestedRefinementElements pNestedRefinement;
+	private final AttributeGroupElements pAttributeGroup;
+	private final AttributeSetElements pAttributeSet;
+	private final OrAttributeSetElements pOrAttributeSet;
+	private final AndAttributeSetElements pAndAttributeSet;
+	private final SubAttributeSetElements pSubAttributeSet;
+	private final NestedAttributeSetElements pNestedAttributeSet;
 	private final AttributeConstraintElements pAttributeConstraint;
 	private final AttributeElements pAttribute;
 	private final AttributeDescendantOfElements pAttributeDescendantOf;
@@ -1285,6 +1501,14 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pRefinement = new RefinementElements();
 		this.pOrRefinement = new OrRefinementElements();
 		this.pAndRefinement = new AndRefinementElements();
+		this.pSubRefinement = new SubRefinementElements();
+		this.pNestedRefinement = new NestedRefinementElements();
+		this.pAttributeGroup = new AttributeGroupElements();
+		this.pAttributeSet = new AttributeSetElements();
+		this.pOrAttributeSet = new OrAttributeSetElements();
+		this.pAndAttributeSet = new AndAttributeSetElements();
+		this.pSubAttributeSet = new SubAttributeSetElements();
+		this.pNestedAttributeSet = new NestedAttributeSetElements();
 		this.pAttributeConstraint = new AttributeConstraintElements();
 		this.pAttribute = new AttributeElements();
 		this.pAttributeDescendantOf = new AttributeDescendantOfElements();
@@ -1551,13 +1775,93 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//AndRefinement returns Refinement:
-	//	AttributeConstraint ({AndRefinement.left=current} AndOperator right=AttributeConstraint)*;
+	//	SubRefinement ({AndRefinement.left=current} AndOperator right=SubRefinement)*;
 	public AndRefinementElements getAndRefinementAccess() {
 		return pAndRefinement;
 	}
 	
 	public ParserRule getAndRefinementRule() {
 		return getAndRefinementAccess().getRule();
+	}
+
+	/// *| NestedRefinement* / SubRefinement returns Refinement:
+	//	AttributeConstraint | AttributeGroup;
+	public SubRefinementElements getSubRefinementAccess() {
+		return pSubRefinement;
+	}
+	
+	public ParserRule getSubRefinementRule() {
+		return getSubRefinementAccess().getRule();
+	}
+
+	//NestedRefinement:
+	//	ROUND_OPEN nested=Refinement ROUND_CLOSE;
+	public NestedRefinementElements getNestedRefinementAccess() {
+		return pNestedRefinement;
+	}
+	
+	public ParserRule getNestedRefinementRule() {
+		return getNestedRefinementAccess().getRule();
+	}
+
+	//AttributeGroup:
+	//	cardinality=Cardinality? CURLY_OPEN refinement=AttributeSet CURLY_CLOSE;
+	public AttributeGroupElements getAttributeGroupAccess() {
+		return pAttributeGroup;
+	}
+	
+	public ParserRule getAttributeGroupRule() {
+		return getAttributeGroupAccess().getRule();
+	}
+
+	//AttributeSet returns Refinement:
+	//	OrAttributeSet;
+	public AttributeSetElements getAttributeSetAccess() {
+		return pAttributeSet;
+	}
+	
+	public ParserRule getAttributeSetRule() {
+		return getAttributeSetAccess().getRule();
+	}
+
+	//OrAttributeSet returns AttributeSet:
+	//	AndAttributeSet ({OrAttributeSet.left=current} OR right=AndAttributeSet)*;
+	public OrAttributeSetElements getOrAttributeSetAccess() {
+		return pOrAttributeSet;
+	}
+	
+	public ParserRule getOrAttributeSetRule() {
+		return getOrAttributeSetAccess().getRule();
+	}
+
+	//AndAttributeSet returns AttributeSet:
+	//	SubAttributeSet ({AndAttributeSet.left=current} AndOperator right=SubAttributeSet)*;
+	public AndAttributeSetElements getAndAttributeSetAccess() {
+		return pAndAttributeSet;
+	}
+	
+	public ParserRule getAndAttributeSetRule() {
+		return getAndAttributeSetAccess().getRule();
+	}
+
+	/// *| NestedAttributeSet* / SubAttributeSet returns AttributeSet:
+	//	AttributeConstraint;
+	public SubAttributeSetElements getSubAttributeSetAccess() {
+		return pSubAttributeSet;
+	}
+	
+	public ParserRule getSubAttributeSetRule() {
+		return getSubAttributeSetAccess().getRule();
+	}
+
+	//NestedAttributeSet:
+	//	ROUND_OPEN nested=AttributeSet ROUND_CLOSE;
+	public NestedAttributeSetElements getNestedAttributeSetAccess() {
+		return pNestedAttributeSet;
+	}
+	
+	public ParserRule getNestedAttributeSetRule() {
+		return getNestedAttributeSetAccess().getRule();
 	}
 
 	//AttributeConstraint:

@@ -22,7 +22,7 @@ package com.b2international.snowowl.snomed.ecl.ecl;
  * @model
  * @generated
  */
-public interface AttributeConstraint extends Refinement
+public interface AttributeConstraint extends Refinement, AttributeSet
 {
   /**
    * Returns the value of the '<em><b>Cardinality</b></em>' containment reference.

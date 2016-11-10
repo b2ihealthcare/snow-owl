@@ -2,9 +2,9 @@
  */
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
-import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
+import com.b2international.snowowl.snomed.ecl.ecl.AttributeSet;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
+import com.b2international.snowowl.snomed.ecl.ecl.OrAttributeSet;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -16,19 +16,19 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>And Refinement</b></em>'.
+ * An implementation of the model object '<em><b>Or Attribute Set</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AndRefinementImpl#getLeft <em>Left</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AndRefinementImpl#getRight <em>Right</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.OrAttributeSetImpl#getLeft <em>Left</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.OrAttributeSetImpl#getRight <em>Right</em>}</li>
  * </ul>
  * </p>
  *
  * @generated
  */
-public class AndRefinementImpl extends RefinementImpl implements AndRefinement
+public class OrAttributeSetImpl extends AttributeSetImpl implements OrAttributeSet
 {
   /**
    * The cached value of the '{@link #getLeft() <em>Left</em>}' containment reference.
@@ -38,7 +38,7 @@ public class AndRefinementImpl extends RefinementImpl implements AndRefinement
    * @generated
    * @ordered
    */
-  protected Refinement left;
+  protected AttributeSet left;
 
   /**
    * The cached value of the '{@link #getRight() <em>Right</em>}' containment reference.
@@ -48,14 +48,14 @@ public class AndRefinementImpl extends RefinementImpl implements AndRefinement
    * @generated
    * @ordered
    */
-  protected Refinement right;
+  protected AttributeSet right;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected AndRefinementImpl()
+  protected OrAttributeSetImpl()
   {
     super();
   }
@@ -68,7 +68,7 @@ public class AndRefinementImpl extends RefinementImpl implements AndRefinement
   @Override
   protected EClass eStaticClass()
   {
-    return EclPackage.Literals.AND_REFINEMENT;
+    return EclPackage.Literals.OR_ATTRIBUTE_SET;
   }
 
   /**
@@ -76,7 +76,7 @@ public class AndRefinementImpl extends RefinementImpl implements AndRefinement
    * <!-- end-user-doc -->
    * @generated
    */
-  public Refinement getLeft()
+  public AttributeSet getLeft()
   {
     return left;
   }
@@ -86,13 +86,13 @@ public class AndRefinementImpl extends RefinementImpl implements AndRefinement
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetLeft(Refinement newLeft, NotificationChain msgs)
+  public NotificationChain basicSetLeft(AttributeSet newLeft, NotificationChain msgs)
   {
-    Refinement oldLeft = left;
+    AttributeSet oldLeft = left;
     left = newLeft;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.AND_REFINEMENT__LEFT, oldLeft, newLeft);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.OR_ATTRIBUTE_SET__LEFT, oldLeft, newLeft);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -103,20 +103,20 @@ public class AndRefinementImpl extends RefinementImpl implements AndRefinement
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setLeft(Refinement newLeft)
+  public void setLeft(AttributeSet newLeft)
   {
     if (newLeft != left)
     {
       NotificationChain msgs = null;
       if (left != null)
-        msgs = ((InternalEObject)left).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.AND_REFINEMENT__LEFT, null, msgs);
+        msgs = ((InternalEObject)left).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.OR_ATTRIBUTE_SET__LEFT, null, msgs);
       if (newLeft != null)
-        msgs = ((InternalEObject)newLeft).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.AND_REFINEMENT__LEFT, null, msgs);
+        msgs = ((InternalEObject)newLeft).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.OR_ATTRIBUTE_SET__LEFT, null, msgs);
       msgs = basicSetLeft(newLeft, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.AND_REFINEMENT__LEFT, newLeft, newLeft));
+      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.OR_ATTRIBUTE_SET__LEFT, newLeft, newLeft));
   }
 
   /**
@@ -124,7 +124,7 @@ public class AndRefinementImpl extends RefinementImpl implements AndRefinement
    * <!-- end-user-doc -->
    * @generated
    */
-  public Refinement getRight()
+  public AttributeSet getRight()
   {
     return right;
   }
@@ -134,13 +134,13 @@ public class AndRefinementImpl extends RefinementImpl implements AndRefinement
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetRight(Refinement newRight, NotificationChain msgs)
+  public NotificationChain basicSetRight(AttributeSet newRight, NotificationChain msgs)
   {
-    Refinement oldRight = right;
+    AttributeSet oldRight = right;
     right = newRight;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.AND_REFINEMENT__RIGHT, oldRight, newRight);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, EclPackage.OR_ATTRIBUTE_SET__RIGHT, oldRight, newRight);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -151,20 +151,20 @@ public class AndRefinementImpl extends RefinementImpl implements AndRefinement
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setRight(Refinement newRight)
+  public void setRight(AttributeSet newRight)
   {
     if (newRight != right)
     {
       NotificationChain msgs = null;
       if (right != null)
-        msgs = ((InternalEObject)right).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.AND_REFINEMENT__RIGHT, null, msgs);
+        msgs = ((InternalEObject)right).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - EclPackage.OR_ATTRIBUTE_SET__RIGHT, null, msgs);
       if (newRight != null)
-        msgs = ((InternalEObject)newRight).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.AND_REFINEMENT__RIGHT, null, msgs);
+        msgs = ((InternalEObject)newRight).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - EclPackage.OR_ATTRIBUTE_SET__RIGHT, null, msgs);
       msgs = basicSetRight(newRight, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.AND_REFINEMENT__RIGHT, newRight, newRight));
+      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.OR_ATTRIBUTE_SET__RIGHT, newRight, newRight));
   }
 
   /**
@@ -177,9 +177,9 @@ public class AndRefinementImpl extends RefinementImpl implements AndRefinement
   {
     switch (featureID)
     {
-      case EclPackage.AND_REFINEMENT__LEFT:
+      case EclPackage.OR_ATTRIBUTE_SET__LEFT:
         return basicSetLeft(null, msgs);
-      case EclPackage.AND_REFINEMENT__RIGHT:
+      case EclPackage.OR_ATTRIBUTE_SET__RIGHT:
         return basicSetRight(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
@@ -195,9 +195,9 @@ public class AndRefinementImpl extends RefinementImpl implements AndRefinement
   {
     switch (featureID)
     {
-      case EclPackage.AND_REFINEMENT__LEFT:
+      case EclPackage.OR_ATTRIBUTE_SET__LEFT:
         return getLeft();
-      case EclPackage.AND_REFINEMENT__RIGHT:
+      case EclPackage.OR_ATTRIBUTE_SET__RIGHT:
         return getRight();
     }
     return super.eGet(featureID, resolve, coreType);
@@ -213,11 +213,11 @@ public class AndRefinementImpl extends RefinementImpl implements AndRefinement
   {
     switch (featureID)
     {
-      case EclPackage.AND_REFINEMENT__LEFT:
-        setLeft((Refinement)newValue);
+      case EclPackage.OR_ATTRIBUTE_SET__LEFT:
+        setLeft((AttributeSet)newValue);
         return;
-      case EclPackage.AND_REFINEMENT__RIGHT:
-        setRight((Refinement)newValue);
+      case EclPackage.OR_ATTRIBUTE_SET__RIGHT:
+        setRight((AttributeSet)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -233,11 +233,11 @@ public class AndRefinementImpl extends RefinementImpl implements AndRefinement
   {
     switch (featureID)
     {
-      case EclPackage.AND_REFINEMENT__LEFT:
-        setLeft((Refinement)null);
+      case EclPackage.OR_ATTRIBUTE_SET__LEFT:
+        setLeft((AttributeSet)null);
         return;
-      case EclPackage.AND_REFINEMENT__RIGHT:
-        setRight((Refinement)null);
+      case EclPackage.OR_ATTRIBUTE_SET__RIGHT:
+        setRight((AttributeSet)null);
         return;
     }
     super.eUnset(featureID);
@@ -253,12 +253,12 @@ public class AndRefinementImpl extends RefinementImpl implements AndRefinement
   {
     switch (featureID)
     {
-      case EclPackage.AND_REFINEMENT__LEFT:
+      case EclPackage.OR_ATTRIBUTE_SET__LEFT:
         return left != null;
-      case EclPackage.AND_REFINEMENT__RIGHT:
+      case EclPackage.OR_ATTRIBUTE_SET__RIGHT:
         return right != null;
     }
     return super.eIsSet(featureID);
   }
 
-} //AndRefinementImpl
+} //OrAttributeSetImpl

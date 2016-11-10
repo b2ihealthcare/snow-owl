@@ -62,7 +62,31 @@ OrRefinement returns Refinement:
 	AndRefinement ({OrRefinement.left=current} OR right=AndRefinement)*;
 
 AndRefinement returns Refinement:
-	AttributeConstraint ({AndRefinement.left=current} AndOperator right=AttributeConstraint)*;
+	SubRefinement ({AndRefinement.left=current} AndOperator right=SubRefinement)*;
+	
+SubRefinement returns Refinement:
+	AttributeConstraint | AttributeGroup /*| NestedRefinement*/;
+	
+NestedRefinement:
+	ROUND_OPEN nested=Refinement ROUND_CLOSE;
+	
+AttributeGroup:
+	(cardinality=Cardinality)? CURLY_OPEN refinement=AttributeSet CURLY_CLOSE;
+	
+AttributeSet returns Refinement:
+	OrAttributeSet;
+	
+OrAttributeSet returns AttributeSet:
+	AndAttributeSet ({OrAttributeSet.left=current} OR right=AndAttributeSet)*;
+	
+AndAttributeSet returns AttributeSet:
+	SubAttributeSet ({AndAttributeSet.left=current} AndOperator right=SubAttributeSet)*;
+	
+SubAttributeSet returns AttributeSet:
+	AttributeConstraint /*| NestedAttributeSet*/;
+	
+NestedAttributeSet:
+	ROUND_OPEN nested=AttributeSet ROUND_CLOSE;	
 	
 AttributeConstraint:
 	(cardinality=Cardinality)? (reversed?=REVERSED)? attribute=Attribute comparison=Comparison;

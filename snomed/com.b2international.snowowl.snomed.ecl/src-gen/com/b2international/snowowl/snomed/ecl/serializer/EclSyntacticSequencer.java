@@ -37,6 +37,10 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getCARETToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getCOLONRule())
 			return getCOLONToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getCURLY_CLOSERule())
+			return getCURLY_CLOSEToken(semanticObject, ruleCall, node);
+		else if(ruleCall.getRule() == grammarAccess.getCURLY_OPENRule())
+			return getCURLY_OPENToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getDBL_GTRule())
 			return getDBL_GTToken(semanticObject, ruleCall, node);
 		else if(ruleCall.getRule() == grammarAccess.getDBL_LTRule())
@@ -103,6 +107,24 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return ":";
+	}
+	
+	/**
+	 * terminal CURLY_CLOSE			: '}';
+	 */
+	protected String getCURLY_CLOSEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "}";
+	}
+	
+	/**
+	 * terminal CURLY_OPEN 			: '{';
+	 */
+	protected String getCURLY_OPENToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "{";
 	}
 	
 	/**
@@ -293,8 +315,9 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	 *     AND | COMMA
 	 *
 	 * This ambiguous syntax occurs at:
+	 *     {AndAttributeSet.left=} AndOperator (ambiguity) AndOperator right=SubAttributeSet
 	 *     {AndExpressionConstraint.left=} AndOperator (ambiguity) AndOperator right=ExclusionExpressionConstraint
-	 *     {AndRefinement.left=} AndOperator (ambiguity) AndOperator right=AttributeConstraint
+	 *     {AndRefinement.left=} AndOperator (ambiguity) AndOperator right=SubRefinement
 	 */
 	protected void emit_AndOperator_ANDTerminalRuleCall_0_or_COMMATerminalRuleCall_1(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
 		acceptNodes(transition, nodes);

@@ -158,10 +158,41 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case EclPackage.NESTED_REFINEMENT:
+      {
+        NestedRefinement nestedRefinement = (NestedRefinement)theEObject;
+        T result = caseNestedRefinement(nestedRefinement);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.ATTRIBUTE_GROUP:
+      {
+        AttributeGroup attributeGroup = (AttributeGroup)theEObject;
+        T result = caseAttributeGroup(attributeGroup);
+        if (result == null) result = caseRefinement(attributeGroup);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.ATTRIBUTE_SET:
+      {
+        AttributeSet attributeSet = (AttributeSet)theEObject;
+        T result = caseAttributeSet(attributeSet);
+        if (result == null) result = caseRefinement(attributeSet);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.NESTED_ATTRIBUTE_SET:
+      {
+        NestedAttributeSet nestedAttributeSet = (NestedAttributeSet)theEObject;
+        T result = caseNestedAttributeSet(nestedAttributeSet);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case EclPackage.ATTRIBUTE_CONSTRAINT:
       {
         AttributeConstraint attributeConstraint = (AttributeConstraint)theEObject;
         T result = caseAttributeConstraint(attributeConstraint);
+        if (result == null) result = caseAttributeSet(attributeConstraint);
         if (result == null) result = caseRefinement(attributeConstraint);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -257,6 +288,24 @@ public class EclSwitch<T> extends Switch<T>
         AndRefinement andRefinement = (AndRefinement)theEObject;
         T result = caseAndRefinement(andRefinement);
         if (result == null) result = caseRefinement(andRefinement);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.OR_ATTRIBUTE_SET:
+      {
+        OrAttributeSet orAttributeSet = (OrAttributeSet)theEObject;
+        T result = caseOrAttributeSet(orAttributeSet);
+        if (result == null) result = caseAttributeSet(orAttributeSet);
+        if (result == null) result = caseRefinement(orAttributeSet);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.AND_ATTRIBUTE_SET:
+      {
+        AndAttributeSet andAttributeSet = (AndAttributeSet)theEObject;
+        T result = caseAndAttributeSet(andAttributeSet);
+        if (result == null) result = caseAttributeSet(andAttributeSet);
+        if (result == null) result = caseRefinement(andAttributeSet);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -436,6 +485,70 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseRefinement(Refinement object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Nested Refinement</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Nested Refinement</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseNestedRefinement(NestedRefinement object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Attribute Group</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Attribute Group</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseAttributeGroup(AttributeGroup object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Attribute Set</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Attribute Set</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseAttributeSet(AttributeSet object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Nested Attribute Set</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Nested Attribute Set</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseNestedAttributeSet(NestedAttributeSet object)
   {
     return null;
   }
@@ -644,6 +757,38 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseAndRefinement(AndRefinement object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Or Attribute Set</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Or Attribute Set</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseOrAttributeSet(OrAttributeSet object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>And Attribute Set</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>And Attribute Set</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseAndAttributeSet(AndAttributeSet object)
   {
     return null;
   }

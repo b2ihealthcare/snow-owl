@@ -130,6 +130,26 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createRefinementAdapter();
       }
       @Override
+      public Adapter caseNestedRefinement(NestedRefinement object)
+      {
+        return createNestedRefinementAdapter();
+      }
+      @Override
+      public Adapter caseAttributeGroup(AttributeGroup object)
+      {
+        return createAttributeGroupAdapter();
+      }
+      @Override
+      public Adapter caseAttributeSet(AttributeSet object)
+      {
+        return createAttributeSetAdapter();
+      }
+      @Override
+      public Adapter caseNestedAttributeSet(NestedAttributeSet object)
+      {
+        return createNestedAttributeSetAdapter();
+      }
+      @Override
       public Adapter caseAttributeConstraint(AttributeConstraint object)
       {
         return createAttributeConstraintAdapter();
@@ -193,6 +213,16 @@ public class EclAdapterFactory extends AdapterFactoryImpl
       public Adapter caseAndRefinement(AndRefinement object)
       {
         return createAndRefinementAdapter();
+      }
+      @Override
+      public Adapter caseOrAttributeSet(OrAttributeSet object)
+      {
+        return createOrAttributeSetAdapter();
+      }
+      @Override
+      public Adapter caseAndAttributeSet(AndAttributeSet object)
+      {
+        return createAndAttributeSetAdapter();
       }
       @Override
       public Adapter defaultCase(EObject object)
@@ -377,6 +407,66 @@ public class EclAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createRefinementAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement <em>Nested Refinement</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement
+   * @generated
+   */
+  public Adapter createNestedRefinementAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup <em>Attribute Group</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup
+   * @generated
+   */
+  public Adapter createAttributeGroupAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeSet <em>Attribute Set</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeSet
+   * @generated
+   */
+  public Adapter createAttributeSetAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.NestedAttributeSet <em>Nested Attribute Set</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.NestedAttributeSet
+   * @generated
+   */
+  public Adapter createNestedAttributeSetAdapter()
   {
     return null;
   }
@@ -572,6 +662,36 @@ public class EclAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createAndRefinementAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.OrAttributeSet <em>Or Attribute Set</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.OrAttributeSet
+   * @generated
+   */
+  public Adapter createOrAttributeSetAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.AndAttributeSet <em>And Attribute Set</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AndAttributeSet
+   * @generated
+   */
+  public Adapter createAndAttributeSetAdapter()
   {
     return null;
   }
