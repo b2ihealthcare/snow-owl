@@ -18,6 +18,7 @@ package com.b2international.index.query;
 import java.util.Set;
 
 import com.b2international.index.mapping.DocumentMapping;
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -134,7 +135,7 @@ public final class Query<T> {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT " + select);
+		sb.append("SELECT " + getSelectString());
 		sb.append(" FROM " + DocumentMapping.getType(from));
 		sb.append(" WHERE " + where);
 		if (SortBy.NONE != sortBy) {
@@ -148,6 +149,10 @@ public final class Query<T> {
 			sb.append(" HAS_PARENT(" + DocumentMapping.getType(parentType) + ")");
 		}
 		return sb.toString();
+	}
+
+	private String getSelectString() {
+		return fields != null && !fields.isEmpty() ? Joiner.on(",").join(fields) : select == from ? "*" : select.toString();
 	}
 
 	public static <T> QueryBuilder<T> select(Class<T> select) {
