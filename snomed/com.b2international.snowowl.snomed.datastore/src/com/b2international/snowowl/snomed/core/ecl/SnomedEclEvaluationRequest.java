@@ -72,6 +72,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
 import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
+import com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
@@ -323,6 +324,8 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 							return Expressions.builder().should(left).should(right).build();
 						}
 					});
+		} else if (refinement instanceof NestedRefinement) {
+			return eval(context, refined, ((NestedRefinement) refinement).getNested());
 		} else {
 			return throwUnsupported(refinement);
 		}
