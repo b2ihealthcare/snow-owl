@@ -140,24 +140,6 @@ public interface EclFactory extends EFactory
   AttributeGroup createAttributeGroup();
 
   /**
-   * Returns a new object of class '<em>Attribute Set</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Attribute Set</em>'.
-   * @generated
-   */
-  AttributeSet createAttributeSet();
-
-  /**
-   * Returns a new object of class '<em>Nested Attribute Set</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Nested Attribute Set</em>'.
-   * @generated
-   */
-  NestedAttributeSet createNestedAttributeSet();
-
-  /**
    * Returns a new object of class '<em>Attribute Constraint</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -273,24 +255,6 @@ public interface EclFactory extends EFactory
    * @generated
    */
   AndRefinement createAndRefinement();
-
-  /**
-   * Returns a new object of class '<em>Or Attribute Set</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Or Attribute Set</em>'.
-   * @generated
-   */
-  OrAttributeSet createOrAttributeSet();
-
-  /**
-   * Returns a new object of class '<em>And Attribute Set</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>And Attribute Set</em>'.
-   * @generated
-   */
-  AndAttributeSet createAndAttributeSet();
 
   /**
    * Returns the package supported by this factory.

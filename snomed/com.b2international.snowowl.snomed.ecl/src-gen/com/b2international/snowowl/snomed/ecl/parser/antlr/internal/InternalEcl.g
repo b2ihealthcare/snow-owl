@@ -65,23 +65,16 @@ import com.b2international.snowowl.snomed.ecl.services.EclGrammarAccess;
 
 // Entry rule entryRuleExpressionConstraint
 entryRuleExpressionConstraint returns [EObject current=null] 
-	@init { 
-		HiddenTokens myHiddenTokenState = ((XtextTokenStream)input).setHiddenTokens("RULE_WS", "RULE_SL_COMMENT", "RULE_ML_COMMENT");
-	}
 	:
 	{ newCompositeNode(grammarAccess.getExpressionConstraintRule()); }
 	 iv_ruleExpressionConstraint=ruleExpressionConstraint 
 	 { $current=$iv_ruleExpressionConstraint.current; } 
 	 EOF 
 ;
-finally {
-	myHiddenTokenState.restore();
-}
 
 // Rule ExpressionConstraint
 ruleExpressionConstraint returns [EObject current=null] 
     @init { enterRule(); 
-		HiddenTokens myHiddenTokenState = ((XtextTokenStream)input).setHiddenTokens("RULE_WS", "RULE_SL_COMMENT", "RULE_ML_COMMENT");
     }
     @after { leaveRule(); }:
 
@@ -95,9 +88,6 @@ ruleExpressionConstraint returns [EObject current=null]
     }
 
 ;
-finally {
-	myHiddenTokenState.restore();
-}
 
 
 
@@ -1015,20 +1005,20 @@ ruleOrRefinement returns [EObject current=null]
         $current = $this_AndRefinement_0.current; 
         afterParserOrEnumRuleCall();
     }
-((
+((	RULE_OR)=>((
     {
         $current = forceCreateModelElementAndSet(
-            grammarAccess.getOrRefinementAccess().getOrRefinementLeftAction_1_0(),
+            grammarAccess.getOrRefinementAccess().getOrRefinementLeftAction_1_0_0(),
             $current);
     }
 )this_OR_2=RULE_OR
     { 
-    newLeafNode(this_OR_2, grammarAccess.getOrRefinementAccess().getORTerminalRuleCall_1_1()); 
+    newLeafNode(this_OR_2, grammarAccess.getOrRefinementAccess().getORTerminalRuleCall_1_0_1()); 
     }
 (
 (
 		{ 
-	        newCompositeNode(grammarAccess.getOrRefinementAccess().getRightAndRefinementParserRuleCall_1_2_0()); 
+	        newCompositeNode(grammarAccess.getOrRefinementAccess().getRightAndRefinementParserRuleCall_1_0_2_0()); 
 	    }
 		lv_right_3_0=ruleAndRefinement		{
 	        if ($current==null) {
@@ -1043,7 +1033,7 @@ ruleOrRefinement returns [EObject current=null]
 	    }
 
 )
-))*)
+)))*)
 ;
 
 
@@ -1073,15 +1063,15 @@ ruleAndRefinement returns [EObject current=null]
         $current = $this_SubRefinement_0.current; 
         afterParserOrEnumRuleCall();
     }
-((
+((	RULE_AND | 	RULE_COMMA)=>((
     {
         $current = forceCreateModelElementAndSet(
-            grammarAccess.getAndRefinementAccess().getAndRefinementLeftAction_1_0(),
+            grammarAccess.getAndRefinementAccess().getAndRefinementLeftAction_1_0_0(),
             $current);
     }
 )
     { 
-        newCompositeNode(grammarAccess.getAndRefinementAccess().getAndOperatorParserRuleCall_1_1()); 
+        newCompositeNode(grammarAccess.getAndRefinementAccess().getAndOperatorParserRuleCall_1_0_1()); 
     }
 ruleAndOperator
     { 
@@ -1090,7 +1080,7 @@ ruleAndOperator
 (
 (
 		{ 
-	        newCompositeNode(grammarAccess.getAndRefinementAccess().getRightSubRefinementParserRuleCall_1_2_0()); 
+	        newCompositeNode(grammarAccess.getAndRefinementAccess().getRightSubRefinementParserRuleCall_1_0_2_0()); 
 	    }
 		lv_right_3_0=ruleSubRefinement		{
 	        if ($current==null) {
@@ -1105,7 +1095,7 @@ ruleAndOperator
 	    }
 
 )
-))*)
+)))*)
 ;
 
 
@@ -1145,10 +1135,65 @@ ruleSubRefinement returns [EObject current=null]
         $current = $this_AttributeGroup_1.current; 
         afterParserOrEnumRuleCall();
     }
+
+    |
+    { 
+        newCompositeNode(grammarAccess.getSubRefinementAccess().getNestedRefinementParserRuleCall_2()); 
+    }
+    this_NestedRefinement_2=ruleNestedRefinement
+    { 
+        $current = $this_NestedRefinement_2.current; 
+        afterParserOrEnumRuleCall();
+    }
 )
 ;
 
 
+
+
+
+// Entry rule entryRuleNestedRefinement
+entryRuleNestedRefinement returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getNestedRefinementRule()); }
+	 iv_ruleNestedRefinement=ruleNestedRefinement 
+	 { $current=$iv_ruleNestedRefinement.current; } 
+	 EOF 
+;
+
+// Rule NestedRefinement
+ruleNestedRefinement returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(this_ROUND_OPEN_0=RULE_ROUND_OPEN
+    { 
+    newLeafNode(this_ROUND_OPEN_0, grammarAccess.getNestedRefinementAccess().getROUND_OPENTerminalRuleCall_0()); 
+    }
+(
+(
+		{ 
+	        newCompositeNode(grammarAccess.getNestedRefinementAccess().getNestedRefinementParserRuleCall_1_0()); 
+	    }
+		lv_nested_1_0=ruleRefinement		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getNestedRefinementRule());
+	        }
+       		set(
+       			$current, 
+       			"nested",
+        		lv_nested_1_0, 
+        		"Refinement");
+	        afterParserOrEnumRuleCall();
+	    }
+
+)
+)this_ROUND_CLOSE_2=RULE_ROUND_CLOSE
+    { 
+    newLeafNode(this_ROUND_CLOSE_2, grammarAccess.getNestedRefinementAccess().getROUND_CLOSETerminalRuleCall_2()); 
+    }
+)
+;
 
 
 
@@ -1275,7 +1320,7 @@ ruleOrAttributeSet returns [EObject current=null]
 ((
     {
         $current = forceCreateModelElementAndSet(
-            grammarAccess.getOrAttributeSetAccess().getOrAttributeSetLeftAction_1_0(),
+            grammarAccess.getOrAttributeSetAccess().getOrRefinementLeftAction_1_0(),
             $current);
     }
 )this_OR_2=RULE_OR
@@ -1333,7 +1378,7 @@ ruleAndAttributeSet returns [EObject current=null]
 ((
     {
         $current = forceCreateModelElementAndSet(
-            grammarAccess.getAndAttributeSetAccess().getAndAttributeSetLeftAction_1_0(),
+            grammarAccess.getAndAttributeSetAccess().getAndRefinementLeftAction_1_0(),
             $current);
     }
 )
@@ -1383,9 +1428,9 @@ ruleSubAttributeSet returns [EObject current=null]
     @init { enterRule(); 
     }
     @after { leaveRule(); }:
-
+(
     { 
-        newCompositeNode(grammarAccess.getSubAttributeSetAccess().getAttributeConstraintParserRuleCall()); 
+        newCompositeNode(grammarAccess.getSubAttributeSetAccess().getAttributeConstraintParserRuleCall_0()); 
     }
     this_AttributeConstraint_0=ruleAttributeConstraint
     { 
@@ -1393,9 +1438,64 @@ ruleSubAttributeSet returns [EObject current=null]
         afterParserOrEnumRuleCall();
     }
 
+    |
+    { 
+        newCompositeNode(grammarAccess.getSubAttributeSetAccess().getNestedAttributeSetParserRuleCall_1()); 
+    }
+    this_NestedAttributeSet_1=ruleNestedAttributeSet
+    { 
+        $current = $this_NestedAttributeSet_1.current; 
+        afterParserOrEnumRuleCall();
+    }
+)
 ;
 
 
+
+
+
+// Entry rule entryRuleNestedAttributeSet
+entryRuleNestedAttributeSet returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getNestedAttributeSetRule()); }
+	 iv_ruleNestedAttributeSet=ruleNestedAttributeSet 
+	 { $current=$iv_ruleNestedAttributeSet.current; } 
+	 EOF 
+;
+
+// Rule NestedAttributeSet
+ruleNestedAttributeSet returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(this_ROUND_OPEN_0=RULE_ROUND_OPEN
+    { 
+    newLeafNode(this_ROUND_OPEN_0, grammarAccess.getNestedAttributeSetAccess().getROUND_OPENTerminalRuleCall_0()); 
+    }
+(
+(
+		{ 
+	        newCompositeNode(grammarAccess.getNestedAttributeSetAccess().getNestedAttributeSetParserRuleCall_1_0()); 
+	    }
+		lv_nested_1_0=ruleAttributeSet		{
+	        if ($current==null) {
+	            $current = createModelElementForParent(grammarAccess.getNestedAttributeSetRule());
+	        }
+       		set(
+       			$current, 
+       			"nested",
+        		lv_nested_1_0, 
+        		"AttributeSet");
+	        afterParserOrEnumRuleCall();
+	    }
+
+)
+)this_ROUND_CLOSE_2=RULE_ROUND_CLOSE
+    { 
+    newLeafNode(this_ROUND_CLOSE_2, grammarAccess.getNestedAttributeSetAccess().getROUND_CLOSETerminalRuleCall_2()); 
+    }
+)
+;
 
 
 

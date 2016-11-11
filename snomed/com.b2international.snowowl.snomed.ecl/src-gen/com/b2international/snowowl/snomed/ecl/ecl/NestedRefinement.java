@@ -2,7 +2,6 @@
  */
 package com.b2international.snowowl.snomed.ecl.ecl;
 
-import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
@@ -20,7 +19,7 @@ import org.eclipse.emf.ecore.EObject;
  * @model
  * @generated
  */
-public interface NestedRefinement extends EObject
+public interface NestedRefinement extends Refinement
 {
   /**
    * Returns the value of the '<em><b>Nested</b></em>' containment reference.

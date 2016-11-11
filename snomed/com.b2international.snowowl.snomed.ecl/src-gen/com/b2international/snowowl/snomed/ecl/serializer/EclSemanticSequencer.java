@@ -5,7 +5,6 @@ package com.b2international.snowowl.snomed.ecl.serializer;
 
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
-import com.b2international.snowowl.snomed.ecl.ecl.AndAttributeSet;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
@@ -22,10 +21,8 @@ import com.b2international.snowowl.snomed.ecl.ecl.DottedExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
-import com.b2international.snowowl.snomed.ecl.ecl.NestedAttributeSet;
 import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
 import com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.OrAttributeSet;
 import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
@@ -60,15 +57,27 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 			case EclPackage.ANCESTOR_OR_SELF_OF:
 				sequence_AncestorOrSelfOf(context, (AncestorOrSelfOf) semanticObject); 
 				return; 
-			case EclPackage.AND_ATTRIBUTE_SET:
-				sequence_AndAttributeSet(context, (AndAttributeSet) semanticObject); 
-				return; 
 			case EclPackage.AND_EXPRESSION_CONSTRAINT:
 				sequence_AndExpressionConstraint(context, (AndExpressionConstraint) semanticObject); 
 				return; 
 			case EclPackage.AND_REFINEMENT:
-				sequence_AndRefinement(context, (AndRefinement) semanticObject); 
-				return; 
+				if(context == grammarAccess.getAndAttributeSetRule() ||
+				   context == grammarAccess.getAndAttributeSetAccess().getAndRefinementLeftAction_1_0() ||
+				   context == grammarAccess.getAttributeSetRule() ||
+				   context == grammarAccess.getOrAttributeSetRule() ||
+				   context == grammarAccess.getOrAttributeSetAccess().getOrRefinementLeftAction_1_0()) {
+					sequence_AndAttributeSet(context, (AndRefinement) semanticObject); 
+					return; 
+				}
+				else if(context == grammarAccess.getAndRefinementRule() ||
+				   context == grammarAccess.getAndRefinementAccess().getAndRefinementLeftAction_1_0_0() ||
+				   context == grammarAccess.getOrRefinementRule() ||
+				   context == grammarAccess.getOrRefinementAccess().getOrRefinementLeftAction_1_0_0() ||
+				   context == grammarAccess.getRefinementRule()) {
+					sequence_AndRefinement(context, (AndRefinement) semanticObject); 
+					return; 
+				}
+				else break;
 			case EclPackage.ANY:
 				sequence_Any(context, (Any) semanticObject); 
 				return; 
@@ -148,24 +157,48 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 			case EclPackage.MEMBER_OF:
 				sequence_MemberOf(context, (MemberOf) semanticObject); 
 				return; 
-			case EclPackage.NESTED_ATTRIBUTE_SET:
-				sequence_NestedAttributeSet(context, (NestedAttributeSet) semanticObject); 
-				return; 
 			case EclPackage.NESTED_EXPRESSION:
 				sequence_NestedExpression(context, (NestedExpression) semanticObject); 
 				return; 
 			case EclPackage.NESTED_REFINEMENT:
-				sequence_NestedRefinement(context, (NestedRefinement) semanticObject); 
-				return; 
-			case EclPackage.OR_ATTRIBUTE_SET:
-				sequence_OrAttributeSet(context, (OrAttributeSet) semanticObject); 
-				return; 
+				if(context == grammarAccess.getAndAttributeSetRule() ||
+				   context == grammarAccess.getAndAttributeSetAccess().getAndRefinementLeftAction_1_0() ||
+				   context == grammarAccess.getAttributeSetRule() ||
+				   context == grammarAccess.getNestedAttributeSetRule() ||
+				   context == grammarAccess.getOrAttributeSetRule() ||
+				   context == grammarAccess.getOrAttributeSetAccess().getOrRefinementLeftAction_1_0() ||
+				   context == grammarAccess.getSubAttributeSetRule()) {
+					sequence_NestedAttributeSet(context, (NestedRefinement) semanticObject); 
+					return; 
+				}
+				else if(context == grammarAccess.getAndRefinementRule() ||
+				   context == grammarAccess.getAndRefinementAccess().getAndRefinementLeftAction_1_0_0() ||
+				   context == grammarAccess.getNestedRefinementRule() ||
+				   context == grammarAccess.getOrRefinementRule() ||
+				   context == grammarAccess.getOrRefinementAccess().getOrRefinementLeftAction_1_0_0() ||
+				   context == grammarAccess.getRefinementRule() ||
+				   context == grammarAccess.getSubRefinementRule()) {
+					sequence_NestedRefinement(context, (NestedRefinement) semanticObject); 
+					return; 
+				}
+				else break;
 			case EclPackage.OR_EXPRESSION_CONSTRAINT:
 				sequence_OrExpressionConstraint(context, (OrExpressionConstraint) semanticObject); 
 				return; 
 			case EclPackage.OR_REFINEMENT:
-				sequence_OrRefinement(context, (OrRefinement) semanticObject); 
-				return; 
+				if(context == grammarAccess.getAttributeSetRule() ||
+				   context == grammarAccess.getOrAttributeSetRule() ||
+				   context == grammarAccess.getOrAttributeSetAccess().getOrRefinementLeftAction_1_0()) {
+					sequence_OrAttributeSet(context, (OrRefinement) semanticObject); 
+					return; 
+				}
+				else if(context == grammarAccess.getOrRefinementRule() ||
+				   context == grammarAccess.getOrRefinementAccess().getOrRefinementLeftAction_1_0_0() ||
+				   context == grammarAccess.getRefinementRule()) {
+					sequence_OrRefinement(context, (OrRefinement) semanticObject); 
+					return; 
+				}
+				else break;
 			case EclPackage.PARENT_OF:
 				sequence_ParentOf(context, (ParentOf) semanticObject); 
 				return; 
@@ -210,18 +243,18 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
-	 *     (left=AndAttributeSet_AndAttributeSet_1_0 right=SubAttributeSet)
+	 *     (left=AndAttributeSet_AndRefinement_1_0 right=SubAttributeSet)
 	 */
-	protected void sequence_AndAttributeSet(EObject context, AndAttributeSet semanticObject) {
+	protected void sequence_AndAttributeSet(EObject context, AndRefinement semanticObject) {
 		if(errorAcceptor != null) {
-			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.AND_ATTRIBUTE_SET__LEFT) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.AND_ATTRIBUTE_SET__LEFT));
-			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.AND_ATTRIBUTE_SET__RIGHT) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.AND_ATTRIBUTE_SET__RIGHT));
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.AND_REFINEMENT__LEFT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.AND_REFINEMENT__LEFT));
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.AND_REFINEMENT__RIGHT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.AND_REFINEMENT__RIGHT));
 		}
 		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
 		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
-		feeder.accept(grammarAccess.getAndAttributeSetAccess().getAndAttributeSetLeftAction_1_0(), semanticObject.getLeft());
+		feeder.accept(grammarAccess.getAndAttributeSetAccess().getAndRefinementLeftAction_1_0(), semanticObject.getLeft());
 		feeder.accept(grammarAccess.getAndAttributeSetAccess().getRightSubAttributeSetParserRuleCall_1_2_0(), semanticObject.getRight());
 		feeder.finish();
 	}
@@ -248,7 +281,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
-	 *     (left=AndRefinement_AndRefinement_1_0 right=SubRefinement)
+	 *     (left=AndRefinement_AndRefinement_1_0_0 right=SubRefinement)
 	 */
 	protected void sequence_AndRefinement(EObject context, AndRefinement semanticObject) {
 		if(errorAcceptor != null) {
@@ -259,8 +292,8 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 		}
 		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
 		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
-		feeder.accept(grammarAccess.getAndRefinementAccess().getAndRefinementLeftAction_1_0(), semanticObject.getLeft());
-		feeder.accept(grammarAccess.getAndRefinementAccess().getRightSubRefinementParserRuleCall_1_2_0(), semanticObject.getRight());
+		feeder.accept(grammarAccess.getAndRefinementAccess().getAndRefinementLeftAction_1_0_0(), semanticObject.getLeft());
+		feeder.accept(grammarAccess.getAndRefinementAccess().getRightSubRefinementParserRuleCall_1_0_2_0(), semanticObject.getRight());
 		feeder.finish();
 	}
 	
@@ -469,10 +502,10 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 * Constraint:
 	 *     nested=AttributeSet
 	 */
-	protected void sequence_NestedAttributeSet(EObject context, NestedAttributeSet semanticObject) {
+	protected void sequence_NestedAttributeSet(EObject context, NestedRefinement semanticObject) {
 		if(errorAcceptor != null) {
-			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.NESTED_ATTRIBUTE_SET__NESTED) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.NESTED_ATTRIBUTE_SET__NESTED));
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.NESTED_REFINEMENT__NESTED) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.NESTED_REFINEMENT__NESTED));
 		}
 		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
 		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
@@ -515,18 +548,18 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
-	 *     (left=OrAttributeSet_OrAttributeSet_1_0 right=AndAttributeSet)
+	 *     (left=OrAttributeSet_OrRefinement_1_0 right=AndAttributeSet)
 	 */
-	protected void sequence_OrAttributeSet(EObject context, OrAttributeSet semanticObject) {
+	protected void sequence_OrAttributeSet(EObject context, OrRefinement semanticObject) {
 		if(errorAcceptor != null) {
-			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.OR_ATTRIBUTE_SET__LEFT) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.OR_ATTRIBUTE_SET__LEFT));
-			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.OR_ATTRIBUTE_SET__RIGHT) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.OR_ATTRIBUTE_SET__RIGHT));
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.OR_REFINEMENT__LEFT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.OR_REFINEMENT__LEFT));
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.OR_REFINEMENT__RIGHT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.OR_REFINEMENT__RIGHT));
 		}
 		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
 		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
-		feeder.accept(grammarAccess.getOrAttributeSetAccess().getOrAttributeSetLeftAction_1_0(), semanticObject.getLeft());
+		feeder.accept(grammarAccess.getOrAttributeSetAccess().getOrRefinementLeftAction_1_0(), semanticObject.getLeft());
 		feeder.accept(grammarAccess.getOrAttributeSetAccess().getRightAndAttributeSetParserRuleCall_1_2_0(), semanticObject.getRight());
 		feeder.finish();
 	}
@@ -553,7 +586,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
-	 *     (left=OrRefinement_OrRefinement_1_0 right=AndRefinement)
+	 *     (left=OrRefinement_OrRefinement_1_0_0 right=AndRefinement)
 	 */
 	protected void sequence_OrRefinement(EObject context, OrRefinement semanticObject) {
 		if(errorAcceptor != null) {
@@ -564,8 +597,8 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 		}
 		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
 		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
-		feeder.accept(grammarAccess.getOrRefinementAccess().getOrRefinementLeftAction_1_0(), semanticObject.getLeft());
-		feeder.accept(grammarAccess.getOrRefinementAccess().getRightAndRefinementParserRuleCall_1_2_0(), semanticObject.getRight());
+		feeder.accept(grammarAccess.getOrRefinementAccess().getOrRefinementLeftAction_1_0_0(), semanticObject.getLeft());
+		feeder.accept(grammarAccess.getOrRefinementAccess().getRightAndRefinementParserRuleCall_1_0_2_0(), semanticObject.getRight());
 		feeder.finish();
 	}
 	

@@ -77,8 +77,6 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
       case EclPackage.REFINEMENT: return createRefinement();
       case EclPackage.NESTED_REFINEMENT: return createNestedRefinement();
       case EclPackage.ATTRIBUTE_GROUP: return createAttributeGroup();
-      case EclPackage.ATTRIBUTE_SET: return createAttributeSet();
-      case EclPackage.NESTED_ATTRIBUTE_SET: return createNestedAttributeSet();
       case EclPackage.ATTRIBUTE_CONSTRAINT: return createAttributeConstraint();
       case EclPackage.CARDINALITY: return createCardinality();
       case EclPackage.COMPARISON: return createComparison();
@@ -92,8 +90,6 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
       case EclPackage.DOTTED_EXPRESSION_CONSTRAINT: return createDottedExpressionConstraint();
       case EclPackage.OR_REFINEMENT: return createOrRefinement();
       case EclPackage.AND_REFINEMENT: return createAndRefinement();
-      case EclPackage.OR_ATTRIBUTE_SET: return createOrAttributeSet();
-      case EclPackage.AND_ATTRIBUTE_SET: return createAndAttributeSet();
       default:
         throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
     }
@@ -247,28 +243,6 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public AttributeSet createAttributeSet()
-  {
-    AttributeSetImpl attributeSet = new AttributeSetImpl();
-    return attributeSet;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public NestedAttributeSet createNestedAttributeSet()
-  {
-    NestedAttributeSetImpl nestedAttributeSet = new NestedAttributeSetImpl();
-    return nestedAttributeSet;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
   public AttributeConstraint createAttributeConstraint()
   {
     AttributeConstraintImpl attributeConstraint = new AttributeConstraintImpl();
@@ -405,28 +379,6 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     AndRefinementImpl andRefinement = new AndRefinementImpl();
     return andRefinement;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public OrAttributeSet createOrAttributeSet()
-  {
-    OrAttributeSetImpl orAttributeSet = new OrAttributeSetImpl();
-    return orAttributeSet;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public AndAttributeSet createAndAttributeSet()
-  {
-    AndAttributeSetImpl andAttributeSet = new AndAttributeSetImpl();
-    return andAttributeSet;
   }
 
   /**

@@ -315,8 +315,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	 *     AND | COMMA
 	 *
 	 * This ambiguous syntax occurs at:
-	 *     {AndAttributeSet.left=} AndOperator (ambiguity) AndOperator right=SubAttributeSet
 	 *     {AndExpressionConstraint.left=} AndOperator (ambiguity) AndOperator right=ExclusionExpressionConstraint
+	 *     {AndRefinement.left=} AndOperator (ambiguity) AndOperator right=SubAttributeSet
 	 *     {AndRefinement.left=} AndOperator (ambiguity) AndOperator right=SubRefinement
 	 */
 	protected void emit_AndOperator_ANDTerminalRuleCall_0_or_COMMATerminalRuleCall_1(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {

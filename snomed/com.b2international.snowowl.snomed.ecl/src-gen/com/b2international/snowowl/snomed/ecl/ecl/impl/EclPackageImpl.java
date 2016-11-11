@@ -4,13 +4,11 @@ package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
-import com.b2international.snowowl.snomed.ecl.ecl.AndAttributeSet;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeSet;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
@@ -25,10 +23,8 @@ import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
-import com.b2international.snowowl.snomed.ecl.ecl.NestedAttributeSet;
 import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
 import com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.OrAttributeSet;
 import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
@@ -146,20 +142,6 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass attributeSetEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass nestedAttributeSetEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
   private EClass attributeConstraintEClass = null;
 
   /**
@@ -245,20 +227,6 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * @generated
    */
   private EClass andRefinementEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass orAttributeSetEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass andAttributeSetEClass = null;
 
   /**
    * Creates an instance of the model <b>Package</b>, registered with
@@ -571,36 +539,6 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
   public EReference getAttributeGroup_Refinement()
   {
     return (EReference)attributeGroupEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public EClass getAttributeSet()
-  {
-    return attributeSetEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public EClass getNestedAttributeSet()
-  {
-    return nestedAttributeSetEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public EReference getNestedAttributeSet_Nested()
-  {
-    return (EReference)nestedAttributeSetEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -958,66 +896,6 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EClass getOrAttributeSet()
-  {
-    return orAttributeSetEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public EReference getOrAttributeSet_Left()
-  {
-    return (EReference)orAttributeSetEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public EReference getOrAttributeSet_Right()
-  {
-    return (EReference)orAttributeSetEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public EClass getAndAttributeSet()
-  {
-    return andAttributeSetEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public EReference getAndAttributeSet_Left()
-  {
-    return (EReference)andAttributeSetEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public EReference getAndAttributeSet_Right()
-  {
-    return (EReference)andAttributeSetEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
   public EclFactory getEclFactory()
   {
     return (EclFactory)getEFactoryInstance();
@@ -1081,11 +959,6 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     createEReference(attributeGroupEClass, ATTRIBUTE_GROUP__CARDINALITY);
     createEReference(attributeGroupEClass, ATTRIBUTE_GROUP__REFINEMENT);
 
-    attributeSetEClass = createEClass(ATTRIBUTE_SET);
-
-    nestedAttributeSetEClass = createEClass(NESTED_ATTRIBUTE_SET);
-    createEReference(nestedAttributeSetEClass, NESTED_ATTRIBUTE_SET__NESTED);
-
     attributeConstraintEClass = createEClass(ATTRIBUTE_CONSTRAINT);
     createEReference(attributeConstraintEClass, ATTRIBUTE_CONSTRAINT__CARDINALITY);
     createEAttribute(attributeConstraintEClass, ATTRIBUTE_CONSTRAINT__REVERSED);
@@ -1133,14 +1006,6 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     andRefinementEClass = createEClass(AND_REFINEMENT);
     createEReference(andRefinementEClass, AND_REFINEMENT__LEFT);
     createEReference(andRefinementEClass, AND_REFINEMENT__RIGHT);
-
-    orAttributeSetEClass = createEClass(OR_ATTRIBUTE_SET);
-    createEReference(orAttributeSetEClass, OR_ATTRIBUTE_SET__LEFT);
-    createEReference(orAttributeSetEClass, OR_ATTRIBUTE_SET__RIGHT);
-
-    andAttributeSetEClass = createEClass(AND_ATTRIBUTE_SET);
-    createEReference(andAttributeSetEClass, AND_ATTRIBUTE_SET__LEFT);
-    createEReference(andAttributeSetEClass, AND_ATTRIBUTE_SET__RIGHT);
   }
 
   /**
@@ -1181,10 +1046,9 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     memberOfEClass.getESuperTypes().add(this.getExpressionConstraint());
     conceptReferenceEClass.getESuperTypes().add(this.getExpressionConstraint());
     anyEClass.getESuperTypes().add(this.getExpressionConstraint());
+    nestedRefinementEClass.getESuperTypes().add(this.getRefinement());
     attributeGroupEClass.getESuperTypes().add(this.getRefinement());
-    attributeSetEClass.getESuperTypes().add(this.getRefinement());
     attributeConstraintEClass.getESuperTypes().add(this.getRefinement());
-    attributeConstraintEClass.getESuperTypes().add(this.getAttributeSet());
     attributeValueEqualsEClass.getESuperTypes().add(this.getComparison());
     attributeValueNotEqualsEClass.getESuperTypes().add(this.getComparison());
     nestedExpressionEClass.getESuperTypes().add(this.getExpressionConstraint());
@@ -1195,8 +1059,6 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     dottedExpressionConstraintEClass.getESuperTypes().add(this.getExpressionConstraint());
     orRefinementEClass.getESuperTypes().add(this.getRefinement());
     andRefinementEClass.getESuperTypes().add(this.getRefinement());
-    orAttributeSetEClass.getESuperTypes().add(this.getAttributeSet());
-    andAttributeSetEClass.getESuperTypes().add(this.getAttributeSet());
 
     // Initialize classes and features; add operations and parameters
     initEClass(expressionConstraintEClass, ExpressionConstraint.class, "ExpressionConstraint", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -1236,11 +1098,6 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     initEClass(attributeGroupEClass, AttributeGroup.class, "AttributeGroup", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getAttributeGroup_Cardinality(), this.getCardinality(), null, "cardinality", null, 0, 1, AttributeGroup.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEReference(getAttributeGroup_Refinement(), this.getRefinement(), null, "refinement", null, 0, 1, AttributeGroup.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-    initEClass(attributeSetEClass, AttributeSet.class, "AttributeSet", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-    initEClass(nestedAttributeSetEClass, NestedAttributeSet.class, "NestedAttributeSet", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getNestedAttributeSet_Nested(), this.getRefinement(), null, "nested", null, 0, 1, NestedAttributeSet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(attributeConstraintEClass, AttributeConstraint.class, "AttributeConstraint", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getAttributeConstraint_Cardinality(), this.getCardinality(), null, "cardinality", null, 0, 1, AttributeConstraint.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -1289,14 +1146,6 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     initEClass(andRefinementEClass, AndRefinement.class, "AndRefinement", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getAndRefinement_Left(), this.getRefinement(), null, "left", null, 0, 1, AndRefinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEReference(getAndRefinement_Right(), this.getRefinement(), null, "right", null, 0, 1, AndRefinement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-    initEClass(orAttributeSetEClass, OrAttributeSet.class, "OrAttributeSet", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getOrAttributeSet_Left(), this.getAttributeSet(), null, "left", null, 0, 1, OrAttributeSet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getOrAttributeSet_Right(), this.getAttributeSet(), null, "right", null, 0, 1, OrAttributeSet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-    initEClass(andAttributeSetEClass, AndAttributeSet.class, "AndAttributeSet", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getAndAttributeSet_Left(), this.getAttributeSet(), null, "left", null, 0, 1, AndAttributeSet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getAndAttributeSet_Right(), this.getAttributeSet(), null, "right", null, 0, 1, AndAttributeSet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     // Create resource
     createResource(eNS_URI);
