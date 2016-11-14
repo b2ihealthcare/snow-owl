@@ -50,6 +50,7 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
@@ -79,6 +80,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
 import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
 import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -295,16 +297,25 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				});
 	}
 	
-	protected Promise<Expression> eval(BranchContext context, final RefinedExpressionConstraint refined) {
-		return eval(context, refined, refined.getRefinement());
+	protected Promise<Expression> eval(final BranchContext context, final RefinedExpressionConstraint refined) {
+		final String focusConceptExpression = context.service(EclSerializer.class).serialize(refined.getConstraint());
+		return resolve(context, focusConceptExpression)
+				.thenWith(new Function<Set<String>, Promise<Expression>>() {
+					@Override
+					public Promise<Expression> apply(Set<String> input) {
+						return eval(context, input, refined.getRefinement());
+					}
+				});
 	}
 	
-	private Promise<Expression> eval(final BranchContext context, final RefinedExpressionConstraint refined, Refinement refinement) {
-		if (refinement instanceof AttributeConstraint) {
-			return evalRefinement(context, refined, (AttributeConstraint) refinement);
+	private Promise<Expression> eval(final BranchContext context, final Set<String> focusConceptIds, Refinement refinement) {
+		if (focusConceptIds == null) {
+			return Promise.immediate(Expressions.matchNone());
+		} else if (refinement instanceof AttributeConstraint) {
+			return evalRefinement(context, focusConceptIds, (AttributeConstraint) refinement);
 		} else if (refinement instanceof AndRefinement) {
 			final AndRefinement and = (AndRefinement) refinement;
-			return Promise.all(eval(context, refined, and.getLeft()), eval(context, refined, and.getRight()))
+			return Promise.all(eval(context, focusConceptIds, and.getLeft()), eval(context, focusConceptIds, and.getRight()))
 					.then(new Function<List<Object>, Expression>() {
 						@Override
 						public Expression apply(List<Object> input) {
@@ -315,7 +326,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 					});
 		} else if (refinement instanceof OrRefinement) {
 			final OrRefinement and = (OrRefinement) refinement;
-			return Promise.all(eval(context, refined, and.getLeft()), eval(context, refined, and.getRight()))
+			return Promise.all(eval(context, focusConceptIds, and.getLeft()), eval(context, focusConceptIds, and.getRight()))
 					.then(new Function<List<Object>, Expression>() {
 						@Override
 						public Expression apply(List<Object> input) {
@@ -325,21 +336,20 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 						}
 					});
 		} else if (refinement instanceof NestedRefinement) {
-			return eval(context, refined, ((NestedRefinement) refinement).getNested());
+			return eval(context, focusConceptIds, ((NestedRefinement) refinement).getNested());
 		} else {
 			return throwUnsupported(refinement);
 		}
 	} 
 	
-	private Promise<Expression> evalRefinement(BranchContext context, final RefinedExpressionConstraint refined, AttributeConstraint refinement) {
+	private Promise<Expression> evalRefinement(BranchContext context, final Set<String> focusConceptIds, AttributeConstraint refinement) {
 		final Cardinality cardinality = refinement.getCardinality();
 		// filterBySource, filterByType and filterByDestination accepts ECL expressions as well, so serialize them into ECL and pass as String when required
 		final EclSerializer serializer = context.service(EclSerializer.class);
-		final String sourceConceptExpression = serializer.serialize(refined.getConstraint());
-		final String typeConceptExpression = serializer.serialize(refinement.getAttribute());
+		final Collection<String> typeConceptFilter = Collections.singleton(serializer.serialize(refinement.getAttribute()));
 		final String destinationConceptExpression = serializer.serialize(rewrite(refinement.getComparison()));
-		final String focusConceptExpression = refinement.isReversed() ? destinationConceptExpression : sourceConceptExpression;
-		final String valueConceptExpression = refinement.isReversed() ? sourceConceptExpression : destinationConceptExpression;
+		final Collection<String> focusConceptFilter = refinement.isReversed() ? Collections.singleton(destinationConceptExpression) : focusConceptIds;
+		final Collection<String> valueConceptFilter = refinement.isReversed() ? focusConceptIds : Collections.singleton(destinationConceptExpression);
 		// if reversed refinement, then we are interested in the destinationIds otherwise we need the sourceIds
 		final Function<ISnomedRelationship, String> idFunction = refinement.isReversed() ? ISnomedRelationship::getDestinationId : ISnomedRelationship::getSourceId;
 		
@@ -348,53 +358,46 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 		final int min = cardinality == null ? 1 : cardinality.getMin();
 		final int max = isUnbounded ? Integer.MAX_VALUE : cardinality.getMax();
 		final Range<Integer> cardinalityRange = Range.closed(min, max);
+
+		final Expression focusConceptExpression = ids(focusConceptIds);
 		
 		if (min == 0) {
 			if (isUnbounded) {
 				// zero and unbounded attributes, just match all focus concepts
-				return evaluate(context, refined.getConstraint());
+				return Promise.immediate(focusConceptExpression);
 			} else {
 				// otherwise evaluate to BOOL(MUST(focus) MUST_NOT(max+1))
 				// construct the positive side of the query with this allowed attribute range
 				final Range<Integer> positiveRange = Range.closed(max + 1, Integer.MAX_VALUE);
-				return Promise.all(
-						// eval the focusConcept expression
-						SnomedRequests.prepareEclEvaluation(focusConceptExpression)
-						.build(context.id(), context.branch().path())
-						.execute(context.service(IEventBus.class))
-						.thenWith(promise -> promise),
-						// eval the same expression with positive range
-						evalRefinement(context, focusConceptExpression, typeConceptExpression, valueConceptExpression, positiveRange, idFunction))
-						.then(new Function<List<Object>, Expression>() {
+				return evalRefinement(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, positiveRange, idFunction)
+						.then(new Function<Expression, Expression>() {
 							@Override
-							public Expression apply(List<Object> expressions) {
-								final Expression focusConcepts = (Expression) expressions.get(0);
-								final Expression positiveConcepts = (Expression) expressions.get(1);
+							public Expression apply(Expression positiveConcepts) {
 								// if positiveConcepts is match none, then don't add it to the expression and just return the focusConcepts
 								return Expressions.matchNone().equals(positiveConcepts) 
-										? focusConcepts
-												: Expressions.builder().must(focusConcepts).mustNot(positiveConcepts).build();
+										? focusConceptExpression
+												: Expressions.builder().must(focusConceptExpression).mustNot(positiveConcepts).build();
 							}
 						});
 			}
 		} else {
 			// if the cardinality either 0 or the min is at least one, then the relationship query is enough
-			return evalRefinement(context, focusConceptExpression, typeConceptExpression, valueConceptExpression, cardinalityRange, idFunction); 
+			return evalRefinement(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, cardinalityRange, idFunction); 
 		}
 	}
 
 	private Promise<Expression> evalRefinement(final BranchContext context, 
-			final String sourceExpression, 
-			final String typeExpression,
-			final String destinationExpression,
+			final Collection<String> sourceFilter, 
+			final Collection<String> typeFilter,
+			final Collection<String> destinationFilter,
 			final Range<Integer> cardinality,
 			final Function<ISnomedRelationship, String> idProvider) {
 		return SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterByActive(true) 
-				.filterBySource(sourceExpression)
-				.filterByType(typeExpression)
-				.filterByDestination(destinationExpression)
+				.filterBySource(sourceFilter)
+				.filterByType(typeFilter)
+				.filterByDestination(destinationFilter)
 				.filterByCharacteristicTypes(ImmutableSet.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP))
 				.setFields(ImmutableSet.of(
 					SnomedRelationshipIndexEntry.Fields.ID, 
@@ -423,9 +426,9 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	
 	protected Promise<Expression> eval(BranchContext context, DottedExpressionConstraint dotted) {
 		final EclSerializer serializer = context.service(EclSerializer.class);
-		final String sourceExpression = serializer.serialize(dotted.getConstraint());
-		final String typeExpression = serializer.serialize(dotted.getAttribute());
-		return evalRefinement(context, sourceExpression, typeExpression, "", Range.closed(1, Integer.MAX_VALUE), ISnomedRelationship::getDestinationId);
+		final Collection<String> sourceFilter = Collections.singleton(serializer.serialize(dotted.getConstraint()));
+		final Collection<String> typeFilter = Collections.singleton(serializer.serialize(dotted.getAttribute()));
+		return evalRefinement(context, sourceFilter, typeFilter, Collections.emptySet(), Range.closed(1, Integer.MAX_VALUE), ISnomedRelationship::getDestinationId);
 	}
 	
 	private ExpressionConstraint rewrite(Comparison comparison) {
@@ -484,6 +487,21 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 						.execute(context.service(IEventBus.class));
 			}
 		};
+	}
+	
+	private static Promise<Set<String>> resolve(final BranchContext context, final String ecl) {
+		return SnomedRequests.prepareSearchConcept()
+			.all()
+			.setFields(ImmutableSet.of(SnomedConceptDocument.Fields.ID))
+			.filterByEcl(ecl)
+			.build(context.id(), context.branch().path())
+			.execute(context.service(IEventBus.class))
+			.then(new Function<SnomedConcepts, Set<String>>() {
+				@Override
+				public Set<String> apply(SnomedConcepts input) {
+					return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).toSet();
+				}
+			});
 	}
 	
 	private static void addParentIds(ISnomedConcept concept, final Set<String> collection) {

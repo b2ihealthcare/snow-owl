@@ -336,12 +336,11 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void refinementCardinalityZeroToUnbounded() throws Exception {
+		generateDrugHierarchy();
+		
 		final Expression actual = eval(String.format("<%s: [0..*] %s=<%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
-		// since 0..* cardinality is equal to just the focusConcepts, then this will eval to <DRUG_ROOT
-		final Expression expected = Expressions.builder()
-				.should(parents(Collections.singleton(DRUG_ROOT)))
-				.should(ancestors(Collections.singleton(DRUG_ROOT)))
-				.build();
+		// since 0..* cardinality is equal to just the focusConcepts, then this will eval to all concepts under DRUG_ROOT
+		final Expression expected = ids(ImmutableSet.of(ABACAVIR_TABLET, PANADOL_TABLET, TRIPHASIL_TABLET, AMOXICILLIN_TABLET));
 		assertEquals(expected, actual);
 	}
 	
@@ -363,13 +362,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		final Expression actual = eval(String.format("<%s: [0..0] %s=<%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
 		final Expression expected =	
 				Expressions.builder()
-					// focusConcepts
-					.must(
-						Expressions.builder()
-							.should(parents(Collections.singleton(DRUG_ROOT)))
-							.should(ancestors(Collections.singleton(DRUG_ROOT)))
-						.build()
-					)
+					.must(ids(ImmutableSet.of(ABACAVIR_TABLET, PANADOL_TABLET, TRIPHASIL_TABLET, AMOXICILLIN_TABLET)))
 					.mustNot(ids(ImmutableSet.of(TRIPHASIL_TABLET, PANADOL_TABLET)))
 				.build();
 		assertEquals(expected, actual);
@@ -382,13 +375,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		final Expression actual = eval(String.format("<%s: [0..1] %s=<%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
 		final Expression expected =	
 				Expressions.builder()
-					// focusConcepts
-					.must(
-						Expressions.builder()
-							.should(parents(Collections.singleton(DRUG_ROOT)))
-							.should(ancestors(Collections.singleton(DRUG_ROOT)))
-						.build()
-					)
+					.must(ids(ImmutableSet.of(ABACAVIR_TABLET, PANADOL_TABLET, TRIPHASIL_TABLET, AMOXICILLIN_TABLET)))
 					.mustNot(ids(ImmutableSet.of(TRIPHASIL_TABLET)))
 				.build();
 		assertEquals(expected, actual);
