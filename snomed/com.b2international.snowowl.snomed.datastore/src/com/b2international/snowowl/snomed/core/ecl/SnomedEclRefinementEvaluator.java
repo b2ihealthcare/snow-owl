@@ -69,11 +69,7 @@ final class SnomedEclRefinementEvaluator {
 	}
 	
 	public Promise<Expression> evaluate(BranchContext context, Refinement refinement) {
-		if (focusConcepts == null) {
-			return Promise.immediate(Expressions.matchNone());
-		} else {
-			return dispatcher.invoke(context, refinement);
-		}
+		return dispatcher.invoke(context, refinement);
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, Refinement refinement) {

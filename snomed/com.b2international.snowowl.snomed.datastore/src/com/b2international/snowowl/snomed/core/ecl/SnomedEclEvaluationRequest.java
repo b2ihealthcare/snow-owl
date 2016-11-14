@@ -274,13 +274,21 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	
 	protected Promise<Expression> eval(final BranchContext context, final RefinedExpressionConstraint refined) {
 		final String focusConceptExpression = context.service(EclSerializer.class).serialize(refined.getConstraint());
-		return resolve(context, focusConceptExpression)
-				.thenWith(new Function<Set<String>, Promise<Expression>>() {
-					@Override
-					public Promise<Expression> apply(Set<String> input) {
-						return new SnomedEclRefinementEvaluator(input).evaluate(context, refined.getRefinement());
-					}
-				});
+		if ("*".equals(focusConceptExpression.trim())) {
+			return new SnomedEclRefinementEvaluator(Collections.emptySet()).evaluate(context, refined.getRefinement());
+		} else {
+			return resolve(context, focusConceptExpression)
+					.thenWith(new Function<Set<String>, Promise<Expression>>() {
+						@Override
+						public Promise<Expression> apply(Set<String> input) {
+							if (input.isEmpty()) {
+								return Promise.immediate(Expressions.matchNone());
+							} else {
+								return new SnomedEclRefinementEvaluator(input).evaluate(context, refined.getRefinement());
+							}
+						}
+					});
+		}
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, DottedExpressionConstraint dotted) {
