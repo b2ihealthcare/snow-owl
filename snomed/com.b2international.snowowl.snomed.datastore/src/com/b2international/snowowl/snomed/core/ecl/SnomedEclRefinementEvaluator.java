@@ -138,7 +138,7 @@ final class SnomedEclRefinementEvaluator {
 			} else {
 				// otherwise evaluate to BOOL(MUST(focus) MUST_NOT(max+1))
 				// construct the positive side of the query with this allowed attribute range
-				final Range<Integer> positiveRange = Range.closed(max + 1, Integer.MAX_VALUE);
+				final Range<Integer> positiveRange = Range.greaterThan(max);
 				return evalRefinement(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, positiveRange, idFunction)
 						.then(new Function<Expression, Expression>() {
 							@Override

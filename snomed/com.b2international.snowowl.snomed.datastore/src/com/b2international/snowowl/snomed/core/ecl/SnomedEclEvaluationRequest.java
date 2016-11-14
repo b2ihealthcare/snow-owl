@@ -296,7 +296,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 		final EclSerializer serializer = context.service(EclSerializer.class);
 		final Collection<String> sourceFilter = Collections.singleton(serializer.serialize(dotted.getConstraint()));
 		final Collection<String> typeFilter = Collections.singleton(serializer.serialize(dotted.getAttribute()));
-		return SnomedEclRefinementEvaluator.evalRefinement(context, sourceFilter, typeFilter, Collections.emptySet(), Range.closed(1, Integer.MAX_VALUE), ISnomedRelationship::getDestinationId);
+		return SnomedEclRefinementEvaluator.evalRefinement(context, sourceFilter, typeFilter, Collections.emptySet(), Range.atLeast(1), ISnomedRelationship::getDestinationId);
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final NestedExpression nested) {
