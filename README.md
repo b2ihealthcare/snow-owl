@@ -10,7 +10,7 @@ The required JDK version is Java 8 update 102 or later.
 ## Dev
 
 Snow Owl is an Equinox-OSGi based server (using either Virgo or standalone OSGi). To develop plug-ins for Snow Owl you need to use Eclipse as IDE: 
-* Use latest Neon Eclipse IDE for Java and DSL Developers: http://www.eclipse.org/downloads/packages/eclipse-ide-java-and-dsl-developers/neon1a
+* Use latest Neon Eclipse IDE for Eclipse Committers: http://www.eclipse.org/downloads/packages/eclipse-ide-eclipse-committers/neon1a
 
 Required Eclipse plug-ins (install the listed features):
 
