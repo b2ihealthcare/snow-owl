@@ -14,7 +14,7 @@ Snow Owl is an Equinox-OSGi based server (using either Virgo or standalone OSGi)
 
 Required Eclipse plug-ins (install the listed features):
 
-*Note: you may have to untick the `Show only the latest versions of the available software` checkbox to get older versions of a feature.*
+*Note: you may have to untick the `Show only the latest versions of the available software` checkbox to get older versions of a feature. Please use the exact version specified below, not the latest point release.*
 
 * Xtext/Xtend (http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/)
  * MWE 2 Language SDK 2.8.1
