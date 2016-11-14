@@ -64,7 +64,11 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 	}
 	
 	public SnomedRelationshipSearchRequestBuilder filterByGroup(int group) {
-		return addOption(OptionKey.GROUP, group);
+		return filterByGroup(group, group);
+	}
+	
+	public SnomedRelationshipSearchRequestBuilder filterByGroup(int groupMin, int groupMax) {
+		return addOption(OptionKey.GROUP_MIN, groupMin).addOption(OptionKey.GROUP_MAX, groupMax);
 	}
 	
 	@Override

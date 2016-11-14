@@ -41,7 +41,8 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 		TYPE,
 		DESTINATION,
 		CHARACTERISTIC_TYPE, 
-		GROUP,
+		GROUP_MIN,
+		GROUP_MAX,
 		UNION_GROUP,
 		MODIFIER
 	}
@@ -64,8 +65,10 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 		addEclFilter(context, queryBuilder, OptionKey.CHARACTERISTIC_TYPE, SnomedRelationshipIndexEntry.Expressions::characteristicTypeIds);
 		addEclFilter(context, queryBuilder, OptionKey.MODIFIER, SnomedRelationshipIndexEntry.Expressions::modifierIds);
 		
-		if (containsKey(OptionKey.GROUP)) {
-			queryBuilder.must(group(get(OptionKey.GROUP, Integer.class)));
+		if (containsKey(OptionKey.GROUP_MIN) || containsKey(OptionKey.GROUP_MAX)) {
+			final int from = containsKey(OptionKey.GROUP_MIN) ? get(OptionKey.GROUP_MIN, Integer.class) : 0;
+			final int to = containsKey(OptionKey.GROUP_MAX) ? get(OptionKey.GROUP_MAX, Integer.class) : Integer.MAX_VALUE;
+			queryBuilder.must(group(from, to));
 		}
 		
 		if (containsKey(OptionKey.UNION_GROUP)) {

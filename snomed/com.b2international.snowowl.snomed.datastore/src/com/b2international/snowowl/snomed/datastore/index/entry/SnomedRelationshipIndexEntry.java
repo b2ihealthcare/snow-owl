@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchRange;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Collection;
@@ -175,6 +176,15 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		
 		public static Expression group(int group) {
 			return match(Fields.GROUP, group);
+		}
+		
+		public static Expression group(int groupStart, int groupEnd) {
+			checkArgument(groupStart <= groupEnd, "Group end should be greater than or equal to groupStart");
+			if (groupStart == groupEnd) {
+				return group(groupStart);
+			} else {
+				return matchRange(Fields.GROUP, groupStart, groupEnd);
+			}
 		}
 		
 		public static Expression unionGroup(int unionGroup) {
