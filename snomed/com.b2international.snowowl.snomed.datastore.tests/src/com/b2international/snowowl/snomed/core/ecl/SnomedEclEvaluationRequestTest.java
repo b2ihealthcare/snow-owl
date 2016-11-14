@@ -73,10 +73,14 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private static final String ABACAVIR_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String AMOXICILLIN_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String TISSEL_KIT = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String ASPIRIN_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String ALGOFLEX_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INGREDIENT1 = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INGREDIENT2 = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INGREDIENT3 = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INGREDIENT4 = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String INGREDIENT5 = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String INGREDIENT6 = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String HAS_BOSS = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String DRUG_ROOT = RandomSnomedIdentiferGenerator.generateConceptId();
 	
@@ -423,7 +427,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void refinementWithComplexConjunctionDisjunction() throws Exception {
+	public void refinementWithConjunctionAndDisjunction() throws Exception {
 		generateDrugHierarchy();
 		generateTisselKit();
 		final Expression actual = eval(String.format("<%s:%s=%s OR %s=%s AND %s=%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT2, HAS_ACTIVE_INGREDIENT, INGREDIENT4, HAS_ACTIVE_INGREDIENT, INGREDIENT2));
@@ -435,6 +439,15 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 						.must(ids(ImmutableSet.of(TRIPHASIL_TABLET)))
 					.build())
 				.build();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementReversedCardinalityZeroToUnbounded() throws Exception {
+		generateDrugHierarchy();
+		
+		final Expression actual = eval(String.format("<%s: [0..*] R %s=%s", SUBSTANCE, HAS_ACTIVE_INGREDIENT, TRIPHASIL_TABLET));
+		final Expression expected = ids(ImmutableSet.of(INGREDIENT1, INGREDIENT2, INGREDIENT3));
 		assertEquals(expected, actual);
 	}
 	
@@ -464,6 +477,56 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		final Expression expected = ids(ImmutableSet.of(INGREDIENT1));
 		assertEquals(expected, actual);
 	}
+	
+	@Test
+	public void refinementWithGroup() throws Exception {
+		generateDrugHierarchy();
+		generateDrugsWithGroups();
+		
+		final Expression actual = eval(String.format("<%s: [1..2] {%s=<%s}", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
+		final Expression expected = ids(ImmutableSet.of(ASPIRIN_TABLET, ALGOFLEX_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementWithGroupCardinality() throws Exception {
+		generateDrugHierarchy();
+		generateDrugsWithGroups();
+		
+		final Expression actual = eval(String.format("<%s: [2..2] {%s=<%s}", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
+		final Expression expected = ids(ImmutableSet.of(ALGOFLEX_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+//	@Test
+//	public void refinementWithGroupWithConjunction() throws Exception {
+//		generateDrugHierarchy();
+//		generateDrugsWithGroups();
+//		
+//		final Expression actual = eval(String.format("<%s: [1..1] {%s=<%s,%s=<%s}", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE, HAS_BOSS, SUBSTANCE));
+//		final Expression expected = id("TODO");
+//		assertEquals(expected, actual);
+//	}
+//	
+//	@Test
+//	public void refinementWithGroupWithDisjunction() throws Exception {
+//		generateDrugHierarchy();
+//		generateDrugsWithGroups();
+//		
+//		final Expression actual = eval(String.format("<%s: [1..1] {%s=%s OR %s=%s}", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT5, HAS_BOSS, INGREDIENT5));
+//		final Expression expected = id("TODO");
+//		assertEquals(expected, actual);
+//	}
+//	
+//	@Test
+//	public void refinementWithGroupConjunctionAndDisjunction() throws Exception {
+//		generateDrugHierarchy();
+//		generateDrugsWithGroups();
+//		
+//		final Expression actual = eval(String.format("<%s: [1..1] {(%s=%s AND %s=%s) OR %s=%s}", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT5, HAS_BOSS, INGREDIENT6, HAS_ACTIVE_INGREDIENT, INGREDIENT6));
+//		final Expression expected = id("TODO");
+//		assertEquals(expected, actual);
+//	}
 	
 	/**
 	 * Generates the following test fixtures:
@@ -496,11 +559,11 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, nextStorageKey(), concept(TRIPHASIL_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
 		indexRevision(MAIN, nextStorageKey(), concept(AMOXICILLIN_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
 		// has active ingredient relationships
-		indexRevision(MAIN, nextStorageKey(), relationship(PANADOL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).build());
-		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).build());
-		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2).build());
-		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_BOSS, INGREDIENT2).build());
-		indexRevision(MAIN, nextStorageKey(), relationship(AMOXICILLIN_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).characteristicTypeId(Concepts.STATED_RELATIONSHIP).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(PANADOL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).group(0).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).group(0).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2).group(0).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_BOSS, INGREDIENT2).group(0).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(AMOXICILLIN_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).group(0).characteristicTypeId(Concepts.STATED_RELATIONSHIP).build());
 	}
 
 	/**
@@ -521,7 +584,40 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private void generateTisselKit() {
 		indexRevision(MAIN, nextStorageKey(), concept(INGREDIENT4).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
 		indexRevision(MAIN, nextStorageKey(), concept(TISSEL_KIT).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
-		indexRevision(MAIN, nextStorageKey(), relationship(TISSEL_KIT, HAS_ACTIVE_INGREDIENT, INGREDIENT4).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(TISSEL_KIT, HAS_ACTIVE_INGREDIENT, INGREDIENT4).group(0).build());
+	}
+	
+	/**
+	 * Generates the following test fixtures:
+	 * <ul>
+	 * 	<li>Substances (children of SUBSTANCE):
+	 * 		<ul>
+	 * 			<li>INGREDIENT5 (ingredient with two inbound HAI from ASPIRIN_TABLET and ALGOFLEX_TABLET, one inbound HAS_BOSS from ALGOFLEX_TABLET)</li>
+	 * 			<li>INGREDIENT6 (ingredient with two inbound HAS_BOSS from ASPIRIN_TABLET and ALGOFLEX_TABLET, one inbound HAI from ALGOFLEX_TABLET)</li>
+	 * 		</ul>
+	 * 	</li>
+	 * 	<li>Drugs (children of DRUG_ROOT):
+	 * 		<ul>
+	 * 			<li>ASPIRIN_TABLET (drug with one HAI relationship to INGREDIENT5 in group 1 and one HAS_BOSS to INGREDIENT6 in group 1)</li>
+	 * 			<li>ALGOFLEX_TABLET (drug with two HAI relationship to INGREDIENT5,INGREDIENT6 in group 1 and 2 and two HAS_BOSS to INGREDIENT6 and 5 in group 1 and 2)</li>
+	 * 		</ul>
+	 * 	</li>
+	 * </ul>
+	 */
+	private void generateDrugsWithGroups() {
+		indexRevision(MAIN, nextStorageKey(), concept(INGREDIENT5).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
+		indexRevision(MAIN, nextStorageKey(), concept(INGREDIENT6).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
+		
+		indexRevision(MAIN, nextStorageKey(), concept(ASPIRIN_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
+		indexRevision(MAIN, nextStorageKey(), concept(ALGOFLEX_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
+		
+		indexRevision(MAIN, nextStorageKey(), relationship(ASPIRIN_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5).group(1).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(ASPIRIN_TABLET, HAS_BOSS, INGREDIENT6).group(1).build());
+
+		indexRevision(MAIN, nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5).group(1).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_BOSS, INGREDIENT6).group(1).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT6).group(2).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_BOSS, INGREDIENT5).group(2).build());
 	}
 
 	private SnomedConceptDocument.Builder concept(final String id) {

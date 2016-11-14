@@ -48,6 +48,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
@@ -69,7 +70,6 @@ import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Range;
 import com.google.common.reflect.TypeToken;
 
 /**
@@ -180,51 +180,54 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 		return evaluate(context, parentOf.getConstraint())
 				.then(EXTRACT_IDS)
 				.thenWith(fetchConcepts(context))
-				.then(new Function<SnomedConcepts, Expression>() {
+				.then(new Function<SnomedConcepts, Set<String>>() {
 					@Override
-					public Expression apply(SnomedConcepts concepts) {
+					public Set<String> apply(SnomedConcepts concepts) {
 						final Set<String> parents = newHashSet();
 						for (ISnomedConcept concept : concepts) {
 							addParentIds(concept, parents);
 						}
-						return parents.isEmpty() ? Expressions.matchNone() : ids(parents);
+						return parents;
 					}
-				});
+				})
+				.then(matchIdsOrNone());
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final AncestorOf ancestorOf) {
 		return evaluate(context, ancestorOf.getConstraint())
 				.then(EXTRACT_IDS)
 				.thenWith(fetchConcepts(context))
-				.then(new Function<SnomedConcepts, Expression>() {
+				.then(new Function<SnomedConcepts, Set<String>>() {
 					@Override
-					public Expression apply(SnomedConcepts concepts) {
+					public Set<String> apply(SnomedConcepts concepts) {
 						final Set<String> ancestors = newHashSet();
 						for (ISnomedConcept concept : concepts) {
 							addParentIds(concept, ancestors);
 							addAncestorIds(concept, ancestors);
 						}
-						return ancestors.isEmpty() ? Expressions.matchNone() : ids(ancestors);
+						return ancestors;
 					}
-				});
+				})
+				.then(matchIdsOrNone());
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final AncestorOrSelfOf ancestorOrSelfOf) {
 		return evaluate(context, ancestorOrSelfOf.getConstraint())
 				.then(EXTRACT_IDS)
 				.thenWith(fetchConcepts(context))
-				.then(new Function<SnomedConcepts, Expression>() {
+				.then(new Function<SnomedConcepts, Set<String>>() {
 					@Override
-					public Expression apply(SnomedConcepts concepts) {
+					public Set<String> apply(SnomedConcepts concepts) {
 						final Set<String> ancestors = newHashSet();
 						for (ISnomedConcept concept : concepts) {
 							ancestors.add(concept.getId());
 							addParentIds(concept, ancestors);
 							addAncestorIds(concept, ancestors);
 						}
-						return ancestors.isEmpty() ? Expressions.matchNone() : ids(ancestors);
+						return ancestors;
 					}
-				});
+				})
+				.then(matchIdsOrNone());
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final AndExpressionConstraint and) {
@@ -295,7 +298,14 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 		final EclSerializer serializer = context.service(EclSerializer.class);
 		final Collection<String> sourceFilter = Collections.singleton(serializer.serialize(dotted.getConstraint()));
 		final Collection<String> typeFilter = Collections.singleton(serializer.serialize(dotted.getAttribute()));
-		return SnomedEclRefinementEvaluator.evalRefinement(context, sourceFilter, typeFilter, Collections.emptySet(), Range.atLeast(1), ISnomedRelationship::getDestinationId);
+		return SnomedEclRefinementEvaluator.evalRefinement(context, sourceFilter, typeFilter, Collections.emptySet(), false)
+				.then(new Function<SnomedRelationships, Set<String>>() {
+					@Override
+					public Set<String> apply(SnomedRelationships input) {
+						return FluentIterable.from(input).transform(ISnomedRelationship::getDestinationId).toSet();
+					}
+				})
+				.then(matchIdsOrNone());
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final NestedExpression nested) {
@@ -374,6 +384,15 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				}
 			}
 		}		
+	}
+	
+	/*package*/ static Function<Set<String>, Expression> matchIdsOrNone() {
+		return new Function<Set<String>, Expression>() {
+			@Override
+			public Expression apply(Set<String> ids) {
+				return ids.isEmpty() ? Expressions.matchNone() : ids(ids);
+			}
+		};
 	}
 
 }
