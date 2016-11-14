@@ -45,45 +45,30 @@ import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.Any;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
-import com.b2international.snowowl.snomed.ecl.ecl.Comparison;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DottedExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.EclFactory;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
 import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
-import com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
 import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.google.common.collect.Range;
 import com.google.common.reflect.TypeToken;
 
@@ -99,7 +84,6 @@ import com.google.common.reflect.TypeToken;
 final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promise<Expression>> {
 
 	private static final long serialVersionUID = 5891665196136989183L;
-	private static final EclFactory ECL_FACTORY = EclFactory.eINSTANCE;
 	
 	private final PolymorphicDispatcher<Promise<Expression>> dispatcher = PolymorphicDispatcher.createForSingleTarget("eval", 2, 2, this);
 
@@ -303,123 +287,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				.thenWith(new Function<Set<String>, Promise<Expression>>() {
 					@Override
 					public Promise<Expression> apply(Set<String> input) {
-						return eval(context, input, refined.getRefinement());
-					}
-				});
-	}
-	
-	private Promise<Expression> eval(final BranchContext context, final Set<String> focusConceptIds, Refinement refinement) {
-		if (focusConceptIds == null) {
-			return Promise.immediate(Expressions.matchNone());
-		} else if (refinement instanceof AttributeConstraint) {
-			return evalRefinement(context, focusConceptIds, (AttributeConstraint) refinement);
-		} else if (refinement instanceof AndRefinement) {
-			final AndRefinement and = (AndRefinement) refinement;
-			return Promise.all(eval(context, focusConceptIds, and.getLeft()), eval(context, focusConceptIds, and.getRight()))
-					.then(new Function<List<Object>, Expression>() {
-						@Override
-						public Expression apply(List<Object> input) {
-							final Expression left = (Expression) input.get(0);
-							final Expression right = (Expression) input.get(1);
-							return Expressions.builder().must(left).must(right).build();
-						}
-					});
-		} else if (refinement instanceof OrRefinement) {
-			final OrRefinement and = (OrRefinement) refinement;
-			return Promise.all(eval(context, focusConceptIds, and.getLeft()), eval(context, focusConceptIds, and.getRight()))
-					.then(new Function<List<Object>, Expression>() {
-						@Override
-						public Expression apply(List<Object> input) {
-							final Expression left = (Expression) input.get(0);
-							final Expression right = (Expression) input.get(1);
-							return Expressions.builder().should(left).should(right).build();
-						}
-					});
-		} else if (refinement instanceof NestedRefinement) {
-			return eval(context, focusConceptIds, ((NestedRefinement) refinement).getNested());
-		} else {
-			return throwUnsupported(refinement);
-		}
-	} 
-	
-	private Promise<Expression> evalRefinement(BranchContext context, final Set<String> focusConceptIds, AttributeConstraint refinement) {
-		final Cardinality cardinality = refinement.getCardinality();
-		// filterBySource, filterByType and filterByDestination accepts ECL expressions as well, so serialize them into ECL and pass as String when required
-		final EclSerializer serializer = context.service(EclSerializer.class);
-		final Collection<String> typeConceptFilter = Collections.singleton(serializer.serialize(refinement.getAttribute()));
-		final String destinationConceptExpression = serializer.serialize(rewrite(refinement.getComparison()));
-		final Collection<String> focusConceptFilter = refinement.isReversed() ? Collections.singleton(destinationConceptExpression) : focusConceptIds;
-		final Collection<String> valueConceptFilter = refinement.isReversed() ? focusConceptIds : Collections.singleton(destinationConceptExpression);
-		// if reversed refinement, then we are interested in the destinationIds otherwise we need the sourceIds
-		final Function<ISnomedRelationship, String> idFunction = refinement.isReversed() ? ISnomedRelationship::getDestinationId : ISnomedRelationship::getSourceId;
-		
-		// the default cardinality is [1..*]
-		final boolean isUnbounded = cardinality == null ? true : cardinality.getMax() == -1;
-		final int min = cardinality == null ? 1 : cardinality.getMin();
-		final int max = isUnbounded ? Integer.MAX_VALUE : cardinality.getMax();
-		final Range<Integer> cardinalityRange = Range.closed(min, max);
-
-		final Expression focusConceptExpression = ids(focusConceptIds);
-		
-		if (min == 0) {
-			if (isUnbounded) {
-				// zero and unbounded attributes, just match all focus concepts
-				return Promise.immediate(focusConceptExpression);
-			} else {
-				// otherwise evaluate to BOOL(MUST(focus) MUST_NOT(max+1))
-				// construct the positive side of the query with this allowed attribute range
-				final Range<Integer> positiveRange = Range.closed(max + 1, Integer.MAX_VALUE);
-				return evalRefinement(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, positiveRange, idFunction)
-						.then(new Function<Expression, Expression>() {
-							@Override
-							public Expression apply(Expression positiveConcepts) {
-								// if positiveConcepts is match none, then don't add it to the expression and just return the focusConcepts
-								return Expressions.matchNone().equals(positiveConcepts) 
-										? focusConceptExpression
-												: Expressions.builder().must(focusConceptExpression).mustNot(positiveConcepts).build();
-							}
-						});
-			}
-		} else {
-			// if the cardinality either 0 or the min is at least one, then the relationship query is enough
-			return evalRefinement(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, cardinalityRange, idFunction); 
-		}
-	}
-
-	private Promise<Expression> evalRefinement(final BranchContext context, 
-			final Collection<String> sourceFilter, 
-			final Collection<String> typeFilter,
-			final Collection<String> destinationFilter,
-			final Range<Integer> cardinality,
-			final Function<ISnomedRelationship, String> idProvider) {
-		return SnomedRequests.prepareSearchRelationship()
-				.all()
-				.filterByActive(true) 
-				.filterBySource(sourceFilter)
-				.filterByType(typeFilter)
-				.filterByDestination(destinationFilter)
-				.filterByCharacteristicTypes(ImmutableSet.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP))
-				.setFields(ImmutableSet.of(
-					SnomedRelationshipIndexEntry.Fields.ID, 
-					SnomedRelationshipIndexEntry.Fields.SOURCE_ID, 
-					SnomedRelationshipIndexEntry.Fields.DESTINATION_ID
-				))
-				.build(context.id(), context.branch().path())
-				.execute(context.service(IEventBus.class))
-				.then(new Function<SnomedRelationships, Expression>() {
-					@Override
-					public Expression apply(SnomedRelationships matchingAttributes) {
-						final Set<String> ids = newHashSet();
-						final Multimap<String, ISnomedRelationship> indexedByMatchingIds = Multimaps.index(matchingAttributes, idProvider);
-						
-						for (String matchingConceptId : indexedByMatchingIds.keySet()) {
-							final Collection<ISnomedRelationship> attributes = indexedByMatchingIds.get(matchingConceptId);
-							final int numberOfMatchingAttributes = attributes.size();
-							if (cardinality.contains(numberOfMatchingAttributes)) {
-								ids.add(matchingConceptId);
-							}
-						}
-						return ids.isEmpty() ? Expressions.matchNone() : ids(ids);
+						return new SnomedEclRefinementEvaluator(input).evaluate(context, refined.getRefinement());
 					}
 				});
 	}
@@ -428,29 +296,14 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 		final EclSerializer serializer = context.service(EclSerializer.class);
 		final Collection<String> sourceFilter = Collections.singleton(serializer.serialize(dotted.getConstraint()));
 		final Collection<String> typeFilter = Collections.singleton(serializer.serialize(dotted.getAttribute()));
-		return evalRefinement(context, sourceFilter, typeFilter, Collections.emptySet(), Range.closed(1, Integer.MAX_VALUE), ISnomedRelationship::getDestinationId);
+		return SnomedEclRefinementEvaluator.evalRefinement(context, sourceFilter, typeFilter, Collections.emptySet(), Range.closed(1, Integer.MAX_VALUE), ISnomedRelationship::getDestinationId);
 	}
 	
-	private ExpressionConstraint rewrite(Comparison comparison) {
-		if (comparison instanceof AttributeValueEquals) {
-			return comparison.getConstraint();
-		} else if (comparison instanceof AttributeValueNotEquals) {
-			// convert != expression to exclusion constraint
-			final ExclusionExpressionConstraint exclusion = ECL_FACTORY.createExclusionExpressionConstraint();
-			// set Any as left of exclusion
-			exclusion.setLeft(ECL_FACTORY.createAny());
-			// set original constraint as right of exclusion
-			exclusion.setRight(comparison.getConstraint());
-			return exclusion;
-		}
-		throw new UnsupportedOperationException("Cannot rewrite comparison: " + comparison);
-	}
-
 	protected Promise<Expression> eval(BranchContext context, final NestedExpression nested) {
 		return evaluate(context, nested.getNested());
 	}
 	
-	private Promise<Expression> throwUnsupported(EObject eObject) {
+	/*package*/ static Promise<Expression> throwUnsupported(EObject eObject) {
 		throw new NotImplementedException("Not implemented ECL feature: %s", eObject.eClass().getName());
 	}
 	
