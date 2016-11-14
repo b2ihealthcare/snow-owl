@@ -90,14 +90,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	@Nullable
 	private String expression;
 
-	@Nullable
-	private ExpressionConstraint expressionConstraint;
-
 	SnomedEclEvaluationRequest() {
-	}
-
-	void setExpression(ExpressionConstraint expressionConstraint) {
-		this.expressionConstraint = expressionConstraint;
 	}
 
 	void setExpression(String expression) {
@@ -113,9 +106,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 
 	@Override
 	public Promise<Expression> execute(BranchContext context) {
-		final ExpressionConstraint currentExpression = expressionConstraint != null ? expressionConstraint
-				: context.service(EclParser.class).parse(expression);
-		return evaluate(context, currentExpression);
+		return evaluate(context, context.service(EclParser.class).parse(expression));
 	}
 	
 	private Promise<Expression> evaluate(BranchContext context, EObject expression) {

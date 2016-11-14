@@ -33,10 +33,6 @@ public final class SnomedEclEvaluationRequestBuilder extends BaseRevisionIndexRe
 		req.setExpression(expression);
 	}
 	
-	public SnomedEclEvaluationRequestBuilder(ExpressionConstraint expressionConstraint) {
-		req.setExpression(expressionConstraint);
-	}
-	
 	@Override
 	protected Request<BranchContext, Promise<Expression>> doBuild() {
 		return req;
