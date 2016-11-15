@@ -19,7 +19,6 @@ import static com.b2international.snowowl.datastore.index.RevisionDocument.Field
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.DESTINATION_ID;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.GROUP;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.SOURCE_ID;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
@@ -300,16 +299,16 @@ final class SnomedEclRefinementEvaluator {
 				// construct the positive side of the query with this allowed attribute range
 				final Range<Long> positiveRange = Range.closed(max + 1, Long.MAX_VALUE);
 				return evalRefinement(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, grouped)
-						.then(filterByCardinality(groupCardinality, positiveRange, idFunction));
+						.then(filterByCardinality(grouped, groupCardinality, positiveRange, idFunction));
 			}
 		} else {
 			// if the cardinality either 0 or the min is at least one, then the relationship query is enough
 			return evalRefinement(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, grouped)
-					.then(filterByCardinality(groupCardinality, cardinalityRange, idFunction)); 
+					.then(filterByCardinality(grouped, groupCardinality, cardinalityRange, idFunction)); 
 		}
 	}
 	
-	/*package*/ static Function<SnomedRelationships, Collection<ISnomedRelationship>> filterByCardinality(final Range<Long> groupCardinality, final Range<Long> cardinality, final Function<ISnomedRelationship, String> idProvider) {
+	/*package*/ static Function<SnomedRelationships, Collection<ISnomedRelationship>> filterByCardinality(final boolean grouped, final Range<Long> groupCardinality, final Range<Long> cardinality, final Function<ISnomedRelationship, String> idProvider) {
 		return new Function<SnomedRelationships, Collection<ISnomedRelationship>>() {
 			@Override
 			public Collection<ISnomedRelationship> apply(SnomedRelationships candidateAttributes) {
@@ -317,7 +316,7 @@ final class SnomedEclRefinementEvaluator {
 				final Collection<ISnomedRelationship> matchingAttributes = newArrayList();
 				
 				final Range<Long> allowedRelationshipCardinality;
-				if (!ANY_GROUP.equals(groupCardinality)) {
+				if (grouped) {
 					final long minRelationships;
 					if (groupCardinality.lowerEndpoint() == 0) {
 						minRelationships = cardinality.lowerEndpoint();
@@ -344,13 +343,21 @@ final class SnomedEclRefinementEvaluator {
 					final Collection<ISnomedRelationship> attributes = indexedByMatchingIds.get(matchingConceptId);
 					final int numberOfMatchingAttributes = attributes.size();
 					if (allowedRelationshipCardinality.contains((long) numberOfMatchingAttributes)) {
-						if (!ANY_GROUP.equals(groupCardinality)) {
-							// if groups should be considered as well, then check group numbers in the matching sets
+						if (grouped) {
 							final Multimap<Integer, ISnomedRelationship> indexedByGroup = FluentIterable.from(attributes).index(ISnomedRelationship::getGroup);
-							checkState(!indexedByGroup.containsKey(0), "At this point ungrouped relationships should not be part of the matching attributes set");
+							// if groups should be considered as well, then check group numbers in the matching sets
 							// check that the concept has at least the right amount of groups
-							if (groupCardinality.contains((long) indexedByGroup.keySet().size())) {
-								matchingAttributes.addAll(attributes);
+							final Multimap<Integer, ISnomedRelationship> validGroups = ArrayListMultimap.create();
+							
+							for (Integer group : indexedByGroup.keySet()) {
+								final Collection<ISnomedRelationship> groupedRelationships = indexedByGroup.get(group);
+								if (cardinality.contains((long) groupedRelationships.size())) {
+									validGroups.putAll(group, groupedRelationships);
+								}
+							}
+							
+							if (groupCardinality.contains((long) validGroups.size())) {
+								matchingAttributes.addAll(validGroups.values());
 							}
 						} else {
 							matchingAttributes.addAll(attributes);
