@@ -312,7 +312,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 		return evaluate(context, nested.getNested());
 	}
 	
-	/*package*/ static Promise<Expression> throwUnsupported(EObject eObject) {
+	/*package*/ static <T> Promise<T> throwUnsupported(EObject eObject) {
 		throw new NotImplementedException("Not implemented ECL feature: %s", eObject.eClass().getName());
 	}
 	
