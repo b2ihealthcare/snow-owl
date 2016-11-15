@@ -77,10 +77,10 @@ public class SnomedVersioningApiAssert {
 				.when().post("/codesystems/{shortNameOrOid}/versions", shortName);
 	}
 	
-	public static Collection<String> getEffectiveDates(final String uniqueId) {
+	public static Collection<String> getEffectiveDates(final String codeSystemShortName) {
 		final Map<?, ?> response = givenAuthenticatedRequest(ADMIN_API)
 			.and().contentType(ContentType.JSON)
-			.when().get("/codesystems/{shortName}/versions", uniqueId)
+			.when().get("/codesystems/{shortName}/versions", codeSystemShortName)
 			.then().extract().body().as(Map.class);
 		
 		if (!response.containsKey("items")) {
@@ -98,9 +98,13 @@ public class SnomedVersioningApiAssert {
 		}
 	}
 	
-	public static String getDateForNewVersion(final String uniqueId) {
+	public static String getLatestAvailableVersionDateAsString(final String codeSystemShortName) {
+		return Dates.formatByGmt(getLatestAvailableVersionDate(codeSystemShortName), DateFormats.SHORT);
+	}
+	
+	public static Date getLatestAvailableVersionDate(final String codeSystemShortName) {
 		Date latestEffectiveDate = new Date();
-		for (final String effectiveDate : getEffectiveDates(uniqueId)) {
+		for (final String effectiveDate : getEffectiveDates(codeSystemShortName)) {
 			Date effDate = Dates.parse(effectiveDate, DateFormats.SHORT);
 			if (latestEffectiveDate.before(effDate)) {
 				latestEffectiveDate = effDate;
@@ -110,8 +114,6 @@ public class SnomedVersioningApiAssert {
 		final Calendar calendar = Calendar.getInstance();
 		calendar.setTime(latestEffectiveDate);
 		calendar.add(Calendar.DATE, 1);
-
-		return Dates.formatByGmt(calendar.getTime(), DateFormats.SHORT);
+		return calendar.getTime();
 	}
-	
 }

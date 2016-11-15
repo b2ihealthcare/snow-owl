@@ -22,7 +22,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +43,10 @@ import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
@@ -87,7 +89,7 @@ public abstract class AbstractSnomedExportApiTest extends AbstractSnomedApiTest 
 				.then().assertThat().statusCode(200);
 	}
 	
-	protected File assertExportFileCreated(final String exportId) {
+	protected File assertExportFileCreated(final String exportId) throws Exception {
 		
 		File tmpDir = null;
 		File exportArchive = null;
@@ -109,7 +111,7 @@ public abstract class AbstractSnomedExportApiTest extends AbstractSnomedApiTest 
 			Files.copy(supplier, exportArchive);
 			
 		} catch (final Exception e) {
-			fail(e.getMessage());
+			throw e;
 		} finally {
 			
 			if (tmpDir != null) {
@@ -127,7 +129,7 @@ public abstract class AbstractSnomedExportApiTest extends AbstractSnomedApiTest 
 		return exportArchive;
 	}
 	
-	protected void assertArchiveContainsLines(final File exportArchive, final Multimap<String, String> fileToLinesMap) {
+	protected void assertArchiveContainsLines(final File exportArchive, final Multimap<String, Pair<Boolean, String>> fileToLinesMap) throws Exception {
 		
 		final Multimap<String, Pair<Boolean, String>> resultMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 		
@@ -139,17 +141,27 @@ public abstract class AbstractSnomedExportApiTest extends AbstractSnomedApiTest 
 					@Override
 					public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
 						
-						for (final Entry<String, Collection<String>> entry : fileToLinesMap.asMap().entrySet()) {
+						for (final Entry<String, Collection<Pair<Boolean, String>>> entry : fileToLinesMap.asMap().entrySet()) {
 							
-							if (file.getFileName().toString().startsWith(entry.getKey())) {
+							String filePrefix = entry.getKey();
+							
+							if (file.getFileName().toString().startsWith(filePrefix)) {
 								
 								final List<String> lines = java.nio.file.Files.readAllLines(file, Charsets.UTF_8);
 								
-								for (final String line : entry.getValue()) {
-									if (lines.contains(line)) {
-										resultMap.put(entry.getKey(), Pair.of(true, line));
+								for (Pair<Boolean, String> line : entry.getValue()) {
+									if (lines.contains(line.getB())) {
+										if (line.getA()) {
+											resultMap.put(filePrefix, Pair.of(true, line.getB()));
+										} else {
+											resultMap.put(filePrefix, Pair.of(false, line.getB()));
+										}
 									} else {
-										resultMap.put(entry.getKey(), Pair.of(false, line));
+										if (line.getA()) {
+											resultMap.put(filePrefix, Pair.of(false, line.getB()));
+										} else {
+											resultMap.put(filePrefix, Pair.of(true, line.getB()));
+										}
 									}
 								}
 								
@@ -165,17 +177,27 @@ public abstract class AbstractSnomedExportApiTest extends AbstractSnomedApiTest 
 			}
 			
 		} catch (final Exception e) {
-			fail(e.getMessage());
+			throw e;
 		}
 		
 		final Set<String> difference = Sets.difference(fileToLinesMap.keySet(), resultMap.keySet());
 		
 		assertTrue(String.format("File(s) starting with <%s> are missing from the export archive", Joiner.on(", ").join(difference)), difference.isEmpty());
 		
-		for (final Entry<String, Collection<Pair<Boolean, String>>> entry : resultMap.asMap().entrySet()) {
+		for (Entry<String, Collection<Pair<Boolean, String>>> entry : fileToLinesMap.asMap().entrySet()) {
 			
-			for (final Pair<Boolean, String> pair : entry.getValue()) {
-				assertEquals(String.format("Line: %s must be contained in %s", pair.getB(), entry.getKey()), true, pair.getA());
+			for (final Pair<Boolean, String> result : resultMap.get(entry.getKey())) {
+				
+				Pair<Boolean, String> originalLine = Iterables.getOnlyElement(FluentIterable.from(entry.getValue()).filter(new Predicate<Pair<Boolean, String>>() {
+					@Override
+					public boolean apply(Pair<Boolean, String> input) {
+						return input.getB().equals(result.getB());
+					}
+				}));
+				
+				String message = String.format("Line: %s must %sbe contained in %s", originalLine.getB(), originalLine.getA() ? "" : "not ", entry.getKey());
+				
+				assertEquals(message, true, result.getA());
 			}
 			
 		}

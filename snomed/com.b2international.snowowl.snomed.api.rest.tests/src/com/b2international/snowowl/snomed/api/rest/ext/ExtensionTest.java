@@ -20,7 +20,7 @@ import static com.b2international.snowowl.snomed.api.rest.CodeSystemApiAssert.ge
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchExists;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.assertVersionPostStatus;
-import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.getDateForNewVersion;
+import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.getLatestAvailableVersionDateAsString;
 
 import java.text.SimpleDateFormat;
 import java.util.UUID;
@@ -52,7 +52,7 @@ public abstract class ExtensionTest {
 	}
 	
 	protected IBranchPath createBranchOnNewVersion(final String uniqueId) {
-		final String versionDate = getDateForNewVersion(uniqueId);
+		final String versionDate = getLatestAvailableVersionDateAsString(uniqueId);
 		final String versionId = UUID.randomUUID().toString();
 		
 		assertVersionPostStatus(versionId, versionDate, uniqueId, 201);
