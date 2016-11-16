@@ -400,14 +400,14 @@ final class SnomedEclRefinementEvaluator {
 	
 	private ExpressionConstraint rewrite(Comparison comparison) {
 		if (comparison instanceof AttributeValueEquals) {
-			return comparison.getConstraint();
+			return ((AttributeValueEquals) comparison).getConstraint();
 		} else if (comparison instanceof AttributeValueNotEquals) {
 			// convert != expression to exclusion constraint
 			final ExclusionExpressionConstraint exclusion = ECL_FACTORY.createExclusionExpressionConstraint();
 			// set Any as left of exclusion
 			exclusion.setLeft(ECL_FACTORY.createAny());
 			// set original constraint as right of exclusion
-			exclusion.setRight(comparison.getConstraint());
+			exclusion.setRight(((AttributeValueNotEquals) comparison).getConstraint());
 			return exclusion;
 		}
 		throw new UnsupportedOperationException("Cannot rewrite comparison: " + comparison);

@@ -165,6 +165,16 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createAttributeValueNotEqualsAdapter();
       }
       @Override
+      public Adapter caseStringValueEquals(StringValueEquals object)
+      {
+        return createStringValueEqualsAdapter();
+      }
+      @Override
+      public Adapter caseStringValueNotEquals(StringValueNotEquals object)
+      {
+        return createStringValueNotEqualsAdapter();
+      }
+      @Override
       public Adapter caseNestedExpression(NestedExpression object)
       {
         return createNestedExpressionAdapter();
@@ -492,6 +502,36 @@ public class EclAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createAttributeValueNotEqualsAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals <em>String Value Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals
+   * @generated
+   */
+  public Adapter createStringValueEqualsAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals <em>String Value Not Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals
+   * @generated
+   */
+  public Adapter createStringValueNotEqualsAdapter()
   {
     return null;
   }

@@ -30,6 +30,8 @@ import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
 import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
+import com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
@@ -171,6 +173,20 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * @generated
    */
   private EClass attributeValueNotEqualsEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass stringValueEqualsEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass stringValueNotEqualsEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -636,16 +652,6 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getComparison_Constraint()
-  {
-    return (EReference)comparisonEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
   public EClass getAttributeValueEquals()
   {
     return attributeValueEqualsEClass;
@@ -656,9 +662,69 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  public EReference getAttributeValueEquals_Constraint()
+  {
+    return (EReference)attributeValueEqualsEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public EClass getAttributeValueNotEquals()
   {
     return attributeValueNotEqualsEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getAttributeValueNotEquals_Constraint()
+  {
+    return (EReference)attributeValueNotEqualsEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getStringValueEquals()
+  {
+    return stringValueEqualsEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getStringValueEquals_Value()
+  {
+    return (EAttribute)stringValueEqualsEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getStringValueNotEquals()
+  {
+    return stringValueNotEqualsEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getStringValueNotEquals_Value()
+  {
+    return (EAttribute)stringValueNotEqualsEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -970,11 +1036,18 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     createEAttribute(cardinalityEClass, CARDINALITY__MAX);
 
     comparisonEClass = createEClass(COMPARISON);
-    createEReference(comparisonEClass, COMPARISON__CONSTRAINT);
 
     attributeValueEqualsEClass = createEClass(ATTRIBUTE_VALUE_EQUALS);
+    createEReference(attributeValueEqualsEClass, ATTRIBUTE_VALUE_EQUALS__CONSTRAINT);
 
     attributeValueNotEqualsEClass = createEClass(ATTRIBUTE_VALUE_NOT_EQUALS);
+    createEReference(attributeValueNotEqualsEClass, ATTRIBUTE_VALUE_NOT_EQUALS__CONSTRAINT);
+
+    stringValueEqualsEClass = createEClass(STRING_VALUE_EQUALS);
+    createEAttribute(stringValueEqualsEClass, STRING_VALUE_EQUALS__VALUE);
+
+    stringValueNotEqualsEClass = createEClass(STRING_VALUE_NOT_EQUALS);
+    createEAttribute(stringValueNotEqualsEClass, STRING_VALUE_NOT_EQUALS__VALUE);
 
     nestedExpressionEClass = createEClass(NESTED_EXPRESSION);
     createEReference(nestedExpressionEClass, NESTED_EXPRESSION__NESTED);
@@ -1051,6 +1124,8 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     attributeConstraintEClass.getESuperTypes().add(this.getRefinement());
     attributeValueEqualsEClass.getESuperTypes().add(this.getComparison());
     attributeValueNotEqualsEClass.getESuperTypes().add(this.getComparison());
+    stringValueEqualsEClass.getESuperTypes().add(this.getComparison());
+    stringValueNotEqualsEClass.getESuperTypes().add(this.getComparison());
     nestedExpressionEClass.getESuperTypes().add(this.getExpressionConstraint());
     orExpressionConstraintEClass.getESuperTypes().add(this.getExpressionConstraint());
     andExpressionConstraintEClass.getESuperTypes().add(this.getExpressionConstraint());
@@ -1110,11 +1185,18 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     initEAttribute(getCardinality_Max(), ecorePackage.getEInt(), "max", null, 0, 1, Cardinality.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(comparisonEClass, Comparison.class, "Comparison", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getComparison_Constraint(), this.getExpressionConstraint(), null, "constraint", null, 0, 1, Comparison.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(attributeValueEqualsEClass, AttributeValueEquals.class, "AttributeValueEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getAttributeValueEquals_Constraint(), this.getExpressionConstraint(), null, "constraint", null, 0, 1, AttributeValueEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(attributeValueNotEqualsEClass, AttributeValueNotEquals.class, "AttributeValueNotEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getAttributeValueNotEquals_Constraint(), this.getExpressionConstraint(), null, "constraint", null, 0, 1, AttributeValueNotEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(stringValueEqualsEClass, StringValueEquals.class, "StringValueEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getStringValueEquals_Value(), ecorePackage.getEString(), "value", null, 0, 1, StringValueEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(stringValueNotEqualsEClass, StringValueNotEquals.class, "StringValueNotEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getStringValueNotEquals_Value(), ecorePackage.getEString(), "value", null, 0, 1, StringValueNotEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(nestedExpressionEClass, NestedExpression.class, "NestedExpression", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getNestedExpression_Nested(), this.getExpressionConstraint(), null, "nested", null, 0, 1, NestedExpression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

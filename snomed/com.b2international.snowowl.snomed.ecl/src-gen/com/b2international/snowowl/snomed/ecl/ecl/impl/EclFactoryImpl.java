@@ -82,6 +82,8 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
       case EclPackage.COMPARISON: return createComparison();
       case EclPackage.ATTRIBUTE_VALUE_EQUALS: return createAttributeValueEquals();
       case EclPackage.ATTRIBUTE_VALUE_NOT_EQUALS: return createAttributeValueNotEquals();
+      case EclPackage.STRING_VALUE_EQUALS: return createStringValueEquals();
+      case EclPackage.STRING_VALUE_NOT_EQUALS: return createStringValueNotEquals();
       case EclPackage.NESTED_EXPRESSION: return createNestedExpression();
       case EclPackage.OR_EXPRESSION_CONSTRAINT: return createOrExpressionConstraint();
       case EclPackage.AND_EXPRESSION_CONSTRAINT: return createAndExpressionConstraint();
@@ -291,6 +293,28 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     AttributeValueNotEqualsImpl attributeValueNotEquals = new AttributeValueNotEqualsImpl();
     return attributeValueNotEquals;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public StringValueEquals createStringValueEquals()
+  {
+    StringValueEqualsImpl stringValueEquals = new StringValueEqualsImpl();
+    return stringValueEquals;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public StringValueNotEquals createStringValueNotEquals()
+  {
+    StringValueNotEqualsImpl stringValueNotEquals = new StringValueNotEqualsImpl();
+    return stringValueNotEquals;
   }
 
   /**

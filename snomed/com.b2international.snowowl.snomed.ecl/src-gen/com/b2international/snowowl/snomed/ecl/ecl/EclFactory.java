@@ -185,6 +185,24 @@ public interface EclFactory extends EFactory
   AttributeValueNotEquals createAttributeValueNotEquals();
 
   /**
+   * Returns a new object of class '<em>String Value Equals</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>String Value Equals</em>'.
+   * @generated
+   */
+  StringValueEquals createStringValueEquals();
+
+  /**
+   * Returns a new object of class '<em>String Value Not Equals</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>String Value Not Equals</em>'.
+   * @generated
+   */
+  StringValueNotEquals createStringValueNotEquals();
+
+  /**
    * Returns a new object of class '<em>Nested Expression</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

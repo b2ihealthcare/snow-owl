@@ -1878,6 +1878,26 @@ ruleComparison returns [EObject current=null]
         $current = $this_AttributeValueNotEquals_1.current; 
         afterParserOrEnumRuleCall();
     }
+
+    |
+    { 
+        newCompositeNode(grammarAccess.getComparisonAccess().getStringValueEqualsParserRuleCall_2()); 
+    }
+    this_StringValueEquals_2=ruleStringValueEquals
+    { 
+        $current = $this_StringValueEquals_2.current; 
+        afterParserOrEnumRuleCall();
+    }
+
+    |
+    { 
+        newCompositeNode(grammarAccess.getComparisonAccess().getStringValueNotEqualsParserRuleCall_3()); 
+    }
+    this_StringValueNotEquals_3=ruleStringValueNotEquals
+    { 
+        $current = $this_StringValueNotEquals_3.current; 
+        afterParserOrEnumRuleCall();
+    }
 )
 ;
 
@@ -1961,6 +1981,92 @@ ruleAttributeValueNotEquals returns [EObject current=null]
         		lv_constraint_1_0, 
         		"SimpleExpressionConstraint");
 	        afterParserOrEnumRuleCall();
+	    }
+
+)
+))
+;
+
+
+
+
+
+// Entry rule entryRuleStringValueEquals
+entryRuleStringValueEquals returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getStringValueEqualsRule()); }
+	 iv_ruleStringValueEquals=ruleStringValueEquals 
+	 { $current=$iv_ruleStringValueEquals.current; } 
+	 EOF 
+;
+
+// Rule StringValueEquals
+ruleStringValueEquals returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(this_EQUAL_0=RULE_EQUAL
+    { 
+    newLeafNode(this_EQUAL_0, grammarAccess.getStringValueEqualsAccess().getEQUALTerminalRuleCall_0()); 
+    }
+(
+(
+		lv_value_1_0=RULE_STRING
+		{
+			newLeafNode(lv_value_1_0, grammarAccess.getStringValueEqualsAccess().getValueSTRINGTerminalRuleCall_1_0()); 
+		}
+		{
+	        if ($current==null) {
+	            $current = createModelElement(grammarAccess.getStringValueEqualsRule());
+	        }
+       		setWithLastConsumed(
+       			$current, 
+       			"value",
+        		lv_value_1_0, 
+        		"STRING");
+	    }
+
+)
+))
+;
+
+
+
+
+
+// Entry rule entryRuleStringValueNotEquals
+entryRuleStringValueNotEquals returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getStringValueNotEqualsRule()); }
+	 iv_ruleStringValueNotEquals=ruleStringValueNotEquals 
+	 { $current=$iv_ruleStringValueNotEquals.current; } 
+	 EOF 
+;
+
+// Rule StringValueNotEquals
+ruleStringValueNotEquals returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(this_NOT_EQUAL_0=RULE_NOT_EQUAL
+    { 
+    newLeafNode(this_NOT_EQUAL_0, grammarAccess.getStringValueNotEqualsAccess().getNOT_EQUALTerminalRuleCall_0()); 
+    }
+(
+(
+		lv_value_1_0=RULE_STRING
+		{
+			newLeafNode(lv_value_1_0, grammarAccess.getStringValueNotEqualsAccess().getValueSTRINGTerminalRuleCall_1_0()); 
+		}
+		{
+	        if ($current==null) {
+	            $current = createModelElement(grammarAccess.getStringValueNotEqualsRule());
+	        }
+       		setWithLastConsumed(
+       			$current, 
+       			"value",
+        		lv_value_1_0, 
+        		"STRING");
 	    }
 
 )
@@ -2685,5 +2791,7 @@ RULE_ML_COMMENT : '/*' ( options {greedy=false;} : . )*'*/';
 RULE_SL_COMMENT : '//' ~(('\n'|'\r'))* ('\r'? '\n')?;
 
 RULE_OTHER_CHARACTER : ~('|');
+
+RULE_STRING : ('"' ('\\' .|~(('\\'|'"')))* '"'|'\'' ('\\' .|~(('\\'|'\'')))* '\'');
 
 

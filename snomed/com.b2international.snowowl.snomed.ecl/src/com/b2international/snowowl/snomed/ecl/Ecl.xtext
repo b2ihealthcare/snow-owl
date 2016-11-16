@@ -104,13 +104,19 @@ Cardinality:
 	SQUARE_OPEN min=NonNegativeInteger TO max=MaxValue SQUARE_CLOSE;
 
 Comparison:
-	AttributeValueEquals | AttributeValueNotEquals /*| NumericValueComparison | StringValueComparison*/;
+	AttributeValueEquals | AttributeValueNotEquals | StringValueEquals | StringValueNotEquals;
 
 AttributeValueEquals:
 	EQUAL constraint=SimpleExpressionConstraint;
 
 AttributeValueNotEquals:
 	NOT_EQUAL constraint=SimpleExpressionConstraint;
+	
+StringValueEquals:
+	EQUAL value=STRING;
+	
+StringValueNotEquals:
+	NOT_EQUAL value=STRING;
 	
 NestedExpression:
 	ROUND_OPEN nested=ExpressionConstraint ROUND_CLOSE;
@@ -185,3 +191,7 @@ terminal SL_COMMENT 			: '//' !('\n'|'\r')* ('\r'? '\n')?;
 
 // misc
 terminal OTHER_CHARACTER		: !'|';
+terminal STRING	: 
+			'"' ( '\\' . /* 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' */ | !('\\'|'"') )* '"' |
+			"'" ( '\\' . /* 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' */ | !('\\'|"'") )* "'"
+		; 

@@ -212,6 +212,22 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case EclPackage.STRING_VALUE_EQUALS:
+      {
+        StringValueEquals stringValueEquals = (StringValueEquals)theEObject;
+        T result = caseStringValueEquals(stringValueEquals);
+        if (result == null) result = caseComparison(stringValueEquals);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.STRING_VALUE_NOT_EQUALS:
+      {
+        StringValueNotEquals stringValueNotEquals = (StringValueNotEquals)theEObject;
+        T result = caseStringValueNotEquals(stringValueNotEquals);
+        if (result == null) result = caseComparison(stringValueNotEquals);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case EclPackage.NESTED_EXPRESSION:
       {
         NestedExpression nestedExpression = (NestedExpression)theEObject;
@@ -564,6 +580,38 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseAttributeValueNotEquals(AttributeValueNotEquals object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>String Value Equals</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>String Value Equals</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseStringValueEquals(StringValueEquals object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>String Value Not Equals</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>String Value Not Equals</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseStringValueNotEquals(StringValueNotEquals object)
   {
     return null;
   }

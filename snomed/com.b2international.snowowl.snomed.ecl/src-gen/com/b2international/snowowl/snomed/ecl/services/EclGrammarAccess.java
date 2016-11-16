@@ -1007,12 +1007,14 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
 		private final RuleCall cAttributeValueEqualsParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
 		private final RuleCall cAttributeValueNotEqualsParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cStringValueEqualsParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		private final RuleCall cStringValueNotEqualsParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
 		
-		/// *| NumericValueComparison | StringValueComparison* / Comparison:
-		//	AttributeValueEquals | AttributeValueNotEquals;
+		//Comparison:
+		//	AttributeValueEquals | AttributeValueNotEquals | StringValueEquals | StringValueNotEquals;
 		@Override public ParserRule getRule() { return rule; }
 
-		//AttributeValueEquals | AttributeValueNotEquals
+		//AttributeValueEquals | AttributeValueNotEquals | StringValueEquals | StringValueNotEquals
 		public Alternatives getAlternatives() { return cAlternatives; }
 
 		//AttributeValueEquals
@@ -1020,6 +1022,12 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 
 		//AttributeValueNotEquals
 		public RuleCall getAttributeValueNotEqualsParserRuleCall_1() { return cAttributeValueNotEqualsParserRuleCall_1; }
+
+		//StringValueEquals
+		public RuleCall getStringValueEqualsParserRuleCall_2() { return cStringValueEqualsParserRuleCall_2; }
+
+		//StringValueNotEquals
+		public RuleCall getStringValueNotEqualsParserRuleCall_3() { return cStringValueNotEqualsParserRuleCall_3; }
 	}
 
 	public class AttributeValueEqualsElements extends AbstractParserRuleElementFinder {
@@ -1068,6 +1076,54 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 
 		//SimpleExpressionConstraint
 		public RuleCall getConstraintSimpleExpressionConstraintParserRuleCall_1_0() { return cConstraintSimpleExpressionConstraintParserRuleCall_1_0; }
+	}
+
+	public class StringValueEqualsElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "StringValueEquals");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cEQUALTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cValueAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cValueSTRINGTerminalRuleCall_1_0 = (RuleCall)cValueAssignment_1.eContents().get(0);
+		
+		//StringValueEquals:
+		//	EQUAL value=STRING;
+		@Override public ParserRule getRule() { return rule; }
+
+		//EQUAL value=STRING
+		public Group getGroup() { return cGroup; }
+
+		//EQUAL
+		public RuleCall getEQUALTerminalRuleCall_0() { return cEQUALTerminalRuleCall_0; }
+
+		//value=STRING
+		public Assignment getValueAssignment_1() { return cValueAssignment_1; }
+
+		//STRING
+		public RuleCall getValueSTRINGTerminalRuleCall_1_0() { return cValueSTRINGTerminalRuleCall_1_0; }
+	}
+
+	public class StringValueNotEqualsElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "StringValueNotEquals");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cNOT_EQUALTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cValueAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cValueSTRINGTerminalRuleCall_1_0 = (RuleCall)cValueAssignment_1.eContents().get(0);
+		
+		//StringValueNotEquals:
+		//	NOT_EQUAL value=STRING;
+		@Override public ParserRule getRule() { return rule; }
+
+		//NOT_EQUAL value=STRING
+		public Group getGroup() { return cGroup; }
+
+		//NOT_EQUAL
+		public RuleCall getNOT_EQUALTerminalRuleCall_0() { return cNOT_EQUALTerminalRuleCall_0; }
+
+		//value=STRING
+		public Assignment getValueAssignment_1() { return cValueAssignment_1; }
+
+		//STRING
+		public RuleCall getValueSTRINGTerminalRuleCall_1_0() { return cValueSTRINGTerminalRuleCall_1_0; }
 	}
 
 	public class NestedExpressionElements extends AbstractParserRuleElementFinder {
@@ -1454,6 +1510,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final ComparisonElements pComparison;
 	private final AttributeValueEqualsElements pAttributeValueEquals;
 	private final AttributeValueNotEqualsElements pAttributeValueNotEquals;
+	private final StringValueEqualsElements pStringValueEquals;
+	private final StringValueNotEqualsElements pStringValueNotEquals;
 	private final NestedExpressionElements pNestedExpression;
 	private final SnomedIdentifierElements pSnomedIdentifier;
 	private final TermElements pTerm;
@@ -1495,6 +1553,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final TerminalRule tML_COMMENT;
 	private final TerminalRule tSL_COMMENT;
 	private final TerminalRule tOTHER_CHARACTER;
+	private final TerminalRule tSTRING;
 	
 	private final Grammar grammar;
 
@@ -1537,6 +1596,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pComparison = new ComparisonElements();
 		this.pAttributeValueEquals = new AttributeValueEqualsElements();
 		this.pAttributeValueNotEquals = new AttributeValueNotEqualsElements();
+		this.pStringValueEquals = new StringValueEqualsElements();
+		this.pStringValueNotEquals = new StringValueNotEqualsElements();
 		this.pNestedExpression = new NestedExpressionElements();
 		this.pSnomedIdentifier = new SnomedIdentifierElements();
 		this.pTerm = new TermElements();
@@ -1578,6 +1639,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.tML_COMMENT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "ML_COMMENT");
 		this.tSL_COMMENT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "SL_COMMENT");
 		this.tOTHER_CHARACTER = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "OTHER_CHARACTER");
+		this.tSTRING = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "STRING");
 	}
 	
 	protected Grammar internalFindGrammar(GrammarProvider grammarProvider) {
@@ -1934,8 +1996,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return getCardinalityAccess().getRule();
 	}
 
-	/// *| NumericValueComparison | StringValueComparison* / Comparison:
-	//	AttributeValueEquals | AttributeValueNotEquals;
+	//Comparison:
+	//	AttributeValueEquals | AttributeValueNotEquals | StringValueEquals | StringValueNotEquals;
 	public ComparisonElements getComparisonAccess() {
 		return pComparison;
 	}
@@ -1962,6 +2024,26 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public ParserRule getAttributeValueNotEqualsRule() {
 		return getAttributeValueNotEqualsAccess().getRule();
+	}
+
+	//StringValueEquals:
+	//	EQUAL value=STRING;
+	public StringValueEqualsElements getStringValueEqualsAccess() {
+		return pStringValueEquals;
+	}
+	
+	public ParserRule getStringValueEqualsRule() {
+		return getStringValueEqualsAccess().getRule();
+	}
+
+	//StringValueNotEquals:
+	//	NOT_EQUAL value=STRING;
+	public StringValueNotEqualsElements getStringValueNotEqualsAccess() {
+		return pStringValueNotEquals;
+	}
+	
+	public ParserRule getStringValueNotEqualsRule() {
+		return getStringValueNotEqualsAccess().getRule();
 	}
 
 	//NestedExpression:
@@ -2247,5 +2329,12 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	//	!"|";
 	public TerminalRule getOTHER_CHARACTERRule() {
 		return tOTHER_CHARACTER;
+	} 
+
+	//terminal STRING:
+	//	"\"" ("\\" . / * 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' * / | !("\\" | "\""))* "\"" | "\'" ("\\" .
+	//	/ * 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' * / | !("\\" | "\'"))* "\'";
+	public TerminalRule getSTRINGRule() {
+		return tSTRING;
 	} 
 }
