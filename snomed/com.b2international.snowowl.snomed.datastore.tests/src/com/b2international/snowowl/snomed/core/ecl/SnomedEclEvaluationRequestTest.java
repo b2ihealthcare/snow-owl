@@ -45,6 +45,7 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -52,6 +53,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
@@ -85,6 +87,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private static final String INGREDIENT6 = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String HAS_BOSS = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String DRUG_ROOT = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String HAS_TRADE_NAME = RandomSnomedIdentiferGenerator.generateConceptId();
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
@@ -553,6 +556,24 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		assertEquals(expected, actual);
 	}
 	
+	@Test
+	public void refinementStringEquals() throws Exception {
+		generateDrugHierarchy();
+		
+		final Expression actual = eval(String.format("<%s: %s = 'PANADOL'", DRUG_ROOT, HAS_TRADE_NAME));
+		final Expression expected = ids(ImmutableSet.of(PANADOL_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementStringNotEquals() throws Exception {
+		generateDrugHierarchy();
+		
+		final Expression actual = eval(String.format("<%s: %s != 'PANADOL'", DRUG_ROOT, HAS_TRADE_NAME));
+		final Expression expected = ids(ImmutableSet.of(ABACAVIR_TABLET, TRIPHASIL_TABLET, AMOXICILLIN_TABLET));
+		assertEquals(expected, actual);
+	}
+	
 	/**
 	 * Generates the following test fixtures:
 	 * <ul>
@@ -589,6 +610,10 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2).group(0).build());
 		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_BOSS, INGREDIENT2).group(0).build());
 		indexRevision(MAIN, nextStorageKey(), relationship(AMOXICILLIN_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).group(0).characteristicTypeId(Concepts.STATED_RELATIONSHIP).build());
+		// trade names
+		indexRevision(MAIN, nextStorageKey(), stringMember(PANADOL_TABLET, HAS_TRADE_NAME, "PANADOL").build());
+		indexRevision(MAIN, nextStorageKey(), stringMember(TRIPHASIL_TABLET, HAS_TRADE_NAME, "TRIPHASIL").build());
+		indexRevision(MAIN, nextStorageKey(), stringMember(AMOXICILLIN_TABLET, HAS_TRADE_NAME, "AMOXICILLIN").build());
 	}
 
 	/**
@@ -680,6 +705,19 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 				.destinationId(destination)
 				.characteristicTypeId(Concepts.INFERRED_RELATIONSHIP)
 				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
+	}
+	
+	private SnomedRefSetMemberIndexEntry.Builder stringMember(final String referencedComponentId, final String attributeName, final String value) {
+		return SnomedRefSetMemberIndexEntry.builder()
+				.id(RandomSnomedIdentiferGenerator.generateRelationshipId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.referencedComponentId(referencedComponentId)
+				.referenceSetId(RandomSnomedIdentiferGenerator.generateConceptId())
+				.referenceSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
+				.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.INFERRED_RELATIONSHIP)
+				.field(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, attributeName)
+				.field(SnomedRf2Headers.FIELD_VALUE, value);
 	}
 
 }
