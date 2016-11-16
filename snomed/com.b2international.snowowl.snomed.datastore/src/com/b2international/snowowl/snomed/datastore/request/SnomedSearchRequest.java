@@ -124,38 +124,46 @@ public abstract class SnomedSearchRequest<R> extends RevisionSearchRequest<R> {
 	protected final void addEclFilter(final BranchContext context, final ExpressionBuilder queryBuilder, Enum<?> eclCapableOptionKey, Function<Collection<String>, Expression> matchingIdsToExpression) {
 		if (containsKey(eclCapableOptionKey)) {
 			// trim all input values before using them
-			Collection<String> idFilter = FluentIterable.from(getCollection(eclCapableOptionKey, String.class)).transform(new Function<String, String>() {
-				@Override
-				public String apply(String input) {
-					return input.trim();
-				}
-			}).toSet();
-			if (idFilter.size() == 1) {
-				// if only a single item is available in the typeIdFilter
-				final String expression = Iterables.getOnlyElement(idFilter);
-				if (!SnomedIdentifiers.isConceptIdentifier(expression)) {
-					// and it's not a CONCEPT_ID, then evaluate via SnomedConceptSearchRequest
+			final Collection<String> optionValues = getCollection(eclCapableOptionKey, String.class);
+			addEclFilter(context, queryBuilder, optionValues, matchingIdsToExpression);
+		}
+	}
 
-					// unless it is an Any ECL expression, which allows any value
-					if ("*".equals(expression)) {
-						return;
-					}
-					
-					// TODO replace sync call to concept search with async promise
-					SnomedConcepts matchingConcepts = SnomedRequests.prepareSearchConcept()
-						.all()
-						.filterByEcl(expression)
-						.setFields(ImmutableSet.of(SnomedConceptDocument.Fields.ID))
-						.build()
-						.execute(context);
-					idFilter = FluentIterable.from(matchingConcepts).transform(IComponent.ID_FUNCTION).toSet();
-					if (idFilter.isEmpty()) {
-						throw new BaseSearchRequest.NoResultException();
-					}
+	protected final void addEclFilter(BranchContext context, ExpressionBuilder queryBuilder, Collection<String> optionValues, Function<Collection<String>, Expression> matchingIdsToExpression) {
+		if (optionValues.isEmpty()) {
+			return;
+		}
+		Collection<String> idFilter = FluentIterable.from(optionValues).transform(new Function<String, String>() {
+			@Override
+			public String apply(String input) {
+				return input.trim();
+			}
+		}).toSet();
+		if (idFilter.size() == 1) {
+			// if only a single item is available in the typeIdFilter
+			final String expression = Iterables.getOnlyElement(idFilter);
+			if (!SnomedIdentifiers.isConceptIdentifier(expression)) {
+				// and it's not a CONCEPT_ID, then evaluate via SnomedConceptSearchRequest
+
+				// unless it is an Any ECL expression, which allows any value
+				if ("*".equals(expression)) {
+					return;
+				}
+				
+				// TODO replace sync call to concept search with async promise
+				SnomedConcepts matchingConcepts = SnomedRequests.prepareSearchConcept()
+					.all()
+					.filterByEcl(expression)
+					.setFields(ImmutableSet.of(SnomedConceptDocument.Fields.ID))
+					.build()
+					.execute(context);
+				idFilter = FluentIterable.from(matchingConcepts).transform(IComponent.ID_FUNCTION).toSet();
+				if (idFilter.isEmpty()) {
+					throw new BaseSearchRequest.NoResultException();
 				}
 			}
-			queryBuilder.must(matchingIdsToExpression.apply(idFilter));
 		}
+		queryBuilder.must(matchingIdsToExpression.apply(idFilter));
 	}
 	
 }

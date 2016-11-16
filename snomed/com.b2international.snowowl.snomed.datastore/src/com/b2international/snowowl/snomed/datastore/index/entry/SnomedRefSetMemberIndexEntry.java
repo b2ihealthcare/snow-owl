@@ -316,6 +316,23 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return matchAny(Fields.VALUE_ID, valueIds);
 		}
 		
+		public static Expression values(Collection<String> values) {
+			return matchAny(Fields.DATA_VALUE, values);
+		}
+		
+		public static Expression dataTypes(Collection<DataType> dataTypes) {
+			return matchAny(Fields.DATA_TYPE, FluentIterable.from(dataTypes).transform(new Function<DataType, String>() {
+				@Override
+				public String apply(DataType input) {
+					return input.name();
+				}
+			}).toSet());
+		}
+		
+		public static Expression attributeNames(Collection<String> attributeNames) {
+			return matchAny(Fields.ATTRIBUTE_NAME, attributeNames);
+		}
+		
 		public static Expression sourceEffectiveTime(long effectiveTime) {
 			return exactMatch(Fields.SOURCE_EFFECTIVE_TIME, effectiveTime);
 		}

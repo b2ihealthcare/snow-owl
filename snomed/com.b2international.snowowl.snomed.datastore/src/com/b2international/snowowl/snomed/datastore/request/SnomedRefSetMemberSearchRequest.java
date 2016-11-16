@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.acceptabilityIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.characteristicTypeIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.correlationIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.dataTypes;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.descriptionFormats;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.mapCategoryIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.operatorIds;
@@ -27,6 +28,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRef
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.targetComponents;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.unitIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.valueIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.values;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -54,6 +56,7 @@ import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator
 import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.dsl.query.RValue;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Iterables;
 
@@ -158,6 +161,15 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_VALUE_ID)) {
 				queryBuilder.must(valueIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME)) {
+				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, String.class), SnomedRefSetMemberIndexEntry.Expressions::attributeNames);
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_VALUE)) {
+				queryBuilder.must(values(propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE, String.class)));
+			}
+			if (propKeys.remove(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE)) {
+				queryBuilder.must(dataTypes(propsFilter.getCollection(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, DataType.class)));
 			}
 			if (!propKeys.isEmpty()) {
 				throw new IllegalQueryParameterException("Unsupported property filter(s), %s", propKeys);
