@@ -104,7 +104,13 @@ Cardinality:
 	SQUARE_OPEN min=NonNegativeInteger TO max=MaxValue SQUARE_CLOSE;
 
 Comparison:
-	AttributeValueEquals | AttributeValueNotEquals | StringValueEquals | StringValueNotEquals;
+	AttributeComparison | DataTypeComparison;
+	
+AttributeComparison:
+	AttributeValueEquals | AttributeValueNotEquals;
+
+DataTypeComparison:
+	StringValueEquals | StringValueNotEquals;
 
 AttributeValueEquals:
 	EQUAL constraint=SimpleExpressionConstraint;

@@ -1861,7 +1861,47 @@ ruleComparison returns [EObject current=null]
     @after { leaveRule(); }:
 (
     { 
-        newCompositeNode(grammarAccess.getComparisonAccess().getAttributeValueEqualsParserRuleCall_0()); 
+        newCompositeNode(grammarAccess.getComparisonAccess().getAttributeComparisonParserRuleCall_0()); 
+    }
+    this_AttributeComparison_0=ruleAttributeComparison
+    { 
+        $current = $this_AttributeComparison_0.current; 
+        afterParserOrEnumRuleCall();
+    }
+
+    |
+    { 
+        newCompositeNode(grammarAccess.getComparisonAccess().getDataTypeComparisonParserRuleCall_1()); 
+    }
+    this_DataTypeComparison_1=ruleDataTypeComparison
+    { 
+        $current = $this_DataTypeComparison_1.current; 
+        afterParserOrEnumRuleCall();
+    }
+)
+;
+
+
+
+
+
+// Entry rule entryRuleAttributeComparison
+entryRuleAttributeComparison returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getAttributeComparisonRule()); }
+	 iv_ruleAttributeComparison=ruleAttributeComparison 
+	 { $current=$iv_ruleAttributeComparison.current; } 
+	 EOF 
+;
+
+// Rule AttributeComparison
+ruleAttributeComparison returns [EObject current=null] 
+    @init { enterRule(); 
+    }
+    @after { leaveRule(); }:
+(
+    { 
+        newCompositeNode(grammarAccess.getAttributeComparisonAccess().getAttributeValueEqualsParserRuleCall_0()); 
     }
     this_AttributeValueEquals_0=ruleAttributeValueEquals
     { 
@@ -1871,31 +1911,51 @@ ruleComparison returns [EObject current=null]
 
     |
     { 
-        newCompositeNode(grammarAccess.getComparisonAccess().getAttributeValueNotEqualsParserRuleCall_1()); 
+        newCompositeNode(grammarAccess.getAttributeComparisonAccess().getAttributeValueNotEqualsParserRuleCall_1()); 
     }
     this_AttributeValueNotEquals_1=ruleAttributeValueNotEquals
     { 
         $current = $this_AttributeValueNotEquals_1.current; 
         afterParserOrEnumRuleCall();
     }
+)
+;
 
-    |
-    { 
-        newCompositeNode(grammarAccess.getComparisonAccess().getStringValueEqualsParserRuleCall_2()); 
+
+
+
+
+// Entry rule entryRuleDataTypeComparison
+entryRuleDataTypeComparison returns [EObject current=null] 
+	:
+	{ newCompositeNode(grammarAccess.getDataTypeComparisonRule()); }
+	 iv_ruleDataTypeComparison=ruleDataTypeComparison 
+	 { $current=$iv_ruleDataTypeComparison.current; } 
+	 EOF 
+;
+
+// Rule DataTypeComparison
+ruleDataTypeComparison returns [EObject current=null] 
+    @init { enterRule(); 
     }
-    this_StringValueEquals_2=ruleStringValueEquals
+    @after { leaveRule(); }:
+(
     { 
-        $current = $this_StringValueEquals_2.current; 
+        newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getStringValueEqualsParserRuleCall_0()); 
+    }
+    this_StringValueEquals_0=ruleStringValueEquals
+    { 
+        $current = $this_StringValueEquals_0.current; 
         afterParserOrEnumRuleCall();
     }
 
     |
     { 
-        newCompositeNode(grammarAccess.getComparisonAccess().getStringValueNotEqualsParserRuleCall_3()); 
+        newCompositeNode(grammarAccess.getDataTypeComparisonAccess().getStringValueNotEqualsParserRuleCall_1()); 
     }
-    this_StringValueNotEquals_3=ruleStringValueNotEquals
+    this_StringValueNotEquals_1=ruleStringValueNotEquals
     { 
-        $current = $this_StringValueNotEquals_3.current; 
+        $current = $this_StringValueNotEquals_1.current; 
         afterParserOrEnumRuleCall();
     }
 )

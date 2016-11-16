@@ -1005,16 +1005,34 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	public class ComparisonElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "Comparison");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
-		private final RuleCall cAttributeValueEqualsParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final RuleCall cAttributeValueNotEqualsParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
-		private final RuleCall cStringValueEqualsParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
-		private final RuleCall cStringValueNotEqualsParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
+		private final RuleCall cAttributeComparisonParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cDataTypeComparisonParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
 		
 		//Comparison:
-		//	AttributeValueEquals | AttributeValueNotEquals | StringValueEquals | StringValueNotEquals;
+		//	AttributeComparison | DataTypeComparison;
 		@Override public ParserRule getRule() { return rule; }
 
-		//AttributeValueEquals | AttributeValueNotEquals | StringValueEquals | StringValueNotEquals
+		//AttributeComparison | DataTypeComparison
+		public Alternatives getAlternatives() { return cAlternatives; }
+
+		//AttributeComparison
+		public RuleCall getAttributeComparisonParserRuleCall_0() { return cAttributeComparisonParserRuleCall_0; }
+
+		//DataTypeComparison
+		public RuleCall getDataTypeComparisonParserRuleCall_1() { return cDataTypeComparisonParserRuleCall_1; }
+	}
+
+	public class AttributeComparisonElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "AttributeComparison");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final RuleCall cAttributeValueEqualsParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cAttributeValueNotEqualsParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		
+		//AttributeComparison:
+		//	AttributeValueEquals | AttributeValueNotEquals;
+		@Override public ParserRule getRule() { return rule; }
+
+		//AttributeValueEquals | AttributeValueNotEquals
 		public Alternatives getAlternatives() { return cAlternatives; }
 
 		//AttributeValueEquals
@@ -1022,12 +1040,26 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 
 		//AttributeValueNotEquals
 		public RuleCall getAttributeValueNotEqualsParserRuleCall_1() { return cAttributeValueNotEqualsParserRuleCall_1; }
+	}
+
+	public class DataTypeComparisonElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "DataTypeComparison");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final RuleCall cStringValueEqualsParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cStringValueNotEqualsParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		
+		//DataTypeComparison:
+		//	StringValueEquals | StringValueNotEquals;
+		@Override public ParserRule getRule() { return rule; }
+
+		//StringValueEquals | StringValueNotEquals
+		public Alternatives getAlternatives() { return cAlternatives; }
 
 		//StringValueEquals
-		public RuleCall getStringValueEqualsParserRuleCall_2() { return cStringValueEqualsParserRuleCall_2; }
+		public RuleCall getStringValueEqualsParserRuleCall_0() { return cStringValueEqualsParserRuleCall_0; }
 
 		//StringValueNotEquals
-		public RuleCall getStringValueNotEqualsParserRuleCall_3() { return cStringValueNotEqualsParserRuleCall_3; }
+		public RuleCall getStringValueNotEqualsParserRuleCall_1() { return cStringValueNotEqualsParserRuleCall_1; }
 	}
 
 	public class AttributeValueEqualsElements extends AbstractParserRuleElementFinder {
@@ -1508,6 +1540,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final AttributeDescendantOrSelfOfElements pAttributeDescendantOrSelfOf;
 	private final CardinalityElements pCardinality;
 	private final ComparisonElements pComparison;
+	private final AttributeComparisonElements pAttributeComparison;
+	private final DataTypeComparisonElements pDataTypeComparison;
 	private final AttributeValueEqualsElements pAttributeValueEquals;
 	private final AttributeValueNotEqualsElements pAttributeValueNotEquals;
 	private final StringValueEqualsElements pStringValueEquals;
@@ -1594,6 +1628,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pAttributeDescendantOrSelfOf = new AttributeDescendantOrSelfOfElements();
 		this.pCardinality = new CardinalityElements();
 		this.pComparison = new ComparisonElements();
+		this.pAttributeComparison = new AttributeComparisonElements();
+		this.pDataTypeComparison = new DataTypeComparisonElements();
 		this.pAttributeValueEquals = new AttributeValueEqualsElements();
 		this.pAttributeValueNotEquals = new AttributeValueNotEqualsElements();
 		this.pStringValueEquals = new StringValueEqualsElements();
@@ -1997,13 +2033,33 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//Comparison:
-	//	AttributeValueEquals | AttributeValueNotEquals | StringValueEquals | StringValueNotEquals;
+	//	AttributeComparison | DataTypeComparison;
 	public ComparisonElements getComparisonAccess() {
 		return pComparison;
 	}
 	
 	public ParserRule getComparisonRule() {
 		return getComparisonAccess().getRule();
+	}
+
+	//AttributeComparison:
+	//	AttributeValueEquals | AttributeValueNotEquals;
+	public AttributeComparisonElements getAttributeComparisonAccess() {
+		return pAttributeComparison;
+	}
+	
+	public ParserRule getAttributeComparisonRule() {
+		return getAttributeComparisonAccess().getRule();
+	}
+
+	//DataTypeComparison:
+	//	StringValueEquals | StringValueNotEquals;
+	public DataTypeComparisonElements getDataTypeComparisonAccess() {
+		return pDataTypeComparison;
+	}
+	
+	public ParserRule getDataTypeComparisonRule() {
+		return getDataTypeComparisonAccess().getRule();
 	}
 
 	//AttributeValueEquals:

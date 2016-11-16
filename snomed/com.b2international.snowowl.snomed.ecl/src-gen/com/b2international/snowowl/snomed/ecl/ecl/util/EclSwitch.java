@@ -196,10 +196,27 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case EclPackage.ATTRIBUTE_COMPARISON:
+      {
+        AttributeComparison attributeComparison = (AttributeComparison)theEObject;
+        T result = caseAttributeComparison(attributeComparison);
+        if (result == null) result = caseComparison(attributeComparison);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.DATA_TYPE_COMPARISON:
+      {
+        DataTypeComparison dataTypeComparison = (DataTypeComparison)theEObject;
+        T result = caseDataTypeComparison(dataTypeComparison);
+        if (result == null) result = caseComparison(dataTypeComparison);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case EclPackage.ATTRIBUTE_VALUE_EQUALS:
       {
         AttributeValueEquals attributeValueEquals = (AttributeValueEquals)theEObject;
         T result = caseAttributeValueEquals(attributeValueEquals);
+        if (result == null) result = caseAttributeComparison(attributeValueEquals);
         if (result == null) result = caseComparison(attributeValueEquals);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -208,6 +225,7 @@ public class EclSwitch<T> extends Switch<T>
       {
         AttributeValueNotEquals attributeValueNotEquals = (AttributeValueNotEquals)theEObject;
         T result = caseAttributeValueNotEquals(attributeValueNotEquals);
+        if (result == null) result = caseAttributeComparison(attributeValueNotEquals);
         if (result == null) result = caseComparison(attributeValueNotEquals);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -216,6 +234,7 @@ public class EclSwitch<T> extends Switch<T>
       {
         StringValueEquals stringValueEquals = (StringValueEquals)theEObject;
         T result = caseStringValueEquals(stringValueEquals);
+        if (result == null) result = caseDataTypeComparison(stringValueEquals);
         if (result == null) result = caseComparison(stringValueEquals);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -224,6 +243,7 @@ public class EclSwitch<T> extends Switch<T>
       {
         StringValueNotEquals stringValueNotEquals = (StringValueNotEquals)theEObject;
         T result = caseStringValueNotEquals(stringValueNotEquals);
+        if (result == null) result = caseDataTypeComparison(stringValueNotEquals);
         if (result == null) result = caseComparison(stringValueNotEquals);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -548,6 +568,38 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseComparison(Comparison object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Attribute Comparison</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Attribute Comparison</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseAttributeComparison(AttributeComparison object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Data Type Comparison</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Data Type Comparison</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseDataTypeComparison(DataTypeComparison object)
   {
     return null;
   }

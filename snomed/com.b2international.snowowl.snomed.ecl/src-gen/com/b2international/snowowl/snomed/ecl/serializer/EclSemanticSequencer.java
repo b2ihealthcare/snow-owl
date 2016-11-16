@@ -357,8 +357,8 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 */
 	protected void sequence_AttributeValueEquals(EObject context, AttributeValueEquals semanticObject) {
 		if(errorAcceptor != null) {
-			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.ATTRIBUTE_VALUE_EQUALS__CONSTRAINT) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.ATTRIBUTE_VALUE_EQUALS__CONSTRAINT));
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.ATTRIBUTE_COMPARISON__CONSTRAINT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.ATTRIBUTE_COMPARISON__CONSTRAINT));
 		}
 		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
 		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
@@ -373,8 +373,8 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 */
 	protected void sequence_AttributeValueNotEquals(EObject context, AttributeValueNotEquals semanticObject) {
 		if(errorAcceptor != null) {
-			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.ATTRIBUTE_VALUE_NOT_EQUALS__CONSTRAINT) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.ATTRIBUTE_VALUE_NOT_EQUALS__CONSTRAINT));
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.ATTRIBUTE_COMPARISON__CONSTRAINT) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.ATTRIBUTE_COMPARISON__CONSTRAINT));
 		}
 		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
 		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
@@ -652,8 +652,8 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 */
 	protected void sequence_StringValueEquals(EObject context, StringValueEquals semanticObject) {
 		if(errorAcceptor != null) {
-			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.STRING_VALUE_EQUALS__VALUE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.STRING_VALUE_EQUALS__VALUE));
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.DATA_TYPE_COMPARISON__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.DATA_TYPE_COMPARISON__VALUE));
 		}
 		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
 		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
@@ -668,8 +668,8 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 */
 	protected void sequence_StringValueNotEquals(EObject context, StringValueNotEquals semanticObject) {
 		if(errorAcceptor != null) {
-			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.STRING_VALUE_NOT_EQUALS__VALUE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.STRING_VALUE_NOT_EQUALS__VALUE));
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.DATA_TYPE_COMPARISON__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.DATA_TYPE_COMPARISON__VALUE));
 		}
 		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
 		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);

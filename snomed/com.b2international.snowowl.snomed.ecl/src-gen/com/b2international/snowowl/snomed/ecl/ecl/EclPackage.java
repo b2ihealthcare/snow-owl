@@ -523,14 +523,14 @@ public interface EclPackage extends EPackage
   int COMPARISON_FEATURE_COUNT = 0;
 
   /**
-   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeValueEqualsImpl <em>Attribute Value Equals</em>}' class.
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeComparisonImpl <em>Attribute Comparison</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeValueEqualsImpl
-   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeValueEquals()
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeComparisonImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeComparison()
    * @generated
    */
-  int ATTRIBUTE_VALUE_EQUALS = 16;
+  int ATTRIBUTE_COMPARISON = 16;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -539,7 +539,63 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ATTRIBUTE_VALUE_EQUALS__CONSTRAINT = COMPARISON_FEATURE_COUNT + 0;
+  int ATTRIBUTE_COMPARISON__CONSTRAINT = COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Attribute Comparison</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int ATTRIBUTE_COMPARISON_FEATURE_COUNT = COMPARISON_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DataTypeComparisonImpl <em>Data Type Comparison</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.DataTypeComparisonImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDataTypeComparison()
+   * @generated
+   */
+  int DATA_TYPE_COMPARISON = 17;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DATA_TYPE_COMPARISON__VALUE = COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Data Type Comparison</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DATA_TYPE_COMPARISON_FEATURE_COUNT = COMPARISON_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeValueEqualsImpl <em>Attribute Value Equals</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeValueEqualsImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeValueEquals()
+   * @generated
+   */
+  int ATTRIBUTE_VALUE_EQUALS = 18;
+
+  /**
+   * The feature id for the '<em><b>Constraint</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int ATTRIBUTE_VALUE_EQUALS__CONSTRAINT = ATTRIBUTE_COMPARISON__CONSTRAINT;
 
   /**
    * The number of structural features of the '<em>Attribute Value Equals</em>' class.
@@ -548,7 +604,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ATTRIBUTE_VALUE_EQUALS_FEATURE_COUNT = COMPARISON_FEATURE_COUNT + 1;
+  int ATTRIBUTE_VALUE_EQUALS_FEATURE_COUNT = ATTRIBUTE_COMPARISON_FEATURE_COUNT + 0;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeValueNotEqualsImpl <em>Attribute Value Not Equals</em>}' class.
@@ -558,7 +614,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeValueNotEquals()
    * @generated
    */
-  int ATTRIBUTE_VALUE_NOT_EQUALS = 17;
+  int ATTRIBUTE_VALUE_NOT_EQUALS = 19;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -567,7 +623,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ATTRIBUTE_VALUE_NOT_EQUALS__CONSTRAINT = COMPARISON_FEATURE_COUNT + 0;
+  int ATTRIBUTE_VALUE_NOT_EQUALS__CONSTRAINT = ATTRIBUTE_COMPARISON__CONSTRAINT;
 
   /**
    * The number of structural features of the '<em>Attribute Value Not Equals</em>' class.
@@ -576,7 +632,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int ATTRIBUTE_VALUE_NOT_EQUALS_FEATURE_COUNT = COMPARISON_FEATURE_COUNT + 1;
+  int ATTRIBUTE_VALUE_NOT_EQUALS_FEATURE_COUNT = ATTRIBUTE_COMPARISON_FEATURE_COUNT + 0;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.StringValueEqualsImpl <em>String Value Equals</em>}' class.
@@ -586,7 +642,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getStringValueEquals()
    * @generated
    */
-  int STRING_VALUE_EQUALS = 18;
+  int STRING_VALUE_EQUALS = 20;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -595,7 +651,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int STRING_VALUE_EQUALS__VALUE = COMPARISON_FEATURE_COUNT + 0;
+  int STRING_VALUE_EQUALS__VALUE = DATA_TYPE_COMPARISON__VALUE;
 
   /**
    * The number of structural features of the '<em>String Value Equals</em>' class.
@@ -604,7 +660,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int STRING_VALUE_EQUALS_FEATURE_COUNT = COMPARISON_FEATURE_COUNT + 1;
+  int STRING_VALUE_EQUALS_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.StringValueNotEqualsImpl <em>String Value Not Equals</em>}' class.
@@ -614,7 +670,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getStringValueNotEquals()
    * @generated
    */
-  int STRING_VALUE_NOT_EQUALS = 19;
+  int STRING_VALUE_NOT_EQUALS = 21;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -623,7 +679,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int STRING_VALUE_NOT_EQUALS__VALUE = COMPARISON_FEATURE_COUNT + 0;
+  int STRING_VALUE_NOT_EQUALS__VALUE = DATA_TYPE_COMPARISON__VALUE;
 
   /**
    * The number of structural features of the '<em>String Value Not Equals</em>' class.
@@ -632,7 +688,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int STRING_VALUE_NOT_EQUALS_FEATURE_COUNT = COMPARISON_FEATURE_COUNT + 1;
+  int STRING_VALUE_NOT_EQUALS_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.NestedExpressionImpl <em>Nested Expression</em>}' class.
@@ -642,7 +698,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getNestedExpression()
    * @generated
    */
-  int NESTED_EXPRESSION = 20;
+  int NESTED_EXPRESSION = 22;
 
   /**
    * The feature id for the '<em><b>Nested</b></em>' containment reference.
@@ -670,7 +726,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getOrExpressionConstraint()
    * @generated
    */
-  int OR_EXPRESSION_CONSTRAINT = 21;
+  int OR_EXPRESSION_CONSTRAINT = 23;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -707,7 +763,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAndExpressionConstraint()
    * @generated
    */
-  int AND_EXPRESSION_CONSTRAINT = 22;
+  int AND_EXPRESSION_CONSTRAINT = 24;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -744,7 +800,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getExclusionExpressionConstraint()
    * @generated
    */
-  int EXCLUSION_EXPRESSION_CONSTRAINT = 23;
+  int EXCLUSION_EXPRESSION_CONSTRAINT = 25;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -781,7 +837,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getRefinedExpressionConstraint()
    * @generated
    */
-  int REFINED_EXPRESSION_CONSTRAINT = 24;
+  int REFINED_EXPRESSION_CONSTRAINT = 26;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -818,7 +874,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDottedExpressionConstraint()
    * @generated
    */
-  int DOTTED_EXPRESSION_CONSTRAINT = 25;
+  int DOTTED_EXPRESSION_CONSTRAINT = 27;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -855,7 +911,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getOrRefinement()
    * @generated
    */
-  int OR_REFINEMENT = 26;
+  int OR_REFINEMENT = 28;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -892,7 +948,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAndRefinement()
    * @generated
    */
-  int AND_REFINEMENT = 27;
+  int AND_REFINEMENT = 29;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -1281,6 +1337,48 @@ public interface EclPackage extends EPackage
   EClass getComparison();
 
   /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeComparison <em>Attribute Comparison</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Attribute Comparison</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeComparison
+   * @generated
+   */
+  EClass getAttributeComparison();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeComparison#getConstraint <em>Constraint</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Constraint</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeComparison#getConstraint()
+   * @see #getAttributeComparison()
+   * @generated
+   */
+  EReference getAttributeComparison_Constraint();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.DataTypeComparison <em>Data Type Comparison</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Data Type Comparison</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DataTypeComparison
+   * @generated
+   */
+  EClass getDataTypeComparison();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.DataTypeComparison#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DataTypeComparison#getValue()
+   * @see #getDataTypeComparison()
+   * @generated
+   */
+  EAttribute getDataTypeComparison_Value();
+
+  /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals <em>Attribute Value Equals</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1289,17 +1387,6 @@ public interface EclPackage extends EPackage
    * @generated
    */
   EClass getAttributeValueEquals();
-
-  /**
-   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals#getConstraint <em>Constraint</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the containment reference '<em>Constraint</em>'.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals#getConstraint()
-   * @see #getAttributeValueEquals()
-   * @generated
-   */
-  EReference getAttributeValueEquals_Constraint();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals <em>Attribute Value Not Equals</em>}'.
@@ -1312,17 +1399,6 @@ public interface EclPackage extends EPackage
   EClass getAttributeValueNotEquals();
 
   /**
-   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals#getConstraint <em>Constraint</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the containment reference '<em>Constraint</em>'.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals#getConstraint()
-   * @see #getAttributeValueNotEquals()
-   * @generated
-   */
-  EReference getAttributeValueNotEquals_Constraint();
-
-  /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals <em>String Value Equals</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1333,17 +1409,6 @@ public interface EclPackage extends EPackage
   EClass getStringValueEquals();
 
   /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals#getValue <em>Value</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Value</em>'.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals#getValue()
-   * @see #getStringValueEquals()
-   * @generated
-   */
-  EAttribute getStringValueEquals_Value();
-
-  /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals <em>String Value Not Equals</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1352,17 +1417,6 @@ public interface EclPackage extends EPackage
    * @generated
    */
   EClass getStringValueNotEquals();
-
-  /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals#getValue <em>Value</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Value</em>'.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals#getValue()
-   * @see #getStringValueNotEquals()
-   * @generated
-   */
-  EAttribute getStringValueNotEquals_Value();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.NestedExpression <em>Nested Expression</em>}'.
@@ -1937,6 +1991,42 @@ public interface EclPackage extends EPackage
     EClass COMPARISON = eINSTANCE.getComparison();
 
     /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeComparisonImpl <em>Attribute Comparison</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeComparisonImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeComparison()
+     * @generated
+     */
+    EClass ATTRIBUTE_COMPARISON = eINSTANCE.getAttributeComparison();
+
+    /**
+     * The meta object literal for the '<em><b>Constraint</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference ATTRIBUTE_COMPARISON__CONSTRAINT = eINSTANCE.getAttributeComparison_Constraint();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DataTypeComparisonImpl <em>Data Type Comparison</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.DataTypeComparisonImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDataTypeComparison()
+     * @generated
+     */
+    EClass DATA_TYPE_COMPARISON = eINSTANCE.getDataTypeComparison();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute DATA_TYPE_COMPARISON__VALUE = eINSTANCE.getDataTypeComparison_Value();
+
+    /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeValueEqualsImpl <em>Attribute Value Equals</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -1945,14 +2035,6 @@ public interface EclPackage extends EPackage
      * @generated
      */
     EClass ATTRIBUTE_VALUE_EQUALS = eINSTANCE.getAttributeValueEquals();
-
-    /**
-     * The meta object literal for the '<em><b>Constraint</b></em>' containment reference feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EReference ATTRIBUTE_VALUE_EQUALS__CONSTRAINT = eINSTANCE.getAttributeValueEquals_Constraint();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeValueNotEqualsImpl <em>Attribute Value Not Equals</em>}' class.
@@ -1965,14 +2047,6 @@ public interface EclPackage extends EPackage
     EClass ATTRIBUTE_VALUE_NOT_EQUALS = eINSTANCE.getAttributeValueNotEquals();
 
     /**
-     * The meta object literal for the '<em><b>Constraint</b></em>' containment reference feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EReference ATTRIBUTE_VALUE_NOT_EQUALS__CONSTRAINT = eINSTANCE.getAttributeValueNotEquals_Constraint();
-
-    /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.StringValueEqualsImpl <em>String Value Equals</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -1983,14 +2057,6 @@ public interface EclPackage extends EPackage
     EClass STRING_VALUE_EQUALS = eINSTANCE.getStringValueEquals();
 
     /**
-     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute STRING_VALUE_EQUALS__VALUE = eINSTANCE.getStringValueEquals_Value();
-
-    /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.StringValueNotEqualsImpl <em>String Value Not Equals</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -1999,14 +2065,6 @@ public interface EclPackage extends EPackage
      * @generated
      */
     EClass STRING_VALUE_NOT_EQUALS = eINSTANCE.getStringValueNotEquals();
-
-    /**
-     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute STRING_VALUE_NOT_EQUALS__VALUE = eINSTANCE.getStringValueNotEquals_Value();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.NestedExpressionImpl <em>Nested Expression</em>}' class.

@@ -80,6 +80,8 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
       case EclPackage.ATTRIBUTE_CONSTRAINT: return createAttributeConstraint();
       case EclPackage.CARDINALITY: return createCardinality();
       case EclPackage.COMPARISON: return createComparison();
+      case EclPackage.ATTRIBUTE_COMPARISON: return createAttributeComparison();
+      case EclPackage.DATA_TYPE_COMPARISON: return createDataTypeComparison();
       case EclPackage.ATTRIBUTE_VALUE_EQUALS: return createAttributeValueEquals();
       case EclPackage.ATTRIBUTE_VALUE_NOT_EQUALS: return createAttributeValueNotEquals();
       case EclPackage.STRING_VALUE_EQUALS: return createStringValueEquals();
@@ -271,6 +273,28 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     ComparisonImpl comparison = new ComparisonImpl();
     return comparison;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public AttributeComparison createAttributeComparison()
+  {
+    AttributeComparisonImpl attributeComparison = new AttributeComparisonImpl();
+    return attributeComparison;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public DataTypeComparison createDataTypeComparison()
+  {
+    DataTypeComparisonImpl dataTypeComparison = new DataTypeComparisonImpl();
+    return dataTypeComparison;
   }
 
   /**

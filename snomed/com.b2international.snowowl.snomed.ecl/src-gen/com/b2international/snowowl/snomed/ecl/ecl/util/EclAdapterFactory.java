@@ -155,6 +155,16 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createComparisonAdapter();
       }
       @Override
+      public Adapter caseAttributeComparison(AttributeComparison object)
+      {
+        return createAttributeComparisonAdapter();
+      }
+      @Override
+      public Adapter caseDataTypeComparison(DataTypeComparison object)
+      {
+        return createDataTypeComparisonAdapter();
+      }
+      @Override
       public Adapter caseAttributeValueEquals(AttributeValueEquals object)
       {
         return createAttributeValueEqualsAdapter();
@@ -472,6 +482,36 @@ public class EclAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createComparisonAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeComparison <em>Attribute Comparison</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.AttributeComparison
+   * @generated
+   */
+  public Adapter createAttributeComparisonAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.DataTypeComparison <em>Data Type Comparison</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DataTypeComparison
+   * @generated
+   */
+  public Adapter createDataTypeComparisonAdapter()
   {
     return null;
   }

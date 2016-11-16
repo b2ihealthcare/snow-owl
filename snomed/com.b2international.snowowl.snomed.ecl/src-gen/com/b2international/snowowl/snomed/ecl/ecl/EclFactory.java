@@ -167,6 +167,24 @@ public interface EclFactory extends EFactory
   Comparison createComparison();
 
   /**
+   * Returns a new object of class '<em>Attribute Comparison</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Attribute Comparison</em>'.
+   * @generated
+   */
+  AttributeComparison createAttributeComparison();
+
+  /**
+   * Returns a new object of class '<em>Data Type Comparison</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Data Type Comparison</em>'.
+   * @generated
+   */
+  DataTypeComparison createDataTypeComparison();
+
+  /**
    * Returns a new object of class '<em>Attribute Value Equals</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

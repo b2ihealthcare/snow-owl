@@ -61,20 +61,17 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="max" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Comparison"/>
-  <eClassifiers xsi:type="ecore:EClass" name="AttributeValueEquals" eSuperTypes="#//Comparison">
+  <eClassifiers xsi:type="ecore:EClass" name="AttributeComparison" eSuperTypes="#//Comparison">
     <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//ExpressionConstraint"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AttributeValueNotEquals" eSuperTypes="#//Comparison">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="constraint" eType="#//ExpressionConstraint"
-        containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="StringValueEquals" eSuperTypes="#//Comparison">
+  <eClassifiers xsi:type="ecore:EClass" name="DataTypeComparison" eSuperTypes="#//Comparison">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="StringValueNotEquals" eSuperTypes="#//Comparison">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AttributeValueEquals" eSuperTypes="#//AttributeComparison"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AttributeValueNotEquals" eSuperTypes="#//AttributeComparison"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StringValueEquals" eSuperTypes="#//DataTypeComparison"/>
+  <eClassifiers xsi:type="ecore:EClass" name="StringValueNotEquals" eSuperTypes="#//DataTypeComparison"/>
   <eClassifiers xsi:type="ecore:EClass" name="NestedExpression" eSuperTypes="#//ExpressionConstraint">
     <eStructuralFeatures xsi:type="ecore:EReference" name="nested" eType="#//ExpressionConstraint"
         containment="true"/>
