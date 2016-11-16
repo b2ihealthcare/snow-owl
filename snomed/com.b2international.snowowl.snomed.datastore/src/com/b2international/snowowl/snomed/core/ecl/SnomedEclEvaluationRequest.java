@@ -46,9 +46,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
@@ -298,11 +296,11 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 		final EclSerializer serializer = context.service(EclSerializer.class);
 		final Collection<String> sourceFilter = Collections.singleton(serializer.serialize(dotted.getConstraint()));
 		final Collection<String> typeFilter = Collections.singleton(serializer.serialize(dotted.getAttribute()));
-		return SnomedEclRefinementEvaluator.evalRefinement(context, sourceFilter, typeFilter, Collections.emptySet(), false)
-				.then(new Function<SnomedRelationships, Set<String>>() {
+		return SnomedEclRefinementEvaluator.evalRelationships(context, sourceFilter, typeFilter, Collections.emptySet(), false)
+				.then(new Function<Collection<SnomedEclRefinementEvaluator.Property>, Set<String>>() {
 					@Override
-					public Set<String> apply(SnomedRelationships input) {
-						return FluentIterable.from(input).transform(ISnomedRelationship::getDestinationId).toSet();
+					public Set<String> apply(Collection<SnomedEclRefinementEvaluator.Property> input) {
+						return FluentIterable.from(input).transform(SnomedEclRefinementEvaluator.Property::getValue).filter(String.class).toSet();
 					}
 				})
 				.then(matchIdsOrNone());

@@ -382,14 +382,14 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			// Disallow instantiation outside static method
 		}
 
-		Builder fields(Map<String, Object> fields) {
+		public Builder fields(Map<String, Object> fields) {
 			for (Entry<String, Object> entry : fields.entrySet()) {
 				field(entry.getKey(), entry.getValue());
 			}
 			return this;
 		}
 		
-		Builder field(String fieldName, Object value) {
+		public Builder field(String fieldName, Object value) {
 			switch (fieldName) {
 			case Fields.ACCEPTABILITY_ID: this.acceptabilityId = (String) value; break;
 			case Fields.ATTRIBUTE_NAME: this.attributeName = (String) value; break;
