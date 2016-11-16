@@ -43,16 +43,21 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
@@ -708,15 +713,21 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	}
 	
 	private SnomedRefSetMemberIndexEntry.Builder stringMember(final String referencedComponentId, final String attributeName, final String value) {
+		final short referencedComponentType = 
+				SnomedIdentifiers.getComponentCategory(referencedComponentId) == ComponentCategory.CONCEPT 
+					? SnomedTerminologyComponentConstants.CONCEPT_NUMBER 
+					: SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 		return SnomedRefSetMemberIndexEntry.builder()
 				.id(RandomSnomedIdentiferGenerator.generateRelationshipId())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(referencedComponentId)
+				.referencedComponentType(referencedComponentType)
 				.referenceSetId(RandomSnomedIdentiferGenerator.generateConceptId())
 				.referenceSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
 				.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.INFERRED_RELATIONSHIP)
 				.field(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, attributeName)
+				.field(Fields.DATA_TYPE, DataType.STRING)
 				.field(SnomedRf2Headers.FIELD_VALUE, value);
 	}
 

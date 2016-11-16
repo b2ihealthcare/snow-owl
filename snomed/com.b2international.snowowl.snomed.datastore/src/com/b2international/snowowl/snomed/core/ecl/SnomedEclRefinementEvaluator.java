@@ -19,6 +19,7 @@ import static com.b2international.snowowl.datastore.index.RevisionDocument.Field
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.DESTINATION_ID;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.GROUP;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.SOURCE_ID;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
@@ -31,6 +32,7 @@ import java.util.function.BinaryOperator;
 
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
+import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -40,8 +42,12 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
@@ -59,6 +65,10 @@ import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
+import com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
@@ -74,6 +84,7 @@ import com.google.common.collect.Sets;
  */
 final class SnomedEclRefinementEvaluator {
 
+	private static final Set<String> ALLOWED_CHARACTERISTIC_TYPES = ImmutableSet.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP);
 	private static final int UNBOUNDED_CARDINALITY = -1;
 	private static final Range<Long> ANY_GROUP = Range.closed(0L, Long.MAX_VALUE);
 	private static final EclFactory ECL_FACTORY = EclFactory.eINSTANCE;
@@ -288,34 +299,92 @@ final class SnomedEclRefinementEvaluator {
 				propertyCardinality = Range.closed(max + 1, Long.MAX_VALUE);
 			}
 		}
-		return evalRefinement(context, refinement, propertyCardinality, grouped, groupCardinality);
+		final Function<Property, Object> idProvider = refinement.isReversed() ? Property::getValue : Property::getObjectId;
+		return evalRefinement(context, refinement, grouped)
+				.then(filterByCardinality(grouped, groupCardinality, propertyCardinality, idProvider));
 	}
 	
-	private Promise<Collection<Property>> evalRefinement(final BranchContext context, final AttributeConstraint refinement, final Range<Long> propertyCardinality, final boolean grouped, final Range<Long> groupCardinality) {
+	private Promise<Collection<Property>> evalRefinement(final BranchContext context, final AttributeConstraint refinement, final boolean grouped) {
 		final Comparison comparison = refinement.getComparison();
+		final EclSerializer serializer = context.service(EclSerializer.class);
+		final Collection<String> typeConceptFilter = Collections.singleton(serializer.serialize(refinement.getAttribute()));
+		
 		if (comparison instanceof AttributeComparison) {
 			// filterByType and filterByDestination accepts ECL expressions as well, so serialize them into ECL and pass as String when required
-			final EclSerializer serializer = context.service(EclSerializer.class);
-			final Collection<String> typeConceptFilter = Collections.singleton(serializer.serialize(refinement.getAttribute()));
 			final Collection<String> destinationConceptFilter = Collections.singleton(serializer.serialize(rewrite(comparison)));
 			final Collection<String> focusConceptFilter = refinement.isReversed() ? destinationConceptFilter : focusConcepts;
 			final Collection<String> valueConceptFilter = refinement.isReversed() ? focusConcepts : destinationConceptFilter;
 			// if reversed refinement, then we are interested in the destinationIds otherwise we need the sourceIds
-			final Function<Property, Object> idProvider = refinement.isReversed() ? Property::getValue : Property::getObjectId;
-			return evalRelationships(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, grouped)
-					.then(filterByCardinality(grouped, groupCardinality, propertyCardinality, idProvider));
+			return evalRelationships(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, grouped);
 		} else if (comparison instanceof DataTypeComparison) {
-			if (refinement.isReversed()) {
+			if (grouped) {
+				throw new BadRequestException("Group refinement is not supported in data type based comparison (string/numeric)");
+			} else if (refinement.isReversed()) {
 				throw new BadRequestException("Reversed flag is not supported in data type based comparison (string/numeric)");
 			} else {
-				
+				return evalMembers(context, typeConceptFilter, comparison);
 			}
-			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
 		} else {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
 		}
 	}
 		
+	private Promise<Collection<Property>> evalMembers(BranchContext context, Collection<String> attributeNames, Comparison comparison) {
+		if (comparison instanceof StringValueEquals) {
+			final String expectedValue = ((StringValueEquals) comparison).getValue();
+			return evalMembers(context, attributeNames, DataType.STRING, expectedValue)
+					.then(new Function<SnomedReferenceSetMembers, Collection<Property>>() {
+						@Override
+						public Collection<Property> apply(SnomedReferenceSetMembers matchingMembers) {
+							return FluentIterable.from(matchingMembers).transform(new Function<SnomedReferenceSetMember, Property>() {
+								@Override
+								public Property apply(SnomedReferenceSetMember input) {
+									return new Property(input.getId(), 
+											input.getReferencedComponent().getId(), 
+											(String) input.getProperties().get(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME),
+											// TODO deserialize value???
+											(String) input.getProperties().get(SnomedRf2Headers.FIELD_VALUE), 
+											0 /*groups are not supported, all members considered ungrouped*/);
+								}
+							}).toSet();
+						}
+					});
+		} else if (comparison instanceof StringValueNotEquals) {
+			final String notExpectedValue = ((StringValueNotEquals) comparison).getValue();
+			return evalMembers(context, attributeNames, DataType.STRING, notExpectedValue)
+					.then(new Function<SnomedReferenceSetMembers, Collection<Property>>() {
+						@Override
+						public Collection<Property> apply(SnomedReferenceSetMembers members) {
+							checkState(!focusConcepts.isEmpty(), "TODO implement * focusConcepts handling here");
+							final Set<String> matchingReferencedComponents = FluentIterable.from(members).transform(new Function<SnomedReferenceSetMember, String>() {
+								@Override
+								public String apply(SnomedReferenceSetMember member) {
+									return member.getReferencedComponent().getId();
+								}
+							}).toSet();
+							return FluentIterable.from(focusConcepts).filter(id -> !matchingReferencedComponents.contains(id)).transform(Property::new).toSet();
+						}
+					});
+		}
+		return SnomedEclEvaluationRequest.throwUnsupported(comparison);
+	}
+
+	private Promise<SnomedReferenceSetMembers> evalMembers(BranchContext context, Collection<String> attributeNames, DataType type, Object valueEquals) {
+		return SnomedRequests.prepareSearchMember()
+			.all()
+			.filterByActive(true)
+			.filterByReferencedComponent(focusConcepts)
+			.filterByRefSetType(Collections.singleton(SnomedRefSetType.CONCRETE_DATA_TYPE))
+			.filterByProps(Options.builder()
+					.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, ALLOWED_CHARACTERISTIC_TYPES)
+					.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, attributeNames)
+					.put(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, type)
+					.put(SnomedRf2Headers.FIELD_VALUE, valueEquals)
+					.build())
+			.build(context.id(), context.branch().path())
+			.execute(context.service(IEventBus.class));
+	}
+
 	/*package*/ static Function<Collection<Property>, Collection<Property>> filterByCardinality(final boolean grouped, final Range<Long> groupCardinality, final Range<Long> cardinality, final Function<Property, Object> idProvider) {
 		return new Function<Collection<Property>, Collection<Property>>() {
 			@Override
@@ -394,7 +463,7 @@ final class SnomedEclRefinementEvaluator {
 				.filterBySource(sourceFilter)
 				.filterByType(typeFilter)
 				.filterByDestination(destinationFilter)
-				.filterByCharacteristicTypes(ImmutableSet.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP))
+				.filterByCharacteristicTypes(ALLOWED_CHARACTERISTIC_TYPES)
 				.setFields(fieldsToLoad.build());
 		
 		// if a grouping refinement, then filter relationships with group number gte 1

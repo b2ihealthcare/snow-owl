@@ -214,7 +214,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 
 		member.setProperties(props);
 		
-		setReferencedComponent(member, entry.getReferencedComponentId(), entry.getReferencedComponentTypeAsString());
+		setReferencedComponent(member, entry.getReferencedComponentId(), entry.getReferencedComponentType());
 		return member;
 	}
 	
@@ -227,24 +227,24 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 		}
 	}
 
-	private void setReferencedComponent(SnomedReferenceSetMemberImpl member, String referencedComponentId, String referencedComponentType) {
+	private void setReferencedComponent(SnomedReferenceSetMemberImpl member, String referencedComponentId, short referencedComponentType) {
 		final SnomedCoreComponent component;
 		switch (referencedComponentType) {
 		// TODO support query type refset refcomp expansion, currently it's a concept
-		case SnomedTerminologyComponentConstants.REFSET:
-		case SnomedTerminologyComponentConstants.CONCEPT:
+		case SnomedTerminologyComponentConstants.REFSET_NUMBER:
+		case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
 			component = new SnomedConcept();
 			((SnomedConcept) component).setId(referencedComponentId);
 			break;
-		case SnomedTerminologyComponentConstants.DESCRIPTION:
+		case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
 			component = new SnomedDescription();
 			((SnomedDescription) component).setId(referencedComponentId);
 			break;
-		case SnomedTerminologyComponentConstants.RELATIONSHIP:
+		case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
 			component = new SnomedRelationship();
 			((SnomedRelationship) component).setId(referencedComponentId);
 			break;
-		default: throw new UnsupportedOperationException("UnsupportedReferencedComponentType");
+		default: throw new UnsupportedOperationException("UnsupportedReferencedComponentType: " + referencedComponentType);
 		}
 		member.setReferencedComponent(component);
 	}
