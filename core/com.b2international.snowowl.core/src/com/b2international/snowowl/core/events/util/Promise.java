@@ -110,6 +110,33 @@ public final class Promise<T> extends AbstractFuture<T> {
 		});
 		return promise;
 	}
+	
+	/**
+	 * Define what to do when the promise becomes rejected. The given {@link Function} should return another {@link Promise} which will be used to evaluate this {@link Promise}.
+	 * @param fail
+	 * @return
+	 */
+	public final Promise<T> failWith(final Function<Throwable, Promise<T>> fail) {
+		final Promise<T> promise = new Promise<>();
+		Futures.addCallback(this, new FutureCallback<T>() {
+
+			@Override
+			public void onSuccess(T result) {
+				promise.resolve(result);
+			}
+
+			@Override
+			public void onFailure(Throwable t) {
+				try {
+					promise.resolveWith(fail.apply(t));
+				} catch (Throwable e) {
+					promise.reject(e);
+				}
+			}
+
+		});
+		return promise;
+	}
 
 	/**
 	 * Define what to do when the promise becomes resolved.
