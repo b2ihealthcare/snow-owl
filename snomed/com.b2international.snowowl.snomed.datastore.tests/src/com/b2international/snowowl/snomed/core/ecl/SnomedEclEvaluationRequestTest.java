@@ -84,6 +84,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private static final String EPOX_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String ALGOFLEX_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String TRIPLEX_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String DRUG_WITH_INVALID_HAI = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INGREDIENT1 = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INGREDIENT2 = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String INGREDIENT3 = RandomSnomedIdentiferGenerator.generateConceptId();
@@ -376,13 +377,27 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void refinementCardinalityZeroToZero() throws Exception {
+	public void refinementCardinalityZeroToZeroEquals() throws Exception {
 		generateDrugHierarchy();
 		
 		final Expression actual = eval(String.format("<%s: [0..0] %s=<%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
 		final Expression expected =	Expressions.builder()
 				.must(descendantsOf(DRUG_ROOT))
 				.mustNot(ids(ImmutableSet.of(TRIPHASIL_TABLET, PANADOL_TABLET)))
+				.build();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementCardinalityZeroToZeroNotEquals() throws Exception {
+		generateDrugHierarchy();
+		indexRevision(MAIN, nextStorageKey(), concept(DRUG_WITH_INVALID_HAI).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(DRUG_WITH_INVALID_HAI, HAS_ACTIVE_INGREDIENT, DRUG_WITH_INVALID_HAI).group(0).build());
+		
+		final Expression actual = eval(String.format("<%s: [0..0] %s!=<%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
+		final Expression expected =	Expressions.builder()
+				.must(descendantsOf(DRUG_ROOT))
+				.mustNot(ids(ImmutableSet.of(DRUG_WITH_INVALID_HAI)))
 				.build();
 		assertEquals(expected, actual);
 	}
