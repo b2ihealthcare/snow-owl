@@ -58,9 +58,13 @@ import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
 import com.b2international.snowowl.snomed.ecl.ecl.Comparison;
 import com.b2international.snowowl.snomed.ecl.ecl.DataTypeComparison;
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.EclFactory;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
@@ -130,7 +134,11 @@ final class SnomedEclRefinementEvaluator {
 						if (throwable instanceof MatchAll) {
 							return focusConcepts.resolveToExpression(context);
 						}
-						throw new SnowowlRuntimeException(throwable);
+						if (throwable instanceof RuntimeException) {
+							throw (RuntimeException) throwable;
+						} else {
+							throw new SnowowlRuntimeException(throwable);
+						}
 					}
 				});
 	}
@@ -338,14 +346,14 @@ final class SnomedEclRefinementEvaluator {
 			} else if (refinement.isReversed()) {
 				throw new BadRequestException("Reversed flag is not supported in data type based comparison (string/numeric)");
 			} else {
-				return evalMembers(context, focusConceptIds, typeConceptFilter, comparison);
+				return evalMembers(context, focusConceptIds, typeConceptFilter, (DataTypeComparison) comparison);
 			}
 		} else {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
 		}
 	}
 		
-	private Promise<Collection<Property>> evalMembers(BranchContext context, final Collection<String> focusConceptIds, Collection<String> attributeNames, Comparison comparison) {
+	private Promise<Collection<Property>> evalMembers(BranchContext context, final Collection<String> focusConceptIds, Collection<String> attributeNames, DataTypeComparison comparison) {
 		final Object value;
 		final DataType type;
 		final RevisionSearchRequest.Operator operator;
@@ -356,6 +364,22 @@ final class SnomedEclRefinementEvaluator {
 		} else if (comparison instanceof StringValueNotEquals) {
 			value = ((StringValueNotEquals) comparison).getValue();
 			type = DataType.STRING;
+			operator = RevisionSearchRequest.Operator.NOT_EQUALS;
+		} else if (comparison instanceof IntegerValueEquals) {
+			value = ((IntegerValueEquals) comparison).getValue();
+			type = DataType.INTEGER;
+			operator = RevisionSearchRequest.Operator.EQUALS;
+		} else if (comparison instanceof IntegerValueNotEquals) {
+			value = ((IntegerValueNotEquals) comparison).getValue();
+			type = DataType.INTEGER;
+			operator = RevisionSearchRequest.Operator.NOT_EQUALS;
+		} else if (comparison instanceof DecimalValueEquals) {
+			value = ((DecimalValueEquals) comparison).getValue();
+			type = DataType.DECIMAL;
+			operator = RevisionSearchRequest.Operator.EQUALS;
+		} else if (comparison instanceof DecimalValueNotEquals) {
+			value = ((DecimalValueNotEquals) comparison).getValue();
+			type = DataType.DECIMAL;
 			operator = RevisionSearchRequest.Operator.NOT_EQUALS;
 		} else {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);

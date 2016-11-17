@@ -21,8 +21,10 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCom
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -48,13 +50,14 @@ import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
@@ -94,6 +97,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private static final String HAS_BOSS = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String DRUG_ROOT = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String HAS_TRADE_NAME = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String PREFERRED_STRENGTH = RandomSnomedIdentiferGenerator.generateConceptId();
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
@@ -630,6 +634,56 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		assertEquals(expected, actual);
 	}
 	
+	@Test
+	public void refinementIntegerEquals() throws Exception {
+		generateDrugHierarchy();
+		final Expression actual = eval(String.format("<%s: %s = #500", DRUG_ROOT, PREFERRED_STRENGTH));
+		final Expression expected = ids(ImmutableSet.of(PANADOL_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementIntegerEqualsNegative() throws Exception {
+		generateDrugHierarchy();
+		final Expression actual = eval(String.format("<%s: %s = #-500", DRUG_ROOT, PREFERRED_STRENGTH));
+		final Expression expected = ids(ImmutableSet.of(TRIPHASIL_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementIntegerNotEquals() throws Exception {
+		generateDrugHierarchy();
+		final Expression actual = eval(String.format("<%s: %s != #500", DRUG_ROOT, PREFERRED_STRENGTH));
+		final Expression expected = ids(ImmutableSet.of(TRIPHASIL_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementDecimalEquals() throws Exception {
+		generateDrugHierarchy();
+		final Expression actual = eval(String.format("<%s: %s = #5.5", DRUG_ROOT, PREFERRED_STRENGTH));
+		final Expression expected = ids(ImmutableSet.of(AMOXICILLIN_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementDecimalEqualsNegative() throws Exception {
+		generateDrugHierarchy();
+		final Expression actual = eval(String.format("<%s: %s = #-5.5", DRUG_ROOT, PREFERRED_STRENGTH));
+		final Expression expected = ids(ImmutableSet.of(ABACAVIR_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementDecimalNotEquals() throws Exception {
+		generateDrugHierarchy();
+		final Expression actual = eval(String.format("<%s: %s != #5.5", DRUG_ROOT, PREFERRED_STRENGTH));
+		final Expression expected = ids(ImmutableSet.of(ABACAVIR_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	// TODO numeric gt, gte, lt, lte
+	
 	/**
 	 * Generates the following test fixtures:
 	 * <ul>
@@ -670,6 +724,11 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, nextStorageKey(), stringMember(PANADOL_TABLET, HAS_TRADE_NAME, "PANADOL").build());
 		indexRevision(MAIN, nextStorageKey(), stringMember(TRIPHASIL_TABLET, HAS_TRADE_NAME, "TRIPHASIL").build());
 		indexRevision(MAIN, nextStorageKey(), stringMember(AMOXICILLIN_TABLET, HAS_TRADE_NAME, "AMOXICILLIN").build());
+		// strengths
+		indexRevision(MAIN, nextStorageKey(), integerMember(PANADOL_TABLET, PREFERRED_STRENGTH, 500).build());
+		indexRevision(MAIN, nextStorageKey(), integerMember(TRIPHASIL_TABLET, PREFERRED_STRENGTH, -500).build());
+		indexRevision(MAIN, nextStorageKey(), decimalMember(AMOXICILLIN_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(5.5d)).build());
+		indexRevision(MAIN, nextStorageKey(), decimalMember(ABACAVIR_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(-5.5d)).build());
 	}
 
 	/**
@@ -763,7 +822,19 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 	}
 	
+	private SnomedRefSetMemberIndexEntry.Builder decimalMember(final String referencedComponentId, final String attributeName, final BigDecimal value) {
+		return concreteDomain(referencedComponentId, attributeName, value, DataType.DECIMAL);
+	}
+	
+	private SnomedRefSetMemberIndexEntry.Builder integerMember(final String referencedComponentId, final String attributeName, final int value) {
+		return concreteDomain(referencedComponentId, attributeName, value, DataType.INTEGER);
+	}
+	
 	private SnomedRefSetMemberIndexEntry.Builder stringMember(final String referencedComponentId, final String attributeName, final String value) {
+		return concreteDomain(referencedComponentId, attributeName, value, DataType.STRING);
+	}
+
+	private SnomedRefSetMemberIndexEntry.Builder concreteDomain(final String referencedComponentId, final String attributeName, final Object value, final DataType type) {
 		final short referencedComponentType = 
 				SnomedIdentifiers.getComponentCategory(referencedComponentId) == ComponentCategory.CONCEPT 
 					? SnomedTerminologyComponentConstants.CONCEPT_NUMBER 
@@ -778,8 +849,8 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 				.referenceSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
 				.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.INFERRED_RELATIONSHIP)
 				.field(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, attributeName)
-				.field(Fields.DATA_TYPE, DataType.STRING)
-				.field(SnomedRf2Headers.FIELD_VALUE, value);
+				.field(Fields.DATA_TYPE, type)
+				.field(SnomedRf2Headers.FIELD_VALUE, SnomedRefSetUtil.serializeValue(type, value));
 	}
 	
 	private static Expression descendantsOf(String conceptId) {

@@ -23,6 +23,7 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -65,6 +66,7 @@ import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 
 /**
  * Lightweight representation of a SNOMED CT reference set member.
@@ -316,8 +318,17 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return matchAny(Fields.VALUE_ID, valueIds);
 		}
 		
-		public static Expression values(Collection<String> values) {
-			return matchAny(Fields.DATA_VALUE, values);
+		public static Expression values(DataType type, Collection<? extends Object> values) {
+			switch (type) {
+			case STRING: 
+				return matchAny(Fields.DATA_VALUE, Iterables.filter(values, String.class));
+			case INTEGER:
+				return matchAny(Fields.DATA_VALUE, FluentIterable.from(values).filter(Integer.class).transform(val -> Integer.toString(val)).toSet());
+			case DECIMAL:
+				return matchAny(Fields.DATA_VALUE, FluentIterable.from(values).filter(BigDecimal.class).transform(BigDecimal::toPlainString).toSet());
+			default:
+				throw new UnsupportedOperationException("Unsupported data type when filtering by values, " + type);
+			}
 		}
 		
 		public static Expression dataTypes(Collection<DataType> dataTypes) {

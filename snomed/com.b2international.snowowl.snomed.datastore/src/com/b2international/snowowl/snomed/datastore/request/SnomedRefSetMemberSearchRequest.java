@@ -48,6 +48,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
@@ -170,7 +171,15 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			if (propKeys.remove(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME)) {
 				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, String.class), SnomedRefSetMemberIndexEntry.Expressions::attributeNames);
 			}
+			final Collection<DataType> dataTypes = propsFilter.getCollection(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, DataType.class);
+			if (propKeys.remove(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE)) {
+				queryBuilder.must(dataTypes(dataTypes));
+			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_VALUE)) {
+				if (dataTypes.size() != 1)  {
+					throw new BadRequestException("DataType filter must be specified if filtering by value");
+				}
+				final DataType dataType = Iterables.getOnlyElement(dataTypes);
 				final String operatorKey = RevisionSearchRequest.operator(SnomedRf2Headers.FIELD_VALUE);
 				RevisionSearchRequest.Operator op;
 				if (propKeys.remove(operatorKey)) {
@@ -178,19 +187,16 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 				} else {
 					op = RevisionSearchRequest.Operator.EQUALS;
 				}
-				final Collection<String> attributeValues = propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE, String.class);
+				final Collection<Object> attributeValues = propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE, Object.class);
 				switch (op) {
 				case EQUALS:
-					queryBuilder.must(values(attributeValues));
+					queryBuilder.must(values(dataType, attributeValues));
 					break;
 				case NOT_EQUALS:
-					queryBuilder.mustNot(values(attributeValues));
+					queryBuilder.mustNot(values(dataType, attributeValues));
 					break;
 				default: throw new NotImplementedException("Unsupported concrete domain value operator %s", op);
 				}
-			}
-			if (propKeys.remove(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE)) {
-				queryBuilder.must(dataTypes(propsFilter.getCollection(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, DataType.class)));
 			}
 			if (!propKeys.isEmpty()) {
 				throw new IllegalQueryParameterException("Unsupported property filter(s), %s", propKeys);
