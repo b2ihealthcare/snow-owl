@@ -110,7 +110,21 @@ AttributeComparison:
 	AttributeValueEquals | AttributeValueNotEquals;
 
 DataTypeComparison:
-	StringValueEquals | StringValueNotEquals;
+	StringValueEquals 
+	| StringValueNotEquals
+	| IntegerValueEquals
+	| IntegerValueNotEquals
+	| IntegerValueGreaterThan
+	| IntegerValueGreaterThanEquals
+	| IntegerValueLessThan
+	| IntegerValueLessThanEquals
+	| DecimalValueEquals
+	| DecimalValueNotEquals
+	| DecimalValueGreaterThan
+	| DecimalValueGreaterThanEquals
+	| DecimalValueLessThan
+	| DecimalValueLessThanEquals
+;
 
 AttributeValueEquals:
 	EQUAL constraint=SimpleExpressionConstraint;
@@ -124,6 +138,42 @@ StringValueEquals:
 StringValueNotEquals:
 	NOT_EQUAL value=STRING;
 	
+IntegerValueEquals:
+	EQUAL HASH value=Integer;
+	
+IntegerValueNotEquals:
+	NOT_EQUAL HASH value=Integer;
+	
+IntegerValueGreaterThan:
+	GT HASH value=Integer;
+
+IntegerValueLessThan:
+	LT HASH value=Integer;
+	
+IntegerValueGreaterThanEquals:
+	GTE HASH value=Integer;
+	
+IntegerValueLessThanEquals:
+	LTE HASH value=Integer;
+	
+DecimalValueEquals:
+	EQUAL HASH value=Decimal;
+	
+DecimalValueNotEquals:
+	NOT_EQUAL HASH value=Decimal;
+	
+DecimalValueGreaterThan:
+	GT HASH value=Decimal;
+
+DecimalValueLessThan:
+	LT HASH value=Decimal;
+	
+DecimalValueGreaterThanEquals:
+	GTE HASH value=Decimal;
+	
+DecimalValueLessThanEquals:
+	LTE HASH value=Decimal;	
+	
 NestedExpression:
 	ROUND_OPEN nested=ExpressionConstraint ROUND_CLOSE;
 
@@ -133,6 +183,7 @@ Term 				hidden() : (TermCharacter)+ (WS+ (TermCharacter)+)*;
 TermCharacter 		hidden() : LT|GT
 								|DBL_LT|DBL_GT
 								|LT_EM|GT_EM
+								|GTE|LTE
 								|AND|OR|NOT|MINUS
 								|ZERO|DIGIT_NONZERO
 								|LETTER|CARET
@@ -142,13 +193,19 @@ TermCharacter 		hidden() : LT|GT
 								|SQUARE_OPEN|SQUARE_CLOSE
 								|DOT|COLON|COMMA
 								|REVERSED|TO
-								|WILDCARD
+								|WILDCARD|HASH|DASH
 								|OTHER_CHARACTER;
 NonNegativeInteger returns ecore::EInt
 					hidden() : ZERO | DIGIT_NONZERO (DIGIT_NONZERO|ZERO)*;
 MaxValue 		   returns ecore::EInt
 					hidden() : NonNegativeInteger | WILDCARD;
 AndOperator			hidden() : AND | COMMA;
+Integer 		   returns ecore::EInt 
+					hidden(): (PLUS | DASH)? NonNegativeInteger;
+Decimal			   returns ecore::EBigDecimal
+					hidden() : (PLUS | DASH)? NonNegativeDecimal; 
+NonNegativeDecimal returns ecore::EBigDecimal
+					hidden() : NonNegativeInteger DOT (DIGIT_NONZERO|ZERO)*;
 
 // ---TERMINALS---
 
@@ -177,6 +234,7 @@ terminal ROUND_CLOSE 			: ')';
 terminal SQUARE_OPEN 			: '[';
 terminal SQUARE_CLOSE 			: ']';
 terminal PLUS 					: '+';
+terminal DASH 					: '-';
 terminal CARET 					: '^';
 terminal NOT 					: '!';
 terminal DOT					: '.';
@@ -189,6 +247,9 @@ terminal DBL_LT					: '<<';
 terminal DBL_GT					: '>>';
 terminal LT_EM					: '<!';
 terminal GT_EM					: '>!';
+terminal GTE					: '>=';
+terminal LTE					: '<=';
+terminal HASH					: '#';
 
 // comment terminals
 terminal WS 					: (' '|'\t'|'\n'|'\r');

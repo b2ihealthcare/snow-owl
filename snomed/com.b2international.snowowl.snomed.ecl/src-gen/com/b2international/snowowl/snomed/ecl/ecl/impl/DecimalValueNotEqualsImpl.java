@@ -2,8 +2,10 @@
  */
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
+
+import java.math.BigDecimal;
 
 import org.eclipse.emf.common.notify.Notification;
 
@@ -13,18 +15,18 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>String Value Not Equals</b></em>'.
+ * An implementation of the model object '<em><b>Decimal Value Not Equals</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.StringValueNotEqualsImpl#getValue <em>Value</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueNotEqualsImpl#getValue <em>Value</em>}</li>
  * </ul>
  * </p>
  *
  * @generated
  */
-public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements StringValueNotEquals
+public class DecimalValueNotEqualsImpl extends DataTypeComparisonImpl implements DecimalValueNotEquals
 {
   /**
    * The default value of the '{@link #getValue() <em>Value</em>}' attribute.
@@ -34,7 +36,7 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
    * @generated
    * @ordered
    */
-  protected static final String VALUE_EDEFAULT = null;
+  protected static final BigDecimal VALUE_EDEFAULT = null;
 
   /**
    * The cached value of the '{@link #getValue() <em>Value</em>}' attribute.
@@ -44,14 +46,14 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
    * @generated
    * @ordered
    */
-  protected String value = VALUE_EDEFAULT;
+  protected BigDecimal value = VALUE_EDEFAULT;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected StringValueNotEqualsImpl()
+  protected DecimalValueNotEqualsImpl()
   {
     super();
   }
@@ -64,7 +66,7 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
   @Override
   protected EClass eStaticClass()
   {
-    return EclPackage.Literals.STRING_VALUE_NOT_EQUALS;
+    return EclPackage.Literals.DECIMAL_VALUE_NOT_EQUALS;
   }
 
   /**
@@ -72,7 +74,7 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
    * <!-- end-user-doc -->
    * @generated
    */
-  public String getValue()
+  public BigDecimal getValue()
   {
     return value;
   }
@@ -82,12 +84,12 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setValue(String newValue)
+  public void setValue(BigDecimal newValue)
   {
-    String oldValue = value;
+    BigDecimal oldValue = value;
     value = newValue;
     if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.STRING_VALUE_NOT_EQUALS__VALUE, oldValue, value));
+      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.DECIMAL_VALUE_NOT_EQUALS__VALUE, oldValue, value));
   }
 
   /**
@@ -100,7 +102,7 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
   {
     switch (featureID)
     {
-      case EclPackage.STRING_VALUE_NOT_EQUALS__VALUE:
+      case EclPackage.DECIMAL_VALUE_NOT_EQUALS__VALUE:
         return getValue();
     }
     return super.eGet(featureID, resolve, coreType);
@@ -116,8 +118,8 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
   {
     switch (featureID)
     {
-      case EclPackage.STRING_VALUE_NOT_EQUALS__VALUE:
-        setValue((String)newValue);
+      case EclPackage.DECIMAL_VALUE_NOT_EQUALS__VALUE:
+        setValue((BigDecimal)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -133,7 +135,7 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
   {
     switch (featureID)
     {
-      case EclPackage.STRING_VALUE_NOT_EQUALS__VALUE:
+      case EclPackage.DECIMAL_VALUE_NOT_EQUALS__VALUE:
         setValue(VALUE_EDEFAULT);
         return;
     }
@@ -150,7 +152,7 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
   {
     switch (featureID)
     {
-      case EclPackage.STRING_VALUE_NOT_EQUALS__VALUE:
+      case EclPackage.DECIMAL_VALUE_NOT_EQUALS__VALUE:
         return VALUE_EDEFAULT == null ? value != null : !VALUE_EDEFAULT.equals(value);
     }
     return super.eIsSet(featureID);
@@ -173,4 +175,4 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
     return result.toString();
   }
 
-} //StringValueNotEqualsImpl
+} //DecimalValueNotEqualsImpl

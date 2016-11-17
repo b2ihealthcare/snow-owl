@@ -86,6 +86,18 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
       case EclPackage.ATTRIBUTE_VALUE_NOT_EQUALS: return createAttributeValueNotEquals();
       case EclPackage.STRING_VALUE_EQUALS: return createStringValueEquals();
       case EclPackage.STRING_VALUE_NOT_EQUALS: return createStringValueNotEquals();
+      case EclPackage.INTEGER_VALUE_EQUALS: return createIntegerValueEquals();
+      case EclPackage.INTEGER_VALUE_NOT_EQUALS: return createIntegerValueNotEquals();
+      case EclPackage.INTEGER_VALUE_GREATER_THAN: return createIntegerValueGreaterThan();
+      case EclPackage.INTEGER_VALUE_LESS_THAN: return createIntegerValueLessThan();
+      case EclPackage.INTEGER_VALUE_GREATER_THAN_EQUALS: return createIntegerValueGreaterThanEquals();
+      case EclPackage.INTEGER_VALUE_LESS_THAN_EQUALS: return createIntegerValueLessThanEquals();
+      case EclPackage.DECIMAL_VALUE_EQUALS: return createDecimalValueEquals();
+      case EclPackage.DECIMAL_VALUE_NOT_EQUALS: return createDecimalValueNotEquals();
+      case EclPackage.DECIMAL_VALUE_GREATER_THAN: return createDecimalValueGreaterThan();
+      case EclPackage.DECIMAL_VALUE_LESS_THAN: return createDecimalValueLessThan();
+      case EclPackage.DECIMAL_VALUE_GREATER_THAN_EQUALS: return createDecimalValueGreaterThanEquals();
+      case EclPackage.DECIMAL_VALUE_LESS_THAN_EQUALS: return createDecimalValueLessThanEquals();
       case EclPackage.NESTED_EXPRESSION: return createNestedExpression();
       case EclPackage.OR_EXPRESSION_CONSTRAINT: return createOrExpressionConstraint();
       case EclPackage.AND_EXPRESSION_CONSTRAINT: return createAndExpressionConstraint();
@@ -339,6 +351,138 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     StringValueNotEqualsImpl stringValueNotEquals = new StringValueNotEqualsImpl();
     return stringValueNotEquals;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public IntegerValueEquals createIntegerValueEquals()
+  {
+    IntegerValueEqualsImpl integerValueEquals = new IntegerValueEqualsImpl();
+    return integerValueEquals;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public IntegerValueNotEquals createIntegerValueNotEquals()
+  {
+    IntegerValueNotEqualsImpl integerValueNotEquals = new IntegerValueNotEqualsImpl();
+    return integerValueNotEquals;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public IntegerValueGreaterThan createIntegerValueGreaterThan()
+  {
+    IntegerValueGreaterThanImpl integerValueGreaterThan = new IntegerValueGreaterThanImpl();
+    return integerValueGreaterThan;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public IntegerValueLessThan createIntegerValueLessThan()
+  {
+    IntegerValueLessThanImpl integerValueLessThan = new IntegerValueLessThanImpl();
+    return integerValueLessThan;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public IntegerValueGreaterThanEquals createIntegerValueGreaterThanEquals()
+  {
+    IntegerValueGreaterThanEqualsImpl integerValueGreaterThanEquals = new IntegerValueGreaterThanEqualsImpl();
+    return integerValueGreaterThanEquals;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public IntegerValueLessThanEquals createIntegerValueLessThanEquals()
+  {
+    IntegerValueLessThanEqualsImpl integerValueLessThanEquals = new IntegerValueLessThanEqualsImpl();
+    return integerValueLessThanEquals;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public DecimalValueEquals createDecimalValueEquals()
+  {
+    DecimalValueEqualsImpl decimalValueEquals = new DecimalValueEqualsImpl();
+    return decimalValueEquals;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public DecimalValueNotEquals createDecimalValueNotEquals()
+  {
+    DecimalValueNotEqualsImpl decimalValueNotEquals = new DecimalValueNotEqualsImpl();
+    return decimalValueNotEquals;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public DecimalValueGreaterThan createDecimalValueGreaterThan()
+  {
+    DecimalValueGreaterThanImpl decimalValueGreaterThan = new DecimalValueGreaterThanImpl();
+    return decimalValueGreaterThan;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public DecimalValueLessThan createDecimalValueLessThan()
+  {
+    DecimalValueLessThanImpl decimalValueLessThan = new DecimalValueLessThanImpl();
+    return decimalValueLessThan;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public DecimalValueGreaterThanEquals createDecimalValueGreaterThanEquals()
+  {
+    DecimalValueGreaterThanEqualsImpl decimalValueGreaterThanEquals = new DecimalValueGreaterThanEqualsImpl();
+    return decimalValueGreaterThanEquals;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public DecimalValueLessThanEquals createDecimalValueLessThanEquals()
+  {
+    DecimalValueLessThanEqualsImpl decimalValueLessThanEquals = new DecimalValueLessThanEqualsImpl();
+    return decimalValueLessThanEquals;
   }
 
   /**

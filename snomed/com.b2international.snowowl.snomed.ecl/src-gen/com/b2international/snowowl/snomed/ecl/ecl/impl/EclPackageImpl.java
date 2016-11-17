@@ -17,6 +17,12 @@ import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
 import com.b2international.snowowl.snomed.ecl.ecl.Comparison;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.DataTypeComparison;
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThan;
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThanEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThan;
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThanEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DottedExpressionConstraint;
@@ -24,6 +30,12 @@ import com.b2international.snowowl.snomed.ecl.ecl.EclFactory;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThan;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThanEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThan;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThanEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
 import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
 import com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement;
@@ -203,6 +215,90 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * @generated
    */
   private EClass stringValueNotEqualsEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass integerValueEqualsEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass integerValueNotEqualsEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass integerValueGreaterThanEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass integerValueLessThanEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass integerValueGreaterThanEqualsEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass integerValueLessThanEqualsEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass decimalValueEqualsEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass decimalValueNotEqualsEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass decimalValueGreaterThanEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass decimalValueLessThanEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass decimalValueGreaterThanEqualsEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass decimalValueLessThanEqualsEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -698,16 +794,6 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EAttribute getDataTypeComparison_Value()
-  {
-    return (EAttribute)dataTypeComparisonEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
   public EClass getAttributeValueEquals()
   {
     return attributeValueEqualsEClass;
@@ -738,9 +824,269 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  public EAttribute getStringValueEquals_Value()
+  {
+    return (EAttribute)stringValueEqualsEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public EClass getStringValueNotEquals()
   {
     return stringValueNotEqualsEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getStringValueNotEquals_Value()
+  {
+    return (EAttribute)stringValueNotEqualsEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getIntegerValueEquals()
+  {
+    return integerValueEqualsEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getIntegerValueEquals_Value()
+  {
+    return (EAttribute)integerValueEqualsEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getIntegerValueNotEquals()
+  {
+    return integerValueNotEqualsEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getIntegerValueNotEquals_Value()
+  {
+    return (EAttribute)integerValueNotEqualsEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getIntegerValueGreaterThan()
+  {
+    return integerValueGreaterThanEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getIntegerValueGreaterThan_Value()
+  {
+    return (EAttribute)integerValueGreaterThanEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getIntegerValueLessThan()
+  {
+    return integerValueLessThanEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getIntegerValueLessThan_Value()
+  {
+    return (EAttribute)integerValueLessThanEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getIntegerValueGreaterThanEquals()
+  {
+    return integerValueGreaterThanEqualsEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getIntegerValueGreaterThanEquals_Value()
+  {
+    return (EAttribute)integerValueGreaterThanEqualsEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getIntegerValueLessThanEquals()
+  {
+    return integerValueLessThanEqualsEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getIntegerValueLessThanEquals_Value()
+  {
+    return (EAttribute)integerValueLessThanEqualsEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getDecimalValueEquals()
+  {
+    return decimalValueEqualsEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getDecimalValueEquals_Value()
+  {
+    return (EAttribute)decimalValueEqualsEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getDecimalValueNotEquals()
+  {
+    return decimalValueNotEqualsEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getDecimalValueNotEquals_Value()
+  {
+    return (EAttribute)decimalValueNotEqualsEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getDecimalValueGreaterThan()
+  {
+    return decimalValueGreaterThanEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getDecimalValueGreaterThan_Value()
+  {
+    return (EAttribute)decimalValueGreaterThanEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getDecimalValueLessThan()
+  {
+    return decimalValueLessThanEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getDecimalValueLessThan_Value()
+  {
+    return (EAttribute)decimalValueLessThanEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getDecimalValueGreaterThanEquals()
+  {
+    return decimalValueGreaterThanEqualsEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getDecimalValueGreaterThanEquals_Value()
+  {
+    return (EAttribute)decimalValueGreaterThanEqualsEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getDecimalValueLessThanEquals()
+  {
+    return decimalValueLessThanEqualsEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getDecimalValueLessThanEquals_Value()
+  {
+    return (EAttribute)decimalValueLessThanEqualsEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -1057,15 +1403,52 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     createEReference(attributeComparisonEClass, ATTRIBUTE_COMPARISON__CONSTRAINT);
 
     dataTypeComparisonEClass = createEClass(DATA_TYPE_COMPARISON);
-    createEAttribute(dataTypeComparisonEClass, DATA_TYPE_COMPARISON__VALUE);
 
     attributeValueEqualsEClass = createEClass(ATTRIBUTE_VALUE_EQUALS);
 
     attributeValueNotEqualsEClass = createEClass(ATTRIBUTE_VALUE_NOT_EQUALS);
 
     stringValueEqualsEClass = createEClass(STRING_VALUE_EQUALS);
+    createEAttribute(stringValueEqualsEClass, STRING_VALUE_EQUALS__VALUE);
 
     stringValueNotEqualsEClass = createEClass(STRING_VALUE_NOT_EQUALS);
+    createEAttribute(stringValueNotEqualsEClass, STRING_VALUE_NOT_EQUALS__VALUE);
+
+    integerValueEqualsEClass = createEClass(INTEGER_VALUE_EQUALS);
+    createEAttribute(integerValueEqualsEClass, INTEGER_VALUE_EQUALS__VALUE);
+
+    integerValueNotEqualsEClass = createEClass(INTEGER_VALUE_NOT_EQUALS);
+    createEAttribute(integerValueNotEqualsEClass, INTEGER_VALUE_NOT_EQUALS__VALUE);
+
+    integerValueGreaterThanEClass = createEClass(INTEGER_VALUE_GREATER_THAN);
+    createEAttribute(integerValueGreaterThanEClass, INTEGER_VALUE_GREATER_THAN__VALUE);
+
+    integerValueLessThanEClass = createEClass(INTEGER_VALUE_LESS_THAN);
+    createEAttribute(integerValueLessThanEClass, INTEGER_VALUE_LESS_THAN__VALUE);
+
+    integerValueGreaterThanEqualsEClass = createEClass(INTEGER_VALUE_GREATER_THAN_EQUALS);
+    createEAttribute(integerValueGreaterThanEqualsEClass, INTEGER_VALUE_GREATER_THAN_EQUALS__VALUE);
+
+    integerValueLessThanEqualsEClass = createEClass(INTEGER_VALUE_LESS_THAN_EQUALS);
+    createEAttribute(integerValueLessThanEqualsEClass, INTEGER_VALUE_LESS_THAN_EQUALS__VALUE);
+
+    decimalValueEqualsEClass = createEClass(DECIMAL_VALUE_EQUALS);
+    createEAttribute(decimalValueEqualsEClass, DECIMAL_VALUE_EQUALS__VALUE);
+
+    decimalValueNotEqualsEClass = createEClass(DECIMAL_VALUE_NOT_EQUALS);
+    createEAttribute(decimalValueNotEqualsEClass, DECIMAL_VALUE_NOT_EQUALS__VALUE);
+
+    decimalValueGreaterThanEClass = createEClass(DECIMAL_VALUE_GREATER_THAN);
+    createEAttribute(decimalValueGreaterThanEClass, DECIMAL_VALUE_GREATER_THAN__VALUE);
+
+    decimalValueLessThanEClass = createEClass(DECIMAL_VALUE_LESS_THAN);
+    createEAttribute(decimalValueLessThanEClass, DECIMAL_VALUE_LESS_THAN__VALUE);
+
+    decimalValueGreaterThanEqualsEClass = createEClass(DECIMAL_VALUE_GREATER_THAN_EQUALS);
+    createEAttribute(decimalValueGreaterThanEqualsEClass, DECIMAL_VALUE_GREATER_THAN_EQUALS__VALUE);
+
+    decimalValueLessThanEqualsEClass = createEClass(DECIMAL_VALUE_LESS_THAN_EQUALS);
+    createEAttribute(decimalValueLessThanEqualsEClass, DECIMAL_VALUE_LESS_THAN_EQUALS__VALUE);
 
     nestedExpressionEClass = createEClass(NESTED_EXPRESSION);
     createEReference(nestedExpressionEClass, NESTED_EXPRESSION__NESTED);
@@ -1146,6 +1529,18 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     attributeValueNotEqualsEClass.getESuperTypes().add(this.getAttributeComparison());
     stringValueEqualsEClass.getESuperTypes().add(this.getDataTypeComparison());
     stringValueNotEqualsEClass.getESuperTypes().add(this.getDataTypeComparison());
+    integerValueEqualsEClass.getESuperTypes().add(this.getDataTypeComparison());
+    integerValueNotEqualsEClass.getESuperTypes().add(this.getDataTypeComparison());
+    integerValueGreaterThanEClass.getESuperTypes().add(this.getDataTypeComparison());
+    integerValueLessThanEClass.getESuperTypes().add(this.getDataTypeComparison());
+    integerValueGreaterThanEqualsEClass.getESuperTypes().add(this.getDataTypeComparison());
+    integerValueLessThanEqualsEClass.getESuperTypes().add(this.getDataTypeComparison());
+    decimalValueEqualsEClass.getESuperTypes().add(this.getDataTypeComparison());
+    decimalValueNotEqualsEClass.getESuperTypes().add(this.getDataTypeComparison());
+    decimalValueGreaterThanEClass.getESuperTypes().add(this.getDataTypeComparison());
+    decimalValueLessThanEClass.getESuperTypes().add(this.getDataTypeComparison());
+    decimalValueGreaterThanEqualsEClass.getESuperTypes().add(this.getDataTypeComparison());
+    decimalValueLessThanEqualsEClass.getESuperTypes().add(this.getDataTypeComparison());
     nestedExpressionEClass.getESuperTypes().add(this.getExpressionConstraint());
     orExpressionConstraintEClass.getESuperTypes().add(this.getExpressionConstraint());
     andExpressionConstraintEClass.getESuperTypes().add(this.getExpressionConstraint());
@@ -1210,15 +1605,52 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     initEReference(getAttributeComparison_Constraint(), this.getExpressionConstraint(), null, "constraint", null, 0, 1, AttributeComparison.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(dataTypeComparisonEClass, DataTypeComparison.class, "DataTypeComparison", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEAttribute(getDataTypeComparison_Value(), ecorePackage.getEString(), "value", null, 0, 1, DataTypeComparison.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(attributeValueEqualsEClass, AttributeValueEquals.class, "AttributeValueEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(attributeValueNotEqualsEClass, AttributeValueNotEquals.class, "AttributeValueNotEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(stringValueEqualsEClass, StringValueEquals.class, "StringValueEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getStringValueEquals_Value(), ecorePackage.getEString(), "value", null, 0, 1, StringValueEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(stringValueNotEqualsEClass, StringValueNotEquals.class, "StringValueNotEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getStringValueNotEquals_Value(), ecorePackage.getEString(), "value", null, 0, 1, StringValueNotEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(integerValueEqualsEClass, IntegerValueEquals.class, "IntegerValueEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getIntegerValueEquals_Value(), ecorePackage.getEInt(), "value", null, 0, 1, IntegerValueEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(integerValueNotEqualsEClass, IntegerValueNotEquals.class, "IntegerValueNotEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getIntegerValueNotEquals_Value(), ecorePackage.getEInt(), "value", null, 0, 1, IntegerValueNotEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(integerValueGreaterThanEClass, IntegerValueGreaterThan.class, "IntegerValueGreaterThan", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getIntegerValueGreaterThan_Value(), ecorePackage.getEInt(), "value", null, 0, 1, IntegerValueGreaterThan.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(integerValueLessThanEClass, IntegerValueLessThan.class, "IntegerValueLessThan", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getIntegerValueLessThan_Value(), ecorePackage.getEInt(), "value", null, 0, 1, IntegerValueLessThan.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(integerValueGreaterThanEqualsEClass, IntegerValueGreaterThanEquals.class, "IntegerValueGreaterThanEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getIntegerValueGreaterThanEquals_Value(), ecorePackage.getEInt(), "value", null, 0, 1, IntegerValueGreaterThanEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(integerValueLessThanEqualsEClass, IntegerValueLessThanEquals.class, "IntegerValueLessThanEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getIntegerValueLessThanEquals_Value(), ecorePackage.getEInt(), "value", null, 0, 1, IntegerValueLessThanEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(decimalValueEqualsEClass, DecimalValueEquals.class, "DecimalValueEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getDecimalValueEquals_Value(), ecorePackage.getEBigDecimal(), "value", null, 0, 1, DecimalValueEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(decimalValueNotEqualsEClass, DecimalValueNotEquals.class, "DecimalValueNotEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getDecimalValueNotEquals_Value(), ecorePackage.getEBigDecimal(), "value", null, 0, 1, DecimalValueNotEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(decimalValueGreaterThanEClass, DecimalValueGreaterThan.class, "DecimalValueGreaterThan", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getDecimalValueGreaterThan_Value(), ecorePackage.getEBigDecimal(), "value", null, 0, 1, DecimalValueGreaterThan.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(decimalValueLessThanEClass, DecimalValueLessThan.class, "DecimalValueLessThan", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getDecimalValueLessThan_Value(), ecorePackage.getEBigDecimal(), "value", null, 0, 1, DecimalValueLessThan.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(decimalValueGreaterThanEqualsEClass, DecimalValueGreaterThanEquals.class, "DecimalValueGreaterThanEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getDecimalValueGreaterThanEquals_Value(), ecorePackage.getEBigDecimal(), "value", null, 0, 1, DecimalValueGreaterThanEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(decimalValueLessThanEqualsEClass, DecimalValueLessThanEquals.class, "DecimalValueLessThanEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getDecimalValueLessThanEquals_Value(), ecorePackage.getEBigDecimal(), "value", null, 0, 1, DecimalValueLessThanEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(nestedExpressionEClass, NestedExpression.class, "NestedExpression", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getNestedExpression_Nested(), this.getExpressionConstraint(), null, "nested", null, 0, 1, NestedExpression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

@@ -3,7 +3,7 @@
 package com.b2international.snowowl.snomed.ecl.ecl.impl;
 
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueNotEquals;
 
 import org.eclipse.emf.common.notify.Notification;
 
@@ -13,18 +13,18 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>String Value Not Equals</b></em>'.
+ * An implementation of the model object '<em><b>Integer Value Not Equals</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.StringValueNotEqualsImpl#getValue <em>Value</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueNotEqualsImpl#getValue <em>Value</em>}</li>
  * </ul>
  * </p>
  *
  * @generated
  */
-public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements StringValueNotEquals
+public class IntegerValueNotEqualsImpl extends DataTypeComparisonImpl implements IntegerValueNotEquals
 {
   /**
    * The default value of the '{@link #getValue() <em>Value</em>}' attribute.
@@ -34,7 +34,7 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
    * @generated
    * @ordered
    */
-  protected static final String VALUE_EDEFAULT = null;
+  protected static final int VALUE_EDEFAULT = 0;
 
   /**
    * The cached value of the '{@link #getValue() <em>Value</em>}' attribute.
@@ -44,14 +44,14 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
    * @generated
    * @ordered
    */
-  protected String value = VALUE_EDEFAULT;
+  protected int value = VALUE_EDEFAULT;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected StringValueNotEqualsImpl()
+  protected IntegerValueNotEqualsImpl()
   {
     super();
   }
@@ -64,7 +64,7 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
   @Override
   protected EClass eStaticClass()
   {
-    return EclPackage.Literals.STRING_VALUE_NOT_EQUALS;
+    return EclPackage.Literals.INTEGER_VALUE_NOT_EQUALS;
   }
 
   /**
@@ -72,7 +72,7 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
    * <!-- end-user-doc -->
    * @generated
    */
-  public String getValue()
+  public int getValue()
   {
     return value;
   }
@@ -82,12 +82,12 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setValue(String newValue)
+  public void setValue(int newValue)
   {
-    String oldValue = value;
+    int oldValue = value;
     value = newValue;
     if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.STRING_VALUE_NOT_EQUALS__VALUE, oldValue, value));
+      eNotify(new ENotificationImpl(this, Notification.SET, EclPackage.INTEGER_VALUE_NOT_EQUALS__VALUE, oldValue, value));
   }
 
   /**
@@ -100,7 +100,7 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
   {
     switch (featureID)
     {
-      case EclPackage.STRING_VALUE_NOT_EQUALS__VALUE:
+      case EclPackage.INTEGER_VALUE_NOT_EQUALS__VALUE:
         return getValue();
     }
     return super.eGet(featureID, resolve, coreType);
@@ -116,8 +116,8 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
   {
     switch (featureID)
     {
-      case EclPackage.STRING_VALUE_NOT_EQUALS__VALUE:
-        setValue((String)newValue);
+      case EclPackage.INTEGER_VALUE_NOT_EQUALS__VALUE:
+        setValue((Integer)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -133,7 +133,7 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
   {
     switch (featureID)
     {
-      case EclPackage.STRING_VALUE_NOT_EQUALS__VALUE:
+      case EclPackage.INTEGER_VALUE_NOT_EQUALS__VALUE:
         setValue(VALUE_EDEFAULT);
         return;
     }
@@ -150,8 +150,8 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
   {
     switch (featureID)
     {
-      case EclPackage.STRING_VALUE_NOT_EQUALS__VALUE:
-        return VALUE_EDEFAULT == null ? value != null : !VALUE_EDEFAULT.equals(value);
+      case EclPackage.INTEGER_VALUE_NOT_EQUALS__VALUE:
+        return value != VALUE_EDEFAULT;
     }
     return super.eIsSet(featureID);
   }
@@ -173,4 +173,4 @@ public class StringValueNotEqualsImpl extends DataTypeComparisonImpl implements 
     return result.toString();
   }
 
-} //StringValueNotEqualsImpl
+} //IntegerValueNotEqualsImpl

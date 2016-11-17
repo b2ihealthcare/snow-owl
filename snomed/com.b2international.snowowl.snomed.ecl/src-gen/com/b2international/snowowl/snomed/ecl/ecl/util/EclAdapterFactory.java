@@ -185,6 +185,66 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createStringValueNotEqualsAdapter();
       }
       @Override
+      public Adapter caseIntegerValueEquals(IntegerValueEquals object)
+      {
+        return createIntegerValueEqualsAdapter();
+      }
+      @Override
+      public Adapter caseIntegerValueNotEquals(IntegerValueNotEquals object)
+      {
+        return createIntegerValueNotEqualsAdapter();
+      }
+      @Override
+      public Adapter caseIntegerValueGreaterThan(IntegerValueGreaterThan object)
+      {
+        return createIntegerValueGreaterThanAdapter();
+      }
+      @Override
+      public Adapter caseIntegerValueLessThan(IntegerValueLessThan object)
+      {
+        return createIntegerValueLessThanAdapter();
+      }
+      @Override
+      public Adapter caseIntegerValueGreaterThanEquals(IntegerValueGreaterThanEquals object)
+      {
+        return createIntegerValueGreaterThanEqualsAdapter();
+      }
+      @Override
+      public Adapter caseIntegerValueLessThanEquals(IntegerValueLessThanEquals object)
+      {
+        return createIntegerValueLessThanEqualsAdapter();
+      }
+      @Override
+      public Adapter caseDecimalValueEquals(DecimalValueEquals object)
+      {
+        return createDecimalValueEqualsAdapter();
+      }
+      @Override
+      public Adapter caseDecimalValueNotEquals(DecimalValueNotEquals object)
+      {
+        return createDecimalValueNotEqualsAdapter();
+      }
+      @Override
+      public Adapter caseDecimalValueGreaterThan(DecimalValueGreaterThan object)
+      {
+        return createDecimalValueGreaterThanAdapter();
+      }
+      @Override
+      public Adapter caseDecimalValueLessThan(DecimalValueLessThan object)
+      {
+        return createDecimalValueLessThanAdapter();
+      }
+      @Override
+      public Adapter caseDecimalValueGreaterThanEquals(DecimalValueGreaterThanEquals object)
+      {
+        return createDecimalValueGreaterThanEqualsAdapter();
+      }
+      @Override
+      public Adapter caseDecimalValueLessThanEquals(DecimalValueLessThanEquals object)
+      {
+        return createDecimalValueLessThanEqualsAdapter();
+      }
+      @Override
       public Adapter caseNestedExpression(NestedExpression object)
       {
         return createNestedExpressionAdapter();
@@ -572,6 +632,186 @@ public class EclAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createStringValueNotEqualsAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals <em>Integer Value Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals
+   * @generated
+   */
+  public Adapter createIntegerValueEqualsAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueNotEquals <em>Integer Value Not Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueNotEquals
+   * @generated
+   */
+  public Adapter createIntegerValueNotEqualsAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThan <em>Integer Value Greater Than</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThan
+   * @generated
+   */
+  public Adapter createIntegerValueGreaterThanAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThan <em>Integer Value Less Than</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThan
+   * @generated
+   */
+  public Adapter createIntegerValueLessThanAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThanEquals <em>Integer Value Greater Than Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThanEquals
+   * @generated
+   */
+  public Adapter createIntegerValueGreaterThanEqualsAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThanEquals <em>Integer Value Less Than Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThanEquals
+   * @generated
+   */
+  public Adapter createIntegerValueLessThanEqualsAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals <em>Decimal Value Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals
+   * @generated
+   */
+  public Adapter createDecimalValueEqualsAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals <em>Decimal Value Not Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals
+   * @generated
+   */
+  public Adapter createDecimalValueNotEqualsAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThan <em>Decimal Value Greater Than</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThan
+   * @generated
+   */
+  public Adapter createDecimalValueGreaterThanAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThan <em>Decimal Value Less Than</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThan
+   * @generated
+   */
+  public Adapter createDecimalValueLessThanAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThanEquals <em>Decimal Value Greater Than Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThanEquals
+   * @generated
+   */
+  public Adapter createDecimalValueGreaterThanEqualsAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThanEquals <em>Decimal Value Less Than Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThanEquals
+   * @generated
+   */
+  public Adapter createDecimalValueLessThanEqualsAdapter()
   {
     return null;
   }

@@ -248,6 +248,114 @@ public class EclSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case EclPackage.INTEGER_VALUE_EQUALS:
+      {
+        IntegerValueEquals integerValueEquals = (IntegerValueEquals)theEObject;
+        T result = caseIntegerValueEquals(integerValueEquals);
+        if (result == null) result = caseDataTypeComparison(integerValueEquals);
+        if (result == null) result = caseComparison(integerValueEquals);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.INTEGER_VALUE_NOT_EQUALS:
+      {
+        IntegerValueNotEquals integerValueNotEquals = (IntegerValueNotEquals)theEObject;
+        T result = caseIntegerValueNotEquals(integerValueNotEquals);
+        if (result == null) result = caseDataTypeComparison(integerValueNotEquals);
+        if (result == null) result = caseComparison(integerValueNotEquals);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.INTEGER_VALUE_GREATER_THAN:
+      {
+        IntegerValueGreaterThan integerValueGreaterThan = (IntegerValueGreaterThan)theEObject;
+        T result = caseIntegerValueGreaterThan(integerValueGreaterThan);
+        if (result == null) result = caseDataTypeComparison(integerValueGreaterThan);
+        if (result == null) result = caseComparison(integerValueGreaterThan);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.INTEGER_VALUE_LESS_THAN:
+      {
+        IntegerValueLessThan integerValueLessThan = (IntegerValueLessThan)theEObject;
+        T result = caseIntegerValueLessThan(integerValueLessThan);
+        if (result == null) result = caseDataTypeComparison(integerValueLessThan);
+        if (result == null) result = caseComparison(integerValueLessThan);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.INTEGER_VALUE_GREATER_THAN_EQUALS:
+      {
+        IntegerValueGreaterThanEquals integerValueGreaterThanEquals = (IntegerValueGreaterThanEquals)theEObject;
+        T result = caseIntegerValueGreaterThanEquals(integerValueGreaterThanEquals);
+        if (result == null) result = caseDataTypeComparison(integerValueGreaterThanEquals);
+        if (result == null) result = caseComparison(integerValueGreaterThanEquals);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.INTEGER_VALUE_LESS_THAN_EQUALS:
+      {
+        IntegerValueLessThanEquals integerValueLessThanEquals = (IntegerValueLessThanEquals)theEObject;
+        T result = caseIntegerValueLessThanEquals(integerValueLessThanEquals);
+        if (result == null) result = caseDataTypeComparison(integerValueLessThanEquals);
+        if (result == null) result = caseComparison(integerValueLessThanEquals);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.DECIMAL_VALUE_EQUALS:
+      {
+        DecimalValueEquals decimalValueEquals = (DecimalValueEquals)theEObject;
+        T result = caseDecimalValueEquals(decimalValueEquals);
+        if (result == null) result = caseDataTypeComparison(decimalValueEquals);
+        if (result == null) result = caseComparison(decimalValueEquals);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.DECIMAL_VALUE_NOT_EQUALS:
+      {
+        DecimalValueNotEquals decimalValueNotEquals = (DecimalValueNotEquals)theEObject;
+        T result = caseDecimalValueNotEquals(decimalValueNotEquals);
+        if (result == null) result = caseDataTypeComparison(decimalValueNotEquals);
+        if (result == null) result = caseComparison(decimalValueNotEquals);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.DECIMAL_VALUE_GREATER_THAN:
+      {
+        DecimalValueGreaterThan decimalValueGreaterThan = (DecimalValueGreaterThan)theEObject;
+        T result = caseDecimalValueGreaterThan(decimalValueGreaterThan);
+        if (result == null) result = caseDataTypeComparison(decimalValueGreaterThan);
+        if (result == null) result = caseComparison(decimalValueGreaterThan);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.DECIMAL_VALUE_LESS_THAN:
+      {
+        DecimalValueLessThan decimalValueLessThan = (DecimalValueLessThan)theEObject;
+        T result = caseDecimalValueLessThan(decimalValueLessThan);
+        if (result == null) result = caseDataTypeComparison(decimalValueLessThan);
+        if (result == null) result = caseComparison(decimalValueLessThan);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.DECIMAL_VALUE_GREATER_THAN_EQUALS:
+      {
+        DecimalValueGreaterThanEquals decimalValueGreaterThanEquals = (DecimalValueGreaterThanEquals)theEObject;
+        T result = caseDecimalValueGreaterThanEquals(decimalValueGreaterThanEquals);
+        if (result == null) result = caseDataTypeComparison(decimalValueGreaterThanEquals);
+        if (result == null) result = caseComparison(decimalValueGreaterThanEquals);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case EclPackage.DECIMAL_VALUE_LESS_THAN_EQUALS:
+      {
+        DecimalValueLessThanEquals decimalValueLessThanEquals = (DecimalValueLessThanEquals)theEObject;
+        T result = caseDecimalValueLessThanEquals(decimalValueLessThanEquals);
+        if (result == null) result = caseDataTypeComparison(decimalValueLessThanEquals);
+        if (result == null) result = caseComparison(decimalValueLessThanEquals);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case EclPackage.NESTED_EXPRESSION:
       {
         NestedExpression nestedExpression = (NestedExpression)theEObject;
@@ -664,6 +772,198 @@ public class EclSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseStringValueNotEquals(StringValueNotEquals object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Integer Value Equals</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Integer Value Equals</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseIntegerValueEquals(IntegerValueEquals object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Integer Value Not Equals</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Integer Value Not Equals</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseIntegerValueNotEquals(IntegerValueNotEquals object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Integer Value Greater Than</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Integer Value Greater Than</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseIntegerValueGreaterThan(IntegerValueGreaterThan object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Integer Value Less Than</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Integer Value Less Than</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseIntegerValueLessThan(IntegerValueLessThan object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Integer Value Greater Than Equals</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Integer Value Greater Than Equals</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseIntegerValueGreaterThanEquals(IntegerValueGreaterThanEquals object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Integer Value Less Than Equals</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Integer Value Less Than Equals</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseIntegerValueLessThanEquals(IntegerValueLessThanEquals object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Decimal Value Equals</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Decimal Value Equals</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseDecimalValueEquals(DecimalValueEquals object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Decimal Value Not Equals</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Decimal Value Not Equals</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseDecimalValueNotEquals(DecimalValueNotEquals object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Decimal Value Greater Than</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Decimal Value Greater Than</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseDecimalValueGreaterThan(DecimalValueGreaterThan object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Decimal Value Less Than</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Decimal Value Less Than</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseDecimalValueLessThan(DecimalValueLessThan object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Decimal Value Greater Than Equals</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Decimal Value Greater Than Equals</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseDecimalValueGreaterThanEquals(DecimalValueGreaterThanEquals object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Decimal Value Less Than Equals</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Decimal Value Less Than Equals</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseDecimalValueLessThanEquals(DecimalValueLessThanEquals object)
   {
     return null;
   }

@@ -561,22 +561,13 @@ public interface EclPackage extends EPackage
   int DATA_TYPE_COMPARISON = 17;
 
   /**
-   * The feature id for the '<em><b>Value</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int DATA_TYPE_COMPARISON__VALUE = COMPARISON_FEATURE_COUNT + 0;
-
-  /**
    * The number of structural features of the '<em>Data Type Comparison</em>' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int DATA_TYPE_COMPARISON_FEATURE_COUNT = COMPARISON_FEATURE_COUNT + 1;
+  int DATA_TYPE_COMPARISON_FEATURE_COUNT = COMPARISON_FEATURE_COUNT + 0;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeValueEqualsImpl <em>Attribute Value Equals</em>}' class.
@@ -651,7 +642,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int STRING_VALUE_EQUALS__VALUE = DATA_TYPE_COMPARISON__VALUE;
+  int STRING_VALUE_EQUALS__VALUE = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>String Value Equals</em>' class.
@@ -660,7 +651,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int STRING_VALUE_EQUALS_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
+  int STRING_VALUE_EQUALS_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.StringValueNotEqualsImpl <em>String Value Not Equals</em>}' class.
@@ -679,7 +670,7 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int STRING_VALUE_NOT_EQUALS__VALUE = DATA_TYPE_COMPARISON__VALUE;
+  int STRING_VALUE_NOT_EQUALS__VALUE = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>String Value Not Equals</em>' class.
@@ -688,7 +679,343 @@ public interface EclPackage extends EPackage
    * @generated
    * @ordered
    */
-  int STRING_VALUE_NOT_EQUALS_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
+  int STRING_VALUE_NOT_EQUALS_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueEqualsImpl <em>Integer Value Equals</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueEqualsImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueEquals()
+   * @generated
+   */
+  int INTEGER_VALUE_EQUALS = 22;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int INTEGER_VALUE_EQUALS__VALUE = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Integer Value Equals</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int INTEGER_VALUE_EQUALS_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueNotEqualsImpl <em>Integer Value Not Equals</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueNotEqualsImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueNotEquals()
+   * @generated
+   */
+  int INTEGER_VALUE_NOT_EQUALS = 23;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int INTEGER_VALUE_NOT_EQUALS__VALUE = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Integer Value Not Equals</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int INTEGER_VALUE_NOT_EQUALS_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueGreaterThanImpl <em>Integer Value Greater Than</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueGreaterThanImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueGreaterThan()
+   * @generated
+   */
+  int INTEGER_VALUE_GREATER_THAN = 24;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int INTEGER_VALUE_GREATER_THAN__VALUE = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Integer Value Greater Than</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int INTEGER_VALUE_GREATER_THAN_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueLessThanImpl <em>Integer Value Less Than</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueLessThanImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueLessThan()
+   * @generated
+   */
+  int INTEGER_VALUE_LESS_THAN = 25;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int INTEGER_VALUE_LESS_THAN__VALUE = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Integer Value Less Than</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int INTEGER_VALUE_LESS_THAN_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueGreaterThanEqualsImpl <em>Integer Value Greater Than Equals</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueGreaterThanEqualsImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueGreaterThanEquals()
+   * @generated
+   */
+  int INTEGER_VALUE_GREATER_THAN_EQUALS = 26;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int INTEGER_VALUE_GREATER_THAN_EQUALS__VALUE = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Integer Value Greater Than Equals</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int INTEGER_VALUE_GREATER_THAN_EQUALS_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueLessThanEqualsImpl <em>Integer Value Less Than Equals</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueLessThanEqualsImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueLessThanEquals()
+   * @generated
+   */
+  int INTEGER_VALUE_LESS_THAN_EQUALS = 27;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int INTEGER_VALUE_LESS_THAN_EQUALS__VALUE = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Integer Value Less Than Equals</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int INTEGER_VALUE_LESS_THAN_EQUALS_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueEqualsImpl <em>Decimal Value Equals</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueEqualsImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueEquals()
+   * @generated
+   */
+  int DECIMAL_VALUE_EQUALS = 28;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DECIMAL_VALUE_EQUALS__VALUE = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Decimal Value Equals</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DECIMAL_VALUE_EQUALS_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueNotEqualsImpl <em>Decimal Value Not Equals</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueNotEqualsImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueNotEquals()
+   * @generated
+   */
+  int DECIMAL_VALUE_NOT_EQUALS = 29;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DECIMAL_VALUE_NOT_EQUALS__VALUE = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Decimal Value Not Equals</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DECIMAL_VALUE_NOT_EQUALS_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueGreaterThanImpl <em>Decimal Value Greater Than</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueGreaterThanImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueGreaterThan()
+   * @generated
+   */
+  int DECIMAL_VALUE_GREATER_THAN = 30;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DECIMAL_VALUE_GREATER_THAN__VALUE = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Decimal Value Greater Than</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DECIMAL_VALUE_GREATER_THAN_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueLessThanImpl <em>Decimal Value Less Than</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueLessThanImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueLessThan()
+   * @generated
+   */
+  int DECIMAL_VALUE_LESS_THAN = 31;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DECIMAL_VALUE_LESS_THAN__VALUE = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Decimal Value Less Than</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DECIMAL_VALUE_LESS_THAN_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueGreaterThanEqualsImpl <em>Decimal Value Greater Than Equals</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueGreaterThanEqualsImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueGreaterThanEquals()
+   * @generated
+   */
+  int DECIMAL_VALUE_GREATER_THAN_EQUALS = 32;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DECIMAL_VALUE_GREATER_THAN_EQUALS__VALUE = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Decimal Value Greater Than Equals</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DECIMAL_VALUE_GREATER_THAN_EQUALS_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 1;
+
+  /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueLessThanEqualsImpl <em>Decimal Value Less Than Equals</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueLessThanEqualsImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueLessThanEquals()
+   * @generated
+   */
+  int DECIMAL_VALUE_LESS_THAN_EQUALS = 33;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DECIMAL_VALUE_LESS_THAN_EQUALS__VALUE = DATA_TYPE_COMPARISON_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>Decimal Value Less Than Equals</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DECIMAL_VALUE_LESS_THAN_EQUALS_FEATURE_COUNT = DATA_TYPE_COMPARISON_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.NestedExpressionImpl <em>Nested Expression</em>}' class.
@@ -698,7 +1025,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getNestedExpression()
    * @generated
    */
-  int NESTED_EXPRESSION = 22;
+  int NESTED_EXPRESSION = 34;
 
   /**
    * The feature id for the '<em><b>Nested</b></em>' containment reference.
@@ -726,7 +1053,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getOrExpressionConstraint()
    * @generated
    */
-  int OR_EXPRESSION_CONSTRAINT = 23;
+  int OR_EXPRESSION_CONSTRAINT = 35;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -763,7 +1090,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAndExpressionConstraint()
    * @generated
    */
-  int AND_EXPRESSION_CONSTRAINT = 24;
+  int AND_EXPRESSION_CONSTRAINT = 36;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -800,7 +1127,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getExclusionExpressionConstraint()
    * @generated
    */
-  int EXCLUSION_EXPRESSION_CONSTRAINT = 25;
+  int EXCLUSION_EXPRESSION_CONSTRAINT = 37;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -837,7 +1164,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getRefinedExpressionConstraint()
    * @generated
    */
-  int REFINED_EXPRESSION_CONSTRAINT = 26;
+  int REFINED_EXPRESSION_CONSTRAINT = 38;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -874,7 +1201,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDottedExpressionConstraint()
    * @generated
    */
-  int DOTTED_EXPRESSION_CONSTRAINT = 27;
+  int DOTTED_EXPRESSION_CONSTRAINT = 39;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -911,7 +1238,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getOrRefinement()
    * @generated
    */
-  int OR_REFINEMENT = 28;
+  int OR_REFINEMENT = 40;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -948,7 +1275,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAndRefinement()
    * @generated
    */
-  int AND_REFINEMENT = 29;
+  int AND_REFINEMENT = 41;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -1368,17 +1695,6 @@ public interface EclPackage extends EPackage
   EClass getDataTypeComparison();
 
   /**
-   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.DataTypeComparison#getValue <em>Value</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Value</em>'.
-   * @see com.b2international.snowowl.snomed.ecl.ecl.DataTypeComparison#getValue()
-   * @see #getDataTypeComparison()
-   * @generated
-   */
-  EAttribute getDataTypeComparison_Value();
-
-  /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals <em>Attribute Value Equals</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1409,6 +1725,17 @@ public interface EclPackage extends EPackage
   EClass getStringValueEquals();
 
   /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals#getValue()
+   * @see #getStringValueEquals()
+   * @generated
+   */
+  EAttribute getStringValueEquals_Value();
+
+  /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals <em>String Value Not Equals</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1417,6 +1744,269 @@ public interface EclPackage extends EPackage
    * @generated
    */
   EClass getStringValueNotEquals();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals#getValue()
+   * @see #getStringValueNotEquals()
+   * @generated
+   */
+  EAttribute getStringValueNotEquals_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals <em>Integer Value Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Integer Value Equals</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals
+   * @generated
+   */
+  EClass getIntegerValueEquals();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals#getValue()
+   * @see #getIntegerValueEquals()
+   * @generated
+   */
+  EAttribute getIntegerValueEquals_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueNotEquals <em>Integer Value Not Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Integer Value Not Equals</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueNotEquals
+   * @generated
+   */
+  EClass getIntegerValueNotEquals();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueNotEquals#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueNotEquals#getValue()
+   * @see #getIntegerValueNotEquals()
+   * @generated
+   */
+  EAttribute getIntegerValueNotEquals_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThan <em>Integer Value Greater Than</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Integer Value Greater Than</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThan
+   * @generated
+   */
+  EClass getIntegerValueGreaterThan();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThan#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThan#getValue()
+   * @see #getIntegerValueGreaterThan()
+   * @generated
+   */
+  EAttribute getIntegerValueGreaterThan_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThan <em>Integer Value Less Than</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Integer Value Less Than</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThan
+   * @generated
+   */
+  EClass getIntegerValueLessThan();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThan#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThan#getValue()
+   * @see #getIntegerValueLessThan()
+   * @generated
+   */
+  EAttribute getIntegerValueLessThan_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThanEquals <em>Integer Value Greater Than Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Integer Value Greater Than Equals</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThanEquals
+   * @generated
+   */
+  EClass getIntegerValueGreaterThanEquals();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThanEquals#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThanEquals#getValue()
+   * @see #getIntegerValueGreaterThanEquals()
+   * @generated
+   */
+  EAttribute getIntegerValueGreaterThanEquals_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThanEquals <em>Integer Value Less Than Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Integer Value Less Than Equals</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThanEquals
+   * @generated
+   */
+  EClass getIntegerValueLessThanEquals();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThanEquals#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThanEquals#getValue()
+   * @see #getIntegerValueLessThanEquals()
+   * @generated
+   */
+  EAttribute getIntegerValueLessThanEquals_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals <em>Decimal Value Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Decimal Value Equals</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals
+   * @generated
+   */
+  EClass getDecimalValueEquals();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals#getValue()
+   * @see #getDecimalValueEquals()
+   * @generated
+   */
+  EAttribute getDecimalValueEquals_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals <em>Decimal Value Not Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Decimal Value Not Equals</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals
+   * @generated
+   */
+  EClass getDecimalValueNotEquals();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals#getValue()
+   * @see #getDecimalValueNotEquals()
+   * @generated
+   */
+  EAttribute getDecimalValueNotEquals_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThan <em>Decimal Value Greater Than</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Decimal Value Greater Than</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThan
+   * @generated
+   */
+  EClass getDecimalValueGreaterThan();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThan#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThan#getValue()
+   * @see #getDecimalValueGreaterThan()
+   * @generated
+   */
+  EAttribute getDecimalValueGreaterThan_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThan <em>Decimal Value Less Than</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Decimal Value Less Than</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThan
+   * @generated
+   */
+  EClass getDecimalValueLessThan();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThan#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThan#getValue()
+   * @see #getDecimalValueLessThan()
+   * @generated
+   */
+  EAttribute getDecimalValueLessThan_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThanEquals <em>Decimal Value Greater Than Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Decimal Value Greater Than Equals</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThanEquals
+   * @generated
+   */
+  EClass getDecimalValueGreaterThanEquals();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThanEquals#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThanEquals#getValue()
+   * @see #getDecimalValueGreaterThanEquals()
+   * @generated
+   */
+  EAttribute getDecimalValueGreaterThanEquals_Value();
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThanEquals <em>Decimal Value Less Than Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Decimal Value Less Than Equals</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThanEquals
+   * @generated
+   */
+  EClass getDecimalValueLessThanEquals();
+
+  /**
+   * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThanEquals#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThanEquals#getValue()
+   * @see #getDecimalValueLessThanEquals()
+   * @generated
+   */
+  EAttribute getDecimalValueLessThanEquals_Value();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.NestedExpression <em>Nested Expression</em>}'.
@@ -2019,14 +2609,6 @@ public interface EclPackage extends EPackage
     EClass DATA_TYPE_COMPARISON = eINSTANCE.getDataTypeComparison();
 
     /**
-     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute DATA_TYPE_COMPARISON__VALUE = eINSTANCE.getDataTypeComparison_Value();
-
-    /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.AttributeValueEqualsImpl <em>Attribute Value Equals</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -2057,6 +2639,14 @@ public interface EclPackage extends EPackage
     EClass STRING_VALUE_EQUALS = eINSTANCE.getStringValueEquals();
 
     /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute STRING_VALUE_EQUALS__VALUE = eINSTANCE.getStringValueEquals_Value();
+
+    /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.StringValueNotEqualsImpl <em>String Value Not Equals</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -2065,6 +2655,230 @@ public interface EclPackage extends EPackage
      * @generated
      */
     EClass STRING_VALUE_NOT_EQUALS = eINSTANCE.getStringValueNotEquals();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute STRING_VALUE_NOT_EQUALS__VALUE = eINSTANCE.getStringValueNotEquals_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueEqualsImpl <em>Integer Value Equals</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueEqualsImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueEquals()
+     * @generated
+     */
+    EClass INTEGER_VALUE_EQUALS = eINSTANCE.getIntegerValueEquals();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute INTEGER_VALUE_EQUALS__VALUE = eINSTANCE.getIntegerValueEquals_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueNotEqualsImpl <em>Integer Value Not Equals</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueNotEqualsImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueNotEquals()
+     * @generated
+     */
+    EClass INTEGER_VALUE_NOT_EQUALS = eINSTANCE.getIntegerValueNotEquals();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute INTEGER_VALUE_NOT_EQUALS__VALUE = eINSTANCE.getIntegerValueNotEquals_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueGreaterThanImpl <em>Integer Value Greater Than</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueGreaterThanImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueGreaterThan()
+     * @generated
+     */
+    EClass INTEGER_VALUE_GREATER_THAN = eINSTANCE.getIntegerValueGreaterThan();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute INTEGER_VALUE_GREATER_THAN__VALUE = eINSTANCE.getIntegerValueGreaterThan_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueLessThanImpl <em>Integer Value Less Than</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueLessThanImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueLessThan()
+     * @generated
+     */
+    EClass INTEGER_VALUE_LESS_THAN = eINSTANCE.getIntegerValueLessThan();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute INTEGER_VALUE_LESS_THAN__VALUE = eINSTANCE.getIntegerValueLessThan_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueGreaterThanEqualsImpl <em>Integer Value Greater Than Equals</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueGreaterThanEqualsImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueGreaterThanEquals()
+     * @generated
+     */
+    EClass INTEGER_VALUE_GREATER_THAN_EQUALS = eINSTANCE.getIntegerValueGreaterThanEquals();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute INTEGER_VALUE_GREATER_THAN_EQUALS__VALUE = eINSTANCE.getIntegerValueGreaterThanEquals_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueLessThanEqualsImpl <em>Integer Value Less Than Equals</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.IntegerValueLessThanEqualsImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueLessThanEquals()
+     * @generated
+     */
+    EClass INTEGER_VALUE_LESS_THAN_EQUALS = eINSTANCE.getIntegerValueLessThanEquals();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute INTEGER_VALUE_LESS_THAN_EQUALS__VALUE = eINSTANCE.getIntegerValueLessThanEquals_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueEqualsImpl <em>Decimal Value Equals</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueEqualsImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueEquals()
+     * @generated
+     */
+    EClass DECIMAL_VALUE_EQUALS = eINSTANCE.getDecimalValueEquals();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute DECIMAL_VALUE_EQUALS__VALUE = eINSTANCE.getDecimalValueEquals_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueNotEqualsImpl <em>Decimal Value Not Equals</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueNotEqualsImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueNotEquals()
+     * @generated
+     */
+    EClass DECIMAL_VALUE_NOT_EQUALS = eINSTANCE.getDecimalValueNotEquals();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute DECIMAL_VALUE_NOT_EQUALS__VALUE = eINSTANCE.getDecimalValueNotEquals_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueGreaterThanImpl <em>Decimal Value Greater Than</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueGreaterThanImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueGreaterThan()
+     * @generated
+     */
+    EClass DECIMAL_VALUE_GREATER_THAN = eINSTANCE.getDecimalValueGreaterThan();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute DECIMAL_VALUE_GREATER_THAN__VALUE = eINSTANCE.getDecimalValueGreaterThan_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueLessThanImpl <em>Decimal Value Less Than</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueLessThanImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueLessThan()
+     * @generated
+     */
+    EClass DECIMAL_VALUE_LESS_THAN = eINSTANCE.getDecimalValueLessThan();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute DECIMAL_VALUE_LESS_THAN__VALUE = eINSTANCE.getDecimalValueLessThan_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueGreaterThanEqualsImpl <em>Decimal Value Greater Than Equals</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueGreaterThanEqualsImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueGreaterThanEquals()
+     * @generated
+     */
+    EClass DECIMAL_VALUE_GREATER_THAN_EQUALS = eINSTANCE.getDecimalValueGreaterThanEquals();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute DECIMAL_VALUE_GREATER_THAN_EQUALS__VALUE = eINSTANCE.getDecimalValueGreaterThanEquals_Value();
+
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueLessThanEqualsImpl <em>Decimal Value Less Than Equals</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.DecimalValueLessThanEqualsImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueLessThanEquals()
+     * @generated
+     */
+    EClass DECIMAL_VALUE_LESS_THAN_EQUALS = eINSTANCE.getDecimalValueLessThanEquals();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute DECIMAL_VALUE_LESS_THAN_EQUALS__VALUE = eINSTANCE.getDecimalValueLessThanEquals_Value();
 
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.NestedExpressionImpl <em>Nested Expression</em>}' class.

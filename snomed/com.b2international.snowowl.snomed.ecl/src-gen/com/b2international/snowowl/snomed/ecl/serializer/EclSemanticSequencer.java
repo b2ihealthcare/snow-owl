@@ -15,11 +15,23 @@ import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThan;
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThanEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThan;
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThanEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
 import com.b2international.snowowl.snomed.ecl.ecl.DottedExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThan;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThanEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThan;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThanEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
 import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
 import com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement;
@@ -104,6 +116,24 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 			case EclPackage.CONCEPT_REFERENCE:
 				sequence_ConceptReference(context, (ConceptReference) semanticObject); 
 				return; 
+			case EclPackage.DECIMAL_VALUE_EQUALS:
+				sequence_DecimalValueEquals(context, (DecimalValueEquals) semanticObject); 
+				return; 
+			case EclPackage.DECIMAL_VALUE_GREATER_THAN:
+				sequence_DecimalValueGreaterThan(context, (DecimalValueGreaterThan) semanticObject); 
+				return; 
+			case EclPackage.DECIMAL_VALUE_GREATER_THAN_EQUALS:
+				sequence_DecimalValueGreaterThanEquals(context, (DecimalValueGreaterThanEquals) semanticObject); 
+				return; 
+			case EclPackage.DECIMAL_VALUE_LESS_THAN:
+				sequence_DecimalValueLessThan(context, (DecimalValueLessThan) semanticObject); 
+				return; 
+			case EclPackage.DECIMAL_VALUE_LESS_THAN_EQUALS:
+				sequence_DecimalValueLessThanEquals(context, (DecimalValueLessThanEquals) semanticObject); 
+				return; 
+			case EclPackage.DECIMAL_VALUE_NOT_EQUALS:
+				sequence_DecimalValueNotEquals(context, (DecimalValueNotEquals) semanticObject); 
+				return; 
 			case EclPackage.DESCENDANT_OF:
 				if(context == grammarAccess.getAttributeRule() ||
 				   context == grammarAccess.getAttributeDescendantOfRule()) {
@@ -155,6 +185,24 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				return; 
 			case EclPackage.EXCLUSION_EXPRESSION_CONSTRAINT:
 				sequence_ExclusionExpressionConstraint(context, (ExclusionExpressionConstraint) semanticObject); 
+				return; 
+			case EclPackage.INTEGER_VALUE_EQUALS:
+				sequence_IntegerValueEquals(context, (IntegerValueEquals) semanticObject); 
+				return; 
+			case EclPackage.INTEGER_VALUE_GREATER_THAN:
+				sequence_IntegerValueGreaterThan(context, (IntegerValueGreaterThan) semanticObject); 
+				return; 
+			case EclPackage.INTEGER_VALUE_GREATER_THAN_EQUALS:
+				sequence_IntegerValueGreaterThanEquals(context, (IntegerValueGreaterThanEquals) semanticObject); 
+				return; 
+			case EclPackage.INTEGER_VALUE_LESS_THAN:
+				sequence_IntegerValueLessThan(context, (IntegerValueLessThan) semanticObject); 
+				return; 
+			case EclPackage.INTEGER_VALUE_LESS_THAN_EQUALS:
+				sequence_IntegerValueLessThanEquals(context, (IntegerValueLessThanEquals) semanticObject); 
+				return; 
+			case EclPackage.INTEGER_VALUE_NOT_EQUALS:
+				sequence_IntegerValueNotEquals(context, (IntegerValueNotEquals) semanticObject); 
 				return; 
 			case EclPackage.MEMBER_OF:
 				sequence_MemberOf(context, (MemberOf) semanticObject); 
@@ -429,6 +477,102 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	
 	/**
 	 * Constraint:
+	 *     value=Decimal
+	 */
+	protected void sequence_DecimalValueEquals(EObject context, DecimalValueEquals semanticObject) {
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.DECIMAL_VALUE_EQUALS__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.DECIMAL_VALUE_EQUALS__VALUE));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getDecimalValueEqualsAccess().getValueDecimalParserRuleCall_2_0(), semanticObject.getValue());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     value=Decimal
+	 */
+	protected void sequence_DecimalValueGreaterThanEquals(EObject context, DecimalValueGreaterThanEquals semanticObject) {
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.DECIMAL_VALUE_GREATER_THAN_EQUALS__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.DECIMAL_VALUE_GREATER_THAN_EQUALS__VALUE));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getDecimalValueGreaterThanEqualsAccess().getValueDecimalParserRuleCall_2_0(), semanticObject.getValue());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     value=Decimal
+	 */
+	protected void sequence_DecimalValueGreaterThan(EObject context, DecimalValueGreaterThan semanticObject) {
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.DECIMAL_VALUE_GREATER_THAN__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.DECIMAL_VALUE_GREATER_THAN__VALUE));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getDecimalValueGreaterThanAccess().getValueDecimalParserRuleCall_2_0(), semanticObject.getValue());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     value=Decimal
+	 */
+	protected void sequence_DecimalValueLessThanEquals(EObject context, DecimalValueLessThanEquals semanticObject) {
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.DECIMAL_VALUE_LESS_THAN_EQUALS__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.DECIMAL_VALUE_LESS_THAN_EQUALS__VALUE));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getDecimalValueLessThanEqualsAccess().getValueDecimalParserRuleCall_2_0(), semanticObject.getValue());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     value=Decimal
+	 */
+	protected void sequence_DecimalValueLessThan(EObject context, DecimalValueLessThan semanticObject) {
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.DECIMAL_VALUE_LESS_THAN__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.DECIMAL_VALUE_LESS_THAN__VALUE));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getDecimalValueLessThanAccess().getValueDecimalParserRuleCall_2_0(), semanticObject.getValue());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     value=Decimal
+	 */
+	protected void sequence_DecimalValueNotEquals(EObject context, DecimalValueNotEquals semanticObject) {
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.DECIMAL_VALUE_NOT_EQUALS__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.DECIMAL_VALUE_NOT_EQUALS__VALUE));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getDecimalValueNotEqualsAccess().getValueDecimalParserRuleCall_2_0(), semanticObject.getValue());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
 	 *     constraint=FocusConcept
 	 */
 	protected void sequence_DescendantOf(EObject context, DescendantOf semanticObject) {
@@ -493,6 +637,102 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
 		feeder.accept(grammarAccess.getExclusionExpressionConstraintAccess().getExclusionExpressionConstraintLeftAction_1_0(), semanticObject.getLeft());
 		feeder.accept(grammarAccess.getExclusionExpressionConstraintAccess().getRightRefinedExpressionConstraintParserRuleCall_1_2_0(), semanticObject.getRight());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     value=Integer
+	 */
+	protected void sequence_IntegerValueEquals(EObject context, IntegerValueEquals semanticObject) {
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.INTEGER_VALUE_EQUALS__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.INTEGER_VALUE_EQUALS__VALUE));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getIntegerValueEqualsAccess().getValueIntegerParserRuleCall_2_0(), semanticObject.getValue());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     value=Integer
+	 */
+	protected void sequence_IntegerValueGreaterThanEquals(EObject context, IntegerValueGreaterThanEquals semanticObject) {
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.INTEGER_VALUE_GREATER_THAN_EQUALS__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.INTEGER_VALUE_GREATER_THAN_EQUALS__VALUE));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getIntegerValueGreaterThanEqualsAccess().getValueIntegerParserRuleCall_2_0(), semanticObject.getValue());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     value=Integer
+	 */
+	protected void sequence_IntegerValueGreaterThan(EObject context, IntegerValueGreaterThan semanticObject) {
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.INTEGER_VALUE_GREATER_THAN__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.INTEGER_VALUE_GREATER_THAN__VALUE));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getIntegerValueGreaterThanAccess().getValueIntegerParserRuleCall_2_0(), semanticObject.getValue());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     value=Integer
+	 */
+	protected void sequence_IntegerValueLessThanEquals(EObject context, IntegerValueLessThanEquals semanticObject) {
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.INTEGER_VALUE_LESS_THAN_EQUALS__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.INTEGER_VALUE_LESS_THAN_EQUALS__VALUE));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getIntegerValueLessThanEqualsAccess().getValueIntegerParserRuleCall_2_0(), semanticObject.getValue());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     value=Integer
+	 */
+	protected void sequence_IntegerValueLessThan(EObject context, IntegerValueLessThan semanticObject) {
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.INTEGER_VALUE_LESS_THAN__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.INTEGER_VALUE_LESS_THAN__VALUE));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getIntegerValueLessThanAccess().getValueIntegerParserRuleCall_2_0(), semanticObject.getValue());
+		feeder.finish();
+	}
+	
+	
+	/**
+	 * Constraint:
+	 *     value=Integer
+	 */
+	protected void sequence_IntegerValueNotEquals(EObject context, IntegerValueNotEquals semanticObject) {
+		if(errorAcceptor != null) {
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.INTEGER_VALUE_NOT_EQUALS__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.INTEGER_VALUE_NOT_EQUALS__VALUE));
+		}
+		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
+		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
+		feeder.accept(grammarAccess.getIntegerValueNotEqualsAccess().getValueIntegerParserRuleCall_2_0(), semanticObject.getValue());
 		feeder.finish();
 	}
 	
@@ -652,8 +892,8 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 */
 	protected void sequence_StringValueEquals(EObject context, StringValueEquals semanticObject) {
 		if(errorAcceptor != null) {
-			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.DATA_TYPE_COMPARISON__VALUE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.DATA_TYPE_COMPARISON__VALUE));
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.STRING_VALUE_EQUALS__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.STRING_VALUE_EQUALS__VALUE));
 		}
 		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
 		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);
@@ -668,8 +908,8 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 */
 	protected void sequence_StringValueNotEquals(EObject context, StringValueNotEquals semanticObject) {
 		if(errorAcceptor != null) {
-			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.DATA_TYPE_COMPARISON__VALUE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.DATA_TYPE_COMPARISON__VALUE));
+			if(transientValues.isValueTransient(semanticObject, EclPackage.Literals.STRING_VALUE_NOT_EQUALS__VALUE) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.STRING_VALUE_NOT_EQUALS__VALUE));
 		}
 		INodesForEObjectProvider nodes = createNodeProvider(semanticObject);
 		SequenceFeeder feeder = createSequencerFeeder(semanticObject, nodes);

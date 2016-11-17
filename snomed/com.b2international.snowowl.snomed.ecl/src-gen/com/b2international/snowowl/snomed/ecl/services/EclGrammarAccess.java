@@ -1047,12 +1047,30 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
 		private final RuleCall cStringValueEqualsParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
 		private final RuleCall cStringValueNotEqualsParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cIntegerValueEqualsParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		private final RuleCall cIntegerValueNotEqualsParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
+		private final RuleCall cIntegerValueGreaterThanParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
+		private final RuleCall cIntegerValueGreaterThanEqualsParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
+		private final RuleCall cIntegerValueLessThanParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
+		private final RuleCall cIntegerValueLessThanEqualsParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
+		private final RuleCall cDecimalValueEqualsParserRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
+		private final RuleCall cDecimalValueNotEqualsParserRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
+		private final RuleCall cDecimalValueGreaterThanParserRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
+		private final RuleCall cDecimalValueGreaterThanEqualsParserRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
+		private final RuleCall cDecimalValueLessThanParserRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
+		private final RuleCall cDecimalValueLessThanEqualsParserRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
 		
 		//DataTypeComparison:
-		//	StringValueEquals | StringValueNotEquals;
+		//	StringValueEquals | StringValueNotEquals | IntegerValueEquals | IntegerValueNotEquals | IntegerValueGreaterThan |
+		//	IntegerValueGreaterThanEquals | IntegerValueLessThan | IntegerValueLessThanEquals | DecimalValueEquals |
+		//	DecimalValueNotEquals | DecimalValueGreaterThan | DecimalValueGreaterThanEquals | DecimalValueLessThan |
+		//	DecimalValueLessThanEquals;
 		@Override public ParserRule getRule() { return rule; }
 
-		//StringValueEquals | StringValueNotEquals
+		//StringValueEquals | StringValueNotEquals | IntegerValueEquals | IntegerValueNotEquals | IntegerValueGreaterThan |
+		//IntegerValueGreaterThanEquals | IntegerValueLessThan | IntegerValueLessThanEquals | DecimalValueEquals |
+		//DecimalValueNotEquals | DecimalValueGreaterThan | DecimalValueGreaterThanEquals | DecimalValueLessThan |
+		//DecimalValueLessThanEquals
 		public Alternatives getAlternatives() { return cAlternatives; }
 
 		//StringValueEquals
@@ -1060,6 +1078,42 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 
 		//StringValueNotEquals
 		public RuleCall getStringValueNotEqualsParserRuleCall_1() { return cStringValueNotEqualsParserRuleCall_1; }
+
+		//IntegerValueEquals
+		public RuleCall getIntegerValueEqualsParserRuleCall_2() { return cIntegerValueEqualsParserRuleCall_2; }
+
+		//IntegerValueNotEquals
+		public RuleCall getIntegerValueNotEqualsParserRuleCall_3() { return cIntegerValueNotEqualsParserRuleCall_3; }
+
+		//IntegerValueGreaterThan
+		public RuleCall getIntegerValueGreaterThanParserRuleCall_4() { return cIntegerValueGreaterThanParserRuleCall_4; }
+
+		//IntegerValueGreaterThanEquals
+		public RuleCall getIntegerValueGreaterThanEqualsParserRuleCall_5() { return cIntegerValueGreaterThanEqualsParserRuleCall_5; }
+
+		//IntegerValueLessThan
+		public RuleCall getIntegerValueLessThanParserRuleCall_6() { return cIntegerValueLessThanParserRuleCall_6; }
+
+		//IntegerValueLessThanEquals
+		public RuleCall getIntegerValueLessThanEqualsParserRuleCall_7() { return cIntegerValueLessThanEqualsParserRuleCall_7; }
+
+		//DecimalValueEquals
+		public RuleCall getDecimalValueEqualsParserRuleCall_8() { return cDecimalValueEqualsParserRuleCall_8; }
+
+		//DecimalValueNotEquals
+		public RuleCall getDecimalValueNotEqualsParserRuleCall_9() { return cDecimalValueNotEqualsParserRuleCall_9; }
+
+		//DecimalValueGreaterThan
+		public RuleCall getDecimalValueGreaterThanParserRuleCall_10() { return cDecimalValueGreaterThanParserRuleCall_10; }
+
+		//DecimalValueGreaterThanEquals
+		public RuleCall getDecimalValueGreaterThanEqualsParserRuleCall_11() { return cDecimalValueGreaterThanEqualsParserRuleCall_11; }
+
+		//DecimalValueLessThan
+		public RuleCall getDecimalValueLessThanParserRuleCall_12() { return cDecimalValueLessThanParserRuleCall_12; }
+
+		//DecimalValueLessThanEquals
+		public RuleCall getDecimalValueLessThanEqualsParserRuleCall_13() { return cDecimalValueLessThanEqualsParserRuleCall_13; }
 	}
 
 	public class AttributeValueEqualsElements extends AbstractParserRuleElementFinder {
@@ -1156,6 +1210,342 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 
 		//STRING
 		public RuleCall getValueSTRINGTerminalRuleCall_1_0() { return cValueSTRINGTerminalRuleCall_1_0; }
+	}
+
+	public class IntegerValueEqualsElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "IntegerValueEquals");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cEQUALTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cValueIntegerParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
+		
+		//IntegerValueEquals:
+		//	EQUAL HASH value=Integer;
+		@Override public ParserRule getRule() { return rule; }
+
+		//EQUAL HASH value=Integer
+		public Group getGroup() { return cGroup; }
+
+		//EQUAL
+		public RuleCall getEQUALTerminalRuleCall_0() { return cEQUALTerminalRuleCall_0; }
+
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
+
+		//value=Integer
+		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
+
+		//Integer
+		public RuleCall getValueIntegerParserRuleCall_2_0() { return cValueIntegerParserRuleCall_2_0; }
+	}
+
+	public class IntegerValueNotEqualsElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "IntegerValueNotEquals");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cNOT_EQUALTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cValueIntegerParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
+		
+		//IntegerValueNotEquals:
+		//	NOT_EQUAL HASH value=Integer;
+		@Override public ParserRule getRule() { return rule; }
+
+		//NOT_EQUAL HASH value=Integer
+		public Group getGroup() { return cGroup; }
+
+		//NOT_EQUAL
+		public RuleCall getNOT_EQUALTerminalRuleCall_0() { return cNOT_EQUALTerminalRuleCall_0; }
+
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
+
+		//value=Integer
+		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
+
+		//Integer
+		public RuleCall getValueIntegerParserRuleCall_2_0() { return cValueIntegerParserRuleCall_2_0; }
+	}
+
+	public class IntegerValueGreaterThanElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "IntegerValueGreaterThan");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cGTTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cValueIntegerParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
+		
+		//IntegerValueGreaterThan:
+		//	GT HASH value=Integer;
+		@Override public ParserRule getRule() { return rule; }
+
+		//GT HASH value=Integer
+		public Group getGroup() { return cGroup; }
+
+		//GT
+		public RuleCall getGTTerminalRuleCall_0() { return cGTTerminalRuleCall_0; }
+
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
+
+		//value=Integer
+		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
+
+		//Integer
+		public RuleCall getValueIntegerParserRuleCall_2_0() { return cValueIntegerParserRuleCall_2_0; }
+	}
+
+	public class IntegerValueLessThanElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "IntegerValueLessThan");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cLTTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cValueIntegerParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
+		
+		//IntegerValueLessThan:
+		//	LT HASH value=Integer;
+		@Override public ParserRule getRule() { return rule; }
+
+		//LT HASH value=Integer
+		public Group getGroup() { return cGroup; }
+
+		//LT
+		public RuleCall getLTTerminalRuleCall_0() { return cLTTerminalRuleCall_0; }
+
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
+
+		//value=Integer
+		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
+
+		//Integer
+		public RuleCall getValueIntegerParserRuleCall_2_0() { return cValueIntegerParserRuleCall_2_0; }
+	}
+
+	public class IntegerValueGreaterThanEqualsElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "IntegerValueGreaterThanEquals");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cGTETerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cValueIntegerParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
+		
+		//IntegerValueGreaterThanEquals:
+		//	GTE HASH value=Integer;
+		@Override public ParserRule getRule() { return rule; }
+
+		//GTE HASH value=Integer
+		public Group getGroup() { return cGroup; }
+
+		//GTE
+		public RuleCall getGTETerminalRuleCall_0() { return cGTETerminalRuleCall_0; }
+
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
+
+		//value=Integer
+		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
+
+		//Integer
+		public RuleCall getValueIntegerParserRuleCall_2_0() { return cValueIntegerParserRuleCall_2_0; }
+	}
+
+	public class IntegerValueLessThanEqualsElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "IntegerValueLessThanEquals");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cLTETerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cValueIntegerParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
+		
+		//IntegerValueLessThanEquals:
+		//	LTE HASH value=Integer;
+		@Override public ParserRule getRule() { return rule; }
+
+		//LTE HASH value=Integer
+		public Group getGroup() { return cGroup; }
+
+		//LTE
+		public RuleCall getLTETerminalRuleCall_0() { return cLTETerminalRuleCall_0; }
+
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
+
+		//value=Integer
+		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
+
+		//Integer
+		public RuleCall getValueIntegerParserRuleCall_2_0() { return cValueIntegerParserRuleCall_2_0; }
+	}
+
+	public class DecimalValueEqualsElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "DecimalValueEquals");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cEQUALTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cValueDecimalParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
+		
+		//DecimalValueEquals:
+		//	EQUAL HASH value=Decimal;
+		@Override public ParserRule getRule() { return rule; }
+
+		//EQUAL HASH value=Decimal
+		public Group getGroup() { return cGroup; }
+
+		//EQUAL
+		public RuleCall getEQUALTerminalRuleCall_0() { return cEQUALTerminalRuleCall_0; }
+
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
+
+		//value=Decimal
+		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
+
+		//Decimal
+		public RuleCall getValueDecimalParserRuleCall_2_0() { return cValueDecimalParserRuleCall_2_0; }
+	}
+
+	public class DecimalValueNotEqualsElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "DecimalValueNotEquals");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cNOT_EQUALTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cValueDecimalParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
+		
+		//DecimalValueNotEquals:
+		//	NOT_EQUAL HASH value=Decimal;
+		@Override public ParserRule getRule() { return rule; }
+
+		//NOT_EQUAL HASH value=Decimal
+		public Group getGroup() { return cGroup; }
+
+		//NOT_EQUAL
+		public RuleCall getNOT_EQUALTerminalRuleCall_0() { return cNOT_EQUALTerminalRuleCall_0; }
+
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
+
+		//value=Decimal
+		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
+
+		//Decimal
+		public RuleCall getValueDecimalParserRuleCall_2_0() { return cValueDecimalParserRuleCall_2_0; }
+	}
+
+	public class DecimalValueGreaterThanElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "DecimalValueGreaterThan");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cGTTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cValueDecimalParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
+		
+		//DecimalValueGreaterThan:
+		//	GT HASH value=Decimal;
+		@Override public ParserRule getRule() { return rule; }
+
+		//GT HASH value=Decimal
+		public Group getGroup() { return cGroup; }
+
+		//GT
+		public RuleCall getGTTerminalRuleCall_0() { return cGTTerminalRuleCall_0; }
+
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
+
+		//value=Decimal
+		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
+
+		//Decimal
+		public RuleCall getValueDecimalParserRuleCall_2_0() { return cValueDecimalParserRuleCall_2_0; }
+	}
+
+	public class DecimalValueLessThanElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "DecimalValueLessThan");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cLTTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cValueDecimalParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
+		
+		//DecimalValueLessThan:
+		//	LT HASH value=Decimal;
+		@Override public ParserRule getRule() { return rule; }
+
+		//LT HASH value=Decimal
+		public Group getGroup() { return cGroup; }
+
+		//LT
+		public RuleCall getLTTerminalRuleCall_0() { return cLTTerminalRuleCall_0; }
+
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
+
+		//value=Decimal
+		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
+
+		//Decimal
+		public RuleCall getValueDecimalParserRuleCall_2_0() { return cValueDecimalParserRuleCall_2_0; }
+	}
+
+	public class DecimalValueGreaterThanEqualsElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "DecimalValueGreaterThanEquals");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cGTETerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cValueDecimalParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
+		
+		//DecimalValueGreaterThanEquals:
+		//	GTE HASH value=Decimal;
+		@Override public ParserRule getRule() { return rule; }
+
+		//GTE HASH value=Decimal
+		public Group getGroup() { return cGroup; }
+
+		//GTE
+		public RuleCall getGTETerminalRuleCall_0() { return cGTETerminalRuleCall_0; }
+
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
+
+		//value=Decimal
+		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
+
+		//Decimal
+		public RuleCall getValueDecimalParserRuleCall_2_0() { return cValueDecimalParserRuleCall_2_0; }
+	}
+
+	public class DecimalValueLessThanEqualsElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "DecimalValueLessThanEquals");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cLTETerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cHASHTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Assignment cValueAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cValueDecimalParserRuleCall_2_0 = (RuleCall)cValueAssignment_2.eContents().get(0);
+		
+		//DecimalValueLessThanEquals:
+		//	LTE HASH value=Decimal;
+		@Override public ParserRule getRule() { return rule; }
+
+		//LTE HASH value=Decimal
+		public Group getGroup() { return cGroup; }
+
+		//LTE
+		public RuleCall getLTETerminalRuleCall_0() { return cLTETerminalRuleCall_0; }
+
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_1() { return cHASHTerminalRuleCall_1; }
+
+		//value=Decimal
+		public Assignment getValueAssignment_2() { return cValueAssignment_2; }
+
+		//Decimal
+		public RuleCall getValueDecimalParserRuleCall_2_0() { return cValueDecimalParserRuleCall_2_0; }
 	}
 
 	public class NestedExpressionElements extends AbstractParserRuleElementFinder {
@@ -1302,40 +1692,44 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cDBL_GTTerminalRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
 		private final RuleCall cLT_EMTerminalRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
 		private final RuleCall cGT_EMTerminalRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
-		private final RuleCall cANDTerminalRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
-		private final RuleCall cORTerminalRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
-		private final RuleCall cNOTTerminalRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
-		private final RuleCall cMINUSTerminalRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
-		private final RuleCall cZEROTerminalRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
-		private final RuleCall cDIGIT_NONZEROTerminalRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
-		private final RuleCall cLETTERTerminalRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
-		private final RuleCall cCARETTerminalRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
-		private final RuleCall cEQUALTerminalRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
-		private final RuleCall cNOT_EQUALTerminalRuleCall_15 = (RuleCall)cAlternatives.eContents().get(15);
-		private final RuleCall cPLUSTerminalRuleCall_16 = (RuleCall)cAlternatives.eContents().get(16);
-		private final RuleCall cCURLY_OPENTerminalRuleCall_17 = (RuleCall)cAlternatives.eContents().get(17);
-		private final RuleCall cCURLY_CLOSETerminalRuleCall_18 = (RuleCall)cAlternatives.eContents().get(18);
-		private final RuleCall cROUND_OPENTerminalRuleCall_19 = (RuleCall)cAlternatives.eContents().get(19);
-		private final RuleCall cROUND_CLOSETerminalRuleCall_20 = (RuleCall)cAlternatives.eContents().get(20);
-		private final RuleCall cSQUARE_OPENTerminalRuleCall_21 = (RuleCall)cAlternatives.eContents().get(21);
-		private final RuleCall cSQUARE_CLOSETerminalRuleCall_22 = (RuleCall)cAlternatives.eContents().get(22);
-		private final RuleCall cDOTTerminalRuleCall_23 = (RuleCall)cAlternatives.eContents().get(23);
-		private final RuleCall cCOLONTerminalRuleCall_24 = (RuleCall)cAlternatives.eContents().get(24);
-		private final RuleCall cCOMMATerminalRuleCall_25 = (RuleCall)cAlternatives.eContents().get(25);
-		private final RuleCall cREVERSEDTerminalRuleCall_26 = (RuleCall)cAlternatives.eContents().get(26);
-		private final RuleCall cTOTerminalRuleCall_27 = (RuleCall)cAlternatives.eContents().get(27);
-		private final RuleCall cWILDCARDTerminalRuleCall_28 = (RuleCall)cAlternatives.eContents().get(28);
-		private final RuleCall cOTHER_CHARACTERTerminalRuleCall_29 = (RuleCall)cAlternatives.eContents().get(29);
+		private final RuleCall cGTETerminalRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
+		private final RuleCall cLTETerminalRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
+		private final RuleCall cANDTerminalRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
+		private final RuleCall cORTerminalRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
+		private final RuleCall cNOTTerminalRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
+		private final RuleCall cMINUSTerminalRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
+		private final RuleCall cZEROTerminalRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
+		private final RuleCall cDIGIT_NONZEROTerminalRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
+		private final RuleCall cLETTERTerminalRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
+		private final RuleCall cCARETTerminalRuleCall_15 = (RuleCall)cAlternatives.eContents().get(15);
+		private final RuleCall cEQUALTerminalRuleCall_16 = (RuleCall)cAlternatives.eContents().get(16);
+		private final RuleCall cNOT_EQUALTerminalRuleCall_17 = (RuleCall)cAlternatives.eContents().get(17);
+		private final RuleCall cPLUSTerminalRuleCall_18 = (RuleCall)cAlternatives.eContents().get(18);
+		private final RuleCall cCURLY_OPENTerminalRuleCall_19 = (RuleCall)cAlternatives.eContents().get(19);
+		private final RuleCall cCURLY_CLOSETerminalRuleCall_20 = (RuleCall)cAlternatives.eContents().get(20);
+		private final RuleCall cROUND_OPENTerminalRuleCall_21 = (RuleCall)cAlternatives.eContents().get(21);
+		private final RuleCall cROUND_CLOSETerminalRuleCall_22 = (RuleCall)cAlternatives.eContents().get(22);
+		private final RuleCall cSQUARE_OPENTerminalRuleCall_23 = (RuleCall)cAlternatives.eContents().get(23);
+		private final RuleCall cSQUARE_CLOSETerminalRuleCall_24 = (RuleCall)cAlternatives.eContents().get(24);
+		private final RuleCall cDOTTerminalRuleCall_25 = (RuleCall)cAlternatives.eContents().get(25);
+		private final RuleCall cCOLONTerminalRuleCall_26 = (RuleCall)cAlternatives.eContents().get(26);
+		private final RuleCall cCOMMATerminalRuleCall_27 = (RuleCall)cAlternatives.eContents().get(27);
+		private final RuleCall cREVERSEDTerminalRuleCall_28 = (RuleCall)cAlternatives.eContents().get(28);
+		private final RuleCall cTOTerminalRuleCall_29 = (RuleCall)cAlternatives.eContents().get(29);
+		private final RuleCall cWILDCARDTerminalRuleCall_30 = (RuleCall)cAlternatives.eContents().get(30);
+		private final RuleCall cHASHTerminalRuleCall_31 = (RuleCall)cAlternatives.eContents().get(31);
+		private final RuleCall cDASHTerminalRuleCall_32 = (RuleCall)cAlternatives.eContents().get(32);
+		private final RuleCall cOTHER_CHARACTERTerminalRuleCall_33 = (RuleCall)cAlternatives.eContents().get(33);
 		
 		//TermCharacter hidden():
-		//	LT | GT | DBL_LT | DBL_GT | LT_EM | GT_EM | AND | OR | NOT | MINUS | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL |
-		//	NOT_EQUAL | PLUS | CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON |
-		//	COMMA | REVERSED | TO | WILDCARD | OTHER_CHARACTER;
+		//	LT | GT | DBL_LT | DBL_GT | LT_EM | GT_EM | GTE | LTE | AND | OR | NOT | MINUS | ZERO | DIGIT_NONZERO | LETTER | CARET
+		//	| EQUAL | NOT_EQUAL | PLUS | CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT |
+		//	COLON | COMMA | REVERSED | TO | WILDCARD | HASH | DASH | OTHER_CHARACTER;
 		@Override public ParserRule getRule() { return rule; }
 
-		//LT | GT | DBL_LT | DBL_GT | LT_EM | GT_EM | AND | OR | NOT | MINUS | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL |
-		//NOT_EQUAL | PLUS | CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON |
-		//COMMA | REVERSED | TO | WILDCARD | OTHER_CHARACTER
+		//LT | GT | DBL_LT | DBL_GT | LT_EM | GT_EM | GTE | LTE | AND | OR | NOT | MINUS | ZERO | DIGIT_NONZERO | LETTER | CARET |
+		//EQUAL | NOT_EQUAL | PLUS | CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT |
+		//COLON | COMMA | REVERSED | TO | WILDCARD | HASH | DASH | OTHER_CHARACTER
 		public Alternatives getAlternatives() { return cAlternatives; }
 
 		//LT
@@ -1356,77 +1750,89 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		//GT_EM
 		public RuleCall getGT_EMTerminalRuleCall_5() { return cGT_EMTerminalRuleCall_5; }
 
+		//GTE
+		public RuleCall getGTETerminalRuleCall_6() { return cGTETerminalRuleCall_6; }
+
+		//LTE
+		public RuleCall getLTETerminalRuleCall_7() { return cLTETerminalRuleCall_7; }
+
 		//AND
-		public RuleCall getANDTerminalRuleCall_6() { return cANDTerminalRuleCall_6; }
+		public RuleCall getANDTerminalRuleCall_8() { return cANDTerminalRuleCall_8; }
 
 		//OR
-		public RuleCall getORTerminalRuleCall_7() { return cORTerminalRuleCall_7; }
+		public RuleCall getORTerminalRuleCall_9() { return cORTerminalRuleCall_9; }
 
 		//NOT
-		public RuleCall getNOTTerminalRuleCall_8() { return cNOTTerminalRuleCall_8; }
+		public RuleCall getNOTTerminalRuleCall_10() { return cNOTTerminalRuleCall_10; }
 
 		//MINUS
-		public RuleCall getMINUSTerminalRuleCall_9() { return cMINUSTerminalRuleCall_9; }
+		public RuleCall getMINUSTerminalRuleCall_11() { return cMINUSTerminalRuleCall_11; }
 
 		//ZERO
-		public RuleCall getZEROTerminalRuleCall_10() { return cZEROTerminalRuleCall_10; }
+		public RuleCall getZEROTerminalRuleCall_12() { return cZEROTerminalRuleCall_12; }
 
 		//DIGIT_NONZERO
-		public RuleCall getDIGIT_NONZEROTerminalRuleCall_11() { return cDIGIT_NONZEROTerminalRuleCall_11; }
+		public RuleCall getDIGIT_NONZEROTerminalRuleCall_13() { return cDIGIT_NONZEROTerminalRuleCall_13; }
 
 		//LETTER
-		public RuleCall getLETTERTerminalRuleCall_12() { return cLETTERTerminalRuleCall_12; }
+		public RuleCall getLETTERTerminalRuleCall_14() { return cLETTERTerminalRuleCall_14; }
 
 		//CARET
-		public RuleCall getCARETTerminalRuleCall_13() { return cCARETTerminalRuleCall_13; }
+		public RuleCall getCARETTerminalRuleCall_15() { return cCARETTerminalRuleCall_15; }
 
 		//EQUAL
-		public RuleCall getEQUALTerminalRuleCall_14() { return cEQUALTerminalRuleCall_14; }
+		public RuleCall getEQUALTerminalRuleCall_16() { return cEQUALTerminalRuleCall_16; }
 
 		//NOT_EQUAL
-		public RuleCall getNOT_EQUALTerminalRuleCall_15() { return cNOT_EQUALTerminalRuleCall_15; }
+		public RuleCall getNOT_EQUALTerminalRuleCall_17() { return cNOT_EQUALTerminalRuleCall_17; }
 
 		//PLUS
-		public RuleCall getPLUSTerminalRuleCall_16() { return cPLUSTerminalRuleCall_16; }
+		public RuleCall getPLUSTerminalRuleCall_18() { return cPLUSTerminalRuleCall_18; }
 
 		//CURLY_OPEN
-		public RuleCall getCURLY_OPENTerminalRuleCall_17() { return cCURLY_OPENTerminalRuleCall_17; }
+		public RuleCall getCURLY_OPENTerminalRuleCall_19() { return cCURLY_OPENTerminalRuleCall_19; }
 
 		//CURLY_CLOSE
-		public RuleCall getCURLY_CLOSETerminalRuleCall_18() { return cCURLY_CLOSETerminalRuleCall_18; }
+		public RuleCall getCURLY_CLOSETerminalRuleCall_20() { return cCURLY_CLOSETerminalRuleCall_20; }
 
 		//ROUND_OPEN
-		public RuleCall getROUND_OPENTerminalRuleCall_19() { return cROUND_OPENTerminalRuleCall_19; }
+		public RuleCall getROUND_OPENTerminalRuleCall_21() { return cROUND_OPENTerminalRuleCall_21; }
 
 		//ROUND_CLOSE
-		public RuleCall getROUND_CLOSETerminalRuleCall_20() { return cROUND_CLOSETerminalRuleCall_20; }
+		public RuleCall getROUND_CLOSETerminalRuleCall_22() { return cROUND_CLOSETerminalRuleCall_22; }
 
 		//SQUARE_OPEN
-		public RuleCall getSQUARE_OPENTerminalRuleCall_21() { return cSQUARE_OPENTerminalRuleCall_21; }
+		public RuleCall getSQUARE_OPENTerminalRuleCall_23() { return cSQUARE_OPENTerminalRuleCall_23; }
 
 		//SQUARE_CLOSE
-		public RuleCall getSQUARE_CLOSETerminalRuleCall_22() { return cSQUARE_CLOSETerminalRuleCall_22; }
+		public RuleCall getSQUARE_CLOSETerminalRuleCall_24() { return cSQUARE_CLOSETerminalRuleCall_24; }
 
 		//DOT
-		public RuleCall getDOTTerminalRuleCall_23() { return cDOTTerminalRuleCall_23; }
+		public RuleCall getDOTTerminalRuleCall_25() { return cDOTTerminalRuleCall_25; }
 
 		//COLON
-		public RuleCall getCOLONTerminalRuleCall_24() { return cCOLONTerminalRuleCall_24; }
+		public RuleCall getCOLONTerminalRuleCall_26() { return cCOLONTerminalRuleCall_26; }
 
 		//COMMA
-		public RuleCall getCOMMATerminalRuleCall_25() { return cCOMMATerminalRuleCall_25; }
+		public RuleCall getCOMMATerminalRuleCall_27() { return cCOMMATerminalRuleCall_27; }
 
 		//REVERSED
-		public RuleCall getREVERSEDTerminalRuleCall_26() { return cREVERSEDTerminalRuleCall_26; }
+		public RuleCall getREVERSEDTerminalRuleCall_28() { return cREVERSEDTerminalRuleCall_28; }
 
 		//TO
-		public RuleCall getTOTerminalRuleCall_27() { return cTOTerminalRuleCall_27; }
+		public RuleCall getTOTerminalRuleCall_29() { return cTOTerminalRuleCall_29; }
 
 		//WILDCARD
-		public RuleCall getWILDCARDTerminalRuleCall_28() { return cWILDCARDTerminalRuleCall_28; }
+		public RuleCall getWILDCARDTerminalRuleCall_30() { return cWILDCARDTerminalRuleCall_30; }
+
+		//HASH
+		public RuleCall getHASHTerminalRuleCall_31() { return cHASHTerminalRuleCall_31; }
+
+		//DASH
+		public RuleCall getDASHTerminalRuleCall_32() { return cDASHTerminalRuleCall_32; }
 
 		//OTHER_CHARACTER
-		public RuleCall getOTHER_CHARACTERTerminalRuleCall_29() { return cOTHER_CHARACTERTerminalRuleCall_29; }
+		public RuleCall getOTHER_CHARACTERTerminalRuleCall_33() { return cOTHER_CHARACTERTerminalRuleCall_33; }
 	}
 
 	public class NonNegativeIntegerElements extends AbstractParserRuleElementFinder {
@@ -1504,6 +1910,94 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		//COMMA
 		public RuleCall getCOMMATerminalRuleCall_1() { return cCOMMATerminalRuleCall_1; }
 	}
+
+	public class IntegerElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "Integer");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Alternatives cAlternatives_0 = (Alternatives)cGroup.eContents().get(0);
+		private final RuleCall cPLUSTerminalRuleCall_0_0 = (RuleCall)cAlternatives_0.eContents().get(0);
+		private final RuleCall cDASHTerminalRuleCall_0_1 = (RuleCall)cAlternatives_0.eContents().get(1);
+		private final RuleCall cNonNegativeIntegerParserRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		
+		//Integer returns ecore::EInt hidden():
+		//	(PLUS | DASH)? NonNegativeInteger;
+		@Override public ParserRule getRule() { return rule; }
+
+		//(PLUS | DASH)? NonNegativeInteger
+		public Group getGroup() { return cGroup; }
+
+		//(PLUS | DASH)?
+		public Alternatives getAlternatives_0() { return cAlternatives_0; }
+
+		//PLUS
+		public RuleCall getPLUSTerminalRuleCall_0_0() { return cPLUSTerminalRuleCall_0_0; }
+
+		//DASH
+		public RuleCall getDASHTerminalRuleCall_0_1() { return cDASHTerminalRuleCall_0_1; }
+
+		//NonNegativeInteger
+		public RuleCall getNonNegativeIntegerParserRuleCall_1() { return cNonNegativeIntegerParserRuleCall_1; }
+	}
+
+	public class DecimalElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "Decimal");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Alternatives cAlternatives_0 = (Alternatives)cGroup.eContents().get(0);
+		private final RuleCall cPLUSTerminalRuleCall_0_0 = (RuleCall)cAlternatives_0.eContents().get(0);
+		private final RuleCall cDASHTerminalRuleCall_0_1 = (RuleCall)cAlternatives_0.eContents().get(1);
+		private final RuleCall cNonNegativeDecimalParserRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		
+		//Decimal returns ecore::EBigDecimal hidden():
+		//	(PLUS | DASH)? NonNegativeDecimal;
+		@Override public ParserRule getRule() { return rule; }
+
+		//(PLUS | DASH)? NonNegativeDecimal
+		public Group getGroup() { return cGroup; }
+
+		//(PLUS | DASH)?
+		public Alternatives getAlternatives_0() { return cAlternatives_0; }
+
+		//PLUS
+		public RuleCall getPLUSTerminalRuleCall_0_0() { return cPLUSTerminalRuleCall_0_0; }
+
+		//DASH
+		public RuleCall getDASHTerminalRuleCall_0_1() { return cDASHTerminalRuleCall_0_1; }
+
+		//NonNegativeDecimal
+		public RuleCall getNonNegativeDecimalParserRuleCall_1() { return cNonNegativeDecimalParserRuleCall_1; }
+	}
+
+	public class NonNegativeDecimalElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "NonNegativeDecimal");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cNonNegativeIntegerParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cDOTTerminalRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Alternatives cAlternatives_2 = (Alternatives)cGroup.eContents().get(2);
+		private final RuleCall cDIGIT_NONZEROTerminalRuleCall_2_0 = (RuleCall)cAlternatives_2.eContents().get(0);
+		private final RuleCall cZEROTerminalRuleCall_2_1 = (RuleCall)cAlternatives_2.eContents().get(1);
+		
+		//NonNegativeDecimal returns ecore::EBigDecimal hidden():
+		//	NonNegativeInteger DOT (DIGIT_NONZERO | ZERO)*;
+		@Override public ParserRule getRule() { return rule; }
+
+		//NonNegativeInteger DOT (DIGIT_NONZERO | ZERO)*
+		public Group getGroup() { return cGroup; }
+
+		//NonNegativeInteger
+		public RuleCall getNonNegativeIntegerParserRuleCall_0() { return cNonNegativeIntegerParserRuleCall_0; }
+
+		//DOT
+		public RuleCall getDOTTerminalRuleCall_1() { return cDOTTerminalRuleCall_1; }
+
+		//(DIGIT_NONZERO | ZERO)*
+		public Alternatives getAlternatives_2() { return cAlternatives_2; }
+
+		//DIGIT_NONZERO
+		public RuleCall getDIGIT_NONZEROTerminalRuleCall_2_0() { return cDIGIT_NONZEROTerminalRuleCall_2_0; }
+
+		//ZERO
+		public RuleCall getZEROTerminalRuleCall_2_1() { return cZEROTerminalRuleCall_2_1; }
+	}
 	
 	
 	private final ExpressionConstraintElements pExpressionConstraint;
@@ -1546,6 +2040,18 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final AttributeValueNotEqualsElements pAttributeValueNotEquals;
 	private final StringValueEqualsElements pStringValueEquals;
 	private final StringValueNotEqualsElements pStringValueNotEquals;
+	private final IntegerValueEqualsElements pIntegerValueEquals;
+	private final IntegerValueNotEqualsElements pIntegerValueNotEquals;
+	private final IntegerValueGreaterThanElements pIntegerValueGreaterThan;
+	private final IntegerValueLessThanElements pIntegerValueLessThan;
+	private final IntegerValueGreaterThanEqualsElements pIntegerValueGreaterThanEquals;
+	private final IntegerValueLessThanEqualsElements pIntegerValueLessThanEquals;
+	private final DecimalValueEqualsElements pDecimalValueEquals;
+	private final DecimalValueNotEqualsElements pDecimalValueNotEquals;
+	private final DecimalValueGreaterThanElements pDecimalValueGreaterThan;
+	private final DecimalValueLessThanElements pDecimalValueLessThan;
+	private final DecimalValueGreaterThanEqualsElements pDecimalValueGreaterThanEquals;
+	private final DecimalValueLessThanEqualsElements pDecimalValueLessThanEquals;
 	private final NestedExpressionElements pNestedExpression;
 	private final SnomedIdentifierElements pSnomedIdentifier;
 	private final TermElements pTerm;
@@ -1553,6 +2059,9 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final NonNegativeIntegerElements pNonNegativeInteger;
 	private final MaxValueElements pMaxValue;
 	private final AndOperatorElements pAndOperator;
+	private final IntegerElements pInteger;
+	private final DecimalElements pDecimal;
+	private final NonNegativeDecimalElements pNonNegativeDecimal;
 	private final TerminalRule tREVERSED;
 	private final TerminalRule tTO;
 	private final TerminalRule tAND;
@@ -1571,6 +2080,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final TerminalRule tSQUARE_OPEN;
 	private final TerminalRule tSQUARE_CLOSE;
 	private final TerminalRule tPLUS;
+	private final TerminalRule tDASH;
 	private final TerminalRule tCARET;
 	private final TerminalRule tNOT;
 	private final TerminalRule tDOT;
@@ -1583,6 +2093,9 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final TerminalRule tDBL_GT;
 	private final TerminalRule tLT_EM;
 	private final TerminalRule tGT_EM;
+	private final TerminalRule tGTE;
+	private final TerminalRule tLTE;
+	private final TerminalRule tHASH;
 	private final TerminalRule tWS;
 	private final TerminalRule tML_COMMENT;
 	private final TerminalRule tSL_COMMENT;
@@ -1634,6 +2147,18 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pAttributeValueNotEquals = new AttributeValueNotEqualsElements();
 		this.pStringValueEquals = new StringValueEqualsElements();
 		this.pStringValueNotEquals = new StringValueNotEqualsElements();
+		this.pIntegerValueEquals = new IntegerValueEqualsElements();
+		this.pIntegerValueNotEquals = new IntegerValueNotEqualsElements();
+		this.pIntegerValueGreaterThan = new IntegerValueGreaterThanElements();
+		this.pIntegerValueLessThan = new IntegerValueLessThanElements();
+		this.pIntegerValueGreaterThanEquals = new IntegerValueGreaterThanEqualsElements();
+		this.pIntegerValueLessThanEquals = new IntegerValueLessThanEqualsElements();
+		this.pDecimalValueEquals = new DecimalValueEqualsElements();
+		this.pDecimalValueNotEquals = new DecimalValueNotEqualsElements();
+		this.pDecimalValueGreaterThan = new DecimalValueGreaterThanElements();
+		this.pDecimalValueLessThan = new DecimalValueLessThanElements();
+		this.pDecimalValueGreaterThanEquals = new DecimalValueGreaterThanEqualsElements();
+		this.pDecimalValueLessThanEquals = new DecimalValueLessThanEqualsElements();
 		this.pNestedExpression = new NestedExpressionElements();
 		this.pSnomedIdentifier = new SnomedIdentifierElements();
 		this.pTerm = new TermElements();
@@ -1641,6 +2166,9 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pNonNegativeInteger = new NonNegativeIntegerElements();
 		this.pMaxValue = new MaxValueElements();
 		this.pAndOperator = new AndOperatorElements();
+		this.pInteger = new IntegerElements();
+		this.pDecimal = new DecimalElements();
+		this.pNonNegativeDecimal = new NonNegativeDecimalElements();
 		this.tREVERSED = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "REVERSED");
 		this.tTO = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "TO");
 		this.tAND = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "AND");
@@ -1659,6 +2187,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.tSQUARE_OPEN = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "SQUARE_OPEN");
 		this.tSQUARE_CLOSE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "SQUARE_CLOSE");
 		this.tPLUS = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "PLUS");
+		this.tDASH = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "DASH");
 		this.tCARET = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "CARET");
 		this.tNOT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "NOT");
 		this.tDOT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "DOT");
@@ -1671,6 +2200,9 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.tDBL_GT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "DBL_GT");
 		this.tLT_EM = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "LT_EM");
 		this.tGT_EM = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "GT_EM");
+		this.tGTE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "GTE");
+		this.tLTE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "LTE");
+		this.tHASH = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "HASH");
 		this.tWS = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "WS");
 		this.tML_COMMENT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "ML_COMMENT");
 		this.tSL_COMMENT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "SL_COMMENT");
@@ -2053,7 +2585,10 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//DataTypeComparison:
-	//	StringValueEquals | StringValueNotEquals;
+	//	StringValueEquals | StringValueNotEquals | IntegerValueEquals | IntegerValueNotEquals | IntegerValueGreaterThan |
+	//	IntegerValueGreaterThanEquals | IntegerValueLessThan | IntegerValueLessThanEquals | DecimalValueEquals |
+	//	DecimalValueNotEquals | DecimalValueGreaterThan | DecimalValueGreaterThanEquals | DecimalValueLessThan |
+	//	DecimalValueLessThanEquals;
 	public DataTypeComparisonElements getDataTypeComparisonAccess() {
 		return pDataTypeComparison;
 	}
@@ -2102,6 +2637,126 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return getStringValueNotEqualsAccess().getRule();
 	}
 
+	//IntegerValueEquals:
+	//	EQUAL HASH value=Integer;
+	public IntegerValueEqualsElements getIntegerValueEqualsAccess() {
+		return pIntegerValueEquals;
+	}
+	
+	public ParserRule getIntegerValueEqualsRule() {
+		return getIntegerValueEqualsAccess().getRule();
+	}
+
+	//IntegerValueNotEquals:
+	//	NOT_EQUAL HASH value=Integer;
+	public IntegerValueNotEqualsElements getIntegerValueNotEqualsAccess() {
+		return pIntegerValueNotEquals;
+	}
+	
+	public ParserRule getIntegerValueNotEqualsRule() {
+		return getIntegerValueNotEqualsAccess().getRule();
+	}
+
+	//IntegerValueGreaterThan:
+	//	GT HASH value=Integer;
+	public IntegerValueGreaterThanElements getIntegerValueGreaterThanAccess() {
+		return pIntegerValueGreaterThan;
+	}
+	
+	public ParserRule getIntegerValueGreaterThanRule() {
+		return getIntegerValueGreaterThanAccess().getRule();
+	}
+
+	//IntegerValueLessThan:
+	//	LT HASH value=Integer;
+	public IntegerValueLessThanElements getIntegerValueLessThanAccess() {
+		return pIntegerValueLessThan;
+	}
+	
+	public ParserRule getIntegerValueLessThanRule() {
+		return getIntegerValueLessThanAccess().getRule();
+	}
+
+	//IntegerValueGreaterThanEquals:
+	//	GTE HASH value=Integer;
+	public IntegerValueGreaterThanEqualsElements getIntegerValueGreaterThanEqualsAccess() {
+		return pIntegerValueGreaterThanEquals;
+	}
+	
+	public ParserRule getIntegerValueGreaterThanEqualsRule() {
+		return getIntegerValueGreaterThanEqualsAccess().getRule();
+	}
+
+	//IntegerValueLessThanEquals:
+	//	LTE HASH value=Integer;
+	public IntegerValueLessThanEqualsElements getIntegerValueLessThanEqualsAccess() {
+		return pIntegerValueLessThanEquals;
+	}
+	
+	public ParserRule getIntegerValueLessThanEqualsRule() {
+		return getIntegerValueLessThanEqualsAccess().getRule();
+	}
+
+	//DecimalValueEquals:
+	//	EQUAL HASH value=Decimal;
+	public DecimalValueEqualsElements getDecimalValueEqualsAccess() {
+		return pDecimalValueEquals;
+	}
+	
+	public ParserRule getDecimalValueEqualsRule() {
+		return getDecimalValueEqualsAccess().getRule();
+	}
+
+	//DecimalValueNotEquals:
+	//	NOT_EQUAL HASH value=Decimal;
+	public DecimalValueNotEqualsElements getDecimalValueNotEqualsAccess() {
+		return pDecimalValueNotEquals;
+	}
+	
+	public ParserRule getDecimalValueNotEqualsRule() {
+		return getDecimalValueNotEqualsAccess().getRule();
+	}
+
+	//DecimalValueGreaterThan:
+	//	GT HASH value=Decimal;
+	public DecimalValueGreaterThanElements getDecimalValueGreaterThanAccess() {
+		return pDecimalValueGreaterThan;
+	}
+	
+	public ParserRule getDecimalValueGreaterThanRule() {
+		return getDecimalValueGreaterThanAccess().getRule();
+	}
+
+	//DecimalValueLessThan:
+	//	LT HASH value=Decimal;
+	public DecimalValueLessThanElements getDecimalValueLessThanAccess() {
+		return pDecimalValueLessThan;
+	}
+	
+	public ParserRule getDecimalValueLessThanRule() {
+		return getDecimalValueLessThanAccess().getRule();
+	}
+
+	//DecimalValueGreaterThanEquals:
+	//	GTE HASH value=Decimal;
+	public DecimalValueGreaterThanEqualsElements getDecimalValueGreaterThanEqualsAccess() {
+		return pDecimalValueGreaterThanEquals;
+	}
+	
+	public ParserRule getDecimalValueGreaterThanEqualsRule() {
+		return getDecimalValueGreaterThanEqualsAccess().getRule();
+	}
+
+	//DecimalValueLessThanEquals:
+	//	LTE HASH value=Decimal;
+	public DecimalValueLessThanEqualsElements getDecimalValueLessThanEqualsAccess() {
+		return pDecimalValueLessThanEquals;
+	}
+	
+	public ParserRule getDecimalValueLessThanEqualsRule() {
+		return getDecimalValueLessThanEqualsAccess().getRule();
+	}
+
 	//NestedExpression:
 	//	ROUND_OPEN nested=ExpressionConstraint ROUND_CLOSE;
 	public NestedExpressionElements getNestedExpressionAccess() {
@@ -2135,9 +2790,9 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	//TermCharacter hidden():
-	//	LT | GT | DBL_LT | DBL_GT | LT_EM | GT_EM | AND | OR | NOT | MINUS | ZERO | DIGIT_NONZERO | LETTER | CARET | EQUAL |
-	//	NOT_EQUAL | PLUS | CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT | COLON |
-	//	COMMA | REVERSED | TO | WILDCARD | OTHER_CHARACTER;
+	//	LT | GT | DBL_LT | DBL_GT | LT_EM | GT_EM | GTE | LTE | AND | OR | NOT | MINUS | ZERO | DIGIT_NONZERO | LETTER | CARET
+	//	| EQUAL | NOT_EQUAL | PLUS | CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT |
+	//	COLON | COMMA | REVERSED | TO | WILDCARD | HASH | DASH | OTHER_CHARACTER;
 	public TermCharacterElements getTermCharacterAccess() {
 		return pTermCharacter;
 	}
@@ -2174,6 +2829,36 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public ParserRule getAndOperatorRule() {
 		return getAndOperatorAccess().getRule();
+	}
+
+	//Integer returns ecore::EInt hidden():
+	//	(PLUS | DASH)? NonNegativeInteger;
+	public IntegerElements getIntegerAccess() {
+		return pInteger;
+	}
+	
+	public ParserRule getIntegerRule() {
+		return getIntegerAccess().getRule();
+	}
+
+	//Decimal returns ecore::EBigDecimal hidden():
+	//	(PLUS | DASH)? NonNegativeDecimal;
+	public DecimalElements getDecimalAccess() {
+		return pDecimal;
+	}
+	
+	public ParserRule getDecimalRule() {
+		return getDecimalAccess().getRule();
+	}
+
+	//NonNegativeDecimal returns ecore::EBigDecimal hidden():
+	//	NonNegativeInteger DOT (DIGIT_NONZERO | ZERO)*;
+	public NonNegativeDecimalElements getNonNegativeDecimalAccess() {
+		return pNonNegativeDecimal;
+	}
+	
+	public ParserRule getNonNegativeDecimalRule() {
+		return getNonNegativeDecimalAccess().getRule();
 	}
 
 	//// ---TERMINALS---
@@ -2289,6 +2974,12 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return tPLUS;
 	} 
 
+	//terminal DASH:
+	//	"-";
+	public TerminalRule getDASHRule() {
+		return tDASH;
+	} 
+
 	//terminal CARET:
 	//	"^";
 	public TerminalRule getCARETRule() {
@@ -2359,6 +3050,24 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	//	">!";
 	public TerminalRule getGT_EMRule() {
 		return tGT_EM;
+	} 
+
+	//terminal GTE:
+	//	">=";
+	public TerminalRule getGTERule() {
+		return tGTE;
+	} 
+
+	//terminal LTE:
+	//	"<=";
+	public TerminalRule getLTERule() {
+		return tLTE;
+	} 
+
+	//terminal HASH:
+	//	"#";
+	public TerminalRule getHASHRule() {
+		return tHASH;
 	} 
 
 	//// comment terminals

@@ -221,6 +221,114 @@ public interface EclFactory extends EFactory
   StringValueNotEquals createStringValueNotEquals();
 
   /**
+   * Returns a new object of class '<em>Integer Value Equals</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Integer Value Equals</em>'.
+   * @generated
+   */
+  IntegerValueEquals createIntegerValueEquals();
+
+  /**
+   * Returns a new object of class '<em>Integer Value Not Equals</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Integer Value Not Equals</em>'.
+   * @generated
+   */
+  IntegerValueNotEquals createIntegerValueNotEquals();
+
+  /**
+   * Returns a new object of class '<em>Integer Value Greater Than</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Integer Value Greater Than</em>'.
+   * @generated
+   */
+  IntegerValueGreaterThan createIntegerValueGreaterThan();
+
+  /**
+   * Returns a new object of class '<em>Integer Value Less Than</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Integer Value Less Than</em>'.
+   * @generated
+   */
+  IntegerValueLessThan createIntegerValueLessThan();
+
+  /**
+   * Returns a new object of class '<em>Integer Value Greater Than Equals</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Integer Value Greater Than Equals</em>'.
+   * @generated
+   */
+  IntegerValueGreaterThanEquals createIntegerValueGreaterThanEquals();
+
+  /**
+   * Returns a new object of class '<em>Integer Value Less Than Equals</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Integer Value Less Than Equals</em>'.
+   * @generated
+   */
+  IntegerValueLessThanEquals createIntegerValueLessThanEquals();
+
+  /**
+   * Returns a new object of class '<em>Decimal Value Equals</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Decimal Value Equals</em>'.
+   * @generated
+   */
+  DecimalValueEquals createDecimalValueEquals();
+
+  /**
+   * Returns a new object of class '<em>Decimal Value Not Equals</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Decimal Value Not Equals</em>'.
+   * @generated
+   */
+  DecimalValueNotEquals createDecimalValueNotEquals();
+
+  /**
+   * Returns a new object of class '<em>Decimal Value Greater Than</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Decimal Value Greater Than</em>'.
+   * @generated
+   */
+  DecimalValueGreaterThan createDecimalValueGreaterThan();
+
+  /**
+   * Returns a new object of class '<em>Decimal Value Less Than</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Decimal Value Less Than</em>'.
+   * @generated
+   */
+  DecimalValueLessThan createDecimalValueLessThan();
+
+  /**
+   * Returns a new object of class '<em>Decimal Value Greater Than Equals</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Decimal Value Greater Than Equals</em>'.
+   * @generated
+   */
+  DecimalValueGreaterThanEquals createDecimalValueGreaterThanEquals();
+
+  /**
+   * Returns a new object of class '<em>Decimal Value Less Than Equals</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Decimal Value Less Than Equals</em>'.
+   * @generated
+   */
+  DecimalValueLessThanEquals createDecimalValueLessThanEquals();
+
+  /**
    * Returns a new object of class '<em>Nested Expression</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
