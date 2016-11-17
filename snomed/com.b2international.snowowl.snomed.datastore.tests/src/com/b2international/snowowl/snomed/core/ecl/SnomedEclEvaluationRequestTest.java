@@ -166,10 +166,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	@Test
 	public void descendantOf() throws Exception {
 		final Expression actual = eval("<"+ROOT_ID);
-		final Expression expected = Expressions.builder()
-				.should(parents(Collections.singleton(ROOT_ID)))
-				.should(ancestors(Collections.singleton(ROOT_ID)))
-				.build();
+		final Expression expected = descendantsOf(ROOT_ID);
 		assertEquals(expected, actual);
 	}
 	
@@ -313,6 +310,15 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
+	public void refinementAnyAttributeNotEquals() throws Exception {
+		generateDrugHierarchy();
+		
+		final Expression actual = eval(String.format("*:%s!=%s", HAS_ACTIVE_INGREDIENT, INGREDIENT1));
+		final Expression expected = ids(Collections.singleton(TRIPHASIL_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void refinementReversedAttributeEquals() throws Exception {
 		generateDrugHierarchy();
 		
@@ -354,7 +360,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		
 		final Expression actual = eval(String.format("<%s: [0..*] %s=<%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
 		// since 0..* cardinality is equal to just the focusConcepts, then this will eval to all concepts under DRUG_ROOT
-		final Expression expected = ids(ImmutableSet.of(ABACAVIR_TABLET, PANADOL_TABLET, TRIPHASIL_TABLET, AMOXICILLIN_TABLET));
+		final Expression expected = descendantsOf(DRUG_ROOT);
 		assertEquals(expected, actual);
 	}
 	
@@ -374,7 +380,10 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		generateDrugHierarchy();
 		
 		final Expression actual = eval(String.format("<%s: [0..0] %s=<%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
-		final Expression expected =	ids(ImmutableSet.of(ABACAVIR_TABLET, AMOXICILLIN_TABLET));
+		final Expression expected =	Expressions.builder()
+				.must(descendantsOf(DRUG_ROOT))
+				.mustNot(ids(ImmutableSet.of(TRIPHASIL_TABLET, PANADOL_TABLET)))
+				.build();
 		assertEquals(expected, actual);
 	}
 	
@@ -383,7 +392,10 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		generateDrugHierarchy();
 		
 		final Expression actual = eval(String.format("<%s: [0..1] %s=<%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
-		final Expression expected =	ids(ImmutableSet.of(ABACAVIR_TABLET, PANADOL_TABLET, AMOXICILLIN_TABLET));
+		final Expression expected =	Expressions.builder()
+				.must(descendantsOf(DRUG_ROOT))
+				.mustNot(ids(ImmutableSet.of(TRIPHASIL_TABLET)))
+				.build();
 		assertEquals(expected, actual);
 	}
 	
@@ -449,7 +461,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		generateDrugHierarchy();
 		
 		final Expression actual = eval(String.format("<%s: [0..*] R %s=%s", SUBSTANCE, HAS_ACTIVE_INGREDIENT, TRIPHASIL_TABLET));
-		final Expression expected = ids(ImmutableSet.of(INGREDIENT1, INGREDIENT2, INGREDIENT3));
+		final Expression expected = descendantsOf(SUBSTANCE);
 		assertEquals(expected, actual);
 	}
 	
@@ -503,7 +515,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		generateDrugsWithGroups();
 		
 		final Expression actual = eval(String.format("<%s: [0..*] {%s=<%s}", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
-		final Expression expected = ids(ImmutableSet.of(EPOX_TABLET, ALGOFLEX_TABLET, ASPIRIN_TABLET, TRIPLEX_TABLET));
+		final Expression expected = descendantsOf(DRUG_ROOT);
 		assertEquals(expected, actual);
 	}
 	
@@ -512,7 +524,10 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		generateDrugsWithGroups();
 		
 		final Expression actual = eval(String.format("<%s: [0..0] {%s=<%s}", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
-		final Expression expected = ids(ImmutableSet.of(EPOX_TABLET));
+		final Expression expected = Expressions.builder()
+				.must(descendantsOf(DRUG_ROOT))
+				.mustNot(ids(ImmutableSet.of(ASPIRIN_TABLET, ALGOFLEX_TABLET, TRIPLEX_TABLET)))
+				.build();
 		assertEquals(expected, actual);
 	}
 	
@@ -521,7 +536,10 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		generateDrugsWithGroups();
 		
 		final Expression actual = eval(String.format("<%s: [0..1] {%s=<%s}", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
-		final Expression expected = ids(ImmutableSet.of(EPOX_TABLET, ASPIRIN_TABLET, TRIPLEX_TABLET));
+		final Expression expected = Expressions.builder()
+				.must(descendantsOf(DRUG_ROOT))
+				.mustNot(ids(ImmutableSet.of(ALGOFLEX_TABLET)))
+				.build();
 		assertEquals(expected, actual);
 	}
 	
@@ -571,11 +589,29 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
+	public void refinementAnyStringEquals() throws Exception {
+		generateDrugHierarchy();
+		
+		final Expression actual = eval(String.format("*: %s = 'PANADOL'", HAS_TRADE_NAME));
+		final Expression expected = ids(ImmutableSet.of(PANADOL_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void refinementStringNotEquals() throws Exception {
 		generateDrugHierarchy();
 		
 		final Expression actual = eval(String.format("<%s: %s != 'PANADOL'", DRUG_ROOT, HAS_TRADE_NAME));
-		final Expression expected = ids(ImmutableSet.of(ABACAVIR_TABLET, TRIPHASIL_TABLET, AMOXICILLIN_TABLET));
+		final Expression expected = ids(ImmutableSet.of(TRIPHASIL_TABLET, AMOXICILLIN_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementAnyStringNotEquals() throws Exception {
+		generateDrugHierarchy();
+		
+		final Expression actual = eval(String.format("*: %s != 'PANADOL'", HAS_TRADE_NAME));
+		final Expression expected = ids(ImmutableSet.of(TRIPHASIL_TABLET, AMOXICILLIN_TABLET));
 		assertEquals(expected, actual);
 	}
 	
@@ -729,6 +765,13 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 				.field(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, attributeName)
 				.field(Fields.DATA_TYPE, DataType.STRING)
 				.field(SnomedRf2Headers.FIELD_VALUE, value);
+	}
+	
+	private static Expression descendantsOf(String conceptId) {
+		return Expressions.builder()
+				.should(parents(ImmutableSet.of(conceptId)))
+				.should(ancestors(ImmutableSet.of(conceptId)))
+				.build();
 	}
 
 }

@@ -275,21 +275,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	
 	protected Promise<Expression> eval(final BranchContext context, final RefinedExpressionConstraint refined) {
 		final String focusConceptExpression = context.service(EclSerializer.class).serialize(refined.getConstraint());
-		if ("*".equals(focusConceptExpression.trim())) {
-			return new SnomedEclRefinementEvaluator(Collections.emptySet()).evaluate(context, refined.getRefinement());
-		} else {
-			return resolve(context, focusConceptExpression)
-					.thenWith(new Function<Set<String>, Promise<Expression>>() {
-						@Override
-						public Promise<Expression> apply(Set<String> input) {
-							if (input.isEmpty()) {
-								return Promise.immediate(Expressions.matchNone());
-							} else {
-								return new SnomedEclRefinementEvaluator(input).evaluate(context, refined.getRefinement());
-							}
-						}
-					});
-		}
+		return new SnomedEclRefinementEvaluator(EclExpression.of(focusConceptExpression)).evaluate(context, refined.getRefinement());
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, DottedExpressionConstraint dotted) {
@@ -347,21 +333,6 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 						.execute(context.service(IEventBus.class));
 			}
 		};
-	}
-	
-	private static Promise<Set<String>> resolve(final BranchContext context, final String ecl) {
-		return SnomedRequests.prepareSearchConcept()
-			.all()
-			.setFields(ImmutableSet.of(SnomedConceptDocument.Fields.ID))
-			.filterByEcl(ecl)
-			.build(context.id(), context.branch().path())
-			.execute(context.service(IEventBus.class))
-			.then(new Function<SnomedConcepts, Set<String>>() {
-				@Override
-				public Set<String> apply(SnomedConcepts input) {
-					return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).toSet();
-				}
-			});
 	}
 	
 	private static void addParentIds(ISnomedConcept concept, final Set<String> collection) {
