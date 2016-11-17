@@ -63,5 +63,5 @@ public final class SnomedRefSetMemberSearchRequestBuilder extends SnomedSearchRe
 	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponentType(String type) {
 		return addOption(OptionKey.REFERENCED_COMPONENT_TYPE, type);
 	}
-	
+
 }

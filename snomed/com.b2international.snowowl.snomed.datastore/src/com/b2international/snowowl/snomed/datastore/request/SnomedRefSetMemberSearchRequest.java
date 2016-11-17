@@ -49,6 +49,8 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
+import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
@@ -65,6 +67,9 @@ import com.google.common.collect.Iterables;
  */
 final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedReferenceSetMembers> {
 
+	/**
+	 * @since 4.5
+	 */
 	enum OptionKey {
 		/**
 		 * Filter by containing reference set
@@ -166,7 +171,23 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, String.class), SnomedRefSetMemberIndexEntry.Expressions::attributeNames);
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_VALUE)) {
-				queryBuilder.must(values(propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE, String.class)));
+				final String operatorKey = RevisionSearchRequest.operator(SnomedRf2Headers.FIELD_VALUE);
+				RevisionSearchRequest.Operator op;
+				if (propKeys.remove(operatorKey)) {
+					op = propsFilter.get(operatorKey, Operator.class);
+				} else {
+					op = RevisionSearchRequest.Operator.EQUALS;
+				}
+				final Collection<String> attributeValues = propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE, String.class);
+				switch (op) {
+				case EQUALS:
+					queryBuilder.must(values(attributeValues));
+					break;
+				case NOT_EQUALS:
+					queryBuilder.mustNot(values(attributeValues));
+					break;
+				default: throw new NotImplementedException("Unsupported concrete domain value operator %s", op);
+				}
 			}
 			if (propKeys.remove(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE)) {
 				queryBuilder.must(dataTypes(propsFilter.getCollection(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, DataType.class)));
