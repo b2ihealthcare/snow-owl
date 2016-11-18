@@ -25,12 +25,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hbase.util.Order;
-import org.apache.hadoop.hbase.util.OrderedBytes;
-import org.apache.hadoop.hbase.util.SimplePositionedMutableByteRange;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * Copied from apache/hbase
@@ -69,9 +64,10 @@ public class TestOrderedBytes {
   static final BigDecimal[] BD_VALS =
     { null, BigDecimal.valueOf(Long.MAX_VALUE), BigDecimal.valueOf(Long.MIN_VALUE),
       BigDecimal.valueOf(Double.MAX_VALUE), BigDecimal.valueOf(Double.MIN_VALUE),
-      BigDecimal.valueOf(Long.MAX_VALUE).multiply(BigDecimal.valueOf(100)) };
+      BigDecimal.valueOf(Long.MAX_VALUE).multiply(BigDecimal.valueOf(100)),
+      new BigDecimal("9999999999999999999999999999999E671")};
   static final int[] BD_LENGTHS =
-    { 1, 11, 11, 11, 4, 12 };
+    { 1, 11, 11, 11, 4, 12, 19 };
 
   /*
    * This is the smallest difference between two doubles in D_VALS
