@@ -157,8 +157,12 @@ public class Expressions {
 		return new StringSetPredicate(field, ImmutableSet.copyOf(values));
 	}
 	
-	public static Expression matchAnyLong(String field, Iterable<Long> storageKeys) {
-		return new LongSetPredicate(field, storageKeys);
+	public static Expression matchAnyLong(String field, Iterable<Long> values) {
+		return new LongSetPredicate(field, values);
+	}
+	
+	public static Expression matchAnyDecimal(String field, Iterable<BigDecimal> values) {
+		return new DecimalSetPredicate(field, values);
 	}
 
 	public static ExpressionBuilder builder() {

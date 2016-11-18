@@ -149,6 +149,8 @@ public final class LuceneQueryBuilder {
 			visit((DecimalPredicate) expression);
 		} else if (expression instanceof DecimalRangePredicate) {
 			visit((DecimalRangePredicate) expression);
+		} else if (expression instanceof DecimalSetPredicate) {
+			visit((DecimalSetPredicate) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
@@ -330,6 +332,15 @@ public final class LuceneQueryBuilder {
 	
 	private void visit(LongSetPredicate predicate) {
 		final Query filter = Fields.longField(predicate.getField()).createTermsFilter(predicate.values());
+		deque.push(filter);
+	}
+	
+	private void visit(DecimalSetPredicate predicate) {
+		final Collection<BytesRef> terms = newHashSetWithExpectedSize(predicate.values().size());
+		for (BigDecimal decimal : predicate.values()) {
+			terms.add(encode(decimal));
+		}
+		final Query filter = new TermsQuery(predicate.getField(), terms);
 		deque.push(filter);
 	}
 	
