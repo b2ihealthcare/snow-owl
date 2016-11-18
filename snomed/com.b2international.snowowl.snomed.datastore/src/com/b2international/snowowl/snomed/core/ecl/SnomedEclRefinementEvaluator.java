@@ -394,8 +394,7 @@ final class SnomedEclRefinementEvaluator {
 								return new Property(input.getId(), 
 										input.getReferencedComponent().getId(), 
 										(String) input.getProperties().get(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME),
-										// TODO deserialize value???
-										(String) input.getProperties().get(SnomedRf2Headers.FIELD_VALUE), 
+										input.getProperties().get(SnomedRf2Headers.FIELD_VALUE), 
 										0 /*groups are not supported, all members considered ungrouped*/);
 							}
 						}).toSet();

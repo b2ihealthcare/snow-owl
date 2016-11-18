@@ -50,7 +50,6 @@ import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -850,7 +849,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 				.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.INFERRED_RELATIONSHIP)
 				.field(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, attributeName)
 				.field(Fields.DATA_TYPE, type)
-				.field(SnomedRf2Headers.FIELD_VALUE, SnomedRefSetUtil.serializeValue(type, value));
+				.field(SnomedRf2Headers.FIELD_VALUE, value);
 	}
 	
 	private static Expression descendantsOf(String conceptId) {
