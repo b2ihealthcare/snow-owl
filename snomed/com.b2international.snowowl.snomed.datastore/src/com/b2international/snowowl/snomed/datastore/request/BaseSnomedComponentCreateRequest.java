@@ -28,6 +28,7 @@ import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.RegisteringIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @since 4.0
@@ -55,6 +56,7 @@ public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<Trans
 	}
 
 	@Override
+	@JsonIgnore
 	public void setIdGenerationStrategy(final IdGenerationStrategy idGenerationStrategy) {
 		this.idGenerationStrategy = idGenerationStrategy;
 	}
