@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.acceptabilityIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.*;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.characteristicTypeIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.correlationIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.dataTypes;
@@ -194,6 +194,12 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 					break;
 				case NOT_EQUALS:
 					queryBuilder.mustNot(values(dataType, attributeValues));
+					break;
+				case LESS_THAN:
+					if (attributeValues.size() != 1) {
+						throw new BadRequestException("Exactly one attribute value is required for range queries");
+					}
+					queryBuilder.must(valueRange(dataType, null, Iterables.getOnlyElement(attributeValues), false, false));
 					break;
 				default: throw new NotImplementedException("Unsupported concrete domain value operator %s", op);
 				}

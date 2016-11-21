@@ -21,8 +21,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCom
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -97,6 +96,8 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private static final String DRUG_ROOT = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String HAS_TRADE_NAME = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String PREFERRED_STRENGTH = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String DRUG_1_MG = RandomSnomedIdentiferGenerator.generateConceptId();
+	private static final String DRUG_1D_MG = RandomSnomedIdentiferGenerator.generateConceptId();
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
@@ -681,7 +682,25 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		assertEquals(expected, actual);
 	}
 	
-	// TODO numeric gt, gte, lt, lte
+	@Test
+	public void refinementIntegerLessThan() throws Exception {
+		generateDrugHierarchy();
+		generateDrugWithIntegerStrengthOfValueOne();
+		final Expression actual = eval(String.format("<%s: %s < #1", DRUG_ROOT, PREFERRED_STRENGTH));
+		final Expression expected = ids(ImmutableSet.of(TRIPHASIL_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementDecimalLessThan() throws Exception {
+		generateDrugHierarchy();
+		generateDrugWithDecimalStrengthOfValueOne();
+		final Expression actual = eval(String.format("<%s: %s < #1.0", DRUG_ROOT, PREFERRED_STRENGTH));
+		final Expression expected = ids(ImmutableSet.of(ABACAVIR_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	// TODO numeric gt, gte, lte
 	
 	/**
 	 * Generates the following test fixtures:
@@ -789,6 +808,16 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		
 		indexRevision(MAIN, nextStorageKey(), relationship(TRIPLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5).group(1).build());
 		indexRevision(MAIN, nextStorageKey(), relationship(TRIPLEX_TABLET, HAS_BOSS, INGREDIENT6).group(2).build());
+	}
+	
+	private void generateDrugWithIntegerStrengthOfValueOne() {
+		indexRevision(MAIN, nextStorageKey(), concept(DRUG_1_MG).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
+		indexRevision(MAIN, nextStorageKey(), integerMember(DRUG_1_MG, PREFERRED_STRENGTH, 1).build());
+	}
+	
+	private void generateDrugWithDecimalStrengthOfValueOne() {
+		indexRevision(MAIN, nextStorageKey(), concept(DRUG_1D_MG).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
+		indexRevision(MAIN, nextStorageKey(), decimalMember(DRUG_1D_MG, PREFERRED_STRENGTH, BigDecimal.valueOf(1.0d)).build());
 	}
 
 	private SnomedConceptDocument.Builder concept(final String id) {

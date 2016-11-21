@@ -19,6 +19,7 @@ import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchAnyDecimal;
 import static com.b2international.index.query.Expressions.matchAnyInt;
+import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
@@ -333,6 +334,19 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				return matchAnyInt(Fields.INTEGER_VALUE, FluentIterable.from(values).filter(Integer.class).toSet());
 			case DECIMAL:
 				return matchAnyDecimal(Fields.DECIMAL_VALUE, FluentIterable.from(values).filter(BigDecimal.class).toSet());
+			default:
+				throw new UnsupportedOperationException("Unsupported data type when filtering by values, " + type);
+			}
+		}
+		
+		public static Expression valueRange(DataType type, final Object lower, final Object upper, boolean includeLower, boolean includeUpper) {
+			switch (type) {
+			case STRING: 
+				return matchRange(Fields.STRING_VALUE, (String) lower, (String) upper, includeLower, includeUpper);
+			case INTEGER:
+				return matchRange(Fields.INTEGER_VALUE, (Integer) lower, (Integer) upper, includeLower, includeUpper);
+			case DECIMAL:
+				return matchRange(Fields.DECIMAL_VALUE, (BigDecimal) lower, (BigDecimal) upper, includeLower, includeUpper);
 			default:
 				throw new UnsupportedOperationException("Unsupported data type when filtering by values, " + type);
 			}
