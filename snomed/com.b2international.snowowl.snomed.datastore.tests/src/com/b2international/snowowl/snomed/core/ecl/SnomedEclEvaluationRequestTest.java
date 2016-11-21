@@ -21,7 +21,8 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCom
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -736,7 +737,23 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		assertEquals(expected, actual);
 	}
 	
-	// TODO numeric gte
+	@Test
+	public void refinementIntegerGreaterThanEquals() throws Exception {
+		generateDrugHierarchy();
+		generateDrugWithIntegerStrengthOfValueOne();
+		final Expression actual = eval(String.format("<%s: %s >= #1", DRUG_ROOT, PREFERRED_STRENGTH));
+		final Expression expected = ids(ImmutableSet.of(PANADOL_TABLET, DRUG_1_MG));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementDecimalGreaterThanEquals() throws Exception {
+		generateDrugHierarchy();
+		generateDrugWithDecimalStrengthOfValueOne();
+		final Expression actual = eval(String.format("<%s: %s >= #1.0", DRUG_ROOT, PREFERRED_STRENGTH));
+		final Expression expected = ids(ImmutableSet.of(AMOXICILLIN_TABLET, DRUG_1D_MG));
+		assertEquals(expected, actual);
+	}
 	
 	/**
 	 * Generates the following test fixtures:
