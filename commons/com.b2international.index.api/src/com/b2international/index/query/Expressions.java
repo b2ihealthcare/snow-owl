@@ -124,25 +124,37 @@ public class Expressions {
 	public static Expression matchNone() {
 		return new MatchNone();
 	}
-
-	public static Expression matchRange(String fieldName, long from, long to) {
-		return new LongRangePredicate(fieldName, from, to);
-	}
 	
-	public static Expression matchRange(String fieldName, int from, int to) {
-		return new IntRangePredicate(fieldName, from, to);
-	}
-
 	public static Expression hasParent(Class<?> parentType, Expression expression) {
 		return new HasParentPredicate(parentType, expression);
 	}
 
+	public static Expression matchRange(String fieldName, Long from, Long to) {
+		return matchRange(fieldName, from, to, true, true);
+	}
+	
+	public static Expression matchRange(String fieldName, Long from, Long to, boolean includeFrom, boolean includeTo) {
+		return new LongRangePredicate(fieldName, from, to, includeFrom, includeTo);
+	}
+	
+	public static Expression matchRange(String fieldName, Integer from, Integer to) {
+		return matchRange(fieldName, from, to, true, true);
+	}
+	
+	public static Expression matchRange(String fieldName, Integer from, Integer to, boolean includeFrom, boolean includeTo) {
+		return new IntRangePredicate(fieldName, from, to, includeFrom, includeTo);
+	}
+
 	public static Expression matchRange(String field, String from, String to) {
-		return new StringRangePredicate(field, from, to);
+		return matchRange(field, from, to, true, true);
+	}
+	
+	public static Expression matchRange(String field, String from, String to, boolean includeFrom, boolean includeTo) {
+		return new StringRangePredicate(field, from, to, includeFrom, includeTo);
 	}
 	
 	public static Expression matchRange(String field, BigDecimal from, BigDecimal to) {
-		return new DecimalRangePredicate(field, from, to);
+		return matchRange(field, from, to, true, true);
 	}
 	
 	public static Expression matchRange(String field, BigDecimal from, BigDecimal to, boolean includeFrom, boolean includeTo) {

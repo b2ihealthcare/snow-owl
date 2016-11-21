@@ -15,48 +15,13 @@
  */
 package com.b2international.index.query;
 
-import java.util.Objects;
-
 /**
  * @since 4.7
  */
-public class StringRangePredicate extends Predicate {
+public final class StringRangePredicate extends RangePredicate<String> {
 
-	private final String from;
-	private final String to;
+	StringRangePredicate(String field, String lower, String upper, boolean includeLower, boolean includeUpper) {
+		super(field, lower, upper, includeLower, includeUpper);
+	}
 
-	StringRangePredicate(String field, String from, String to) {
-		super(field);
-		this.from = from;
-		this.to = to;
-	}
-	
-	public String from() {
-		return from;
-	}
-	
-	public String to() {
-		return to;
-	}
-	
-	@Override
-	public int hashCode() {
-		return Objects.hash(getField(), from(), to());
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (super.equals(obj)) {
-			final StringRangePredicate other = (StringRangePredicate) obj;
-			return Objects.equals(from, other.from) && Objects.equals(to, other.to);
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	public String toString() {
-		return String.format("%s is gte(%s) and lte(%s)", getField(), from, to);
-	}
-	
 }

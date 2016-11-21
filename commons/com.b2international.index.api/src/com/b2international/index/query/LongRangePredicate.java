@@ -18,28 +18,10 @@ package com.b2international.index.query;
 /**
  * @since 4.7
  */
-public class LongRangePredicate extends Predicate {
+public final class LongRangePredicate extends RangePredicate<Long> {
 
-	private final long from;
-	private final long to;
-
-	LongRangePredicate(String field, long from, long to) {
-		super(field);
-		this.from = from;
-		this.to = to;
+	LongRangePredicate(String field, Long lower, Long upper, boolean includeLower, boolean includeUpper) {
+		super(field, lower, upper, includeLower, includeUpper);
 	}
 	
-	public long from() {
-		return from;
-	}
-	
-	public long to() {
-		return to;
-	}
-	
-	@Override
-	public String toString() {
-		return String.format("%s is gte(%s) and lte(%s)", getField(), from, to);
-	}
-
 }

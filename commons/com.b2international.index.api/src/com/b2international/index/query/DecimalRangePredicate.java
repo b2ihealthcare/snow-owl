@@ -20,44 +20,10 @@ import java.math.BigDecimal;
 /**
  * @since 5.4
  */
-public final class DecimalRangePredicate extends Predicate {
+public final class DecimalRangePredicate extends RangePredicate<BigDecimal> {
 
-	private final BigDecimal from;
-	private final BigDecimal to;
-	private boolean includeFrom;
-	private boolean includeTo;
+	DecimalRangePredicate(String field, BigDecimal lower, BigDecimal upper, boolean includeLower, boolean includeUpper) {
+		super(field, lower, upper, includeLower, includeUpper);
+	}
 
-	DecimalRangePredicate(String field, BigDecimal from, BigDecimal to) {
-		this(field, from, to, true, true);
-	}
-	
-	DecimalRangePredicate(String field, BigDecimal from, BigDecimal to, boolean includeFrom, boolean includeTo) {
-		super(field);
-		this.from = from;
-		this.to = to;
-		this.includeFrom = includeFrom;
-		this.includeTo = includeTo;
-	}
-	
-	public boolean isIncludeFrom() {
-		return includeFrom;
-	}
-	
-	public boolean isIncludeTo() {
-		return includeTo;
-	}
-	
-	public BigDecimal from() {
-		return from;
-	}
-	
-	public BigDecimal to() {
-		return to;
-	}
-	
-	@Override
-	public String toString() {
-		return String.format("%s is gte(%s) and lte(%s)", getField(), from, to);
-	}
-	
 }

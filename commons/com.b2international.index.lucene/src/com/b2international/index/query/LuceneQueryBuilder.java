@@ -370,24 +370,24 @@ public final class LuceneQueryBuilder {
 	}
 
 	private void visit(LongRangePredicate range) {
-		final Query filter = NumericRangeQuery.newLongRange(range.getField(), range.from(), range.to(), true, true);
+		final Query filter = NumericRangeQuery.newLongRange(range.getField(), range.lower(), range.upper(), range.isIncludeLower(), range.isIncludeUpper());
 		deque.push(filter);
 	}
 	
 	private void visit(IntRangePredicate range) {
-		final Query filter = NumericRangeQuery.newIntRange(range.getField(), range.from(), range.to(), true, true);
+		final Query filter = NumericRangeQuery.newIntRange(range.getField(), range.lower(), range.upper(), range.isIncludeLower(), range.isIncludeUpper());
 		deque.push(filter);
 	}
 	
 	private void visit(StringRangePredicate range) {
-		final Query filter = TermRangeQuery.newStringRange(range.getField(), range.from(), range.to(), true, true);
+		final Query filter = TermRangeQuery.newStringRange(range.getField(), range.lower(), range.upper(), range.isIncludeLower(), range.isIncludeUpper());
 		deque.push(filter);
 	}
 	
 	private void visit(DecimalRangePredicate range) {
-		final BytesRef upper = range.to() == null ? null : encode(range.to());
-		final BytesRef lower = range.from() == null ? null : encode(range.from());
-		final Query filter = new TermRangeQuery(range.getField(), lower, upper, range.isIncludeFrom(), range.isIncludeTo());
+		final BytesRef lower = range.lower() == null ? null : encode(range.lower());
+		final BytesRef upper = range.upper() == null ? null : encode(range.upper());
+		final Query filter = new TermRangeQuery(range.getField(), lower, upper, range.isIncludeLower(), range.isIncludeUpper());
 		deque.push(filter);
 	}
 	
