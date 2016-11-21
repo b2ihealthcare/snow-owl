@@ -54,7 +54,8 @@ public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<Trans
 		return moduleId;
 	}
 
-	void setIdGenerationStrategy(final IdGenerationStrategy idGenerationStrategy) {
+	@Override
+	public void setIdGenerationStrategy(final IdGenerationStrategy idGenerationStrategy) {
 		this.idGenerationStrategy = idGenerationStrategy;
 	}
 
@@ -70,7 +71,9 @@ public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<Trans
 	protected final void ensureUniqueId(String type, TransactionContext context) {
 		final Timer idGenerationTimer = context.service(Metrics.class).timer("idGeneration");
 		try {
+			
 			idGenerationTimer.start();
+			
 			if (getIdGenerationStrategy() instanceof RegisteringIdStrategy) {
 				final String componentId = getIdGenerationStrategy().generate(context);
 				
@@ -81,9 +84,7 @@ public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<Trans
 					setIdGenerationStrategy(new ConstantIdStrategy(componentId));
 					return;
 				}
-			}
-			
-			if (getIdGenerationStrategy() instanceof ReservingIdStrategy) {
+			} else if (getIdGenerationStrategy() instanceof ReservingIdStrategy) {
 				String componentId = null;
 				
 				for (int i = 0; i < ID_GENERATION_ATTEMPTS; i++) {
@@ -98,7 +99,19 @@ public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<Trans
 				}
 				
 				throw new BadRequestException("Couldn't generate unique identifier for %s after %d attempts.", type, ID_GENERATION_ATTEMPTS); 
+			} else if (getIdGenerationStrategy() instanceof ConstantIdStrategy) {
+				
+				String componentId = getIdGenerationStrategy().generate(context);
+				
+				try {
+					checkComponentExists(context, componentId);
+					throw new AlreadyExistsException(type, componentId);
+				} catch (ComponentNotFoundException e) {
+					return;
+				}
+				
 			}
+			
 		} finally {
 			idGenerationTimer.stop();
 		}
