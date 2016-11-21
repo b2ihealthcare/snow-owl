@@ -59,6 +59,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
 import com.b2international.snowowl.snomed.ecl.ecl.Comparison;
 import com.b2international.snowowl.snomed.ecl.ecl.DataTypeComparison;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThan;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThan;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThanEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals;
@@ -66,6 +67,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.EclFactory;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThan;
 import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThan;
 import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThanEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueNotEquals;
@@ -401,6 +403,14 @@ final class SnomedEclRefinementEvaluator {
 			value = ((DecimalValueLessThanEquals) comparison).getValue();
 			type = DataType.DECIMAL;
 			operator = RevisionSearchRequest.Operator.LESS_THAN_EQUALS;
+		} else if (comparison instanceof IntegerValueGreaterThan) {
+			value = ((IntegerValueGreaterThan) comparison).getValue();
+			type = DataType.INTEGER;
+			operator = RevisionSearchRequest.Operator.GREATER_THAN;
+		} else if (comparison instanceof DecimalValueGreaterThan) {
+			value = ((DecimalValueGreaterThan) comparison).getValue();
+			type = DataType.DECIMAL;
+			operator = RevisionSearchRequest.Operator.GREATER_THAN;
 		} else {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
 		}

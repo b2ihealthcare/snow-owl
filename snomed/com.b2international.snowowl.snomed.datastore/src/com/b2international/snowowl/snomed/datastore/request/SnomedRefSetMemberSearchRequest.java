@@ -203,6 +203,10 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 					checkRangeValue(attributeValues);
 					queryBuilder.must(valueRange(dataType, null, Iterables.getOnlyElement(attributeValues), false, true));
 					break;
+				case GREATER_THAN:
+					checkRangeValue(attributeValues);
+					queryBuilder.must(valueRange(dataType, Iterables.getOnlyElement(attributeValues), null, false, false));
+					break;
 				default: throw new NotImplementedException("Unsupported concrete domain value operator %s", op);
 				}
 			}

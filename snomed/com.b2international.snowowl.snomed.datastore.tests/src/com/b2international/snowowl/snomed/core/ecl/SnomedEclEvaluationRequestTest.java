@@ -718,7 +718,25 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		assertEquals(expected, actual);
 	}
 	
-	// TODO numeric gt, gte, lte
+	@Test
+	public void refinementIntegerGreaterThan() throws Exception {
+		generateDrugHierarchy();
+		generateDrugWithIntegerStrengthOfValueOne();
+		final Expression actual = eval(String.format("<%s: %s > #1", DRUG_ROOT, PREFERRED_STRENGTH));
+		final Expression expected = ids(ImmutableSet.of(PANADOL_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementDecimalGreaterThan() throws Exception {
+		generateDrugHierarchy();
+		generateDrugWithDecimalStrengthOfValueOne();
+		final Expression actual = eval(String.format("<%s: %s > #1.0", DRUG_ROOT, PREFERRED_STRENGTH));
+		final Expression expected = ids(ImmutableSet.of(AMOXICILLIN_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	// TODO numeric gte
 	
 	/**
 	 * Generates the following test fixtures:
