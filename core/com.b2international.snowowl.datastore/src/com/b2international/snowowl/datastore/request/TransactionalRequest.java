@@ -104,4 +104,7 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 		return CommitResult.class;
 	}
 	
+	public Request<TransactionContext, ?> getNext() {
+		return next;
+	}
 }

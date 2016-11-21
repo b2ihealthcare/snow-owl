@@ -63,7 +63,7 @@ public abstract class DelegatingRequest<C extends ServiceProvider, T extends Ser
 	
 	@JsonProperty
 	@JsonUnwrapped
-	protected final Request<T, R> next() {
+	public final Request<T, R> next() {
 		return next;
 	}
 
