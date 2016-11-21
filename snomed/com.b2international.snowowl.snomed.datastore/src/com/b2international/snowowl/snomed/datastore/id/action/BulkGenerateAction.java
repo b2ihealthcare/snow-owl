@@ -19,6 +19,7 @@ import java.util.Collection;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.5
@@ -57,7 +58,7 @@ public class BulkGenerateAction extends IdAction<Collection<String>> {
 
 	@Override
 	public Collection<String> get() {
-		return componentIds;
+		return ImmutableList.<String>copyOf(componentIds);
 	}
 
 }
