@@ -60,12 +60,14 @@ import com.b2international.snowowl.snomed.ecl.ecl.Comparison;
 import com.b2international.snowowl.snomed.ecl.ecl.DataTypeComparison;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThan;
+import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThanEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.EclFactory;
 import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThan;
+import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThanEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
@@ -391,6 +393,14 @@ final class SnomedEclRefinementEvaluator {
 			value = ((DecimalValueLessThan) comparison).getValue();
 			type = DataType.DECIMAL;
 			operator = RevisionSearchRequest.Operator.LESS_THAN;
+		} else if (comparison instanceof IntegerValueLessThanEquals) {
+			value = ((IntegerValueLessThanEquals) comparison).getValue();
+			type = DataType.INTEGER;
+			operator = RevisionSearchRequest.Operator.LESS_THAN_EQUALS;
+		} else if (comparison instanceof DecimalValueLessThanEquals) {
+			value = ((DecimalValueLessThanEquals) comparison).getValue();
+			type = DataType.DECIMAL;
+			operator = RevisionSearchRequest.Operator.LESS_THAN_EQUALS;
 		} else {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
 		}

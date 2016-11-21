@@ -700,6 +700,24 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		assertEquals(expected, actual);
 	}
 	
+	@Test
+	public void refinementIntegerLessThanOrEquals() throws Exception {
+		generateDrugHierarchy();
+		generateDrugWithIntegerStrengthOfValueOne();
+		final Expression actual = eval(String.format("<%s: %s <= #1", DRUG_ROOT, PREFERRED_STRENGTH));
+		final Expression expected = ids(ImmutableSet.of(TRIPHASIL_TABLET, DRUG_1_MG));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementDecimalLessThanOrEquals() throws Exception {
+		generateDrugHierarchy();
+		generateDrugWithDecimalStrengthOfValueOne();
+		final Expression actual = eval(String.format("<%s: %s <= #1.0", DRUG_ROOT, PREFERRED_STRENGTH));
+		final Expression expected = ids(ImmutableSet.of(ABACAVIR_TABLET, DRUG_1D_MG));
+		assertEquals(expected, actual);
+	}
+	
 	// TODO numeric gt, gte, lte
 	
 	/**

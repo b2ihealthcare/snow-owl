@@ -196,10 +196,12 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 					queryBuilder.mustNot(values(dataType, attributeValues));
 					break;
 				case LESS_THAN:
-					if (attributeValues.size() != 1) {
-						throw new BadRequestException("Exactly one attribute value is required for range queries");
-					}
+					checkRangeValue(attributeValues);
 					queryBuilder.must(valueRange(dataType, null, Iterables.getOnlyElement(attributeValues), false, false));
+					break;
+				case LESS_THAN_EQUALS:
+					checkRangeValue(attributeValues);
+					queryBuilder.must(valueRange(dataType, null, Iterables.getOnlyElement(attributeValues), false, true));
 					break;
 				default: throw new NotImplementedException("Unsupported concrete domain value operator %s", op);
 				}
@@ -222,6 +224,12 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			return SnomedConverters.newMemberConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), hits.getTotal());
 		}
 
+	}
+
+	private static void checkRangeValue(final Collection<Object> attributeValues) {
+		if (attributeValues.size() != 1) {
+			throw new BadRequestException("Exactly one attribute value is required for range queries");
+		}
 	}
 	
 	@Override

@@ -47,7 +47,6 @@ import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
@@ -67,7 +66,6 @@ import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
 import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.TypeToken;
 
 /**
