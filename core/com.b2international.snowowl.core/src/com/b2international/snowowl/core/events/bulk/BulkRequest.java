@@ -60,4 +60,11 @@ public final class BulkRequest<C extends ServiceProvider> extends BaseRequest<C,
 	public static <C extends ServiceProvider> BulkRequestBuilder<C> create() {
 		return new BulkRequestBuilder<C>();
 	}
+	
+	/**
+	 * @return the requests
+	 */
+	public List<Request<C, ?>> getRequests() {
+		return requests;
+	}
 }
