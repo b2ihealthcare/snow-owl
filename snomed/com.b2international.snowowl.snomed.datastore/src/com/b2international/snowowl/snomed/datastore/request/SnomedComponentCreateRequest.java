@@ -26,8 +26,6 @@ public interface SnomedComponentCreateRequest extends Request<TransactionContext
 
 	IdGenerationStrategy getIdGenerationStrategy();
 
-	void setIdGenerationStrategy(IdGenerationStrategy idGenerationStrategy);
-	
 	String getModuleId();
 
 }

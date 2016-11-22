@@ -55,9 +55,8 @@ public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<Trans
 		return moduleId;
 	}
 
-	@Override
 	@JsonIgnore
-	public void setIdGenerationStrategy(final IdGenerationStrategy idGenerationStrategy) {
+	public final void setIdGenerationStrategy(final IdGenerationStrategy idGenerationStrategy) {
 		this.idGenerationStrategy = idGenerationStrategy;
 	}
 
