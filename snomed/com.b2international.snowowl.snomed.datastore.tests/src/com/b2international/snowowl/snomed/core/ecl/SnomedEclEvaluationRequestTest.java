@@ -17,7 +17,9 @@ package com.b2international.snowowl.snomed.core.ecl;
 
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.id;
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringMappingRefSet;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringRefSet;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_MAPPING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
@@ -158,14 +160,20 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	@Test
 	public void memberOf() throws Exception {
 		final Expression actual = eval("^"+Concepts.REFSET_DESCRIPTION_TYPE);
-		final Expression expected = referringRefSet(Concepts.REFSET_DESCRIPTION_TYPE);
+		final Expression expected = Expressions.builder()
+				.should(referringRefSet(Concepts.REFSET_DESCRIPTION_TYPE))
+				.should(referringMappingRefSet(Concepts.REFSET_DESCRIPTION_TYPE))
+				.build();
 		assertEquals(expected, actual);
 	}
 	
 	@Test
 	public void memberOfAny() throws Exception {
 		final Expression actual = eval("^*");
-		final Expression expected = Expressions.exists(REFERRING_REFSETS);
+		final Expression expected = Expressions.builder()
+				.should(Expressions.exists(REFERRING_REFSETS))
+				.should(Expressions.exists(REFERRING_MAPPING_REFSETS))
+				.build();
 		assertEquals(expected, actual);
 	}
 	

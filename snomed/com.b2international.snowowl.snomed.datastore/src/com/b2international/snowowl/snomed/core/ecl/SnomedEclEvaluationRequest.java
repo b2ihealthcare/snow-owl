@@ -18,7 +18,9 @@ package com.b2international.snowowl.snomed.core.ecl;
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.id;
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Fields.ID;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringMappingRefSet;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringRefSet;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_MAPPING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
@@ -124,9 +126,17 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	protected Promise<Expression> eval(BranchContext context, MemberOf memberOf) {
 		if (memberOf.getConstraint() instanceof ConceptReference) {
 			final ConceptReference concept = (ConceptReference) memberOf.getConstraint();
-			return Promise.immediate(referringRefSet(concept.getId()));
+			return Promise.immediate(
+					Expressions.builder()
+						.should(referringRefSet(concept.getId()))
+						.should(referringMappingRefSet(concept.getId()))
+					.build()
+					);
 		} else if (memberOf.getConstraint() instanceof Any) {
-			return Promise.immediate(Expressions.exists(REFERRING_REFSETS));
+			return Promise.immediate(Expressions.builder()
+					.should(Expressions.exists(REFERRING_REFSETS))
+					.should(Expressions.exists(REFERRING_MAPPING_REFSETS))
+					.build());
 		} else {
 			return throwUnsupported(memberOf.getConstraint());
 		}
