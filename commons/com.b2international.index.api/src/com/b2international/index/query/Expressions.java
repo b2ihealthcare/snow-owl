@@ -24,7 +24,6 @@ import java.util.List;
 import com.b2international.index.Analyzers;
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 /**
@@ -162,11 +161,11 @@ public class Expressions {
 	}
 
 	public static Expression matchAnyInt(String field, Iterable<Integer> values) {
-		return new IntSetPredicate(field, ImmutableSet.copyOf(values));
+		return new IntSetPredicate(field, values);
 	}
 	
 	public static Expression matchAny(String field, Iterable<String> values) {
-		return new StringSetPredicate(field, ImmutableSet.copyOf(values));
+		return new StringSetPredicate(field, values);
 	}
 	
 	public static Expression matchAnyLong(String field, Iterable<Long> values) {

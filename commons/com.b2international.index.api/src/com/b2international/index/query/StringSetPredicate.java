@@ -15,14 +15,12 @@
  */
 package com.b2international.index.query;
 
-import java.util.Set;
-
 /**
  * @since 4.7
  */
 public final class StringSetPredicate extends SetPredicate<String> {
 
-	StringSetPredicate(String field, Set<String> values) {
+	StringSetPredicate(String field, Iterable<String> values) {
 		super(field, values);
 	}
 
