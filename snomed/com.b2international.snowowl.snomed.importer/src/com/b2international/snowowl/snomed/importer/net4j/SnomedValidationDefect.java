@@ -30,13 +30,19 @@ public class SnomedValidationDefect implements Serializable, Comparable<SnomedVa
 	
 	private static final long serialVersionUID = 1L;
 	
+	private final String fileName;
 	private final DefectType defectType;
 	private final Collection<String> defects;
 	
-	public SnomedValidationDefect(final DefectType defectType, final Collection<String> defects) {
+	public SnomedValidationDefect(final String fileName, final DefectType defectType, final Collection<String> defects) {
+		this.fileName = fileName;
 		this.defectType = checkNotNull(defectType, "defectType");
 		checkArgument(!defects.isEmpty(), "At least one error message is required");
 		this.defects = ImmutableList.copyOf(defects);
+	}
+	
+	public String getFileName() {
+		return fileName;
 	}
 	
 	public final DefectType getDefectType() {

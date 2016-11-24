@@ -105,6 +105,9 @@ public class SnomedDescriptionValidator extends AbstractSnomedValidator {
 		addDefect(DefectType.DESCRIPTION_TYPE_NOT_EXIST, typeConceptNotExist);
 		addDefect(DefectType.DESCRIPTION_CASE_SIGNIFICANCE_NOT_EXIST, caseSignificanceConceptNotExist);
 		
+		descriptionIdsWithEffectivetimeStatus.clear();
+		fullySpecifiedNames.clear();
+		descriptionIdNotUnique.clear();
 		fullySpecifiedNameNotUnique.clear();
 		descriptionConceptNotExist.clear();
 		typeConceptNotExist.clear();

@@ -27,7 +27,9 @@ import static com.b2international.snowowl.snomed.importer.release.ReleaseFileSet
 import static com.b2international.snowowl.snomed.importer.rf2.util.RF2ReleaseRefSetFileCollector.collectUrlFromRelease;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Maps.newHashMap;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +42,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -111,6 +114,7 @@ import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedDescrip
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedRelationshipImporter;
 import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedValidationContext;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -515,23 +519,36 @@ public final class ImportUtil {
 			@Override
 			public Boolean execute(RevisionSearcher index) throws IOException {
 				final SnomedValidationContext validator = new SnomedValidationContext(index, requestingUserId, configuration, IMPORT_LOGGER, repositoryState);
-				result.getValidationDefects().addAll(validator.validate(subMonitor.newChild(1)));
+				final Set<SnomedValidationDefect> defects = result.getValidationDefects();
+				defects.addAll(validator.validate(subMonitor.newChild(1)));
 				
-				if (!isEmpty(result.getValidationDefects())) {
+				if (!isEmpty(defects)) {
 					// If only header differences exist, continue the import
-					final FluentIterable<String> defects = FluentIterable.from(result.getValidationDefects()).transformAndConcat(new Function<SnomedValidationDefect, Iterable<? extends String>>() {
-						@Override
-						public Iterable<? extends String> apply(SnomedValidationDefect input) {
-							return input.getDefects();
-						}
-					});
+					
 					final String message = String.format("Validation encountered %s issue(s).", defects.size());
 					LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, message);
-					for (String defect : defects) {
-						LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, defect);
+					
+					final String lineSeparator = System.getProperty("line.separator");
+					final Map<String, BufferedWriter> defectWriters = newHashMap();
+					try {
+						for (SnomedValidationDefect defect : defects) {
+							final String filePath = defect.getFileName();
+							final String defectsFile = String.format("d:/%s_%s_defects.txt", configuration.getArchiveFile().getName(), filePath);
+							if (!defectWriters.containsKey(defectsFile)) {
+								defectWriters.put(defectsFile, Files.newWriter(new File(defectsFile), Charsets.UTF_8));
+							}
+							for (String lineDefect : defect.getDefects()) {
+								defectWriters.get(defectsFile).write(defect.getDefectType().name() + "\t" + lineDefect);
+								defectWriters.get(defectsFile).write(lineSeparator);
+							}
+						}
+					} finally {
+						for (BufferedWriter writer : defectWriters.values()) {
+							writer.close();
+						}
 					}
 					
-					return !Iterables.tryFind(result.getValidationDefects(), new Predicate<SnomedValidationDefect>() {
+					return !Iterables.tryFind(defects, new Predicate<SnomedValidationDefect>() {
 						@Override
 						public boolean apply(SnomedValidationDefect input) {
 							return input.getDefectType().isCritical();

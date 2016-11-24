@@ -29,10 +29,10 @@ public class SnomedIncompleteTaxonomyValidationDefect extends SnomedValidationDe
 	
 	private Collection<String> conceptIdsToInactivate;
 	
-	public SnomedIncompleteTaxonomyValidationDefect(final Collection<String> defects, 
+	public SnomedIncompleteTaxonomyValidationDefect(final String filePath, final Collection<String> defects, 
 			final Collection<String> conceptIdsToInactivate) {
 		
-		super(DefectType.INCONSISTENT_TAXONOMY, defects);
+		super(filePath, DefectType.INCONSISTENT_TAXONOMY, defects);
 		this.conceptIdsToInactivate = checkNotNull(conceptIdsToInactivate, "conceptIdsToInactivate");
 	}
 	

@@ -35,7 +35,6 @@ import com.b2international.collections.longs.LongCollection;
 import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilderResult;
@@ -45,9 +44,10 @@ import com.b2international.snowowl.snomed.importer.net4j.SnomedIncompleteTaxonom
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.RepositoryState;
 import com.b2international.snowowl.snomed.importer.rf2.util.Rf2FileModifier;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 
 /**
  * Class for validating the taxonomy of active concepts and active IS_A relationships.
@@ -113,6 +113,9 @@ public class SnomedTaxonomyValidator {
 	private Collection<SnomedValidationDefect> doValidate() {
 		try {
 			final Rf2BasedSnomedTaxonomyBuilder builder = Rf2BasedSnomedTaxonomyBuilder.newInstance(new SnomedTaxonomyBuilder(conceptIds, statements), characteristicType);
+			
+			final Multimap<String, InvalidRelationship> invalidRelationships = ArrayListMultimap.create();
+			
 			if (snapshot) {
 				
 				LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
@@ -130,7 +133,7 @@ public class SnomedTaxonomyValidator {
 				
 				final SnomedTaxonomyBuilderResult result = builder.build();
 				if (!result.getStatus().isOK()) {
-					throw new IncompleteTaxonomyException(Lists.newArrayList(result.getInvalidRelationships()));
+					invalidRelationships.putAll("", result.getInvalidRelationships());
 				}
 			} else {
 			
@@ -145,6 +148,7 @@ public class SnomedTaxonomyValidator {
 						.build()
 						.asList();
 				
+				
 				for (final String effectiveTime : effectiveTimes) {
 					LOGGER.info("Validating concepts and relationships from '" + effectiveTime + "'...");
 					
@@ -153,54 +157,63 @@ public class SnomedTaxonomyValidator {
 					
 					builder.applyNodeChanges(getFilePath(conceptFile));
 					builder.applyEdgeChanges(getFilePath(relationshipFile));
-					builder.build();
+					final SnomedTaxonomyBuilderResult result = builder.build();
+					if (!result.getStatus().isOK()) {
+						invalidRelationships.putAll(effectiveTime, result.getInvalidRelationships());
+					}
 				}
+			}
+			
+			if (!invalidRelationships.isEmpty()) {
+				final Collection<String> defects = newHashSet();
+				final Collection<String> conceptIdsToInactivate = newHashSet();
+				
+				for (final String effectiveTime : invalidRelationships.keySet()) {
+					for (final InvalidRelationship invalidRelationship: invalidRelationships.get(effectiveTime)) {
+						final String sourceId = Long.toString(invalidRelationship.getSourceId());
+						final String destinationId = Long.toString(invalidRelationship.getDestinationId());
+						
+						if (conceptIds.contains(invalidRelationship.getDestinationId())) {
+							conceptIdsToInactivate.add(destinationId);
+						}
+						
+						if (conceptIds.contains(invalidRelationship.getSourceId())) {
+							conceptIdsToInactivate.add(sourceId);
+						}
+						
+						final StringBuilder sb = new StringBuilder();
+						sb.append("IS A relationship");
+						sb.append(" '" + invalidRelationship.getRelationshipId() + "'");
+						sb.append(" has a missing or inactive ");
+						
+						switch (invalidRelationship.getMissingConcept()) {
+						case DESTINATION:
+							sb.append("destination concept");
+							sb.append(" '" + destinationId);
+							break;
+						case SOURCE:
+							sb.append("source concept");
+							sb.append(" '" + sourceId);
+							break;
+						default:
+							throw new IllegalStateException("Unexpected missing concept type '" + invalidRelationship.getMissingConcept() + "'.");					
+						}
+						
+						sb.append("' in effectiveTime ");
+						sb.append("".equals(effectiveTime) ? "Unpublished/Undefined" : effectiveTime);
+						sb.append("'.");
+						
+						defects.add(sb.toString());
+					}
+				}
+				
+				final SnomedValidationDefect defect = new SnomedIncompleteTaxonomyValidationDefect(relationshipsFile.getName(), defects, conceptIdsToInactivate);
+				return Collections.<SnomedValidationDefect>singleton(defect);
 			}
 			
 		} catch (final IOException e) {
-			LOGGER.error("Validation failed with an IOException.", e);
-			return Collections.<SnomedValidationDefect>singleton(new SnomedValidationDefect(DefectType.IO_PROBLEM, Collections.<String>emptySet()));
-		} catch (final IncompleteTaxonomyException e) {
-			LOGGER.error("Validation failed.");
-			final Collection<String> defects = newHashSet();
-			final Collection<String> conceptIdsToInactivate = newHashSet();
-			for (final InvalidRelationship invalidRelationship: e.getInvalidRelationships()) {
-				final String sourceId = Long.toString(invalidRelationship.getSourceId());
-				final String destinationId = Long.toString(invalidRelationship.getDestinationId());
-				
-				if (conceptIds.contains(invalidRelationship.getDestinationId())) {
-					conceptIdsToInactivate.add(destinationId);
-				}
-				
-				if (conceptIds.contains(invalidRelationship.getSourceId())) {
-					conceptIdsToInactivate.add(sourceId);
-				}
-				
-				final StringBuilder sb = new StringBuilder();
-				sb.append("IS A relationship");
-				sb.append(" '" + invalidRelationship.getRelationshipId() + "'");
-				sb.append(" has a missing or inactive ");
-				
-				switch (invalidRelationship.getMissingConcept()) {
-					case DESTINATION:
-						sb.append("destination concept");
-						sb.append(" '" + destinationId);
-						break;
-					case SOURCE:
-						sb.append("source concept");
-						sb.append(" '" + sourceId);
-						break;
-					default:
-						throw new IllegalStateException("Unexpected missing concept type '" + invalidRelationship.getMissingConcept() + "'.");					
-				}
-				
-				sb.append("'.");
-				
-				defects.add(sb.toString());
-			}
-			
-			final SnomedValidationDefect defect = new SnomedIncompleteTaxonomyValidationDefect(defects, conceptIdsToInactivate);
-			return Collections.<SnomedValidationDefect>singleton(defect);
+			LOGGER.error("Validation failed.", e);
+			return Collections.<SnomedValidationDefect>singleton(new SnomedValidationDefect(relationshipsFile.getName(), DefectType.IO_PROBLEM, Collections.<String>emptySet()));
 		}
 		
 		LOGGER.info("SNOMED CT ontology validation successfully finished. No errors were found.");
