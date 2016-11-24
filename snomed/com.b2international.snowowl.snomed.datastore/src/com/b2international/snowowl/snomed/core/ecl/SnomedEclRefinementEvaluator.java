@@ -562,7 +562,7 @@ final class SnomedEclRefinementEvaluator {
 								}
 							}
 							
-							if (groupCardinality.contains((long) validGroups.size())) {
+							if (groupCardinality.contains((long) validGroups.keySet().size())) {
 								properties.addAll(validGroups.values());
 							}
 						} else {
