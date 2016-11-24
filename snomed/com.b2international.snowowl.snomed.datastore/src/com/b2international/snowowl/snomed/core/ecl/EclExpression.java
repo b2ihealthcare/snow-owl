@@ -41,6 +41,7 @@ final class EclExpression {
 	
 	private Promise<Set<String>> promise;
 	private Promise<Expression> expressionPromise;
+	private Promise<SnomedConcepts> conceptPromise;
 
 	private EclExpression(String ecl) {
 		this.ecl = ecl.trim();
@@ -70,6 +71,17 @@ final class EclExpression {
 					});
 		}
 		return promise;
+	}
+	
+	public Promise<SnomedConcepts> resolveConcepts(final BranchContext context) {
+		if (conceptPromise == null) {
+			conceptPromise = SnomedRequests.prepareSearchConcept()
+					.all()
+					.filterByEcl(ecl)
+					.build(context.id(), context.branch().path())
+					.execute(context.service(IEventBus.class));
+		}
+		return conceptPromise;
 	}
 
 	public Promise<Expression> resolveToExpression(final BranchContext context) {

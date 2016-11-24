@@ -159,8 +159,9 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
 	protected Promise<Expression> eval(BranchContext context, final DescendantOf descendantOf) {
-		return evaluate(context, descendantOf.getConstraint())
-				.then(EXTRACT_IDS)
+		final ExpressionConstraint inner = descendantOf.getConstraint();
+		return evaluate(context, inner)
+				.thenWith(resolveIds(context, inner))
 				.then(new Function<Set<String>, Expression>() {
 					@Override
 					public Expression apply(Set<String> ids) {
@@ -177,8 +178,9 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
 	protected Promise<Expression> eval(BranchContext context, final DescendantOrSelfOf descendantOrSelfOf) {
-		return evaluate(context, descendantOrSelfOf.getConstraint())
-				.then(EXTRACT_IDS)
+		final ExpressionConstraint inner = descendantOrSelfOf.getConstraint();
+		return evaluate(context, inner)
+				.thenWith(resolveIds(context, inner))
 				.then(new Function<Set<String>, Expression>() {
 					@Override
 					public Expression apply(Set<String> ids) {
@@ -196,8 +198,9 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
 	protected Promise<Expression> eval(BranchContext context, final ChildOf childOf) {
-		return evaluate(context, childOf.getConstraint())
-				.then(EXTRACT_IDS)
+		final ExpressionConstraint inner = childOf.getConstraint();
+		return evaluate(context, inner)
+				.thenWith(resolveIds(context, inner))
 				.then(new Function<Set<String>, Expression>() {
 					@Override
 					public Expression apply(Set<String> ids) {
@@ -211,9 +214,9 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
 	protected Promise<Expression> eval(BranchContext context, final ParentOf parentOf) {
-		return evaluate(context, parentOf.getConstraint())
-				.then(EXTRACT_IDS)
-				.thenWith(fetchConcepts(context))
+		final String inner = context.service(EclSerializer.class).serialize(parentOf.getConstraint());
+		return EclExpression.of(inner)
+				.resolveConcepts(context)
 				.then(new Function<SnomedConcepts, Set<String>>() {
 					@Override
 					public Set<String> apply(SnomedConcepts concepts) {
@@ -232,9 +235,9 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
 	protected Promise<Expression> eval(BranchContext context, final AncestorOf ancestorOf) {
-		return evaluate(context, ancestorOf.getConstraint())
-				.then(EXTRACT_IDS)
-				.thenWith(fetchConcepts(context))
+		final String inner = context.service(EclSerializer.class).serialize(ancestorOf.getConstraint());
+		return EclExpression.of(inner)
+				.resolveConcepts(context)
 				.then(new Function<SnomedConcepts, Set<String>>() {
 					@Override
 					public Set<String> apply(SnomedConcepts concepts) {
@@ -254,9 +257,9 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
 	protected Promise<Expression> eval(BranchContext context, final AncestorOrSelfOf ancestorOrSelfOf) {
-		return evaluate(context, ancestorOrSelfOf.getConstraint())
-				.then(EXTRACT_IDS)
-				.thenWith(fetchConcepts(context))
+		final String inner = context.service(EclSerializer.class).serialize(ancestorOrSelfOf.getConstraint());
+		return EclExpression.of(inner)
+				.resolveConcepts(context)
 				.then(new Function<SnomedConcepts, Set<String>>() {
 					@Override
 					public Set<String> apply(SnomedConcepts concepts) {
@@ -381,12 +384,25 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 		throw new UnsupportedOperationException("Cannot extract ID values from: " + expression);
 	}
 	
-	private static Function<Expression, Set<String>> EXTRACT_IDS = new Function<Expression, Set<String>>() {
-		@Override
-		public Set<String> apply(Expression expression) {
-			return extractIds(expression);
-		}
-	};
+	/**
+	 * Extracts SNOMED CT IDs from the given expression if it is either single or multi-valued String predicate and the field is equal to RevisionDocument.Fields.ID.
+	 * Otherwise it will try to evaluate the ecl completely without using the first returned expression.
+	 * @param ecl - the original ECL which will resolve to the returned function parameter as {@link Expression}
+	 */
+	private static Function<Expression, Promise<Set<String>>> resolveIds(BranchContext context, ExpressionConstraint ecl) {
+		return new Function<Expression, Promise<Set<String>>>() {
+			@Override
+			public Promise<Set<String>> apply(Expression expression) {
+				try {
+					return Promise.immediate(extractIds(expression));
+				} catch (UnsupportedOperationException e) {
+					final String eclExpression = context.service(EclSerializer.class).serialize(ecl);
+					// otherwise always evaluate the expression to ID set and return that
+					return EclExpression.of(eclExpression).resolve(context);
+				}
+			}
+		};
+	}
 	
 	private static Function<Set<String>, Promise<SnomedConcepts>> fetchConcepts(final BranchContext context) {
 		return new Function<Set<String>, Promise<SnomedConcepts>>() {

@@ -763,6 +763,24 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		assertEquals(expected, actual);
 	}
 	
+	@Test
+	public void descendantsOfAllMembersOfReferenceSet() throws Exception {
+		final String refSetId = Concepts.REFSET_DESCRIPTION_TYPE;
+		final String member1 = RandomSnomedIdentiferGenerator.generateConceptId();
+		final String member2 = RandomSnomedIdentiferGenerator.generateConceptId();
+		
+		indexRevision(MAIN, nextStorageKey(), concept(member1)
+				.referringRefSets(ImmutableSet.of(refSetId))
+				.build());
+		indexRevision(MAIN, nextStorageKey(), concept(member2)
+				.referringRefSets(ImmutableSet.of(refSetId))
+				.build());
+		
+		final Expression actual = eval(String.format("<^%s", refSetId));
+		final Expression expected = descendantsOf(member1, member2);
+		assertEquals(expected, actual);
+	}
+	
 	/**
 	 * Generates the following test fixtures:
 	 * <ul>
@@ -942,10 +960,10 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 				.field(SnomedRf2Headers.FIELD_VALUE, value);
 	}
 	
-	private static Expression descendantsOf(String conceptId) {
+	private static Expression descendantsOf(String...conceptIds) {
 		return Expressions.builder()
-				.should(parents(ImmutableSet.of(conceptId)))
-				.should(ancestors(ImmutableSet.of(conceptId)))
+				.should(parents(ImmutableSet.copyOf(conceptIds)))
+				.should(ancestors(ImmutableSet.copyOf(conceptIds)))
 				.build();
 	}
 
