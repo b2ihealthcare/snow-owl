@@ -35,6 +35,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.dsl.query.RValue;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
+import com.b2international.snowowl.snomed.ecl.Ecl;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
@@ -146,7 +147,7 @@ public abstract class SnomedSearchRequest<R> extends RevisionSearchRequest<R> {
 				// and it's not a CONCEPT_ID, then evaluate via SnomedConceptSearchRequest
 
 				// unless it is an Any ECL expression, which allows any value
-				if ("*".equals(expression)) {
+				if (Ecl.ANY.equals(expression)) {
 					return;
 				}
 				

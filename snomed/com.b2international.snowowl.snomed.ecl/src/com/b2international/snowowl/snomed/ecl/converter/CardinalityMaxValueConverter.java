@@ -19,6 +19,8 @@ import org.eclipse.xtext.conversion.ValueConverterException;
 import org.eclipse.xtext.conversion.impl.AbstractValueConverter;
 import org.eclipse.xtext.nodemodel.INode;
 
+import com.b2international.snowowl.snomed.ecl.Ecl;
+
 /**
  * @since 5.4
  */
@@ -26,7 +28,7 @@ public final class CardinalityMaxValueConverter extends AbstractValueConverter<I
 
 	@Override
 	public Integer toValue(String string, INode node) throws ValueConverterException {
-		if ("*".equals(string)) {
+		if (Ecl.ANY.equals(string)) {
 			return -1;
 		} else {
 			return Integer.valueOf(string);
@@ -36,7 +38,7 @@ public final class CardinalityMaxValueConverter extends AbstractValueConverter<I
 	@Override
 	public String toString(Integer value) throws ValueConverterException {
 		if (value == -1) {
-			return "*";
+			return Ecl.ANY;
 		} else {
 			return value.toString();
 		}

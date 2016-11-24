@@ -27,6 +27,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.ecl.Ecl;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
@@ -50,7 +51,7 @@ final class EclExpression {
 	}
 	
 	public boolean isAnyExpression() {
-		return "*".equals(ecl);
+		return Ecl.ANY.equals(ecl);
 	}
 	
 	public Promise<Set<String>> resolve(final BranchContext context) {
