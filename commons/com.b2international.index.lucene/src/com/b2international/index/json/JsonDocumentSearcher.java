@@ -121,9 +121,7 @@ public class JsonDocumentSearcher implements Searcher {
 				return new Hits<>(Collections.emptyList(), offset, limit, totalHits);
 			} else {
 				if (limit == Integer.MAX_VALUE || limit == Integer.MAX_VALUE - 1 /*SearchRequest max value*/) {
-					// if all values required, or clients expect all values to be returned
-					// use collector instead of TopDocs, TODO bring back DocSourceCollector to life
-					// reduce limit to max. total hits
+					// if all values required, or clients expect all values to be returned reduce limit to total hits
 					limit = searcher.count(lq);
 				} 
 				int maxDoc = searcher.getIndexReader().maxDoc();
