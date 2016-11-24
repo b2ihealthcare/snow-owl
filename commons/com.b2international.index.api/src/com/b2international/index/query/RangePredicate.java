@@ -22,6 +22,11 @@ import java.util.Objects;
  */
 public abstract class RangePredicate<T> extends Predicate {
 
+	private static final String LT = "<";
+	private static final String LTE = "<=";
+	private static final String GT = ">";
+	private static final String GTE = ">=";
+	
 	private final T lower;
 	private final T upper;
 	private final boolean includeLower;
@@ -71,7 +76,7 @@ public abstract class RangePredicate<T> extends Predicate {
 	
 	@Override
 	public final String toString() {
-		return String.format("%s is %s(%s) and %s(%s)", getField(), isIncludeLower() ? "gte" : "gt", lower, isIncludeUpper() ? "lte" : "lt", upper);
+		return String.format("%s %s %s and %s %s %s", getField(), isIncludeLower() ? GTE : GT, lower, getField(), isIncludeUpper() ? LTE : LT, upper);
 	}
 
 }
