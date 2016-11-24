@@ -67,8 +67,8 @@ public abstract class RangePredicate<T> extends Predicate {
 			final RangePredicate<?> other = (RangePredicate<?>) obj;
 			return Objects.equals(lower(), other.lower()) 
 					&& Objects.equals(upper(), other.upper())
-					&& Objects.equals(isIncludeLower(), other.isIncludeLower())
-					&& Objects.equals(isIncludeUpper(), other.isIncludeUpper());
+					&& isIncludeLower() == other.isIncludeLower()
+					&& isIncludeUpper() == other.isIncludeUpper();
 		} else {
 			return false;
 		}

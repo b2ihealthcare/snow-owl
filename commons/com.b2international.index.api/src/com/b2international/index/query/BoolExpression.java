@@ -75,7 +75,7 @@ public final class BoolExpression implements Expression {
 				&& Objects.equals(mustNotClauses, other.mustNotClauses)
 				&& Objects.equals(shouldClauses, other.shouldClauses)
 				&& Objects.equals(filterClauses, other.filterClauses)
-				&& Objects.equals(minShouldMatch, other.minShouldMatch);
+				&& minShouldMatch == other.minShouldMatch;
 	}
 	
 	@Override

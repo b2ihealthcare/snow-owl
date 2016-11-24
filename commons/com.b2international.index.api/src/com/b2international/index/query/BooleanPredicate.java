@@ -19,7 +19,7 @@ package com.b2international.index.query;
 /**
  * @since 4.7
  */
-public class BooleanPredicate extends SingleArgumentPredicate<Boolean> {
+public final class BooleanPredicate extends SingleArgumentPredicate<Boolean> {
 
 	BooleanPredicate(String field, Boolean argument) {
 		super(field, argument);

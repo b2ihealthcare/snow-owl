@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 /**
  * @since 5.4
  */
-public class DecimalPredicate extends SingleArgumentPredicate<BigDecimal> {
+public final class DecimalPredicate extends SingleArgumentPredicate<BigDecimal> {
 
 	public DecimalPredicate(String field, BigDecimal argument) {
 		super(field, argument);

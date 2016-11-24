@@ -15,11 +15,10 @@
  */
 package com.b2international.index.query;
 
-
 /**
  * @since 4.7
  */
-public class StringPredicate extends SingleArgumentPredicate<String> {
+public final class StringPredicate extends SingleArgumentPredicate<String> {
 
 	StringPredicate(String field, String argument) {
 		super(field, argument);
