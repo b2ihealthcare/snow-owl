@@ -15,7 +15,6 @@
  */
 package com.b2international.index.json;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 
@@ -34,6 +33,7 @@ import org.apache.lucene.search.SimpleCollector;
 
 import com.b2international.index.json.DocValueCollectorManager.DocValueCollector;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Sets;
 
 /**
  * @since 5.4
@@ -96,7 +96,9 @@ public final class DocValueCollectorManager implements CollectorManager<DocValue
 					throw new UnsupportedOperationException("Unhandled docValues for field: " + field + " -> " + docValues);
 				}
 			}
-			checkState(!hit.isEmpty(), "No values loaded from document for fields: %s", fields);
+			if (!hit.keySet().containsAll(fields)) {
+				throw new IllegalStateException(String.format("Missing fields on partially loaded document: %s", Sets.difference(fields, hit.keySet())));
+			}
 			hits.add(hit);
 		}
 		
