@@ -115,14 +115,26 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 		return throwUnsupported(eObject);
 	}
 
+	/**
+	 * Handles ANY simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints  
+	 */
 	protected Promise<Expression> eval(BranchContext context, Any any) {
 		return Promise.immediate(Expressions.matchAll());
 	}
 	
+	/**
+	 * Handles ConceptReference/Self simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
+	 */
 	protected Promise<Expression> eval(BranchContext context, ConceptReference concept) {
 		return Promise.immediate(id(concept.getId()));
 	}
 	
+	/**
+	 * Handles MemberOf simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
+	 */
 	protected Promise<Expression> eval(BranchContext context, MemberOf memberOf) {
 		if (memberOf.getConstraint() instanceof ConceptReference) {
 			final ConceptReference concept = (ConceptReference) memberOf.getConstraint();
@@ -142,6 +154,10 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 		}
 	}
 	
+	/**
+	 * Handles DescendantsOf simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
+	 */
 	protected Promise<Expression> eval(BranchContext context, final DescendantOf descendantOf) {
 		return evaluate(context, descendantOf.getConstraint())
 				.then(EXTRACT_IDS)
@@ -156,6 +172,10 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				});
 	}
 	
+	/**
+	 * Handles DescendantOrSelfOf simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
+	 */
 	protected Promise<Expression> eval(BranchContext context, final DescendantOrSelfOf descendantOrSelfOf) {
 		return evaluate(context, descendantOrSelfOf.getConstraint())
 				.then(EXTRACT_IDS)
@@ -171,6 +191,10 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				});
 	}
 	
+	/**
+	 * Handles ChildOf simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
+	 */
 	protected Promise<Expression> eval(BranchContext context, final ChildOf childOf) {
 		return evaluate(context, childOf.getConstraint())
 				.then(EXTRACT_IDS)
@@ -182,6 +206,10 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				});
 	}
 	
+	/**
+	 * Handles ParentOf simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
+	 */
 	protected Promise<Expression> eval(BranchContext context, final ParentOf parentOf) {
 		return evaluate(context, parentOf.getConstraint())
 				.then(EXTRACT_IDS)
@@ -199,6 +227,10 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				.then(matchIdsOrNone());
 	}
 	
+	/**
+	 * Handles AncestorOf simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
+	 */
 	protected Promise<Expression> eval(BranchContext context, final AncestorOf ancestorOf) {
 		return evaluate(context, ancestorOf.getConstraint())
 				.then(EXTRACT_IDS)
@@ -217,6 +249,10 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				.then(matchIdsOrNone());
 	}
 	
+	/**
+	 * Handles AncestorOrSelfOf simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
+	 */
 	protected Promise<Expression> eval(BranchContext context, final AncestorOrSelfOf ancestorOrSelfOf) {
 		return evaluate(context, ancestorOrSelfOf.getConstraint())
 				.then(EXTRACT_IDS)
@@ -236,6 +272,10 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				.then(matchIdsOrNone());
 	}
 	
+	/**
+	 * Handles conjunction binary operator expressions
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.4+Conjunction+and+Disjunction
+	 */
 	protected Promise<Expression> eval(BranchContext context, final AndExpressionConstraint and) {
 		return Promise.all(evaluate(context, and.getLeft()), evaluate(context, and.getRight()))
 				.then(new Function<List<Object>, Expression>() {
@@ -251,6 +291,10 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				});
 	}
 	
+	/**
+	 * Handles disjunction binary operator expressions
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.4+Conjunction+and+Disjunction
+	 */
 	protected Promise<Expression> eval(BranchContext context, final OrExpressionConstraint or) {
 		return Promise.all(evaluate(context, or.getLeft()), evaluate(context, or.getRight()))
 				.then(new Function<List<Object>, Expression>() {
@@ -266,6 +310,10 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				});
 	}
 	
+	/**
+	 * Handles exclusion binary operator expressions
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.5+Exclusion+and+Not+Equals
+	 */
 	protected Promise<Expression> eval(BranchContext context, final ExclusionExpressionConstraint exclusion) {
 		return Promise.all(evaluate(context, exclusion.getLeft()), evaluate(context, exclusion.getRight()))
 				.then(new Function<List<Object>, Expression>() {
@@ -281,11 +329,18 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				});
 	}
 	
+	/**
+	 * Delegates evaluation of Refinement expression constraints to {@link SnomedEclRefinementEvaluator}.
+	 */
 	protected Promise<Expression> eval(final BranchContext context, final RefinedExpressionConstraint refined) {
 		final String focusConceptExpression = context.service(EclSerializer.class).serialize(refined.getConstraint());
 		return new SnomedEclRefinementEvaluator(EclExpression.of(focusConceptExpression)).evaluate(context, refined.getRefinement());
 	}
 	
+	/**
+	 * Handles dotted expression constraints (reversed attribute refinement with dot notation)
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.2+Refinements
+	 */
 	protected Promise<Expression> eval(BranchContext context, DottedExpressionConstraint dotted) {
 		final EclSerializer serializer = context.service(EclSerializer.class);
 		final Collection<String> sourceFilter = Collections.singleton(serializer.serialize(dotted.getConstraint()));
@@ -300,6 +355,9 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				.then(matchIdsOrNone());
 	}
 	
+	/**
+	 * Handles nested expression constraints by simple evaluation the nested expression.
+	 */
 	protected Promise<Expression> eval(BranchContext context, final NestedExpression nested) {
 		return evaluate(context, nested.getNested());
 	}

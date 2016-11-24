@@ -91,7 +91,10 @@ import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 
 /**
+ * Handles refined expression constraint evaluation.
  * @since 5.4
+ * @see https://confluence.ihtsdotools.org/display/DOCECL/6.2+Refinements
+ * @see https://confluence.ihtsdotools.org/display/DOCECL/6.4+Conjunction+and+Disjunction
  */
 final class SnomedEclRefinementEvaluator {
 
@@ -119,6 +122,10 @@ final class SnomedEclRefinementEvaluator {
 		return SnomedEclEvaluationRequest.throwUnsupported(refinement); 
 	}
 	
+	/**
+	 * Handles eclAttribute part of refined expression constraints.
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.3+Cardinality
+	 */
 	protected Promise<Expression> eval(final BranchContext context, final AttributeConstraint refinement) {
 		return evalRefinement(context, refinement, false, ANY_GROUP)
 				.thenWith(new Function<Collection<Property>, Promise<Expression>>() {
@@ -151,6 +158,10 @@ final class SnomedEclRefinementEvaluator {
 				});
 	}
 	
+	/**
+	 * Handles conjunctions in refinement part of refined expression constraints.
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.4+Conjunction+and+Disjunction
+	 */
 	protected Promise<Expression> eval(final BranchContext context, AndRefinement and) {
 		return Promise.all(evaluate(context, and.getLeft()), evaluate(context, and.getRight()))
 				.then(new Function<List<Object>, Expression>() {
@@ -163,6 +174,10 @@ final class SnomedEclRefinementEvaluator {
 				});
 	}
 	
+	/**
+	 * Handles disjunctions in refinement part of refined expression constraints.
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.4+Conjunction+and+Disjunction
+	 */
 	protected Promise<Expression> eval(final BranchContext context, OrRefinement or) {
 		return Promise.all(evaluate(context, or.getLeft()), evaluate(context, or.getRight()))
 				.then(new Function<List<Object>, Expression>() {
@@ -175,10 +190,17 @@ final class SnomedEclRefinementEvaluator {
 				});
 	}
 	
+	/**
+	 * Handles nested refinements by delegating the evaluation to the nested refinement constraint.
+	 */
 	protected Promise<Expression> eval(final BranchContext context, NestedRefinement nested) {
 		return evaluate(context, nested.getNested());
 	}
-	
+
+	/**
+	 * Handles evaluation of attribute refinements with groups
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.2+Refinements
+	 */
 	protected Promise<Expression> eval(final BranchContext context, AttributeGroup group) {
 		final Cardinality cardinality = group.getCardinality();
 		final boolean isUnbounded = cardinality == null ? true : cardinality.getMax() == UNBOUNDED_CARDINALITY;
@@ -210,9 +232,11 @@ final class SnomedEclRefinementEvaluator {
 					})
 					.then(SnomedEclEvaluationRequest.matchIdsOrNone());
 		}
-		
 	}
 	
+	/**
+	 * Evaluates refinement parts inside attribute group based refinements.
+	 */
 	protected Promise<Collection<Property>> evaluateGroup(BranchContext context, Range<Long> groupCardinality, Refinement refinement) {
 		return groupRefinementDispatcher.invoke(context, groupCardinality, refinement);
 	}
@@ -220,7 +244,10 @@ final class SnomedEclRefinementEvaluator {
 	protected Promise<Collection<Property>> evalGroup(final BranchContext context, final Range<Long> groupCardinality, final Refinement refinement) {
 		return SnomedEclEvaluationRequest.throwUnsupported(refinement);
 	}
-	
+
+	/**
+	 * Handles attribute refinements inside attribute group refinements.
+	 */
 	protected Promise<Collection<Property>> evalGroup(final BranchContext context, final Range<Long> groupCardinality, final AttributeConstraint refinement) {
 		if (refinement.isReversed()) {
 			throw new BadRequestException("Reversed attributes are not supported in group refinements");
@@ -248,20 +275,35 @@ final class SnomedEclRefinementEvaluator {
 		}
 	}
 	
+	/**
+	 * Handles conjunction inside attribute group based refinements.
+	 */
 	protected Promise<Collection<Property>> evalGroup(final BranchContext context, final Range<Long> groupCardinality, final AndRefinement and) {
 		return Promise.all(evaluateGroup(context, groupCardinality, and.getLeft()), evaluateGroup(context, groupCardinality, and.getRight()))
 				.then(evalParts(groupCardinality, Sets::intersection));
 	}
 	
+	/**
+	 * Handles disjunction inside attribute group based refinements.
+	 */
 	protected Promise<Collection<Property>> evalGroup(final BranchContext context, final Range<Long> groupCardinality, final OrRefinement or) {
 		return Promise.all(evaluateGroup(context, groupCardinality, or.getLeft()), evaluateGroup(context, groupCardinality, or.getRight()))
 				.then(evalParts(groupCardinality, Sets::union));
 	}
 	
+	/**
+	 * Handles nested refinements inside attribute group based refinements.
+	 */
 	protected Promise<Collection<Property>> evalGroup(final BranchContext context, final Range<Long> groupCardinality, final NestedRefinement nested) {
 		return evaluateGroup(context, groupCardinality, nested.getNested());
 	}
 	
+	/**
+	 * Evaluates partial results coming from a binary operator's left and right side within attribute group based refinements.
+	 * @param groupCardinality - the cardinality to check
+	 * @param groupOperator - the operator to use (AND or OR, aka {@link Sets#intersection(Set, Set)} or {@link Sets#union(Set, Set)})
+	 * @return a function that will can be chained via {@link Promise#then(Function)} to evaluate partial results when they are available
+	 */
 	private Function<List<Object>, Collection<Property>> evalParts(final Range<Long> groupCardinality, BinaryOperator<Set<Integer>> groupOperator) {
 		return new Function<List<Object>, Collection<Property>>() {
 			@Override
@@ -299,6 +341,14 @@ final class SnomedEclRefinementEvaluator {
 		};
 	}
 
+	/**
+	 * Evaluates attribute refinements. 
+	 * @param context - the branch where the evaluation should happen
+	 * @param refinement - the refinement itself
+	 * @param grouped - whether the refinement should consider groups
+	 * @param groupCardinality - the cardinality to use when grouped parameter is <code>true</code>
+	 * @return a {@link Collection} of {@link Property} objects that match the parameters
+	 */
 	private Promise<Collection<Property>> evalRefinement(final BranchContext context, final AttributeConstraint refinement, final boolean grouped, final Range<Long> groupCardinality) {
 		final Cardinality cardinality = refinement.getCardinality();
 		// the default cardinality is [1..*]
@@ -335,6 +385,10 @@ final class SnomedEclRefinementEvaluator {
 				});
 	}
 	
+	/**
+	 * Evaluates an {@link AttributeConstraint} refinement on the given focusConceptId set on the given {@link BranchContext}.
+	 * Grouped parameter can  
+	 */
 	private Promise<Collection<Property>> evalRefinement(final BranchContext context, final Collection<String> focusConceptIds, final AttributeConstraint refinement, final boolean grouped) {
 		final Comparison comparison = refinement.getComparison();
 		final EclSerializer serializer = context.service(EclSerializer.class);
@@ -521,6 +575,17 @@ final class SnomedEclRefinementEvaluator {
 		};
 	}
 
+	/**
+	 * Executes a SNOMED CT Relationship search request using the given source, type, destination filters.
+	 * If the groupedRelationshipsOnly boolean flag is <code>true</code>, then the search will match relationships that are grouped (their groupId is greater than or equals to <code>1</code>).
+	 * @param context - the context where the search should happen
+	 * @param sourceFilter - filter for relationship sources
+	 * @param typeFilter - filter for relationship types
+	 * @param destinationFilter - filter for relationship destinations
+	 * @param groupedRelationshipsOnly - whether the search should consider grouped relationships only or not
+	 * @return a {@link Promise} of {@link Collection} of {@link Property} objects that match the criteria
+	 * @see SnomedRelationshipSearchRequestBuilder
+	 */
 	/*package*/ static Promise<Collection<Property>> evalRelationships(final BranchContext context, 
 			final Collection<String> sourceFilter, 
 			final Collection<String> typeFilter,
