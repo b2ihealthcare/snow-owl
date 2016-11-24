@@ -160,17 +160,25 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	 */
 	protected Promise<Expression> eval(BranchContext context, final DescendantOf descendantOf) {
 		final ExpressionConstraint inner = descendantOf.getConstraint();
-		return evaluate(context, inner)
-				.thenWith(resolveIds(context, inner))
-				.then(new Function<Set<String>, Expression>() {
-					@Override
-					public Expression apply(Set<String> ids) {
-						return Expressions.builder()
-								.should(parents(ids))
-								.should(ancestors(ids))
-								.build();
-					}
-				});
+		// <* should eval to * MINUS parents IN (ROOT_ID)
+		if (inner instanceof Any) {
+			return Promise.immediate(Expressions.builder()
+					.must(Expressions.matchAll())
+					.mustNot(parents(Collections.singleton(IComponent.ROOT_ID)))
+					.build());
+		} else {
+			return evaluate(context, inner)
+					.thenWith(resolveIds(context, inner))
+					.then(new Function<Set<String>, Expression>() {
+						@Override
+						public Expression apply(Set<String> ids) {
+							return Expressions.builder()
+									.should(parents(ids))
+									.should(ancestors(ids))
+									.build();
+						}
+					});
+		}
 	}
 	
 	/**
@@ -179,18 +187,23 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	 */
 	protected Promise<Expression> eval(BranchContext context, final DescendantOrSelfOf descendantOrSelfOf) {
 		final ExpressionConstraint inner = descendantOrSelfOf.getConstraint();
-		return evaluate(context, inner)
-				.thenWith(resolveIds(context, inner))
-				.then(new Function<Set<String>, Expression>() {
-					@Override
-					public Expression apply(Set<String> ids) {
-						return Expressions.builder()
-								.should(ids(ids))
-								.should(parents(ids))
-								.should(ancestors(ids))
-								.build();
-					}
-				});
+		// <<* should eval to *
+		if (inner instanceof Any) {
+			return evaluate(context, inner);
+		} else {
+			return evaluate(context, inner)
+					.thenWith(resolveIds(context, inner))
+					.then(new Function<Set<String>, Expression>() {
+						@Override
+						public Expression apply(Set<String> ids) {
+							return Expressions.builder()
+									.should(ids(ids))
+									.should(parents(ids))
+									.should(ancestors(ids))
+									.build();
+						}
+					});
+		}
 	}
 	
 	/**
@@ -198,15 +211,23 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
 	protected Promise<Expression> eval(BranchContext context, final ChildOf childOf) {
-		final ExpressionConstraint inner = childOf.getConstraint();
-		return evaluate(context, inner)
-				.thenWith(resolveIds(context, inner))
-				.then(new Function<Set<String>, Expression>() {
-					@Override
-					public Expression apply(Set<String> ids) {
-						return parents(ids);
-					}
-				});
+		final ExpressionConstraint innerConstraint = childOf.getConstraint();
+		// <!* should eval to * MINUS parents in (ROOT_ID)
+		if (innerConstraint instanceof Any) {
+			return Promise.immediate(Expressions.builder()
+					.must(Expressions.matchAll())
+					.mustNot(parents(Collections.singleton(IComponent.ROOT_ID)))
+					.build());
+		} else {
+			return evaluate(context, innerConstraint)
+					.thenWith(resolveIds(context, innerConstraint))
+					.then(new Function<Set<String>, Expression>() {
+						@Override
+						public Expression apply(Set<String> ids) {
+							return parents(ids);
+						}
+					});
+		}
 	}
 	
 	/**
@@ -257,22 +278,28 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
 	protected Promise<Expression> eval(BranchContext context, final AncestorOrSelfOf ancestorOrSelfOf) {
-		final String inner = context.service(EclSerializer.class).serialize(ancestorOrSelfOf.getConstraint());
-		return EclExpression.of(inner)
-				.resolveConcepts(context)
-				.then(new Function<SnomedConcepts, Set<String>>() {
-					@Override
-					public Set<String> apply(SnomedConcepts concepts) {
-						final Set<String> ancestors = newHashSet();
-						for (ISnomedConcept concept : concepts) {
-							ancestors.add(concept.getId());
-							addParentIds(concept, ancestors);
-							addAncestorIds(concept, ancestors);
+		final ExpressionConstraint innerConstraint = ancestorOrSelfOf.getConstraint();
+		// >>* should eval to *
+		if (innerConstraint instanceof Any) {
+			return evaluate(context, innerConstraint);
+		} else {
+			final String inner = context.service(EclSerializer.class).serialize(innerConstraint);
+			return EclExpression.of(inner)
+					.resolveConcepts(context)
+					.then(new Function<SnomedConcepts, Set<String>>() {
+						@Override
+						public Set<String> apply(SnomedConcepts concepts) {
+							final Set<String> ancestors = newHashSet();
+							for (ISnomedConcept concept : concepts) {
+								ancestors.add(concept.getId());
+								addParentIds(concept, ancestors);
+								addAncestorIds(concept, ancestors);
+							}
+							return ancestors;
 						}
-						return ancestors;
-					}
-				})
-				.then(matchIdsOrNone());
+					})
+					.then(matchIdsOrNone());
+		}
 	}
 	
 	/**
