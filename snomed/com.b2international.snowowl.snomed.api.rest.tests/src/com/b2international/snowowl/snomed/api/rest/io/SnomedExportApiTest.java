@@ -344,6 +344,7 @@ public class SnomedExportApiTest extends AbstractSnomedExportApiTest {
 		// create fixer branch for version branch
 		SnomedBranchingApiAssert.givenBranchWithPath(taskBranch);
 		
+		// change an existing component
 		final Calendar calendar = Calendar.getInstance();
 		calendar.setTime(dateForNewVersion);
 		calendar.add(Calendar.DATE, 1);
@@ -354,6 +355,19 @@ public class SnomedExportApiTest extends AbstractSnomedExportApiTest {
 		
 		assertComponentHasProperty(taskBranch, SnomedComponentType.MEMBER, memberId, "effectiveTime", newEffectiveTime);
 		assertComponentHasProperty(taskBranch, SnomedComponentType.MEMBER, memberId, "released", true);
+		
+		// add a new component with the same effective time as the version branch
+		
+		final Map<String, Object> newMemberReq = createRefSetMemberRequestBody(createdConceptId, createdRefSetId);
+		String newMemberId = assertComponentCreated(taskBranch, SnomedComponentType.MEMBER, newMemberReq);
+		
+		assertComponentHasProperty(taskBranch, SnomedComponentType.MEMBER, newMemberId, "effectiveTime", null);
+		assertComponentHasProperty(taskBranch, SnomedComponentType.MEMBER, newMemberId, "released", false);
+		
+		updateMemberEffectiveTime(taskBranch, newMemberId, versionEffectiveDate, true);
+		
+		assertComponentHasProperty(taskBranch, SnomedComponentType.MEMBER, newMemberId, "effectiveTime", versionEffectiveDate);
+		assertComponentHasProperty(taskBranch, SnomedComponentType.MEMBER, newMemberId, "released", true);
 		
 		final Map<Object, Object> config = ImmutableMap.builder()
 				.put("type", "SNAPSHOT")
@@ -373,11 +387,14 @@ public class SnomedExportApiTest extends AbstractSnomedExportApiTest {
 		String refsetMemberLine = getComponentLine(ImmutableList.<String>of(memberId, newEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
 		String invalidRefsetMemberLine = getComponentLine(ImmutableList.<String>of(memberId, versionEffectiveDate, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
 		
+		String newRefsetMemberLine = getComponentLine(ImmutableList.<String>of(newMemberId, versionEffectiveDate, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
+		
 		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 		
 		String refsetFileName = "der2_Refset_ExampleRefsetSnapshot";
 		
 		fileToLinesMap.put(refsetFileName, Pair.of(true, refsetMemberLine));
+		fileToLinesMap.put(refsetFileName, Pair.of(true, newRefsetMemberLine));
 		fileToLinesMap.put(refsetFileName, Pair.of(false, invalidRefsetMemberLine));
 		
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
