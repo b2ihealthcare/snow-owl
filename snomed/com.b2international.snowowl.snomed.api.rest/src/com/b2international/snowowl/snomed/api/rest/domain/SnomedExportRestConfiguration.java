@@ -25,6 +25,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 1.0
@@ -76,6 +77,7 @@ public class SnomedExportRestConfiguration {
 	 * <br>Can be {@code null} even 
 	 * if the {@link Rf2ReleaseType release type} is {@link Rf2ReleaseType#DELTA delta}.
 	 */
+	@JsonProperty(value="startEffectiveTime")
 	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
 	public Date getDeltaStartEffectiveTime() {
 		return deltaStartEffectiveTime;
@@ -90,6 +92,7 @@ public class SnomedExportRestConfiguration {
 	 * <br>May return with {@code null} even 
 	 * if the {@link Rf2ReleaseType release type} is {@link Rf2ReleaseType#DELTA delta}.
 	 */
+	@JsonProperty(value="endEffectiveTime")
 	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
 	public Date getDeltaEndEffectiveTime() {
 		return deltaEndEffectiveTime;
