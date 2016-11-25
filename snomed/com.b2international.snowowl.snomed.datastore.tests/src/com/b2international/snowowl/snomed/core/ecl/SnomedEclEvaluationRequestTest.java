@@ -33,6 +33,7 @@ import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.collections.PrimitiveCollectionModule;
@@ -812,6 +813,24 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		final Expression expected = descendantsOf(member1, member2);
 		assertEquals(expected, actual);
 	}
+
+	@Ignore("Unsupported attribute cardinality in group")
+	@Test
+	public void defaultGroupCardinalityWithZeroToOneAttributeCardinality() throws Exception {
+		generateDrugsWithGroups();
+		final Expression actual = eval(String.format("<%s: { [0..1] %s = <%s }", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
+		final Expression expected = ids(ImmutableSet.of(ASPIRIN_TABLET, TRIPLEX_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Ignore("Unsupported attribute cardinality in group with cardinality")
+	@Test
+	public void groupCardinalityZeroToOneWithZeroToOneAttributeCardinality() throws Exception {
+		generateDrugsWithGroups();
+		final Expression actual = eval(String.format("<%s: [0..1] { [0..1] %s = <%s }", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
+		final Expression expected = ids(ImmutableSet.of(ASPIRIN_TABLET, TRIPLEX_TABLET));
+		assertEquals(expected, actual);
+	}
 	
 	/**
 	 * Generates the following test fixtures:
@@ -892,8 +911,10 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	 * 	</li>
 	 * 	<li>Drugs (children of DRUG_ROOT):
 	 * 		<ul>
+	 * 			<li>EPOX_TABLET (drug with one ungrouped HAI relationship to INGREDIENT5)</li>
 	 * 			<li>ASPIRIN_TABLET (drug with one HAI relationship to INGREDIENT5 in group 1 and one HAS_BOSS to INGREDIENT6 in group 1)</li>
 	 * 			<li>ALGOFLEX_TABLET (drug with two HAI relationship to INGREDIENT5,INGREDIENT6 in group 1 and 2 and two HAS_BOSS to INGREDIENT6 and 5 in group 1 and 2)</li>
+	 * 			<li>TRIPLEX_TABLET (drug with one HAI relationship to INGREDIENT5 in group 1 and one HAS_BOSS to ING6 in group 2)</li>
 	 * 		</ul>
 	 * 	</li>
 	 * </ul>
