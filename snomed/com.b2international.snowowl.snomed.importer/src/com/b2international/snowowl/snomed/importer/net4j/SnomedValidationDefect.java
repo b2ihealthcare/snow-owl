@@ -18,7 +18,9 @@ package com.b2international.snowowl.snomed.importer.net4j;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.Writer;
 import java.util.Collection;
 
 import com.google.common.collect.ImmutableList;
@@ -29,6 +31,8 @@ import com.google.common.collect.ImmutableList;
 public class SnomedValidationDefect implements Serializable, Comparable<SnomedValidationDefect> {
 	
 	private static final long serialVersionUID = 1L;
+	protected static final String TAB = "\t";
+	protected static final String LE = System.getProperty("line.separator");
 	
 	private final String fileName;
 	private final DefectType defectType;
@@ -56,6 +60,20 @@ public class SnomedValidationDefect implements Serializable, Comparable<SnomedVa
 	@Override
 	public int compareTo(SnomedValidationDefect o) {
 		return getDefectType().compareTo(o.getDefectType());
+	}
+
+	/**
+	 * Writes this {@link SnomedValidationDefect SNOMED CT RF2 validation defect} to a writer.
+	 * @param writer
+	 * @throws IOException
+	 */
+	public void writeTo(Writer writer) throws IOException {
+		for (String lineDefect : getDefects()) {
+			writer.write(getDefectType().name());
+			writer.write(TAB);
+			writer.write(lineDefect);
+			writer.write(LE);
+		}
 	}
 	
 }

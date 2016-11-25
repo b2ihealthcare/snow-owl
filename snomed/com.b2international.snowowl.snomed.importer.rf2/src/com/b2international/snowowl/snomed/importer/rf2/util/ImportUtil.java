@@ -528,7 +528,6 @@ public final class ImportUtil {
 					final String message = String.format("Validation encountered %s issue(s).", defects.size());
 					LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, message);
 					
-					final String lineSeparator = System.getProperty("line.separator");
 					final Map<String, BufferedWriter> defectWriters = newHashMap();
 					try {
 						for (SnomedValidationDefect defect : defects) {
@@ -537,10 +536,7 @@ public final class ImportUtil {
 							if (!defectWriters.containsKey(defectsFile)) {
 								defectWriters.put(defectsFile, Files.newWriter(new File(defectsFile), Charsets.UTF_8));
 							}
-							for (String lineDefect : defect.getDefects()) {
-								defectWriters.get(defectsFile).write(defect.getDefectType().name() + "\t" + lineDefect);
-								defectWriters.get(defectsFile).write(lineSeparator);
-							}
+							defect.writeTo(defectWriters.get(defectsFile));
 						}
 					} finally {
 						for (BufferedWriter writer : defectWriters.values()) {
