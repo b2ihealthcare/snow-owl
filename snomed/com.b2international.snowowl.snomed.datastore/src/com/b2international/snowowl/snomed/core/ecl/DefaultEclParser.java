@@ -18,12 +18,20 @@ package com.b2international.snowowl.snomed.core.ecl;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.StringReader;
+import java.util.List;
 import java.util.Map;
 
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
+import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.SyntaxErrorMessage;
 import org.eclipse.xtext.parser.IParseResult;
 import org.eclipse.xtext.parser.IParser;
+import org.eclipse.xtext.util.CancelIndicator;
+import org.eclipse.xtext.validation.CheckMode;
+import org.eclipse.xtext.validation.IResourceValidator;
+import org.eclipse.xtext.validation.Issue;
 
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -37,9 +45,11 @@ import com.google.common.base.Strings;
 public class DefaultEclParser implements EclParser {
 
 	private final IParser eclParser;
+	private final IResourceValidator validator;
 
-	public DefaultEclParser(IParser eclParser) {
+	public DefaultEclParser(IParser eclParser, IResourceValidator validator) {
 		this.eclParser = eclParser;
+		this.validator = validator;
 	}
 	
 	@Override
@@ -57,7 +67,22 @@ public class DefaultEclParser implements EclParser {
 					}
 					throw new SyntaxException("ECL", errors);
 				} else {
-					return (ExpressionConstraint) parseResult.getRootASTElement();
+					final ExpressionConstraint ecl = (ExpressionConstraint) parseResult.getRootASTElement();
+					final Resource resource = new ResourceImpl();
+					resource.getContents().add(ecl);
+					final List<Issue> issues = validator.validate(resource, CheckMode.ALL, CancelIndicator.NullImpl);
+					if (!issues.isEmpty()) {
+						final Map<Pair<Integer, Integer>, String> errors = newHashMap();
+						for (Issue issue : issues) {
+							if (issue.getSeverity() == Severity.ERROR) {
+								errors.put(Pair.of(issue.getLineNumber(), issue.getOffset()), issue.getMessage());
+							}
+						}
+						if (!errors.isEmpty()) {
+							throw new SyntaxException("ECL", errors);
+						}
+					}
+					return ecl;
 				}
 			}
 		}

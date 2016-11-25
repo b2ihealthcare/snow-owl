@@ -23,8 +23,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCom
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -32,6 +31,7 @@ import java.util.Collections;
 
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
+import org.eclipse.xtext.validation.IResourceValidator;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -120,7 +120,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		super.setup();
 		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 		context = TestBranchContext.on(MAIN)
-				.with(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class)))
+				.with(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)))
 				.with(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)))
 				.with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index())
@@ -298,6 +298,28 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
+	public void multipleAndOperatorsWithoutBrackets() throws Exception {
+		final Expression actual = eval(String.format("%s AND %s AND %s", ROOT_ID, ROOT_ID, ROOT_ID));
+		assertNotNull(actual);
+	}
+	
+	@Test
+	public void multipleOrOperatorsWithoutBrackets() throws Exception {
+		final Expression actual = eval(String.format("%s OR %s OR %s", ROOT_ID, ROOT_ID, ROOT_ID));
+		assertNotNull(actual);
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void binaryOperatorAmbiguityOrAnd() throws Exception {
+		eval(String.format("%s OR %s AND %s", ROOT_ID, ROOT_ID, ROOT_ID));
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void binaryOperatorAmbiguityAndOr() throws Exception {
+		eval(String.format("%s AND %s OR %s", ROOT_ID, ROOT_ID, ROOT_ID));
+	}
+	
+	@Test
 	public void refinementAttributeEquals() throws Exception {
 		generateDrugHierarchy();
 		final Expression actual = eval(String.format("<%s:%s=%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT1));
@@ -472,7 +494,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	public void refinementWithConjunctionAndDisjunction() throws Exception {
 		generateDrugHierarchy();
 		generateTisselKit();
-		final Expression actual = eval(String.format("<%s:%s=%s OR %s=%s AND %s=%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT2, HAS_ACTIVE_INGREDIENT, INGREDIENT4, HAS_ACTIVE_INGREDIENT, INGREDIENT2));
+		final Expression actual = eval(String.format("<%s:%s=%s OR (%s=%s AND %s=%s)", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT2, HAS_ACTIVE_INGREDIENT, INGREDIENT4, HAS_ACTIVE_INGREDIENT, INGREDIENT2));
 		final Expression expected = Expressions.builder()
 				.should(ids(ImmutableSet.of(TRIPHASIL_TABLET)))
 				.should(
@@ -482,6 +504,16 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 					.build())
 				.build();
 		assertEquals(expected, actual);
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void refinementAmbiguityAndOr() throws Exception {
+		eval(String.format("<%s:%s=%s AND %s=%s OR %s=%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT2, HAS_ACTIVE_INGREDIENT, INGREDIENT4, HAS_ACTIVE_INGREDIENT, INGREDIENT2));
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void refinementAmbiguityOrAnd() throws Exception {
+		eval(String.format("<%s:%s=%s OR %s=%s AND %s=%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT2, HAS_ACTIVE_INGREDIENT, INGREDIENT4, HAS_ACTIVE_INGREDIENT, INGREDIENT2));
 	}
 	
 	@Test

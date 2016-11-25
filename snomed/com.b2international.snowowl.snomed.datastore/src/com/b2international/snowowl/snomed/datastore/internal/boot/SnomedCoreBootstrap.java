@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.internal.boot;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
+import org.eclipse.xtext.validation.IResourceValidator;
 
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
@@ -45,7 +46,7 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 		env.services().registerService(SnomedCoreConfiguration.class, coreConfig);
 		env.services().registerService(LanguageSetting.class, new StaticLanguageSetting(coreConfig.getLanguage(), SnomedCoreConfiguration.DEFAULT_LANGUAGE));
 		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
-		env.services().registerService(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class)));
+		env.services().registerService(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)));
 		env.services().registerService(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)));
 	}
 
