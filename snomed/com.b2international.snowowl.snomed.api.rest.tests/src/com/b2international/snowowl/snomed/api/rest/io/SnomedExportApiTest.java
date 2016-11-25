@@ -16,12 +16,16 @@
 package com.b2international.snowowl.snomed.api.rest.io;
 
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentExists;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.createRefSetMemberRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenRelationshipRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.whenCreatingVersion;
@@ -29,6 +33,7 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.io.File;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -36,20 +41,27 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.commons.Pair;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
+import com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
+import com.jayway.restassured.http.ContentType;
 
 /**
  * @since 5.4
@@ -142,8 +154,8 @@ public class SnomedExportApiTest extends AbstractSnomedExportApiTest {
 		final Map<Object, Object> config = ImmutableMap.builder()
 				.put("type", "DELTA")
 				.put("branchPath", versionPath)
-				.put("deltaStartEffectiveTime", versionEffectiveDate)
-				.put("deltaEndEffectiveTime", versionEffectiveDate)
+				.put("startEffectiveTime", versionEffectiveDate)
+				.put("endEffectiveTime", versionEffectiveDate)
 				.build();
 			
 		final String exportId = assertExportConfigurationCanBeCreated(config);
@@ -151,8 +163,8 @@ public class SnomedExportApiTest extends AbstractSnomedExportApiTest {
 		assertExportConfiguration(exportId)
 			.and().body("type", equalTo("DELTA"))
 			.and().body("branchPath", equalTo(versionPath))
-			.and().body("deltaStartEffectiveTime", equalTo(versionEffectiveDate))
-			.and().body("deltaEndEffectiveTime", equalTo(versionEffectiveDate));
+			.and().body("startEffectiveTime", equalTo(versionEffectiveDate))
+			.and().body("endEffectiveTime", equalTo(versionEffectiveDate));
 		
 		final File exportArchive = assertExportFileCreated(exportId);
 		
@@ -220,8 +232,8 @@ public class SnomedExportApiTest extends AbstractSnomedExportApiTest {
 		final Map<Object, Object> config = ImmutableMap.builder()
 				.put("type", "DELTA")
 				.put("branchPath", Branch.MAIN_PATH)
-				.put("deltaStartEffectiveTime", versionEffectiveDate)
-				.put("deltaEndEffectiveTime", versionEffectiveDate)
+				.put("startEffectiveTime", versionEffectiveDate)
+				.put("endEffectiveTime", versionEffectiveDate)
 				.put("includeUnpublished", true)
 				.build();
 			
@@ -230,8 +242,8 @@ public class SnomedExportApiTest extends AbstractSnomedExportApiTest {
 		assertExportConfiguration(exportId)
 			.and().body("type", equalTo("DELTA"))
 			.and().body("branchPath", equalTo(Branch.MAIN_PATH))
-			.and().body("deltaStartEffectiveTime", equalTo(versionEffectiveDate))
-			.and().body("deltaEndEffectiveTime", equalTo(versionEffectiveDate))
+			.and().body("startEffectiveTime", equalTo(versionEffectiveDate))
+			.and().body("endEffectiveTime", equalTo(versionEffectiveDate))
 			.and().body("includeUnpublished", equalTo(true));
 		
 		final File exportArchive = assertExportFileCreated(exportId);
@@ -266,6 +278,122 @@ public class SnomedExportApiTest extends AbstractSnomedExportApiTest {
 		
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}
+	
+	@Test
+	public void exportContentFromVersionBranchFixerTask() throws Exception {
+		
+		assertNewVersionCreated();
+		
+		// create concept ref. component
+		final Map<?, ?> conceptReq = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String createdConceptId = assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, conceptReq);
+		
+		// create refset
+		String refsetName = "ExampleRefset";
+		
+		final Map<String, Object> fsnDescription = ImmutableMap.<String, Object>builder()
+				.put("typeId", FULLY_SPECIFIED_NAME)
+				.put("term", refsetName + " (qualifier)")
+				.put("languageCode", "en")
+				.put("acceptability", PREFERRED_ACCEPTABILITY_MAP)
+				.build();
+		
+		final Map<String, Object> ptDescription = ImmutableMap.<String, Object>builder()
+				.put("typeId", SYNONYM)
+				.put("term", refsetName)
+				.put("languageCode", "en")
+				.put("acceptability", PREFERRED_ACCEPTABILITY_MAP)
+				.build();
+
+		final Map<String, Object> conceptBuilder = ImmutableMap.<String, Object>builder()
+				.put("moduleId", MODULE_SCT_CORE)
+				.put("descriptions", ImmutableList.of(fsnDescription, ptDescription))
+				.put("parentId", Concepts.REFSET_SIMPLE_TYPE)
+				.build();
+		
+		final Map<String, Object> refSetReq = ImmutableMap.<String, Object>builder()
+				.putAll(conceptBuilder)
+				.put("commitComment", String.format("New %s type reference set with %s members", SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT))
+				.put("type", SnomedRefSetType.SIMPLE)
+				.put("referencedComponentType", SnomedTerminologyComponentConstants.CONCEPT)
+				.build();
+		
+		final String createdRefSetId = assertComponentCreated(createMainPath(), SnomedComponentType.REFSET, refSetReq);
+		assertComponentExists(createMainPath(), SnomedComponentType.REFSET, createdRefSetId);
+		
+		// create member
+		final Map<String, Object> memberReq = createRefSetMemberRequestBody(createdConceptId, createdRefSetId);
+		String memberId = assertComponentCreated(createMainPath(), SnomedComponentType.MEMBER, memberReq);
+		
+		final Date dateForNewVersion = SnomedVersioningApiAssert.getLatestAvailableVersionDate("SNOMEDCT");
+		
+		String versionName = Dates.formatByGmt(dateForNewVersion);
+		String versionEffectiveDate = Dates.formatByGmt(dateForNewVersion, DateFormats.SHORT);
+		
+		whenCreatingVersion(versionName, versionEffectiveDate)
+			.then().assertThat().statusCode(201);
+		
+		givenAuthenticatedRequest(ADMIN_API)
+			.when().get("/codesystems/SNOMEDCT/versions/{id}", versionName)
+			.then().assertThat().statusCode(200);
+		
+		IBranchPath versionPath = BranchPathUtils.createPath(BranchPathUtils.createMainPath(), versionName);
+		String testBranchName = "Fix01";
+		IBranchPath taskBranch = BranchPathUtils.createPath(versionPath, testBranchName);
+		
+		// create fixer branch for version branch
+		SnomedBranchingApiAssert.givenBranchWithPath(taskBranch);
+		
+		final Calendar calendar = Calendar.getInstance();
+		calendar.setTime(dateForNewVersion);
+		calendar.add(Calendar.DATE, 1);
+		
+		String newEffectiveTime = Dates.formatByGmt(calendar.getTime(), DateFormats.SHORT);
+		
+		updateMemberEffectiveTime(taskBranch, memberId, newEffectiveTime, true);
+		
+		assertComponentHasProperty(taskBranch, SnomedComponentType.MEMBER, memberId, "effectiveTime", newEffectiveTime);
+		assertComponentHasProperty(taskBranch, SnomedComponentType.MEMBER, memberId, "released", true);
+		
+		final Map<Object, Object> config = ImmutableMap.builder()
+				.put("type", "SNAPSHOT")
+				.put("branchPath", taskBranch.getPath())
+				.put("startEffectiveTime", versionEffectiveDate)
+				.build();
+			
+		final String exportId = assertExportConfigurationCanBeCreated(config);
+		
+		assertExportConfiguration(exportId)
+			.and().body("type", equalTo("SNAPSHOT"))
+			.and().body("branchPath", equalTo(taskBranch.getPath()))
+			.and().body("startEffectiveTime", equalTo(versionEffectiveDate));
+		
+		final File exportArchive = assertExportFileCreated(exportId);
+		
+		String refsetMemberLine = getComponentLine(ImmutableList.<String>of(memberId, newEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
+		String invalidRefsetMemberLine = getComponentLine(ImmutableList.<String>of(memberId, versionEffectiveDate, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
+		
+		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
+		
+		String refsetFileName = "der2_Refset_ExampleRefsetSnapshot";
+		
+		fileToLinesMap.put(refsetFileName, Pair.of(true, refsetMemberLine));
+		fileToLinesMap.put(refsetFileName, Pair.of(false, invalidRefsetMemberLine));
+		
+		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+	}
+	
+	private static void updateMemberEffectiveTime(final IBranchPath branchPath, final String memberId, final String effectiveTime, boolean force) {
+		final Map<?, ?> effectiveTimeUpdate = ImmutableMap.of("effectiveTime", effectiveTime, "commitComment", "Update member effective time: " + memberId);
+		// without force flag API responds with 204, but the content remains the same
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.with().contentType(ContentType.JSON)
+			.and().body(effectiveTimeUpdate)
+			.when().put("/{path}/{componentType}/{id}?force="+force, branchPath.getPath(), SnomedComponentType.MEMBER.toLowerCasePlural(), memberId)
+			.then().log().ifValidationFails()
+			.statusCode(204);
+	}
+	
 
 	private String createAdditionalRelationshipOnMain() {
 		final Map<?, ?> additionalRequestBody = givenRelationshipRequestBody(BLEEDING, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE,
