@@ -121,7 +121,7 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 		
 		if (onlyUnpublished) {
 			builder.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
-		} else if (exportContext.getContentSubType() == ContentSubType.DELTA) {
+		} else if (exportContext.getContentSubType() != ContentSubType.FULL) {
 			Date deltaExportStartEffectiveTime = exportContext.getDeltaExportStartEffectiveTime();
 			Date deltaExportEndEffectiveTime = exportContext.getDeltaExportEndEffectiveTime();
 			

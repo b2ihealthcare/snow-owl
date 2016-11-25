@@ -92,9 +92,9 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 
 		ApiValidation.checkInput(configuration);
 		
-		if (!Rf2ReleaseType.DELTA.equals(configuration.getType())) {
+		if (Rf2ReleaseType.FULL.equals(configuration.getType())) {
 			if (configuration.getDeltaStartEffectiveTime() != null || configuration.getDeltaEndEffectiveTime() != null) {
-				throw new BadRequestException("Export date ranges can only be set if the export mode is set to DELTA.");
+				throw new BadRequestException("Export date ranges can only be set if the export mode is not FULL.");
 			}
 		}
 		
