@@ -400,6 +400,137 @@ public class SnomedExportApiTest extends AbstractSnomedExportApiTest {
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}
 	
+	@Test
+	public void exportContentFromVersionBranchFixerTaskWithTransientEffectiveTime() throws Exception {
+		
+		assertNewVersionCreated();
+		
+		// create concept ref. component
+		final Map<?, ?> conceptReq = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String createdConceptId = assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, conceptReq);
+		
+		// create refset
+		String refsetName = "TransientExampleRefset";
+		
+		final Map<String, Object> fsnDescription = ImmutableMap.<String, Object>builder()
+				.put("typeId", FULLY_SPECIFIED_NAME)
+				.put("term", refsetName + " (qualifier)")
+				.put("languageCode", "en")
+				.put("acceptability", PREFERRED_ACCEPTABILITY_MAP)
+				.build();
+		
+		final Map<String, Object> ptDescription = ImmutableMap.<String, Object>builder()
+				.put("typeId", SYNONYM)
+				.put("term", refsetName)
+				.put("languageCode", "en")
+				.put("acceptability", PREFERRED_ACCEPTABILITY_MAP)
+				.build();
+
+		final Map<String, Object> conceptBuilder = ImmutableMap.<String, Object>builder()
+				.put("moduleId", MODULE_SCT_CORE)
+				.put("descriptions", ImmutableList.of(fsnDescription, ptDescription))
+				.put("parentId", Concepts.REFSET_SIMPLE_TYPE)
+				.build();
+		
+		final Map<String, Object> refSetReq = ImmutableMap.<String, Object>builder()
+				.putAll(conceptBuilder)
+				.put("commitComment", String.format("New %s type reference set with %s members", SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT))
+				.put("type", SnomedRefSetType.SIMPLE)
+				.put("referencedComponentType", SnomedTerminologyComponentConstants.CONCEPT)
+				.build();
+		
+		final String createdRefSetId = assertComponentCreated(createMainPath(), SnomedComponentType.REFSET, refSetReq);
+		assertComponentExists(createMainPath(), SnomedComponentType.REFSET, createdRefSetId);
+		
+		// create member
+		final Map<String, Object> memberReq = createRefSetMemberRequestBody(createdConceptId, createdRefSetId);
+		String memberId = assertComponentCreated(createMainPath(), SnomedComponentType.MEMBER, memberReq);
+		
+		final Date dateForNewVersion = getDateForNewVersion("SNOMEDCT");
+		
+		String versionName = Dates.formatByGmt(dateForNewVersion);
+		String versionEffectiveDate = Dates.formatByGmt(dateForNewVersion, DateFormats.SHORT);
+		
+		whenCreatingVersion(versionName, versionEffectiveDate)
+			.then().assertThat().statusCode(201);
+		
+		givenAuthenticatedRequest(ADMIN_API)
+			.when().get("/codesystems/SNOMEDCT/versions/{id}", versionName)
+			.then().assertThat().statusCode(200);
+		
+		IBranchPath versionPath = BranchPathUtils.createVersionPath(versionName);
+		String testBranchName = "Fix01";
+		IBranchPath taskBranch = BranchPathUtils.createPath(versionPath, testBranchName);
+		
+		// create fixer branch for version branch
+		SnomedBranchingApiAssert.givenBranchWithPath(taskBranch);
+		
+		// change an existing component
+
+		assertComponentHasProperty(taskBranch, SnomedComponentType.MEMBER, memberId, "active", true);
+		assertComponentHasProperty(taskBranch, SnomedComponentType.MEMBER, memberId, "effectiveTime", versionEffectiveDate);
+		assertComponentHasProperty(taskBranch, SnomedComponentType.MEMBER, memberId, "released", true);
+		
+		Map<String, Object> memberUpdateRequest = ImmutableMap.<String, Object>builder()
+				.put("active", false)
+				.put("commitComment", "Inactivate member")
+				.build();
+		
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.with().contentType(ContentType.JSON)
+			.and().body(memberUpdateRequest)
+			.when().put("/{path}/{componentType}/{id}?force=false", taskBranch.getPath(), SnomedComponentType.MEMBER.toLowerCasePlural(), memberId)
+			.then().log().ifValidationFails()
+			.statusCode(204);
+		
+		assertComponentHasProperty(taskBranch, SnomedComponentType.MEMBER, memberId, "active", false);
+		assertComponentHasProperty(taskBranch, SnomedComponentType.MEMBER, memberId, "effectiveTime", null);
+		assertComponentHasProperty(taskBranch, SnomedComponentType.MEMBER, memberId, "released", true);
+		
+		// add a new component
+		
+		final Map<String, Object> newMemberReq = createRefSetMemberRequestBody(createdConceptId, createdRefSetId);
+		String newMemberId = assertComponentCreated(taskBranch, SnomedComponentType.MEMBER, newMemberReq);
+		
+		assertComponentHasProperty(taskBranch, SnomedComponentType.MEMBER, newMemberId, "effectiveTime", null);
+		assertComponentHasProperty(taskBranch, SnomedComponentType.MEMBER, newMemberId, "released", false);
+		
+		final Map<Object, Object> config = ImmutableMap.builder()
+				.put("type", "SNAPSHOT")
+				.put("branchPath", taskBranch.getPath())
+				.put("startEffectiveTime", versionEffectiveDate)
+				.put("transientEffectiveTime", versionEffectiveDate)
+				.put("includeUnpublished", true)
+				.build();
+			
+		final String exportId = assertExportConfigurationCanBeCreated(config);
+		
+		assertExportConfiguration(exportId)
+			.and().body("type", equalTo("SNAPSHOT"))
+			.and().body("branchPath", equalTo(taskBranch.getPath()))
+			.and().body("startEffectiveTime", equalTo(versionEffectiveDate))
+			.and().body("transientEffectiveTime", equalTo(versionEffectiveDate))
+			.and().body("includeUnpublished", equalTo(true));
+		
+		final File exportArchive = assertExportFileCreated(exportId);
+		
+		String refsetMemberLine = getComponentLine(ImmutableList.<String>of(memberId, versionEffectiveDate, "0", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
+		String invalidRefsetMemberLine = getComponentLine(ImmutableList.<String>of(memberId, versionEffectiveDate, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
+		
+		String newRefsetMemberLine = getComponentLine(ImmutableList.<String>of(newMemberId, versionEffectiveDate, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
+		
+		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
+		
+		String refsetFileName = "der2_Refset_TransientExampleRefset";
+		
+		fileToLinesMap.put(refsetFileName, Pair.of(true, refsetMemberLine));
+		fileToLinesMap.put(refsetFileName, Pair.of(true, newRefsetMemberLine));
+		fileToLinesMap.put(refsetFileName, Pair.of(false, invalidRefsetMemberLine));
+		
+		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+	}
+	
+	
 	private static void updateMemberEffectiveTime(final IBranchPath branchPath, final String memberId, final String effectiveTime, boolean force) {
 		final Map<?, ?> effectiveTimeUpdate = ImmutableMap.of("effectiveTime", effectiveTime, "commitComment", "Update member effective time: " + memberId);
 		// without force flag API responds with 204, but the content remains the same
