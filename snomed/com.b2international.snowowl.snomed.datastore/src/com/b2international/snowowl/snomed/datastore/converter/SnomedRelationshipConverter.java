@@ -42,6 +42,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -67,7 +68,6 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 		result.setCharacteristicType(toCharacteristicType(input.getCharacteristicTypeId()));
 		result.setDestinationNegated(input.isDestinationNegated());
 		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTime()));
-		result.setGroup(input.getGroup());
 		result.setId(input.getId());
 		result.setModifier(toRelationshipModifier(input.isUniversal()));
 		result.setModuleId(input.getModuleId());
@@ -75,18 +75,19 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 		// XXX using optional refinability as default, will be expanded to the proper refinability if supported in expand
 		result.setRefinability(RelationshipRefinability.OPTIONAL);
 		result.setReleased(input.isReleased());
+		result.setGroup(input.getGroup());
 		result.setUnionGroup(input.getUnionGroup());
 		result.setDestination(new SnomedConcept(input.getDestinationId()));
 		result.setSource(new SnomedConcept(input.getSourceId()));
 		result.setType(new SnomedConcept(input.getTypeId()));
-//		result.setScore(input.getScore());
+		result.setScore(input.getScore());
 		return result;
 	}
 	
 	@Override
 	protected void expand(List<ISnomedRelationship> results) {
 		final Set<String> relationshipIds = FluentIterable.from(results).transform(ID_FUNCTION).toSet();
-		expandRefinability(results, relationshipIds);
+//		expandRefinability(results, relationshipIds);
 		
 		if (expand().isEmpty()) {
 			return;
@@ -200,7 +201,11 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 	}
 
 	private CharacteristicType toCharacteristicType(final String characteristicTypeId) {
-		return CharacteristicType.getByConceptId(characteristicTypeId);
+		if (Strings.isNullOrEmpty(characteristicTypeId)) {
+			return null;
+		} else {
+			return CharacteristicType.getByConceptId(characteristicTypeId);
+		}
 	}
 
 	private RelationshipModifier toRelationshipModifier(final boolean universal) {

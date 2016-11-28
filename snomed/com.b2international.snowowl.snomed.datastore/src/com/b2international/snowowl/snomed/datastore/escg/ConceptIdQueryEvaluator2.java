@@ -42,6 +42,7 @@ import com.b2international.snowowl.snomed.dsl.query.ast.SubExpression;
 
 /**
  * Evaluator service for getting SNOMED&nbsp;CT concept IDs.
+ * @deprecated - see {@link IEscgQueryEvaluatorService}
  */
 public class ConceptIdQueryEvaluator2 implements IQueryEvaluator<LongSet, com.b2international.snowowl.snomed.dsl.query.RValue> {
 	

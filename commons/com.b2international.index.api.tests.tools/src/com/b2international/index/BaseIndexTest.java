@@ -93,10 +93,10 @@ public abstract class BaseIndexTest {
 		});
 	}
 	
-	protected final <T> Iterable<T> search(final Query<T> query) {
-		return index().read(new IndexRead<Iterable<T>>() {
+	protected final <T> Hits<T> search(final Query<T> query) {
+		return index().read(new IndexRead<Hits<T>>() {
 			@Override
-			public Iterable<T> execute(Searcher index) throws IOException {
+			public Hits<T> execute(Searcher index) throws IOException {
 				return index.search(query);
 			}
 		});

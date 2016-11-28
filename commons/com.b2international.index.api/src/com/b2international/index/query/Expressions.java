@@ -17,13 +17,13 @@ package com.b2international.index.query;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
 import com.b2international.index.Analyzers;
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 /**
@@ -79,6 +79,10 @@ public class Expressions {
 
 	}
 	
+	public static Expression exists(final String field) {
+		return matchRange(field, (String) null, (String) null);
+	}
+	
 	public static Expression nestedMatch(final String path, Expression expression) {
 		final List<String> pathSegments = Lists.reverse(Splitter.on(".").splitToList(path));
 		Expression previous = expression;
@@ -107,41 +111,69 @@ public class Expressions {
 	public static Expression match(String field, Integer value) {
 		return new IntPredicate(field, value);
 	}
+	
+	public static Expression match(String field, BigDecimal value) {
+		return new DecimalPredicate(field, value);
+	}
 
 	public static Expression matchAll() {
-		return new MatchAll();
+		return MatchAll.INSTANCE;
 	}
 	
 	public static Expression matchNone() {
 		return new MatchNone();
 	}
-
-	public static Expression matchRange(String fieldName, long from, long to) {
-		return new LongRangePredicate(fieldName, from, to);
-	}
 	
-	public static Expression matchRange(String fieldName, int from, int to) {
-		return new IntRangePredicate(fieldName, from, to);
-	}
-
 	public static Expression hasParent(Class<?> parentType, Expression expression) {
 		return new HasParentPredicate(parentType, expression);
 	}
 
+	public static Expression matchRange(String fieldName, Long from, Long to) {
+		return matchRange(fieldName, from, to, true, true);
+	}
+	
+	public static Expression matchRange(String fieldName, Long from, Long to, boolean includeFrom, boolean includeTo) {
+		return new LongRangePredicate(fieldName, from, to, includeFrom, includeTo);
+	}
+	
+	public static Expression matchRange(String fieldName, Integer from, Integer to) {
+		return matchRange(fieldName, from, to, true, true);
+	}
+	
+	public static Expression matchRange(String fieldName, Integer from, Integer to, boolean includeFrom, boolean includeTo) {
+		return new IntRangePredicate(fieldName, from, to, includeFrom, includeTo);
+	}
+
 	public static Expression matchRange(String field, String from, String to) {
-		return new StringRangePredicate(field, from, to);
+		return matchRange(field, from, to, true, true);
+	}
+	
+	public static Expression matchRange(String field, String from, String to, boolean includeFrom, boolean includeTo) {
+		return new StringRangePredicate(field, from, to, includeFrom, includeTo);
+	}
+	
+	public static Expression matchRange(String field, BigDecimal from, BigDecimal to) {
+		return matchRange(field, from, to, true, true);
+	}
+	
+	public static Expression matchRange(String field, BigDecimal from, BigDecimal to, boolean includeFrom, boolean includeTo) {
+		return new DecimalRangePredicate(field, from, to, includeFrom, includeTo);
 	}
 
 	public static Expression matchAnyInt(String field, Iterable<Integer> values) {
-		return new IntSetPredicate(field, ImmutableSet.copyOf(values));
+		return new IntSetPredicate(field, values);
 	}
 	
 	public static Expression matchAny(String field, Iterable<String> values) {
-		return new StringSetPredicate(field, ImmutableSet.copyOf(values));
+		return new StringSetPredicate(field, values);
 	}
 	
-	public static Expression matchAnyLong(String field, Iterable<Long> storageKeys) {
-		return new LongSetPredicate(field, storageKeys);
+	public static Expression matchAnyLong(String field, Iterable<Long> values) {
+		return new LongSetPredicate(field, values);
+	}
+	
+	public static Expression matchAnyDecimal(String field, Iterable<BigDecimal> values) {
+		return new DecimalSetPredicate(field, values);
 	}
 
 	public static ExpressionBuilder builder() {

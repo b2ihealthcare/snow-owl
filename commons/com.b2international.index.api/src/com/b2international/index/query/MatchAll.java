@@ -18,9 +18,9 @@ package com.b2international.index.query;
 /**
  * @since 4.7
  */
-public class MatchAll implements Expression {
+public enum MatchAll implements Expression {
 
-	MatchAll() {}
+	INSTANCE;
 	
 	@Override
 	public String toString() {

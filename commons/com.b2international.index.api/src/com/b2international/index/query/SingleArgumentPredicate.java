@@ -17,13 +17,15 @@ package com.b2international.index.query;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Objects;
+
 /**
  * Represents a predicate with a single argument.
  * 
  * @since 4.7
  * @param <A> the argument type
  */
-public class SingleArgumentPredicate<A> extends Predicate {
+public abstract class SingleArgumentPredicate<A> extends Predicate {
 
 	private final A argument;
 
@@ -32,7 +34,22 @@ public class SingleArgumentPredicate<A> extends Predicate {
 		this.argument = checkNotNull(argument, "argument");
 	}
 	
-	public A getArgument() {
+	@Override
+	public int hashCode() {
+		return Objects.hash(getField(), argument);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (super.equals(obj)) {
+			SingleArgumentPredicate<?> other = (SingleArgumentPredicate<?>) obj; 
+			return Objects.equals(argument, other.argument);
+		} else {
+			return false;
+		}
+	}
+	
+	public final A getArgument() {
 		return argument;
 	}
 

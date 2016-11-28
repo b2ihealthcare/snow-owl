@@ -27,6 +27,7 @@ import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorServ
  * Job for registering the ESCG query evaluator service factory to the application context. 
  * @see ServiceConfigJob
  * @see IEscgQueryEvaluatorServiceFactory
+ * @deprecated - see {@link IEscgQueryEvaluatorService}
  */
 public class EscgQueryEvaluatorServiceConfigJob extends AbstractServerServiceConfigJob<IEscgQueryEvaluatorService> {
 

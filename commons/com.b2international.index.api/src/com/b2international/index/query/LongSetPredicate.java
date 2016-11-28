@@ -18,7 +18,7 @@ package com.b2international.index.query;
 /**
  * @since 4.7
  */
-public class LongSetPredicate extends SetPredicate<Long> {
+public final class LongSetPredicate extends SetPredicate<Long> {
 
 	LongSetPredicate(String field, Iterable<Long> values) {
 		super(field, values);

@@ -159,4 +159,13 @@ public interface Options {
 	 * @return a set view of the keys contained in this map
 	 */
 	Set<String> keySet();
+	
+	/**
+	 * Creates a new {@link OptionsBuilder} instance to build {@link Options}.
+	 * @return
+	 */
+	static OptionsBuilder builder() {
+		return OptionsBuilder.newBuilder();
+	}
+	
 }

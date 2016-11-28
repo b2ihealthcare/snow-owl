@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -81,7 +80,6 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	// fixtures
 	private final Map<String, Concept> conceptsById = newHashMap();
 	private final Map<String, SnomedRefSet> refSetsById = newHashMap();
-	private final AtomicLong storageKeys = new AtomicLong(1L);
 	
 	private CDOView view = mock(CDOView.class);
 	private Collection<CDOObject> newComponents = newHashSet();
@@ -151,11 +149,6 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		return new CDOCommitChangeSet(view, "test", "test", newComponents, dirtyComponents, detachedComponents, revisionDeltas, 1L);
 	}
 
-	
-	protected final long nextStorageKey() {
-		return storageKeys.getAndIncrement();
-	}
-	
 	protected final CDOID nextStorageKeyAsCDOID() {
 		return CDOIDUtil.createLong(nextStorageKey());
 	}

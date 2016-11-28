@@ -18,7 +18,7 @@ package com.b2international.index.query;
 /**
  * @since 5.0
  */
-public class PrefixPredicate extends SingleArgumentPredicate<String> {
+public final class PrefixPredicate extends SingleArgumentPredicate<String> {
 
 	PrefixPredicate(String field, String argument) {
 		super(field, argument);
