@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.rf2;
 
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -64,6 +66,11 @@ public class SnomedRf2DescriptionExporter extends AbstractSnomedRf2CoreExporter<
 	@Override
 	public String[] getColumnHeaders() {
 		return SnomedRf2Headers.DESCRIPTION_HEADER;
+	}
+	
+	@Override
+	protected void appendExpressionConstraint(ExpressionBuilder builder) {
+		builder.mustNot(SnomedDescriptionIndexEntry.Expressions.type(Concepts.TEXT_DEFINITION));
 	}
 	
 }

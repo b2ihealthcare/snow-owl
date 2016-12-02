@@ -22,6 +22,7 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_C
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeUpdated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentExists;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
@@ -446,7 +447,7 @@ public class SnomedExportApiTest extends AbstractSnomedExportApiTest {
 		final Map<String, Object> memberReq = createRefSetMemberRequestBody(createdConceptId, createdRefSetId);
 		String memberId = assertComponentCreated(createMainPath(), SnomedComponentType.MEMBER, memberReq);
 		
-		final Date dateForNewVersion = getDateForNewVersion("SNOMEDCT");
+		final Date dateForNewVersion = SnomedVersioningApiAssert.getLatestAvailableVersionDate("SNOMEDCT");
 		
 		String versionName = Dates.formatByGmt(dateForNewVersion);
 		String versionEffectiveDate = Dates.formatByGmt(dateForNewVersion, DateFormats.SHORT);
@@ -458,7 +459,7 @@ public class SnomedExportApiTest extends AbstractSnomedExportApiTest {
 			.when().get("/codesystems/SNOMEDCT/versions/{id}", versionName)
 			.then().assertThat().statusCode(200);
 		
-		IBranchPath versionPath = BranchPathUtils.createVersionPath(versionName);
+		IBranchPath versionPath = BranchPathUtils.createPath(BranchPathUtils.createMainPath(), versionName);
 		String testBranchName = "Fix01";
 		IBranchPath taskBranch = BranchPathUtils.createPath(versionPath, testBranchName);
 		
@@ -530,6 +531,155 @@ public class SnomedExportApiTest extends AbstractSnomedExportApiTest {
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}
 	
+	@Test
+	public void exportPublishedAndUnpublishedTextDefinitionsIntoSeparateFile() throws Exception {
+		
+		// create new version
+		assertNewVersionCreated();
+		
+		// create new concept
+		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		String conceptId = assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, conceptRequestBody);
+
+		// create new text definition
+		String textDefinitionTerm = "Text Definition with effective time";
+		Map<?, ?> textDefinitionRequestBody = ImmutableMap.builder()
+			.put("conceptId", conceptId)
+			.put("moduleId", MODULE_SCT_CORE)
+			.put("typeId", Concepts.TEXT_DEFINITION)
+			.put("term", textDefinitionTerm)
+			.put("languageCode", "en")
+			.put("acceptability", ACCEPTABLE_ACCEPTABILITY_MAP)
+			.put("commitComment", "new text definition")
+			.build();
+		
+		String textDefinitionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, textDefinitionRequestBody);
+
+		// version new concept
+		Date conceptVersionDate = assertNewVersionCreated();
+		String conceptEffectiveDate = Dates.formatByGmt(conceptVersionDate, DateFormats.SHORT);
+
+		// create new text definition
+		String unpublishedTextDefinitionTerm = "Text Definition without effective time";
+		Map<?, ?> unpublishedTextDefinitionRequestBody = ImmutableMap.builder()
+			.put("conceptId", conceptId)
+			.put("moduleId", MODULE_SCT_CORE)
+			.put("typeId", Concepts.TEXT_DEFINITION)
+			.put("term", unpublishedTextDefinitionTerm)
+			.put("languageCode", "en")
+			.put("acceptability", ACCEPTABLE_ACCEPTABILITY_MAP)
+			.put("commitComment", "new text definition")
+			.build();
+		
+		String unpublishedTextDefinitionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, unpublishedTextDefinitionRequestBody);
+		
+		// do not create new version
+		
+		final Map<Object, Object> config = ImmutableMap.builder()
+				.put("type", "DELTA")
+				.put("branchPath", Branch.MAIN_PATH)
+				.put("startEffectiveTime", conceptEffectiveDate)
+				.put("endEffectiveTime", conceptEffectiveDate)
+				.put("includeUnpublished", true)
+				.build();
+			
+		final String exportId = assertExportConfigurationCanBeCreated(config);
+		
+		assertExportConfiguration(exportId)
+			.and().body("type", equalTo("DELTA"))
+			.and().body("branchPath", equalTo(Branch.MAIN_PATH))
+			.and().body("startEffectiveTime", equalTo(conceptEffectiveDate))
+			.and().body("endEffectiveTime", equalTo(conceptEffectiveDate))
+			.and().body("includeUnpublished", equalTo(true));
+		
+		final File exportArchive = assertExportFileCreated(exportId);
+		
+		String textDefinitionLine = getComponentLine(ImmutableList.<String> of(textDefinitionId, conceptEffectiveDate, "1", MODULE_SCT_CORE, conceptId, "en",
+				Concepts.TEXT_DEFINITION, textDefinitionTerm, CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId()));
+		
+		String unpublishedTextDefinitionLine = getComponentLine(ImmutableList.<String> of(unpublishedTextDefinitionId, "", "1", MODULE_SCT_CORE, conceptId, "en",
+				Concepts.TEXT_DEFINITION, unpublishedTextDefinitionTerm, CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId()));
+
+		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
+				
+		fileToLinesMap.put("sct2_Description", Pair.of(false, textDefinitionLine));
+		fileToLinesMap.put("sct2_Description", Pair.of(false, unpublishedTextDefinitionLine));
+		
+		fileToLinesMap.put("sct2_TextDefinition", Pair.of(true, textDefinitionLine));
+		fileToLinesMap.put("sct2_TextDefinition", Pair.of(true, unpublishedTextDefinitionLine));
+		
+		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+	}
+	
+	@Test
+	public void exportShouldAlwaysCreateTextDefinitionDescriptionAndLanguageRefsetFiles() throws Exception {
+
+		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		String conceptId = assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, conceptRequestBody);
+		
+		final Date dateForNewVersion = SnomedVersioningApiAssert.getLatestAvailableVersionDate("SNOMEDCT");
+		
+		String versionName = Dates.formatByGmt(dateForNewVersion);
+		String versionEffectiveDate = Dates.formatByGmt(dateForNewVersion, DateFormats.SHORT);
+		
+		whenCreatingVersion(versionName, versionEffectiveDate)
+			.then().assertThat().statusCode(201);
+		
+		givenAuthenticatedRequest(ADMIN_API)
+			.when().get("/codesystems/SNOMEDCT/versions/{id}", versionName)
+			.then().assertThat().statusCode(200);
+		
+		assertComponentHasProperty(createMainPath(), SnomedComponentType.CONCEPT, conceptId, "definitionStatus", DefinitionStatus.PRIMITIVE.name());
+		
+		final Map<?, ?> updateRequest = ImmutableMap.builder()
+				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
+				.put("commitComment", "Changed definition status of concept")
+				.build();
+		
+		assertComponentCanBeUpdated(createMainPath(), SnomedComponentType.CONCEPT, conceptId, updateRequest);
+		assertComponentHasProperty(createMainPath(), SnomedComponentType.CONCEPT, conceptId, "definitionStatus", DefinitionStatus.FULLY_DEFINED.name());
+		
+		// create new version
+		
+		final Date newVersion = SnomedVersioningApiAssert.getLatestAvailableVersionDate("SNOMEDCT");
+		
+		String newVersionName = Dates.formatByGmt(newVersion);
+		String newVersionEffectiveDate = Dates.formatByGmt(newVersion, DateFormats.SHORT);
+		
+		whenCreatingVersion(newVersionName, newVersionEffectiveDate)
+			.then().assertThat().statusCode(201);
+		
+		givenAuthenticatedRequest(ADMIN_API)
+			.when().get("/codesystems/SNOMEDCT/versions/{id}", newVersionName)
+			.then().assertThat().statusCode(200);
+		
+		
+		final Map<Object, Object> config = ImmutableMap.builder()
+				.put("type", "DELTA")
+				.put("branchPath", Branch.MAIN_PATH)
+				.put("startEffectiveTime", newVersionEffectiveDate)
+				.put("endEffectiveTime", newVersionEffectiveDate)
+				.build();
+			
+		final String exportId = assertExportConfigurationCanBeCreated(config);
+		
+		assertExportConfiguration(exportId)
+			.and().body("type", equalTo("DELTA"))
+			.and().body("branchPath", equalTo(Branch.MAIN_PATH))
+			.and().body("startEffectiveTime", equalTo(newVersionEffectiveDate))
+			.and().body("endEffectiveTime", equalTo(newVersionEffectiveDate));
+		
+		final File exportArchive = assertExportFileCreated(exportId);
+		
+		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
+				
+		fileToLinesMap.put("sct2_Description", Pair.of(false, ""));
+		fileToLinesMap.put("sct2_TextDefinition", Pair.of(false, ""));
+		fileToLinesMap.put("der2_cRefset_USEnglish", Pair.of(false, ""));
+		fileToLinesMap.put("der2_cRefset_GBEnglish", Pair.of(false, ""));
+		
+		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+	}
 	
 	private static void updateMemberEffectiveTime(final IBranchPath branchPath, final String memberId, final String effectiveTime, boolean force) {
 		final Map<?, ?> effectiveTimeUpdate = ImmutableMap.of("effectiveTime", effectiveTime, "commitComment", "Update member effective time: " + memberId);

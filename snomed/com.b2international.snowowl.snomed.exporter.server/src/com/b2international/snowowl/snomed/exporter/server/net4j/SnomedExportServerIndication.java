@@ -67,6 +67,7 @@ import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedInferredRela
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedRf2ConceptExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedRf2DescriptionExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedStatedRelationshipExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedTextDefinitionExporter;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -485,6 +486,16 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			monitor.worked(2);
 		}
 		
+		logActivity("Publishing SNOMED CT text definitions into RF2 format.");
+		SnomedExporter textDefinitionExporter = new SnomedTextDefinitionExporter(context, revisionSearcher, false);
+		new SnomedExportExecutor(textDefinitionExporter, workingDirectory, clientNamespace).execute(false);
+		
+		if (monitor.isCanceled()) {
+			return;
+		} else {
+			monitor.worked(2);
+		}
+		
 		logActivity("Publishing SNOMED CT non-stated relationships into RF2 format.");
 		SnomedExporter relationshipExporter = new SnomedInferredRelationshipExporter(context, revisionSearcher, false);
 		new SnomedExportExecutor(relationshipExporter, workingDirectory, clientNamespace).execute(false);
@@ -556,6 +567,16 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		logActivity("Publishing SNOMED CT unpublished descriptions into RF2 format.");
 		SnomedExporter unpublishedDescriptionExporter = new SnomedRf2DescriptionExporter(context, revisionSearcher, true);
 		new SnomedExportExecutor(unpublishedDescriptionExporter, workingDirectory, clientNamespace).execute(append);
+		
+		if (monitor.isCanceled()) {
+			return;
+		} else {
+			monitor.worked(2);
+		}
+		
+		logActivity("Publishing SNOMED CT unpublished text definitions into RF2 format.");
+		SnomedExporter unpublishedTextDefinitionExporter = new SnomedTextDefinitionExporter(context, revisionSearcher, true);
+		new SnomedExportExecutor(unpublishedTextDefinitionExporter, workingDirectory, clientNamespace).execute(append);
 		
 		if (monitor.isCanceled()) {
 			return;
@@ -640,7 +661,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		int counter = 0;
 
 		if (coreComponentExport) {
-			counter += 8;
+			counter += 10;
 			if (includeRf1)
 				counter += 6;
 		}
