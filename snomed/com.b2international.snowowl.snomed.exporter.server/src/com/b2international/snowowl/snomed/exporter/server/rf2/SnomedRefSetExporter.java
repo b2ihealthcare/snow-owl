@@ -43,7 +43,7 @@ import com.google.common.collect.Sets;
  * Base for all SNOMED&nbsp;CT reference set RF2 exporters.
  *
  */
-public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRefSetMemberIndexEntry> implements SnomedExporter {
+public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRefSetMemberIndexEntry> {
 
 	private final String refSetId;
 

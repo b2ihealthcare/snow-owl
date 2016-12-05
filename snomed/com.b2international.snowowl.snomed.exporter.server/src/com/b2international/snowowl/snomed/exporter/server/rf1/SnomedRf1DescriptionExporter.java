@@ -18,6 +18,10 @@ package com.b2international.snowowl.snomed.exporter.server.rf1;
 import static com.b2international.commons.StringUtils.valueOfOrEmptyString;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,7 +42,9 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 
 /**
@@ -82,6 +88,24 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1CoreExporter<
 	}
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedRf1DescriptionExporter.class);
+	
+	private static final String EXTENDED_DESCRIPTION_TYPE_EXPLANATION_FILE_NAME = "Extended_Description_Type_Explanation.txt";
+	
+	private static final List<String> EXTENDED_DESCRIPTION_TYPE_EXPLANATION = ImmutableList.<String> builder()
+			.add("TypeID\tDescription type")
+			.add(" 1\tPreferred term")
+			.add(" 2\tSynonym")
+			.add(" 3\tFully specified name")
+			.add(" 4\tFull name")
+			.add(" 5\tAbbreviation")
+			.add(" 6\tProduct term")
+			.add(" 7\tShort name")
+			.add(" 8\tPreferred plural")
+			.add(" 9\tNote")
+			.add("10\tSearch term")
+			.add("11\tAbbreviation plural")
+			.add("12\tProduct term plural")
+			.build();
 	
 	private Id2Rf1PropertyMapper mapper;
 	private final Set<String> undefinedDescriptionTypeIds = Sets.newHashSet();
@@ -156,6 +180,27 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1CoreExporter<
 	@Override
 	public String[] getColumnHeaders() {
 		return SnomedRf2Headers.DESCRIPTION_HEADER;
+	}
+	
+	@Override
+	public void execute() throws IOException {
+		super.execute();
+		
+		if (includeExtendedDescriptionTypes) {
+			
+			Path workingDirPath = Paths.get(getExportContext().getReleaseRootPath().toString(), getRelativeDirectory());
+			if (Files.notExists(workingDirPath)) {
+				Files.createDirectories(workingDirPath);
+			}
+			
+			Path extendedFilePath = Paths.get(workingDirPath.toString(), EXTENDED_DESCRIPTION_TYPE_EXPLANATION_FILE_NAME);
+			
+			if (Files.notExists(extendedFilePath)) {
+				Files.createFile(extendedFilePath);
+			}
+			
+			Files.write(extendedFilePath, EXTENDED_DESCRIPTION_TYPE_EXPLANATION, Charsets.UTF_8);
+		}
 	}
 	
 	/*returns with a number indicating the status of a description for RF1 publication.*/

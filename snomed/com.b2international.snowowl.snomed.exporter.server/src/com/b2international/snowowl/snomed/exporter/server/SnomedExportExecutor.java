@@ -15,174 +15,67 @@
  */
 package com.b2international.snowowl.snomed.exporter.server;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
+import static com.google.common.base.Charsets.UTF_8;
+
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
-import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
 import com.google.common.base.Joiner;
 
 
 /**
- * This class executes the corresponding SNOMED&nbsp;CT specific exporter and writes the result to the given temporary working directory.
- * The subsequent path and filename is got by the specified importer.
+ * This class executes the corresponding SNOMED CT specific exporter and writes the result to the given temporary working directory.
  *
  */
 public class SnomedExportExecutor {
-	
-	private static final Charset UTF_8 = Charset.forName("UTF-8");
 
-	private static final String RELEASE_BASE_DIRECTORY = "SnomedCT_Release_";
+	private final SnomedExporter exporter;
 	
-	private final String temporaryWorkingDirectory;
-	private final File baseReleaseDir;
-	private File releaseFilePath;
-	private final SnomedExporter snomedExporter;
-	private final String clientNamespace;
-	
-	public SnomedExportExecutor(final SnomedExporter snomedExporter, final String workingDirectory, final String clientNamespace) {
-		this.snomedExporter = snomedExporter;
-		this.clientNamespace = clientNamespace;
-		
-		baseReleaseDir = new File(workingDirectory + File.separatorChar + RELEASE_BASE_DIRECTORY + clientNamespace);
-		if (!baseReleaseDir.exists()) {
-			baseReleaseDir.mkdirs();
-		}
-		
-		this.temporaryWorkingDirectory = workingDirectory;
-	}
-	
-	public void execute(boolean append) throws IOException {
-		releaseFilePath = write(append);
+	public SnomedExportExecutor(final SnomedExporter exporter) {
+		this.exporter = exporter;
 	}
 
-	public File getTemporaryFile() {
-		if (releaseFilePath == null) {
-			throw new IllegalStateException("The exported file is not ready, this may sign that you are trying to get the file from a different thread or (more likely) you have not called the executor yet.");
-		}
-		return releaseFilePath;
-	}
-	
-	public void deleteTemporaryFile() {
-		if (releaseFilePath != null && releaseFilePath.exists()) {
-			releaseFilePath.delete();
-		}
-	}
-	
-	public File writeExtendedDescriptionTypeExplanation() throws IOException {
-		final File extendedDescriptionTypePath = new File(
-				temporaryWorkingDirectory + 
-				File.separatorChar + 
-				RELEASE_BASE_DIRECTORY + 
-				clientNamespace + 
-				File.separatorChar + 
-				snomedExporter.getRelativeDirectory() + 
-				File.separatorChar + 
-				"Extended_Description_Type_Explanation.txt");
+	public void execute() throws IOException {
 		
-		if (extendedDescriptionTypePath.getParentFile() != null) {
-			extendedDescriptionTypePath.getParentFile().mkdirs();
+		Path workingDirPath = Paths.get(exporter.getExportContext().getReleaseRootPath().toString(), exporter.getRelativeDirectory());
+		
+		if (Files.notExists(workingDirPath)) {
+			Files.createDirectories(workingDirPath);
 		}
 		
-		extendedDescriptionTypePath.createNewFile();
+		Path filePath = Paths.get(workingDirPath.toString(), exporter.getFileName());
 		
-		final Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(extendedDescriptionTypePath), "UTF-8"));
-		writer.write(getExtendedDescriptionTypeExplanationFileFormat());
-		writer.close();
-		
-		return extendedDescriptionTypePath;
-	}
-	
-	private File write(boolean append) throws IOException {
-		final File releaseFileRelativePath = new File(
-				temporaryWorkingDirectory + 
-				File.separatorChar + 
-				RELEASE_BASE_DIRECTORY + 
-				clientNamespace + 
-				File.separatorChar + 
-				snomedExporter.getRelativeDirectory() + 
-				File.separatorChar + 
-				snomedExporter.getFileName());
-		
-		if (releaseFileRelativePath.getParentFile() != null) {
-			releaseFileRelativePath.getParentFile().mkdirs();
+		if (Files.notExists(filePath)) {
+			Files.createFile(filePath);
 		}
-		
-		releaseFileRelativePath.createNewFile();
-		
-		FileChannel fileChannel = null;
-		RandomAccessFile randomAccessFile = null;
 
-		try {
-			randomAccessFile = new RandomAccessFile(releaseFileRelativePath, "rw");
-			fileChannel = randomAccessFile.getChannel();
-			
-			//if appended, set the position and omit the header
-			if (append) {
-				final long fileSize = fileChannel.size();
-				fileChannel.position(fileSize);
-			} else {
-				writeFileHeader(fileChannel, snomedExporter.getColumnHeaders());
-			}
-			
-			for (final String line : snomedExporter) {
-				fileChannel.write(ByteBuffer.wrap(line.getBytes(UTF_8)));
-				fileChannel.write(ByteBuffer.wrap(SnomedExporter.CR_LF.getBytes(UTF_8)));
-			}
-			
-		} finally {
-			
-			if (null != randomAccessFile) {
-				randomAccessFile.close();
-			}
-			
-			if (null != fileChannel) {
-				fileChannel.close();
-			}
-			
-			if (null != snomedExporter) {
-				try {
-					snomedExporter.close();
-				} catch (final Exception e) {
-					try {
-						snomedExporter.close();
-					} catch (final Exception e1) {
-						e.addSuppressed(e1);
-					}
-					throw new SnowowlRuntimeException("Error while releasing exporter.", e);
+		try (RandomAccessFile randomAccessFile = new RandomAccessFile(filePath.toFile(), "rw")) {
+			try (FileChannel fileChannel = randomAccessFile.getChannel()) {
+					
+				if (randomAccessFile.length() == 0L) {
+					writeFileHeader(fileChannel, exporter.getColumnHeaders());
+				}
+				
+				fileChannel.position(fileChannel.size());
+				
+				for (final String line : exporter) {
+					fileChannel.write(ByteBuffer.wrap(line.getBytes(UTF_8)));
+					fileChannel.write(ByteBuffer.wrap(SnomedExporter.CR_LF.getBytes(UTF_8)));
 				}
 			}
 		}
-		return releaseFileRelativePath;
+		
 	}
 	
 	private void writeFileHeader(final FileChannel fileChannel, final String[] columnHeaders) throws IOException {
 		fileChannel.write(ByteBuffer.wrap(Joiner.on("\t").join(columnHeaders).trim().getBytes(UTF_8)));
 		fileChannel.write(ByteBuffer.wrap(SnomedExporter.CR_LF.getBytes(UTF_8)));
 	}
-
-	private String getExtendedDescriptionTypeExplanationFileFormat() {
-		return new StringBuilder("TypeID\tDescription type\n")
-		.append(" 1\tPreferred term\n")
-		.append(" 2\tSynonym\n")
-		.append(" 3\tFully specified name\n")
-		.append(" 4\tFull name\n")
-		.append(" 5\tAbbreviation\n")
-		.append(" 6\tProduct term\n")
-		.append(" 7\tShort name\n")
-		.append(" 8\tPreferred plural\n")
-		.append(" 9\tNote\n")
-		.append("10\tSearch term\n")
-		.append("11\tAbbreviation plural\n")
-		.append("12\tProduct term plural\n")
-		.toString();
-	}
+	
 }

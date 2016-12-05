@@ -132,9 +132,4 @@ public class SnomedCrossMapTargetExporter extends AbstractSnomedCrossMapExporter
 		return itr;
 	}
 
-	@Override
-	public void close() throws Exception {
-		// ignored
-	}
-
 }

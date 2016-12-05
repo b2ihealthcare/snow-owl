@@ -184,9 +184,5 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 	public Iterator<String> iterator() {
 		return itr;
 	}
-
-	@Override
-	public void close() throws Exception {
-
-	}
+	
 }

@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.exporter.server;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.Set;
 
@@ -46,6 +47,7 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	
 	private Id2Rf1PropertyMapper id2Rf1PropertyMapper;
 	private ExportFormat exportFormat;
+	private Path releaseRootPath;
 	
 	public SnomedExportContextImpl(final ExportFormat exportFormat, 
 			final IBranchPath currentBranchPath,
@@ -54,7 +56,8 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 			@Nullable final Date startEffectiveTime, 
 			@Nullable final Date endEffectiveTime,
 			final Set<String> moduleIds,
-			final Id2Rf1PropertyMapper id2Rf1PropertyMapper) {
+			final Id2Rf1PropertyMapper id2Rf1PropertyMapper,
+			final Path releaseRootPath) {
 
 		this.exportFormat = checkNotNull(exportFormat, "exportFormat");
 		this.currentBranchPath = checkNotNull(currentBranchPath, "currentBranchPath");
@@ -64,6 +67,7 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 		this.endEffectiveTime = endEffectiveTime;
 		this.moduleIds = moduleIds;
 		this.id2Rf1PropertyMapper = id2Rf1PropertyMapper;
+		this.releaseRootPath = releaseRootPath;
 	}
 	
 	@Override
@@ -126,4 +130,9 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 		return id2Rf1PropertyMapper;
 	}
 
+	@Override
+	public Path getReleaseRootPath() {
+		return releaseRootPath;
+	}
+	
 }

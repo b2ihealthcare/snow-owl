@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.exporter.server.rf2;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -27,7 +28,7 @@ import com.google.common.base.Charsets;
  * Representation of an exporter for SNOMED&nbsp;CT ontology.
  *
  */
-public interface SnomedExporter extends Iterator<String>, Iterable<String>, AutoCloseable {
+public interface SnomedExporter extends Iterator<String>, Iterable<String> {
 	
 	/**Horizontal tab.*/
 	String HT = new String(new byte [] { Ascii.HT }, Charsets.US_ASCII);
@@ -65,5 +66,7 @@ public interface SnomedExporter extends Iterator<String>, Iterable<String>, Auto
 	 * Returns the export context used by the export process
 	 */
 	SnomedExportContext getExportContext();
+	
+	void execute() throws IOException;
 	
 }

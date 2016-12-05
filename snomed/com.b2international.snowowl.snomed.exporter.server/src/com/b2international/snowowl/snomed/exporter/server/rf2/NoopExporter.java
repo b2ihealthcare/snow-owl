@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.rf2;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -46,10 +47,6 @@ public enum NoopExporter implements SnomedExporter {
 	}
 
 	@Override
-	public void close() throws Exception {
-	}
-
-	@Override
 	public String getRelativeDirectory() {
 		throw new UnsupportedOperationException("Implementation error.");
 	}
@@ -77,6 +74,10 @@ public enum NoopExporter implements SnomedExporter {
 	@Override
 	public Iterator<String> iterator() {
 		return this;
+	}
+	
+	@Override
+	public void execute() throws IOException {
 	}
 
 }

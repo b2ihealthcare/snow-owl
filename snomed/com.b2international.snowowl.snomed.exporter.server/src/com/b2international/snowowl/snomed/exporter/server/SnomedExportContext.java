@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.exporter.server;
 
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.Set;
 
@@ -101,4 +102,8 @@ public interface SnomedExportContext {
 	 */
 	Id2Rf1PropertyMapper getId2Rf1PropertyMapper();
 
+	/**
+	 * Returns the path to '&lt;path_to_export_temp_dir&gt;\SnomedCT_Release_&lt;namespace&gt;'
+	 */
+	Path getReleaseRootPath();
 }

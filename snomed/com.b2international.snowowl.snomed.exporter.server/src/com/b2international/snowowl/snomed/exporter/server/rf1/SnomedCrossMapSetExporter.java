@@ -25,7 +25,6 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
-import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
 
 /**
  * SNOMED&nbsp;CT cross map set exporter for complex map and simple map type reference sets.
@@ -36,7 +35,7 @@ import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
  * @see SnomedRf1Exporter
  * @see AbstractSnomedCrossMapExporter
  */
-public class SnomedCrossMapSetExporter extends AbstractSnomedCrossMapExporter implements SnomedExporter {
+public class SnomedCrossMapSetExporter extends AbstractSnomedCrossMapExporter {
 
 	private static final String FILE_NAME_PREFIX = "CrossMapSets";
 	private Iterator<String> itr;
@@ -101,9 +100,4 @@ public class SnomedCrossMapSetExporter extends AbstractSnomedCrossMapExporter im
 		return itr;
 	}
 
-	@Override
-	public void close() throws Exception {
-		//nothing
-	}
-	
 }

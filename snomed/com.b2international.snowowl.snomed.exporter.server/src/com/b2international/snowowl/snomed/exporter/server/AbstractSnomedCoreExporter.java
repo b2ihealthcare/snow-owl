@@ -129,9 +129,10 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void execute() throws IOException {
+		new SnomedExportExecutor(this).execute();
 	}
-
+	
 	protected void appendExpressionConstraint(ExpressionBuilder builder) {
 		//do nothing
 	}
