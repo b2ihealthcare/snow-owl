@@ -123,6 +123,14 @@ public class Expressions {
 	public static Expression matchNone() {
 		return MatchNone.INSTANCE;
 	}
+
+	public static Expression matchRange(String fieldName, long from, long to) {
+		return new LongRangePredicate(fieldName, from, to, true, true);
+	}
+	
+	public static Expression matchRange(String fieldName, long from, long to, boolean minInclusive, boolean maxInclusive) {
+		return new LongRangePredicate(fieldName, from, to, minInclusive, maxInclusive);
+	}
 	
 	public static Expression hasParent(Class<?> parentType, Expression expression) {
 		return new HasParentPredicate(parentType, expression);
