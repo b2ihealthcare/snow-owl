@@ -43,6 +43,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
@@ -174,9 +176,9 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		final FileSystemResource exportZipResource = new FileSystemResource(exportZipFile);
 		
 		final HttpHeaders httpHeaders = new HttpHeaders();
-		final String timestamp = new SimpleDateFormat("yyyyMMdd").format(new Date());
+		
 		httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-		httpHeaders.set("Content-Disposition", "attachment; filename=\"snomed_export_" + timestamp + ".zip\"");
+		httpHeaders.set("Content-Disposition", "attachment; filename=\"snomed_export_" + Dates.formatByHostTimeZone(new Date(), DateFormats.COMPACT_LONG) + ".zip\"");
 
 		exports.remove(exportId);
 		return new ResponseEntity<FileSystemResource>(exportZipResource, httpHeaders, HttpStatus.OK);
