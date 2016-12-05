@@ -19,6 +19,7 @@ import static com.b2international.commons.StringUtils.valueOfOrEmptyString;
 
 import java.io.IOException;
 
+import com.b2international.commons.BooleanUtils;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -84,8 +85,8 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1CoreExporter<Snom
 		Rf1Concept concept = new Rf1Concept();
 		
 		concept.id = doc.getId();
-		concept.status = doc.isActive() ? "1" : "0";
-		concept.definitionStatus = doc.isPrimitive() ? "1" : "0";
+		concept.status = BooleanUtils.toString(doc.isActive());
+		concept.definitionStatus = BooleanUtils.toString(doc.isPrimitive());
 		
 		final LanguageSetting languageSetting = ApplicationContext.getInstance().getService(LanguageSetting.class);
 		IEventBus eventBus = ApplicationContext.getInstance().getService(IEventBus.class);

@@ -37,7 +37,7 @@ public class SnomedRf2RelationshipExporter extends AbstractSnomedRf2CoreExporter
 		sb.append(HT);
 		sb.append(formatEffectiveTime(doc.getEffectiveTime()));
 		sb.append(HT);
-		sb.append(doc.isActive() ? "1" : "0");
+		sb.append(formatStatus(doc.isActive()));
 		sb.append(HT);
 		sb.append(doc.getModuleId());
 		sb.append(HT);

@@ -41,7 +41,7 @@ public class SnomedRf2ConceptExporter extends AbstractSnomedRf2CoreExporter<Snom
 		sb.append(HT);
 		sb.append(formatEffectiveTime(doc.getEffectiveTime()));
 		sb.append(HT);
-		sb.append(doc.isActive() ? "1" : "0");
+		sb.append(formatStatus(doc.isActive()));
 		sb.append(HT);
 		sb.append(doc.getModuleId());
 		sb.append(HT);
