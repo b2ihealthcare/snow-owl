@@ -35,8 +35,8 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	private final ContentSubType contentSubType;
 	private final String unsetEffectiveTimeLabel;
 
-	private final Date deltaExportStartEffectiveTime;
-	private final Date deltaExportEndEffectiveTime;
+	private Date startEffectiveTime;
+	private Date endEffectiveTime;
 	
 	// FIXME always false, clients should specify the value
 	private boolean includeMapTargetDescription = false; 
@@ -51,8 +51,8 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 			final IBranchPath currentBranchPath,
 			final ContentSubType contentSubType,
 			final String unsetEffectiveTimeLabel,
-			@Nullable final Date deltaExportStartEffectiveTime, 
-			@Nullable final Date deltaExportEndEffectiveTime,
+			@Nullable final Date startEffectiveTime, 
+			@Nullable final Date endEffectiveTime,
 			final Set<String> moduleIds,
 			final Id2Rf1PropertyMapper id2Rf1PropertyMapper) {
 
@@ -60,8 +60,8 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 		this.currentBranchPath = checkNotNull(currentBranchPath, "currentBranchPath");
 		this.contentSubType = checkNotNull(contentSubType, "contentSubType");
 		this.unsetEffectiveTimeLabel = checkNotNull(unsetEffectiveTimeLabel, "unsetEffectiveTimeLabel");
-		this.deltaExportStartEffectiveTime = deltaExportStartEffectiveTime;
-		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
+		this.startEffectiveTime = startEffectiveTime;
+		this.endEffectiveTime = endEffectiveTime;
 		this.moduleIds = moduleIds;
 		this.id2Rf1PropertyMapper = id2Rf1PropertyMapper;
 	}
@@ -92,13 +92,23 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	}
 	
 	@Override
-	@Nullable public Date getDeltaExportStartEffectiveTime() {
-		return deltaExportStartEffectiveTime;
+	@Nullable public Date getStartEffectiveTime() {
+		return startEffectiveTime;
 	}
 
 	@Override
-	@Nullable public Date getDeltaExportEndEffectiveTime() {
-		return deltaExportEndEffectiveTime;
+	public void setStartEffectiveTime(Date startEffectiveTime) {
+		this.startEffectiveTime = startEffectiveTime;
+	}
+	
+	@Override
+	@Nullable public Date getEndEffectiveTime() {
+		return endEffectiveTime;
+	}
+	
+	@Override
+	public void setEndEffectiveTime(Date endEffectiveTime) {
+		this.endEffectiveTime = endEffectiveTime;
 	}
 	
 	@Override

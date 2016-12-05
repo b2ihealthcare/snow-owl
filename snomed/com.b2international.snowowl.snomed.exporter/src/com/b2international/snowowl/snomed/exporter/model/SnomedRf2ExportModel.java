@@ -62,8 +62,8 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	private boolean extendedDescriptionTypesForRf1;
 	private boolean includeUnpublised;
 
-	private Date deltaExportStartEffectiveTime;
-	private Date deltaExportEndEffectiveTime;
+	private Date startEffectiveTime;
+	private Date endEffectiveTime;
 	private ContentSubType releaseType;
 	private Set<SnomedMapSetSetting> settings;
 	private Set<String> modulesToExport;
@@ -229,20 +229,20 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		return modulesToExport;
 	}
 
-	public Date getDeltaExportStartEffectiveTime() {
-		return deltaExportStartEffectiveTime;
+	public Date getStartEffectiveTime() {
+		return startEffectiveTime;
 	}
 
-	public void setDeltaExportStartEffectiveTime(Date deltaExportStartEffectiveTime) {
-		this.deltaExportStartEffectiveTime = deltaExportStartEffectiveTime;
+	public void setStartEffectiveTime(Date startEffectiveTime) {
+		this.startEffectiveTime = startEffectiveTime;
 	}
 
-	public Date getDeltaExportEndEffectiveTime() {
-		return deltaExportEndEffectiveTime;
+	public Date getEndEffectiveTime() {
+		return endEffectiveTime;
 	}
 
-	public void setDeltaExportEndEffectiveTime(Date deltaExportEndEffectiveTime) {
-		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
+	public void setEndEffectiveTime(Date endEffectiveTime) {
+		this.endEffectiveTime = endEffectiveTime;
 	}
 
 	public boolean includeUnpublised() {

@@ -58,16 +58,24 @@ public interface SnomedExportContext {
 	ContentSubType getContentSubType();
 
 	/**
-	 * Returns with the delta export start effective time. Can be {@code null} even 
-	 * if the {@link ContentSubType} is {@link ContentSubType#DELTA delta}.
+	 * Returns with a restricting start effective time. Can be {@code null}.
 	 */
-	@Nullable Date getDeltaExportStartEffectiveTime();
+	@Nullable Date getStartEffectiveTime();
 
 	/**
-	 * Returns with the delta export end effective time. Can be {@code null} even 
-	 * if the {@link ContentSubType} is {@link ContentSubType#DELTA delta}.
+	 * Sets a restricting start effective time.
 	 */
-	@Nullable Date getDeltaExportEndEffectiveTime();
+	void setStartEffectiveTime(Date startEffectiveTime);
+	
+	/**
+	 * Returns with a restricting end effective time. Can be {@code null}.
+	 */
+	@Nullable Date getEndEffectiveTime();
+	
+	/**
+	 * Sets a restricting end effective time.
+	 */
+	void setEndEffectiveTime(Date endEffectiveTime);
 	
 	/**
 	 * Returns the label to use when a component does not have an effective time assigned. Defaults to {@link EffectiveTimes#UNSET_EFFECTIVE_TIME_LABEL}. 

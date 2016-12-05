@@ -109,8 +109,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 
 	private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SnomedExportServerIndication.class);
 
-	// this is the directory where the exported files with the RF2 directory
-	// "standard" are put
+	// this is the directory where the exported files with the RF2 directory "standard" are put
 	private final String TEMPORARY_WORKING_DIRECTORY = System.getProperty("java.io.tmpdir") + File.separatorChar + "export" + System.currentTimeMillis();
 
 	private boolean coreComponentExport;
@@ -119,8 +118,8 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 	private boolean includeRf1;
 	private boolean includeExtendedDescriptionTypes;
 	private Set<String> modulesToExport;
-	private Date deltaExportStartEffectiveTime;
-	private Date deltaExportEndEffectiveTime;
+	private Date startEffectiveTime;
+	private Date endEffectiveTime;
 	private String clientNamespace;
 
 	// the number of the selected refset to export, if 0, no reference export will be executed
@@ -158,14 +157,13 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		userId = in.readUTF();
 		branchPath = BranchPathUtils.createPath(in.readUTF());
 		
-		String deltaExportStartEffectiveTimeString = in.readUTF();
-		String deltaExportEndEffectiveTimeString = in.readUTF();
-		deltaExportStartEffectiveTime = deltaExportStartEffectiveTimeString.equals("") ? null : convertRF2StringToDate(deltaExportStartEffectiveTimeString);
-		deltaExportEndEffectiveTime = deltaExportEndEffectiveTimeString.equals("") ? null : convertRF2StringToDate(deltaExportEndEffectiveTimeString);
+		String startEffectiveTimeString = in.readUTF();
+		String endEffectiveTimeString = in.readUTF();
+		startEffectiveTime = startEffectiveTimeString.equals("") ? null : convertRF2StringToDate(startEffectiveTimeString);
+		endEffectiveTime = endEffectiveTimeString.equals("") ? null : convertRF2StringToDate(endEffectiveTimeString);
 		releaseType = ContentSubType.getByValue(in.readInt());
 		unsetEffectiveTimeLabel = in.readUTF();
 		includeUnpublished = in.readBoolean();
-		
 		
 		includeRf1 = in.readBoolean();
 		includeExtendedDescriptionTypes = in.readBoolean();
@@ -197,8 +195,8 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 				branchPath, 
 				releaseType, 
 				unsetEffectiveTimeLabel,
-				deltaExportStartEffectiveTime, 
-				deltaExportEndEffectiveTime,
+				startEffectiveTime, 
+				endEffectiveTime,
 				modulesToExport,
 				new Id2Rf1PropertyMapper());
 		
@@ -313,22 +311,22 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 					public boolean apply(ICodeSystemVersion input) {
 						
 						//special case, unpublished only, do not handle here
-						if (deltaExportStartEffectiveTime == null && deltaExportEndEffectiveTime == null) {
+						if (startEffectiveTime == null && endEffectiveTime == null) {
 							return false;
-						} else if (deltaExportStartEffectiveTime == null) {
+						} else if (startEffectiveTime == null) {
 							Date effectiveDate = new Date(input.getEffectiveDate());
-							if (effectiveDate.before(deltaExportEndEffectiveTime) || effectiveDate.equals(deltaExportEndEffectiveTime)) {
+							if (effectiveDate.before(endEffectiveTime) || effectiveDate.equals(endEffectiveTime)) {
 								return true;
 							}
-						} else if (deltaExportEndEffectiveTime == null) {
+						} else if (endEffectiveTime == null) {
 							Date effectiveDate = new Date(input.getEffectiveDate());
-							if (effectiveDate.after(deltaExportStartEffectiveTime) || effectiveDate.equals(deltaExportStartEffectiveTime)) {
+							if (effectiveDate.after(startEffectiveTime) || effectiveDate.equals(startEffectiveTime)) {
 								return true;
 							}
 						} else {
 							Date effectiveDate = new Date(input.getEffectiveDate());
-							if ((effectiveDate.after(deltaExportStartEffectiveTime) || effectiveDate.equals(deltaExportStartEffectiveTime))
-									&& (effectiveDate.before(deltaExportEndEffectiveTime) || effectiveDate.equals(deltaExportEndEffectiveTime))) {
+							if ((effectiveDate.after(startEffectiveTime) || effectiveDate.equals(startEffectiveTime))
+									&& (effectiveDate.before(endEffectiveTime) || effectiveDate.equals(endEffectiveTime))) {
 								return true;
 							}
 						}
@@ -363,7 +361,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			}
 			
 			if (exportBranchPaths.isEmpty() && !isUnpublishedExport(subType)) {
-				throw new BadRequestException("No branch paths were found for the export.");
+				throw new BadRequestException("No branch paths were found to export.");
 			}
 			
 			Collections.sort(exportBranchPaths);
@@ -380,13 +378,13 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 						}
 						
 						if (coreComponentExport) {
-							LogUtils.logExportActivity(LOGGER, userId, branchPath, "Starting SNOMED CT core components " + subType+ " export...");
+							LogUtils.logExportActivity(LOGGER, userId, branchPath, "Starting SNOMED CT core components " + subType + " export...");
 							executeCoreExport(TEMPORARY_WORKING_DIRECTORY, exportContext, revisionSearcher, monitor);
 						}
 						
 						if (numberOfRefSetsToExport != 0) {
 							
-							LogUtils.logExportActivity(LOGGER, userId, branchPath, "Starting SNOMED CT reference set " + subType+ " export...");
+							LogUtils.logExportActivity(LOGGER, userId, branchPath, "Starting SNOMED CT reference set " + subType + " export...");
 							
 							for (String identifierConceptId : refsetIdentifierConcepts) {
 								executeRefSetExport(TEMPORARY_WORKING_DIRECTORY, exportContext, identifierConceptId, revisionSearcher, false, monitor);
@@ -403,7 +401,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			}
 			
 			//special case
-			if (subType == ContentSubType.DELTA && deltaExportStartEffectiveTime == null && deltaExportEndEffectiveTime == null) {
+			if (subType == ContentSubType.DELTA && startEffectiveTime == null && endEffectiveTime == null) {
 				revisionIndex.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
 					@Override
 					public Void execute(RevisionSearcher revisionSearcher) throws IOException {
@@ -454,7 +452,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 	
 	private boolean isUnpublishedExport(final ContentSubType subType) {
 		return includeUnpublished
-				|| (subType == ContentSubType.DELTA && deltaExportStartEffectiveTime == null && deltaExportEndEffectiveTime == null);
+				|| (subType == ContentSubType.DELTA && startEffectiveTime == null && endEffectiveTime == null);
 	}
 
 	private void executeCoreExport(final String workingDirectory, final SnomedExportContext context, final RevisionSearcher revisionSearcher, final OMMonitor monitor) throws IOException {

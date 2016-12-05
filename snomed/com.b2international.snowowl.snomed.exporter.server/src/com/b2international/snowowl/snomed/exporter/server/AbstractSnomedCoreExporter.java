@@ -122,19 +122,19 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 		if (onlyUnpublished) {
 			builder.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
 		} else if (exportContext.getContentSubType() != ContentSubType.FULL) {
-			Date deltaExportStartEffectiveTime = exportContext.getDeltaExportStartEffectiveTime();
-			Date deltaExportEndEffectiveTime = exportContext.getDeltaExportEndEffectiveTime();
+			Date startEffectiveTime = exportContext.getStartEffectiveTime();
+			Date endEffectiveTime = exportContext.getEndEffectiveTime();
 			
-			if (deltaExportStartEffectiveTime != null || deltaExportEndEffectiveTime != null) {
+			if (startEffectiveTime != null || endEffectiveTime != null) {
 				long from = 0l;
 				long to = Long.MAX_VALUE;
 				
-				if (deltaExportStartEffectiveTime != null) {
-					from = deltaExportStartEffectiveTime.getTime();
+				if (startEffectiveTime != null) {
+					from = startEffectiveTime.getTime();
 				} 
 				
-				if (deltaExportEndEffectiveTime != null) {
-					to = deltaExportEndEffectiveTime.getTime();
+				if (endEffectiveTime != null) {
+					to = endEffectiveTime.getTime();
 				}
 				
 				builder.must(SnomedDocument.Expressions.effectiveTime(from, to));
