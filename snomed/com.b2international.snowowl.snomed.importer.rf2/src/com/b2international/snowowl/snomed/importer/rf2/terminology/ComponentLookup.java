@@ -15,26 +15,33 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.terminology;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.collections.PrimitiveMaps;
+import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyLongMap;
-import com.b2international.commons.ClassUtils;
+import com.b2international.collections.longs.LongSet;
+import com.b2international.collections.longs.LongValueMap;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Component;
@@ -45,9 +52,11 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 
 /**
  * Maps SNOMED CT component identifiers to CDO storage keys in a compact
@@ -57,7 +66,7 @@ import com.google.common.collect.Maps;
  * @param <C> the component type (must be either a subtype of {@link Component}
  * or a subtype of {@link SnomedRefSet})
  */
-public class ComponentLookup<C extends CDOObject> {
+public final class ComponentLookup<C extends CDOObject> {
 
 	private static final int EXPECTED_COMPONENT_SIZE = 50000;
 
@@ -75,53 +84,105 @@ public class ComponentLookup<C extends CDOObject> {
 	}
 
 	public void addNewComponent(final C component, final String id) {
-		newComponents.put(id, component);
+		C prev = newComponents.put(id, component);
+		if (prev != null && component != prev) {
+			throw new IllegalStateException("Reregistering a new component with ID " + id);
+		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public C getComponent(final String componentId) {
-		final C c = newComponents.get(componentId);
+	public C getNewComponent(String componentId) {
+		return newComponents.get(componentId);
+	}
+	
+	/**
+	 * Fetch CDOObject for the given component IDs.
+	 * @param componentIds 
+	 * @return
+	 */
+	public Collection<C> getComponents(Collection<String> componentIds) {
+		final Collection<C> components = Sets.newHashSetWithExpectedSize(componentIds.size());
+		final Set<String> missingComponentIds = Sets.newHashSet();
 		
-		if (null != c) {
-			return c;
+		for (String componentId : componentIds) {
+			final C component = getNewComponent(componentId);
+			if (component != null) {
+				components.add(component);
+			} else {
+				missingComponentIds.add(componentId);
+			}
 		}
 		
-		long storageKey = getComponentStorageKey(componentId);
-		
-		if (storageKey > 0L) {
-			return (C) editingContext.lookup(getComponentStorageKey(componentId));
+		if (missingComponentIds.isEmpty()) {
+			return components;
 		}
 		
-		return null;
+		LongIterator storageKeys = getComponentStorageKeys(missingComponentIds).iterator();
+		
+		while (storageKeys.hasNext()) {
+			final long storageKey = storageKeys.next();
+			components.add((C) editingContext.lookup(storageKey));
+		}
+		
+		return components;
 	}
 
 	public long getComponentStorageKey(final String componentId) {
-		final long componentIdLong = ImportUtil.parseLong(componentId);
-		if (!componentIdMap.containsKey(componentIdLong)) {
+		LongIterator it = getComponentStorageKeys(Collections.singleton(componentId)).iterator();
+		return it.hasNext() ? it.next() : CDOUtils.NO_STORAGE_KEY;
+	}
+
+	public LongSet getComponentStorageKeys(final Collection<String> componentIds) {
+		final LongSet storageKeys = PrimitiveSets.newLongOpenHashSetWithExpectedSize(componentIds.size());
+		final Set<String> missingStorageKeyComponentIds = newHashSet();
+		for (String componentId : componentIds) {
+			final long componentIdLong = ImportUtil.parseLong(componentId);
+			if (componentIdMap.containsKey(componentIdLong)) {
+				storageKeys.add(componentIdMap.get(componentIdLong));
+			} else {
+				missingStorageKeyComponentIds.add(componentId);
+			}
+		}
+		
+		if (!missingStorageKeyComponentIds.isEmpty()) {
 			try {
-				final long storageKey = getStorageKey(componentId, SnomedIdentifiers.getComponentCategory(componentId));
-				if (CDOUtils.NO_STORAGE_KEY != storageKey) {
-					registerComponentStorageKey(componentId, storageKey);
-				}
-			} catch (Exception e) {
+				LongValueMap<String> missingStorageKeys = getStorageKeys(missingStorageKeyComponentIds);
+				for (String missingStorageKeyComponentId : missingStorageKeyComponentIds) {
+					if (missingStorageKeys.containsKey(missingStorageKeyComponentId)) {
+						final long missingStorageKey = missingStorageKeys.get(missingStorageKeyComponentId);
+						if (missingStorageKey > CDOUtils.NO_STORAGE_KEY) {
+							storageKeys.add(missingStorageKey);
+							registerComponentStorageKey(missingStorageKeyComponentId, missingStorageKey);
+						}
+					}
+				} 
+			} catch (IOException e) {
 				throw new SnowowlRuntimeException(e);
 			}
 		}
-		return componentIdMap.get(componentIdLong);
+		
+		return storageKeys;
 	}
-
-	private long getStorageKey(final String componentId, final ComponentCategory componentCategory) throws IOException {
-		return index.read(editingContext.getBranch(), new RevisionIndexRead<Long>() {
+	
+	private LongValueMap<String> getStorageKeys(final Collection<String> componentIds) throws IOException {
+		return index.read(editingContext.getBranch(), new RevisionIndexRead<LongValueMap<String>>() {
 			@Override
-			public Long execute(RevisionSearcher index) throws IOException {
-				final Class<? extends SnomedDocument> type = SnomedDocument.getType(componentCategory);
-				final Query<? extends SnomedDocument> query = Query.select(type).where(SnomedDocument.Expressions.id(componentId)).limit(2).build();
-				final Hits<? extends SnomedDocument> hits = index.search(query);
-				if (SnomedRefSet.class.isAssignableFrom(clazz)) {
-					return hits.getTotal() > 0 ? ClassUtils.checkAndCast(Iterables.getOnlyElement(hits), SnomedConceptDocument.class).getRefSetStorageKey() : CDOUtils.NO_STORAGE_KEY;
-				} else {
-					return hits.getTotal() > 0 ? Iterables.getOnlyElement(hits).getStorageKey() : CDOUtils.NO_STORAGE_KEY;
+			public LongValueMap<String> execute(RevisionSearcher index) throws IOException {
+				final LongValueMap<String> map = PrimitiveMaps.newObjectKeyLongOpenHashMapWithExpectedSize(componentIds.size());
+				// index componentIds by their category
+				final Multimap<Class<? extends SnomedDocument>, String> idsByType = Multimaps.index(componentIds, id -> SnomedDocument.getType(SnomedIdentifiers.getComponentCategory(id)));
+				for (Class<? extends SnomedDocument> type : idsByType.keySet()) {
+					final Query<? extends SnomedDocument> query = Query.select(type).where(SnomedDocument.Expressions.ids(componentIds)).limit(componentIds.size()).build();
+					final Hits<? extends SnomedDocument> hits = index.search(query);
+					for (SnomedDocument doc : hits) {
+						if (SnomedRefSet.class.isAssignableFrom(clazz)) {
+							map.put(doc.getId(), ((SnomedConceptDocument) doc).getRefSetStorageKey());
+						} else {
+							map.put(doc.getId(), doc.getStorageKey());
+						}
+					}
 				}
+				// execute queries for each type
+				return map;
 			}
 		});
 	}
@@ -130,7 +191,7 @@ public class ComponentLookup<C extends CDOObject> {
 		return initializedComponents.contains(importType);
 	}
 
-	public void registerComponentStorageKey(final String componentId, final long storageKey) {
+	private void registerComponentStorageKey(final String componentId, final long storageKey) {
 		final long existingKey = componentIdMap.put(ImportUtil.parseLong(componentId), storageKey);
 		
 		if (existingKey > 0L && existingKey != storageKey) {
@@ -140,7 +201,7 @@ public class ComponentLookup<C extends CDOObject> {
 		}
 	}
 	
-	public void registerNewComponents() {
+	public void registerNewComponentStorageKeys() {
 		// Consume each element while it is being registered
 		for (final Iterator<Entry<String, C>> itr = Iterators.consumingIterator(newComponents.entrySet().iterator()); itr.hasNext();) {
 			final Entry<String, C> newComponent = itr.next();
@@ -176,4 +237,5 @@ public class ComponentLookup<C extends CDOObject> {
 		}
 		
 	}
+
 }
