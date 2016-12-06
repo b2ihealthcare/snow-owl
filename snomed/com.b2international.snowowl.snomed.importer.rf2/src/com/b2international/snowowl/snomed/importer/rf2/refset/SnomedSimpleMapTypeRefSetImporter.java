@@ -96,7 +96,6 @@ public class SnomedSimpleMapTypeRefSetImporter extends AbstractSnomedMapTypeRefS
 
 	@Override
 	protected void applyRow(SnomedSimpleMapRefSetMember member, SimpleMapRefSetRow row, Collection<SnomedSimpleMapRefSetMember> componentsToAttach) {
-		member.setUuid(row.getUuid().toString());
 		if (row.getEffectiveTime() != null) {
 			member.setEffectiveTime(row.getEffectiveTime());
 			member.setReleased(true);

@@ -82,7 +82,6 @@ public class SnomedDescriptionTypeRefSetImporter extends AbstractSnomedRefSetImp
 
 	@Override
 	protected void applyRow(SnomedDescriptionTypeRefSetMember member, DescriptionFormatRefSetRow row, Collection<SnomedDescriptionTypeRefSetMember> componentsToAttach) {
-		member.setUuid(row.getUuid().toString());
 		if (row.getEffectiveTime() != null) {
 			member.setEffectiveTime(row.getEffectiveTime());
 			member.setReleased(true);

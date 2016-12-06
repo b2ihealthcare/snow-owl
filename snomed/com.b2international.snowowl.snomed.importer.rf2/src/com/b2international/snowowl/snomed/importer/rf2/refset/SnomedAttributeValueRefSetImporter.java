@@ -96,7 +96,6 @@ public class SnomedAttributeValueRefSetImporter extends AbstractSnomedRefSetImpo
 	
 	@Override
 	protected void applyRow(SnomedAttributeValueRefSetMember member, AssociatingRefSetRow row, Collection<SnomedAttributeValueRefSetMember> componentsToAttach) {
-		member.setUuid(row.getUuid().toString());
 		if (row.getEffectiveTime() != null) {
 			member.setEffectiveTime(row.getEffectiveTime());
 			member.setReleased(true);

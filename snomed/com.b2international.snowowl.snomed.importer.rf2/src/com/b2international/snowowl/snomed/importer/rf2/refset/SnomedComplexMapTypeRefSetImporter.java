@@ -107,7 +107,6 @@ public class SnomedComplexMapTypeRefSetImporter extends AbstractSnomedMapTypeRef
 	@Override
 	protected void applyRow(SnomedSimpleMapRefSetMember member, ComplexMapTypeRefSetRow row, Collection<SnomedSimpleMapRefSetMember> componentsToAttach) {
 		SnomedComplexMapRefSetMember complexMember = (SnomedComplexMapRefSetMember) member;
-		complexMember.setUuid(row.getUuid().toString());
 		if (row.getEffectiveTime() != null) {
 			complexMember.setEffectiveTime(row.getEffectiveTime());
 			complexMember.setReleased(true);

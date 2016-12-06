@@ -87,7 +87,6 @@ public final class SnomedAssociationRefSetImporter extends AbstractSnomedRefSetI
 	
 	@Override
 	protected void applyRow(SnomedAssociationRefSetMember member, AssociatingRefSetRow row, Collection<SnomedAssociationRefSetMember> componentsToAttach) {
-		member.setUuid(row.getUuid().toString());
 		if (row.getEffectiveTime() != null) {
 			member.setEffectiveTime(row.getEffectiveTime());
 			member.setReleased(true);

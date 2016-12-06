@@ -122,7 +122,6 @@ public class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImporter<A
 
 	@Override
 	protected void applyRow(SnomedLanguageRefSetMember member, AssociatingRefSetRow row, Collection<SnomedLanguageRefSetMember> componentsToAttach) {
-		member.setUuid(row.getUuid().toString());
 		if (row.getEffectiveTime() != null) {
 			member.setEffectiveTime(row.getEffectiveTime());
 			member.setReleased(true);

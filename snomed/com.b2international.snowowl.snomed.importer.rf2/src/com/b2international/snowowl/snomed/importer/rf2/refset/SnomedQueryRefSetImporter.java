@@ -82,7 +82,6 @@ public class SnomedQueryRefSetImporter extends AbstractSnomedRefSetImporter<Quer
 
 	@Override
 	protected void applyRow(SnomedQueryRefSetMember member, QueryRefSetRow row, Collection<SnomedQueryRefSetMember> componentsToAttach) {
-		member.setUuid(row.getUuid().toString());
 		if (row.getEffectiveTime() != null) {
 			member.setEffectiveTime(row.getEffectiveTime());
 			member.setReleased(true);

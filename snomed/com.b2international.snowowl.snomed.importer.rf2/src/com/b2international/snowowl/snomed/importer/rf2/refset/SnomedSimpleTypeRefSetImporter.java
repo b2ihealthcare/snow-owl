@@ -74,7 +74,6 @@ public class SnomedSimpleTypeRefSetImporter extends AbstractSnomedRefSetImporter
 
 	@Override
 	protected void applyRow(SnomedRefSetMember member, RefSetRow row, Collection<SnomedRefSetMember> componentsToAttach) {
-		member.setUuid(row.getUuid().toString());
 		if (row.getEffectiveTime() != null) {
 			member.setEffectiveTime(row.getEffectiveTime());
 			member.setReleased(true);

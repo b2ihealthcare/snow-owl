@@ -74,7 +74,6 @@ public class SnomedModuleDependencyRefSetImporter extends AbstractSnomedRefSetIm
 
 	@Override
 	protected void applyRow(SnomedModuleDependencyRefSetMember member, ModuleDependencyRefSetRow row, Collection<SnomedModuleDependencyRefSetMember> componentsToAttach) {
-		member.setUuid(row.getUuid().toString());
 		if (row.getEffectiveTime() != null) {
 			member.setEffectiveTime(row.getEffectiveTime());
 			member.setReleased(true);

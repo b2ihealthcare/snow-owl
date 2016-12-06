@@ -128,7 +128,6 @@ public class SnomedConcreteDataTypeRefSetImporter extends AbstractSnomedRefSetIm
 
 	@Override
 	protected void applyRow(SnomedConcreteDataTypeRefSetMember member, ConcreteDomainRefSetRow row, Collection<SnomedConcreteDataTypeRefSetMember> componentsToAttach) {
-		member.setUuid(row.getUuid().toString());
 		if (row.getEffectiveTime() != null) {
 			member.setEffectiveTime(row.getEffectiveTime());
 			member.setReleased(true);
