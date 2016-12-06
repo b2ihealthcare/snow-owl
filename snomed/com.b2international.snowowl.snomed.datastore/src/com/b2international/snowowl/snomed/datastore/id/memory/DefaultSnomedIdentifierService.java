@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
 import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -211,16 +213,15 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		LOGGER.debug(String.format("Registering %d component IDs.", componentIds.size()));
 
 		try {
+			final Collection<String> existingIds = getSctIds(componentIds).stream().filter(id -> id.matches(IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)).map(SctId::getSctid).collect(Collectors.toSet());
+			
 			for (final String componentId : componentIds) {
-				final SctId sctId = getSctId(componentId);
-
-				if (!sctId.matches(IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)) {
-					LOGGER.warn(String.format("Cannot register ID %s as it is already present with status %s.", componentId,
-							sctId.getStatus()));
-				} else {
-					sctId.setStatus(IdentifierStatus.ASSIGNED.getSerializedName());
+				if (!existingIds.contains(componentId)) {
+					final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
 					sctIds.put(componentId, sctId);
 					registeredComponentIds.add(componentId);
+				} else {
+					LOGGER.warn("Cannot register ID {} as it is already taken.", componentId);
 				}
 			}
 
@@ -257,12 +258,10 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 		LOGGER.debug(String.format("Deprecating %d component IDs.", componentIds.size()));
 
-		for (final String componentId : componentIds) {
-			final SctId sctId = getSctId(componentId);
-
+		for (final SctId sctId : getSctIds(componentIds)) {
 			if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.PUBLISHED)) {
 				sctId.setStatus(IdentifierStatus.DEPRECATED.getSerializedName());
-				deprecatedSctIds.put(componentId, sctId);
+				deprecatedSctIds.put(sctId.getSctid(), sctId);
 			} else if (!sctId.isDeprecated()) {
 				throw new BadRequestException(String.format("Cannot deprecate ID in state %s.", sctId.getStatus()));
 			}
@@ -277,11 +276,9 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 		LOGGER.debug(String.format("Releasing %d component IDs.", componentIds.size()));
 
-		for (final String componentId : componentIds) {
-			final SctId sctId = getSctId(componentId);
-
+		for (final SctId sctId : getSctIds(componentIds)) {
 			if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
-				releasedComponentIds.add(componentId);
+				releasedComponentIds.add(sctId.getSctid());
 			} else if (!sctId.isAvailable()) {
 				throw new BadRequestException(String.format("Cannot release ID in state %s.", sctId.getStatus()));
 			}
@@ -296,12 +293,10 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 		LOGGER.debug("Publishing {} component IDs.", componentIds.size());
 
-		for (final String componentId : componentIds) {
-			final SctId sctId = getSctId(componentId);
-
+		for (final SctId sctId : getSctIds(componentIds)) {
 			if (sctId.isAssigned()) {
 				sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
-				publishedSctIds.put(componentId, sctId);
+				publishedSctIds.put(sctId.getSctid(), sctId);
 			} else if (!sctId.isPublished()) {
 				throw new BadRequestException("Cannot publish ID '%s' in state '%s'.", sctId.getSctid(), sctId.getStatus());
 			}
@@ -312,13 +307,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 	@Override
 	public Collection<SctId> getSctIds(final Collection<String> componentIds) {
-		LOGGER.debug(String.format("Getting %d SctIds.", componentIds.size()));
-		final Collection<SctId> sctIds = Lists.newArrayList();
-		for (final String componentId : componentIds) {
-			sctIds.add(getSctId(componentId));
-		}
-
-		return sctIds;
+		return store.get().read(index -> index.search(Query.select(SctId.class).where(Expressions.matchAny(DocumentMapping._ID, componentIds)).limit(componentIds.size()).build()).getHits()); 
 	}
 
 	private String generateId(final String namespace, final ComponentCategory category) {
@@ -425,5 +414,5 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			}
 		});
 	}
-
+	
 }
