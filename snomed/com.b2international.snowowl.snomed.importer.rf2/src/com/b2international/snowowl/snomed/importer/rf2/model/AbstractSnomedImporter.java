@@ -678,7 +678,8 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 			C component = existingComponents.get(componentId);
 			final T row = rowToImport.getValue();
 			if (component == null) {
-				component = getOrCreate(componentId, componentsToAttach);
+				// XXX some RF2 rows might already introduced the component with just the ID
+				component = getOrCreateNew(componentId, componentsToAttach);
 			} else if (skipCurrentRow(row, component)) {
 				getLogger().warn("Not importing component '{}|{}' with effective time '{}'; it should have been filtered from the input file.",
 						row.getClass().getSimpleName(),
@@ -702,12 +703,22 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	protected final C getOrCreate(String componentId, Collection<C> componentsToAttach) {
 		C component = Iterables.getOnlyElement(loadComponents(Collections.singleton(componentId)), null);
 		if (component == null) {
+			component = getOrCreateNew(componentId, componentsToAttach);
+		}
+		return component;
+	}
+
+	private C getOrCreateNew(String componentId, Collection<C> componentsToAttach) {
+		C component = getNewComponent(componentId);
+		if (component == null) {
 			component = createComponent(componentId);
 			registerNewComponent(component);
 			componentsToAttach.add(component);
 		}
 		return component;
 	}
+
+	protected abstract C getNewComponent(String componentId);
 
 	protected abstract C createComponent(String componentId);
 

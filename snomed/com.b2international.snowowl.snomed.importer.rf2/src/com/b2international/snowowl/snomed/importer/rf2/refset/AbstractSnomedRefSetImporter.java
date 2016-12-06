@@ -93,6 +93,11 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 	}
 	
 	@Override
+	protected M getNewComponent(String componentId) {
+		return getImportContext().getRefSetMemberLookup().getNewMember(componentId);
+	}
+	
+	@Override
 	protected void attach(Collection<M> componentsToAttach) {
 		for (M member : componentsToAttach) {
 			if (member.getRefSet() instanceof SnomedRegularRefSet) {

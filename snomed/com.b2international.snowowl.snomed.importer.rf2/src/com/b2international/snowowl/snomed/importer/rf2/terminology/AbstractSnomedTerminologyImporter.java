@@ -76,6 +76,11 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 	}
 	
 	@Override
+	protected final C getNewComponent(String componentId) {
+		return (C) getComponentLookup().getNewComponent(componentId);
+	}
+	
+	@Override
 	protected void registerNewComponent(C component) {
 		getComponentLookup().addNewComponent(component, component.getId());
 		if (snomedIdentifiers.importSupported()) {
