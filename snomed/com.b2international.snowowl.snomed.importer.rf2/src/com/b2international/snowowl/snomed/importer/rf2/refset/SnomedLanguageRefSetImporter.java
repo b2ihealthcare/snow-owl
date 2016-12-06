@@ -154,6 +154,10 @@ public class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImporter<A
 	 */
 	@Override
 	protected void attach(Collection<SnomedLanguageRefSetMember> componentsToAttach) {
+		final SnomedEditingContext editingContext = getImportContext().getEditingContext();
+		final CDOTransaction transaction = editingContext.getTransaction();
+		final CDOResource resource = transaction.getOrCreateResource(TEMPORARY_LANGUAGE_MEMBER_ROOT_RESOURCE_NAME);
+		
 		for (SnomedLanguageRefSetMember currentMember : componentsToAttach) {
 			//object with dirty state already contained in their proper container, we do not have to set the
 			//XXX right here we have to consider the followings: referenced component ID has been changed
@@ -161,15 +165,8 @@ public class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImporter<A
 			//there we have to check whether a dirty member has CDOSetFeature delta for the 'referencedComponentId' feature
 			//if so we will update its container.
 			if (CDOState.TRANSIENT.equals(currentMember.cdoState())) {
-				
-				final SnomedEditingContext editingContext = getImportContext().getEditingContext();
-				final CDOTransaction transaction = editingContext.getTransaction();
-				final CDOResource resource = transaction.getOrCreateResource(TEMPORARY_LANGUAGE_MEMBER_ROOT_RESOURCE_NAME);
-				
 				resource.getContents().add(currentMember);
-				
 				newMembers.add(currentMember);
-				
 			}
 		}
 	}
