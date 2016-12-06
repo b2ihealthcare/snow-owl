@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.importer.rf2.refset;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -24,8 +25,6 @@ import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ParseInt;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.importer.rf2.csv.DescriptionFormatRefSetRow;
@@ -82,33 +81,21 @@ public class SnomedDescriptionTypeRefSetImporter extends AbstractSnomedRefSetImp
 	}
 
 	@Override
-	protected SnomedDescriptionTypeRefSetMember doImportRow(final DescriptionFormatRefSetRow currentRow) {
-
-		final SnomedDescriptionTypeRefSetMember editedMember = (SnomedDescriptionTypeRefSetMember) getOrCreateMember(currentRow.getUuid());
-		
-		if (skipCurrentRow(currentRow, editedMember)) {
-			getLogger().warn("Not importing description format reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
-					currentRow.getUuid(), 
-					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
-
-			return null;
-		}
-
-		if (currentRow.getEffectiveTime() != null) {
-			editedMember.setEffectiveTime(currentRow.getEffectiveTime());
-			editedMember.setReleased(true);
+	protected void applyRow(SnomedDescriptionTypeRefSetMember member, DescriptionFormatRefSetRow row, Collection<SnomedDescriptionTypeRefSetMember> componentsToAttach) {
+		member.setUuid(row.getUuid().toString());
+		if (row.getEffectiveTime() != null) {
+			member.setEffectiveTime(row.getEffectiveTime());
+			member.setReleased(true);
 		} else {
-			editedMember.unsetEffectiveTime();
+			member.unsetEffectiveTime();
 		}
 
-		editedMember.setRefSet(getOrCreateRefSet(currentRow.getRefSetId(), currentRow.getReferencedComponentId()));
-		editedMember.setActive(currentRow.isActive());
-		editedMember.setModuleId(currentRow.getModuleId());
-		editedMember.setReferencedComponentId(currentRow.getReferencedComponentId());
-		editedMember.setDescriptionFormat(currentRow.getAssociatedComponentId());
-		editedMember.setDescriptionLength(currentRow.getDescriptionLength());
-		
-		return editedMember;
+		member.setRefSet(getOrCreateRefSet(row.getRefSetId(), row.getReferencedComponentId()));
+		member.setActive(row.isActive());
+		member.setModuleId(row.getModuleId());
+		member.setReferencedComponentId(row.getReferencedComponentId());
+		member.setDescriptionFormat(row.getAssociatedComponentId());
+		member.setDescriptionLength(row.getDescriptionLength());		
 	}
 
 	@Override
@@ -117,7 +104,7 @@ public class SnomedDescriptionTypeRefSetImporter extends AbstractSnomedRefSetImp
 	}
 
 	@Override
-	protected SnomedDescriptionTypeRefSetMember createRefSetMember() {
+	protected SnomedDescriptionTypeRefSetMember createComponent() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedDescriptionTypeRefSetMember();
 	}
 }

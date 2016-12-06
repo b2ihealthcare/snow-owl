@@ -17,15 +17,16 @@ package com.b2international.snowowl.snomed.importer.rf2.refset;
 
 import java.io.InputStream;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -38,11 +39,12 @@ import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-public class SnomedAssociationRefSetImporter extends AbstractSnomedRefSetImporter<AssociatingRefSetRow, SnomedAssociationRefSetMember> {
+public final class SnomedAssociationRefSetImporter extends AbstractSnomedRefSetImporter<AssociatingRefSetRow, SnomedAssociationRefSetMember> {
 
 	private static final Map<String, CellProcessor> CELL_PROCESSOR_MAPPING = ImmutableMap.<String, CellProcessor>builder()
 			.put(AssociatingRefSetRow.PROP_UUID, new ParseUuid())
@@ -78,63 +80,51 @@ public class SnomedAssociationRefSetImporter extends AbstractSnomedRefSetImporte
 		return SnomedRefSetType.ASSOCIATION;
 	}
 	
-		@Override
-	protected SnomedAssociationRefSetMember doImportRow(final AssociatingRefSetRow currentRow) {
-
-		final SnomedAssociationRefSetMember editedMember = getOrCreateMember(currentRow.getUuid());
-		
-		if (skipCurrentRow(currentRow, editedMember)) {
-			getLogger().warn("Not importing association reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
-					currentRow.getUuid(), 
-					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
-
-			return null;
-		}
-
-		if (currentRow.getEffectiveTime() != null) {
-			editedMember.setEffectiveTime(currentRow.getEffectiveTime());
-			editedMember.setReleased(true);
-		} else {
-			editedMember.unsetEffectiveTime();
-		}
-
-		editedMember.setRefSet(getOrCreateRefSet(currentRow.getRefSetId(), currentRow.getReferencedComponentId()));
-		editedMember.setActive(currentRow.isActive());
-		editedMember.setModuleId(currentRow.getModuleId());
-		editedMember.setReferencedComponentId(currentRow.getReferencedComponentId());
-		editedMember.setTargetComponentId(currentRow.getAssociatedComponentId());
-		
-		return editedMember;
+	@Override
+	protected SnomedAssociationRefSetMember createComponent() {
+		return SnomedRefSetFactory.eINSTANCE.createSnomedAssociationRefSetMember();
 	}
+	
+	@Override
+	protected void applyRow(SnomedAssociationRefSetMember member, AssociatingRefSetRow row, Collection<SnomedAssociationRefSetMember> componentsToAttach) {
+		member.setUuid(row.getUuid().toString());
+		if (row.getEffectiveTime() != null) {
+			member.setEffectiveTime(row.getEffectiveTime());
+			member.setReleased(true);
+		} else {
+			member.unsetEffectiveTime();
+		}
 
+		member.setRefSet(getOrCreateRefSet(row.getRefSetId(), row.getReferencedComponentId()));
+		member.setActive(row.isActive());
+		member.setModuleId(row.getModuleId());
+		member.setReferencedComponentId(row.getReferencedComponentId());
+		member.setTargetComponentId(row.getAssociatedComponentId());
+	}
+	
 	@Override
 	protected String getIdentifierParentConceptId(final String refSetId) {
 		return Concepts.REFSET_ASSOCIATION_TYPE;
 	}
 
 	@Override
-	protected SnomedAssociationRefSetMember createRefSetMember() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedAssociationRefSetMember();
-	}
-	
-	@Override
 	protected SnomedRefSet createUninitializedRefSet(final String identifierConceptId) {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedStructuralRefSet();
 	}
-	
+
 	@Override
-	protected boolean addToMembersList(final SnomedAssociationRefSetMember currentMember) {
-		
-		final Inactivatable inactivatableComponent = getInactivatableComponent(currentMember.getReferencedComponentId());
-		
-		if (null == inactivatableComponent) {
-			String message = MessageFormat.format("Inactivatable component with ID ''{0}'' could not be found, skipping refset member.", currentMember.getReferencedComponentId());
-			getLogger().warn(message);
-			log(message);
-			return false;
+	protected void attach(Collection<SnomedAssociationRefSetMember> componentsToAttach) {
+		final Collection<String> containerComponentIds = componentsToAttach.stream().map(SnomedRefSetMember::getReferencedComponentId).collect(Collectors.toSet());
+		final Map<String, Component> containerComponents = getComponents(containerComponentIds).stream().collect(Collectors.toMap(Component::getId, c -> c));
+		for (SnomedAssociationRefSetMember member : componentsToAttach) {
+			Component container = containerComponents.get(member.getReferencedComponentId());
+			if (container instanceof Inactivatable) {
+				((Inactivatable) container).getAssociationRefSetMembers().add(member);
+			} else {
+				String message = MessageFormat.format("Inactivatable component with ID ''{0}'' could not be found, skipping refset member.", member.getReferencedComponentId());
+				getLogger().warn(message);
+			}
 		}
-		
-		inactivatableComponent.getAssociationRefSetMembers().add(currentMember);
-		return true;
 	}
+	
 }

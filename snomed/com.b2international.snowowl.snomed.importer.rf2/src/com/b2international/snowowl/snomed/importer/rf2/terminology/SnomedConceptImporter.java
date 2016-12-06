@@ -16,18 +16,14 @@
 package com.b2international.snowowl.snomed.importer.rf2.terminology;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.runtime.SubMonitor;
 import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.importer.AbstractImportUnit;
-import com.b2international.snowowl.importer.ImportAction;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -35,7 +31,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.importer.rf2.csv.ConceptRow;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
-import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
 import com.b2international.snowowl.snomed.importer.rf2.model.IndexConfiguration;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportConfiguration;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
@@ -44,9 +39,6 @@ import com.google.common.collect.ImmutableMap;
 
 public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<ConceptRow, Concept> {
 
-	
-	private ImmutableMap.Builder<String, ConceptRow> conceptRowBuilder;
-	
 	private static final Map<String, CellProcessor> CELLPROCESSOR_MAPPING = ImmutableMap.<String, CellProcessor>builder()
 			.put(ConceptRow.PROP_ID, NullObjectPattern.INSTANCE)
 			.put(ConceptRow.PROP_EFFECTIVE_TIME, createEffectiveTimeCellProcessor())
@@ -77,45 +69,32 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 		return SnomedConceptDocument.class;
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * <p>
-	 * Overridden in {@link SnomedConceptImporter} to read all concept rows into
-	 * a map first, then do the actual import.
-	 */
 	@Override
-	public void doImport(final SubMonitor subMonitor, final AbstractImportUnit unit) {
+	protected Concept createComponent() {
+		return SnomedFactory.eINSTANCE.createConcept();
+	}
 
-		final Map<String, ConceptRow> conceptRowMap;
-		final ComponentImportUnit concreteUnit = (ComponentImportUnit) unit;
-		final String effectiveTimeKey = concreteUnit.getEffectiveTimeKey();
-		
-		try {
-			conceptRowBuilder = ImmutableMap.builder();
-			super.doImport(subMonitor, unit);
-			conceptRowMap = conceptRowBuilder.build();
-		} finally {
-			conceptRowBuilder = null;
+	@Override
+	protected void attach(Collection<Concept> componentsToAttach) {
+		getImportContext().getEditingContext().addAll(componentsToAttach);
+	}
+	
+	@Override
+	protected void applyRow(Concept component, ConceptRow row, Collection<Concept> componentsToAttach) {
+		component.setId(row.getId());
+		if (row.getEffectiveTime() != null) {
+			component.setEffectiveTime(row.getEffectiveTime());
+			component.setReleased(true);
+		} else {
+			component.unsetEffectiveTime();
 		}
 		
-		int unitsCommitted = 0;
+		component.setActive(row.isActive());
+		component.setModule(getOrCreate(row.getModuleId(), componentsToAttach));
+		component.setDefinitionStatus(getOrCreate(row.getDefinitionStatusId(), componentsToAttach));
+		component.setExhaustive(false);
 		
-		for (final ConceptRow rowMapValue : conceptRowMap.values()) {
-			
-			importRow(rowMapValue, conceptRowMap);
-			unitsCommitted++;
-			subMonitor.worked(1);
-
-			if (!needsCommitting(unitsCommitted)) {
-				continue;
-			}
-			
-			if (ImportAction.BREAK.equals(cdoCommit(subMonitor, effectiveTimeKey))) {
-				break;
-			}
-		}
-		
-		cdoCommit(subMonitor, effectiveTimeKey);
+		getImportContext().conceptVisited(row.getId());		
 	}
 
 	@Override
@@ -123,75 +102,9 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 		return (2 * recordCount) + (recordCount / COMMIT_EVERY_NUM_ELEMENTS + 1) * COMMIT_WORK_UNITS;
 	}
 	
-	////////////////////////////////////////////////////////
-	// Diversion of commit operations to separate methods
-	////////////////////////////////////////////////////////
-	
 	@Override
 	protected boolean needsCommitting(final int unitsAdded) {
 		return false;
 	}
 	
-	
-	@Override
-	protected ImportAction commit(final SubMonitor subMonitor, final String formattedEffectiveTime) {
-		return ImportAction.CONTINUE;
-	}
-
-	private ImportAction cdoCommit(final SubMonitor subMonitor, final String formattedEffectiveTime) {
-		return super.commit(subMonitor, formattedEffectiveTime);
-	}
-
-	@Override
-	protected void importRow(final ConceptRow currentRow) {
-		conceptRowBuilder.put(currentRow.getId(), currentRow);
-	}
-	
-	protected void importRow(final ConceptRow currentRow, final Map<String, ConceptRow> conceptRowMap) {
-
-		final Concept editedConcept = getOrCreateComponent(null, currentRow.getId());
-		
-		if (skipCurrentRow(currentRow, editedConcept)) {
-			getLogger().warn("Not importing concept '{}' with effective time '{}'; it should have been filtered from the input file.",
-					currentRow.getId(), 
-					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
-			
-			return;
-		}
-		
-		if (currentRow.getEffectiveTime() != null) {
-			editedConcept.setEffectiveTime(currentRow.getEffectiveTime());
-			editedConcept.setReleased(true);
-		} else {
-			editedConcept.unsetEffectiveTime();
-		}
-		
-		editedConcept.setExhaustive(false);
-		editedConcept.setActive(currentRow.isActive());
-		editedConcept.setDefinitionStatus(getOrCreateComponent(null, currentRow.getDefinitionStatusId()));
-		editedConcept.setModule(getOrCreateComponent(null, currentRow.getModuleId()));
-		
-		getImportContext().conceptVisited(currentRow.getId());
-	}
-	
-	@Override
-	protected Concept getComponent(final String componentId) {
-		return getConcept(componentId);
-	}
-	
-	@Override
-	protected Concept createComponent(final String containerId, final String componentId) {
-		final Concept concept = SnomedFactory.eINSTANCE.createConcept();
-		concept.setId(componentId);
-		//add to CDO resource after initializing it
-		//this is to avoid dangling reference exception when committing
-		//consider the following use case
-		//after every 50k RF2 file row, a commit is performed if the underlying transaction is dirty
-		//consider 50k brand new concept with a non-existing module concept which will be processed as the 50001 RF2 file row
-		//the module concept will be created, but will not be added to its CDO resource but set as a module for the previous 50k concepts
-		//cause dangling reference exception on commit
-		getImportContext().getEditingContext().add(concept);
-		
-		return concept;
-	}
 }

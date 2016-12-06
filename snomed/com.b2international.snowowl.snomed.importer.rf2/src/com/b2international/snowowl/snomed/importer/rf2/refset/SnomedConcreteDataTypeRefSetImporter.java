@@ -17,17 +17,18 @@ package com.b2international.snowowl.snomed.importer.rf2.refset;
 
 import java.io.InputStream;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.Annotatable;
+import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.importer.rf2.csv.ConcreteDomainRefSetRow;
@@ -41,6 +42,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRef
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -125,36 +127,24 @@ public class SnomedConcreteDataTypeRefSetImporter extends AbstractSnomedRefSetIm
 	}
 
 	@Override
-	protected SnomedConcreteDataTypeRefSetMember doImportRow(final ConcreteDomainRefSetRow currentRow) {
-
-		final SnomedConcreteDataTypeRefSetMember editedMember = getOrCreateMember(currentRow.getUuid());
-		
-		if (skipCurrentRow(currentRow, editedMember)) {
-			getLogger().warn("Not importing concrete domain reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
-					currentRow.getUuid(), 
-					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
-
-			return null;
-		}
-
-		if (currentRow.getEffectiveTime() != null) {
-			editedMember.setEffectiveTime(currentRow.getEffectiveTime());
-			editedMember.setReleased(true);
+	protected void applyRow(SnomedConcreteDataTypeRefSetMember member, ConcreteDomainRefSetRow row, Collection<SnomedConcreteDataTypeRefSetMember> componentsToAttach) {
+		member.setUuid(row.getUuid().toString());
+		if (row.getEffectiveTime() != null) {
+			member.setEffectiveTime(row.getEffectiveTime());
+			member.setReleased(true);
 		} else {
-			editedMember.unsetEffectiveTime();
+			member.unsetEffectiveTime();
 		}
 
-		editedMember.setRefSet(getOrCreateRefSet(currentRow.getRefSetId(), currentRow.getReferencedComponentId()));
-		editedMember.setActive(currentRow.isActive());
-		editedMember.setModuleId(currentRow.getModuleId());
-		editedMember.setReferencedComponentId(currentRow.getReferencedComponentId());
-		editedMember.setUomComponentId(currentRow.getUomId());
-		editedMember.setOperatorComponentId(currentRow.getOperatorId());
-		editedMember.setLabel(currentRow.getAttributeName());
-		editedMember.setSerializedValue(currentRow.getDataValue());
-		editedMember.setCharacteristicTypeId(currentRow.getCharacteristicTypeId());
-		
-		return editedMember;
+		member.setRefSet(getOrCreateRefSet(row.getRefSetId(), row.getReferencedComponentId()));
+		member.setActive(row.isActive());
+		member.setModuleId(row.getModuleId());
+		member.setReferencedComponentId(row.getReferencedComponentId());
+		member.setUomComponentId(row.getUomId());
+		member.setOperatorComponentId(row.getOperatorId());
+		member.setLabel(row.getAttributeName());
+		member.setSerializedValue(row.getDataValue());
+		member.setCharacteristicTypeId(row.getCharacteristicTypeId());
 	}
 	
 	/**
@@ -172,23 +162,23 @@ public class SnomedConcreteDataTypeRefSetImporter extends AbstractSnomedRefSetIm
 	}
 
 	@Override
-	protected SnomedConcreteDataTypeRefSetMember createRefSetMember() {
+	protected SnomedConcreteDataTypeRefSetMember createComponent() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedConcreteDataTypeRefSetMember();
 	}
 	
 	@Override
-	protected boolean addToMembersList(final SnomedConcreteDataTypeRefSetMember currentMember) {
-		
-		final Annotatable annotatableComponent = getAnnotatableComponent(currentMember.getReferencedComponentId());
-		
-		if (null == annotatableComponent) {
-			String message = MessageFormat.format("Annotatable component with ID ''{0}'' could not be found, skipping refset member.", currentMember.getReferencedComponentId());
-			getLogger().warn(message);
-			log(message);
-			return false;
+	protected void attach(Collection<SnomedConcreteDataTypeRefSetMember> componentsToAttach) {
+		final Collection<String> containerComponentIds = componentsToAttach.stream().map(SnomedRefSetMember::getReferencedComponentId).collect(Collectors.toSet());
+		final Map<String, Component> containerComponents = getComponents(containerComponentIds).stream().collect(Collectors.toMap(Component::getId, c -> c));
+		for (SnomedConcreteDataTypeRefSetMember member : componentsToAttach) {
+			Component container = containerComponents.get(member.getReferencedComponentId());
+			if (container instanceof Annotatable) {
+				((Annotatable) container).getConcreteDomainRefSetMembers().add(member);
+			} else {
+				String message = MessageFormat.format("Annotatable component with ID ''{0}'' could not be found, skipping refset member.", member.getReferencedComponentId());
+				getLogger().warn(message);
+			}
 		}
-		
-		annotatableComponent.getConcreteDomainRefSetMembers().add(currentMember);
-		return true;
 	}
+	
 }

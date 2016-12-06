@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.importer.rf2.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,11 +30,16 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.CDOObject;
@@ -81,12 +87,7 @@ import com.b2international.snowowl.importer.AbstractImportUnit;
 import com.b2international.snowowl.importer.AbstractLoggingImporter;
 import com.b2international.snowowl.importer.ImportAction;
 import com.b2international.snowowl.importer.ImportException;
-import com.b2international.snowowl.snomed.Annotatable;
 import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Inactivatable;
-import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.ContentSubType;
@@ -102,6 +103,7 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closeables;
 
@@ -188,43 +190,9 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 		return componentStagingDirectory;
 	}
 	
-	private Component getComponent(final String componentId) {
-		return importContext.getComponentLookup().getComponent(componentId);
+	protected final Collection<Component> getComponents(final Collection<String> componentIds) {
+		return importContext.getComponentLookup().getComponents(componentIds);
 	}
-	
-	protected Concept getConcept(final String conceptId) {
-		return (Concept) getComponent(conceptId);
-	}
-
-	protected Concept getConceptSafe(final String conceptId, final String conceptField, final String componentId) {
-		
-		final Concept result = getConcept(conceptId);
-		
-		if (null == result) {
-			throw new NullPointerException(MessageFormat.format("Concept ''{0}'' for field {1}, {2} ''{3}'' not found.", 
-					conceptId, conceptField, getImportConfiguration().getType().getDisplayName(), componentId));
-		}
-		
-		return result;
-	}
-
-	protected Description getDescription(final String descriptionId) {
-		return (Description) getComponent(descriptionId);
-	}
-	
-	protected Relationship getRelationship(final String relationshipId) {
-		return (Relationship) getComponent(relationshipId);
-	}
-	
-	protected Annotatable getAnnotatableComponent(final String componentId) {
-		return (Annotatable) getComponent(componentId);
-	}
-	
-	protected Inactivatable getInactivatableComponent(final String componentId) {
-		return (Inactivatable) getComponent(componentId);
-	}
-
-	
 	
 	@Override
 	public void preImport(final SubMonitor subMonitor) {
@@ -278,7 +246,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	 *<p>Could return with {@code null}.*/
 	protected abstract Date getComponentEffectiveTime(C editedComponent);
 	
-	protected boolean skipCurrentRow(final AbstractComponentRow rf2Row, final C existingComponent) {
+	protected final boolean skipCurrentRow(final AbstractComponentRow rf2Row, final C existingComponent) {
 		return skipCurrentRow(rf2Row, getComponentEffectiveTime(existingComponent));		
 	}
 	
@@ -504,14 +472,13 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	}
 
 	@Override
-	public void doImport(final SubMonitor subMonitor, final AbstractImportUnit unit) {
+	public final void doImport(final SubMonitor subMonitor, final AbstractImportUnit unit) {
 		
 		final ComponentImportUnit concreteUnit = (ComponentImportUnit) unit;
 		final int recordCount = concreteUnit.getRecordCount();
 		final String effectiveTimeKey = concreteUnit.getEffectiveTimeKey();
 		
 		final int workUnits = getImportWorkUnits(recordCount);
-		int unitsAdded = 0;
 		
 		final String message = getImportMessage(effectiveTimeKey);
 		subMonitor.beginTask(message, workUnits);
@@ -538,6 +505,8 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 		
 		try {
 			
+			List<T> rows = Lists.newArrayListWithExpectedSize(COMMIT_EVERY_NUM_ELEMENTS);
+			
 			while (true) {
 				
 				try {
@@ -559,39 +528,33 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 					}
 				}
 				
-				if (currentRow == null) {
-					// End of file reached
-					break;
-				}
-						
-				try {
-					importRow(currentRow);
-				} catch (final NullPointerException e) {
-					
-					if (ImportAction.BREAK.equals(handleImportException(e))) {
-						break;
-					} else {
+				if (currentRow != null) {
+					rows.add(currentRow);
+					subMonitor.worked(1);
+					// keep loading all items, until we reach the threshold
+					if (!needsCommitting(rows.size())) {
 						continue;
 					}
-				}
-				
-				unitsAdded++;
-				subMonitor.worked(1);
-
-				if (!needsCommitting(unitsAdded)) {
-					continue;
-				}
-				
-				if (ImportAction.BREAK.equals(commit(subMonitor, effectiveTimeKey))) {
+					
+					// process batch loaded rows and commit them
+					importRows(rows);
+					// reinit rows array
+					rows = Lists.newArrayListWithExpectedSize(COMMIT_EVERY_NUM_ELEMENTS);
+					if (ImportAction.BREAK.equals(commit(subMonitor, effectiveTimeKey))) {
+						break;
+					}
+					
+				} else {
+					// process remaining rows and break
+					importRows(rows);
+					rows.clear();
+					commit(subMonitor, effectiveTimeKey);
 					break;
 				}
 			}
-			
 		} finally {
 			Closeables.closeQuietly(sliceBeanReader);
 		}
-		
-		commit(subMonitor, effectiveTimeKey);
 	}
 
 	protected int getImportWorkUnits(final int recordCount) {
@@ -697,15 +660,72 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	 * By default this method does nothing. Clients may override it.
 	 */
 	protected void handleCommitException() {
-		return;
 	}
 	
 	/**
-	 * Modifies repository state based on the incoming CSV row bean.
+	 * Modifies repository state based on the incoming CSV rows.
 	 * 
-	 * @param currentRow the row to import
+	 * @param rows the rows to import
 	 */
-	protected abstract void importRow(T currentRow);
+	private final void importRows(List<T> rows) {
+		final Map<String, T> rowsToImport = rows.stream().filter(getRowFilter()).collect(Collectors.toMap(getRowIdMapper(), row -> row));
+		// load existing components
+		final Map<String, C> existingComponents = loadComponents(rowsToImport.keySet()).stream().collect(Collectors.toMap(getComponentIdMapper(), c -> c));
+		// create or update components
+		final Collection<C> componentsToAttach = newHashSet();
+		for (Entry<String, T> rowToImport : rowsToImport.entrySet()) {
+			final String componentId = rowToImport.getKey();
+			C component = existingComponents.get(componentId);
+			final T row = rowToImport.getValue();
+			if (component == null) {
+				component = getOrCreate(componentId, componentsToAttach);
+			} else if (skipCurrentRow(row, component)) {
+				getLogger().warn("Not importing component '{}|{}' with effective time '{}'; it should have been filtered from the input file.",
+						row.getClass().getSimpleName(),
+						getRowIdMapper().apply(row), 
+						EffectiveTimes.format(row.getEffectiveTime(), DateFormats.SHORT));
+				continue;
+			}
+			applyRow(component, row, componentsToAttach);
+		}
+		attach(componentsToAttach);
+	}
+
+	/**
+	 * Gets or creates a new components. This method should return a new component from the current transaction if it does exist, otherwise it should
+	 * return a new object with the given id.
+	 * 
+	 * @param componentId
+	 * @param componentsToAttach - the collection to register attachable components to
+	 * @return
+	 */
+	protected final C getOrCreate(String componentId, Collection<C> componentsToAttach) {
+		C component = Iterables.getOnlyElement(loadComponents(Collections.singleton(componentId)), null);
+		if (component == null) {
+			component = createComponent(componentId);
+			registerNewComponent(component);
+			componentsToAttach.add(component);
+		}
+		return component;
+	}
+
+	protected abstract C createComponent(String componentId);
+
+	protected abstract void registerNewComponent(C component);
+
+	protected abstract void applyRow(C component, T row, Collection<C> componentsToAttach);
+
+	protected abstract Collection<C> loadComponents(Set<String> componentIds);
+
+	protected abstract void attach(Collection<C> componentsToAttach);
+
+	protected abstract Function<T, String> getRowIdMapper();
+	
+	protected abstract Function<C, String> getComponentIdMapper();
+
+	protected Predicate<T> getRowFilter() {
+		return row -> true;
+	}
 
 	@Override
 	public void postImport(final SubMonitor subMonitor) {

@@ -17,10 +17,12 @@ package com.b2international.snowowl.snomed.importer.rf2.refset;
 
 import java.io.InputStream;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.eclipse.core.runtime.SubMonitor;
 
@@ -34,7 +36,6 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.importer.rf2.csv.AbstractRefSetRow;
@@ -47,24 +48,22 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Iterables;
 
 public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, M extends SnomedRefSetMember> extends AbstractSnomedImporter<T, M> {
 
-	private final Map<String, SnomedRefSet> refSetMap = Maps.newHashMap(); 
-	
 	public AbstractSnomedRefSetImporter(final SnomedImportConfiguration<T> importConfiguration, final SnomedImportContext importContext, 
 			final InputStream releaseFileStream, final String releaseFileIdentifier) {
 		
 		super(importConfiguration, importContext, releaseFileStream, releaseFileIdentifier);
 	}
 
-	protected SnomedRefSetEditingContext getRefSetEditingContext() {
+	protected final SnomedRefSetEditingContext getRefSetEditingContext() {
 		return getImportContext().getEditingContext().getRefSetEditingContext();
 	}
 
 	@Override
-	protected Expression getAvailableComponentQuery() {
+	protected final Expression getAvailableComponentQuery() {
 		return SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(Collections.singleton(getRefSetType()));
 	}
 	
@@ -74,51 +73,49 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 	}
 	
 	@Override
-	protected void importRow(final T currentRow) {
-		
-		if (getImportContext().isRefSetIgnored(currentRow.getRefSetId())) {
-			// Member belongs to ignored reference set
-			return;
-		}
-		
-		final M currentMember = doImportRow(currentRow);
-		
-		if (null == currentMember) {
-			return;
-		}
-		
-		if (addToMembersList(currentMember)) {
-			getImportContext().refSetVisited(currentRow.getRefSetId());
-		}
+	protected final Function<T, String> getRowIdMapper() {
+		return row -> row.getUuid().toString();
 	}
-
-	protected abstract M doImportRow(final T currentRow);
 	
 	@Override
-	protected Date getComponentEffectiveTime(M editedComponent) {
+	protected final Function<M, String> getComponentIdMapper() {
+		return SnomedRefSetMember::getUuid;
+	}
+	
+	@Override
+	protected final Predicate<T> getRowFilter() {
+		return row -> !getImportContext().isRefSetIgnored(row.getRefSetId());
+	}
+	
+	@Override
+	protected final Date getComponentEffectiveTime(M editedComponent) {
 		return editedComponent.getEffectiveTime();
 	}
 	
-	protected boolean addToMembersList(final M currentMember) {
-		
-		if (!(currentMember.getRefSet() instanceof SnomedRegularRefSet)) {
-			final String message = MessageFormat.format("Couldn''t determine members list for member ''{0}''.", currentMember.getClass().getSimpleName());
-			getLogger().warn(message);
-			log(message);
-			return false;
+	@Override
+	protected void attach(Collection<M> componentsToAttach) {
+		for (M member : componentsToAttach) {
+			if (member.getRefSet() instanceof SnomedRegularRefSet) {
+				SnomedRegularRefSet refSet = (SnomedRegularRefSet) member.getRefSet();
+				refSet.getMembers().add(member);
+			} else {
+				throw new IllegalStateException("Trying to attach structural member, but couldn't find its proper place: " + member.getRefSet().getType() + " | " + member.getUuid());
+			}
 		}
-		
-		((SnomedRegularRefSet) currentMember.getRefSet()).getMembers().add(currentMember);
-		return true;
+	}
+	
+	@Override
+	protected final Collection<M> loadComponents(Set<String> componentIds) {
+		return getImportContext().getRefSetMemberLookup().getMembers(componentIds);
 	}
 	
 	protected void createIdentifierConceptIfNotExists(final String identifierId) throws ImportException {
 		
-		Concept identifierConcept = getConcept(identifierId);
+		Concept identifierConcept = (Concept) Iterables.getOnlyElement(getComponents(Collections.singleton(identifierId)), null);
 		
 		if (identifierConcept == null) {
 			
-			final Concept identiferParentConcept = getConcept(getIdentifierParentConceptId(identifierId));
+			final Concept identiferParentConcept = (Concept) Iterables.getOnlyElement(getComponents(Collections.singleton(getIdentifierParentConceptId(identifierId))), null);
 			
 			if (identiferParentConcept == null) {
 				String message = MessageFormat.format("Reference set parent concept ''{0}'' not found in database.", 
@@ -142,7 +139,7 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 			
 			//attempt to create proper language type reference set members for the concept
 			String languageRefSetId = editingContext.getLanguageRefSetId();
-			final SnomedRefSet languageRefSet = new SnomedRefSetLookupService().getComponent(languageRefSetId, editingContext.getTransaction());
+			final SnomedRefSet languageRefSet = editingContext.lookup(languageRefSetId, SnomedRefSet.class);
 			
 			if (languageRefSet instanceof SnomedStructuralRefSet) {
 				
@@ -189,7 +186,7 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 	 * component, subclasses should override to set the type, or do something
 	 * completely different.
 	 */
-	protected SnomedRefSet createRefSet(final String identifierConceptId, final String referencedComponentId) {
+	protected final SnomedRefSet createRefSet(final String identifierConceptId, final String referencedComponentId) {
 		
 		createIdentifierConceptIfNotExists(identifierConceptId);
 		final SnomedRefSet refSet = createUninitializedRefSet(identifierConceptId);
@@ -207,34 +204,27 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 	protected void initRefSet(final SnomedRefSet refSet, final String referencedComponentId) {
 		// Subclasses should override
 	}
-
-	protected M getOrCreateMember(final UUID uuid) {
-		
-		@SuppressWarnings("unchecked")
-		M member = (M) getImportContext().getRefSetMemberLookup().getMember(uuid);
-			
-		if (null == member) {
-			member = createRefSetMember();
-			member.setUuid(uuid.toString());
-			getImportContext().getRefSetMemberLookup().addNewMember(member);
-		}
-				
-		return member;
+	
+	@Override
+	protected void registerNewComponent(M component) {
+		getImportContext().getRefSetMemberLookup().addNewMember(component);
 	}
 
-	protected abstract M createRefSetMember();
+	@Override
+	protected final M createComponent(String memberId) {
+		final M member = createComponent();
+		member.setUuid(memberId);
+		return member;
+	}
+	
+	protected abstract M createComponent();
 	
 	protected SnomedRefSet getOrCreateRefSet(final String refSetSctId, final String referencedComponentId) {
 		
-		SnomedRefSet refSet = refSetMap.get(refSetSctId);
-		
-		if (null == refSet) {
-			refSet = getImportContext().getRefSetLookup().getComponent(refSetSctId);
-		}
+		SnomedRefSet refSet = Iterables.getOnlyElement(getImportContext().getRefSetLookup().getComponents(Collections.singleton(refSetSctId)), null);
 		
 		if (null == refSet) {
 			refSet = createRefSet(refSetSctId, referencedComponentId);
-			refSetMap.put(refSetSctId, refSet);
 			getImportContext().getRefSetLookup().addNewComponent(refSet, refSetSctId);
 			getRefSetEditingContext().add(refSet);
 		}
@@ -242,17 +232,12 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 		return refSet;
 	}
 	
-	private void clearRefSetMap() {
-		refSetMap.clear();
-	}
-	
 	@Override
 	protected ImportAction commit(final SubMonitor subMonitor, final String formattedEffectiveTime) {
 		final ImportAction result = super.commit(subMonitor, formattedEffectiveTime);
-		clearRefSetMap();
-		getImportContext().getRefSetMemberLookup().registerNewMembers();
-		getImportContext().getRefSetLookup().registerNewComponents();
-		getImportContext().getComponentLookup().registerNewComponents();
+		getImportContext().getRefSetMemberLookup().registerNewMemberStorageKeys();
+		getImportContext().getRefSetLookup().registerNewComponentStorageKeys();
+		getImportContext().getComponentLookup().registerNewComponentStorageKeys();
 		return result;
 	}
 

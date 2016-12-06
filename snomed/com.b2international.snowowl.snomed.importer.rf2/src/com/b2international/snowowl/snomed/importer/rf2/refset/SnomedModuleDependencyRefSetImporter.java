@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.importer.rf2.refset;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -23,8 +24,6 @@ import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.importer.rf2.csv.ModuleDependencyRefSetRow;
@@ -72,43 +71,32 @@ public class SnomedModuleDependencyRefSetImporter extends AbstractSnomedRefSetIm
 	public SnomedModuleDependencyRefSetImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, final String releaseFileIdentifier) {
 		super(IMPORT_CONFIGURATTION, importContext, releaseFileStream, releaseFileIdentifier);
 	}
-	
+
 	@Override
-	protected SnomedModuleDependencyRefSetMember doImportRow(ModuleDependencyRefSetRow currentRow) {
-		final SnomedModuleDependencyRefSetMember editedMember = getOrCreateMember(currentRow.getUuid());
-		
-		if (skipCurrentRow(currentRow, editedMember)) {
-			getLogger().warn("Not importing module dependency reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
-					currentRow.getUuid(), 
-					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
-			
-			return null;
-		}
-		
-		if (currentRow.getEffectiveTime() != null) {
-			editedMember.setEffectiveTime(currentRow.getEffectiveTime());
-			editedMember.setReleased(true);
+	protected void applyRow(SnomedModuleDependencyRefSetMember member, ModuleDependencyRefSetRow row, Collection<SnomedModuleDependencyRefSetMember> componentsToAttach) {
+		member.setUuid(row.getUuid().toString());
+		if (row.getEffectiveTime() != null) {
+			member.setEffectiveTime(row.getEffectiveTime());
+			member.setReleased(true);
 		} else {
-			editedMember.unsetEffectiveTime();
+			member.unsetEffectiveTime();
 		}
 
-		editedMember.setRefSet(getOrCreateRefSet(currentRow.getRefSetId(), currentRow.getReferencedComponentId()));
-		editedMember.setActive(currentRow.isActive());
-		editedMember.setModuleId(currentRow.getModuleId());
-		editedMember.setReferencedComponentId(currentRow.getReferencedComponentId());
-		editedMember.setSourceEffectiveTime(currentRow.getSourceEffectiveTime());
-		editedMember.setTargetEffectiveTime(currentRow.getTargetEffectiveTime());
-		
-		return editedMember;
+		member.setRefSet(getOrCreateRefSet(row.getRefSetId(), row.getReferencedComponentId()));
+		member.setActive(row.isActive());
+		member.setModuleId(row.getModuleId());
+		member.setReferencedComponentId(row.getReferencedComponentId());
+		member.setSourceEffectiveTime(row.getSourceEffectiveTime());
+		member.setTargetEffectiveTime(row.getTargetEffectiveTime());
 	}
-
+	
 	@Override
 	protected String getIdentifierParentConceptId(String refSetId) {
 		return Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
 	}
 
 	@Override
-	protected SnomedModuleDependencyRefSetMember createRefSetMember() {
+	protected SnomedModuleDependencyRefSetMember createComponent() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedModuleDependencyRefSetMember();
 	}
 

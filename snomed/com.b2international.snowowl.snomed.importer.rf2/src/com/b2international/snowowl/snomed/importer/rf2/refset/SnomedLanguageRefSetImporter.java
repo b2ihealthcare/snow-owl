@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.importer.rf2.refset;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -48,8 +49,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.collect.LongSets.LongFunction;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPointUtils;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
@@ -122,41 +121,29 @@ public class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImporter<A
 	}
 
 	@Override
-	protected SnomedLanguageRefSetMember doImportRow(final AssociatingRefSetRow currentRow) {
-
-		final SnomedLanguageRefSetMember editedMember = getOrCreateMember(currentRow.getUuid());
-		
-		if (skipCurrentRow(currentRow, editedMember)) {
-			getLogger().warn("Not importing language reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
-					currentRow.getUuid(), 
-					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
-
-			return null;
-		}
-
-		if (currentRow.getEffectiveTime() != null) {
-			editedMember.setEffectiveTime(currentRow.getEffectiveTime());
-			editedMember.setReleased(true);
+	protected void applyRow(SnomedLanguageRefSetMember member, AssociatingRefSetRow row, Collection<SnomedLanguageRefSetMember> componentsToAttach) {
+		member.setUuid(row.getUuid().toString());
+		if (row.getEffectiveTime() != null) {
+			member.setEffectiveTime(row.getEffectiveTime());
+			member.setReleased(true);
 		} else {
-			editedMember.unsetEffectiveTime();
+			member.unsetEffectiveTime();
 		}
 
-		editedMember.setRefSet(getOrCreateRefSet(currentRow.getRefSetId(), currentRow.getReferencedComponentId()));
-		editedMember.setActive(currentRow.isActive());
-		editedMember.setModuleId(currentRow.getModuleId());
-		editedMember.setReferencedComponentId(currentRow.getReferencedComponentId());
-		editedMember.setAcceptabilityId(currentRow.getAssociatedComponentId());
-		
-		return editedMember;
+		member.setRefSet(getOrCreateRefSet(row.getRefSetId(), row.getReferencedComponentId()));
+		member.setActive(row.isActive());
+		member.setModuleId(row.getModuleId());
+		member.setReferencedComponentId(row.getReferencedComponentId());
+		member.setAcceptabilityId(row.getAssociatedComponentId());		
 	}
-
+	
 	@Override
 	protected String getIdentifierParentConceptId(final String refSetId) {
 		return Concepts.REFSET_LANGUAGE_TYPE;
 	}
 
 	@Override
-	protected SnomedLanguageRefSetMember createRefSetMember() {
+	protected SnomedLanguageRefSetMember createComponent() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedLanguageRefSetMember();
 	}
 	
@@ -166,26 +153,25 @@ public class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImporter<A
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected boolean addToMembersList(final SnomedLanguageRefSetMember currentMember) {
-		
-		//object with dirty state already contained in their proper container, we do not have to set the
-		//XXX right here we have to consider the followings: referenced component ID has been changed
-		//for the language member, but we will deal with it in the #preCommit
-		//there we have to check whether a dirty member has CDOSetFeature delta for the 'referencedComponentId' feature
-		//if so we will update its container.
-		if (CDOState.TRANSIENT.equals(currentMember.cdoState())) {
-		
-			final SnomedEditingContext editingContext = getImportContext().getEditingContext();
-			final CDOTransaction transaction = editingContext.getTransaction();
-			final CDOResource resource = transaction.getOrCreateResource(TEMPORARY_LANGUAGE_MEMBER_ROOT_RESOURCE_NAME);
-			
-			resource.getContents().add(currentMember);
-			
-			newMembers.add(currentMember);
-			
+	protected void attach(Collection<SnomedLanguageRefSetMember> componentsToAttach) {
+		for (SnomedLanguageRefSetMember currentMember : componentsToAttach) {
+			//object with dirty state already contained in their proper container, we do not have to set the
+			//XXX right here we have to consider the followings: referenced component ID has been changed
+			//for the language member, but we will deal with it in the #preCommit
+			//there we have to check whether a dirty member has CDOSetFeature delta for the 'referencedComponentId' feature
+			//if so we will update its container.
+			if (CDOState.TRANSIENT.equals(currentMember.cdoState())) {
+				
+				final SnomedEditingContext editingContext = getImportContext().getEditingContext();
+				final CDOTransaction transaction = editingContext.getTransaction();
+				final CDOResource resource = transaction.getOrCreateResource(TEMPORARY_LANGUAGE_MEMBER_ROOT_RESOURCE_NAME);
+				
+				resource.getContents().add(currentMember);
+				
+				newMembers.add(currentMember);
+				
+			}
 		}
-		
-		return true;
 	}
 	
 	@Override
@@ -213,11 +199,7 @@ public class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImporter<A
 		}));
 		
 		
-		final LongSet descriptionStorageKeys = LongSets.newLongSet(LongSets.transform(LongSets.toStringSet(referencedDescriptionIds), new LongFunction<String>() {
-			@Override public long apply(final String member) {
-				return componentLookup.getComponentStorageKey(member);
-			}
-		})); 
+		final LongSet descriptionStorageKeys = componentLookup.getComponentStorageKeys(LongSets.toStringSet(referencedDescriptionIds));
 		
 		final List<CDOID> ids = CDOIDUtils.getIds(descriptionStorageKeys);
 		final List<CDORevision> revisions = CDOServerUtils.getRevisions(

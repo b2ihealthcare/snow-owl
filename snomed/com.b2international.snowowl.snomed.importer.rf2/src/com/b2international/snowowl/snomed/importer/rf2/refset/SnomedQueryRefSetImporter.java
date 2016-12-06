@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.importer.rf2.refset;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -23,8 +24,6 @@ import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -82,41 +81,29 @@ public class SnomedQueryRefSetImporter extends AbstractSnomedRefSetImporter<Quer
 	}
 
 	@Override
-	protected SnomedQueryRefSetMember doImportRow(final QueryRefSetRow currentRow) {
-
-		final SnomedQueryRefSetMember editedMember = (SnomedQueryRefSetMember) getOrCreateMember(currentRow.getUuid());
-		
-		if (skipCurrentRow(currentRow, editedMember)) {
-			getLogger().warn("Not importing query type reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
-					currentRow.getUuid(), 
-					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
-
-			return null;
-		}
-
-		if (currentRow.getEffectiveTime() != null) {
-			editedMember.setEffectiveTime(currentRow.getEffectiveTime());
-			editedMember.setReleased(true);
+	protected void applyRow(SnomedQueryRefSetMember member, QueryRefSetRow row, Collection<SnomedQueryRefSetMember> componentsToAttach) {
+		member.setUuid(row.getUuid().toString());
+		if (row.getEffectiveTime() != null) {
+			member.setEffectiveTime(row.getEffectiveTime());
+			member.setReleased(true);
 		} else {
-			editedMember.unsetEffectiveTime();
+			member.unsetEffectiveTime();
 		}
 
-		editedMember.setRefSet(getOrCreateRefSet(currentRow.getRefSetId(), currentRow.getReferencedComponentId()));
-		editedMember.setActive(currentRow.isActive());
-		editedMember.setModuleId(currentRow.getModuleId());
-		editedMember.setReferencedComponentId(currentRow.getReferencedComponentId());
-		editedMember.setQuery(currentRow.getQuery());
-		
-		return editedMember;
+		member.setRefSet(getOrCreateRefSet(row.getRefSetId(), row.getReferencedComponentId()));
+		member.setActive(row.isActive());
+		member.setModuleId(row.getModuleId());
+		member.setReferencedComponentId(row.getReferencedComponentId());
+		member.setQuery(row.getQuery());		
 	}
-
+	
 	@Override
 	protected String getIdentifierParentConceptId(final String refSetId) {
 		return Concepts.REFSET_QUERY_SPECIFICATION_TYPE;
 	}
 
 	@Override
-	protected SnomedQueryRefSetMember createRefSetMember() {
+	protected SnomedQueryRefSetMember createComponent() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedQueryRefSetMember(); 
 	}
 }

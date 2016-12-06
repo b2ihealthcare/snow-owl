@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.importer.rf2.terminology;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -23,8 +24,6 @@ import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -78,47 +77,34 @@ public class SnomedDescriptionImporter extends AbstractSnomedTerminologyImporter
 	}
 
 	@Override
-	protected void importRow(final DescriptionRow currentRow) {
-
-		final Description editedDescription = getOrCreateComponent(currentRow.getConceptId(), currentRow.getId());
-		
-		if (skipCurrentRow(currentRow, editedDescription)) {
-			getLogger().warn("Not importing concept '{}' with effective time '{}'; it should have been filtered from the input file.",
-					currentRow.getId(), 
-					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
-
-			return;
-		}
-
-		if (currentRow.getEffectiveTime() != null) {
-			editedDescription.setEffectiveTime(currentRow.getEffectiveTime());
-			editedDescription.setReleased(true);
+	protected void applyRow(Description component, DescriptionRow row, Collection<Description> componentsToAttach) {
+		component.setId(row.getId());
+		if (row.getEffectiveTime() != null) {
+			component.setEffectiveTime(row.getEffectiveTime());
+			component.setReleased(true);
 		} else {
-			editedDescription.unsetEffectiveTime();
+			component.unsetEffectiveTime();
 		}
 		
-		editedDescription.setActive(currentRow.isActive());
-		editedDescription.setCaseSignificance(getConceptSafe(currentRow.getCaseSignificanceId(), SnomedRf2Headers.FIELD_CASE_SIGNIFICANCE_ID, currentRow.getId()));
-		editedDescription.setLanguageCode(currentRow.getLanguageCode());
-		editedDescription.setModule(getConceptSafe(currentRow.getModuleId(), SnomedRf2Headers.FIELD_MODULE_ID, currentRow.getId()));
-		editedDescription.setTerm(currentRow.getTerm());
-		editedDescription.setType(getConceptSafe(currentRow.getTypeId(), SnomedRf2Headers.FIELD_TYPE_ID, currentRow.getId()));
+		component.setActive(row.isActive());
+		component.setConcept(getConceptSafe(row.getConceptId(), SnomedRf2Headers.FIELD_CONCEPT_ID, row.getId()));
+		component.setCaseSignificance(getConceptSafe(row.getCaseSignificanceId(), SnomedRf2Headers.FIELD_CASE_SIGNIFICANCE_ID, row.getId()));
+		component.setLanguageCode(row.getLanguageCode());
+		component.setModule(getConceptSafe(row.getModuleId(), SnomedRf2Headers.FIELD_MODULE_ID, row.getId()));
+		component.setTerm(row.getTerm());
+		component.setType(getConceptSafe(row.getTypeId(), SnomedRf2Headers.FIELD_TYPE_ID, row.getId()));
 		
-		getImportContext().conceptVisited(currentRow.getConceptId());
+		getImportContext().conceptVisited(row.getConceptId());
 	}
-	
+
 	@Override
-	protected Description createComponent(final String containerId, final String componentId) {
-		final Description description = SnomedFactory.eINSTANCE.createDescription();
-		description.setId(componentId);
-		description.setConcept(getConceptSafe(containerId, SnomedRf2Headers.FIELD_CONCEPT_ID, componentId));
-		
-		return description;
+	protected void attach(Collection<Description> componentsToAttach) {
+		// nothing to do
 	}
-	
+
 	@Override
-	protected Description getComponent(final String componentId) {
-		return getDescription(componentId);
+	protected Description createComponent() {
+		return SnomedFactory.eINSTANCE.createDescription();
 	}
 	
 }
