@@ -527,22 +527,22 @@ public final class ImportUtil {
 					
 					final String message = String.format("Validation encountered %s issue(s).", defects.size());
 					LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, message);
-					
-					final Map<String, BufferedWriter> defectWriters = newHashMap();
-					try {
-						for (SnomedValidationDefect defect : defects) {
-							final String filePath = defect.getFileName();
-							final String defectsFile = String.format("d:/%s_%s_defects.txt", configuration.getArchiveFile().getName(), filePath);
-							if (!defectWriters.containsKey(defectsFile)) {
-								defectWriters.put(defectsFile, Files.newWriter(new File(defectsFile), Charsets.UTF_8));
-							}
-							defect.writeTo(defectWriters.get(defectsFile));
-						}
-					} finally {
-						for (BufferedWriter writer : defectWriters.values()) {
-							writer.close();
-						}
-					}
+//					
+//					final Map<String, BufferedWriter> defectWriters = newHashMap();
+//					try {
+//						for (SnomedValidationDefect defect : defects) {
+//							final String filePath = defect.getFileName();
+//							final String defectsFile = String.format("d:/%s_%s_defects.txt", configuration.getArchiveFile().getName(), filePath);
+//							if (!defectWriters.containsKey(defectsFile)) {
+//								defectWriters.put(defectsFile, Files.newWriter(new File(defectsFile), Charsets.UTF_8));
+//							}
+//							defect.writeTo(defectWriters.get(defectsFile));
+//						}
+//					} finally {
+//						for (BufferedWriter writer : defectWriters.values()) {
+//							writer.close();
+//						}
+//					}
 					
 					return !Iterables.tryFind(defects, new Predicate<SnomedValidationDefect>() {
 						@Override
