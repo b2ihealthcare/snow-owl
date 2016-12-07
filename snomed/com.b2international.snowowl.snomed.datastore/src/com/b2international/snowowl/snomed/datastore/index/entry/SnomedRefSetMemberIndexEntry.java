@@ -47,6 +47,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
@@ -645,13 +646,25 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			if (dataType != null) {
 				switch (dataType) {
 				case BOOLEAN:
-					doc.booleanValue = (Boolean) value;
+					if (value instanceof Boolean) {
+						doc.booleanValue = (Boolean) value;
+					} else if (value instanceof String) {
+						doc.booleanValue = SnomedRefSetUtil.deserializeValue(dataType, (String) value);
+					}
 					break;
 				case DECIMAL:
-					doc.decimalValue = (BigDecimal) value;
+					if (value instanceof BigDecimal) {
+						doc.decimalValue = (BigDecimal) value;
+					} else if (value instanceof String) {
+						doc.decimalValue = SnomedRefSetUtil.deserializeValue(dataType, (String) value);
+					}
 					break;
 				case INTEGER:
-					doc.integerValue = (Integer) value;
+					if (value instanceof Integer) {
+						doc.integerValue = (Integer) value;
+					} else if (value instanceof String) {
+						doc.integerValue = SnomedRefSetUtil.deserializeValue(dataType, (String) value);
+					}
 					break;
 				case STRING:
 					doc.stringValue = (String) value;
