@@ -204,11 +204,9 @@ public class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImporter<A
 		
 		
 		if (null == revisions) {
-			
 			String message = "Cannot load revision for descriptions from store.";
-			log("SNOMED CT import failed. " + message);
+			log("SNOMED CT import failed. {}", message);
 			throw new SnowowlServiceException(message);
-			
 		}
 		
 		//mapping between SNOMED CT description storage key and the CDO revision
@@ -229,7 +227,7 @@ public class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImporter<A
 			
 			final BaseCDORevision memberRevision = (BaseCDORevision) newMember.cdoRevision();
 			final InternalCDORevision descriptionRevision = 
-					(InternalCDORevision) Preconditions.checkNotNull(object, "Cannot find description revision. CDO ID: " + descriptionStorageKey);
+					(InternalCDORevision) Preconditions.checkNotNull(object, "Cannot find description revision. CDO ID: %s", descriptionStorageKey);
 			
 			memberRevision.setContainerID(descriptionRevision.getID());
 			memberRevision.setContainingFeatureID(InternalEObject.EOPPOSITE_FEATURE_BASE - SnomedPackage.DESCRIPTION__LANGUAGE_REF_SET_MEMBERS);
@@ -240,21 +238,18 @@ public class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImporter<A
 			//get revision delta for description
 			InternalCDORevisionDelta revisionDelta = (InternalCDORevisionDelta) lastSavepoint.getRevisionDeltas().get(descriptionRevision.getID());
 			
-	    if (null == revisionDelta) {
-	    
-	    	//create empty revision delta
-        revisionDelta = (InternalCDORevisionDelta) CDORevisionUtil.createDelta(descriptionRevision);
-        //register it
-        lastSavepoint.getRevisionDeltas().put(descriptionRevision.getID(), revisionDelta);
-        
-      	
-      }
+			if (null == revisionDelta) {
+		    	//create empty revision delta
+		        revisionDelta = (InternalCDORevisionDelta) CDORevisionUtil.createDelta(descriptionRevision);
+		        //register it
+		        lastSavepoint.getRevisionDeltas().put(descriptionRevision.getID(), revisionDelta);
+			}
 
-	    //get current language reference set members for description
-	    final CDOList cdoList = descriptionRevision.getList(SnomedPackage.eINSTANCE.getDescription_LanguageRefSetMembers());
+		    //get current language reference set members for description
+		    final CDOList cdoList = descriptionRevision.getList(SnomedPackage.eINSTANCE.getDescription_LanguageRefSetMembers());
 	    
-	    //create add feature delta with the new member
-	    revisionDelta.addFeatureDelta(createAddRevisionDelta(newMember, cdoList.size()));
+		    //create add feature delta with the new member
+		    revisionDelta.addFeatureDelta(createAddRevisionDelta(newMember, cdoList.size()));
 		}
 		
 		final CDOResource resource = transaction.getOrCreateResource(TEMPORARY_LANGUAGE_MEMBER_ROOT_RESOURCE_NAME);
@@ -291,7 +286,7 @@ public class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImporter<A
 			
 		}
 		
-		return Preconditions.checkNotNull(id, "Referenced component ID was null for reference set member.  Member: " + member);
+		return Preconditions.checkNotNull(id, "Referenced component ID was null for reference set member.  Member: %s", member);
 		
 	}
 	

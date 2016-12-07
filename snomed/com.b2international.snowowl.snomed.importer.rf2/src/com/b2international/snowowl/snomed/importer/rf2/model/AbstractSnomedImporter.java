@@ -174,8 +174,8 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	 * Logs the given message to the dedicated import log file.
 	 * @param message the message to log.
 	 */
-	protected void log(final String message) {
-		LogUtils.logImportActivity(IMPORT_LOGGER, userIdSupplier.get(), branchPathSupplier.get(), message);
+	protected void log(final String message, Object...arguments) {
+		LogUtils.logImportActivity(IMPORT_LOGGER, userIdSupplier.get(), branchPathSupplier.get(), message, arguments);
 	}
 	
 	protected SnomedImportConfiguration<T> getImportConfiguration() {
@@ -197,7 +197,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	@Override
 	public void preImport(final SubMonitor subMonitor) {
 
-		final String message = getPreImportMessage();
+		final String message = MessageFormat.format("Preparing {0} import", importConfiguration.getType().getDisplayName());
 		log(message);
 		subMonitor.beginTask(message, 1);
 		
@@ -206,10 +206,6 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 		} finally {
 			subMonitor.done();
 		}
-	}
-
-	private String getPreImportMessage() {
-		return MessageFormat.format("Preparing {0} import", importConfiguration.getType().getDisplayName());
 	}
 
 	private void createComponentStagingDirectory(final SubMonitor subMonitor) {
@@ -406,8 +402,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	}
 
 	private ImportAction handlePreImportException(final SuperCSVException e) {
-		final String reason = null != e.getMessage() ? " Reason: '" + e.getMessage() + "'" : "";
-		log("Exception caught while reading release file. Continuing with next row." + reason);
+		log("Exception caught while reading release file. Continuing with next row. {}", e.getMessage());
 		importContext.getLogger().warn("Exception caught while reading release file. Continuing with next row.", e);
 		return ImportAction.CONTINUE;
 	}
@@ -441,8 +436,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 			try {
 				sliceStream = new FileOutputStream(sliceFile);
 			} catch (final FileNotFoundException e) {
-				final String reason = null != e.getMessage() ? " Reason: '" + e.getMessage() + "'" : "";
-				log("SNOMED CT import failed. Couldn't open output file '" + sliceFile.getAbsolutePath() + "' for writing." + reason);
+				log("SNOMED CT import failed. Couldn't open output file '{}' for writing. {}", sliceFile.getAbsolutePath(), e.getMessage());
 				throw new ImportException("Couldn't open output file '" + sliceFile.getAbsolutePath() + "' for writing.", e);
 			}
 			
@@ -562,8 +556,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	}
 
 	private ImportAction handleImportException(final Throwable e) {
-		final String reason = null != e.getMessage() ? " Reason: '" + e.getMessage() + "'" : "";
-		log("Exception caught while importing row from release file. Continuing with next row." + reason);
+		log("Exception caught while importing row from release file. Continuing with next row. {}", e.getMessage());
 		importContext.getLogger().warn("Exception caught while importing row from release file. Continuing with next row.", e);
 		return ImportAction.CONTINUE;
 	}
@@ -639,15 +632,13 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	}
 	
 	private ImportAction checkCommitException(final SnowowlServiceException e) {
-		final String reason = null != e.getMessage() ? " Reason: '" + e.getMessage() + "'" : "";
-		log("SNOMED CT import failed. Caught exception while import, aborting." + reason);
+		log("SNOMED CT import failed. Caught exception while import, aborting. {}", e.getMessage());
 		importContext.getLogger().warn("Caught exception while import, aborting.", e);
 		return ImportAction.BREAK;
 	}
 
 	private ImportAction checkCommitException(final CommitException e) {
-		final String reason = null != e.getMessage() ? " Reason: '" + e.getMessage() + "'" : "";
-		log("SNOMED CT import failed. Caught exception while import, aborting." + reason);
+		log("SNOMED CT import failed. Caught exception while import, aborting. {}", e.getMessage());
 		importContext.getLogger().warn("Caught exception while import, aborting.", e);
 		handleCommitException();
 		return ImportAction.BREAK;
@@ -740,9 +731,9 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 
 	@Override
 	public void postImport(final SubMonitor subMonitor) {
-
-		subMonitor.beginTask(getPostImportMessage(), 2);
-		log(getPostImportMessage());
+		final String message = MessageFormat.format("Finishing {0} import", importConfiguration.getType().getDisplayName());
+		subMonitor.beginTask(message, 2);
+		log(message);
 		
 		// Tear down in opposite order
 		try {
@@ -753,10 +744,6 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 		}
 	}
 
-	private String getPostImportMessage() {
-		return MessageFormat.format("Finishing {0} import", importConfiguration.getType().getDisplayName());
-	}
-	
 	private void createIndexes(final SubMonitor subMonitor) {
 	
 		final String message = MessageFormat.format("Creating indexes for {0} import.", importConfiguration.getType().getDisplayName());

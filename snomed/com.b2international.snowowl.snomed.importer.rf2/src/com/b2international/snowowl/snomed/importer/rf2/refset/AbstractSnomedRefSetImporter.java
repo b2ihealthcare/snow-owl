@@ -125,7 +125,7 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 			if (identiferParentConcept == null) {
 				String message = MessageFormat.format("Reference set parent concept ''{0}'' not found in database.", 
 						getIdentifierParentConceptId(identifierId));
-				log("SNOMED CT import failed. " + message);
+				log("SNOMED CT import failed. {}", message);
 				throw new ImportException(message);
 			}
 
