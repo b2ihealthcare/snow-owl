@@ -28,6 +28,7 @@ import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -37,7 +38,6 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.collect.Sets;
 
 /**
  * Base for all SNOMED&nbsp;CT reference set RF2 exporters.
@@ -49,16 +49,15 @@ public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRe
 
 	private SnomedRefSetType type;
 
-	public SnomedRefSetExporter(final SnomedExportContext configuration, final String refSetId, 
-			final SnomedRefSetType type, final RevisionSearcher revisionSearcher, final boolean unpublished) {
-		super(configuration, SnomedRefSetMemberIndexEntry.class, revisionSearcher, unpublished);
-		this.refSetId = checkNotNull(refSetId, "refSetId");
-		this.type = checkNotNull(type, "type");
+	public SnomedRefSetExporter(final SnomedExportContext exportContext, final SnomedReferenceSet refset, final RevisionSearcher revisionSearcher) {
+		super(exportContext, SnomedRefSetMemberIndexEntry.class, revisionSearcher);
+		this.refSetId = checkNotNull(refset.getId(), "refSetId");
+		this.type = checkNotNull(refset.getType(), "type");
 	}
 	
 	@Override
 	protected void appendExpressionConstraint(ExpressionBuilder builder) {
-		builder.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(getRefSetId())));
+		builder.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(getRefSetId()));
 	}
 
 	@Override
@@ -112,6 +111,7 @@ public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRe
 	
 	@Override
 	public String getFileName() {
+		// FIXME
 		final ICDOConnection connection = getServiceForClass(ICDOConnectionManager.class).getByUuid(SnomedDatastoreActivator.REPOSITORY_UUID);
 		final IBranchPath branchPath = getExportContext().getCurrentBranchPath();
 		final String refSetName = getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, refSetId);

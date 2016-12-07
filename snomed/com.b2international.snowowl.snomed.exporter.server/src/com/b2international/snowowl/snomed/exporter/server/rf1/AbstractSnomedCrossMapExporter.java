@@ -41,25 +41,30 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedExporter {
 	
 	private final SnomedMapSetSetting mapSetSetting;
 	private final String label;
-	private SnomedExportContext configuration;
+	private SnomedExportContext exportContext;
 	private String refSetId;
 	protected RevisionSearcher revisionSearcher;
 
-	protected AbstractSnomedCrossMapExporter(final SnomedExportContext configuration, final String refSetId, 
+	protected AbstractSnomedCrossMapExporter(final SnomedExportContext exportContext, final String refSetId, 
 			final SnomedMapSetSetting mapSetSetting, final RevisionSearcher revisionSearcher) {
 		this.refSetId = checkNotNull(refSetId, "refSetId");
-		this.configuration = checkNotNull(configuration, "configuration");
+		this.exportContext = checkNotNull(exportContext, "exportContext");
 		this.mapSetSetting = checkNotNull(mapSetSetting);
 		this.revisionSearcher = checkNotNull(revisionSearcher);
 		label = ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(getBranchPath(), refSetId);
 	}
 
 	protected IBranchPath getBranchPath() {
-		return configuration.getCurrentBranchPath();
+		return exportContext.getCurrentBranchPath();
 	}
 	
 	public String getRefSetId() {
 		return refSetId;
+	}
+	
+	@Override
+	public void remove() {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -81,7 +86,7 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedExporter {
 	
 	@Override
 	public SnomedExportContext getExportContext() {
-		return configuration;
+		return exportContext;
 	}
 	
 	@Override

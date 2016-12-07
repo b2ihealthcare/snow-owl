@@ -92,12 +92,6 @@ public class SnomedSubsetExporter extends AbstractSnomedSubsetExporter {
 	}
 
 	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
-	}
-
-
-	@Override
 	public Iterator<String> iterator() {
 		return itr;
 	}

@@ -112,13 +112,12 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1CoreExporter<
 	private String preferredLanguageId;
 	private boolean includeExtendedDescriptionTypes;
 	
-	public SnomedRf1DescriptionExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, 
-			final boolean unpublished, final boolean includeExtendedDescriptionTypes) {
-		super(configuration, SnomedDescriptionIndexEntry.class, revisionSearcher, unpublished);
-		mapper = configuration.getId2Rf1PropertyMapper();
+	public SnomedRf1DescriptionExporter(final SnomedExportContext exportContext, final RevisionSearcher revisionSearcher,
+			final boolean includeExtendedDescriptionTypes) {
+		super(exportContext, SnomedDescriptionIndexEntry.class, revisionSearcher);
+		mapper = exportContext.getId2Rf1PropertyMapper();
 		this.includeExtendedDescriptionTypes = includeExtendedDescriptionTypes;
 		this.preferredLanguageId = ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId();
-		
 	}
 	
 	@Override

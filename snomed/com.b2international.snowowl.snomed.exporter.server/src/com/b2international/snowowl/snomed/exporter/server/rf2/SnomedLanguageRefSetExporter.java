@@ -17,18 +17,17 @@ package com.b2international.snowowl.snomed.exporter.server.rf2;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * Exporter for language type reference sets.
  */
 public class SnomedLanguageRefSetExporter extends SnomedRefSetExporter {
 
-	public SnomedLanguageRefSetExporter(final SnomedExportContext configuration, final String refSetId,
-			final SnomedRefSetType type, final RevisionSearcher revisionSearcher, final boolean unpublished) {
-		super(configuration, refSetId, type, revisionSearcher, unpublished);
+	public SnomedLanguageRefSetExporter(final SnomedExportContext exportContext, SnomedReferenceSet refset, final RevisionSearcher revisionSearcher) {
+		super(exportContext, refset, revisionSearcher);
 	}
 	
 	@Override

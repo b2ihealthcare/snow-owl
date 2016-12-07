@@ -51,7 +51,7 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedExporter {
 				.setLimit(0)
 				.setComponentIds(Collections.singleton(refSetId))
 				.filterByType(SnomedRefSetType.LANGUAGE)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranchPath().getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranchPath().getPath()) // is the export branch path ok here?
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync().getTotal() > 0;
 	}
@@ -68,12 +68,12 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedExporter {
 	private final String folderName;
 	private String label;
 	private int referencedComponentType;
-	private SnomedExportContext configuration;
+	private SnomedExportContext exportContext;
 	private String refSetId;
 	protected RevisionSearcher revisionSearcher;
 
-	protected AbstractSnomedSubsetExporter(final SnomedExportContext configuration, final String refSetId, final RevisionSearcher revisionSearcher) {
-		this.configuration = configuration;
+	protected AbstractSnomedSubsetExporter(final SnomedExportContext exportContext, final String refSetId, final RevisionSearcher revisionSearcher) {
+		this.exportContext = exportContext;
 		this.refSetId = refSetId;
 		this.revisionSearcher = revisionSearcher;
 		referencedComponentType = getReferencedComponentType(refSetId);
@@ -85,8 +85,13 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedExporter {
 		}
 	}
 
+	@Override
+	public void remove() {
+		throw new UnsupportedOperationException();
+	}
+	
 	protected IBranchPath getBranchPath() {
-		return this.configuration.getCurrentBranchPath();
+		return this.exportContext.getCurrentBranchPath();
 	}
 
 	protected String getRefSetId() {
@@ -95,7 +100,7 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedExporter {
 	
 	@Override
 	public SnomedExportContext getExportContext() {
-		return configuration;
+		return exportContext;
 	}
 	
 	@Override

@@ -145,11 +145,6 @@ public class SnomedCrossMapExporter extends AbstractSnomedCrossMapExporter {
 	}
 
 	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public Iterator<String> iterator() {
 		return itr;
 	}

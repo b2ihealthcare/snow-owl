@@ -46,10 +46,10 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	private Set<String> moduleIds;
 	
 	private Id2Rf1PropertyMapper id2Rf1PropertyMapper;
-	private ExportFormat exportFormat;
 	private Path releaseRootPath;
+	private boolean unpublishedExport;
 	
-	public SnomedExportContextImpl(final ExportFormat exportFormat, 
+	public SnomedExportContextImpl( 
 			final IBranchPath currentBranchPath,
 			final ContentSubType contentSubType,
 			final String unsetEffectiveTimeLabel,
@@ -59,7 +59,6 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 			final Id2Rf1PropertyMapper id2Rf1PropertyMapper,
 			final Path releaseRootPath) {
 
-		this.exportFormat = checkNotNull(exportFormat, "exportFormat");
 		this.currentBranchPath = checkNotNull(currentBranchPath, "currentBranchPath");
 		this.contentSubType = checkNotNull(contentSubType, "contentSubType");
 		this.unsetEffectiveTimeLabel = checkNotNull(unsetEffectiveTimeLabel, "unsetEffectiveTimeLabel");
@@ -68,18 +67,9 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 		this.moduleIds = moduleIds;
 		this.id2Rf1PropertyMapper = id2Rf1PropertyMapper;
 		this.releaseRootPath = releaseRootPath;
+		this.unpublishedExport = false;
 	}
 	
-	@Override
-	public ExportFormat getExportFormat() {
-		return exportFormat;
-	}
-	
-	@Override
-	public void setExportFormat(ExportFormat exportFormat) {
-		this.exportFormat = exportFormat;
-	}
-
 	@Override
 	public IBranchPath getCurrentBranchPath() {
 		return currentBranchPath;
@@ -135,4 +125,13 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 		return releaseRootPath;
 	}
 	
+	@Override
+	public boolean isUnpublishedExport() {
+		return unpublishedExport;
+	}
+	
+	@Override
+	public void setUnpublishedExport(boolean isUnpublishedExport) {
+		this.unpublishedExport = isUnpublishedExport;
+	}
 }

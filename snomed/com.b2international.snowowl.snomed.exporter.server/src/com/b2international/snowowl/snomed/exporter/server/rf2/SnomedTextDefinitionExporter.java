@@ -27,8 +27,8 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
  */
 public class SnomedTextDefinitionExporter extends SnomedRf2DescriptionExporter {
 
-	public SnomedTextDefinitionExporter(SnomedExportContext configuration, RevisionSearcher revisionSearcher, boolean unpublished) {
-		super(configuration, revisionSearcher, unpublished);
+	public SnomedTextDefinitionExporter(SnomedExportContext exportContext, RevisionSearcher revisionSearcher) {
+		super(exportContext, revisionSearcher);
 	}
 	
 	@Override

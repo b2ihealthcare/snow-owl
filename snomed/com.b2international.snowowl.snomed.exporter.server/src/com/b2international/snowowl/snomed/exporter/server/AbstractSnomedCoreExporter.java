@@ -18,8 +18,8 @@ package com.b2international.snowowl.snomed.exporter.server;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.b2international.commons.BooleanUtils;
@@ -47,28 +47,30 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 	// scroll page size for the query
 	private static final int PAGE_SIZE = 100000;
 	
-	private int totalSize = -1;
-	private int currentOffset;
 	private int currentIndex;
-	private Hits<T> conceptHits;
+	private int currentOffset;
+	private Hits<T> hits;
+	
 	private Class<T> clazz;
 	private SnomedExportContext exportContext;
 	private RevisionSearcher revisionSearcher;
-	private boolean onlyUnpublished;
 
-	protected AbstractSnomedCoreExporter(final SnomedExportContext exportContext, final Class<T> clazz, final RevisionSearcher revisionSearcher, 
-			final boolean onlyUnpublished) {
+	protected AbstractSnomedCoreExporter(final SnomedExportContext exportContext, final Class<T> clazz, final RevisionSearcher revisionSearcher) {
 		this.exportContext = checkNotNull(exportContext, "exportContext");
 		this.clazz = checkNotNull(clazz, "clazz");
 		this.revisionSearcher = checkNotNull(revisionSearcher, "revisionSearcher");
-		this.onlyUnpublished = onlyUnpublished;
+		
+		this.hits = new Hits<T>(Collections.<T>emptyList(), 0, 0, -1);
+		this.currentIndex = 0;
+		this.currentOffset = 0;
 	}
 	
 	/**
-	 * Transforms the SNOMED CT document index representation argument into a serialized line of 
-	 * attributes as specified in the RF1 or RF2 format.
-	 * @param the SNOMED CT document to transform.
-	 * @return a string as a serialized line in the export file.
+	 * Transforms the SNOMED CT document index representation argument into a serialized line of attributes as specified in the RF1 or RF2 format.
+	 * 
+	 * @param snomedDocument
+	 *            SNOMED CT document to transform
+	 * @return a string as a serialized line in the export file
 	 */
 	public abstract String convertToString(final T snomedDocument);
 
@@ -85,34 +87,28 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 	@Override
 	public boolean hasNext() {
 		
-		if (totalSize == -1 || (currentIndex >= conceptHits.getHits().size()) && currentOffset < totalSize ) {
+		if (currentIndex == hits.getHits().size() && currentOffset != hits.getTotal()) {
+			
 			try {
-				//traverse back from the current branchpath and find all the concepts that have the commit times from the versions visible from the branch path
-				final Query<T> exportQuery = Query.select(clazz).where(getQueryExpression()).offset(currentOffset).limit(PAGE_SIZE).build();
-				conceptHits = revisionSearcher.search(exportQuery);
 				
-				//to avoid getting the size every time
-				if (totalSize == -1) {
-					totalSize = conceptHits.getTotal();
-				}
+				final Query<T> exportQuery = Query.select(clazz).where(getQueryExpression()).offset(currentOffset).limit(PAGE_SIZE).build();
+				hits = revisionSearcher.search(exportQuery);
+				
 				currentIndex = 0;
-				currentOffset += conceptHits.getHits().size();
+				currentOffset += hits.getHits().size();
+				
 			} catch (IOException e) {
 				throw new SnowowlRuntimeException(e);
 			}
+			
 		}
-		return conceptHits != null && conceptHits.getHits().size() > 0 && currentIndex < conceptHits.getHits().size();
+		
+		return hits.getHits().size() > 0 && currentIndex < hits.getHits().size();
 	}
 	
 	@Override
 	public String next() {
-		
-		if (!hasNext()) {
-			throw new NoSuchElementException();
-		}
-		
-		T revisionIndexEntry = conceptHits.getHits().get(currentIndex++);
-		return convertToString(revisionIndexEntry);
+		return convertToString(hits.getHits().get(currentIndex++));
 	}
 	
 	@Override
@@ -120,10 +116,6 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 		return exportContext;
 	}
 
-	/**
-	 * Returns the revision searcher used by this exporter.
-	 * @return
-	 */
 	public RevisionSearcher getRevisionSearcher() {
 		return revisionSearcher;
 	}
@@ -166,7 +158,7 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 
 	private void appendEffectiveTimeConstraint(ExpressionBuilder builder) {
 		
-		if (onlyUnpublished) {
+		if (exportContext.isUnpublishedExport()) {
 			
 			builder.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
 			

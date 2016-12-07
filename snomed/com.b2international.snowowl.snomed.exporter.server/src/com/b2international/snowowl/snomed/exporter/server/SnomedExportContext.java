@@ -33,18 +33,6 @@ import com.b2international.snowowl.snomed.exporter.server.rf1.Id2Rf1PropertyMapp
 public interface SnomedExportContext {
 
 	/**
-	 * Returns the export format requested
-	 * @return export format
-	 */
-	ExportFormat getExportFormat();
-	
-	/**
-	 * Sets the export format
-	 * @param exportFormat
-	 */
-	void setExportFormat(ExportFormat exportFormat);
-	
-	/**
 	 * Returns with the current branch path of the client who 
 	 * triggered the export. 
 	 * @return the client's current branch path.
@@ -106,4 +94,14 @@ public interface SnomedExportContext {
 	 * Returns the path to '&lt;path_to_export_temp_dir&gt;\SnomedCT_Release_&lt;namespace&gt;'
 	 */
 	Path getReleaseRootPath();
+	
+	/**
+	 * Returns true if only unpublished components must be exported. False by default.
+	 */
+	boolean isUnpublishedExport();
+	
+	/**
+	 * Sets the value of the flag responsible for unpublished export.
+	 */
+	void setUnpublishedExport(boolean isUnpublishedExport);
 }

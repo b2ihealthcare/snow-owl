@@ -30,8 +30,8 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
  */
 public class SnomedRf2ConceptExporter extends AbstractSnomedRf2CoreExporter<SnomedConceptDocument> {
 
-	public SnomedRf2ConceptExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean onlyUnpublished) {
-		super(configuration, SnomedConceptDocument.class, revisionSearcher, onlyUnpublished);
+	public SnomedRf2ConceptExporter(final SnomedExportContext exportContext, final RevisionSearcher revisionSearcher) {
+		super(exportContext, SnomedConceptDocument.class, revisionSearcher);
 	}
 
 	@Override

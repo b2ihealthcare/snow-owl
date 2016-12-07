@@ -62,9 +62,6 @@ public interface SnomedExporter extends Iterator<String>, Iterable<String> {
 	
 	String[] getColumnHeaders();
 	
-	/**
-	 * Returns the export context used by the export process
-	 */
 	SnomedExportContext getExportContext();
 	
 	void execute() throws IOException;

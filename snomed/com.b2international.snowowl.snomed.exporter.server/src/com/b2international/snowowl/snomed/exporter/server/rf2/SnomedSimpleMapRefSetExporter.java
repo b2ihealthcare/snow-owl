@@ -19,11 +19,11 @@ import static com.google.common.base.Strings.nullToEmpty;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * SNOMED CT simple map type reference set exporter (optionally with map target description).
@@ -32,10 +32,9 @@ public class SnomedSimpleMapRefSetExporter extends SnomedRefSetExporter {
 
 	private final boolean includeMapTargetDescription;
 	
-	public SnomedSimpleMapRefSetExporter(final SnomedExportContext configuration, final String refSetId, 
-			final SnomedRefSetType type, final boolean includeMapTargetDescription, final RevisionSearcher revisionSearcher, final boolean unpublished) {
-		
-		super(configuration, refSetId, type, revisionSearcher, unpublished);
+	public SnomedSimpleMapRefSetExporter(final SnomedExportContext exportContext, SnomedReferenceSet refset, final boolean includeMapTargetDescription, 
+			final RevisionSearcher revisionSearcher) {
+		super(exportContext, refset, revisionSearcher);
 		this.includeMapTargetDescription = includeMapTargetDescription;
 	}
 	
