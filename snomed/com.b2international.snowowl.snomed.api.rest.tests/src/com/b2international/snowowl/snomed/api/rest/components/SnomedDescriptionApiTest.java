@@ -45,7 +45,9 @@ import java.util.UUID;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -60,6 +62,7 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
@@ -167,6 +170,18 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
 		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
 		assertCaseSignificance(createMainPath(), descriptionId, CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE);
+	}
+	
+	@Test
+	public void createDescriptionWithPredefinedId() {
+		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
+		final String descriptionId = identifierService.reserve(null, ComponentCategory.DESCRIPTION);
+		Map<Object, Object> requestBody = createRequestBuilder(DISEASE, "Description with predefined id", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM,
+				"New description with predefined id")
+				.put("id", descriptionId)
+				.build();
+		String createdId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
+		assertEquals(descriptionId, createdId);
 	}
 	
 	@Test

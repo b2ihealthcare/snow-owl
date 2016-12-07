@@ -18,7 +18,7 @@ package com.b2international.index.query;
 /**
  * @since 4.7
  */
-public class LongPredicate extends SingleArgumentPredicate<Long> {
+public final class LongPredicate extends SingleArgumentPredicate<Long> {
 
 	LongPredicate(String field, Long argument) {
 		super(field, argument);

@@ -319,7 +319,7 @@ public abstract class LeafWidgetBeanSorter {
 		}
 		
 		if (input instanceof DataTypeWidgetBean) {
-			return ((DataTypeWidgetBean) input).getSelectedValue();
+			return String.valueOf(((DataTypeWidgetBean) input).getSelectedValue());
 		}
 		
 		return null;

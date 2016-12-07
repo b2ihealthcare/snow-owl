@@ -55,6 +55,8 @@ public abstract class BaseRevisionIndexTest {
 	protected static final long STORAGE_KEY1 = 1L;
 	protected static final long STORAGE_KEY2 = 2L;
 	
+	// XXX start from 3 to take the two constant values above into account
+	private AtomicLong storageKeys = new AtomicLong(3);
 	private ObjectMapper mapper;
 	private Mappings mappings;
 	private Index rawIndex;
@@ -79,6 +81,10 @@ public abstract class BaseRevisionIndexTest {
 	
 	private int nextSegmentId() {
 		return segmentIds.getAndIncrement();
+	}
+	
+	protected final long nextStorageKey() {
+		return storageKeys.getAndIncrement();
 	}
 	
 	@Before

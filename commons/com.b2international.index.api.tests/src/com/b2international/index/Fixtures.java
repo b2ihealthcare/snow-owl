@@ -47,6 +47,14 @@ public class Fixtures {
 			this.field1 = field1;
 			this.field2 = field2;
 		}
+		
+		public String getField1() {
+			return field1;
+		}
+		
+		public String getField2() {
+			return field2;
+		}
 
 		@Override
 		public boolean equals(Object obj) {

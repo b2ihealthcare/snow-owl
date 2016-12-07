@@ -18,7 +18,7 @@ package com.b2international.index.query;
 /**
  * @since 4.7
  */
-public class IntSetPredicate extends SetPredicate<Integer> {
+public final class IntSetPredicate extends SetPredicate<Integer> {
 
 	IntSetPredicate(String field, Iterable<Integer> values) {
 		super(field, values);

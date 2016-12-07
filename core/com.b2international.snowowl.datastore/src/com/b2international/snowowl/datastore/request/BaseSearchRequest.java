@@ -32,6 +32,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public abstract class BaseSearchRequest<C extends ServiceProvider, B> extends BaseResourceRequest<C, B> {
 	
+	/**
+	 * Exception that indicates that the search request will not have any matching items therefore can immediately respond back with an empty result.
+	 * @since 5.4
+	 */
+	public static class NoResultException extends RuntimeException {
+		private static final long serialVersionUID = 5581643581423131046L;
+	}
+	
 	@Min(0)
 	private int offset;
 
@@ -106,11 +114,27 @@ public abstract class BaseSearchRequest<C extends ServiceProvider, B> extends Ba
 	public final B execute(C context) {
 		try {
 			return doExecute(context);
+		} catch (NoResultException e) {
+			return createEmptyResult(offset, limit);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Caught exception while executing search request.", e);
 		}
 	}
 	
+	/**
+	 * Creates a new empty result object with the specified offset and limit parameter.
+	 * @param offset
+	 * @param limit
+	 * @return
+	 */
+	protected abstract B createEmptyResult(int offset, int limit);
+
+	/**
+	 * Executes this search request.
+	 * @param context
+	 * @return
+	 * @throws IOException
+	 */
 	protected abstract B doExecute(C context) throws IOException;
 	
 }

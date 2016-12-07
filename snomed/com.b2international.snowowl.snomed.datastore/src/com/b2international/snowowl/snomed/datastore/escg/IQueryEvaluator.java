@@ -22,6 +22,7 @@ package com.b2international.snowowl.snomed.datastore.escg;
  * 
  * @param <R> the evaluation result type
  * @param <E> the expression type
+ * @deprecated - see {@link IEscgQueryEvaluatorService}
  */
 public interface IQueryEvaluator<R, E> {
 

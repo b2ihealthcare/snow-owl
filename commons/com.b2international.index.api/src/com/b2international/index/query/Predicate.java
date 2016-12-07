@@ -17,6 +17,8 @@ package com.b2international.index.query;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Objects;
+
 
 /**
  * Represents a predicate against a single field
@@ -31,7 +33,21 @@ public abstract class Predicate implements Expression {
 		this.field = checkNotNull(field, "feature");
 	}
 
-	public String getField() {
+	@Override
+	public int hashCode() {
+		return Objects.hash(field);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		Predicate predicate = (Predicate) obj;
+		return Objects.equals(field, predicate.field);
+	}
+	
+	public final String getField() {
 		return field;
 	}
 	

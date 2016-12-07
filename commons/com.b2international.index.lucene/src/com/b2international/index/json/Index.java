@@ -19,16 +19,22 @@ import static com.google.common.collect.Lists.newLinkedList;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import org.apache.hadoop.hbase.util.Order;
+import org.apache.hadoop.hbase.util.OrderedBytes;
+import org.apache.hadoop.hbase.util.SimplePositionedMutableByteRange;
 import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FloatDocValuesField;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.util.BytesRef;
 
@@ -49,6 +55,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public final class Index implements Operation {
 
+	public static final int PRECISION = 1 + 18 + 8; // according to OrderedBytes 
 	private final String key;
 	private byte[] source;
 
@@ -208,6 +215,15 @@ public final class Index implements Operation {
 				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
 			} else if (isShort(fieldType)) {
 				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
+			} else if (isBigDecimal(fieldType)) {
+				final SimplePositionedMutableByteRange dst = new SimplePositionedMutableByteRange(PRECISION);
+				final int writtenBytes = OrderedBytes.encodeNumeric(dst, node.decimalValue(), Order.ASCENDING);
+				final BytesRef term = new BytesRef(dst.getBytes(), 0, writtenBytes);
+				final StringField field = new StringField(name, term, Store.NO);
+				doc.add(field);
+				if (docValues) {
+					doc.add(new BinaryDocValuesField(name, term));
+				}
 			} else {
 				throw new UnsupportedOperationException("Unsupported number type: " + fieldType + " for field: " + name);
 			}
@@ -217,6 +233,10 @@ public final class Index implements Operation {
 		}
 	}
 
+	private boolean isBigDecimal(Class<?> fieldType) {
+		return fieldType == BigDecimal.class;
+	}
+	
 	private boolean isFloat(Class<?> fieldType) {
 		return fieldType == Float.class || fieldType == float.class || FloatCollection.class.isAssignableFrom(fieldType);
 	}

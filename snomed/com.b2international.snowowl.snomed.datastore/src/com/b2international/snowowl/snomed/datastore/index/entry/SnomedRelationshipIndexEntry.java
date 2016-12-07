@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchRange;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -53,6 +53,9 @@ import com.google.common.collect.FluentIterable;
 public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument implements IStatement<String> {
 
 	private static final long serialVersionUID = -7873086925532169024L;
+	
+	public static final int DEFAULT_GROUP = -1;
+	public static final int DEFAULT_UNION_GROUP = -1;
 
 	public static Builder builder() {
 		return new Builder();
@@ -175,6 +178,15 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			return match(Fields.GROUP, group);
 		}
 		
+		public static Expression group(int groupStart, int groupEnd) {
+			checkArgument(groupStart <= groupEnd, "Group end should be greater than or equal to groupStart");
+			if (groupStart == groupEnd) {
+				return group(groupStart);
+			} else {
+				return matchRange(Fields.GROUP, groupStart, groupEnd);
+			}
+		}
+		
 		public static Expression unionGroup(int unionGroup) {
 			return match(Fields.UNION_GROUP, unionGroup);
 		}
@@ -247,8 +259,8 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		private String characteristicTypeId;
 		private String modifierId;
 
-		private int group;
-		private int unionGroup;
+		private int group = DEFAULT_GROUP;
+		private int unionGroup = DEFAULT_UNION_GROUP;
 
 		private boolean destinationNegated;
 		
@@ -368,14 +380,15 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				referringRefSets,
 				referringMappingRefSets);
 
-		checkArgument(group >= 0, String.format("Group number '%s' may not be negative (relationship ID: %s).", group, id));
-		checkArgument(unionGroup >= 0, String.format("Union group number '%s' may not be negative (relationship ID: %s).", unionGroup, id));
+		// XXX -1 is the default value
+		checkArgument(group >= -1, String.format("Group number '%s' may not be negative (relationship ID: %s).", group, id));
+		checkArgument(unionGroup >= -1, String.format("Union group number '%s' may not be negative (relationship ID: %s).", unionGroup, id));
 
-		this.sourceId = checkNotNull(sourceId, "Relationship source identifier may not be null.");
-		this.typeId = checkNotNull(typeId, "Relationship type identifier may not be null.");
-		this.destinationId = checkNotNull(destinationId, "Relationship destination identifier may not be null.");
-		this.characteristicTypeId = checkNotNull(characteristicTypeId, "Relationship characteristic type identifier may not be null.");
-		this.modifierId = checkNotNull(modifierId, "Relationship modifier identifier may not be null.");
+		this.sourceId = sourceId;
+		this.typeId = typeId;
+		this.destinationId = destinationId;
+		this.characteristicTypeId = characteristicTypeId;
+		this.modifierId = modifierId;
 		this.group = group;
 		this.unionGroup = unionGroup;
 		this.destinationNegated = destinationNegated;
@@ -480,15 +493,15 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	/**
 	 * @return the relationship group
 	 */
-	public int getGroup() {
-		return group;
+	public Integer getGroup() {
+		return group == DEFAULT_GROUP ? null : group;
 	}
 
 	/**
 	 * @return the relationship union group
 	 */
-	public int getUnionGroup() {
-		return unionGroup;
+	public Integer getUnionGroup() {
+		return unionGroup == DEFAULT_UNION_GROUP ? null : unionGroup;
 	}
 
 	/**

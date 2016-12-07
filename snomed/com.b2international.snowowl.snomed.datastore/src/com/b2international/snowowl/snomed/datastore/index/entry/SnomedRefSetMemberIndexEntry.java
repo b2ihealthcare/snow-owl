@@ -17,12 +17,16 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchAnyDecimal;
+import static com.b2international.index.query.Expressions.matchAnyInt;
+import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,7 +47,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
@@ -58,6 +61,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMemb
 import com.b2international.snowowl.snomed.snomedrefset.util.SnomedRefSetSwitch;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
@@ -98,12 +102,17 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static final String CHARACTERISTIC_TYPE_ID = SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID;
 		public static final String SOURCE_EFFECTIVE_TIME = SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME;
 		public static final String TARGET_EFFECTIVE_TIME = SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME;
-		public static final String DATA_VALUE = SnomedRf2Headers.FIELD_VALUE;
+		private static final String DATA_VALUE = SnomedRf2Headers.FIELD_VALUE;
 		public static final String ATTRIBUTE_NAME = SnomedRf2Headers.FIELD_ATTRIBUTE_NAME;
 		// extra index fields to store datatype and map target type
 		public static final String DATA_TYPE = "dataType";
 		public static final String REFSET_TYPE = "referenceSetType";
 		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
+		// CD value fields per type
+		public static final String BOOLEAN_VALUE = "booleanValue";
+		public static final String STRING_VALUE = "stringValue";
+		public static final String INTEGER_VALUE = "integerValue";
+		public static final String DECIMAL_VALUE = "decimalValue";
 	}
 	
 		public static Builder builder() {
@@ -316,6 +325,45 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return matchAny(Fields.VALUE_ID, valueIds);
 		}
 		
+		public static Expression values(DataType type, Collection<? extends Object> values) {
+			switch (type) {
+			case STRING: 
+				return matchAny(Fields.STRING_VALUE, FluentIterable.from(values).filter(String.class).toSet());
+			case INTEGER:
+				return matchAnyInt(Fields.INTEGER_VALUE, FluentIterable.from(values).filter(Integer.class).toSet());
+			case DECIMAL:
+				return matchAnyDecimal(Fields.DECIMAL_VALUE, FluentIterable.from(values).filter(BigDecimal.class).toSet());
+			default:
+				throw new UnsupportedOperationException("Unsupported data type when filtering by values, " + type);
+			}
+		}
+		
+		public static Expression valueRange(DataType type, final Object lower, final Object upper, boolean includeLower, boolean includeUpper) {
+			switch (type) {
+			case STRING: 
+				return matchRange(Fields.STRING_VALUE, (String) lower, (String) upper, includeLower, includeUpper);
+			case INTEGER:
+				return matchRange(Fields.INTEGER_VALUE, (Integer) lower, (Integer) upper, includeLower, includeUpper);
+			case DECIMAL:
+				return matchRange(Fields.DECIMAL_VALUE, (BigDecimal) lower, (BigDecimal) upper, includeLower, includeUpper);
+			default:
+				throw new UnsupportedOperationException("Unsupported data type when filtering by values, " + type);
+			}
+		}
+		
+		public static Expression dataTypes(Collection<DataType> dataTypes) {
+			return matchAny(Fields.DATA_TYPE, FluentIterable.from(dataTypes).transform(new Function<DataType, String>() {
+				@Override
+				public String apply(DataType input) {
+					return input.name();
+				}
+			}).toSet());
+		}
+		
+		public static Expression attributeNames(Collection<String> attributeNames) {
+			return matchAny(Fields.ATTRIBUTE_NAME, attributeNames);
+		}
+		
 		public static Expression sourceEffectiveTime(long effectiveTime) {
 			return exactMatch(Fields.SOURCE_EFFECTIVE_TIME, effectiveTime);
 		}
@@ -352,7 +400,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		// CONCRETE DOMAIN reference set members
 		private DataType dataType;
 		private String attributeName;
-		private String value;
+		private Object value;
 		private String operatorId;
 		private String characteristicTypeId;
 		private String unitId;
@@ -382,21 +430,21 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			// Disallow instantiation outside static method
 		}
 
-		Builder fields(Map<String, Object> fields) {
+		public Builder fields(Map<String, Object> fields) {
 			for (Entry<String, Object> entry : fields.entrySet()) {
 				field(entry.getKey(), entry.getValue());
 			}
 			return this;
 		}
 		
-		Builder field(String fieldName, Object value) {
+		public Builder field(String fieldName, Object value) {
 			switch (fieldName) {
 			case Fields.ACCEPTABILITY_ID: this.acceptabilityId = (String) value; break;
 			case Fields.ATTRIBUTE_NAME: this.attributeName = (String) value; break;
 			case Fields.CHARACTERISTIC_TYPE_ID: this.characteristicTypeId = (String) value; break;
 			case Fields.CORRELATION_ID: this.correlationId = (String) value; break;
 			case Fields.DATA_TYPE: this.dataType = (DataType) value; break;
-			case Fields.DATA_VALUE: this.value = (String) value; break;
+			case Fields.DATA_VALUE: this.value = value; break;
 			case Fields.DESCRIPTION_FORMAT: this.descriptionFormat = (String) value; break;
 			case Fields.DESCRIPTION_LENGTH: this.descriptionLength = (Integer) value; break;
 			case Fields.MAP_ADVICE: this.mapAdvice = (String) value; break;
@@ -543,7 +591,30 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return getSelf();
 		}
 		
-		Builder value(final String value) {
+		/**
+		 * @deprecated - this is no longer a valid refset member index field, but required to make pre-5.4 dataset work with 5.4 without migration
+		 */
+		Builder value(final Object value) {
+			this.value = value;
+			return getSelf();
+		}
+		
+		Builder decimalValue(final BigDecimal value) {
+			this.value = value;
+			return getSelf();
+		}
+		
+		Builder booleanValue(final Boolean value) {
+			this.value = value;
+			return getSelf();
+		}
+		
+		Builder integerValue(final Integer value) {
+			this.value = value;
+			return getSelf();
+		}
+		
+		Builder stringValue(final String value) {
 			this.value = value;
 			return getSelf();
 		}
@@ -571,7 +642,23 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			// concrete domain members
 			doc.dataType = dataType;
 			doc.attributeName = attributeName;
-			doc.value = value;
+			if (dataType != null) {
+				switch (dataType) {
+				case BOOLEAN:
+					doc.booleanValue = (Boolean) value;
+					break;
+				case DECIMAL:
+					doc.decimalValue = (BigDecimal) value;
+					break;
+				case INTEGER:
+					doc.integerValue = (Integer) value;
+					break;
+				case STRING:
+					doc.stringValue = (String) value;
+					break;
+				default: throw new UnsupportedOperationException("Unsupported concrete domain data type: " + dataType);
+				}
+			}
 			doc.characteristicTypeId = characteristicTypeId;
 			doc.operatorId = operatorId;
 			doc.unitId = unitId;
@@ -620,7 +707,13 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	// CONCRETE DOMAIN reference set members
 	private DataType dataType;
 	private String attributeName;
-	private String value;
+	
+	// only one of these value fields should be set when this represents a concrete domain member
+	private String stringValue;
+	private Boolean booleanValue;
+	private Integer integerValue;
+	private BigDecimal decimalValue;
+	
 	private String operatorId;
 	private String characteristicTypeId;
 	private String unitId;
@@ -707,12 +800,42 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	@JsonIgnore
 	@SuppressWarnings("unchecked")
 	public <T> T getValueAs() {
-		final DataType dataType = getDataType();
-		return (T) (dataType == null ? null : SnomedRefSetUtil.deserializeValue(dataType, getValue()));
+		return (T) getValue();
 	}
 	
-	public String getValue() {
-		return value;
+	@JsonIgnore
+	public Object getValue() {
+		if (dataType == null) {
+			return null;
+		} else {
+			switch (dataType) {
+			case BOOLEAN: return booleanValue;
+			case DECIMAL: return decimalValue;
+			case INTEGER: return integerValue;
+			case STRING: return stringValue;
+			default: throw new UnsupportedOperationException("Unsupported concrete domain data type: " + dataType);
+			}
+		}
+	}
+	
+	@JsonProperty
+	BigDecimal getDecimalValue() {
+		return decimalValue;
+	}
+	
+	@JsonProperty
+	Boolean getBooleanValue() {
+		return booleanValue;
+	}
+	
+	@JsonProperty
+	Integer getIntegerValue() {
+		return integerValue;
+	}
+	
+	@JsonProperty
+	String getStringValue() {
+		return stringValue;
 	}
 
 	public DataType getDataType() {
@@ -896,7 +1019,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.add("valueId", valueId)
 				.add("dataType", dataType)
 				.add("attributeName", attributeName)
-				.add("value", value)
+				.add("value", getValue())
 				.add("operatorId", operatorId)
 				.add("characteristicTypeId", characteristicTypeId)
 				.add("unitId", unitId)

@@ -125,12 +125,12 @@ public class ExpandableSnomedRelationship implements ISnomedRelationship {
 	}
 
 	@Override
-	public int getGroup() {
+	public Integer getGroup() {
 		return wrappedRelationship.getGroup();
 	}
 
 	@Override
-	public int getUnionGroup() {
+	public Integer getUnionGroup() {
 		return wrappedRelationship.getUnionGroup();
 	}
 

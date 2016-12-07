@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.id.action;
 import java.util.Collection;
 
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.5
@@ -48,7 +49,7 @@ public class BulkDeprecateAction extends IdAction<Collection<String>> {
 
 	@Override
 	public Collection<String> get() {
-		return componentIds;
+		return ImmutableList.<String>copyOf(componentIds);
 	}
 
 }

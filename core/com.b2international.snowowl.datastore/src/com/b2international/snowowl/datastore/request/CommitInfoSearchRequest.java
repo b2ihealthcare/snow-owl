@@ -22,6 +22,7 @@ import static com.b2international.snowowl.datastore.commitinfo.CommitInfoDocumen
 import static com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument.Expressions.userId;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import com.b2international.index.Hits;
@@ -80,7 +81,11 @@ final class CommitInfoSearchRequest extends SearchRequest<CommitInfos> {
 		}
 	}
 	
-
+	@Override
+	protected CommitInfos createEmptyResult(int offset, int limit) {
+		throw new UnsupportedOperationException("Missing repositoryId parameter at this point");
+	}
+	
 	private void addBranchClause(final ExpressionBuilder builder) {
 		if (containsKey(OptionKey.BRANCH)) {
 			final String branch = getString(OptionKey.BRANCH);

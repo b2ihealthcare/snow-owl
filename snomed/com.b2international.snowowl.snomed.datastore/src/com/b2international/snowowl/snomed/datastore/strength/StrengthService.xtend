@@ -150,7 +150,7 @@ class StrengthService implements IStrengthService {
 		Long.valueOf(element)
 	}
 	
-	def private StrengthEntryDelimiter getDelimiterFor(String value) {
+	def private StrengthEntryDelimiter getDelimiterFor(Object value) {
 		return StrengthEntryDelimiter.values.findFirst[value == it.literal]
 	}
 	

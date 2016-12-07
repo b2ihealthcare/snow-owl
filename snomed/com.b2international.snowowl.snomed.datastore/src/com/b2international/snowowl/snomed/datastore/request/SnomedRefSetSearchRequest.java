@@ -81,7 +81,11 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 		} else {
 			return SnomedConverters.newRefSetConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), hits.getTotal());
 		}
-
+	}
+	
+	@Override
+	protected SnomedReferenceSets createEmptyResult(int offset, int limit) {
+		return new SnomedReferenceSets(offset, limit, 0);
 	}
 	
 	@Override

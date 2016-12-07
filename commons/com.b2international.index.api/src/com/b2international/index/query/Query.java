@@ -15,7 +15,11 @@
  */
 package com.b2international.index.query;
 
+import java.util.Set;
+
 import com.b2international.index.mapping.DocumentMapping;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Represents a generic query on any kind of storage and model.
@@ -52,6 +56,7 @@ public final class Query<T> {
 	private SortBy sortBy = SortBy.NONE;
 	private Class<?> parentType;
 	private boolean withScores;
+	private Set<String> fields;
 
 	Query() {}
 
@@ -119,10 +124,18 @@ public final class Query<T> {
 		this.withScores = withScores;
 	}
 	
+	public Set<String> getFields() {
+		return fields;
+	}
+	
+	void setFields(Set<String> fields) {
+		this.fields = fields;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT " + select);
+		sb.append("SELECT " + getSelectString());
 		sb.append(" FROM " + DocumentMapping.getType(from));
 		sb.append(" WHERE " + where);
 		if (SortBy.NONE != sortBy) {
@@ -138,12 +151,28 @@ public final class Query<T> {
 		return sb.toString();
 	}
 
+	private String getSelectString() {
+		return fields != null && !fields.isEmpty() ? Joiner.on(",").join(fields) : select == from ? "*" : select.toString();
+	}
+
 	public static <T> QueryBuilder<T> select(Class<T> select) {
 		return selectPartial(select, select);
 	}
 	
 	public static <T> QueryBuilder<T> selectPartial(Class<T> select, Class<?> from) {
 		return new DefaultQueryBuilder<T>(select, from, null);
+	}
+	
+	public static <T> QueryBuilder<T> selectPartial(Class<T> select, Class<?> from, Set<String> fields) {
+		return new DefaultQueryBuilder<T>(select, from, null).fields(fields);
+	}
+	
+	public static <T> QueryBuilder<T> selectPartial(Class<T> select, Set<String> fields) {
+		return new DefaultQueryBuilder<T>(select, select, null).fields(fields);
+	}
+	
+	public static <T> QueryBuilder<T> selectPartial(Class<T> select, String...fields) {
+		return selectPartial(select, ImmutableSet.copyOf(fields));
 	}
 	
 	public static <T> QueryBuilder<T> select(Class<T> select, Class<?> scope) {

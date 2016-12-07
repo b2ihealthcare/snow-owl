@@ -85,7 +85,7 @@ public abstract class SnomedComponentApiAssert {
 				.build();
 	}
 	
-	private static Builder<String, Object> createRelationshipRequestBuilder(final String sourceId, 
+	public static Builder<String, Object> createRelationshipRequestBuilder(final String sourceId, 
 			final String typeId, 
 			final String destinationId, 
 			final String moduleId, 

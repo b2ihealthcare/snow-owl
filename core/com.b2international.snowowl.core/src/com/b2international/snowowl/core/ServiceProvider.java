@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core;
 
+import com.b2international.snowowl.core.events.Request;
 import com.google.inject.Provider;
 
 /**
@@ -38,5 +39,23 @@ public interface ServiceProvider {
 	 * @return
 	 */
 	<T> Provider<T> provider(Class<T> type);
+
+	/**
+	 * Empty {@link ServiceProvider} implementation that throws {@link UnsupportedOperationException}s when trying to provide services. Useful when
+	 * testing {@link Request} implementations.
+	 * 
+	 * @since 5.4
+	 */
+	ServiceProvider EMPTY = new ServiceProvider() {
+		@Override
+		public <T> T service(Class<T> type) {
+			throw new UnsupportedOperationException("Empty service provider can't provide services");
+		}
+
+		@Override
+		public <T> Provider<T> provider(Class<T> type) {
+			throw new UnsupportedOperationException("Empty service provider can't provide services");
+		}
+	};
 
 }
