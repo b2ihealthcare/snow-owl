@@ -384,7 +384,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 			final long commitTimestamp = commitInfo.getTimeStamp();
 			((CDOBranchManagerImpl) service(BranchManager.class)).handleCommit(branch.getID(), commitTimestamp);
 			// send out the currently enqueued commit notification, if there is any (import might skip sending commit notifications until a certain point)
-			final RepositoryCommitNotification notification = commitNotifications.get(commitTimestamp);
+			final RepositoryCommitNotification notification = commitNotifications.remove(commitTimestamp);
 			if (notification != null) {
 				notification.publish(events());
 			}
