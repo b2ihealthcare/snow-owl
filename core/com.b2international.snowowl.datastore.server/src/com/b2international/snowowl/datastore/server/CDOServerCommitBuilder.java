@@ -52,7 +52,6 @@ import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.internal.common.commit.FailureCommitInfo;
 import org.eclipse.emf.cdo.internal.server.Repository;
-import org.eclipse.emf.internal.cdo.view.InternalCDOTransactionWrapper;
 import org.eclipse.emf.cdo.server.IStoreAccessor;
 import org.eclipse.emf.cdo.server.IView;
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
@@ -75,6 +74,7 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.cdo.view.CDOViewTargetChangedEvent;
 import org.eclipse.emf.internal.cdo.object.CDOObjectReferenceImpl;
 import org.eclipse.emf.internal.cdo.view.CDOStateMachine;
+import org.eclipse.emf.internal.cdo.view.InternalCDOTransactionWrapper;
 import org.eclipse.emf.spi.cdo.CDOSessionProtocol.CommitTransactionResult;
 import org.eclipse.emf.spi.cdo.InternalCDOObject;
 import org.eclipse.emf.spi.cdo.InternalCDOSession;
@@ -158,7 +158,7 @@ public class CDOServerCommitBuilder {
 	 * <p>
 	 * This class is non-static to allow direct access to fields in the containing builder class.
 	 */
-	private class ServerTransactionCommitContext extends CustomTransactionCommitContext {
+	/*package*/ class ServerTransactionCommitContext extends CustomTransactionCommitContext {
 
 		private ServerTransactionCommitContext(final InternalTransaction transaction, final IErrorLoggingStrategy strategy) {
 			super(transaction, strategy);
@@ -172,6 +172,10 @@ public class CDOServerCommitBuilder {
 		@Override 
 		protected String getParentContextDescription() { 
 			return parentContextDescription; 
+		}
+
+		public final boolean isCommitNotificationEnabled() {
+			return sendCommitNotification;
 		}
 	}
 
@@ -195,7 +199,7 @@ public class CDOServerCommitBuilder {
 		public InternalRepository getRepository() {
 			return new ServerTransactionRepository(repository, transaction, notifyWriteAccessHandlers);
 		}
-
+		
 		@Override 
 		public ServerTransactionCommitContext createCommitContext() {
 			return new ServerTransactionCommitContext(this, FilteringErrorLoggingStrategy.INSTANCE);

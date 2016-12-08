@@ -79,11 +79,14 @@ public class DelegateCDOServerChangeManager {
 	private final ICDOCommitChangeSet commitChangeSet;
 	private final IBranchPath branchPath;
 	private final String repositoryUuid;
+	private final boolean isCommitNotificationEnabled;
 	
 	private @Nullable IOperationLockTarget lockTarget;
 	private @Nullable Collection<ICDOChangeProcessor> changeProcessors;
+
 	
-	public DelegateCDOServerChangeManager(final ICDOCommitChangeSet commitChangeSet, final Collection<CDOChangeProcessorFactory> factories, final boolean copySession) {
+	public DelegateCDOServerChangeManager(final ICDOCommitChangeSet commitChangeSet, final Collection<CDOChangeProcessorFactory> factories, final boolean copySession, boolean isCommitNotificationEnabled) {
+		this.isCommitNotificationEnabled = isCommitNotificationEnabled;
 		this.commitChangeSet = Preconditions.checkNotNull(commitChangeSet, "Commit change set data argument cannot be null.");
 		final CDOView view = commitChangeSet.getView();
 		this.repositoryUuid = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).get(view).getUuid();
@@ -232,10 +235,12 @@ public class DelegateCDOServerChangeManager {
 			
 			ForkJoinUtils.runJobsInParallelWithErrorHandling(commitJobs, null);
 			// queue commit notification
-			final IndexCommitChangeSet mergedChangeSet = merge(indexCommitChangeSets);
-			getContext().getService(RepositoryManager.class)
-				.get(repositoryUuid)
-				.sendNotification(toCommitNotification(mergedChangeSet));
+			if (isCommitNotificationEnabled) {
+				final IndexCommitChangeSet mergedChangeSet = merge(indexCommitChangeSets);
+				getContext().getService(RepositoryManager.class)
+					.get(repositoryUuid)
+					.sendNotification(toCommitNotification(mergedChangeSet));
+			}
 		} catch (final Exception e) {
 			caughtException = new SnowowlRuntimeException("Error when committing change processors on branch: " + branchPath, e);
 		} finally {

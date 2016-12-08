@@ -264,9 +264,19 @@ public class CDOServerChangeManager extends ObjectWriteAccessHandler {
 	
 	/*creates a change manager instance from the underlying transaction commit context*/
 	private DelegateCDOServerChangeManager createChangeManager(final TransactionCommitContext commitContext) {
-		return new DelegateCDOServerChangeManager(getCommitChangeSet(commitContext), factories, true);
+		final boolean isCommitNotificationEnabled = isCommitNotificationEnabled(commitContext);
+		return new DelegateCDOServerChangeManager(getCommitChangeSet(commitContext), factories, true, isCommitNotificationEnabled);
 	}
 	
+	private boolean isCommitNotificationEnabled(TransactionCommitContext commitContext) {
+		if (commitContext instanceof CDOServerCommitBuilder.ServerTransactionCommitContext) {
+			return ((CDOServerCommitBuilder.ServerTransactionCommitContext) commitContext).isCommitNotificationEnabled();
+		} else {
+			// by default all non server commits should send out commit notifications
+			return true;
+		}
+	}
+
 	/*returns with the branch path extracted from the underlying transaction commit context.*/
 	private IBranchPath getBranchPath(final TransactionCommitContext commitContext) {
 		return createPath(checkNotNull(checkNotNull(checkNotNull(commitContext, "commitContext").getTransaction(), "transaction").getBranch()));
