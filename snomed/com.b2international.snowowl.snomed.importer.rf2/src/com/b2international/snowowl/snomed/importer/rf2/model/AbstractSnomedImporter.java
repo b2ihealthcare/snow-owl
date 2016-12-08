@@ -46,6 +46,7 @@ import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.spi.cdo.InternalCDOTransaction;
+import org.slf4j.LoggerFactory;
 import org.supercsv.cellprocessor.Optional;
 import org.supercsv.cellprocessor.ParseDate;
 import org.supercsv.cellprocessor.ift.CellProcessor;
@@ -114,7 +115,7 @@ import com.google.common.io.Closeables;
  */
 public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C extends CDOObject> extends AbstractLoggingImporter {
 
-	private static final org.slf4j.Logger IMPORT_LOGGER = org.slf4j.LoggerFactory.getLogger(AbstractSnomedImporter.class);
+	private static final org.slf4j.Logger IMPORT_LOGGER = LoggerFactory.getLogger("snomed.importer.rf2");
 	
 	/**
 	 * Remaining work for {@link SubMonitor}s is repeatedly set to this value

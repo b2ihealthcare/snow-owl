@@ -27,9 +27,7 @@ import static com.b2international.snowowl.snomed.importer.release.ReleaseFileSet
 import static com.b2international.snowowl.snomed.importer.rf2.util.RF2ReleaseRefSetFileCollector.collectUrlFromRelease;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Maps.newHashMap;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +40,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -51,6 +48,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
@@ -114,7 +112,6 @@ import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedDescrip
 import com.b2international.snowowl.snomed.importer.rf2.terminology.SnomedRelationshipImporter;
 import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedValidationContext;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -135,7 +132,7 @@ import com.google.common.primitives.Longs;
  */
 public final class ImportUtil {
 
-	private static final org.slf4j.Logger IMPORT_LOGGER = org.slf4j.LoggerFactory.getLogger(ImportUtil.class);
+	private static final org.slf4j.Logger IMPORT_LOGGER = LoggerFactory.getLogger("snomed.importer.rf2");
 	private static final String SNOMED_IMPORT_POST_PROCESSOR_EXTENSION = "com.b2international.snowowl.snomed.datastore.snomedImportPostProcessor";
 
 	public SnomedImportResult doImport(final String requestingUserId, final ImportConfiguration configuration, final IProgressMonitor monitor) throws ImportException {
