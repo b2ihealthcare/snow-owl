@@ -24,9 +24,9 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.LanguageConfiguration;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.base.Preconditions;
 
 /**
@@ -71,11 +71,11 @@ public class SnomedRfFileNameBuilder {
 		return releaseDate;
 	}
 
-	public static String buildRefSetFileName(final SnomedExportContext configuration, final String refSetName, final SnomedRefSet refSet) {
+	public static String buildRefSetFileName(final SnomedExportContext configuration, final String refSetName, final SnomedReferenceSet refSet) {
 		return buildRefSetFileName(configuration, refSetName, refSet, false);
 	}
 
-	public static String buildRefSetFileName(final SnomedExportContext configuration, final String refSetName, final SnomedRefSet refSet, final boolean includeMapTargetDescription) {
+	public static String buildRefSetFileName(final SnomedExportContext configuration, final String refSetName, final SnomedReferenceSet refSet, final boolean includeMapTargetDescription) {
 		return new StringBuilder("der2_")
 				.append(getPrefix(refSet, includeMapTargetDescription))
 				.append("Refset_")
@@ -120,17 +120,17 @@ public class SnomedRfFileNameBuilder {
 	}
 
 	/*returns with the language code for the reference set*/
-	private static String getLanguageCode(final SnomedRefSet refSet) {
-		return com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping.getLanguageCode(refSet.getIdentifierId()); 
+	private static String getLanguageCode(final SnomedReferenceSet refSet) {
+		return com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping.getLanguageCode(refSet.getId()); 
 	}
 
 	/*returns true if the reference set is a language type*/
-	private static boolean isLanguageType(final SnomedRefSet refSet) {
+	private static boolean isLanguageType(final SnomedReferenceSet refSet) {
 		return LANGUAGE.equals(refSet.getType()); 
 	}
 
 	/*returns with the RF2 file name prefix for the reference set*/
-	private static String getPrefix(final SnomedRefSet refSet, final boolean includeMapTargetDescription) {
+	private static String getPrefix(final SnomedReferenceSet refSet, final boolean includeMapTargetDescription) {
 		switch (Preconditions.checkNotNull(refSet, "SNOMED CT reference set argument cannot be null.").getType()) {
 		case CONCRETE_DATA_TYPE: return "ccss";
 		case QUERY: return "s";
@@ -147,7 +147,7 @@ public class SnomedRfFileNameBuilder {
 		throw new IllegalArgumentException ("Unknown reference set type. Type: " + refSet.getType());
 	}
 	
-	private static String getSimpleMapPrefix(final SnomedRefSet refSet, final boolean includeMapTargetDescription) {
+	private static String getSimpleMapPrefix(final SnomedReferenceSet refSet, final boolean includeMapTargetDescription) {
 		return includeMapTargetDescription ? "ss" : "s";
 	}
 

@@ -23,7 +23,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 
 /**
  * SNOMED CT simple map type reference set exporter (optionally with map target description).
@@ -39,8 +38,8 @@ public class SnomedSimpleMapRefSetExporter extends SnomedRefSetExporter {
 	}
 	
 	@Override
-	protected String buildRefSetFileName(final String refSetName, final SnomedRefSet refSet) {
-		return SnomedRfFileNameBuilder.buildRefSetFileName(getExportContext(), refSetName, refSet, includeMapTargetDescription);
+	public String getFileName() {
+		return SnomedRfFileNameBuilder.buildRefSetFileName(getExportContext(), getRefsetName(), getRefset(), includeMapTargetDescription);
 	}
 
 	@Override

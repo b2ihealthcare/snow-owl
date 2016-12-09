@@ -15,29 +15,25 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.rf2;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.google.common.base.Preconditions.checkNotNull;
-
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 
 /**
  * Base for all SNOMED&nbsp;CT reference set RF2 exporters.
@@ -45,19 +41,16 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
  */
 public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRefSetMemberIndexEntry> {
 
-	private final String refSetId;
-
-	private SnomedRefSetType type;
+	private SnomedReferenceSet refset;
 
 	public SnomedRefSetExporter(final SnomedExportContext exportContext, final SnomedReferenceSet refset, final RevisionSearcher revisionSearcher) {
 		super(exportContext, SnomedRefSetMemberIndexEntry.class, revisionSearcher);
-		this.refSetId = checkNotNull(refset.getId(), "refSetId");
-		this.type = checkNotNull(refset.getType(), "type");
+		this.refset = checkNotNull(refset, "refset");
 	}
 	
 	@Override
 	protected void appendExpressionConstraint(ExpressionBuilder builder) {
-		builder.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(getRefSetId()));
+		builder.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(refset.getId()));
 	}
 
 	@Override
@@ -89,7 +82,7 @@ public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRe
 	
 	@Override
 	public String getRelativeDirectory() {
-		switch (type) {
+		switch (refset.getType()) {
 			case SIMPLE: //$FALL-THROUGH$
 			case ASSOCIATION: //$FALL-THROUGH$
 			case CONCRETE_DATA_TYPE: //$FALL-THROUGH$
@@ -105,32 +98,32 @@ public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRe
 				return RF2_METADATA_REFERENCE_SET_RELATIVE_DIR;
 			case LANGUAGE: 
 				return RF2_LANGUAGE_REFERENCE_SET_RELATIVE_DIR;
-			default: throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + type);
+			default: throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + refset.getType());
 		}
 	}
 	
 	@Override
 	public String getFileName() {
-		// FIXME
-		final ICDOConnection connection = getServiceForClass(ICDOConnectionManager.class).getByUuid(SnomedDatastoreActivator.REPOSITORY_UUID);
-		final IBranchPath branchPath = getExportContext().getCurrentBranchPath();
-		final String refSetName = getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, refSetId);
-		return CDOUtils.apply(new CDOTransactionFunction<String>(connection, branchPath) {
-			@Override
-			protected String apply(final CDOTransaction transaction) {
-				final SnomedRefSet refSet = new SnomedRefSetLookupService().getComponent(getRefSetId(), transaction);
-				return buildRefSetFileName(refSetName, refSet);
-			}
-		});
-	}
-	
-	protected String buildRefSetFileName(final String refSetName, final SnomedRefSet refSet) {
-		return SnomedRfFileNameBuilder.buildRefSetFileName(getExportContext(), refSetName, refSet);
+		return SnomedRfFileNameBuilder.buildRefSetFileName(getExportContext(), getRefsetName(), refset);
 	}
 
-	/**Returns with the reference set identifier concept ID.*/
-	protected String getRefSetId() {
-		return refSetId;
+	protected String getRefsetName() {
+		
+		ISnomedDescription pt = Iterables.getOnlyElement(SnomedRequests.prepareSearchDescription()
+			.one()
+			.filterByActive(true)
+			.filterByConceptId(refset.getId())
+			.filterByType("<<" + Concepts.SYNONYM)
+			.filterByAcceptability(Acceptability.PREFERRED)
+			.filterByExtendedLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
+			.build(getExportContext().getCurrentBranchPath().getPath())
+			.executeSync(ApplicationContext.getServiceForClass(IEventBus.class)), null);
+		
+		return pt != null ? !Strings.isNullOrEmpty(pt.getTerm()) ? pt.getTerm() : refset.getId() : refset.getId();
+	}
+	
+	protected SnomedReferenceSet getRefset() {
+		return refset;
 	}
 
 }
