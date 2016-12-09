@@ -22,7 +22,6 @@ import static com.b2international.index.query.Expressions.matchTextAllPrefix;
 import static com.b2international.index.query.Expressions.matchTextFuzzy;
 import static com.b2international.index.query.Expressions.matchTextParsed;
 import static com.b2international.index.query.Expressions.matchTextPhrase;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
@@ -397,12 +396,12 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 				referringRefSets,
 				referringMappingRefSets);
 		
-		this.conceptId = checkNotNull(conceptId, "Description concept identifier may not be null.");
-		this.languageCode = checkNotNull(languageCode, "Description language code may not be null.");
-		this.term = checkNotNull(term, "Description term may not be null.");
-		this.typeId = checkNotNull(typeId, "Description type identifier may not be null.");
+		this.conceptId = conceptId;
+		this.languageCode = languageCode;
+		this.term = term;
+		this.typeId = typeId;
 		this.typeLabel = typeLabel;
-		this.caseSignificanceId = checkNotNull(caseSignificanceId, "Description case significance identifier may not be null.");
+		this.caseSignificanceId = caseSignificanceId;
 		this.preferredIn = preferredIn == null ? Collections.<String>emptySet() : preferredIn;
 		this.acceptableIn = acceptableIn == null ? Collections.<String>emptySet() : acceptableIn;
 	}

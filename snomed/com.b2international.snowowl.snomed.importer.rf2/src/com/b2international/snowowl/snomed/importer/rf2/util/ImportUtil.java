@@ -92,6 +92,7 @@ import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
@@ -255,7 +256,7 @@ public final class ImportUtil {
 	}
 	
 	private LongCollection getConceptIds(RevisionSearcher searcher) throws IOException {
-		final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
+		final Query<SnomedConceptDocument> query = Query.selectPartial(SnomedConceptDocument.class, SnomedDocument.Fields.ID)
 				.where(Expressions.matchAll())
 				.limit(Integer.MAX_VALUE)
 				.build();
