@@ -59,6 +59,21 @@ public class SnomedRfFileNameBuilder {
 				.append(".txt")
 				.toString();
 	}
+	
+	public static String buildRf2DescriptionFileName(final ComponentExportType type, final SnomedExportContext exportContext, final String languageCode) {
+		return new StringBuilder("sct2_")
+				.append(String.valueOf(type))
+				.append("_")
+				.append(String.valueOf(exportContext.getContentSubType()))
+				.append("-")
+				.append(languageCode)
+				.append("_")
+				.append(exportContext.getNamespaceId())
+				.append("_")
+				.append(getReleaseDate(exportContext))
+				.append(".txt")
+				.toString();
+	}
 
 	/*
 	 * return the transient effective time if set, otherwise today's date

@@ -22,6 +22,7 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
+import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 
 /**
  * RF2 export implementation for SNOMED&nbsp;CT description.
@@ -29,10 +30,11 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
  */
 public class SnomedRf2DescriptionExporter extends AbstractSnomedRf2CoreExporter<SnomedDescriptionIndexEntry> {
 
-	
-	public SnomedRf2DescriptionExporter(final SnomedExportContext exportContext, final RevisionSearcher revisionSearcher) {
+	private String languageCode;
+
+	public SnomedRf2DescriptionExporter(final SnomedExportContext exportContext, final RevisionSearcher revisionSearcher, final String languageCode) {
 		super(exportContext, SnomedDescriptionIndexEntry.class, revisionSearcher);
-		
+		this.languageCode = languageCode;
 	}
 	
 	@Override
@@ -69,8 +71,18 @@ public class SnomedRf2DescriptionExporter extends AbstractSnomedRf2CoreExporter<
 	}
 	
 	@Override
-	protected void appendExpressionConstraint(ExpressionBuilder builder) {
-		builder.mustNot(SnomedDescriptionIndexEntry.Expressions.type(Concepts.TEXT_DEFINITION));
+	public String getFileName() {
+		return SnomedRfFileNameBuilder.buildRf2DescriptionFileName(getType(), getExportContext(), getLanguageCode());
 	}
 	
+	@Override
+	protected void appendExpressionConstraint(ExpressionBuilder builder) {
+		builder
+			.mustNot(SnomedDescriptionIndexEntry.Expressions.type(Concepts.TEXT_DEFINITION))
+			.must(SnomedDescriptionIndexEntry.Expressions.languageCode(getLanguageCode()));
+	}
+	
+	protected String getLanguageCode() {
+		return languageCode;
+	}
 }

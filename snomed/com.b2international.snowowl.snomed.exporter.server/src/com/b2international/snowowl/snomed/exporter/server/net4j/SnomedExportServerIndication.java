@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.net4j;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,6 +29,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -38,6 +41,7 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.time.TimeUtil;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
@@ -59,6 +63,7 @@ import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult.Result;
@@ -495,17 +500,25 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			monitor.worked(2);
 		}
 		
-		logActivity(String.format("Exporting %sSNOMED CT descriptions into RF2 format", exportContext.isUnpublishedExport() ? "unpublished " : ""));
-		new SnomedRf2DescriptionExporter(exportContext, revisionSearcher).execute();
+		Set<String> languageCodesInUse = getLanguageCodesInUse(revisionSearcher);
+		
+		for (String languageCode : languageCodesInUse) {
+			logActivity(String.format("Exporting %sSNOMED CT descriptions with language code '%s' into RF2 format",
+					exportContext.isUnpublishedExport() ? "unpublished " : "", languageCode));
+			new SnomedRf2DescriptionExporter(exportContext, revisionSearcher, languageCode).execute();
+		}
 		
 		if (monitor.isCanceled()) {
 			return;
 		} else {
 			monitor.worked(2);
 		}
-		
-		logActivity(String.format("Exporting %sSNOMED CT text definitions into RF2 format", exportContext.isUnpublishedExport() ? "unpublished " : ""));
-		new SnomedTextDefinitionExporter(exportContext, revisionSearcher).execute();
+
+		for (String languageCode : languageCodesInUse) {
+			logActivity(String.format("Exporting %sSNOMED CT text definitions with language code '%s' into RF2 format",
+					exportContext.isUnpublishedExport() ? "unpublished " : "", languageCode));
+			new SnomedTextDefinitionExporter(exportContext, revisionSearcher, languageCode).execute();
+		}
 		
 		if (monitor.isCanceled()) {
 			return;
@@ -560,6 +573,26 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 				monitor.worked(2);
 			}
 		}
+	}
+
+	private Set<String> getLanguageCodesInUse(final RevisionSearcher revisionSearcher) throws IOException {
+		
+		Set<String> languageCodesInUse = newHashSet();
+		
+		for (String code : Locale.getISOLanguages()) {
+			int size = revisionSearcher.search(
+				Query.select(SnomedDescriptionIndexEntry.class)
+					.where(SnomedDescriptionIndexEntry.Expressions.languageCode(code))
+					.limit(1)
+					.build()
+			).getHits().size();
+			
+			if (size > 0) {
+				languageCodesInUse.add(code);
+			}
+		}
+		
+		return languageCodesInUse;
 	}
 
 	private void executeRefSetExport(final SnomedReferenceSet refset, final RevisionSearcher revisionSearcher, final OMMonitor monitor) throws IOException {

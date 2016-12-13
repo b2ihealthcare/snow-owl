@@ -27,8 +27,8 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
  */
 public class SnomedTextDefinitionExporter extends SnomedRf2DescriptionExporter {
 
-	public SnomedTextDefinitionExporter(SnomedExportContext exportContext, RevisionSearcher revisionSearcher) {
-		super(exportContext, revisionSearcher);
+	public SnomedTextDefinitionExporter(final SnomedExportContext exportContext, final RevisionSearcher revisionSearcher, final String languageCode) {
+		super(exportContext, revisionSearcher, languageCode);
 	}
 	
 	@Override
@@ -37,8 +37,10 @@ public class SnomedTextDefinitionExporter extends SnomedRf2DescriptionExporter {
 	}
 	
 	@Override
-	protected void appendExpressionConstraint(ExpressionBuilder builder) {
-		builder.must(SnomedDescriptionIndexEntry.Expressions.type(Concepts.TEXT_DEFINITION));
+	protected void appendExpressionConstraint(final ExpressionBuilder builder) {
+		builder
+			.must(SnomedDescriptionIndexEntry.Expressions.type(Concepts.TEXT_DEFINITION))
+			.must(SnomedDescriptionIndexEntry.Expressions.languageCode(getLanguageCode()));
 	}
 
 }
