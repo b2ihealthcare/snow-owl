@@ -26,6 +26,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAsse
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentExists;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertDescriptionExists;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.createRefSetMemberRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenRelationshipRequestBody;
@@ -35,6 +36,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.io.File;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +55,7 @@ import com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
@@ -61,6 +64,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.jayway.restassured.http.ContentType;
 
@@ -653,7 +657,6 @@ public class SnomedExportApiTest extends AbstractSnomedExportApiTest {
 			.when().get("/codesystems/SNOMEDCT/versions/{id}", newVersionName)
 			.then().assertThat().statusCode(200);
 		
-		
 		final Map<Object, Object> config = ImmutableMap.builder()
 				.put("type", "DELTA")
 				.put("branchPath", Branch.MAIN_PATH)
@@ -675,13 +678,186 @@ public class SnomedExportApiTest extends AbstractSnomedExportApiTest {
 				
 		fileToLinesMap.put("sct2_Description", Pair.of(false, ""));
 		fileToLinesMap.put("sct2_TextDefinition", Pair.of(false, ""));
-		fileToLinesMap.put("der2_cRefset_USEnglish", Pair.of(false, ""));
-		fileToLinesMap.put("der2_cRefset_GBEnglish", Pair.of(false, ""));
+		fileToLinesMap.put("der2_cRefset_Language", Pair.of(false, ""));
 		
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}
 	
-	private static void updateMemberEffectiveTime(final IBranchPath branchPath, final String memberId, final String effectiveTime, boolean force) {
+	@Test
+	public void exportDescriptionsTextDefinitionsAndLanguageRefsetMembersPerLanguageCode() throws Exception {
+		
+		// create new version
+		assertNewVersionCreated();
+		
+		// create new concept
+		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		String conceptId = assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, conceptRequestBody);
+
+		final String englishTextDefinitionTerm = "Text Definition with effective time";
+		String englishTextDefinitionId = createAcceptableDescription(conceptId, englishTextDefinitionTerm, "en", Concepts.TEXT_DEFINITION);
+		
+		final String danishTextDefinitionTerm = "Danish Text Definition with effective time";
+		String danishTextDefinitionId = createAcceptableDescription(conceptId, danishTextDefinitionTerm, "da", Concepts.TEXT_DEFINITION);
+		
+		final String englishDescriptionTerm = "Description with effective time";
+		String englishDescriptionId = createAcceptableDescription(conceptId, englishDescriptionTerm, "en", Concepts.SYNONYM);
+		
+		final String danishDescriptionTerm = "Danish Description with effective time";
+		String danishDescriptionId = createAcceptableDescription(conceptId, danishDescriptionTerm, "da", Concepts.SYNONYM);
+
+		// version new concept
+		Date conceptVersionDate = assertNewVersionCreated();
+		String conceptEffectiveDate = Dates.formatByGmt(conceptVersionDate, DateFormats.SHORT);
+
+		final String unpublishedEnglishTextDefinitionTerm = "Unpublished Text Definition";
+		String unpublishedEnglishTextDefinitionId = createAcceptableDescription(conceptId, unpublishedEnglishTextDefinitionTerm, "en", Concepts.TEXT_DEFINITION);
+		
+		final String unpublishedDanishTextDefinitionTerm = "Unpublished Danish Text Definition";
+		String unpublishedDanishTextDefinitionId = createAcceptableDescription(conceptId, unpublishedDanishTextDefinitionTerm, "da", Concepts.TEXT_DEFINITION);
+		
+		final String unpublishedEnglishDescriptionTerm = "Unpublished Description";
+		String unpublishedEnglishDescriptionId = createAcceptableDescription(conceptId, unpublishedEnglishDescriptionTerm, "en", Concepts.SYNONYM);
+		
+		final String unpublishedDanishDescriptionTerm = "Unpublished Danish Description";
+		String unpublishedDanishDescriptionId = createAcceptableDescription(conceptId, unpublishedDanishDescriptionTerm, "da", Concepts.SYNONYM);
+		
+		// do not create new version
+		
+		final Map<Object, Object> config = ImmutableMap.builder()
+				.put("type", "DELTA")
+				.put("branchPath", Branch.MAIN_PATH)
+				.put("startEffectiveTime", conceptEffectiveDate)
+				.put("endEffectiveTime", conceptEffectiveDate)
+				.put("includeUnpublished", true)
+				.build();
+			
+		final String exportId = assertExportConfigurationCanBeCreated(config);
+		
+		assertExportConfiguration(exportId)
+			.and().body("type", equalTo("DELTA"))
+			.and().body("branchPath", equalTo(Branch.MAIN_PATH))
+			.and().body("startEffectiveTime", equalTo(conceptEffectiveDate))
+			.and().body("endEffectiveTime", equalTo(conceptEffectiveDate))
+			.and().body("includeUnpublished", equalTo(true));
+		
+		final File exportArchive = assertExportFileCreated(exportId);
+		
+		String englishTextDefinitionLine = createDescriptionLine(englishTextDefinitionId, conceptEffectiveDate, conceptId, "en", Concepts.TEXT_DEFINITION, englishTextDefinitionTerm);
+		String danishTextDefinitionLine = createDescriptionLine(danishTextDefinitionId, conceptEffectiveDate, conceptId, "da", Concepts.TEXT_DEFINITION, danishTextDefinitionTerm);
+		String englishDescriptionLine = createDescriptionLine(englishDescriptionId, conceptEffectiveDate, conceptId, "en", Concepts.SYNONYM, englishDescriptionTerm);
+		String danishDescriptionLine = createDescriptionLine(danishDescriptionId, conceptEffectiveDate, conceptId, "da", Concepts.SYNONYM, danishDescriptionTerm);
+		
+		String unpublishedEnglishTextDefinitionLine = createDescriptionLine(unpublishedEnglishTextDefinitionId, "", conceptId, "en", Concepts.TEXT_DEFINITION, unpublishedEnglishTextDefinitionTerm);
+		String unpublishedDanishTextDefinitionLine = createDescriptionLine(unpublishedDanishTextDefinitionId, "", conceptId, "da", Concepts.TEXT_DEFINITION, unpublishedDanishTextDefinitionTerm);
+		String unpublishedEnglishDescriptionLine = createDescriptionLine(unpublishedEnglishDescriptionId, "", conceptId, "en", Concepts.SYNONYM, unpublishedEnglishDescriptionTerm);
+		String unpublishedDanishDescriptionLine = createDescriptionLine(unpublishedDanishDescriptionId, "", conceptId, "da", Concepts.SYNONYM, unpublishedDanishDescriptionTerm);
+
+		String englishTextDefinitionMemberLine = createAcceptableLanguageRefsetMemberLine(englishTextDefinitionId, conceptEffectiveDate);
+		String danishTextDefinitionMemberLine = createAcceptableLanguageRefsetMemberLine(danishTextDefinitionId, conceptEffectiveDate);
+		String englishDescriptionMemberLine = createAcceptableLanguageRefsetMemberLine(englishDescriptionId, conceptEffectiveDate);
+		String danishDescriptionMemberLine = createAcceptableLanguageRefsetMemberLine(danishDescriptionId, conceptEffectiveDate);
+		
+		String unpublishedEnglishTextDefinitionMemberLine = createAcceptableLanguageRefsetMemberLine(unpublishedEnglishTextDefinitionId, "");
+		String unpublishedDanishTextDefinitionMemberLine = createAcceptableLanguageRefsetMemberLine(unpublishedDanishTextDefinitionId, "");
+		String unpublishedEnglishDescriptionMemberLine = createAcceptableLanguageRefsetMemberLine(unpublishedEnglishDescriptionId, "");
+		String unpublishedDanishDescriptionMemberLine = createAcceptableLanguageRefsetMemberLine(unpublishedDanishDescriptionId, "");
+		
+		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
+				
+		fileToLinesMap.put("sct2_Description_Delta-en", Pair.of(false, englishTextDefinitionLine));
+		fileToLinesMap.put("sct2_Description_Delta-en", Pair.of(false, danishTextDefinitionLine));
+		fileToLinesMap.put("sct2_Description_Delta-en", Pair.of(true, englishDescriptionLine));
+		fileToLinesMap.put("sct2_Description_Delta-en", Pair.of(false, danishDescriptionLine));
+		
+		fileToLinesMap.put("sct2_Description_Delta-da", Pair.of(false, englishTextDefinitionLine));
+		fileToLinesMap.put("sct2_Description_Delta-da", Pair.of(false, danishTextDefinitionLine));
+		fileToLinesMap.put("sct2_Description_Delta-da", Pair.of(false, englishDescriptionLine));
+		fileToLinesMap.put("sct2_Description_Delta-da", Pair.of(true, danishDescriptionLine));
+		
+		fileToLinesMap.put("sct2_TextDefinition_Delta-en", Pair.of(true, englishTextDefinitionLine));
+		fileToLinesMap.put("sct2_TextDefinition_Delta-en", Pair.of(false, danishTextDefinitionLine));
+		fileToLinesMap.put("sct2_TextDefinition_Delta-en", Pair.of(false, englishDescriptionLine));
+		fileToLinesMap.put("sct2_TextDefinition_Delta-en", Pair.of(false, danishDescriptionLine));
+
+		fileToLinesMap.put("sct2_TextDefinition_Delta-da", Pair.of(false, englishTextDefinitionLine));
+		fileToLinesMap.put("sct2_TextDefinition_Delta-da", Pair.of(true, danishTextDefinitionLine));
+		fileToLinesMap.put("sct2_TextDefinition_Delta-da", Pair.of(false, englishDescriptionLine));
+		fileToLinesMap.put("sct2_TextDefinition_Delta-da", Pair.of(false, danishDescriptionLine));
+		
+		fileToLinesMap.put("sct2_Description_Delta-en", Pair.of(false, unpublishedEnglishTextDefinitionLine));
+		fileToLinesMap.put("sct2_Description_Delta-en", Pair.of(false, unpublishedDanishTextDefinitionLine));
+		fileToLinesMap.put("sct2_Description_Delta-en", Pair.of(true, unpublishedEnglishDescriptionLine));
+		fileToLinesMap.put("sct2_Description_Delta-en", Pair.of(false, unpublishedDanishDescriptionLine));
+		
+		fileToLinesMap.put("sct2_Description_Delta-da", Pair.of(false, unpublishedEnglishTextDefinitionLine));
+		fileToLinesMap.put("sct2_Description_Delta-da", Pair.of(false, unpublishedDanishTextDefinitionLine));
+		fileToLinesMap.put("sct2_Description_Delta-da", Pair.of(false, unpublishedEnglishDescriptionLine));
+		fileToLinesMap.put("sct2_Description_Delta-da", Pair.of(true, unpublishedDanishDescriptionLine));
+		
+		fileToLinesMap.put("sct2_TextDefinition_Delta-en", Pair.of(true, unpublishedEnglishTextDefinitionLine));
+		fileToLinesMap.put("sct2_TextDefinition_Delta-en", Pair.of(false, unpublishedDanishTextDefinitionLine));
+		fileToLinesMap.put("sct2_TextDefinition_Delta-en", Pair.of(false, unpublishedEnglishDescriptionLine));
+		fileToLinesMap.put("sct2_TextDefinition_Delta-en", Pair.of(false, unpublishedDanishDescriptionLine));
+
+		fileToLinesMap.put("sct2_TextDefinition_Delta-da", Pair.of(false, unpublishedEnglishTextDefinitionLine));
+		fileToLinesMap.put("sct2_TextDefinition_Delta-da", Pair.of(true, unpublishedDanishTextDefinitionLine));
+		fileToLinesMap.put("sct2_TextDefinition_Delta-da", Pair.of(false, unpublishedEnglishDescriptionLine));
+		fileToLinesMap.put("sct2_TextDefinition_Delta-da", Pair.of(false, unpublishedDanishDescriptionLine));
+		
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-en", Pair.of(true, englishTextDefinitionMemberLine));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-en", Pair.of(false, danishTextDefinitionMemberLine));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-en", Pair.of(true, englishDescriptionMemberLine));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-en", Pair.of(false, danishDescriptionMemberLine));
+		
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-da", Pair.of(false, englishTextDefinitionMemberLine));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-da", Pair.of(true, danishTextDefinitionMemberLine));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-da", Pair.of(false, englishDescriptionMemberLine));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-da", Pair.of(true, danishDescriptionMemberLine));
+		
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-en", Pair.of(true, unpublishedEnglishTextDefinitionMemberLine));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-en", Pair.of(false, unpublishedDanishTextDefinitionMemberLine));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-en", Pair.of(true, unpublishedEnglishDescriptionMemberLine));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-en", Pair.of(false, unpublishedDanishDescriptionMemberLine));
+		
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-da", Pair.of(false, unpublishedEnglishTextDefinitionMemberLine));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-da", Pair.of(true, unpublishedDanishTextDefinitionMemberLine));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-da", Pair.of(false, unpublishedEnglishDescriptionMemberLine));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-da", Pair.of(true, unpublishedDanishDescriptionMemberLine));
+		
+		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+	}
+	
+	private String getLanguageRefsetMemberId(String descriptionId) {
+		final Collection<Map<String, Object>> members = assertDescriptionExists(createMainPath(), descriptionId, "members()").extract().body().path("members.items");
+		return String.valueOf(Iterables.getOnlyElement(members).get("id"));
+	}
+	
+	private String createDescriptionLine(String id, String effectiveTime, String conceptId, String languageCode, String type, String term) {
+		return getComponentLine(ImmutableList.<String> of(id, effectiveTime, "1", MODULE_SCT_CORE, conceptId, languageCode,
+				type, term, CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId()));
+	}
+	
+	private String createAcceptableLanguageRefsetMemberLine(String descriptionId, String effectiveTime) {
+		return getComponentLine(ImmutableList.<String> of(getLanguageRefsetMemberId(descriptionId), effectiveTime, "1", MODULE_SCT_CORE, Concepts.REFSET_LANGUAGE_TYPE_UK, descriptionId,
+				Acceptability.ACCEPTABLE.getConceptId()));
+	}
+	
+	private String createAcceptableDescription(String conceptId, String term, String languageCode, String typeId) {
+		
+		final Map<?, ?> descriptionRequestBody = ImmutableMap.builder()
+			.put("conceptId", conceptId)
+			.put("moduleId", MODULE_SCT_CORE)
+			.put("typeId", typeId)
+			.put("term", term)
+			.put("languageCode", languageCode)
+			.put("acceptability", ACCEPTABLE_ACCEPTABILITY_MAP)
+			.put("commitComment", "new description")
+			.build();
+		
+		return assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, descriptionRequestBody);
+	}
+	
+	private void updateMemberEffectiveTime(final IBranchPath branchPath, final String memberId, final String effectiveTime, boolean force) {
 		final Map<?, ?> effectiveTimeUpdate = ImmutableMap.of("effectiveTime", effectiveTime, "commitComment", "Update member effective time: " + memberId);
 		// without force flag API responds with 204, but the content remains the same
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
