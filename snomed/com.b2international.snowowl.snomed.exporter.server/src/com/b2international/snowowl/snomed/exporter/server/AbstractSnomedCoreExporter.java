@@ -94,6 +94,8 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 				final Query<T> exportQuery = Query.select(clazz).where(getQueryExpression()).offset(currentOffset).limit(PAGE_SIZE).build();
 				hits = revisionSearcher.search(exportQuery);
 				
+				collectHits(hits);
+				
 				currentIndex = 0;
 				currentOffset += hits.getHits().size();
 				
@@ -106,6 +108,8 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 		return hits.getHits().size() > 0 && currentIndex < hits.getHits().size();
 	}
 	
+	protected void collectHits(Hits<T> hits) {}
+
 	@Override
 	public String next() {
 		return convertToString(hits.getHits().get(currentIndex++));

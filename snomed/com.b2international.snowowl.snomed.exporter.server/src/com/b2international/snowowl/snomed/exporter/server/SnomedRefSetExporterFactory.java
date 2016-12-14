@@ -33,7 +33,6 @@ import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedConcreteDoma
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedDescriptionTypeRefSetExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExtendedMapRefSetExporter;
-import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedLanguageRefSetExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedModuleDependencyRefSetExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedQueryRefSetExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedRefSetExporter;
@@ -57,8 +56,6 @@ public class SnomedRefSetExporterFactory {
 				return new SnomedComplexMapRefSetExporter(exportContext, refset, revisionSearcher);
 			case EXTENDED_MAP:
 				return new SnomedExtendedMapRefSetExporter(exportContext, refset, revisionSearcher);
-			case LANGUAGE:
-				return new SnomedLanguageRefSetExporter(exportContext, refset, revisionSearcher);
 			case QUERY:
 				return new SnomedQueryRefSetExporter(exportContext, refset, revisionSearcher);
 			case ATTRIBUTE_VALUE:

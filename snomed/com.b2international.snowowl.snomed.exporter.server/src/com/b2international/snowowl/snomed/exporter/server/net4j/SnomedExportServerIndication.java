@@ -80,6 +80,7 @@ import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedRf2ConceptEx
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedRf2DescriptionExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedStatedRelationshipExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedTextDefinitionExporter;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
@@ -503,7 +504,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		Set<String> languageCodesInUse = getLanguageCodesInUse(revisionSearcher);
 		
 		for (String languageCode : languageCodesInUse) {
-			logActivity(String.format("Exporting %sSNOMED CT descriptions with language code '%s' into RF2 format",
+			logActivity(String.format("Exporting %sSNOMED CT descriptions and language reference set members with language code '%s' into RF2 format",
 					exportContext.isUnpublishedExport() ? "unpublished " : "", languageCode));
 			new SnomedRf2DescriptionExporter(exportContext, revisionSearcher, languageCode).execute();
 		}
@@ -515,7 +516,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		}
 
 		for (String languageCode : languageCodesInUse) {
-			logActivity(String.format("Exporting %sSNOMED CT text definitions with language code '%s' into RF2 format",
+			logActivity(String.format("Exporting %sSNOMED CT text definitions and language reference set members with language code '%s' into RF2 format",
 					exportContext.isUnpublishedExport() ? "unpublished " : "", languageCode));
 			new SnomedTextDefinitionExporter(exportContext, revisionSearcher, languageCode).execute();
 		}
@@ -597,10 +598,14 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 
 	private void executeRefSetExport(final SnomedReferenceSet refset, final RevisionSearcher revisionSearcher, final OMMonitor monitor) throws IOException {
 		
-		final SnomedExporter refSetExporter = SnomedRefSetExporterFactory.getRefSetExporter(refset, exportContext, revisionSearcher);
-		
-		logActivity(String.format("Exporting SNOMED CT reference set into RF2 format. Reference set identifier concept ID: %s", refset.getId()));
-		refSetExporter.execute();
+		if (refset.getType() != SnomedRefSetType.LANGUAGE) {
+			
+			final SnomedExporter refSetExporter = SnomedRefSetExporterFactory.getRefSetExporter(refset, exportContext, revisionSearcher);
+			
+			logActivity(String.format("Exporting SNOMED CT reference set into RF2 format. Reference set identifier concept ID: %s", refset.getId()));
+			refSetExporter.execute();
+			
+		}
 	
 		if (!exportContext.isUnpublishedExport() && includeRf1) {
 			
@@ -655,7 +660,12 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			}
 		}
 
-		counter += referenceSetsToExport.size();
+		counter += FluentIterable.from(referenceSetsToExport).filter(new Predicate<SnomedReferenceSet>() {
+			@Override
+			public boolean apply(SnomedReferenceSet input) {
+				return input.getType() != SnomedRefSetType.LANGUAGE;
+			}
+		}).size();
 
 		counter++; // compressing zip
 		counter++; // sending file to the client;

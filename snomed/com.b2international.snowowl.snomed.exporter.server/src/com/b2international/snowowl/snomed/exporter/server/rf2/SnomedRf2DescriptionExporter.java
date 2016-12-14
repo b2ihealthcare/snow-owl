@@ -15,6 +15,13 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.rf2;
 
+import java.io.IOException;
+
+import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.collect.LongSets;
+import com.b2international.commons.collect.LongSets.LongFunction;
+import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -22,6 +29,7 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
+import com.b2international.snowowl.snomed.exporter.server.SnomedExportExecutor;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 
 /**
@@ -31,10 +39,12 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilde
 public class SnomedRf2DescriptionExporter extends AbstractSnomedRf2CoreExporter<SnomedDescriptionIndexEntry> {
 
 	private String languageCode;
+	private LongSet descriptionIds;
 
 	public SnomedRf2DescriptionExporter(final SnomedExportContext exportContext, final RevisionSearcher revisionSearcher, final String languageCode) {
 		super(exportContext, SnomedDescriptionIndexEntry.class, revisionSearcher);
 		this.languageCode = languageCode;
+		descriptionIds = PrimitiveSets.newLongOpenHashSet();
 	}
 	
 	@Override
@@ -72,7 +82,19 @@ public class SnomedRf2DescriptionExporter extends AbstractSnomedRf2CoreExporter<
 	
 	@Override
 	public String getFileName() {
-		return SnomedRfFileNameBuilder.buildRf2DescriptionFileName(getType(), getExportContext(), getLanguageCode());
+		return new StringBuilder("sct2")
+			.append('_')
+			.append(String.valueOf(getType()))
+			.append('_')
+			.append(String.valueOf(getExportContext().getContentSubType()))
+			.append('-')
+			.append(getLanguageCode())
+			.append('_')
+			.append(getExportContext().getNamespaceId())
+			.append('_')
+			.append(SnomedRfFileNameBuilder.getReleaseDate(getExportContext()))
+			.append(".txt")
+			.toString();
 	}
 	
 	@Override
@@ -84,5 +106,21 @@ public class SnomedRf2DescriptionExporter extends AbstractSnomedRf2CoreExporter<
 	
 	protected String getLanguageCode() {
 		return languageCode;
+	}
+	
+	@Override
+	protected void collectHits(Hits<SnomedDescriptionIndexEntry> hits) {
+		descriptionIds.addAll(LongSets.newLongSet(LongSets.transform(hits, new LongFunction<SnomedDescriptionIndexEntry>() {
+			@Override
+			public long apply(SnomedDescriptionIndexEntry input) {
+				return Long.valueOf(input.getId());
+			}
+		})));
+	}
+	
+	@Override
+	public void execute() throws IOException {
+		super.execute();
+		new SnomedExportExecutor(new SnomedLanguageRefSetExporter(getExportContext(), getRevisionSearcher(), getLanguageCode(), descriptionIds)).execute();
 	}
 }
