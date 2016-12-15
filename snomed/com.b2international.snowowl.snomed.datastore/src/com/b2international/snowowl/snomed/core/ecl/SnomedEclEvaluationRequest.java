@@ -235,7 +235,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
 	protected Promise<Expression> eval(BranchContext context, final ParentOf parentOf) {
-		final String inner = context.service(EclSerializer.class).serialize(parentOf.getConstraint());
+		final String inner = context.service(EclSerializer.class).serializeWithoutTerms(parentOf.getConstraint());
 		return EclExpression.of(inner)
 				.resolveConcepts(context)
 				.then(new Function<SnomedConcepts, Set<String>>() {
@@ -256,7 +256,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
 	protected Promise<Expression> eval(BranchContext context, final AncestorOf ancestorOf) {
-		final String inner = context.service(EclSerializer.class).serialize(ancestorOf.getConstraint());
+		final String inner = context.service(EclSerializer.class).serializeWithoutTerms(ancestorOf.getConstraint());
 		return EclExpression.of(inner)
 				.resolveConcepts(context)
 				.then(new Function<SnomedConcepts, Set<String>>() {
@@ -283,7 +283,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 		if (innerConstraint instanceof Any) {
 			return evaluate(context, innerConstraint);
 		} else {
-			final String inner = context.service(EclSerializer.class).serialize(innerConstraint);
+			final String inner = context.service(EclSerializer.class).serializeWithoutTerms(innerConstraint);
 			return EclExpression.of(inner)
 					.resolveConcepts(context)
 					.then(new Function<SnomedConcepts, Set<String>>() {
@@ -363,7 +363,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	 * Delegates evaluation of Refinement expression constraints to {@link SnomedEclRefinementEvaluator}.
 	 */
 	protected Promise<Expression> eval(final BranchContext context, final RefinedExpressionConstraint refined) {
-		final String focusConceptExpression = context.service(EclSerializer.class).serialize(refined.getConstraint());
+		final String focusConceptExpression = context.service(EclSerializer.class).serializeWithoutTerms(refined.getConstraint());
 		return new SnomedEclRefinementEvaluator(EclExpression.of(focusConceptExpression)).evaluate(context, refined.getRefinement());
 	}
 	
@@ -373,8 +373,8 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 	 */
 	protected Promise<Expression> eval(BranchContext context, DottedExpressionConstraint dotted) {
 		final EclSerializer serializer = context.service(EclSerializer.class);
-		final Collection<String> sourceFilter = Collections.singleton(serializer.serialize(dotted.getConstraint()));
-		final Collection<String> typeFilter = Collections.singleton(serializer.serialize(dotted.getAttribute()));
+		final Collection<String> sourceFilter = Collections.singleton(serializer.serializeWithoutTerms(dotted.getConstraint()));
+		final Collection<String> typeFilter = Collections.singleton(serializer.serializeWithoutTerms(dotted.getAttribute()));
 		return SnomedEclRefinementEvaluator.evalRelationships(context, sourceFilter, typeFilter, Collections.emptySet(), false)
 				.then(new Function<Collection<SnomedEclRefinementEvaluator.Property>, Set<String>>() {
 					@Override
@@ -423,7 +423,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 				try {
 					return Promise.immediate(extractIds(expression));
 				} catch (UnsupportedOperationException e) {
-					final String eclExpression = context.service(EclSerializer.class).serialize(ecl);
+					final String eclExpression = context.service(EclSerializer.class).serializeWithoutTerms(ecl);
 					// otherwise always evaluate the expression to ID set and return that
 					return EclExpression.of(eclExpression).resolve(context);
 				}

@@ -81,6 +81,8 @@ import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
@@ -113,8 +115,6 @@ final class SnomedEclRefinementEvaluator {
 	}
 	
 	public Promise<Expression> evaluate(BranchContext context, Refinement refinement) {
-		// start evaluating the focusConcepts expression
-		this.focusConcepts.resolve(context);
 		return refinementDispatcher.invoke(context, refinement);
 	}
 	
@@ -392,13 +392,13 @@ final class SnomedEclRefinementEvaluator {
 	private Promise<Collection<Property>> evalRefinement(final BranchContext context, final Collection<String> focusConceptIds, final AttributeConstraint refinement, final boolean grouped) {
 		final Comparison comparison = refinement.getComparison();
 		final EclSerializer serializer = context.service(EclSerializer.class);
-		final Collection<String> typeConceptFilter = Collections.singleton(serializer.serialize(refinement.getAttribute()));
+		final Collection<String> typeConceptFilter = Collections.singleton(serializer.serializeWithoutTerms(refinement.getAttribute()));
 		
 		if (comparison instanceof AttributeComparison) {
 			// resolve non-* focusConcept ECLs to IDs, so we can filter relationships by source/destination
 			// filterByType and filterByDestination accepts ECL expressions as well, so serialize them into ECL and pass as String when required
 			// if reversed refinement, then we are interested in the destinationIds otherwise we need the sourceIds
-			final Collection<String> destinationConceptFilter = Collections.singleton(serializer.serialize(rewrite(comparison)));
+			final Collection<String> destinationConceptFilter = Collections.singleton(serializer.serializeWithoutTerms(rewrite(comparison)));
 			final Collection<String> focusConceptFilter = refinement.isReversed() ? destinationConceptFilter : focusConceptIds;
 			final Collection<String> valueConceptFilter = refinement.isReversed() ? focusConceptIds : destinationConceptFilter;
 			return evalRelationships(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, grouped);
@@ -601,13 +601,28 @@ final class SnomedEclRefinementEvaluator {
 		final SnomedRelationshipSearchRequestBuilder req = SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterByActive(true) 
-				.filterBySource(sourceFilter)
 				.filterByType(typeFilter)
-				.filterByDestination(destinationFilter)
 				.filterByCharacteristicTypes(ALLOWED_CHARACTERISTIC_TYPES)
 				.setFields(fieldsToLoad.build());
 		
-		// if a grouping refinement, then filter relationships with group number gte 1
+		// XXX more than 1000 IDs will be filtered using Java instead of in the query to gain performance
+		final Predicate<ISnomedRelationship> sourcePredicate;
+		if (sourceFilter.size() < 1000) {
+			req.filterBySource(sourceFilter);
+			sourcePredicate = Predicates.alwaysTrue();
+		} else {
+			sourcePredicate = relationship -> sourceFilter.contains(relationship.getSourceId());
+		}
+		
+		final Predicate<ISnomedRelationship> destinationPredicate;
+		if (destinationFilter.size() < 1000) {
+			req.filterByDestination(destinationFilter);
+			destinationPredicate = Predicates.alwaysTrue();
+		} else {
+			destinationPredicate = relationship -> destinationFilter.contains(relationship.getDestinationId());
+		}
+		
+		// if a grouping refinement, then filter relationships with group >= 1
 		if (groupedRelationshipsOnly) {
 			req.filterByGroup(1, Integer.MAX_VALUE);
 		}
@@ -618,7 +633,7 @@ final class SnomedEclRefinementEvaluator {
 				.then(new Function<SnomedRelationships, Collection<Property>>() {
 					@Override
 					public Collection<Property> apply(SnomedRelationships input) {
-						return FluentIterable.from(input).transform(new Function<ISnomedRelationship, Property>() {
+						return FluentIterable.from(input).filter(Predicates.and(sourcePredicate, destinationPredicate)).transform(new Function<ISnomedRelationship, Property>() {
 							@Override
 							public Property apply(ISnomedRelationship input) {
 								return new Property(input.getId(), input.getSourceId(), input.getTypeId(), input.getDestinationId(), input.getGroup());
