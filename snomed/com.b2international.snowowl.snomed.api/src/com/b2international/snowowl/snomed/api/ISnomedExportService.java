@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.api;
 
 import java.io.File;
 
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.snomed.api.exception.SnomedExportException;
 import com.b2international.snowowl.snomed.core.domain.ISnomedExportConfiguration;
 
@@ -38,4 +39,12 @@ public interface ISnomedExportService {
 	 * @throws SnomedExportException if the configuration is invalid, or the export fails for some reason
 	 */
 	File export(ISnomedExportConfiguration configuration);
+
+	/**
+	 * Resolves the namespace to be used for the export by extracting branch metadata information.
+	 * @param branch the branch used for extracting the metadata information
+	 * @return the namespace extracted from the branch metadata information or INT by default.
+	 */
+	String resolveNamespaceId(Branch branch);
+	
 }

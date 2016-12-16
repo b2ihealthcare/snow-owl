@@ -21,9 +21,7 @@ import java.io.FileOutputStream;
 import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicReference;
 
-import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.net4j.signal.RemoteException;
 import org.eclipse.net4j.signal.RequestWithMonitoring;
 import org.eclipse.net4j.signal.SignalProtocol;
@@ -31,44 +29,18 @@ import org.eclipse.net4j.util.io.ExtendedDataInputStream;
 import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.ILookupService;
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.net4j.MonitorCanceledRequest;
 import com.b2international.snowowl.datastore.net4j.RequestCancelationRunnable;
 import com.b2international.snowowl.snomed.SnomedConstants;
-import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedConfiguration;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult.Result;
 import com.b2international.snowowl.snomed.exporter.model.SnomedRf2ExportModel;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 
 /**
- * This class sends user export request to the server-side. Currently the following parameters are sent to the server in the following order:
- * <ul>
- * <li>clientBranchId - int; the current branch id of the client</li>
- * <li>clientBranchBaseTimeStamp - long; the base timestamp of the current branch of the client (only used if on task branch)</li>
- * <li>fromEffectiveTime - String; if empty, effectiveTime won't be used in the queries (from this date, inclusive)</li>
- * <li>toEffectiveTime - String; if empty, effectiveTime won't be used in the queries (until this date, inclusive)</li>
- * <li>coreComponentExport - boolean; if false, core component export won't be executed</li>
- * <li>numberOfRefSetsToExport - int; if 0, no refset export will be executed, the number of the refsets to be exported otherwise</li>
- * <li>refsetIdentifierConcepts - String; only if numberOfRefSetsToExport > 0; reference set identifier concept ids, the number of strings has to be read is equal to
- * <u>numberOfRefSetsToExport</u></li>
- * </ul>
- * 
- * The server response contains the zipped archive file and the archive itself.
- * 
- * <b>Note:</b> cancel request is overridden {@link MonitorCanceledRequest}
+ * This class sends user export request to the server-side. The server response contains the zipped archive file.
  * 
  */
 public class SnomedExportClientRequest extends RequestWithMonitoring<File> {
@@ -107,32 +79,31 @@ public class SnomedExportClientRequest extends RequestWithMonitoring<File> {
 		}
 
 		out.writeUTF(model.getUserId());
-		out.writeUTF(model.getClientBranch().getPath());
+		out.writeUTF(model.getClientBranch().path());
+		
 		out.writeUTF(convertDateToRF2String(model.getStartEffectiveTime()));
 		out.writeUTF(convertDateToRF2String(model.getEndEffectiveTime()));
+		
 		out.writeInt(model.getReleaseType().getValue());
 		out.writeUTF(model.getUnsetEffectiveTimeLabel());
 		out.writeBoolean(model.includeUnpublised());
+		
 		out.writeBoolean(model.isExportToRf1());
 		out.writeBoolean(model.isExtendedDescriptionTypesForRf1());
-		final boolean coreComponentsToExport = model.isCoreComponentsToExport();
-		out.writeBoolean(coreComponentsToExport);
-		final Set<String> refsetConceptIdentifiers = model.getRefSetIds();
-		if (coreComponentsToExport) {
-			refsetConceptIdentifiers.addAll(getHiddenRefSetIds());
-		}
+		
+		out.writeBoolean(model.isCoreComponentsToExport());
+		out.writeInt(model.getRefSetIds().size());
 
-		out.writeInt(refsetConceptIdentifiers.size());
-
-		for (final String refsetIdentifierConcept : refsetConceptIdentifiers) {
+		for (final String refsetIdentifierConcept : model.getRefSetIds()) {
 			out.writeUTF(refsetIdentifierConcept);
 		}
 
 		final Set<SnomedMapSetSetting> settings = model.getSettings();
 		
 		out.writeInt(settings.size());
-		for (final SnomedMapSetSetting setting : settings)
+		for (final SnomedMapSetSetting setting : settings) {
 			SnomedMapSetSetting.write(setting, out);
+		}
 		
 		final Set<String> modulesToExport = model.getModulesToExport();
 		
@@ -142,6 +113,8 @@ public class SnomedExportClientRequest extends RequestWithMonitoring<File> {
 		}
 
 		out.writeUTF(model.getNamespace());
+		out.writeUTF(model.getCodeSystemShortName());
+		out.writeBoolean(model.isExtensionOnly());
 	}
 
 	@Override
@@ -224,50 +197,8 @@ public class SnomedExportClientRequest extends RequestWithMonitoring<File> {
 		if (date != null) {
 			return EffectiveTimes.format(date, SnomedConstants.RF2_EFFECTIVE_TIME_FORMAT);
 		} else {
-			return "";
+			return StringUtils.EMPTY_STRING;
 		}
-	}
-
-	/* returns with the hidden/structural reference set IDs. */
-	private Set<String> getHiddenRefSetIds() {
-		final AtomicReference<CDOView> viewReference = new AtomicReference<CDOView>();
-		try {
-			viewReference.set(createView());
-			// get all hidden/structural reference set
-			return Sets.newHashSet(Iterables.filter(ApplicationContext.getInstance().getService(SnomedConfiguration.class).getHiddenReferenceSets().getChildren().keySet(),
-					new Predicate<String>() {
-						@Override
-						public boolean apply(final String id) {
-							// filter out the non existing ones.
-							return null != getRefSet(id, viewReference.get());
-						}
-					}));
-		} finally {
-			if (null != viewReference.get())
-				viewReference.get().close();
-		}
-	}
-
-	/*
-	 * returns with a SNOMED CT reference set identified by the specified identifier concept ID. the reference set is looked up in the specified CDO view.
-	 */
-	private SnomedRefSet getRefSet(final String id, final CDOView view) {
-		return getLookupSerive().getComponent(id, view);
-	}
-
-	/* returns with the SNOMED CT reference set lookup service. */
-	private ILookupService<String, SnomedRefSet, CDOView> getLookupSerive() {
-		return CoreTerminologyBroker.getInstance().getLookupService(SnomedTerminologyComponentConstants.REFSET);
-	}
-
-	/* creates a CDO view. */
-	private CDOView createView() {
-		return getConnection().createView(model.getClientBranch());
-	}
-
-	/* returns with the connection service. */
-	private ICDOConnection getConnection() {
-		return ApplicationContext.getInstance().getService(ICDOConnectionManager.class).get(SnomedPackage.eINSTANCE);
 	}
 
 }

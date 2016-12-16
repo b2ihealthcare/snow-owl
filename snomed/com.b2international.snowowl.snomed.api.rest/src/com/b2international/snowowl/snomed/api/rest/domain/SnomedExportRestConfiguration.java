@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
@@ -44,8 +45,10 @@ public class SnomedExportRestConfiguration {
 	private Date startEffectiveTime;
 	private Date endEffectiveTime;
 	private String transientEffectiveTime;
-	
 	private boolean includeUnpublished;
+	
+	private String codeSystemShortName = SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME;
+	private boolean extensionOnly = false;
 
 	/**
 	 * Returns with the RF2 release type of the current export configuration.
@@ -139,7 +142,7 @@ public class SnomedExportRestConfiguration {
 	}
 	
 	/**
-	 * Sets whether the unpublished artefacts should be exported
+	 * Sets whether unpublished components should be exported
 	 * @param includeUnpublished
 	 */
 	public void setIncludeUnpublished(boolean includeUnpublished) {
@@ -147,10 +150,48 @@ public class SnomedExportRestConfiguration {
 	}
 	
 	/**
-	 * Returns true if the 
+	 * Returns if unpublished components should be exported 
 	 * @return
 	 */
 	public boolean isIncludeUnpublished() {
 		return includeUnpublished;
+	}
+	
+	/**
+	 * Sets the short name of the code system that needs to be exported
+	 * 
+	 * @param codeSystemShortName the codeSystemShortName to set
+	 */
+	public void setCodeSystemShortName(String codeSystemShortName) {
+		this.codeSystemShortName = codeSystemShortName;
+	}
+	
+	/**
+	 * Returns the short name of the code system that needs to be exported
+	 * 
+	 * @return the codeSystemShortName
+	 */
+	public String getCodeSystemShortName() {
+		return codeSystemShortName;
+	}
+	
+	/**
+	 * If set to true only the code system specified by it's short name will be exported. If set to false all versions from parent code systems
+	 * will be collected and exported.
+	 * 
+	 * @param extensionOnly the extensionOnly to set
+	 */
+	public void setExtensionOnly(boolean extensionOnly) {
+		this.extensionOnly = extensionOnly;
+	}
+	
+	/**
+	 * Returns true if only the code system specified by it's short name should be exported. If set to false all versions from parent code systems
+	 * will be collected and exported.
+	 * 
+	 * @return the extensionOnly
+	 */
+	public boolean isExtensionOnly() {
+		return extensionOnly;
 	}
 }

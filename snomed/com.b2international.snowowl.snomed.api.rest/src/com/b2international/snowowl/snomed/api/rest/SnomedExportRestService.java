@@ -57,6 +57,7 @@ import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
 import com.google.common.collect.MapMaker;
 import com.wordnik.swagger.annotations.Api;
@@ -93,17 +94,64 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			@RequestBody
 			final SnomedExportRestConfiguration configuration) throws IOException {
 
+		validate(configuration);
+		
+		final SnomedExportRestRun run = new SnomedExportRestRun();
+		BeanUtils.copyProperties(configuration, run);
+		run.setId(UUID.randomUUID());
+		
+		exports.put(run.getId(), run);
+		
+		return Responses.created(getExportRunURI(run.getId())).build();
+	}
+	
+	private void validate(SnomedExportRestConfiguration configuration) {
+
 		ApiValidation.checkInput(configuration);
 		
+		validateExportType(configuration);
+		validateTransientEffectiveTime(configuration.getTransientEffectiveTime());
+		Branch branch = validateBranch(configuration);
+		
+		validateNamespace(configuration, branch);
+		validateCodeSystemShortName(configuration);
+	}
+
+	private void validateCodeSystemShortName(SnomedExportRestConfiguration configuration) {
+		if (!Strings.isNullOrEmpty(configuration.getCodeSystemShortName())) {
+			
+			int hitSize = CodeSystemRequests.prepareSearchCodeSystem()
+				.one()
+				.filterByShortName(configuration.getCodeSystemShortName())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
+				.execute(bus)
+				.getSync().getTotal();
+			
+			if (hitSize == 0) {
+				throw new BadRequestException("Unknown code system with short name: %s", configuration.getCodeSystemShortName());
+			}
+			
+		} else {
+			throw new BadRequestException("Code system short name must be set for configuring the export properly.");
+		}
+	}
+
+	private void validateNamespace(SnomedExportRestConfiguration configuration, Branch branch) {
+		if (Strings.isNullOrEmpty(configuration.getNamespaceId())) {
+			configuration.setNamespaceId(exportService.resolveNamespaceId(branch));
+		}
+	}
+
+	private void validateExportType(SnomedExportRestConfiguration configuration) {
 		if (Rf2ReleaseType.FULL.equals(configuration.getType())) {
 			if (configuration.getStartEffectiveTime() != null || configuration.getEndEffectiveTime() != null) {
 				throw new BadRequestException("Export date ranges can only be set if the export mode is not FULL.");
 			}
 		}
-		
-		final String transientEffectiveTime = configuration.getTransientEffectiveTime();
-		validateTransientEffectiveTime(transientEffectiveTime);
+	}
 
+	private Branch validateBranch(SnomedExportRestConfiguration configuration) {
+		
 		Branch branch = SnomedRequests.branching()
 				.prepareGet(configuration.getBranchPath())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
@@ -116,16 +164,9 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			throw new BadRequestException("Branch '%s' has been deleted and cannot accept further modifications.", configuration.getBranchPath());
 		}
 		
-		final UUID id = UUID.randomUUID();
-		final SnomedExportRestRun run = new SnomedExportRestRun();
-		
-		BeanUtils.copyProperties(configuration, run);
-		run.setId(id);
-		exports.put(id, run);
-		
-		return Responses.created(getExportRunURI(id)).build();
+		return branch;
 	}
-	
+
 	private void validateTransientEffectiveTime(final String transientEffectiveTime) {
 		
 		if (Strings.isNullOrEmpty(transientEffectiveTime)) {
@@ -201,7 +242,9 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 				configuration.getNamespaceId(), configuration.getModuleIds(),
 				configuration.getStartEffectiveTime(), configuration.getEndEffectiveTime(),
 				configuration.getTransientEffectiveTime(),
-				configuration.isIncludeUnpublished());
+				configuration.isIncludeUnpublished(),
+				configuration.getCodeSystemShortName(),
+				configuration.isExtensionOnly());
 
 		return conf;
 	}

@@ -33,8 +33,7 @@ import com.b2international.snowowl.snomed.exporter.model.SnomedRf2ExportModel;
 public class SnomedExportService {
 
 	/**
-	 * Executes an RF2 publication export process on the server side using the given {@link SnomedRf2ExportModel} as
-	 * configuration.
+	 * Executes an RF2 publication export process on the server side using the given {@link SnomedRf2ExportModel} as configuration.
 	 * 
 	 * @param model
 	 * @param monitor
@@ -73,8 +72,7 @@ public class SnomedExportService {
 	 * @return the namespace ID.
 	 */
 	protected String getNamespace() {
-		return ApplicationContext.getInstance().getService(SnomedConfiguration.class).getNamespaces()
-				.getDefaultChildKey();
+		return ApplicationContext.getInstance().getService(SnomedConfiguration.class).getNamespaces().getDefaultChildKey();
 	}
 
 }

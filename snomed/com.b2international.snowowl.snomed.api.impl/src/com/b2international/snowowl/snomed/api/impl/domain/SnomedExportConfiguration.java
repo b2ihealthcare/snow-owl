@@ -37,13 +37,17 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 	private Date endEffectiveTime;
 	private String transientEffectiveTime;
 	private boolean includeUnpublised;
+	private String codeSystemShortName;
+	private boolean extensionOnly;
 
 	public SnomedExportConfiguration(Rf2ReleaseType type, 
 			String branchPath, 
 			String namespaceId, Collection<String> moduleIds,
 			Date startEffectiveTime, Date endEffectiveTime, 
 			String transientEffectiveTime,
-			final boolean includeUnpublished) {
+			final boolean includeUnpublished,
+			String codeSystemShortName,
+			boolean extensionOnly) {
 		this.type = checkNotNull(type, "type");
 		this.namespaceId = checkNotNull(namespaceId, "namespaceId");
 		this.branchPath = checkNotNull(branchPath, "branchPath");
@@ -52,6 +56,8 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 		this.endEffectiveTime = endEffectiveTime;
 		this.transientEffectiveTime = transientEffectiveTime;
 		this.includeUnpublised = includeUnpublished;
+		this.codeSystemShortName = checkNotNull(codeSystemShortName, "codeSystemShortName");
+		this.extensionOnly = extensionOnly;
 	}
 	
 	@Override
@@ -90,7 +96,18 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 	}
 
 	@Override
-	public boolean includeUnpublised() {
+	public boolean isIncludeUnpublised() {
 		return includeUnpublised;
 	}
+	
+	@Override
+	public String getCodeSystemShortName() {
+		return codeSystemShortName;
+	}
+	
+	@Override
+	public boolean isExtensionOnly() {
+		return extensionOnly;
+	}
+	
 }
