@@ -121,7 +121,7 @@ public class Expressions {
 	}
 	
 	public static Expression matchNone() {
-		return new MatchNone();
+		return MatchNone.INSTANCE;
 	}
 	
 	public static Expression hasParent(Class<?> parentType, Expression expression) {
