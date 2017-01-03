@@ -814,12 +814,19 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		assertEquals(expected, actual);
 	}
 
-	@Ignore("Unsupported attribute cardinality in group")
+	@Test
+	public void defaultGroupCardinalityWithZeroToZeroAttributeCardinality() throws Exception {
+		generateDrugsWithGroups();
+		final Expression actual = eval(String.format("<%s: { [0..0] %s = <%s }", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
+		final Expression expected = Expressions.matchNone();
+		assertEquals(expected, actual);
+	}
+	
 	@Test
 	public void defaultGroupCardinalityWithZeroToOneAttributeCardinality() throws Exception {
 		generateDrugsWithGroups();
 		final Expression actual = eval(String.format("<%s: { [0..1] %s = <%s }", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
-		final Expression expected = ids(ImmutableSet.of(ASPIRIN_TABLET, TRIPLEX_TABLET));
+		final Expression expected = ids(ImmutableSet.of(ASPIRIN_TABLET, TRIPLEX_TABLET, ALGOFLEX_TABLET));
 		assertEquals(expected, actual);
 	}
 	

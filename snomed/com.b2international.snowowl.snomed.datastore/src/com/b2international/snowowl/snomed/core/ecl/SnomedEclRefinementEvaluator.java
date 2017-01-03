@@ -100,7 +100,7 @@ import com.google.common.collect.Sets;
  */
 final class SnomedEclRefinementEvaluator {
 
-	private static final Set<String> ALLOWED_CHARACTERISTIC_TYPES = ImmutableSet.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP);
+	static final Set<String> ALLOWED_CHARACTERISTIC_TYPES = ImmutableSet.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP);
 	private static final int UNBOUNDED_CARDINALITY = -1;
 	private static final Range<Long> ANY_GROUP = Range.closed(0L, Long.MAX_VALUE);
 	private static final EclFactory ECL_FACTORY = EclFactory.eINSTANCE;
@@ -253,6 +253,33 @@ final class SnomedEclRefinementEvaluator {
 			throw new BadRequestException("Reversed attributes are not supported in group refinements");
 		} else {
 			return evalRefinement(context, refinement, true, groupCardinality)
+					.thenWith(new Function<Collection<Property>, Promise<Collection<Property>>>() {
+						@Override
+						public Promise<Collection<Property>> apply(Collection<Property> input) {
+							final Cardinality cardinality = refinement.getCardinality();
+							if (cardinality != null && cardinality.getMin() == 0 && cardinality.getMax() != UNBOUNDED_CARDINALITY) {
+								final Function<Property, Object> idProvider = refinement.isReversed() ? Property::getValue : Property::getObjectId;
+								final Set<String> matchingIds = FluentIterable.from(input).transform(idProvider).filter(String.class).toSet();
+								// two cases here, one is the [1..x] the other is [0..x]
+								// XXX internal evaluation returns negative matches, that should be excluded from the focusConcept set
+								return focusConcepts.resolveToConceptsWithGroups(context)
+										.then(new Function<Set<String>, Collection<Property>>() {
+											@Override
+											public Collection<Property> apply(Set<String> focusConceptIds) {
+												final Collection<Property> matchingProperties = newHashSetWithExpectedSize(focusConceptIds.size() - matchingIds.size());
+												for (String focusConceptId : focusConceptIds) {
+													if (!matchingIds.contains(focusConceptId)) {
+														matchingProperties.add(new Property(focusConceptId));
+													}
+												}
+												return matchingProperties;
+											}
+										});
+							} else {
+								return Promise.immediate(input);
+							}
+						}
+					})
 					.failWith(new Function<Throwable, Promise<Collection<Property>>>() {
 						@Override
 						public Promise<Collection<Property>> apply(Throwable throwable) {
@@ -366,11 +393,13 @@ final class SnomedEclRefinementEvaluator {
 				propertyCardinality = Range.closed(max + 1, Long.MAX_VALUE);
 			}
 		} else {
-			// use cardinality range specified in the syntax
+			// use cardinality range specified in the expression
 			propertyCardinality = Range.closed(min, max);
 		}
 		final Function<Property, Object> idProvider = refinement.isReversed() ? Property::getValue : Property::getObjectId;
-		final Promise<Set<String>> focusConceptIds = focusConcepts.isAnyExpression() ? Promise.immediate(Collections.emptySet()) : focusConcepts.resolve(context);
+		final Promise<Set<String>> focusConceptIds = focusConcepts.isAnyExpression() 
+				? Promise.immediate(Collections.emptySet()) 
+				: grouped ? focusConcepts.resolveToConceptsWithGroups(context) : focusConcepts.resolve(context);
 		return focusConceptIds
 				.thenWith(new Function<Set<String>, Promise<Collection<Property>>>() {
 					@Override

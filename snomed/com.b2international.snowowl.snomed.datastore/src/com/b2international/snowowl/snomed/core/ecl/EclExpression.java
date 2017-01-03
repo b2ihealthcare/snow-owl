@@ -24,8 +24,11 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.Ecl;
 import com.google.common.base.Function;
@@ -42,6 +45,7 @@ final class EclExpression {
 	private Promise<Set<String>> promise;
 	private Promise<Expression> expressionPromise;
 	private Promise<SnomedConcepts> conceptPromise;
+	private Promise<Set<String>> conceptsWithGroups;
 
 	private EclExpression(String ecl) {
 		this.ecl = ecl.trim();
@@ -110,6 +114,27 @@ final class EclExpression {
 						}
 					}
 				});
+	}
+	
+	public Promise<Set<String>> resolveToConceptsWithGroups(final BranchContext context) {
+		if (conceptsWithGroups == null) {
+			conceptsWithGroups = SnomedRequests.prepareSearchRelationship()
+					.all()
+					.filterByActive(true)
+					.filterByCharacteristicTypes(SnomedEclRefinementEvaluator.ALLOWED_CHARACTERISTIC_TYPES)
+					.filterBySource(ecl)
+					.filterByGroup(1, Integer.MAX_VALUE)
+					.setFields(ImmutableSet.of(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID))
+					.build(context.id(), context.branch().path())
+					.execute(context.service(IEventBus.class))
+					.then(new Function<SnomedRelationships, Set<String>>() {
+						@Override
+						public Set<String> apply(SnomedRelationships input) {
+							return FluentIterable.from(input).transform(ISnomedRelationship::getSourceId).toSet();
+						}
+					});
+		}
+		return conceptsWithGroups;
 	}
 	
 }
