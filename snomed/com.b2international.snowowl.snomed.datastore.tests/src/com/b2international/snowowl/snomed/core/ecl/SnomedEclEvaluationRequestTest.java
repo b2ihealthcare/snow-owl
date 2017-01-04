@@ -430,10 +430,22 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, nextStorageKey(), concept(DRUG_WITH_INVALID_HAI).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
 		indexRevision(MAIN, nextStorageKey(), relationship(DRUG_WITH_INVALID_HAI, HAS_ACTIVE_INGREDIENT, DRUG_WITH_INVALID_HAI).group(0).build());
 		
-		final Expression actual = eval(String.format("<%s: [0..0] %s!=<%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
+		final Expression actual = eval(String.format("<%s: [0..0] %s != <%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
 		final Expression expected =	Expressions.builder()
 				.must(descendantsOf(DRUG_ROOT))
 				.mustNot(ids(ImmutableSet.of(DRUG_WITH_INVALID_HAI)))
+				.build();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementCardinalityZeroToZeroNotEqualsToSingleValue() throws Exception {
+		generateDrugHierarchy();
+		
+		final Expression actual = eval(String.format("<%s: [0..0] %s != %s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT1));
+		final Expression expected =	Expressions.builder()
+				.must(descendantsOf(DRUG_ROOT))
+				.mustNot(ids(ImmutableSet.of(TRIPHASIL_TABLET)))
 				.build();
 		assertEquals(expected, actual);
 	}
@@ -832,10 +844,37 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	
 	@Ignore("Unsupported attribute cardinality in group with cardinality")
 	@Test
+	public void groupCardinalityZeroToZeroWithZeroToZeroAttributeCardinality() throws Exception {
+		generateDrugsWithGroups();
+		final Expression actual = eval(String.format("<%s: [0..0] { [0..0] %s = <%s }", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
+		final Expression expected = Expressions.matchNone();
+		assertEquals(expected, actual);
+	}
+	
+	@Ignore("Unsupported attribute cardinality in group with cardinality")
+	@Test
+	public void groupCardinalityZeroToOneWithZeroToZeroAttributeCardinality() throws Exception {
+		generateDrugsWithGroups();
+		final Expression actual = eval(String.format("<%s: [0..1] { [0..0] %s = <%s }", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
+		final Expression expected = Expressions.matchNone();
+		assertEquals(expected, actual);
+	}
+	
+	@Ignore("Unsupported attribute cardinality in group with cardinality")
+	@Test
+	public void groupCardinalityZeroToZeroWithZeroToOneAttributeCardinality() throws Exception {
+		generateDrugsWithGroups();
+		final Expression actual = eval(String.format("<%s: [0..0] { [0..1] %s = <%s }", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
+		final Expression expected = Expressions.matchNone();
+		assertEquals(expected, actual);
+	}
+	
+	@Ignore("Unsupported attribute cardinality in group with cardinality")
+	@Test
 	public void groupCardinalityZeroToOneWithZeroToOneAttributeCardinality() throws Exception {
 		generateDrugsWithGroups();
 		final Expression actual = eval(String.format("<%s: [0..1] { [0..1] %s = <%s }", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
-		final Expression expected = ids(ImmutableSet.of(ASPIRIN_TABLET, TRIPLEX_TABLET));
+		final Expression expected = ids(ImmutableSet.of(ASPIRIN_TABLET, TRIPLEX_TABLET, EPOX_TABLET));
 		assertEquals(expected, actual);
 	}
 	
