@@ -257,11 +257,11 @@ final class SnomedEclRefinementEvaluator {
 						@Override
 						public Promise<Collection<Property>> apply(Collection<Property> input) {
 							final Cardinality cardinality = refinement.getCardinality();
+							// two cases here, one is the [1..x] the other is [0..x]
 							if (cardinality != null && cardinality.getMin() == 0 && cardinality.getMax() != UNBOUNDED_CARDINALITY) {
+								// XXX internal evaluation returns negative matches, that should be excluded from the focusConcept set
 								final Function<Property, Object> idProvider = refinement.isReversed() ? Property::getValue : Property::getObjectId;
 								final Set<String> matchingIds = FluentIterable.from(input).transform(idProvider).filter(String.class).toSet();
-								// two cases here, one is the [1..x] the other is [0..x]
-								// XXX internal evaluation returns negative matches, that should be excluded from the focusConcept set
 								return focusConcepts.resolveToConceptsWithGroups(context)
 										.then(new Function<Set<String>, Collection<Property>>() {
 											@Override
@@ -553,12 +553,7 @@ final class SnomedEclRefinementEvaluator {
 				
 				final Range<Long> allowedRelationshipCardinality;
 				if (grouped) {
-					final long minRelationships;
-					if (groupCardinality.lowerEndpoint() == 0) {
-						minRelationships = cardinality.lowerEndpoint();
-					} else {
-						minRelationships = groupCardinality.lowerEndpoint() * cardinality.lowerEndpoint();
-					}
+					final long minRelationships = groupCardinality.lowerEndpoint() == 0 ? cardinality.lowerEndpoint() : groupCardinality.lowerEndpoint() * cardinality.lowerEndpoint();  
 					final long maxRelationships;
 					if (groupCardinality.hasUpperBound() && cardinality.hasUpperBound()) {
 						if (groupCardinality.upperEndpoint() == Long.MAX_VALUE || cardinality.upperEndpoint() == Long.MAX_VALUE) {
@@ -567,7 +562,7 @@ final class SnomedEclRefinementEvaluator {
 							maxRelationships = groupCardinality.upperEndpoint() * cardinality.upperEndpoint();
 						}
 					} else {
-						// either group or relationship cardinality is unbounded
+						// group and relationship cardinalities are unbounded
 						maxRelationships = Long.MAX_VALUE;
 					}
 					allowedRelationshipCardinality = Range.closed(minRelationships, maxRelationships);

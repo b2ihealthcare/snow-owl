@@ -834,11 +834,50 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		assertEquals(expected, actual);
 	}
 	
+	@Ignore
+	@Test
+	public void defaultGroupCardinalityWithZeroToZeroAttributeCardinalityNotEquals() throws Exception {
+		generateDrugsWithGroups();
+		final Expression actual = eval(String.format("<%s: { [0..0] %s != %s }", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT5));
+		final Expression expected = ids(ImmutableSet.of(ASPIRIN_TABLET, TRIPLEX_TABLET, ALGOFLEX_TABLET));
+		assertEquals(expected, actual);
+	}
+	
 	@Test
 	public void defaultGroupCardinalityWithZeroToOneAttributeCardinality() throws Exception {
 		generateDrugsWithGroups();
 		final Expression actual = eval(String.format("<%s: { [0..1] %s = <%s }", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
 		final Expression expected = ids(ImmutableSet.of(ASPIRIN_TABLET, TRIPLEX_TABLET, ALGOFLEX_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void groupCardinalityZeroToZeroWithDefaultAttributeCardinality() throws Exception {
+		generateDrugsWithGroups();
+		final Expression actual = eval(String.format("<%s: [0..0] { %s = <%s }", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
+		final Expression expected = Expressions.builder()
+				.must(descendantsOf(DRUG_ROOT))
+				.mustNot(ids(ImmutableSet.of(ALGOFLEX_TABLET, TRIPLEX_TABLET, ASPIRIN_TABLET)))
+				.build();;
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void groupCardinalityZeroToOneWithDefaultAttributeCardinality() throws Exception {
+		generateDrugsWithGroups();
+		final Expression actual = eval(String.format("<%s: [0..1] { %s = <%s }", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
+		final Expression expected = Expressions.builder()
+				.must(descendantsOf(DRUG_ROOT))
+				.mustNot(ids(ImmutableSet.of(ALGOFLEX_TABLET)))
+				.build();;
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void groupCardinalityZeroToOneWithDefaultAttributeCardinalityNotEquals() throws Exception {
+		generateDrugsWithGroups();
+		final Expression actual = eval(String.format("<%s: [0..1] { %s != <%s }", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
+		final Expression expected = descendantsOf(DRUG_ROOT);
 		assertEquals(expected, actual);
 	}
 	
