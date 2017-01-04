@@ -38,7 +38,7 @@ import com.google.common.base.Splitter;
  */
 public class Rf2FileModifier {
 
-	private static final Splitter ON = Splitter.on('\t');
+	private static final Splitter TAB_SPLITTER = Splitter.on('\t');
 
 	/**
 	 * Splits the given RF2 files into RF2 file segments based on distinct effective times. The result will be a map
@@ -68,7 +68,7 @@ public class Rf2FileModifier {
 					continue;
 				}
 				
-				final List<String> values = ON.splitToList(line);
+				final List<String> values = TAB_SPLITTER.splitToList(line);
 				final String effectiveTime = values.get(1);
 				
 				final PrintWriter effectiveTimeWriter;
