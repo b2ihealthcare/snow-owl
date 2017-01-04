@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 /**
@@ -63,7 +64,9 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 
 		@Override
 		public B id(String id) {
-			namespace(SnomedIdentifiers.create(id).getNamespace());
+			if (!Strings.isNullOrEmpty(id)) {
+				namespace(SnomedIdentifiers.create(id).getNamespace());
+			}
 			return super.id(id);
 		}
 		
