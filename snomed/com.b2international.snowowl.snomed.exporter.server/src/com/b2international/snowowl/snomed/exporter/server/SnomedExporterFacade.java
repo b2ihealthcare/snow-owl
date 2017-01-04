@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Set;
 
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
+import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,90 +95,158 @@ public class SnomedExporterFacade {
 
 		if (monitor.isCanceled()) {
 			return;
-		} else {
-			monitor.worked(2);
 		}
 		
 		logActivity("Publishing SNOMED CT concepts into RF2 format.");
-		SnomedExporter conceptExporter = new SnomedConceptExporter(configuration);
-		new SnomedExportExecutor(conceptExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+		
+		Async async = null;
+		
+		try {
+			async = monitor.forkAsync(2);
+			SnomedConceptExporter conceptExporter = new SnomedConceptExporter(configuration);
+			new SnomedExportExecutor(conceptExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+		} finally {
+			if (async != null) {
+				async.stop();
+				async = null;
+			}
+		}
 		
 		if (monitor.isCanceled()) {
 			return;
-		} else {
-			monitor.worked(2);
 		}
 		
 		logActivity("Publishing SNOMED CT description into RF2 format.");
-		SnomedExporter descriptionExporter = new SnomedDescriptionExporter(configuration);
-		new SnomedExportExecutor(descriptionExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+		
+		try {
+			async = monitor.forkAsync(2);
+			SnomedDescriptionExporter descriptionExporter = new SnomedDescriptionExporter(configuration);
+			new SnomedExportExecutor(descriptionExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+		} finally {
+			if (async != null) {
+				async.stop();
+				async = null;
+			}
+		}
 		
 		if (monitor.isCanceled()) {
 			return;
-		} else {
-			monitor.worked(2);
 		}
 		
 		logActivity("Publishing SNOMED CT non-stated relationships into RF2 format.");
-		SnomedExporter relationshipExporter = new SnomedRelationshipExporter(configuration);
-		new SnomedExportExecutor(relationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+		
+		try {
+			async = monitor.forkAsync(2);
+			SnomedExporter relationshipExporter = new SnomedRelationshipExporter(configuration);
+			new SnomedExportExecutor(relationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+		} finally {
+			if (async != null) {
+				async.stop();
+				async = null;
+			}
+		}
 		
 		if (monitor.isCanceled()) {
 			return;
-		} else {
-			monitor.worked(2);
 		}
 		
 		logActivity("Publishing SNOMED CT stated relationships into RF2 format.");
-		SnomedExporter statedRelationshipExporter = new SnomedStatedRelationshipExporter(configuration);
-		new SnomedExportExecutor(statedRelationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+		
+		try {
+			async = monitor.forkAsync(2);
+			SnomedExporter statedRelationshipExporter = new SnomedStatedRelationshipExporter(configuration);
+			new SnomedExportExecutor(statedRelationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+		} finally {
+			if (async != null) {
+				async.stop();
+				async = null;
+			}
+		}
+
+		if (monitor.isCanceled()) {
+			return;
+		}
 		
 		if (includeRf1) {
 			
 			final Id2Rf1PropertyMapper mapper = new Id2Rf1PropertyMapper();
 			
 			logActivity("Publishing SNOMED CT concepts into RF1 format.");
-			conceptExporter = new SnomedRf1ConceptExporter(configuration, mapper);
-			new SnomedExportExecutor(conceptExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+			
+			try {
+				async = monitor.forkAsync(2);
+				SnomedRf1ConceptExporter rf1ConceptExporter = new SnomedRf1ConceptExporter(configuration, mapper);
+				new SnomedExportExecutor(rf1ConceptExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+			} finally {
+				if (async != null) {
+					async.stop();
+					async = null;
+				}
+			}
 			
 			if (monitor.isCanceled()) {
 				return;
-			} else {
-				monitor.worked(2);
 			}
 			
 			logActivity("Publishing SNOMED CT descriptions into RF1 format.");
-			descriptionExporter = new SnomedRf1DescriptionExporter(configuration, mapper, includeExtendedDescriptionTypes);
-			final SnomedExportExecutor exportExecutor = new SnomedExportExecutor(descriptionExporter, workingDirectory, modulesToExport, clientNamespace);
-			exportExecutor.execute();
 			
-			if (includeExtendedDescriptionTypes) {
-				exportExecutor.writeExtendedDescriptionTypeExplanation();
+			try {
+				async = monitor.forkAsync(2);
+				SnomedRf1DescriptionExporter rf1DescriptionExporter = new SnomedRf1DescriptionExporter(configuration, mapper, includeExtendedDescriptionTypes);
+				final SnomedExportExecutor exportExecutor = new SnomedExportExecutor(rf1DescriptionExporter, workingDirectory, modulesToExport, clientNamespace);
+				exportExecutor.execute();
+				
+				if (includeExtendedDescriptionTypes) {
+					exportExecutor.writeExtendedDescriptionTypeExplanation();
+				}
+			} finally {
+				if (async != null) {
+					async.stop();
+					async = null;
+				}
 			}
 			
 			if (monitor.isCanceled()) {
 				return;
-			} else {
-				monitor.worked(2);
 			}
 			
 			logActivity("Publishing SNOMED CT relationships into RF1 format.");
-			relationshipExporter = new SnomedRf1RelationshipExporter(configuration, mapper);
-			new SnomedExportExecutor(relationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+			
+			try {
+				async = monitor.forkAsync(2);
+				SnomedRf1RelationshipExporter rf1RelationshipExporter = new SnomedRf1RelationshipExporter(configuration, mapper);
+				new SnomedExportExecutor(rf1RelationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+			} finally {
+				if (async != null) {
+					async.stop();
+					async = null;
+				}
+			}
 			
 			if (monitor.isCanceled()) {
 				return;
-			} else {
-				monitor.worked(2);
 			}
-			
 		}
-		
 	}
 
 	public void executeRefSetExport(final String workingDirectory, final SnomedExportConfiguration configuration, final String refSetId, 
 			final OMMonitor monitor) throws IOException {
 	
+		Async async = null;
+		
+		try {
+			async = monitor.forkAsync();
+			doRefSetExport(workingDirectory, configuration, refSetId);
+		} finally {
+			if (async != null) {
+				async.stop();
+				async = null;
+			}
+		}
+	}
+	
+	private void doRefSetExport(String workingDirectory, SnomedExportConfiguration configuration, String refSetId) throws IOException {
+
 		final SnomedExporter refSetExporter = SnomedRefSetExporterFactory.getRefSetExporter(refSetId, configuration);
 		
 		if (NoopExporter.INSTANCE == refSetExporter) {
@@ -214,12 +283,9 @@ public class SnomedExporterFacade {
 					}
 				}
 			}
-				
 		}
-		
-		monitor.worked(1);
 	}
-	
+
 	private void logActivity(final String message) {
 		LOGGER.info(message);
 		LogUtils.logExportActivity(activityLogger, userId, branchPath, message);

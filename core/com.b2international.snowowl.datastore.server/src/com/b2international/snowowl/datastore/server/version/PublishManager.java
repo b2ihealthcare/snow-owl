@@ -104,13 +104,14 @@ public abstract class PublishManager implements IPublishManager {
 			publishTerminologyMetadateChanges(configuration);
 			logWork(monitor);
 
+			LOGGER.info(format(NEW_VERSION_CREATED_TEMPLATE, configuration.getVersionId(), getToolingName()));
+			
 		} catch (final SnowowlServiceException e) {
 			handleError(e);
 		} finally {
 			ToolingIdThreadLocal.reset();
 		}
 
-		format(NEW_VERSION_CREATED_TEMPLATE, configuration.getVersionId(), getToolingName());
 
 	}
 	

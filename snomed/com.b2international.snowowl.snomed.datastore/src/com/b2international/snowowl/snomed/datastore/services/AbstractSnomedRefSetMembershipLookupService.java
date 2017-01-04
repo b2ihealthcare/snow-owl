@@ -63,6 +63,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -366,12 +367,14 @@ public abstract class AbstractSnomedRefSetMembershipLookupService implements IRe
 	 * @param relationshipIds the relationship IDs.
 	 * @return a collection of data type reference set members referencing the given relationships.
 	 */
-	public Collection<SnomedRefSetMemberIndexEntry> getRelationshipDataTypes(final String... relationshipIds) {
-		if (0 == relationshipIds.length) {
-			return Collections.<SnomedRefSetMemberIndexEntry> emptyList();
+	public Collection<SnomedRefSetMemberIndexEntry> getRelationshipDataTypes(Collection<String> relationshipIds) {
+		
+		if (relationshipIds.isEmpty()) {
+			return Collections.emptyList();
 		}
+
 		final IIndexQueryAdapter<SnomedRefSetMemberIndexEntry> createFindByRefSetTypeQuery = SnomedConcreteDataTypeRefSetMembershipIndexQueryAdapter
-				.createFindActivesByReferencedComponentIdsQuery(RELATIONSHIP, wrapArguments(relationshipIds));
+				.createFindActivesByReferencedComponentIdsQuery(RELATIONSHIP, relationshipIds);
 		return getIndexService().searchUnsorted(createFindByRefSetTypeQuery);
 	}
 

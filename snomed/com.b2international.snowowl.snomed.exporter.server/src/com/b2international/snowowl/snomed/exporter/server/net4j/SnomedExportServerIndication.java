@@ -324,11 +324,14 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		} catch (Exception e) {
 			final String reason = null != e.getMessage() ? " Reason: '" + e.getMessage() + "'" : "";
 			LogUtils.logExportActivity(LOGGER, userId, branchPath, "Caught exception while exporting SNOMED CT terminology." + reason);
+			LOGGER.error("Caught exception while exporting SNOMED CT terminology.", e);
 			
 			if (e.getClass().isAssignableFrom(RuntimeException.class)) {
 				result.setResultAndMessage(Result.EXCEPTION, "An error occurred while exporting SNOMED CT components: could not retrieve data from database.");
 			} else if (e.getClass().isAssignableFrom(IOException.class)) {
 				result.setResultAndMessage(Result.EXCEPTION, "An error occurred while exporting SNOMED CT components: could not create release files.");
+			} else {
+				result.setResultAndMessage(Result.EXCEPTION, "An error occurred while exporting SNOMED CT components.");
 			}
 		}
 		

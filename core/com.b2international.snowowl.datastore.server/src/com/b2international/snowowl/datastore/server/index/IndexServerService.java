@@ -220,7 +220,6 @@ public abstract class IndexServerService<E extends IIndexEntry> extends Abstract
 		checkState(!physicalPath.isMain(), "Physical path cannot be MAIN.");
 		
 		try {
-			
 			final IndexBranchService baseBranchService = getBranchService(logicalPath.getParent());
 			
 			synchronized (baseBranchService) {

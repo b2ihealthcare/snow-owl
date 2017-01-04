@@ -20,11 +20,14 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.google.common.collect.Multimaps
 import com.google.common.collect.Range
 import java.util.Collection
+import org.slf4j.LoggerFactory
 
 /**
  * Service implementation for extracting strength information from {@link SnomedRefSetMemberIndexEntry}s.
  */
 class StrengthService implements IStrengthService {
+	
+	val static LOG = LoggerFactory.getLogger(StrengthService)
 	
 	val CD_NUMERATOR_VALUE = "NumeratorValue";
 	val CD_NUMERATOR_MIN_VALUE = "NumeratorMinValue";
@@ -72,8 +75,17 @@ class StrengthService implements IStrengthService {
 	}
 	
 	def private isSimpleType(Collection<SnomedRefSetMemberIndexEntry> entries) {
-		entries.size == 1 && 
-		entries.head.attributeLabel.endsWith(CD_NUMERATOR_VALUE)
+		val result = entries.forall[attributeLabel.endsWith(CD_NUMERATOR_VALUE)]
+		
+		if (!result) {
+			return false
+		}
+
+		if (entries.size > 1) {
+			entries.forEach[LOG.info("Found multiple simple type strength for {}: {}", it.referencedComponentId, it)]
+		}
+	
+		return result;
 	}
 	
 	def private isSimpleRangeType(Collection<SnomedRefSetMemberIndexEntry> entries) {
