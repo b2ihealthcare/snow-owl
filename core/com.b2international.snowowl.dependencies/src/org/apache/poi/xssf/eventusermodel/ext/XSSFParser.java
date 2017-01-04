@@ -134,7 +134,7 @@ public class XSSFParser {
 				
 				@Override
 				public void cell(final String cellReference, final String formattedValue) {
-					if (coumnCounter++ <= callback.getRelevanCoumnCount()) {
+					if (coumnCounter++ <= callback.getRelevantColumnCount()) {
 						values.get().add(formattedValue);
 					}
 				}

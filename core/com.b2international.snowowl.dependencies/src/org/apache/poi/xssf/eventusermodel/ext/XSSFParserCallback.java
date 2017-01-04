@@ -28,7 +28,7 @@ public interface XSSFParserCallback {
 	 * Inclusive, zero based maximum column number that has to be parsed.
 	 * @return the maximum, relevant column count.
 	 */
-	int getRelevanCoumnCount();
+	int getRelevantColumnCount();
 	
 	/**
 	 * Fired when a line of cells are processed during the XSSF parsing.
