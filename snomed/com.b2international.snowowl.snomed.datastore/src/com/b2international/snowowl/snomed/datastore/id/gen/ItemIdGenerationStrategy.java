@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.gen;
 
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 
 /**
  * Determines an algorithm on how to generate a valid SNOMED CT Item identifier without extension namespace-identifier, partition-identifier and
@@ -27,13 +28,14 @@ public interface ItemIdGenerationStrategy {
 	/**
 	 * Generates a brand new SNOMED CT Item Identifier.
 	 * 
-	 * @return
+	 * @param namespace the namespace identifier
+	 * @param category the terminology independent category of the component  
+	 * @return the generated item identifier
 	 */
-	String generateItemId();
+	String generateItemId(String namespace, ComponentCategory category);
 
 	/**
-	 * {@link ItemIdGenerationStrategy} implementation which generates a random Item identifier.
+	 * {@link ItemIdGenerationStrategy} implementation which generates a random Item identifier, independent of the given namespace and category.
 	 */
 	ItemIdGenerationStrategy RANDOM = new RandomItemIdGenerationStrategy();
-
 }
