@@ -42,7 +42,7 @@ public class ReservationRangeImpl implements Reservation {
 		checkArgument(itemIdMin >= minItemIdMin, "ItemIdMin should be greater than or equal to %s", minItemIdMin);
 		checkArgument(itemIdMax >= itemIdMin, "ItemIdMax should be greater than or equal to ItemIdMin");
 		this.itemIdRange = Range.closed(itemIdMin, itemIdMax);
-		this.namespace = Strings.nullToEmpty(namespace);
+		this.namespace = namespace;
 		this.components = components;
 	}
 	
@@ -63,7 +63,7 @@ public class ReservationRangeImpl implements Reservation {
 	}
 	
 	public boolean affects(String namespace, ComponentCategory category) {
-		return this.namespace.equals(namespace) && this.components.contains(category);
+		return Objects.equal(namespace, getNamespace()) && getComponents().contains(category);
 	}
 	
 	public Range<Long> getItemIdRange() {

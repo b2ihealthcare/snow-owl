@@ -35,7 +35,7 @@ public final class SnomedIdentifierImpl implements SnomedIdentifier {
 
 	public SnomedIdentifierImpl(final long itemId, final String namespace, final int partitionIdentifier, final int componentIdentifier, final int checkDigit) {
 		this.itemId = itemId;
-		this.namespace = Strings.nullToEmpty(namespace);
+		this.namespace = namespace;
 		this.formatIdentifier = partitionIdentifier;
 		this.componentIdentifier = componentIdentifier;
 		this.checkDigit = checkDigit;
@@ -68,7 +68,7 @@ public final class SnomedIdentifierImpl implements SnomedIdentifier {
 	@Override
 	public String toString() {
 		if (id == null) {
-			id = String.format("%s%s%s%s%s", itemId, namespace, formatIdentifier, componentIdentifier, checkDigit);
+			id = String.format("%s%s%s%s%s", itemId, Strings.nullToEmpty(namespace), formatIdentifier, componentIdentifier, checkDigit);
 		}
 		return id;
 	}
