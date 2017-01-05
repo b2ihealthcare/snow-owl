@@ -177,15 +177,15 @@ final class SnomedEclRewriter {
 		it
 	}
 	
-	def private dispatch Comparison rewriteComparison(AttributeValueNotEquals it) {
-		val comparison = EclFactory.eINSTANCE.createAttributeValueEquals
-		val nested = EclFactory.eINSTANCE.createNestedExpression
-		val exclusion = EclFactory.eINSTANCE.createExclusionExpressionConstraint
-		exclusion.left = EclFactory.eINSTANCE.createAny
-		exclusion.right = it.constraint
-		nested.nested = exclusion
-		comparison.constraint = nested 
-		comparison
+	def private dispatch Comparison rewriteComparison(AttributeValueNotEquals notEquals) {
+		EclFactory.eINSTANCE.createAttributeValueEquals => [
+			constraint = EclFactory.eINSTANCE.createNestedExpression => [
+				nested = EclFactory.eINSTANCE.createExclusionExpressionConstraint => [
+					left = EclFactory.eINSTANCE.createAny
+					right = notEquals.constraint
+				]
+			] 
+		]
 	}
 	
 }
