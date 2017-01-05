@@ -49,11 +49,11 @@ public class SnomedSimpleMapTypeRefSetImporter extends AbstractSnomedMapTypeRefS
 			.add(new IndexConfiguration("SNOMEDREFSET_SNOMEDSIMPLEMAPREFSETMEMBER_IDX1003", "SNOMEDREFSET_SNOMEDSIMPLEMAPREFSETMEMBER", "UUID/*!(255)*/", "CDO_BRANCH", "CDO_VERSION"))
 			.add(new IndexConfiguration("SNOMEDREFSET_SNOMEDSIMPLEMAPREFSETMEMBER_IDX1004", "SNOMEDREFSET_SNOMEDSIMPLEMAPREFSETMEMBER", "MAPTARGETCOMPONENTID/*!(255)*/", "CDO_BRANCH", "CDO_VERSION"))
 			.build();
-	private boolean extended;
+	private boolean hasMapTargetDescription;
 	
-	public SnomedSimpleMapTypeRefSetImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, boolean extended, final String releaseFileIdentifier) {
-		super(createImportConfiguration(extended), importContext, releaseFileStream, releaseFileIdentifier);
-		this.extended = extended;
+	public SnomedSimpleMapTypeRefSetImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, boolean hasMapTargetDescription, final String releaseFileIdentifier) {
+		super(createImportConfiguration(hasMapTargetDescription), importContext, releaseFileStream, releaseFileIdentifier);
+		this.hasMapTargetDescription = hasMapTargetDescription;
 	}
 
 	private static SnomedImportConfiguration<SimpleMapRefSetRow> createImportConfiguration(boolean extended) {
@@ -109,7 +109,7 @@ public class SnomedSimpleMapTypeRefSetImporter extends AbstractSnomedMapTypeRefS
 		member.setReferencedComponentId(row.getReferencedComponentId());
 		member.setMapTargetComponentId(row.getAssociatedComponentId());
 		
-		if (extended) {
+		if (hasMapTargetDescription) {
 			member.setMapTargetComponentDescription(((SimpleMapRefSetRow) row).getMapTargetDescription());
 		}		
 	}
