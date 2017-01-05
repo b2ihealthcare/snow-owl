@@ -171,6 +171,7 @@ public final class ComponentLookup<C extends CDOObject> {
 				// index componentIds by their category
 				final Multimap<Class<? extends SnomedDocument>, String> idsByType = Multimaps.index(componentIds, id -> SnomedDocument.getType(SnomedIdentifiers.getComponentCategory(id)));
 				for (Class<? extends SnomedDocument> type : idsByType.keySet()) {
+					// execute queries for each type and based on the current clazz extract either refset or concept storage keys
 					final Query<? extends SnomedDocument> query = Query.select(type).where(SnomedDocument.Expressions.ids(componentIds)).limit(componentIds.size()).build();
 					final Hits<? extends SnomedDocument> hits = index.search(query);
 					for (SnomedDocument doc : hits) {
@@ -181,7 +182,6 @@ public final class ComponentLookup<C extends CDOObject> {
 						}
 					}
 				}
-				// execute queries for each type
 				return map;
 			}
 		});

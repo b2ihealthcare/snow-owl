@@ -125,7 +125,6 @@ public class RefSetMemberLookup {
 			@Override
 			public LongValueMap<String> execute(RevisionSearcher index) throws IOException {
 				final LongValueMap<String> map = PrimitiveMaps.newObjectKeyLongOpenHashMapWithExpectedSize(componentIds.size());
-				// index componentIds by their category
 				final Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
 						.where(SnomedRefSetMemberIndexEntry.Expressions.ids(componentIds))
 						.limit(componentIds.size())
