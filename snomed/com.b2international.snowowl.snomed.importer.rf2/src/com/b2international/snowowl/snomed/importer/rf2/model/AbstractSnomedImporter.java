@@ -666,10 +666,9 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 		final Map<String, C> existingComponents = loadComponents(rowsToImport.keySet()).stream().collect(Collectors.toMap(getComponentIdMapper(), c -> c));
 		// create or update components
 		final Collection<C> componentsToAttach = newHashSet();
-		for (Entry<String, T> rowToImport : rowsToImport.entrySet()) {
-			final String componentId = rowToImport.getKey();
+		for (final String componentId : rowsToImport.keySet()) {
+			final T row = rowsToImport.get(componentId);
 			C component = existingComponents.get(componentId);
-			final T row = rowToImport.getValue();
 			if (component == null) {
 				// XXX some RF2 rows might already introduced the component with just the ID
 				component = getOrCreateNew(componentId, componentsToAttach);
