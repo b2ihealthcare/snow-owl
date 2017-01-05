@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,15 +29,14 @@ public final class SnomedIdentifierImpl implements SnomedIdentifier {
 	private String id;
 	private long itemId;
 	private String namespace;
-	private int partitionIdentifier;
+	private int formatIdentifier;
 	private int componentIdentifier;
 	private int checkDigit;
 
-	public SnomedIdentifierImpl(final long itemId, final String namespace, final int partitionIdentifier, final int componentIdentifier,
-			final int checkDigit) {
+	public SnomedIdentifierImpl(final long itemId, final String namespace, final int partitionIdentifier, final int componentIdentifier, final int checkDigit) {
 		this.itemId = itemId;
-		this.namespace = namespace;
-		this.partitionIdentifier = partitionIdentifier;
+		this.namespace = Strings.nullToEmpty(namespace);
+		this.formatIdentifier = partitionIdentifier;
 		this.componentIdentifier = componentIdentifier;
 		this.checkDigit = checkDigit;
 	}
@@ -50,8 +49,8 @@ public final class SnomedIdentifierImpl implements SnomedIdentifier {
 		return namespace;
 	}
 
-	public int getPartitionIdentifier() {
-		return partitionIdentifier;
+	public int getFormatIdentifier() {
+		return formatIdentifier;
 	}
 
 	public int getComponentIdentifier() {
@@ -69,7 +68,7 @@ public final class SnomedIdentifierImpl implements SnomedIdentifier {
 	@Override
 	public String toString() {
 		if (id == null) {
-			id = String.format("%s%s%s%s%s", itemId, Strings.nullToEmpty(namespace), partitionIdentifier, componentIdentifier, checkDigit);
+			id = String.format("%s%s%s%s%s", itemId, namespace, formatIdentifier, componentIdentifier, checkDigit);
 		}
 		return id;
 	}

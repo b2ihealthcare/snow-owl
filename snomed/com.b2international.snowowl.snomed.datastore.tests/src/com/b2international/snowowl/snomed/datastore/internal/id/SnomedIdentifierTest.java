@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public class SnomedIdentifierTest {
 		final SnomedIdentifier id = SnomedIdentifiers.create(Concepts.ROOT_CONCEPT);
 		assertEquals(138875L, id.getItemId());
 		assertNull(id.getNamespace());
-		assertEquals(0, id.getPartitionIdentifier());
+		assertEquals(0, id.getFormatIdentifier());
 		assertEquals(0, id.getComponentIdentifier());
 		assertEquals(5, id.getCheckDigit());
 		assertEquals(ComponentCategory.CONCEPT, id.getComponentCategory());
@@ -46,7 +46,7 @@ public class SnomedIdentifierTest {
 		final SnomedIdentifier id = SnomedIdentifiers.create("100005");
 		assertEquals(100L, id.getItemId());
 		assertNull(id.getNamespace());
-		assertEquals(0, id.getPartitionIdentifier());
+		assertEquals(0, id.getFormatIdentifier());
 		assertEquals(0, id.getComponentIdentifier());
 		assertEquals(5, id.getCheckDigit());
 		assertEquals(ComponentCategory.CONCEPT, id.getComponentCategory());
@@ -57,7 +57,7 @@ public class SnomedIdentifierTest {
 		final SnomedIdentifier id = SnomedIdentifiers.create(Concepts.DEFINITION_STATUS_ROOT);
 		assertEquals(900000000000444L, id.getItemId());
 		assertNull(id.getNamespace());
-		assertEquals(0, id.getPartitionIdentifier());
+		assertEquals(0, id.getFormatIdentifier());
 		assertEquals(0, id.getComponentIdentifier());
 		assertEquals(6, id.getCheckDigit());
 		assertEquals(ComponentCategory.CONCEPT, id.getComponentCategory());
@@ -68,7 +68,7 @@ public class SnomedIdentifierTest {
 		final SnomedIdentifier id = SnomedIdentifiers.create("1290023401015");
 		assertEquals(1290023401L, id.getItemId());
 		assertNull(id.getNamespace());
-		assertEquals(0, id.getPartitionIdentifier());
+		assertEquals(0, id.getFormatIdentifier());
 		assertEquals(1, id.getComponentIdentifier());
 		assertEquals(5, id.getCheckDigit());
 		assertEquals(ComponentCategory.DESCRIPTION, id.getComponentCategory());
@@ -79,7 +79,7 @@ public class SnomedIdentifierTest {
 		final SnomedIdentifier id = SnomedIdentifiers.create("9940000001029");
 		assertEquals(9940000001L, id.getItemId());
 		assertNull(id.getNamespace());
-		assertEquals(0, id.getPartitionIdentifier());
+		assertEquals(0, id.getFormatIdentifier());
 		assertEquals(2, id.getComponentIdentifier());
 		assertEquals(9, id.getCheckDigit());
 		assertEquals(ComponentCategory.RELATIONSHIP, id.getComponentCategory());
@@ -90,7 +90,7 @@ public class SnomedIdentifierTest {
 		final SnomedIdentifier id = SnomedIdentifiers.create("1290000001117");
 		assertEquals(129L, id.getItemId());
 		assertEquals("0000001", id.getNamespace());
-		assertEquals(1, id.getPartitionIdentifier());
+		assertEquals(1, id.getFormatIdentifier());
 		assertEquals(1, id.getComponentIdentifier());
 		assertEquals(7, id.getCheckDigit());
 		assertEquals(ComponentCategory.DESCRIPTION, id.getComponentCategory());
@@ -101,7 +101,7 @@ public class SnomedIdentifierTest {
 		final SnomedIdentifier id = SnomedIdentifiers.create("9940000001126");
 		assertEquals(994L, id.getItemId());
 		assertEquals("0000001", id.getNamespace());
-		assertEquals(1, id.getPartitionIdentifier());
+		assertEquals(1, id.getFormatIdentifier());
 		assertEquals(2, id.getComponentIdentifier());
 		assertEquals(6, id.getCheckDigit());
 		assertEquals(ComponentCategory.RELATIONSHIP, id.getComponentCategory());
@@ -112,7 +112,7 @@ public class SnomedIdentifierTest {
 		final SnomedIdentifier id = SnomedIdentifiers.create("999999990989121104");
 		assertEquals(99999999L, id.getItemId());
 		assertEquals("0989121", id.getNamespace());
-		assertEquals(1, id.getPartitionIdentifier());
+		assertEquals(1, id.getFormatIdentifier());
 		assertEquals(0, id.getComponentIdentifier());
 		assertEquals(4, id.getCheckDigit());
 		assertEquals(ComponentCategory.CONCEPT, id.getComponentCategory());
