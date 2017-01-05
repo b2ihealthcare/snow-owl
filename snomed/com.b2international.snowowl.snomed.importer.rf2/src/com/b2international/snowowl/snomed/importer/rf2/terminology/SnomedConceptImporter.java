@@ -81,7 +81,6 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 	
 	@Override
 	protected void applyRow(Concept component, ConceptRow row, Collection<Concept> componentsToAttach) {
-		component.setId(row.getId());
 		if (row.getEffectiveTime() != null) {
 			component.setEffectiveTime(row.getEffectiveTime());
 			component.setReleased(true);

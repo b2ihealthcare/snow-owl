@@ -78,7 +78,6 @@ public class SnomedDescriptionImporter extends AbstractSnomedTerminologyImporter
 
 	@Override
 	protected void applyRow(Description component, DescriptionRow row, Collection<Description> componentsToAttach) {
-		component.setId(row.getId());
 		if (row.getEffectiveTime() != null) {
 			component.setEffectiveTime(row.getEffectiveTime());
 			component.setReleased(true);

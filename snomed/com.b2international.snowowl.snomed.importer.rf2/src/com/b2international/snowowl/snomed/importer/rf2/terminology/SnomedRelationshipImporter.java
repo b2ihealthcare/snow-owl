@@ -86,7 +86,6 @@ public final class SnomedRelationshipImporter extends AbstractSnomedTerminologyI
 
 	@Override
 	protected void applyRow(Relationship component, RelationshipRow row, Collection<Relationship> componentsToAttach) {
-		component.setId(row.getId());
 		if (row.getEffectiveTime() != null) {
 			component.setEffectiveTime(row.getEffectiveTime());
 			component.setReleased(true);
