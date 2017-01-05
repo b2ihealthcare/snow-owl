@@ -95,7 +95,7 @@ public class SnomedModuleDependencyRefSetImporter extends AbstractSnomedRefSetIm
 	}
 
 	@Override
-	protected SnomedModuleDependencyRefSetMember createComponent() {
+	protected SnomedModuleDependencyRefSetMember createMember() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedModuleDependencyRefSetMember();
 	}
 

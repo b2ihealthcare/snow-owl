@@ -102,7 +102,7 @@ public class SnomedQueryRefSetImporter extends AbstractSnomedRefSetImporter<Quer
 	}
 
 	@Override
-	protected SnomedQueryRefSetMember createComponent() {
+	protected SnomedQueryRefSetMember createMember() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedQueryRefSetMember(); 
 	}
 }

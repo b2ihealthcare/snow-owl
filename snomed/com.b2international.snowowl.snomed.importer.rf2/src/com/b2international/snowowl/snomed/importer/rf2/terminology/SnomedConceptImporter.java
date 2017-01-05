@@ -70,7 +70,7 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 	}
 	
 	@Override
-	protected Concept createComponent() {
+	protected Concept createCoreComponent() {
 		return SnomedFactory.eINSTANCE.createConcept();
 	}
 

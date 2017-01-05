@@ -93,7 +93,7 @@ public class SnomedSimpleTypeRefSetImporter extends AbstractSnomedRefSetImporter
 	}
 
 	@Override
-	protected SnomedRefSetMember createComponent() {
+	protected SnomedRefSetMember createMember() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedRefSetMember();
 	}
 }

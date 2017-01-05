@@ -103,7 +103,7 @@ public class SnomedDescriptionTypeRefSetImporter extends AbstractSnomedRefSetImp
 	}
 
 	@Override
-	protected SnomedDescriptionTypeRefSetMember createComponent() {
+	protected SnomedDescriptionTypeRefSetMember createMember() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedDescriptionTypeRefSetMember();
 	}
 }

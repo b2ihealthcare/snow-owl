@@ -103,7 +103,7 @@ public class SnomedDescriptionImporter extends AbstractSnomedTerminologyImporter
 	}
 
 	@Override
-	protected Description createComponent() {
+	protected Description createCoreComponent() {
 		return SnomedFactory.eINSTANCE.createDescription();
 	}
 	

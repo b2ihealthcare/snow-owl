@@ -120,7 +120,7 @@ public class SnomedSimpleMapTypeRefSetImporter extends AbstractSnomedMapTypeRefS
 	}
 
 	@Override
-	protected SnomedSimpleMapRefSetMember createComponent() {
+	protected SnomedSimpleMapRefSetMember createMember() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedSimpleMapRefSetMember();
 	}
 }

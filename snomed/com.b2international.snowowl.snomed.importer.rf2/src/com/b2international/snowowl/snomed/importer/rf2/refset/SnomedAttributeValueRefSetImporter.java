@@ -116,7 +116,7 @@ public class SnomedAttributeValueRefSetImporter extends AbstractSnomedRefSetImpo
 	}
 
 	@Override
-	protected SnomedAttributeValueRefSetMember createComponent() {
+	protected SnomedAttributeValueRefSetMember createMember() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedAttributeValueRefSetMember();
 	}
 	

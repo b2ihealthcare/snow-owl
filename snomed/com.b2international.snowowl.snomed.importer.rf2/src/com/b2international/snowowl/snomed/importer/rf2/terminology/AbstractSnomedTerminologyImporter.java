@@ -116,12 +116,12 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 
 	@Override
 	protected C createComponent(String componentId) {
-		final C component = createComponent();
+		final C component = createCoreComponent();
 		component.setId(componentId);
 		return component;
 	}
 	
-	protected abstract C createComponent();
+	protected abstract C createCoreComponent();
 
 	protected final Concept getConceptSafe(final String conceptId, final String conceptField, final String componentId) {
 		final Concept result = (Concept) Iterables.getOnlyElement(getComponents(Collections.singleton(conceptId)), null);

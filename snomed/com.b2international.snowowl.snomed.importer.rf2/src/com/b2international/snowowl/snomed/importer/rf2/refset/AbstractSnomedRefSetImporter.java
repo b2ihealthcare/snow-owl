@@ -217,12 +217,12 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 
 	@Override
 	protected final M createComponent(String memberId) {
-		final M member = createComponent();
+		final M member = createMember();
 		member.setUuid(memberId);
 		return member;
 	}
 	
-	protected abstract M createComponent();
+	protected abstract M createMember();
 	
 	protected SnomedRefSet getOrCreateRefSet(final String refSetSctId, final String referencedComponentId) {
 		

@@ -81,7 +81,7 @@ public final class SnomedAssociationRefSetImporter extends AbstractSnomedRefSetI
 	}
 	
 	@Override
-	protected SnomedAssociationRefSetMember createComponent() {
+	protected SnomedAssociationRefSetMember createMember() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedAssociationRefSetMember();
 	}
 	

@@ -136,7 +136,7 @@ public class SnomedComplexMapTypeRefSetImporter extends AbstractSnomedMapTypeRef
 	}
 
 	@Override
-	protected SnomedComplexMapRefSetMember createComponent() {
+	protected SnomedComplexMapRefSetMember createMember() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedComplexMapRefSetMember();
 	}
 }

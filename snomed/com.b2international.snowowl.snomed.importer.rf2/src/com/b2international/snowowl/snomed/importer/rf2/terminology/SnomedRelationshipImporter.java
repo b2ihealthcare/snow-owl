@@ -122,7 +122,7 @@ public final class SnomedRelationshipImporter extends AbstractSnomedTerminologyI
 	}
 	
 	@Override
-	protected Relationship createComponent() {
+	protected Relationship createCoreComponent() {
 		return SnomedFactory.eINSTANCE.createRelationship();
 	}
 	

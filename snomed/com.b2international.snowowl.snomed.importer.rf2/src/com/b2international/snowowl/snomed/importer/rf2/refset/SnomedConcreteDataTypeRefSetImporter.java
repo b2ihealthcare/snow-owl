@@ -161,7 +161,7 @@ public class SnomedConcreteDataTypeRefSetImporter extends AbstractSnomedRefSetIm
 	}
 
 	@Override
-	protected SnomedConcreteDataTypeRefSetMember createComponent() {
+	protected SnomedConcreteDataTypeRefSetMember createMember() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedConcreteDataTypeRefSetMember();
 	}
 	

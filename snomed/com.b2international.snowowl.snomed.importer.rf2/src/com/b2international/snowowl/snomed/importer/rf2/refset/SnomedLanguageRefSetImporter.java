@@ -102,7 +102,7 @@ public final class SnomedLanguageRefSetImporter extends AbstractSnomedRefSetImpo
 	}
 
 	@Override
-	protected SnomedLanguageRefSetMember createComponent() {
+	protected SnomedLanguageRefSetMember createMember() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedLanguageRefSetMember();
 	}
 	
