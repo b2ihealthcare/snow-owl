@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,18 @@ import com.google.common.collect.Maps;
  */
 public class SortBy {
 	public static enum Order {
-		ASC, DESC
+		ASC(true), 
+		DESC(false);
+		
+		private final boolean ascending;
+
+		private Order(boolean ascending) {
+			this.ascending = ascending;
+		}
+
+		public boolean isAscending() {
+			return ascending;
+		}
 	}
 
 	/**

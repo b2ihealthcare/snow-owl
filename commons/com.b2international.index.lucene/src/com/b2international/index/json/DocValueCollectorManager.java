@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,24 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hbase.util.OrderedBytes;
+import org.apache.hadoop.hbase.util.SimplePositionedMutableByteRange;
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.search.CollectionTerminatedException;
 import org.apache.lucene.search.CollectorManager;
 import org.apache.lucene.search.SimpleCollector;
+import org.apache.lucene.util.BytesRef;
 
 import com.b2international.index.json.DocValueCollectorManager.DocValueCollector;
+import com.b2international.index.mapping.DocumentMapping;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 
@@ -41,9 +46,11 @@ import com.google.common.collect.Sets;
 public final class DocValueCollectorManager implements CollectorManager<DocValueCollector, List<Map<String, Object>>> {
 
 	private final Set<String> fields;
+	private final DocumentMapping mapping;
 	
-	public DocValueCollectorManager(Set<String> fields) {
+	public DocValueCollectorManager(Set<String> fields, DocumentMapping mapping) {
 		this.fields = fields;
+		this.mapping = mapping;
 	}
 	
 	@Override
@@ -67,8 +74,17 @@ public final class DocValueCollectorManager implements CollectorManager<DocValue
 		@Override
 		protected void doSetNextReader(LeafReaderContext context) throws IOException {
 			for (String field : fields) {
-				Object docValues = context.reader().getNumericDocValues(field);
-				if (docValues == null) {
+				Object docValues = null;
+				Field mappingField = mapping.getField(field);
+				Class<?> fieldType = NumericClassUtils.unwrapCollectionType(mappingField);
+				
+				if (NumericClassUtils.isCollection(mappingField)) {
+					throw new IllegalStateException("Docvalues can not be retrieved for a collection of type: " + fieldType + " for field: " + field);
+				}
+				
+				if (NumericClassUtils.isFloat(fieldType) || NumericClassUtils.isLong(fieldType) || NumericClassUtils.isInt(fieldType) || NumericClassUtils.isShort(fieldType)) {
+					docValues = context.reader().getNumericDocValues(field);
+				} else if (NumericClassUtils.isBigDecimal(fieldType) || String.class.isAssignableFrom(fieldType)) {
 					docValues = context.reader().getBinaryDocValues(field);
 				}
 				if (docValues == null) {
@@ -88,12 +104,25 @@ public final class DocValueCollectorManager implements CollectorManager<DocValue
 			final Map<String, Object> hit = newHashMapWithExpectedSize(fields.size());
 			for (String field : fields) {
 				Object docValues = this.docValues.get(field);
-				if (docValues instanceof BinaryDocValues) {
-					hit.put(field, ((BinaryDocValues) docValues).get(doc).utf8ToString());
-				} else if (docValues instanceof NumericDocValues) {
+				Class<?> fieldType = mapping.getField(field).getType();
+				
+				if (NumericClassUtils.isFloat(fieldType)) {
+					int intBits = (int) ((NumericDocValues) docValues).get(doc);
+					hit.put(field, Float.intBitsToFloat(intBits));  
+				} else if (NumericClassUtils.isLong(fieldType)) {
 					hit.put(field, ((NumericDocValues) docValues).get(doc));
+				} else if (NumericClassUtils.isInt(fieldType)) {
+					hit.put(field, (int) ((NumericDocValues) docValues).get(doc));
+				} else if (NumericClassUtils.isShort(fieldType)) {
+					hit.put(field, (short) ((NumericDocValues) docValues).get(doc));
+				} else if (NumericClassUtils.isBigDecimal(fieldType)) {
+					BytesRef bytesRef = ((BinaryDocValues) docValues).get(doc);
+					SimplePositionedMutableByteRange src = new SimplePositionedMutableByteRange(bytesRef.bytes, bytesRef.offset, bytesRef.length);
+					hit.put(field, OrderedBytes.decodeNumericAsBigDecimal(src));
+				} else if (String.class.isAssignableFrom(fieldType)) {
+					hit.put(field, ((BinaryDocValues) docValues).get(doc).utf8ToString());
 				} else {
-					throw new UnsupportedOperationException("Unhandled docValues for field: " + field + " -> " + docValues);
+					throw new UnsupportedOperationException("Unhandled docValues for field: " + field + " of type: " + fieldType + " -> " + docValues);
 				}
 			}
 			if (!hit.keySet().containsAll(fields)) {

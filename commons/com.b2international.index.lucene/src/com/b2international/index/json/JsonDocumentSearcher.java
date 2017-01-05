@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,11 @@
  */
 package com.b2international.index.json;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
+
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +29,8 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldDocs;
 import org.slf4j.Logger;
@@ -43,6 +48,8 @@ import com.b2international.index.query.LuceneQueryBuilder;
 import com.b2international.index.query.Phase;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
+import com.b2international.index.query.SortBy.MultiSortBy;
+import com.b2international.index.query.SortBy.SortByField;
 import com.b2international.index.query.slowlog.QueryProfiler;
 import com.b2international.index.query.slowlog.SlowLogConfig;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -51,6 +58,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.primitives.Ints;
 
 /**
@@ -100,9 +108,13 @@ public class JsonDocumentSearcher implements Searcher {
 	public <T> Hits<T> search(Query<T> query) throws IOException {
 		if (query.getFields() == null || query.getFields().isEmpty()) {
 			return searchDefault(query);
-		} else {
-			return searchByCollector(query);
 		}
+		
+		if (!SortBy.NONE.equals(query.getSortBy())) {
+			throw new IllegalArgumentException("Queries with field selection can't be sorted: " + query.getSortBy()); 
+		}
+		
+		return searchByCollector(query);
 	}
 
 	private <T> Hits<T> searchByCollector(Query<T> query) throws IOException {
@@ -110,8 +122,8 @@ public class JsonDocumentSearcher implements Searcher {
 		try {
 			profiler.start(Phase.QUERY);
 			final Class<T> select = query.getSelect();
-			final Class<?> from = query.getFrom();
-			final org.apache.lucene.search.Query lq = toLuceneQuery(from, query);
+			final DocumentMapping mapping = getDocumentMapping(query);
+			final org.apache.lucene.search.Query lq = toLuceneQuery(mapping, query);
 			
 			final int offset = query.getOffset();
 			int limit = query.getLimit();
@@ -129,7 +141,7 @@ public class JsonDocumentSearcher implements Searcher {
 					return new Hits<>(Collections.emptyList(), offset, limit, 0);
 				} else {
 					final Set<String> fields = query.getFields();
-					final List<Map<String, Object>> rawHits = searcher.search(lq, new DocValueCollectorManager(fields));
+					final List<Map<String, Object>> rawHits = searcher.search(lq, new DocValueCollectorManager(fields, mapping));
 					final List<T> hits = FluentIterable.from(rawHits)
 							.transform(new Function<Map<String, Object>, T>() {
 								@Override
@@ -150,7 +162,9 @@ public class JsonDocumentSearcher implements Searcher {
 		final QueryProfiler profiler = new QueryProfiler(query, slowLogConfig);
 		final Class<T> select = query.getSelect();
 		final Class<?> from = query.getFrom();
-		final org.apache.lucene.search.Query lq = toLuceneQuery(from, query);
+		final DocumentMapping mapping = getDocumentMapping(query);
+		final org.apache.lucene.search.Query lq = toLuceneQuery(mapping, query);
+		final org.apache.lucene.search.Sort ls = toLuceneSort(mapping, query);
 		
 		final int offset = query.getOffset();
 		int limit = query.getLimit();
@@ -173,7 +187,7 @@ public class JsonDocumentSearcher implements Searcher {
 				if (maxDoc <= 0 || limit < 1) {
 					topDocs = new TopFieldDocs(0, null, null, 0);
 				} else {
-					topDocs = searcher.search(lq, numDocsToRetrieve(offset, limit), toSort(query.getSortBy()), query.isWithScores(), false);
+					topDocs = searcher.search(lq, numDocsToRetrieve(offset, limit), ls, query.isWithScores(), false);
 				}
 			}
 			profiler.end(Phase.QUERY);
@@ -215,27 +229,69 @@ public class JsonDocumentSearcher implements Searcher {
 		}
 	}
 
-	private Sort toSort(SortBy sortBy) {
-		// TODO implement sorting by field
-		return SortBy.SCORE == sortBy ? Sort.RELEVANCE : Sort.INDEXORDER;
-	}
-
-	protected int numDocsToRetrieve(final int offset, final int limit) {
-		return Ints.min(offset + limit, searcher.getIndexReader().maxDoc());
-	}
-
-	private org.apache.lucene.search.Query toLuceneQuery(Class<?> select, Query<?> query) {
-		final DocumentMapping mapping;
+	private DocumentMapping getDocumentMapping(Query<?> query) {
 		if (query.getParentType() != null) {
-			mapping = mappings.getMapping(query.getParentType()).getNestedMapping(select);
-		} else {
-			mapping = mappings.getMapping(select);
+			return mappings.getMapping(query.getParentType()).getNestedMapping(query.getFrom());
 		}
+		return mappings.getMapping(query.getFrom());
+	}
+
+	private org.apache.lucene.search.Query toLuceneQuery(DocumentMapping mapping, Query<?> query) {
 		return new LuceneQueryBuilder(mapping).build(query.getWhere());
+	}
+
+	private org.apache.lucene.search.Sort toLuceneSort(DocumentMapping mapping, Query<?> query) {
+		final SortBy sortBy = query.getSortBy();
+		final List<SortBy> items = newArrayList();
+		
+		// Unpack the top level multi-sort if present
+		if (sortBy instanceof MultiSortBy) {
+			items.addAll(((MultiSortBy) sortBy).getItems());
+		} else {
+			items.add(sortBy);
+		}
+		
+		final List<SortField> convertedItems = newArrayListWithExpectedSize(items.size());
+		for (final SortBy item : items) {
+			if (SortBy.NONE.equals(item)) {
+				convertedItems.add(SortField.FIELD_DOC);
+			} else if (SortBy.SCORE.equals(item)) {
+				convertedItems.add(SortField.FIELD_SCORE);
+			} else if (item instanceof SortByField) {
+				final SortByField fieldItem = (SortByField) item;
+				final String sortField = fieldItem.getField();
+				final Field mappingField = mapping.getField(sortField);
+
+				if (NumericClassUtils.isCollection(mappingField)) {
+					throw new IllegalArgumentException("Can't sort on field collection: " + sortField);
+				}
+				
+				final Class<?> fieldType = mappingField.getType();
+				final boolean ascending = fieldItem.getOrder().isAscending();
+				
+				if (NumericClassUtils.isLong(fieldType)) {
+					convertedItems.add(new SortField(sortField, Type.LONG, ascending));
+				} else if (NumericClassUtils.isFloat(fieldType)) {
+					convertedItems.add(new SortField(sortField, Type.FLOAT, ascending));
+				} else if (NumericClassUtils.isInt(fieldType) || NumericClassUtils.isShort(fieldType)) {
+					convertedItems.add(new SortField(sortField, Type.INT, ascending));
+				} else if (NumericClassUtils.isBigDecimal(fieldType) || String.class.isAssignableFrom(fieldType)) {
+					// TODO: STRING mode might be faster, but requires SortedDocValueFields
+					convertedItems.add(new SortField(sortField, Type.STRING_VAL, ascending));
+				} else {
+					throw new IllegalArgumentException("Unsupported sort field type: " + fieldType + " for field: " + sortField);
+				}
+			}
+		}
+		
+		return new org.apache.lucene.search.Sort(Iterables.toArray(convertedItems, SortField.class));
+	}
+	
+	private int numDocsToRetrieve(final int offset, final int limit) {
+		return Ints.min(offset + limit, searcher.getIndexReader().maxDoc());
 	}
 
 	private static boolean isEmpty(TopDocs docs) {
 		return docs == null || docs.scoreDocs == null || docs.scoreDocs.length == 0;
 	}
-
 }
