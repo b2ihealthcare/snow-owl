@@ -403,7 +403,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	}
 
 	private ImportAction handlePreImportException(final SuperCSVException e) {
-		log("Exception caught while reading release file. Continuing with next row. {}", e.getMessage());
+		log("Exception caught while reading release file. Continuing with next row.", e);
 		importContext.getLogger().warn("Exception caught while reading release file. Continuing with next row.", e);
 		return ImportAction.CONTINUE;
 	}
@@ -437,7 +437,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 			try {
 				sliceStream = new FileOutputStream(sliceFile);
 			} catch (final FileNotFoundException e) {
-				log("SNOMED CT import failed. Couldn't open output file '{}' for writing. {}", sliceFile.getAbsolutePath(), e.getMessage());
+				log("SNOMED CT import failed. Couldn't open output file '{}' for writing.", sliceFile.getAbsolutePath(), e);
 				throw new ImportException("Couldn't open output file '" + sliceFile.getAbsolutePath() + "' for writing.", e);
 			}
 			
@@ -557,8 +557,9 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	}
 
 	private ImportAction handleImportException(final Throwable e) {
-		log("Exception caught while importing row from release file. Continuing with next row. {}", e.getMessage());
-		importContext.getLogger().warn("Exception caught while importing row from release file. Continuing with next row.", e);
+		final String message = "Exception caught while importing row from release file. Continuing with next row.";
+		log(message, e);
+		importContext.getLogger().warn(message, e);
 		return ImportAction.CONTINUE;
 	}
 
@@ -633,13 +634,13 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	}
 	
 	private ImportAction checkCommitException(final SnowowlServiceException e) {
-		log("SNOMED CT import failed. Caught exception while import, aborting. {}", e.getMessage());
+		log("SNOMED CT import failed. Caught exception while import, aborting. {}", e);
 		importContext.getLogger().warn("Caught exception while import, aborting.", e);
 		return ImportAction.BREAK;
 	}
 
 	private ImportAction checkCommitException(final CommitException e) {
-		log("SNOMED CT import failed. Caught exception while import, aborting. {}", e.getMessage());
+		log("SNOMED CT import failed. Caught exception while import, aborting. {}", e);
 		importContext.getLogger().warn("Caught exception while import, aborting.", e);
 		handleCommitException();
 		return ImportAction.BREAK;
