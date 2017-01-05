@@ -104,7 +104,9 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 
 	@Override
 	public Promise<Expression> execute(BranchContext context) {
-		return evaluate(context, context.service(EclParser.class).parse(expression));
+		// parse and rewrite the ECL expression before processing
+		final ExpressionConstraint exp = context.service(EclParser.class).parse(expression);
+		return evaluate(context, new SnomedEclRewriter().rewrite(exp));
 	}
 	
 	private Promise<Expression> evaluate(BranchContext context, EObject expression) {

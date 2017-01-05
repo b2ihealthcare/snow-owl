@@ -53,8 +53,6 @@ import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeComparison;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
 import com.b2international.snowowl.snomed.ecl.ecl.Comparison;
 import com.b2international.snowowl.snomed.ecl.ecl.DataTypeComparison;
@@ -64,9 +62,6 @@ import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThanEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThan;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThanEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.EclFactory;
-import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThan;
 import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThanEquals;
@@ -103,7 +98,6 @@ final class SnomedEclRefinementEvaluator {
 	static final Set<String> ALLOWED_CHARACTERISTIC_TYPES = ImmutableSet.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP);
 	private static final int UNBOUNDED_CARDINALITY = -1;
 	private static final Range<Long> ANY_GROUP = Range.closed(0L, Long.MAX_VALUE);
-	private static final EclFactory ECL_FACTORY = EclFactory.eINSTANCE;
 	
 	private final PolymorphicDispatcher<Promise<Expression>> refinementDispatcher = PolymorphicDispatcher.createForSingleTarget("eval", 2, 2, this);
 	private final PolymorphicDispatcher<Promise<Collection<Property>>> groupRefinementDispatcher = PolymorphicDispatcher.createForSingleTarget("evalGroup", 3, 3, this);
@@ -427,7 +421,7 @@ final class SnomedEclRefinementEvaluator {
 			// resolve non-* focusConcept ECLs to IDs, so we can filter relationships by source/destination
 			// filterByType and filterByDestination accepts ECL expressions as well, so serialize them into ECL and pass as String when required
 			// if reversed refinement, then we are interested in the destinationIds otherwise we need the sourceIds
-			final Collection<String> destinationConceptFilter = Collections.singleton(serializer.serializeWithoutTerms(rewrite(comparison)));
+			final Collection<String> destinationConceptFilter = Collections.singleton(serializer.serializeWithoutTerms(((AttributeComparison) comparison).getConstraint()));
 			final Collection<String> focusConceptFilter = refinement.isReversed() ? destinationConceptFilter : focusConceptIds;
 			final Collection<String> valueConceptFilter = refinement.isReversed() ? focusConceptIds : destinationConceptFilter;
 			return evalRelationships(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, grouped);
@@ -665,21 +659,6 @@ final class SnomedEclRefinementEvaluator {
 						}).toSet();
 					}
 				});
-	}
-	
-	private ExpressionConstraint rewrite(Comparison comparison) {
-		if (comparison instanceof AttributeValueEquals) {
-			return ((AttributeValueEquals) comparison).getConstraint();
-		} else if (comparison instanceof AttributeValueNotEquals) {
-			// convert != expression to exclusion constraint
-			final ExclusionExpressionConstraint exclusion = ECL_FACTORY.createExclusionExpressionConstraint();
-			// set Any as left of exclusion
-			exclusion.setLeft(ECL_FACTORY.createAny());
-			// set original constraint as right of exclusion
-			exclusion.setRight(((AttributeValueNotEquals) comparison).getConstraint());
-			return exclusion;
-		}
-		throw new UnsupportedOperationException("Cannot rewrite comparison: " + comparison);
 	}
 	
 	// Helper Throwable class to quickly return from attribute constraint evaluation when all matches are valid
