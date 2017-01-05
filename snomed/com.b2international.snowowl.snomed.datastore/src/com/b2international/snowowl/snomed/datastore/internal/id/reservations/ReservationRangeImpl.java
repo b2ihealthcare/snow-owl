@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public class ReservationRangeImpl implements Reservation {
 		checkArgument(itemIdMin >= minItemIdMin, "ItemIdMin should be greater than or equal to %s", minItemIdMin);
 		checkArgument(itemIdMax >= itemIdMin, "ItemIdMax should be greater than or equal to ItemIdMin");
 		this.itemIdRange = Range.closed(itemIdMin, itemIdMax);
-		this.namespace = namespace;
+		this.namespace = Strings.nullToEmpty(namespace);
 		this.components = components;
 	}
 	
@@ -60,6 +60,14 @@ public class ReservationRangeImpl implements Reservation {
 
 	private Collection<ComponentCategory> getComponents() {
 		return components;
+	}
+	
+	public boolean affects(String namespace, ComponentCategory category) {
+		return this.namespace.equals(namespace) && this.components.contains(category);
+	}
+	
+	public Range<Long> getItemIdRange() {
+		return itemIdRange;
 	}
 
 	@Override
