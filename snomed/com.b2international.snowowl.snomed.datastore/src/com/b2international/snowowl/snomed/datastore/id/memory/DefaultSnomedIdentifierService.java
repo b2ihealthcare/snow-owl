@@ -16,14 +16,17 @@
 package com.b2international.snowowl.snomed.datastore.id.memory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.eclipse.emf.cdo.spi.server.Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -213,18 +216,13 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		LOGGER.debug(String.format("Registering %d component IDs.", componentIds.size()));
 
 		try {
-			final Collection<String> existingIds = getSctIds(componentIds).stream().filter(id -> id.matches(IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)).map(SctId::getSctid).collect(Collectors.toSet());
-			
-			for (final String componentId : componentIds) {
-				if (!existingIds.contains(componentId)) {
-					final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
-					sctIds.put(componentId, sctId);
-					registeredComponentIds.add(componentId);
+			for (final SctId sctId : getSctIds(componentIds)) {
+				if (!sctId.matches(IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)) {
+					LOGGER.warn("Cannot register ID {} as it is already present with status {}.", sctId.getSctid(), sctId.getStatus());
 				} else {
-					LOGGER.warn("Cannot register ID {} as it is already taken.", componentId);
+					sctId.setStatus(IdentifierStatus.ASSIGNED.getSerializedName());
 				}
 			}
-
 			putSctIds(sctIds);
 		} catch (Exception e) {
 			// remove the registered component IDs
@@ -307,7 +305,20 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 	@Override
 	public Collection<SctId> getSctIds(final Collection<String> componentIds) {
-		return store.get().read(index -> index.search(Query.select(SctId.class).where(Expressions.matchAny(DocumentMapping._ID, componentIds)).limit(componentIds.size()).build()).getHits()); 
+		final List<SctId> existingIds = store.get().read(index -> index.search(Query.select(SctId.class).where(Expressions.matchAny(DocumentMapping._ID, componentIds)).limit(componentIds.size()).build()).getHits());
+		if (existingIds.size() == componentIds.size()) {
+			return existingIds;
+		} else {
+			final Set<String> existingIdentifiers = existingIds.stream().map(SctId::getSctid).collect(Collectors.toSet());
+			final List<SctId> ids = newArrayListWithExpectedSize(componentIds.size());
+			ids.addAll(existingIds);
+			for (String componentId : componentIds) {
+				if (!existingIdentifiers.contains(componentId)) {
+					ids.add(buildSctId(componentId, IdentifierStatus.AVAILABLE));
+				}
+			}
+			return ids;
+		}
 	}
 
 	private String generateId(final String namespace, final ComponentCategory category) {
