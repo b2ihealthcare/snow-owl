@@ -534,7 +534,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 					// process batch loaded rows and commit them
 					importRows(rows);
 					// reinit rows array
-					rows = Lists.newArrayListWithExpectedSize(COMMIT_EVERY_NUM_ELEMENTS);
+					rows.clear();
 					if (ImportAction.BREAK.equals(commit(subMonitor, effectiveTimeKey))) {
 						break;
 					}
