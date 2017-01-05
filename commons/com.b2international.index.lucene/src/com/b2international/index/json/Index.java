@@ -40,6 +40,7 @@ import org.apache.lucene.util.BytesRef;
 import com.b2international.index.Searcher;
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.util.NumericClassUtils;
 import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

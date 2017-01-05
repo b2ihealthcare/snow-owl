@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.json;
+package com.b2international.index.util;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -24,7 +24,6 @@ import com.b2international.collections.bytes.ByteCollection;
 import com.b2international.collections.floats.FloatCollection;
 import com.b2international.collections.ints.IntCollection;
 import com.b2international.collections.longs.LongCollection;
-import com.b2international.index.util.Reflections;
 
 /**
  * @since 5.4

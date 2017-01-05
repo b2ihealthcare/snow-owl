@@ -37,6 +37,7 @@ import org.apache.lucene.util.BytesRef;
 
 import com.b2international.index.json.DocValueCollectorManager.DocValueCollector;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.util.NumericClassUtils;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 

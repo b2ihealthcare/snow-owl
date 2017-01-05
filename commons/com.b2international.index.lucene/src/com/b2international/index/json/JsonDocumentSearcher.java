@@ -52,6 +52,7 @@ import com.b2international.index.query.SortBy.MultiSortBy;
 import com.b2international.index.query.SortBy.SortByField;
 import com.b2international.index.query.slowlog.QueryProfiler;
 import com.b2international.index.query.slowlog.SlowLogConfig;
+import com.b2international.index.util.NumericClassUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
