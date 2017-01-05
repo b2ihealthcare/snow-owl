@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -333,8 +333,9 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	private String generateComponentId(final String namespace, final ComponentCategory category) {
 		final String selectedNamespace = selectNamespace(namespace);
 		final StringBuilder builder = new StringBuilder();
-		// generate the SCT Item ID
-		builder.append(generationStrategy.generateItemId());
+
+		// generate the SCT Item ID (value can be a function of component category and namespace)
+		builder.append(generationStrategy.generateItemId(selectedNamespace, category));
 
 		// append namespace and the first part of the partition-identifier
 		if (Strings.isNullOrEmpty(selectedNamespace)) {
@@ -358,12 +359,12 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		final SctId sctId = new SctId();
 		sctId.setSctid(componentId);
 		sctId.setStatus(status.getSerializedName());
-		sctId.setNamespace(identifier.getNamespace());
-		sctId.setPartitionId(String.valueOf(identifier.getPartitionIdentifier()));
+		sctId.setSequence(identifier.getItemId());
+		sctId.setNamespaceFromString(identifier.getNamespace());
+		sctId.setPartitionId(String.format("%s%s", identifier.getFormatIdentifier(), identifier.getComponentIdentifier()));
 		sctId.setCheckDigit(identifier.getCheckDigit());
 
-		// TODO set remaining attributes?
-
+		// TODO set remaining attributes
 		return sctId;
 	}
 
