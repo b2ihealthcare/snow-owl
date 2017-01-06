@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,11 @@ import com.b2international.snowowl.snomed.datastore.id.AbstractBulkIdentifierSer
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
+import com.b2international.snowowl.snomed.datastore.id.gen.SequentialItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Provider;
 import com.google.inject.util.Providers;
 
 /**
@@ -48,10 +50,14 @@ public class BulkInMemorySnomedIdentifierServiceTest extends AbstractBulkIdentif
 
 	@Before
 	public void init() {
-		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		store = Indexes.createIndex(UUID.randomUUID().toString(), new ObjectMapper(), new Mappings(SctId.class));
-		service = new DefaultSnomedIdentifierService(Providers.of(store), ItemIdGenerationStrategy.RANDOM, reservationService, new SnomedIdentifierConfiguration());
 		store.admin().create();
+		
+		final Provider<Index> storeProvider = Providers.of(store);
+		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(storeProvider, reservationService);
+		
+		service = new DefaultSnomedIdentifierService(storeProvider, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
 	}
 	
 	@After

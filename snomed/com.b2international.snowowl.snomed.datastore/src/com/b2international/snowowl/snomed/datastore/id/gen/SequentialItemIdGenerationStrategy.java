@@ -68,7 +68,8 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 			if (lastSctId != null) {
 				this.counter = new AtomicLong(lastSctId.getSequence());
 			} else {
-				this.counter = new AtomicLong(allowedRange.lowerEndpoint());
+				// getNextItemId() will add 1 to this value immediately
+				this.counter = new AtomicLong(allowedRange.lowerEndpoint() - 1L);
 			}
 			
 			final ImmutableRangeSet.Builder<Long> excludedRangesBuilder = ImmutableRangeSet.builder();
@@ -169,7 +170,7 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 
 	@Override
 	public String generateItemId(final String namespace, final ComponentCategory category) {
-		final Pair<String, ComponentCategory> key = Pair.of(Strings.nullToEmpty(namespace), category);
+		final Pair<String, ComponentCategory> key = Pair.identicalPairOf(Strings.nullToEmpty(namespace), category);
 		final long nextItemId = lastItemIds.getUnchecked(key).getNextItemId();
 		return Long.toString(nextItemId);
 	}

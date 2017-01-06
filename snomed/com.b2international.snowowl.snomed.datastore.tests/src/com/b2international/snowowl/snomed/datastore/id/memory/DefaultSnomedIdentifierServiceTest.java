@@ -15,9 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.memory;
 
+import static org.junit.Assert.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.After;
@@ -33,14 +35,35 @@ import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfi
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
+import com.b2international.snowowl.snomed.datastore.id.gen.SequentialItemIdGenerationStrategy;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.inject.Provider;
 import com.google.inject.util.Providers;
 
 /**
  * @since 4.7
  */
 public class DefaultSnomedIdentifierServiceTest {
+
+	private static final class CyclingItemIdGenerationStrategy implements ItemIdGenerationStrategy {
+		private final Iterator<String> itr;
+
+		public CyclingItemIdGenerationStrategy(final String... itemIds) {
+			this.itr = Iterables.cycle(itemIds).iterator();
+		}
+
+		@Override
+		public String generateItemId(final String namespace, final ComponentCategory category) {
+			return itr.next();
+		}
+	}
+
+	private static final String INT_NAMESPACE = "";
+	private static final String B2I_NAMESPACE = "1000129";
 
 	private Index store;
 
@@ -49,35 +72,53 @@ public class DefaultSnomedIdentifierServiceTest {
 		store = Indexes.createIndex(UUID.randomUUID().toString(), new ObjectMapper(), new Mappings(SctId.class));
 		store.admin().create();
 	}
-	
+
 	@After
 	public void after() {
 		store.admin().delete();
 	}
-	
+
 	@Test
-	public void issue_SO_1945() throws Exception {
-		final Iterator<String> itemIds = Iterables.cycle("1000", "1001").iterator();
-		final ItemIdGenerationStrategy itemIdGenerationStrategy = new ItemIdGenerationStrategy() {
-			@Override
-			public String generateItemId(String namespace, ComponentCategory category) {
-				return itemIds.next();
-			}
-		};
-		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(Providers.of(store), itemIdGenerationStrategy);
-		final String first = identifiers.generate("", ComponentCategory.CONCEPT);
-		assertThat(first).contains("1000");
-		final String second = identifiers.generate("", ComponentCategory.CONCEPT);
-		assertThat(second).contains("1001");
-		// third attempt should generate ID with itemId 1000 again, 
-		// but that is already generated and no more itemIds available
-		// therefore it will try to generate 1001, and that fails to, rinse and repeat until maxIdGenerationAttempts
+	public void issue_SO_1945_testItemIdPoolExhausted() throws Exception {
+		final Provider<Index> storeProvider = Providers.of(store);
+		final ItemIdGenerationStrategy idGenerationStrategy = new CyclingItemIdGenerationStrategy("1000", "1001");
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(storeProvider, idGenerationStrategy);
+
+		final String first = identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT);
+		assertThat(first).startsWith("1000");
+		final String second = identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT);
+		assertThat(second).startsWith("1001");
+
+		/*
+		 * The third attempt should generate itemId 1000 again,
+		 * but that is already generated and no more itemIds are available
+		 * therefore it will try to generate 1001, and that fails too, 
+		 * rinse and repeat until maxIdGenerationAttempts are made
+		 */
 		try {
-			identifiers.generate("", ComponentCategory.CONCEPT);
-		} catch (BadRequestException e) {
+			identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT);
+		} catch (final BadRequestException e) {
 			assertThat(e.getMessage()).isEqualTo(String.format("Couldn't generate identifier in maximum (%s) number of attempts",
 					SnomedIdentifierConfiguration.DEFAULT_ID_GENERATION_ATTEMPTS));
 		}
 	}
-	
+
+	@Test
+	public void issue_SO_2138_testItemIdsReturnedInSequence() throws Exception {
+		final Provider<Index> storeProvider = Providers.of(store);
+		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(storeProvider, reservationService);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(storeProvider, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
+
+		List<String> actualIds = ImmutableList.copyOf(identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT, 3));
+		List<String> expectedIds = ImmutableList.of("100005", "101009", "102002");
+		assertEquals(expectedIds, actualIds);
+
+		actualIds = ImmutableList.copyOf(identifiers.generate(B2I_NAMESPACE, ComponentCategory.CONCEPT, 3));
+		expectedIds = ImmutableList.of("11000129102", "21000129106", "31000129108");
+		assertEquals(expectedIds, actualIds);
+
+		// Make a surprise return to the INT namespace here 
+		assertEquals("103007", identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT));
+	}
 }
