@@ -1,6 +1,21 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.4.0
+
+### Added
+- Support for Expression Constraint Language v1.1.1 has been added, see http://snomed.org/ecl for details
+- Support for BigDecimal mapping in index API
+
+### Changed
+- GET /concepts now supports filtering by ECL expressions via `ecl` query parameter
+- Deprecated `escg` filter on GET /concepts endpoint. Use the `ecl` query parameter instead
+
+### Bugs
+- Fixed empty task branch issue when an exception occurs during rebase (rebase now works on a temporary branch until it completes and renames the branch to the original name using CDO branch rename functionality, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=422145)
+- Fixed missing stated relationship file from delta export
+- Request new identifiers in bulk during bulk component updates
+
 ## 5.3.0
 
 ### Changed
@@ -14,7 +29,7 @@ All notable changes to this project will be documented in this file.
 ### Bugs
 - Fixed review change calculation bug, deleted components will mark their container component changed by default
 - Fixed bug with new/dirty reference set (re)indexing without concept changes
-- Handle unordered list index calculations properly during revision compare
+- Handle unordered list index calculations properly during CDO revision compare
 
 ## 5.2.0
 
@@ -22,7 +37,7 @@ All notable changes to this project will be documented in this file.
 - New Java API to get/search commit information in a repository. See class `com.b2international.snowowl.datastore.request.CommitInfoRequests`. To make the new API work, you have to reindex your dataset using the `snowowl reindex` console command
 
 ### Changed
-- SNOMED CT RF2 importer now uses the same change processing/indexing as regular commits 
+- SNOMED CT RF2 importer now uses the same change processing/indexing as regular commits
 - Support DOI score indexing during change processing (aka when committing changes)
 
 ### Bugs
