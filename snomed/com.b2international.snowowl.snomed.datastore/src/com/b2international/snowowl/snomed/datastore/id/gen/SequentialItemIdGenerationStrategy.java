@@ -51,7 +51,7 @@ import com.google.inject.Provider;
  * An item identifier generation strategy that assigns item identifiers to components in a sequential
  * fashion.
  * 
- * @since 4.0
+ * @since 5.4
  */
 public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrategy {
 
@@ -95,16 +95,15 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 			return store.get().read(new IndexRead<SctId>() {
 				@Override
 				public SctId execute(final Searcher index) throws IOException {
-					final boolean intNamespace = CompareUtils.isEmpty(namespace);
 					
 					final Expression idsByNamespaceAndType = Expressions.builder()
-							.must(Expressions.exactMatch("namespace", intNamespace ? 0L : Long.parseLong(namespace)))
-							.must(Expressions.exactMatch("partitionId", (intNamespace ? "0" : "1") + Integer.toString(category.ordinal())))
+							.must(SctId.Expressions.namespace(namespace))
+							.must(SctId.Expressions.partitionId(namespace, category))
 							.build();
 					
 					final Hits<SctId> hits = index.search(Query.select(SctId.class)
 							.where(idsByNamespaceAndType)
-							.sortBy(SortBy.field("sequence", Order.DESC))
+							.sortBy(SortBy.field(SctId.Fields.SEQUENCE, Order.DESC))
 							.offset(0)
 							.limit(1)
 							.build());
