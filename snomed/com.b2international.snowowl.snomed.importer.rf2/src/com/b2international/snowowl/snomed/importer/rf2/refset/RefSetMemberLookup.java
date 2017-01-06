@@ -15,35 +15,43 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.refset;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Set;
 
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
-import com.b2international.commons.collections.UuidLongMap;
+import com.b2international.collections.PrimitiveMaps;
+import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongSet;
+import com.b2international.collections.longs.LongValueMap;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.CDOEditingContext;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 public class RefSetMemberLookup {
 
 	private static final int EXPECTED_MEMBERS_SIZE = 50000;
 
-	private final Map<UUID, SnomedRefSetMember> newMembers = Maps.newHashMap();
-	private UuidLongMap memberIdMap = new UuidLongMap(EXPECTED_MEMBERS_SIZE);
+	private final Map<String, SnomedRefSetMember> newMembers = Maps.newHashMap();
+	private final LongValueMap<String> storageKeysByMemberId = PrimitiveMaps.newObjectKeyLongOpenHashMapWithExpectedSize(EXPECTED_MEMBERS_SIZE);
 	private final CDOEditingContext editingContext;
 	private final RevisionIndex index;
 	
@@ -52,45 +60,86 @@ public class RefSetMemberLookup {
 		this.editingContext = editingContext;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <M extends SnomedRefSetMember> M getMember(final UUID memberId) {
-		if (newMembers.containsKey(memberId)) {
-			return (M) newMembers.get(memberId);
-		} else {
-			final long storageKey = getStorageKey(memberId);
-			if (storageKey > CDOUtils.NO_STORAGE_KEY) {
-				return (M) editingContext.lookup(storageKey);
+	public <M> Collection<M> getMembers(Collection<String> memberIds) {
+		final Collection<M> members = Sets.newHashSetWithExpectedSize(memberIds.size());
+		final Set<String> missingMemberIds = Sets.newHashSet();
+		
+		for (String memberId : memberIds) {
+			final M component = getNewMember(memberId);
+			if (component != null) {
+				members.add(component);
 			} else {
-				return null;
-			}
-		} 
-	}
-
-	public long getStorageKey(final UUID uuid) {
-		long storageKey = memberIdMap.get(uuid);
-		if (storageKey < 0) {
-			storageKey = index.read(editingContext.getBranch(), new RevisionIndexRead<Long>() {
-				@Override
-				public Long execute(RevisionSearcher index) throws IOException {
-					final Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
-							.where(SnomedRefSetMemberIndexEntry.Expressions.id(uuid.toString()))
-							.limit(2)
-							.build();
-					final Hits<SnomedRefSetMemberIndexEntry> hits = index.search(query);
-					return hits.getTotal() > 0 ? Iterables.getOnlyElement(hits).getStorageKey() : CDOUtils.NO_STORAGE_KEY;
-				}
-			});
-			if (storageKey > CDOUtils.NO_STORAGE_KEY) {
-				memberIdMap.put(uuid, storageKey);
+				missingMemberIds.add(memberId);
 			}
 		}
-		return storageKey;
+		
+		if (missingMemberIds.isEmpty()) {
+			return members;
+		}
+		
+		LongIterator storageKeys = getComponentStorageKeys(missingMemberIds).iterator();
+		
+		while (storageKeys.hasNext()) {
+			final long storageKey = storageKeys.next();
+			members.add((M) editingContext.lookup(storageKey));
+		}
+		
+		return members;
 	}
 
-	public void registerMemberStorageKey(final UUID memberId, final long storageKey) {
+	public <M> M getNewMember(String memberId) {
+		return (M) newMembers.get(memberId);
+	}
+
+	public LongSet getComponentStorageKeys(final Collection<String> memberIds) {
+		final LongSet storageKeys = PrimitiveSets.newLongOpenHashSetWithExpectedSize(memberIds.size());
+		final Set<String> missingStorageKeyComponentIds = newHashSet();
+		for (String memberId : memberIds) {
+			if (storageKeysByMemberId.containsKey(memberId)) {
+				storageKeys.add(storageKeysByMemberId.get(memberId));
+			} else {
+				missingStorageKeyComponentIds.add(memberId);
+			}
+		}
 		
-		final long existingKey = memberIdMap.put(memberId, storageKey);
+		if (!missingStorageKeyComponentIds.isEmpty()) {
+			try {
+				LongValueMap<String> missingStorageKeys = getStorageKeys(missingStorageKeyComponentIds);
+				for (String missingStorageKeyComponentId : missingStorageKeyComponentIds) {
+					if (missingStorageKeys.containsKey(missingStorageKeyComponentId)) {
+						final long missingStorageKey = missingStorageKeys.get(missingStorageKeyComponentId);
+						storageKeys.add(missingStorageKey);
+						registerMemberStorageKey(missingStorageKeyComponentId, missingStorageKey);
+					}
+				} 
+			} catch (IOException e) {
+				throw new SnowowlRuntimeException(e);
+			}
+		}
 		
+		return storageKeys;
+	}
+	
+	private LongValueMap<String> getStorageKeys(final Collection<String> componentIds) throws IOException {
+		return index.read(editingContext.getBranch(), new RevisionIndexRead<LongValueMap<String>>() {
+			@Override
+			public LongValueMap<String> execute(RevisionSearcher index) throws IOException {
+				final LongValueMap<String> map = PrimitiveMaps.newObjectKeyLongOpenHashMapWithExpectedSize(componentIds.size());
+				final Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
+						.where(SnomedRefSetMemberIndexEntry.Expressions.ids(componentIds))
+						.limit(componentIds.size())
+						.build();
+				final Hits<SnomedRefSetMemberIndexEntry> hits = index.search(query);
+				for (SnomedDocument doc : hits) {
+					map.put(doc.getId(), doc.getStorageKey());
+				}
+				return map;
+			}
+		});
+	}
+	
+	public void registerMemberStorageKey(final String memberId, final long storageKey) {
+		final long existingKey = storageKeysByMemberId.put(memberId, storageKey);
 		if (existingKey > 0L && existingKey != storageKey) {
 			throw new IllegalStateException(
 					MessageFormat.format("Storage key re-registered for member with UUID ''{0}''. Old key: {1}, new key: {2}",
@@ -98,16 +147,16 @@ public class RefSetMemberLookup {
 		}
 	}
 
-	public void registerNewMembers() {
+	public void registerNewMemberStorageKeys() {
 		// Consume each element while it is being registered
 		for (final Iterator<SnomedRefSetMember> itr = Iterators.consumingIterator(newMembers.values().iterator()); itr.hasNext();) {
 			final SnomedRefSetMember newMember = itr.next();
-			registerMemberStorageKey(UUID.fromString(newMember.getUuid()), CDOIDUtil.getLong(newMember.cdoID()));
+			registerMemberStorageKey(newMember.getUuid(), CDOIDUtil.getLong(newMember.cdoID()));
 		}
 	}
 
 	public void addNewMember(final SnomedRefSetMember member) {
-		newMembers.put(UUID.fromString(member.getUuid()), member);
+		newMembers.put(member.getUuid(), member);
 	}
 	
 	/**
@@ -118,8 +167,8 @@ public class RefSetMemberLookup {
 			newMembers.clear();
 		}
 		
-		if (null != memberIdMap) {
-			memberIdMap = null;
+		if (null != storageKeysByMemberId) {
+			storageKeysByMemberId.clear();
 		}
 	}
 	

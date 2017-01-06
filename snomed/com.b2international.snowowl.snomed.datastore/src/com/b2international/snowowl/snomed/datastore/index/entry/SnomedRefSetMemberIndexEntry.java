@@ -24,7 +24,6 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -47,6 +46,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
@@ -645,13 +645,25 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			if (dataType != null) {
 				switch (dataType) {
 				case BOOLEAN:
-					doc.booleanValue = (Boolean) value;
+					if (value instanceof Boolean) {
+						doc.booleanValue = (Boolean) value;
+					} else if (value instanceof String) {
+						doc.booleanValue = SnomedRefSetUtil.deserializeValue(dataType, (String) value);
+					}
 					break;
 				case DECIMAL:
-					doc.decimalValue = (BigDecimal) value;
+					if (value instanceof BigDecimal) {
+						doc.decimalValue = (BigDecimal) value;
+					} else if (value instanceof String) {
+						doc.decimalValue = SnomedRefSetUtil.deserializeValue(dataType, (String) value);
+					}
 					break;
 				case INTEGER:
-					doc.integerValue = (Integer) value;
+					if (value instanceof Integer) {
+						doc.integerValue = (Integer) value;
+					} else if (value instanceof String) {
+						doc.integerValue = SnomedRefSetUtil.deserializeValue(dataType, (String) value);
+					}
 					break;
 				case STRING:
 					doc.stringValue = (String) value;
@@ -759,10 +771,9 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				effectiveTimeLong);
 
 		checkArgument(referencedComponentType >= CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, "Referenced component type '%s' is invalid.", referencedComponentType);
-
-		this.referencedComponentId = checkNotNull(referencedComponentId, "Reference component identifier may not be null.");
-		this.referenceSetId = checkNotNull(referenceSetId, "Reference set identifier may not be null.");
-		this.referenceSetType = checkNotNull(referenceSetType, "Reference set type may not be null.");
+		this.referencedComponentId = referencedComponentId;
+		this.referenceSetId = referenceSetId;
+		this.referenceSetType = referenceSetType;
 		this.referencedComponentType = referencedComponentType;
 	}
 

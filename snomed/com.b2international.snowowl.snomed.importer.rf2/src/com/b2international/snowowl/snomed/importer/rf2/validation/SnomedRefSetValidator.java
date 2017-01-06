@@ -160,6 +160,7 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 		addDefect(DefectType.REFSET_MEMBER_COMPONENT_NOT_EXIST, referencedComponentNotExist);
 		uuidInvalid.clear();
 		referencedComponentNotExist.clear();
+		memberDataByUuid.clear();
 	}
 	
 	/**returns with the proper import component type based on the component ID argument.*/

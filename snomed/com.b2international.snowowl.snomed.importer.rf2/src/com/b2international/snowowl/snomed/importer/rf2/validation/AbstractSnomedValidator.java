@@ -183,8 +183,9 @@ public abstract class AbstractSnomedValidator {
 	 * @param monitor the SubMonitor instance to report progress on
 	 */
 	protected void doValidate(final String effectiveTime, IProgressMonitor monitor) {
-		if (!effectiveTimes.contains(effectiveTime)) return;
-		
+		if (!effectiveTimes.contains(effectiveTime)) {
+			return;	
+		}
 		final Stopwatch watch = Stopwatch.createStarted();
 		final String effectiveTimeMessage = effectiveTime.length() == 0 ? "Unpublished" : effectiveTime;
 		final String message = String.format("Validating %s file in '%s'...", importType.getDisplayName(), effectiveTimeMessage);
@@ -249,7 +250,7 @@ public abstract class AbstractSnomedValidator {
 	}
 	
 	protected void addDefect(final DefectType type, String...defects) {
-		this.validationContext.addDefect(type, defects);
+		this.validationContext.addDefect(releaseFileName, type, defects);
 	}
 	
 	/**
@@ -258,7 +259,7 @@ public abstract class AbstractSnomedValidator {
 	 * @param validationDefect the defect to be added
 	 */
 	protected void addDefect(final DefectType type, Iterable<String> defects) {
-		this.validationContext.addDefect(type, defects);
+		this.validationContext.addDefect(releaseFileName, type, defects);
 	}
 	
 	/**
@@ -348,7 +349,7 @@ public abstract class AbstractSnomedValidator {
 	}
 	
 	protected void registerComponent(ComponentCategory category, String componentId, boolean status) throws AlreadyExistsException {
-		validationContext.registerComponent(category, componentId, status);
+		validationContext.registerComponent(releaseFileName, category, componentId, status);
 	}
 	
 	/**
@@ -422,7 +423,7 @@ public abstract class AbstractSnomedValidator {
 	}
 	
 	private void validateEffectiveTime(String effectiveTime, final int lineNumber) {
-		if (ContentSubType.DELTA.equals(configuration.getVersion()) && effectiveTime.isEmpty()) {
+		if (effectiveTime.isEmpty()) {
 			return;
 		}
 		try {

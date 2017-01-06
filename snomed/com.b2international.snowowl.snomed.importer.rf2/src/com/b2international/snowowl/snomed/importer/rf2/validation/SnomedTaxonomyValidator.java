@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
 import static com.b2international.snowowl.snomed.common.ContentSubType.SNAPSHOT;
-import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 import static java.util.Collections.emptySet;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -35,19 +36,21 @@ import com.b2international.collections.longs.LongCollection;
 import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
+import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship.MissingConcept;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilderResult;
 import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedIncompleteTaxonomyValidationDefect;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
+import com.b2international.snowowl.snomed.importer.net4j.TaxonomyDefect;
 import com.b2international.snowowl.snomed.importer.rf2.RepositoryState;
 import com.b2international.snowowl.snomed.importer.rf2.util.Rf2FileModifier;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 
 /**
  * Class for validating the taxonomy of active concepts and active IS_A relationships.
@@ -56,6 +59,19 @@ import com.google.common.collect.Lists;
 public class SnomedTaxonomyValidator {
 
 	private static final Logger LOGGER = getLogger(SnomedTaxonomyValidator.class);
+
+	private static final Comparator<String> EFFECTIVE_TIME_COMPARATOR = new Comparator<String>() {
+		@Override
+		public int compare(String o1, String o2) {
+			// consider empty greater than non-empty
+			if (o1.isEmpty() && !o2.isEmpty()) {
+				return 1;
+			} else if (!o1.isEmpty() && o2.isEmpty()) {
+				return -1;
+			}
+			return o1.compareTo(o2);
+		}
+	};
 	
 	// new RF2 state
 	private final File conceptsFile;
@@ -112,99 +128,77 @@ public class SnomedTaxonomyValidator {
 	 */
 	private Collection<SnomedValidationDefect> doValidate() {
 		try {
-			final Rf2BasedSnomedTaxonomyBuilder builder = Rf2BasedSnomedTaxonomyBuilder.newInstance(new SnomedTaxonomyBuilder(conceptIds, statements), characteristicType);
-			if (snapshot) {
-				
-				LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
-				
-				
-				if (hasConceptImport()) {
-					final String conceptFilePath = removeConceptHeader();
-					builder.applyNodeChanges(conceptFilePath);
+			final Multimap<String, InvalidRelationship> invalidRelationships = processTaxonomy();
+			if (!invalidRelationships.isEmpty()) {
+				final Collection<TaxonomyDefect> defects = newArrayListWithExpectedSize(invalidRelationships.size());
+				for (final String effectiveTime : invalidRelationships.keySet()) {
+					for (final InvalidRelationship invalidRelationship: invalidRelationships.get(effectiveTime)) {
+						defects.add(new TaxonomyDefect(invalidRelationship.getRelationshipId(), effectiveTime, invalidRelationship.getMissingConcept() == MissingConcept.DESTINATION ? TaxonomyDefect.Type.MISSING_DESTINATION : TaxonomyDefect.Type.MISSING_SOURCE, invalidRelationship.getMissingConceptId()));
+					}
 				}
 				
-				if (hasRelationshipImport()) {
-					final String relationshipFilePath = removeRelationshipHeader();
-					builder.applyEdgeChanges(relationshipFilePath);
-				}
-				
-				final SnomedTaxonomyBuilderResult result = builder.build();
-				if (!result.getStatus().isOK()) {
-					throw new IncompleteTaxonomyException(Lists.newArrayList(result.getInvalidRelationships()));
-				}
-			} else {
-			
-				LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
-				
-				final Map<String, File> conceptFiles = hasConceptImport() ? Rf2FileModifier.split(conceptsFile) : ImmutableMap.<String, File>of();
-				final Map<String, File> relationshipFiles = hasRelationshipImport() ? Rf2FileModifier.split(relationshipsFile) : ImmutableMap.<String, File>of();
-
-				final List<String> effectiveTimes = ImmutableSortedSet.<String>naturalOrder()
-						.addAll(conceptFiles.keySet())
-						.addAll(relationshipFiles.keySet())
-						.build()
-						.asList();
-				
-				for (final String effectiveTime : effectiveTimes) {
-					LOGGER.info("Validating concepts and relationships from '" + effectiveTime + "'...");
-					
-					final File conceptFile = conceptFiles.get(effectiveTime);
-					final File relationshipFile = relationshipFiles.get(effectiveTime);
-					
-					builder.applyNodeChanges(getFilePath(conceptFile));
-					builder.applyEdgeChanges(getFilePath(relationshipFile));
-					builder.build();
-				}
+				return Collections.singleton(new SnomedIncompleteTaxonomyValidationDefect(relationshipsFile.getName(), defects));
 			}
-			
 		} catch (final IOException e) {
-			LOGGER.error("Validation failed with an IOException.", e);
-			return Collections.<SnomedValidationDefect>singleton(new SnomedValidationDefect(DefectType.IO_PROBLEM, Collections.<String>emptySet()));
-		} catch (final IncompleteTaxonomyException e) {
-			LOGGER.error("Validation failed.");
-			final Collection<String> defects = newHashSet();
-			final Collection<String> conceptIdsToInactivate = newHashSet();
-			for (final InvalidRelationship invalidRelationship: e.getInvalidRelationships()) {
-				final String sourceId = Long.toString(invalidRelationship.getSourceId());
-				final String destinationId = Long.toString(invalidRelationship.getDestinationId());
-				
-				if (conceptIds.contains(invalidRelationship.getDestinationId())) {
-					conceptIdsToInactivate.add(destinationId);
-				}
-				
-				if (conceptIds.contains(invalidRelationship.getSourceId())) {
-					conceptIdsToInactivate.add(sourceId);
-				}
-				
-				final StringBuilder sb = new StringBuilder();
-				sb.append("IS A relationship");
-				sb.append(" '" + invalidRelationship.getRelationshipId() + "'");
-				sb.append(" has a missing or inactive ");
-				
-				switch (invalidRelationship.getMissingConcept()) {
-					case DESTINATION:
-						sb.append("destination concept");
-						sb.append(" '" + destinationId);
-						break;
-					case SOURCE:
-						sb.append("source concept");
-						sb.append(" '" + sourceId);
-						break;
-					default:
-						throw new IllegalStateException("Unexpected missing concept type '" + invalidRelationship.getMissingConcept() + "'.");					
-				}
-				
-				sb.append("'.");
-				
-				defects.add(sb.toString());
-			}
-			
-			final SnomedValidationDefect defect = new SnomedIncompleteTaxonomyValidationDefect(defects, conceptIdsToInactivate);
-			return Collections.<SnomedValidationDefect>singleton(defect);
+			LOGGER.error("Validation failed.", e);
+			return Collections.<SnomedValidationDefect>singleton(new SnomedValidationDefect(relationshipsFile.getName(), DefectType.IO_PROBLEM, Collections.<String>emptySet()));
 		}
 		
 		LOGGER.info("SNOMED CT ontology validation successfully finished. No errors were found.");
 		return emptySet();
+	}
+
+	private Multimap<String, InvalidRelationship> processTaxonomy() throws IOException {
+		final Rf2BasedSnomedTaxonomyBuilder builder = Rf2BasedSnomedTaxonomyBuilder.newInstance(new SnomedTaxonomyBuilder(conceptIds, statements), characteristicType);
+		final Multimap<String, InvalidRelationship> invalidRelationships = ArrayListMultimap.create();
+		if (snapshot) {
+			
+			LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
+			
+			
+			if (hasConceptImport()) {
+				final String conceptFilePath = removeConceptHeader();
+				builder.applyNodeChanges(conceptFilePath);
+			}
+			
+			if (hasRelationshipImport()) {
+				final String relationshipFilePath = removeRelationshipHeader();
+				builder.applyEdgeChanges(relationshipFilePath);
+			}
+			
+			final SnomedTaxonomyBuilderResult result = builder.build();
+			if (!result.getStatus().isOK()) {
+				invalidRelationships.putAll("", result.getInvalidRelationships());
+			}
+		} else {
+		
+			LOGGER.info("Validating SNOMED CT ontology based on the given RF2 release files...");
+			
+			final Map<String, File> conceptFiles = hasConceptImport() ? Rf2FileModifier.split(conceptsFile) : ImmutableMap.<String, File>of();
+			final Map<String, File> relationshipFiles = hasRelationshipImport() ? Rf2FileModifier.split(relationshipsFile) : ImmutableMap.<String, File>of();
+
+			final List<String> effectiveTimes = ImmutableSortedSet.orderedBy(EFFECTIVE_TIME_COMPARATOR)
+					.addAll(conceptFiles.keySet())
+					.addAll(relationshipFiles.keySet())
+					.build()
+					.asList();
+			
+			
+			for (final String effectiveTime : effectiveTimes) {
+				LOGGER.info("Validating taxonomy in '{}'...", effectiveTime);
+				
+				final File conceptFile = conceptFiles.get(effectiveTime);
+				final File relationshipFile = relationshipFiles.get(effectiveTime);
+				
+				builder.applyNodeChanges(getFilePath(conceptFile));
+				builder.applyEdgeChanges(getFilePath(relationshipFile));
+				final SnomedTaxonomyBuilderResult result = builder.build();
+				if (!result.getStatus().isOK()) {
+					invalidRelationships.putAll(effectiveTime, result.getInvalidRelationships());
+				}
+			}
+		}
+		return invalidRelationships;
 	}
 
 	private String getFilePath(@Nullable final File file) {

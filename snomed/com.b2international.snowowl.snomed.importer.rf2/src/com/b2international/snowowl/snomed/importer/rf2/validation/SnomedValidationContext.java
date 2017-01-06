@@ -57,7 +57,7 @@ import com.b2international.snowowl.snomed.importer.rf2.RepositoryState;
 import com.google.common.base.Charsets;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
@@ -67,7 +67,7 @@ import com.google.common.collect.Ordering;
  */
 public final class SnomedValidationContext {
 	
-	private final Multimap<DefectType, String> defects = LinkedHashMultimap.create();
+	private final Map<String, Multimap<DefectType, String>> defects = newHashMap();
 	private final ImportConfiguration configuration;
 	private final List<AbstractSnomedValidator> releaseFileValidators = Lists.newArrayList();
 	
@@ -146,11 +146,11 @@ public final class SnomedValidationContext {
 		}
 
 		if (isValidReleaseFile(configuration.getRelationshipsFile())) {
-			releaseFileValidators.add(new SnomedRelationshipValidator(configuration, this));
+			releaseFileValidators.add(new SnomedRelationshipValidator(configuration, this, configuration.getRelationshipsFile()));
 		}
 		
 		if (isValidReleaseFile(configuration.getStatedRelationshipsFile())) {
-			releaseFileValidators.add(new SnomedRelationshipValidator(configuration, this));
+			releaseFileValidators.add(new SnomedRelationshipValidator(configuration, this, configuration.getStatedRelationshipsFile()));
 		}
 	}
 	
@@ -234,17 +234,20 @@ public final class SnomedValidationContext {
 		validationResult.addAll(new SnomedTaxonomyValidator(configuration, repositoryState, Concepts.STATED_RELATIONSHIP).validate());
 		validationResult.addAll(new SnomedTaxonomyValidator(configuration, repositoryState, Concepts.INFERRED_RELATIONSHIP).validate());
 		
-		for (DefectType type : this.defects.keySet()) {
-			final Collection<String> messages = this.defects.get(type);
-			validationResult.add(new SnomedValidationDefect(type, messages));
+		for (String file : this.defects.keySet()) {
+			final Multimap<DefectType, String> fileDefects = this.defects.get(file);
+			for (DefectType type : fileDefects.keySet()) {
+				final Collection<String> messages = fileDefects.get(type);
+				validationResult.add(new SnomedValidationDefect(file, type, messages));
+			}
 		}
 
 		return validationResult;
 	}
 
-	/*package*/ void registerComponent(ComponentCategory category, String componentId, boolean status) throws AlreadyExistsException {
+	/*package*/ void registerComponent(final String sourceFile, ComponentCategory category, String componentId, boolean status) throws AlreadyExistsException {
 		if (!getIdValidator(category).isValid(componentId)) {
-			addDefect(DefectType.INVALID_ID, String.format("'%s' is not a valid '%s' identifier", componentId, category.name()));
+			addDefect(sourceFile, DefectType.INVALID_ID, String.format("'%s' is not a valid '%s' identifier", componentId, category.name()));
 		}
 		// update status, component line registration should happen in effective time order
 		componentStatus.put(componentId, status);
@@ -274,12 +277,15 @@ public final class SnomedValidationContext {
 		}
 	}
 	
-	/*package*/ void addDefect(DefectType type, String...defects) {
-		addDefect(type, Arrays.asList(defects));
+	/*package*/ void addDefect(final String file, DefectType type, String...defects) {
+		addDefect(file, type, Arrays.asList(defects));
 	}
 	
-	/*package*/ void addDefect(DefectType type, Iterable<String> defects) {
-		this.defects.putAll(type, defects);
+	/*package*/ void addDefect(final String file, DefectType type, Iterable<String> defects) {
+		if (!this.defects.containsKey(file)) {
+			this.defects.put(file, LinkedListMultimap.create());
+		}
+		this.defects.get(file).putAll(type, defects);
 	}
 	
 	private SnomedIdentifierValidator getIdValidator(ComponentCategory category) {

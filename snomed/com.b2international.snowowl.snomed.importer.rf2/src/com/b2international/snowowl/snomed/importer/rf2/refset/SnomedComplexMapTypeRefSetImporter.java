@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.importer.rf2.refset;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -23,8 +24,6 @@ import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.importer.rf2.csv.ComplexMapTypeRefSetRow;
@@ -106,50 +105,38 @@ public class SnomedComplexMapTypeRefSetImporter extends AbstractSnomedMapTypeRef
 	}
 	
 	@Override
-	protected SnomedSimpleMapRefSetMember doImportRow(final ComplexMapTypeRefSetRow currentRow) {
-
-		final SnomedComplexMapRefSetMember editedMember = (SnomedComplexMapRefSetMember) getOrCreateMember(currentRow.getUuid());
-		
-		if (skipCurrentRow(currentRow, editedMember)) {
-			getLogger().warn("Not importing complex map reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
-					currentRow.getUuid(), 
-					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
-
-			return null;
-		}
-
-		if (currentRow.getEffectiveTime() != null) {
-			editedMember.setEffectiveTime(currentRow.getEffectiveTime());
-			editedMember.setReleased(true);
+	protected void applyRow(SnomedSimpleMapRefSetMember member, ComplexMapTypeRefSetRow row, Collection<SnomedSimpleMapRefSetMember> componentsToAttach) {
+		SnomedComplexMapRefSetMember complexMember = (SnomedComplexMapRefSetMember) member;
+		if (row.getEffectiveTime() != null) {
+			complexMember.setEffectiveTime(row.getEffectiveTime());
+			complexMember.setReleased(true);
 		} else {
-			editedMember.unsetEffectiveTime();
+			complexMember.unsetEffectiveTime();
 		}
 
-		editedMember.setRefSet(getOrCreateRefSet(currentRow.getRefSetId(), currentRow.getReferencedComponentId()));
-		editedMember.setActive(currentRow.isActive());
-		editedMember.setModuleId(currentRow.getModuleId());
-		editedMember.setReferencedComponentId(currentRow.getReferencedComponentId());
-		editedMember.setMapTargetComponentId(currentRow.getAssociatedComponentId());
-		editedMember.setCorrelationId(currentRow.getCorrelationId());
-		editedMember.setMapAdvice(currentRow.getMapAdvice());
-		editedMember.setMapRule(currentRow.getMapRule());
-		editedMember.setMapGroup(currentRow.getMapGroup());
-		editedMember.setMapPriority(currentRow.getMapPriority());
+		complexMember.setRefSet(getOrCreateRefSet(row.getRefSetId(), row.getReferencedComponentId()));
+		complexMember.setActive(row.isActive());
+		complexMember.setModuleId(row.getModuleId());
+		complexMember.setReferencedComponentId(row.getReferencedComponentId());
+		complexMember.setMapTargetComponentId(row.getAssociatedComponentId());
+		complexMember.setCorrelationId(row.getCorrelationId());
+		complexMember.setMapAdvice(row.getMapAdvice());
+		complexMember.setMapRule(row.getMapRule());
+		complexMember.setMapGroup(row.getMapGroup());
+		complexMember.setMapPriority(row.getMapPriority());
 		
 		if (extended) {
-			editedMember.setMapCategoryId(currentRow.getMapCategoryId());
+			complexMember.setMapCategoryId(row.getMapCategoryId());
 		}
-		
-		return editedMember;
 	}
-
+	
 	@Override
 	protected String getIdentifierParentConceptId(final String refSetId) {
 		return Concepts.REFSET_COMPLEX_MAP_TYPE;
 	}
 
 	@Override
-	protected SnomedComplexMapRefSetMember createRefSetMember() {
+	protected SnomedComplexMapRefSetMember createMember() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedComplexMapRefSetMember();
 	}
 }
