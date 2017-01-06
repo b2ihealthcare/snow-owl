@@ -5,16 +5,18 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Support for Expression Constraint Language v1.1.1 has been added, see http://snomed.org/ecl for details
-- Support for BigDecimal mapping in index API
+- Support BigDecimal property mapping in index API
 
 ### Changed
 - GET /concepts now supports filtering by ECL expressions via `ecl` query parameter
 - Deprecated `escg` filter on GET /concepts endpoint. Use the `ecl` query parameter instead
+- Snow Owl now uses sequential SNOMED CT identifier generation instead of random
 
 ### Bugs
-- Fixed empty task branch issue when an exception occurs during rebase (rebase now works on a temporary branch until it completes and renames the branch to the original name using CDO branch rename functionality, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=422145)
-- Fixed missing stated relationship file from delta export
-- Request new identifiers in bulk during bulk component updates
+- Fixed empty task branch issue when an exception occurs during rebase (rebase now works on a temporary branch until it completes and renames the branch to the original name using CDO branch rename functionality, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=422145) (https://github.com/b2ihealthcare/snow-owl/pull/118)
+- Fixed missing non-stated relationship file from delta export (https://github.com/b2ihealthcare/snow-owl/pull/119)
+- Request new identifiers in bulk during bulk component updates (https://github.com/b2ihealthcare/snow-owl/pull/121)
+- Improved performance and memory usage of SNOMED CT RF2 importer (https://github.com/b2ihealthcare/snow-owl/pull/122)
 
 ## 5.3.0
 
