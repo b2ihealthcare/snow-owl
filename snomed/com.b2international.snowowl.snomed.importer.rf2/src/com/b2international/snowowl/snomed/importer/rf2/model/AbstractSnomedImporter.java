@@ -634,13 +634,13 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	}
 	
 	private ImportAction checkCommitException(final SnowowlServiceException e) {
-		log("SNOMED CT import failed. Caught exception while import, aborting. {}", e);
+		log("SNOMED CT import failed. Caught exception while import, aborting.", e);
 		importContext.getLogger().warn("Caught exception while import, aborting.", e);
 		return ImportAction.BREAK;
 	}
 
 	private ImportAction checkCommitException(final CommitException e) {
-		log("SNOMED CT import failed. Caught exception while import, aborting. {}", e);
+		log("SNOMED CT import failed. Caught exception while import, aborting.", e);
 		importContext.getLogger().warn("Caught exception while import, aborting.", e);
 		handleCommitException();
 		return ImportAction.BREAK;
