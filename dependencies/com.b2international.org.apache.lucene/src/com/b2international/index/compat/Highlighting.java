@@ -104,7 +104,7 @@ public class Highlighting {
 				final String filterToken = itr.next();
 				if (labelToken.startsWith(filterToken)) {
 					// XXX: the same segment of text may be selected for highlighting multiple times, revisit if this causes problems
-					elementMatchRegions.add(new int[] { startIndex, startIndex + filterToken.length() - 1 });
+					elementMatchRegions.add(new int[] { startIndex, startIndex + filterToken.length() });
 				}
 			}
 			
