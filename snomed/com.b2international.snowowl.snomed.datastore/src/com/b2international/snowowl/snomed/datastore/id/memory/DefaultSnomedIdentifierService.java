@@ -221,6 +221,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 					LOGGER.warn("Cannot register ID {} as it is already present with status {}.", sctId.getSctid(), sctId.getStatus());
 				} else {
 					sctId.setStatus(IdentifierStatus.ASSIGNED.getSerializedName());
+					sctIds.put(sctId.getSctid(), sctId);
 				}
 			}
 			putSctIds(sctIds);
