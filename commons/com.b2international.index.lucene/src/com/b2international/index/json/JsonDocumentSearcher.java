@@ -268,17 +268,17 @@ public class JsonDocumentSearcher implements Searcher {
 				}
 				
 				final Class<?> fieldType = mappingField.getType();
-				final boolean ascending = fieldItem.getOrder().isAscending();
+				final boolean reverse = SortBy.Order.DESC.equals(fieldItem.getOrder());
 				
 				if (NumericClassUtils.isLong(fieldType)) {
-					convertedItems.add(new SortField(sortField, Type.LONG, ascending));
+					convertedItems.add(new SortField(sortField, Type.LONG, reverse));
 				} else if (NumericClassUtils.isFloat(fieldType)) {
-					convertedItems.add(new SortField(sortField, Type.FLOAT, ascending));
+					convertedItems.add(new SortField(sortField, Type.FLOAT, reverse));
 				} else if (NumericClassUtils.isInt(fieldType) || NumericClassUtils.isShort(fieldType)) {
-					convertedItems.add(new SortField(sortField, Type.INT, ascending));
+					convertedItems.add(new SortField(sortField, Type.INT, reverse));
 				} else if (NumericClassUtils.isBigDecimal(fieldType) || String.class.isAssignableFrom(fieldType)) {
 					// TODO: STRING mode might be faster, but requires SortedDocValueFields
-					convertedItems.add(new SortField(sortField, Type.STRING_VAL, ascending));
+					convertedItems.add(new SortField(sortField, Type.STRING_VAL, reverse));
 				} else {
 					throw new IllegalArgumentException("Unsupported sort field type: " + fieldType + " for field: " + sortField);
 				}

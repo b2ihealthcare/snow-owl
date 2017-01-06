@@ -32,18 +32,7 @@ import com.google.common.collect.Maps;
  */
 public class SortBy {
 	public static enum Order {
-		ASC(true), 
-		DESC(false);
-		
-		private final boolean ascending;
-
-		private Order(boolean ascending) {
-			this.ascending = ascending;
-		}
-
-		public boolean isAscending() {
-			return ascending;
-		}
+		ASC, DESC;
 	}
 
 	/**
