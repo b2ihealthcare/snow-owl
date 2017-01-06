@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,14 +40,14 @@ public class NestedDocumentIndexTest extends BaseIndexTest {
 	@Test
 	public void indexNestedDocument() throws Exception {
 		final ParentData data = new ParentData("field1", new NestedData("field2"));
-		indexDocument(KEY, data);
-		assertEquals(data, getDocument(ParentData.class, KEY));
+		indexDocument(KEY1, data);
+		assertEquals(data, getDocument(ParentData.class, KEY1));
 	}
 	
 	@Test
 	public void deleteDocumentWithNestedDocShouldDeleteNested() throws Exception {
 		indexNestedDocument();
-		deleteDocument(ParentData.class, KEY);
+		deleteDocument(ParentData.class, KEY1);
 		
 		// query to get parent document, should be none
 		final Query<ParentData> parentDataQuery = Query.select(ParentData.class).where(Expressions.matchAll()).build();
@@ -64,7 +64,7 @@ public class NestedDocumentIndexTest extends BaseIndexTest {
 	public void searchNestedDocument() throws Exception {
 		final ParentData data = new ParentData("field1", new NestedData("field2"));
 		final ParentData data2 = new ParentData("field1", new NestedData("field2Changed"));
-		indexDocument(KEY, data);
+		indexDocument(KEY1, data);
 		indexDocument(KEY2, data2);
 		
 		final Query<ParentData> query = Query.select(ParentData.class).where(Expressions.nestedMatch("nestedData", Expressions.exactMatch("field2", "field2"))).build();

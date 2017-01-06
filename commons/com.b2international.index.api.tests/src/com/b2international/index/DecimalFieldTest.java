@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class DecimalFieldTest extends BaseIndexTest {
 	@Override
 	public void setup() {
 		super.setup();
-		indexDocument(KEY, new DataWithDecimal(VALUE_10));
+		indexDocument(KEY1, new DataWithDecimal(VALUE_10));
 		indexDocument(KEY2, new DataWithDecimal(VALUE_05));
 		indexDocument(KEY3, new DataWithDecimal(VALUE_20));
 	}
@@ -132,8 +132,8 @@ public class DecimalFieldTest extends BaseIndexTest {
 	
 	@Test
 	public void indexReallyBigPositiveDecimal() throws Exception {
-		indexDocument(KEY, new DataWithDecimal(REALLY_BIG));
-		final DataWithDecimal actual = getDocument(DataWithDecimal.class, KEY);
+		indexDocument(KEY1, new DataWithDecimal(REALLY_BIG));
+		final DataWithDecimal actual = getDocument(DataWithDecimal.class, KEY1);
 		assertEquals(new DataWithDecimal(REALLY_BIG), actual);
 		
 		final Hits<DataWithDecimal> hits = search(Query.select(DataWithDecimal.class)
@@ -147,8 +147,8 @@ public class DecimalFieldTest extends BaseIndexTest {
 	@Test
 	public void indexReallySmallPositiveDecimal() throws Exception {
 		final DataWithDecimal expected = new DataWithDecimal(REALLY_SMALL);
-		indexDocument(KEY, expected);
-		final DataWithDecimal actual = getDocument(DataWithDecimal.class, KEY);
+		indexDocument(KEY1, expected);
+		final DataWithDecimal actual = getDocument(DataWithDecimal.class, KEY1);
 		assertEquals(expected, actual);
 		
 		final Hits<DataWithDecimal> hits = search(Query.select(DataWithDecimal.class)
