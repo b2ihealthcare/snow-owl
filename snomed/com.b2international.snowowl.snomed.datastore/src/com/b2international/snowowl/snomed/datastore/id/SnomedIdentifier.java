@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 
 /**
  * @since 4.0
+ * @see <a href="https://confluence.ihtsdotools.org/display/DOCRELFMT/5.+Representing+SNOMED+CT+identifiers">Representing SNOMED CT identifiers</a>
  */
 public interface SnomedIdentifier extends Serializable {
 
@@ -28,12 +29,27 @@ public interface SnomedIdentifier extends Serializable {
 
 	public String getNamespace();
 
-	public int getPartitionIdentifier();
+	/** 
+	 * The first digit of the partition identifier. Possible values are:
+	 * <ul>
+	 * <li>0 &rarr; short format (component originated in the INT release) 
+	 * <li>1 &rarr; long format (component ID has a namespace and orginated in an extension). All other values are reserved for
+	 * future use.
+	 */
+	public int getFormatIdentifier();
 
+	/**
+	 * The second digit of the partition identifier. Possible values are:
+	 * <ul>
+	 * <li>0 &rarr; Concept
+	 * <li>1 &rarr; Description
+	 * <li>2 &rarr; Relationship
+	 * </ul>
+	 * All other values a reserved for future use.
+	 */
 	public int getComponentIdentifier();
 
 	public int getCheckDigit();
 
 	public ComponentCategory getComponentCategory();
-	
 }

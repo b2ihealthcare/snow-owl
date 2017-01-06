@@ -20,9 +20,15 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.google.common.base.Objects;
+
 /**
- * Pair of values
- * 
+ * Represents a pair of values of the specified type.
+ * <p>
+ * Note that <code>Pair</code> is not {@link Serializable} and it doesn't override the default {@link #equals(Object)} 
+ * and {@link #hashCode()} default implementations. If you need pairwise equality semantics, use the factory method 
+ * {@link #identicalPairOf(Object, Object)}; for serialization purposes {@link #serializablePairOf(Serializable, Serializable)} 
+ * should be used.
  */
 public class Pair<A, B> {
 
@@ -69,6 +75,16 @@ public class Pair<A, B> {
 		return of(entry.getKey(), entry.getValue());
 	}
 	
+	/**Creates a new identical pair instance with the given values.*/
+	public static <A, B> IdenticalPair<A, B> identicalPairOf(final A a, final B b) {
+		return new IdenticalPair<A, B>(a, b);
+	}
+
+	/**Creates a new serializable pair instance for the given values.*/
+	public static <A extends Serializable, B extends Serializable> SerializablePair<A, B> serializablePairOf(final A a, final B b) {
+		return new SerializablePair<A, B>(a, b);
+	}
+
 	/**
 	 * Returns as a singleton immutable map.
 	 * <br>This method eagerly creates a new map instance each time this method is accessed.
@@ -89,27 +105,14 @@ public class Pair<A, B> {
 	 * @see Serializable
 	 */
 	public static class SerializablePair<A extends Serializable, B extends Serializable> extends Pair<A, B> implements Serializable {
-
 		private static final long serialVersionUID = 6569609379343461859L;
-		
-		/**Creates a new serializable pair instance for the given values.*/
-		public static <A extends Serializable, B extends Serializable> SerializablePair<A, B> of(final A a, final B b) {
-			return new SerializablePair<A, B>(a, b);
-		}
-		
 		private SerializablePair(final A a, final B b) { super(a, b); }
-		
 	}
 	
 	/**
 	 * A pair of values. Each instance of the class are equal if {@link #getA() A} and {@link #getB() B} values are equal.
 	 */
 	public static class IdenticalPair<A, B> extends Pair<A, B> {
-		
-		/**Creates a new identical pair instance with the given values.*/
-		public static <A, B> IdenticalPair<A, B> identicalPairOf(final A a, final B b) {
-			return new IdenticalPair<A, B>(a, b);
-		}
 		
 		private IdenticalPair(final A a, final B b) { super(a, b); }
 
@@ -131,19 +134,7 @@ public class Pair<A, B> {
 			if (getClass() != obj.getClass())
 				return false;
 			final IdenticalPair<?, ?> other = (IdenticalPair<?, ?>) obj;
-			if (getA() == null) {
-				if (other.getA() != null)
-					return false;
-			} else if (!getA().equals(other.getA()))
-				return false;
-			if (getB() == null) {
-				if (other.getB() != null)
-					return false;
-			} else if (!getB().equals(other.getB()))
-				return false;
-			return true;
+			return Objects.equal(getA(), other.getA()) && Objects.equal(getB(), other.getB());
 		}
-		
 	}
-	
 }

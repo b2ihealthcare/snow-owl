@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,12 +42,12 @@ public class TransactionalityTest extends BaseIndexTest {
 		index().write(new IndexWrite<Void>() {
 			@Override
 			public Void execute(Writer index) throws IOException {
-				index.put(KEY, data);
+				index.put(KEY1, data);
 				return null;
 			}
 		});
 		// after the failed transaction data should not be in the index
-		assertNull(getDocument(Data.class, KEY));
+		assertNull(getDocument(Data.class, KEY1));
 	}
 	
 	@Test
@@ -55,20 +55,20 @@ public class TransactionalityTest extends BaseIndexTest {
 		final Data data = new Data();
 		try (Writer tx1 = client().writer(); 
 				Writer tx2 = client().writer()) {
-			tx1.put(KEY, data);
+			tx1.put(KEY1, data);
 			tx2.put(KEY2, data);
 			tx1.commit();
 			
 			// at this point tx2 content should not be visible
 			try (Searcher searcher = client().searcher()) {
-				assertEquals(data, searcher.get(Data.class, KEY));
+				assertEquals(data, searcher.get(Data.class, KEY1));
 				assertNull(searcher.get(Data.class, KEY2));
 			}
 			
 			tx2.commit();
 			
 			try (Searcher searcher = client().searcher()) {
-				assertEquals(data, searcher.get(Data.class, KEY));
+				assertEquals(data, searcher.get(Data.class, KEY1));
 				assertEquals(data, searcher.get(Data.class, KEY2));
 			}
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,14 +46,14 @@ public class ComplexDocumentIndexTest extends BaseIndexTest {
 		final DeepData data = new DeepData(new ParentData("field1", new NestedData("field2")));
 		final DeepData data2 = new DeepData(new ParentData("field1", new NestedData("field2Changed")));
 		try (Writer writer = client().writer()) {
-			writer.put(KEY, data);
+			writer.put(KEY1, data);
 			writer.put(KEY2, data2);
 			writer.commit();
 		}
 		// try to get nested document as is first
 		try (Searcher searcher = client().searcher()) {
 			// get single data
-			final DeepData actual = searcher.get(DeepData.class, KEY);
+			final DeepData actual = searcher.get(DeepData.class, KEY1);
 			assertEquals(data, actual);
 			// try nested query
 			final Query<DeepData> query = Query.select(DeepData.class)
@@ -72,14 +72,14 @@ public class ComplexDocumentIndexTest extends BaseIndexTest {
 		final MultipleNestedData data2 = new MultipleNestedData(Arrays.asList(new NestedData("field2Changed"), new NestedData("field2AnotherChanged")));
 		// index multi nested data
 		try (Writer writer = client().writer()) {
-			writer.put(KEY, data);
+			writer.put(KEY1, data);
 			writer.put(KEY2, data2);
 			writer.commit();
 		}
 		
 		try (Searcher searcher = client().searcher()) {
 			// get data by key
-			final MultipleNestedData actual = searcher.get(MultipleNestedData.class, KEY);
+			final MultipleNestedData actual = searcher.get(MultipleNestedData.class, KEY1);
 			assertEquals(data, actual);
 			// try nested query on collections
 			final Query<MultipleNestedData> query = Query.select(MultipleNestedData.class)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.index;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -35,25 +36,129 @@ public class Fixtures {
 	@Doc
 	public static class Data {
 
+		@Analyzed
+		private String analyzedField;
+		
 		private String field1;
 		private String field2;
+		
+		private BigDecimal bigDecimalField;
+		
+		private float floatField;
+		private Float floatWrapper;
+		private long longField;
+		private Long longWrapper;
+		private int intField;
+		private Integer intWrapper;
+		private short shortField;
+		private Short shortWrapper;
 
-		public Data() {
-			this("field1", "field2");
+		@JsonProperty
+		public String getAnalyzedField() {
+			return analyzedField;
 		}
-		
-		@JsonCreator
-		public Data(@JsonProperty("field1") String field1, @JsonProperty("field2") String field2) {
-			this.field1 = field1;
-			this.field2 = field2;
+
+		public void setAnalyzedField(String analyzedField) {
+			this.analyzedField = analyzedField;
 		}
-		
+
+		@JsonProperty
 		public String getField1() {
 			return field1;
 		}
-		
+
+		public void setField1(String field1) {
+			this.field1 = field1;
+		}
+
+		@JsonProperty
 		public String getField2() {
 			return field2;
+		}
+
+		public void setField2(String field2) {
+			this.field2 = field2;
+		}
+
+		@JsonProperty
+		public BigDecimal getBigDecimalField() {
+			return bigDecimalField;
+		}
+
+		public void setBigDecimalField(BigDecimal bigDecimalField) {
+			this.bigDecimalField = bigDecimalField;
+		}
+
+		@JsonProperty
+		public float getFloatField() {
+			return floatField;
+		}
+
+		public void setFloatField(float floatField) {
+			this.floatField = floatField;
+		}
+
+		@JsonProperty
+		public Float getFloatWrapper() {
+			return floatWrapper;
+		}
+
+		public void setFloatWrapper(Float floatWrapper) {
+			this.floatWrapper = floatWrapper;
+		}
+
+		@JsonProperty
+		public long getLongField() {
+			return longField;
+		}
+
+		public void setLongField(long longField) {
+			this.longField = longField;
+		}
+
+		@JsonProperty
+		public Long getLongWrapper() {
+			return longWrapper;
+		}
+
+		public void setLongWrapper(Long longWrapper) {
+			this.longWrapper = longWrapper;
+		}
+
+		@JsonProperty
+		public int getIntField() {
+			return intField;
+		}
+
+		public void setIntField(int intField) {
+			this.intField = intField;
+		}
+
+		@JsonProperty
+		public Integer getIntWrapper() {
+			return intWrapper;
+		}
+
+		public void setIntWrapper(Integer intWrapper) {
+			this.intWrapper = intWrapper;
+		}
+
+		@JsonProperty
+		public short getShortField() {
+			return shortField;
+		}
+
+		public void setShortField(short shortField) {
+			this.shortField = shortField;
+		}
+
+		@JsonProperty
+		public Short getShortWrapper() {
+			return shortWrapper;
+		}
+
+		public void setShortWrapper(Short shortWrapper) {
+			this.shortWrapper = shortWrapper;
 		}
 
 		@Override
@@ -62,12 +167,31 @@ public class Fixtures {
 			if (obj == null) return false;
 			if (getClass() != obj.getClass()) return false;
 			Data other = (Data) obj;
-			return Objects.equals(field1, other.field1) && Objects.equals(field2, other.field2); 
+			return true
+					&& Objects.equals(analyzedField, other.analyzedField) 
+					&& Objects.equals(field1, other.field1) 
+					&& Objects.equals(field2, other.field2) 
+					&& Objects.equals(bigDecimalField, other.bigDecimalField) 
+					&& Objects.equals(floatWrapper, other.floatWrapper) 
+					&& Objects.equals(longWrapper, other.longWrapper) 
+					&& Objects.equals(intWrapper, other.intWrapper) 
+					&& Objects.equals(shortWrapper, other.shortWrapper)
+					&& floatField == other.floatField 
+					&& longField == other.longField
+					&& intField == other.intField 
+					&& shortField == other.shortField;
 		}
 		
 		@Override
 		public int hashCode() {
-			return Objects.hash(field1, field2);
+			return Objects.hash(analyzedField, 
+					field1, 
+					field2, 
+					bigDecimalField, 
+					floatWrapper, 
+					longWrapper, 
+					intWrapper, 
+					shortWrapper);
 		}
 		
 	}
@@ -78,6 +202,10 @@ public class Fixtures {
 		@JsonCreator
 		public PartialData(@JsonProperty("field1") String field1) {
 			this.field1 = field1;
+		}
+		
+		public String getField1() {
+			return field1;
 		}
 		
 		@Override
