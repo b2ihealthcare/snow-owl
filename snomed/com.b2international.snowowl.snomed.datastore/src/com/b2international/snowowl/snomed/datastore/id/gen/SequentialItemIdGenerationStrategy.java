@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.id.gen;
 
 import java.io.IOException;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.b2international.commons.CompareUtils;
@@ -44,7 +43,6 @@ import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
-import com.google.common.collect.Sets;
 import com.google.inject.Provider;
 
 /**
@@ -118,11 +116,13 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 			return counter.updateAndGet(current -> {
 				long next = snapToLowerBound(current + 1L);
 				
-				final Set<Range<Long>> visitedRanges = Sets.newHashSet(excludedRanges.asRanges());
+				Range<Long> firstRange = null;
 				while (excludedRanges.contains(next)) {
 				
 					final Range<Long> container = excludedRanges.rangeContaining(next);
-					if (!visitedRanges.remove(container)) {
+					if (firstRange == null) {
+						firstRange = container;
+					} else if (firstRange.equals(container)) {
 						throw new IllegalStateException("Range visited twice while generating next item identifier: " + container);
 					}
 					
@@ -145,10 +145,10 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 	}
 	
 	private static final long MIN_INT_ITEMID = 100L;
-	private static final long MAX_INT_ITEMID = 99999999_9999999L; // 8 + 7 = 15 digits for itemId
+	private static final long MAX_INT_ITEMID = 9999_9999_9999_999L; // 8 + 7 = 15 digits for itemId
 	
 	private static final long MIN_NAMESPACE_ITEMID = 1L;
-	private static final long MAX_NAMESPACE_ITEMID = 99999999L; // 8 digits for itemId, 7 digits for namespaceId
+	private static final long MAX_NAMESPACE_ITEMID = 9999_9999L; // 8 digits for itemId, 7 digits for namespaceId
 
 	private static long getLowerInclusiveId(final String namespace) {
 		return CompareUtils.isEmpty(namespace) ? MIN_INT_ITEMID : MIN_NAMESPACE_ITEMID;
@@ -170,7 +170,7 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 
 	@Override
 	public String generateItemId(final String namespace, final ComponentCategory category) {
-		final Pair<String, ComponentCategory> key = Pair.identicalPairOf(Strings.nullToEmpty(namespace), category);
+		final Pair<String, ComponentCategory> key = Pair.identicalPairOf(Strings.emptyToNull(namespace), category);
 		final long nextItemId = lastItemIds.getUnchecked(key).getNextItemId();
 		return Long.toString(nextItemId);
 	}

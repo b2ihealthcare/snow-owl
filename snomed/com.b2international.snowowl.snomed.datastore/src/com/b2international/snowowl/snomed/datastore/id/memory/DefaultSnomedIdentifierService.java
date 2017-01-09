@@ -384,12 +384,12 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		final SctId sctId = new SctId();
 		sctId.setSctid(componentId);
 		sctId.setStatus(status.getSerializedName());
-		sctId.setNamespace(identifier.getNamespace());
+		sctId.setSequence(identifier.getItemId());
+		sctId.setNamespaceFromString(identifier.getNamespace());
 		sctId.setPartitionId(String.format("%s%s", identifier.getFormatIdentifier(), identifier.getComponentIdentifier()));
 		sctId.setCheckDigit(identifier.getCheckDigit());
 
-		// TODO set remaining attributes?
-
+		// TODO set remaining attributes
 		return sctId;
 	}
 	

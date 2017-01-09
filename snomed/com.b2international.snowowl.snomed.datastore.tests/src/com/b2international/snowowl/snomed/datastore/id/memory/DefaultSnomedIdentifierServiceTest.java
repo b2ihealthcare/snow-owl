@@ -37,9 +37,11 @@ import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.gen.SequentialItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.inject.Provider;
 import com.google.inject.util.Providers;
@@ -62,7 +64,7 @@ public class DefaultSnomedIdentifierServiceTest {
 		}
 	}
 
-	private static final String INT_NAMESPACE = "";
+	private static final String INT_NAMESPACE = null;
 	private static final String B2I_NAMESPACE = "1000129";
 
 	private Index store;
@@ -120,5 +122,70 @@ public class DefaultSnomedIdentifierServiceTest {
 
 		// Make a surprise return to the INT namespace here 
 		assertEquals("103007", identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT));
+	}
+	
+	@Test
+	public void issue_SO_2138_testItemIdWraparound() throws Exception {
+		final Provider<Index> storeProvider = Providers.of(store);
+		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(storeProvider, reservationService);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(storeProvider, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
+		
+		identifiers.register("999999999999998003");
+		
+		List<String> actualIds = ImmutableList.copyOf(identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT, 2));
+		List<String> expectedIds = ImmutableList.of("999999999999999006", "100005");
+		assertEquals(expectedIds, actualIds);
+	}
+	
+	@Test
+	public void issue_SO_2138_testSkipReservedRange() throws Exception {
+		final Provider<Index> storeProvider = Providers.of(store);
+		
+		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		reservationService.create("noTwoHundreds", Reservations.range(200L, 299L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
+		
+		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(storeProvider, reservationService);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(storeProvider, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
+		
+		// The next item ID would be 200, if it weren't for the reserved range 200-299
+		identifiers.register("199004");
+		
+		assertEquals("300004", identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT));
+	}
+	
+	@Test
+	public void issue_SO_2138_testSkipReservedRangeWithWraparound() throws Exception {
+		final Provider<Index> storeProvider = Providers.of(store);
+		
+		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		reservationService.create("nothingAboveTwoHundred", Reservations.range(200L, 9999_9999_9999_999L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
+		
+		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(storeProvider, reservationService);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(storeProvider, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
+		
+		// The next item ID would be 200, if it weren't for the reserved range, which goes to the maximum allowed value
+		identifiers.register("199004");
+		
+		assertEquals("100005", identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT));
+	}
+	
+	@Test(expected=IllegalStateException.class)
+	public void issue_SO_2138_testCoveringReservedRanges() throws Exception {
+		final Provider<Index> storeProvider = Providers.of(store);
+		
+		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		reservationService.create("nothingAboveOneHundredNinetyNine", Reservations.range(200L, 9999_9999_9999_999L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
+		reservationService.create("nothingBelowOneHundredNinetyNine", Reservations.range(100L, 198L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
+		
+		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(storeProvider, reservationService);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(storeProvider, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
+		
+		identifiers.register("198007");
+		
+		assertEquals("199004", identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT));
+		
+		// This attempt should not be able to generate any other value
+		identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT);
 	}
 }

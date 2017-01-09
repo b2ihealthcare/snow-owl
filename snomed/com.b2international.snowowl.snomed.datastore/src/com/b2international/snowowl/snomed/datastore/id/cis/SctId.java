@@ -130,8 +130,8 @@ public class SctId {
 	}
 	
 	@JsonIgnore
-	public void setNamespace(String namespace) {
-		this.namespace = null == namespace ? 0 : Integer.valueOf(namespace);
+	public void setNamespaceFromString(String namespace) {
+		this.namespace = CompareUtils.isEmpty(namespace) ? 0L : Long.valueOf(namespace);
 	}
 
 	/**
