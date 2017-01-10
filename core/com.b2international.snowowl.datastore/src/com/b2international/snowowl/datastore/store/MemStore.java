@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,12 +97,21 @@ public class MemStore<T> implements Store<T> {
 		checkArgument(query != null, "Query may not be null");
 		checkArgument(offset >= 0, "Offset must be zero or positive");
 		checkArgument(limit >= 1, "Limit should be at least one");
-		return FluentIterable.from(values()).skip(offset).limit(limit).filter(Predicates.and(toPredicates(query))).toSet();
+		return FluentIterable.from(values())
+				.filter(Predicates.and(toPredicates(query)))
+				.skip(offset)
+				.limit(limit)
+				.toSortedList(query.sortBy().toOrdering());
 	}
 	
 	@Override
 	public void configureSearchable(String property) {
-		// No-op for MemStore, which can access all properties of a stored item reflectively
+		// All properties can be accessed for search and comparisons in MemStore
+	}
+	
+	@Override
+	public void configureSortable(String property) {
+		// All properties can be accessed for sorting in MemStore
 	}
 	
 	private Iterable<Predicate<T>> toPredicates(Query query) {
