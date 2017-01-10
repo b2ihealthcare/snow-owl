@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.datastore.store.query.Query;
 import com.b2international.snowowl.datastore.store.query.QueryBuilder;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.ReservationRangeImpl;
@@ -99,7 +100,7 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 			final boolean intNamespace = CompareUtils.isEmpty(namespace);
 
 			final Query query = QueryBuilder.newQuery()
-				.match(SctId.Fields.NAMESPACE, intNamespace ? 0L : Long.parseLong(namespace))
+				.match(SctId.Fields.NAMESPACE, intNamespace ? SnomedIdentifiers.INT_NAMESPACE : namespace)
 				.match(SctId.Fields.PARTITION_ID, (intNamespace ? "0" : "1") + Integer.toString(category.ordinal()))
 				.sortBy(SctId.Fields.SEQUENCE, true, false)
 				.build();
