@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
+import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
@@ -38,6 +41,8 @@ import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.TopDocs;
@@ -49,6 +54,8 @@ import com.b2international.snowowl.datastore.store.query.Clause;
 import com.b2international.snowowl.datastore.store.query.EqualsWhere;
 import com.b2international.snowowl.datastore.store.query.LessThanWhere;
 import com.b2international.snowowl.datastore.store.query.PrefixWhere;
+import com.b2international.snowowl.datastore.store.query.SortBy;
+import com.b2international.snowowl.datastore.store.query.SortBy.SortByField;
 import com.b2international.snowowl.datastore.store.query.Where;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -65,7 +72,8 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 	private static final String SOURCE_FIELD = "source";
 	private ObjectMapper objectMapper;
 	private Class<T> clazz;
-	private Collection<String> additionalSearchableFields = newHashSet();
+	private Set<String> searchableFields = newHashSet();
+	private Set<String> sortFields = newHashSet();
 
 	/**
 	 * Creates a new Index based {@link Store} implementation working on the given directory.
@@ -187,13 +195,13 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 	@Override
 	public Collection<T> search(com.b2international.snowowl.datastore.store.query.Query query, int offset, int limit) {
 		try {
-			return searchIndex(convert(query), offset, limit);
+			return searchIndex(convertQuery(query), offset, limit, convertSortBy(query));
 		} catch (IOException e) {
 			throw new StoreException("Failed to execute query '%s' on store '%s'.", query, getDirectory(), e);
 		}
 	}
 
-	private Query convert(com.b2international.snowowl.datastore.store.query.Query query) {
+	private Query convertQuery(com.b2international.snowowl.datastore.store.query.Query query) {
 		final BooleanQuery result = new BooleanQuery();
 		for (Clause clause : query.clauses()) {
 			if (clause instanceof Where) {
@@ -204,11 +212,24 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 				} else if (clause instanceof PrefixWhere) {
 					result.add(new PrefixQuery(new Term(property, value)), Occur.MUST);
 				} else if (clause instanceof LessThanWhere) {
-					result.add(new TermRangeQuery(property, null, new BytesRef(value), false, false), Occur.MUST);
+					result.add(TermRangeQuery.newStringRange(property, null, value, false, false), Occur.MUST);
 				}
 			}
 		}
 		return result;
+	}
+
+	private Sort convertSortBy(com.b2international.snowowl.datastore.store.query.Query query) {
+		SortBy sortBy = query.sortBy();
+		
+		if (sortBy == SortBy.INDEX_ORDER) {
+			return Sort.INDEXORDER;
+		} else if (sortBy instanceof SortBy.SortByField) {
+			SortBy.SortByField sortByField = (SortByField) sortBy;
+			return new Sort(new SortField(sortByField.property(), sortByField.isNumeric() ? Type.LONG : Type.STRING_VAL, !sortByField.isAscending()));
+		} else {
+			throw new IllegalArgumentException("Unsupported sort type " + sortBy + ".");
+		}
 	}
 
 	@Override
@@ -223,7 +244,12 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 	
 	@Override
 	public void configureSearchable(String property) {
-		this.additionalSearchableFields.add(checkNotNull(property));
+		this.searchableFields.add(checkNotNull(property));
+	}
+	
+	@Override
+	public void configureSortable(String property) {
+		this.sortFields.add(checkNotNull(property));
 	}
 
 	@Override
@@ -259,8 +285,21 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 		final Document doc = new Document();
 		doc.add(new StringField(ID_FIELD, key, Field.Store.NO));
 		doc.add(new StoredField(SOURCE_FIELD, serialize(value)));
-		for (String property : newHashSet(this.additionalSearchableFields)) {
+		
+		for (String property : newHashSet(this.searchableFields)) {
 			doc.add(new StringField(property, String.valueOf(ReflectionUtils.getGetterValue(value, property)), Field.Store.NO));
+		}
+
+		// Values are stored in String form, but sorting will be done numerically in case of long values
+		for (String property : this.sortFields) {
+			Object propertyValue = ReflectionUtils.getGetterValue(value, property);
+			Class<?> propertyClass = propertyValue.getClass();
+			
+			if (Long.class.isAssignableFrom(propertyClass) || long.class.isAssignableFrom(propertyClass)) {
+				doc.add(new NumericDocValuesField(property, (long) propertyValue));
+			} else {
+				doc.add(new BinaryDocValuesField(property, new BytesRef(String.valueOf(propertyValue))));
+			}
 		}
 		return doc;
 	}
@@ -282,15 +321,15 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 	}
 
 	private List<T> searchIndex(final Query query, final int limit) throws IOException {
-		return searchIndex(query, 0, limit);
+		return searchIndex(query, 0, limit, Sort.INDEXORDER);
 	}
 	
-	private List<T> searchIndex(final Query query, final int offset, final int limit) throws IOException {
+	private List<T> searchIndex(final Query query, final int offset, final int limit, final Sort sort) throws IOException {
 		IndexSearcher searcher = null;
 		try {
 			searcher = manager.acquire();
 
-			final TopDocs docs = searcher.search(query, null, offset + limit, Sort.INDEXORDER, false, false);
+			final TopDocs docs = searcher.search(query, null, offset + limit, sort, false, false);
 			final ScoreDoc[] scoreDocs = docs.scoreDocs;
 			final ImmutableList.Builder<T> resultBuilder = ImmutableList.builder();
 

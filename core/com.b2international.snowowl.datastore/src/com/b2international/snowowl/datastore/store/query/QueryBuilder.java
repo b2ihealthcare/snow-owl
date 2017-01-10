@@ -51,6 +51,12 @@ public class QueryBuilder {
 		return this;
 	}
 	
+	public QueryBuilder sortBy(String property, boolean numeric, boolean ascending) {
+		checkState(query != null, "Query already created, use another builder");
+		this.query.setSortBy(new SortBy.SortByField(property, numeric, ascending));
+		return this;
+	}
+	
 	public Query build() {
 		Query query = this.query;
 		this.query = null;
@@ -65,13 +71,24 @@ public class QueryBuilder {
 
 		private Collection<Clause> clauses = newHashSet();
 		
+		private SortBy sortBy = SortBy.INDEX_ORDER; 
+		
 		@Override
 		public Collection<Clause> clauses() {
 			return ImmutableSet.copyOf(clauses);
 		}
 		
-		public void addClause(Clause clause) {
+		@Override
+		public SortBy sortBy() {
+			return sortBy;
+		}
+		
+		private void addClause(Clause clause) {
 			clauses.add(clause);
+		}
+
+		private void setSortBy(SortBy sortBy) {
+			this.sortBy = sortBy;
 		}
 		
 	}

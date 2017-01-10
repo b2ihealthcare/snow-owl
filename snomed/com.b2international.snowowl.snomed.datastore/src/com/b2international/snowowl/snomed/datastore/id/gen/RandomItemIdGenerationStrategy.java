@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,20 @@ package com.b2international.snowowl.snomed.datastore.id.gen;
 
 import java.util.Random;
 
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+
 /**
+ * An item identifier generation strategy that assigns item identifiers to components randomly, without
+ * using the namespace or component category arguments.
+ * 
  * @since 4.0
  */
 public class RandomItemIdGenerationStrategy implements ItemIdGenerationStrategy {
 
 	@Override
-	public String generateItemId() {
+	public String generateItemId(String namespace, ComponentCategory category) {
 		// nextInt excludes top value, add 1 to make it inclusive
-		return Integer.toString(new Random().nextInt(99999999 - 100 + 1) + 100);
+		return Integer.toString(new Random().nextInt(9999_9999 - 100 + 1) + 100);
 	}
 
 }

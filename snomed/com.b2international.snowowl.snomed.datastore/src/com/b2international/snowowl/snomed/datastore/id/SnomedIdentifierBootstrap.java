@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfi
 import com.b2international.snowowl.snomed.datastore.id.cis.CisSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
+import com.b2international.snowowl.snomed.datastore.id.gen.SequentialItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
@@ -84,8 +85,8 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 		}
 	}
 
-	private void registerSnomedIdentifierService(final SnomedIdentifierConfiguration conf, final Environment env,
-			final ISnomedIdentiferReservationService reservationService) {
+	private void registerSnomedIdentifierService(final SnomedIdentifierConfiguration conf, final Environment env, final ISnomedIdentiferReservationService reservationService) {
+		
 		ISnomedIdentifierService identifierService = null;
 
 		final ObjectMapper mapper = new ObjectMapper();
@@ -99,7 +100,8 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 		case INDEX:
 			LOGGER.info("Snow Owl is configured to use index based identifier service.");
 			final IndexStore<SctId> indexStore = getIndexStore(env, mapper);
-			identifierService = new DefaultSnomedIdentifierService(indexStore, ItemIdGenerationStrategy.RANDOM, reservationService, conf);
+			final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(indexStore, reservationService);
+			identifierService = new DefaultSnomedIdentifierService(indexStore, generationStrategy, reservationService, conf);
 			break;
 		case CIS:
 			LOGGER.info("Snow Owl is configured to use CIS based identifier service.");
