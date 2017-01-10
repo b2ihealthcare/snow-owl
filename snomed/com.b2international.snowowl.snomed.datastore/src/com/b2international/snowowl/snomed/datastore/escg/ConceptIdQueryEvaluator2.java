@@ -27,6 +27,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.dsl.query.ast.AndClause;
@@ -39,9 +40,11 @@ import com.b2international.snowowl.snomed.dsl.query.ast.OrClause;
 import com.b2international.snowowl.snomed.dsl.query.ast.RValue;
 import com.b2international.snowowl.snomed.dsl.query.ast.RefSet;
 import com.b2international.snowowl.snomed.dsl.query.ast.SubExpression;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Evaluator service for getting SNOMED&nbsp;CT concept IDs.
+ * @deprecated - see {@link IEscgQueryEvaluatorService}
  */
 public class ConceptIdQueryEvaluator2 implements IQueryEvaluator<LongSet, com.b2international.snowowl.snomed.dsl.query.RValue> {
 	
@@ -73,6 +76,7 @@ public class ConceptIdQueryEvaluator2 implements IQueryEvaluator<LongSet, com.b2
 					.where(Expressions.builder()
 							.must(SnomedRelationshipIndexEntry.Expressions.active())
 							.must(SnomedRelationshipIndexEntry.Expressions.typeIds(LongSets.toStringSet(typeIds)))
+							.must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds(ImmutableSet.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP)))
 							.must(SnomedRelationshipIndexEntry.Expressions.destinationIds(LongSets.toStringSet(destinationIds)))
 							.build())
 					.limit(Integer.MAX_VALUE)

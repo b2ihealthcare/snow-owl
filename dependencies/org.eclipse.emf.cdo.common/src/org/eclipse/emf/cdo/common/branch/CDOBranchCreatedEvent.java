@@ -20,8 +20,10 @@ import org.eclipse.net4j.util.event.IEvent;
  * @since 3.0
  * @noextend This interface is not intended to be extended by clients.
  * @noimplement This interface is not intended to be implemented by clients.
+ * @deprecated As of 4.3 use {@link CDOBranchChangedEvent}.
  */
-public interface CDOBranchCreatedEvent extends IEvent
+@Deprecated
+public interface CDOBranchCreatedEvent extends CDOBranchChangedEvent
 {
   public CDOBranchManager getSource();
 

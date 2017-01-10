@@ -64,7 +64,7 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 	public <T> Hits<T> search(Query<T> query) throws IOException {
 		if (query.getParentType() == null && Revision.class.isAssignableFrom(query.getFrom())) {
 			// rewrite query if we are looking for revision, otherwise if we are looking for unversioned nested use it as is
-			query = Query.selectPartial(query.getSelect(), query.getFrom())
+			query = Query.selectPartial(query.getSelect(), query.getFrom(), query.getFields())
 					.where(Expressions.builder()
 					.must(query.getWhere())
 					.must(Revision.branchFilter(branch))

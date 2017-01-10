@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.server.console;
 
-import static com.google.common.collect.Lists.newArrayList;
-
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
@@ -28,8 +28,11 @@ import com.b2international.commons.StringUtils;
 import com.b2international.index.revision.Purge;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.ServerDbUtils;
 import com.b2international.snowowl.datastore.server.reindex.OptimizeRequest;
 import com.b2international.snowowl.datastore.server.reindex.PurgeRequest;
@@ -38,17 +41,20 @@ import com.b2international.snowowl.datastore.server.reindex.ReindexRequestBuilde
 import com.b2international.snowowl.datastore.server.reindex.ReindexResult;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterables;
+import com.google.common.primitives.Longs;
 
 /**
  * OSGI command contribution with Snow Owl maintenance type commands.
  */
 public class MaintenanceCommandProvider implements CommandProvider {
 
-	private static final String DEFAULT_BRANCH_PREFIX = "|---";
-	private static final String DEFAULT_INDENT = "    ";
+	private static final String DEFAULT_BRANCH_PREFIX = "|--";
+	private static final String DEFAULT_INDENT = "   ";
 	private static final String LISTBRANCHES_COMMAND = "listbranches";
 	private static final String LISTREPOSITORIES_COMMAND = "listrepositories";
 	private static final String DBCREATEINDEX_COMMAND = "dbcreateindex";
@@ -59,7 +65,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		buffer.append("---Snow Owl commands---\n");
 		buffer.append("\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namespace URI.\n");
 		buffer.append("\tsnowowl listrepositories - prints all the repositories in the system.\n");
-		buffer.append("\tsnowowl listbranches [repository] - prints all the branches in the system for a repository.\n");
+		buffer.append("\tsnowowl listbranches [repository] [branchPath] - prints all the child branches of the specified branch path in the system for a repository. Branch path is MAIN by default and has to be full path (e.g. MAIN/PROJECT/TASK)\n");
 		buffer.append("\tsnowowl reindex [repositoryId] [failedCommitTimestamp]- reindexes the content for the given repository ID from the given failed commit timestamp (optional, default timestamp is 1 which means no failed commit).\n");
 		buffer.append("\tsnowowl optimize [repositoryId] [maxSegments] - optimizes the underlying index for the repository to have the supplied maximum number of segments (default number is 1)\n");
 		buffer.append("\tsnowowl purge [repositoryId] [branchPath] [ALL|LATEST|HISTORY] - optimizes the underlying index by deleting unnecessary documents from the given branch using the given purge strategy (default strategy is LATEST)\n");
@@ -218,40 +224,88 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	}
 
 	public synchronized void listBranches(CommandInterpreter interpreter) {
-		String repositoryName = interpreter.nextArgument();
-		if (isValidRepositoryName(repositoryName, interpreter)) {
-			interpreter.println(String.format("Branches for repository %s:", repositoryName));
-
-			Branch mainBranch = BranchPathUtils.getMainBranchForRepository(repositoryName);
-
-			List<Branch> allBranches = newArrayList(mainBranch.children());
-			allBranches.add(mainBranch);
-
-			printBranchHierarchy(allBranches, Sets.<Branch> newHashSet(), mainBranch, interpreter);
+		String repositoryUUID = interpreter.nextArgument();
+		
+		if (isValidRepositoryName(repositoryUUID, interpreter)) {
+			
+			String parentBranchPath = interpreter.nextArgument();
+			
+			if (Strings.isNullOrEmpty(parentBranchPath)) {
+				interpreter.println("Parent branch path was not specified, falling back to MAIN");
+				parentBranchPath = Branch.MAIN_PATH;
+			} else if (!parentBranchPath.startsWith(Branch.MAIN_PATH)) {
+				interpreter.println("Specify parent branch with full path. i.e. MAIN/PROJECT/TASK1");
+				return;
+			}
+			
+			Branch parentBranch = null;
+			
+			try {
+				 parentBranch = RepositoryRequests.branching()
+						 			.prepareGet(parentBranchPath)
+						 			.build(repositoryUUID)
+						 			.execute(getBus())
+						 			.getSync(1000, TimeUnit.MILLISECONDS);
+			} catch (NotFoundException e) {
+				interpreter.println(String.format("Unable to find %s", parentBranchPath));
+				return;
+			}
+			
+			if (parentBranch != null) {
+				interpreter.println(String.format("Branch hierarchy for %s in repository %s:", parentBranchPath, repositoryUUID));
+				print(parentBranch, getDepthOfBranch(parentBranch), interpreter);
+			}
+			
 		}
 	}
-
-	private void printBranchHierarchy(List<Branch> branches, Set<Branch> visitedBranches, Branch currentBranch, CommandInterpreter interpreter) {
-		interpreter.println(String.format("%s%s%s", getDepthOfBranch(currentBranch), DEFAULT_BRANCH_PREFIX, currentBranch.name()));
-		visitedBranches.add(currentBranch);
-		for (Branch branch : branches) {
-			if (!visitedBranches.contains(branch)) {
-				if (branch.parentPath().equals(currentBranch.path())) {
-					printBranchHierarchy(branches, visitedBranches, branch, interpreter);
-				}
+	
+	private void print(final Branch branch, final int parentDepth, CommandInterpreter interpreter) {
+		
+		printBranch(branch, getDepthOfBranch(branch) - parentDepth, interpreter);
+		
+		List<? extends Branch> children = FluentIterable.from(branch.children()).filter(new Predicate<Branch>() {
+			@Override
+			public boolean apply(Branch input) {
+				return input.parentPath().equals(branch.path());
+			}
+		}).toSortedList(new Comparator<Branch>() {
+			@Override
+			public int compare(Branch o1, Branch o2) {
+				return Longs.compare(o1.baseTimestamp(), o2.baseTimestamp());
+			}
+		});
+		
+		if (children.size() != 0) {
+			for (Branch child : children) {
+				print(child, parentDepth, interpreter);
 			}
 		}
+		
 	}
 
-	private String getDepthOfBranch(Branch currentBranch) {
-		int depth = Splitter.on(Branch.SEPARATOR).splitToList(currentBranch.path()).size();
+	private void printBranch(Branch branch, int depth, CommandInterpreter interpreter) {
+		interpreter.println(String.format("%-30s %-12s B: %s H: %s",
+				String.format("%s%s%s", 
+				getIndentationForBranch(depth), 
+				DEFAULT_BRANCH_PREFIX, 
+				branch.name()),
+				String.format("[%s]", branch.state()),
+				Dates.formatByGmt(branch.baseTimestamp(), DateFormats.LONG), 
+				Dates.formatByGmt(branch.headTimestamp(), DateFormats.LONG)));
+	}
+		
+	private String getIndentationForBranch(int depth) {
 		String indent = "";
-		for (int i = 1; i < depth; i++) {
-			indent = indent + DEFAULT_INDENT;
+		for (int i = 0; i < depth; i++) {
+			indent += DEFAULT_INDENT;
 		}
 		return indent;
 	}
 
+	private int getDepthOfBranch(Branch currentBranch) {
+		return Iterables.size(Splitter.on(Branch.SEPARATOR).split(currentBranch.path()));
+	}
+	
 	private boolean isValidRepositoryName(String repositoryName, CommandInterpreter interpreter) {
 		Set<String> uuidKeySet = getRepositoryManager().uuidKeySet();
 		if (!uuidKeySet.contains(repositoryName)) {

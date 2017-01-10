@@ -140,6 +140,7 @@ public class FocusConceptNormalizer {
 
 	private Collection<SnomedConceptDocument> getAllSubTypes(String id) {
 		return SnomedRequests.prepareSearchConcept()
+				.all()
 				.filterByAncestor(id)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))

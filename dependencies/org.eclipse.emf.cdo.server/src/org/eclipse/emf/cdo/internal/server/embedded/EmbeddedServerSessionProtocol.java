@@ -11,6 +11,7 @@
 package org.eclipse.emf.cdo.internal.server.embedded;
 
 import org.eclipse.emf.cdo.common.CDOCommonRepository;
+import org.eclipse.emf.cdo.common.branch.CDOBranchChangedEvent.ChangeKind;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.lock.CDOLockChangeInfo;
@@ -83,8 +84,12 @@ public class EmbeddedServerSessionProtocol extends Lifecycle implements ISession
 
   public void sendBranchNotification(InternalCDOBranch branch)
   {
-    EmbeddedClientSession clientSession = clientSessionProtocol.getSession();
-    clientSession.handleBranchNotification(branch);
+    throw new UnsupportedOperationException();
+  }
+
+  public void sendBranchNotification(InternalCDOBranch branch, ChangeKind changeKind) throws Exception
+  {
+    throw new UnsupportedOperationException();
   }
 
   public void sendCommitNotification(CDOCommitInfo commitInfo)

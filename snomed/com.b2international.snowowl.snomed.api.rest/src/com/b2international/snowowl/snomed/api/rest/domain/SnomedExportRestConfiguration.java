@@ -154,7 +154,7 @@ public class SnomedExportRestConfiguration {
 	 * Returns true if the 
 	 * @return
 	 */
-	public boolean includeUnpublished() {
+	public boolean isIncludeUnpublished() {
 		return includeUnpublished;
 	}
 }

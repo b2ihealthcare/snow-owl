@@ -300,6 +300,7 @@ public enum SnomedModuleDependencyCollectorService {
 	
 	private Set<String> getAllModuleConceptIds() {
 		return SnomedRequests.prepareSearchConcept()
+				.all()
 				.filterByActive(true)
 				.filterByAncestor(Concepts.MODULE_ROOT)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranchPath().getPath())

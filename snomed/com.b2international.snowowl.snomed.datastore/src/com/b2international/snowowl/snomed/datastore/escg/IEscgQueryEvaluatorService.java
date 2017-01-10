@@ -17,11 +17,13 @@ package com.b2international.snowowl.snomed.datastore.escg;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 
 /**
  * Service for evaluating ESCG query expressions.
  * 
  * @see IQueryExpressionWrapper
+ * @deprecated - ESCG is deprecated as of 5.4, use {@link SnomedConceptSearchRequestBuilder#filterByEcl ECL filter API} instead of ESCG
  */
 public interface IEscgQueryEvaluatorService {
 	

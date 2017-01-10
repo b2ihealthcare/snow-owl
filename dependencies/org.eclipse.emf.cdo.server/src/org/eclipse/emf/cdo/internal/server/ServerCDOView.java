@@ -887,6 +887,7 @@ public class ServerCDOView extends AbstractCDOView implements org.eclipse.emf.cd
       throw new UnsupportedOperationException();
     }
 
+    @Deprecated
     public void handleBranchNotification(InternalCDOBranch branch)
     {
       throw new UnsupportedOperationException();

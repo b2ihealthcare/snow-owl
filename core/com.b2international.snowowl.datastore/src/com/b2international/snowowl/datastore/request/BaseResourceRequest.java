@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
@@ -35,6 +37,8 @@ public abstract class BaseResourceRequest<C extends ServiceProvider, B> extends 
 
 	@NotNull
 	private Options expand;
+
+	private Set<String> fields = Collections.emptySet();
 	
 	@JsonProperty
 	protected final List<ExtendedLocale> locales() {
@@ -46,12 +50,21 @@ public abstract class BaseResourceRequest<C extends ServiceProvider, B> extends 
 		return expand;
 	}
 	
+	@JsonProperty
+	protected final Set<String> fields() {
+		return fields;
+	}
+	
 	final void setLocales(List<ExtendedLocale> locales) {
 		this.locales = locales;
 	}
 	
 	final void setExpand(Options expand) {
 		this.expand = expand;
+	}
+	
+	final void setFields(Set<String> fields) {
+		this.fields = fields;
 	}
 	
 }

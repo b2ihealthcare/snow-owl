@@ -574,7 +574,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		}
 		
 		logActivity("Publishing SNOMED CT unpublished inferred relationships into RF2 format.");
-		SnomedExporter unpublishedinferredRelationshipExporter = new SnomedStatedRelationshipExporter(context, revisionSearcher, true);
+		SnomedExporter unpublishedinferredRelationshipExporter = new SnomedInferredRelationshipExporter(context, revisionSearcher, true);
 		new SnomedExportExecutor(unpublishedinferredRelationshipExporter, workingDirectory, clientNamespace).execute(append);
 		
 		if (monitor.isCanceled()) {

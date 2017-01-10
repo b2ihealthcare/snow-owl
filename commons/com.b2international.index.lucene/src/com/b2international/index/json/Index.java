@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,20 +24,23 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import org.apache.hadoop.hbase.util.Order;
+import org.apache.hadoop.hbase.util.OrderedBytes;
+import org.apache.hadoop.hbase.util.SimplePositionedMutableByteRange;
 import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FloatDocValuesField;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.util.BytesRef;
 
-import com.b2international.collections.floats.FloatCollection;
-import com.b2international.collections.ints.IntCollection;
-import com.b2international.collections.longs.LongCollection;
 import com.b2international.index.Searcher;
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.util.NumericClassUtils;
 import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,6 +52,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public final class Index implements Operation {
 
+	public static final int PRECISION = 1 + 18 + 8; // according to OrderedBytes 
 	private final String key;
 	private byte[] source;
 
@@ -104,7 +108,7 @@ public final class Index implements Operation {
 				final DocumentMapping nestedTypeMapping = mapping.getNestedMapping(fieldType);
 				final JsonNode node = object.get(field.getName());
 				if (node instanceof ArrayNode) {
-					for (JsonNode item : (ArrayNode) node) {
+					for (JsonNode item : node) {
 						if (item instanceof ObjectNode) {
 							collectDocs(uid, UUID.randomUUID().toString(), (ObjectNode) item, nestedTypeMapping, docs);
 						}
@@ -164,14 +168,17 @@ public final class Index implements Operation {
 		return doc;
 	}
 
+	/* 
+	 * TODO: 
+	 * - add support for nested object properties without nested document mapping
+	 * - add support for selective field loading and sorting on all fields by storing DocValues 
+	 *   (boolean values and collections can not be selected at the moment)
+	 */
 	private void addToDoc(final Document doc, final String name, final JsonNode node, DocumentMapping mapping, boolean docValues) {
 		switch (node.getNodeType()) {
 		case ARRAY:
-			// FIXME deeply nested objects, etc.
-			// for now only basic lists are supported
-			final Iterator<JsonNode> array = node.iterator();
-			while (array.hasNext()) {
-				addToDoc(doc, name, array.next(), mapping, false);
+			for (final JsonNode item : node) {
+				addToDoc(doc, name, item, mapping, false);
 			}
 			break;
 		case STRING:
@@ -179,58 +186,53 @@ public final class Index implements Operation {
 				Fields.searchOnlyTextField(name).addTo(doc, node.textValue());
 			} else {
 				Fields.searchOnlyStringField(name).addTo(doc, node.textValue());
-				if (docValues) {
-					doc.add(new BinaryDocValuesField(name, new BytesRef(node.textValue())));
-				}
+			}
+			
+			if (docValues) {
+				doc.add(new BinaryDocValuesField(name, new BytesRef(node.textValue())));
 			}
 			break;
 		case BOOLEAN:
 			Fields.searchOnlyBoolField(name).addTo(doc, node.booleanValue());
 			break;
 		case NUMBER:
-			Class<?> fieldType = mapping.getField(name).getType();
-			if (Collection.class.isAssignableFrom(fieldType)) {
-				fieldType = Reflections.getType(mapping.getField(name));
-			} else {
-				if (docValues) {
-					if (isFloat(fieldType)) {
-						doc.add(new FloatDocValuesField(name, node.floatValue()));	
-					} else if (isLong(fieldType) || isInt(fieldType) || isShort(fieldType)) {
-						doc.add(new NumericDocValuesField(name, node.longValue()));
-					}
-				}
+			final Field field = mapping.getField(name);
+			final Class<?> fieldType = NumericClassUtils.unwrapCollectionType(field);
+			
+			if (docValues && NumericClassUtils.isCollection(field)) {
+				throw new IllegalStateException("Docvalues can not be indexed for a collection of type: " + fieldType + " for field: " + name);
 			}
-			if (isLong(fieldType)) {
+			
+			if (NumericClassUtils.isLong(fieldType)) {
 				Fields.searchOnlyLongField(name).addTo(doc, node.longValue());
-			} else if (isFloat(fieldType)) {
+			} else if (NumericClassUtils.isFloat(fieldType)) {
 				Fields.searchOnlyFloatField(name).addTo(doc, node.floatValue());
-			} else if (isInt(fieldType)) {
+			} else if (NumericClassUtils.isInt(fieldType) || NumericClassUtils.isShort(fieldType)) {
 				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
-			} else if (isShort(fieldType)) {
-				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
+			} else if (NumericClassUtils.isBigDecimal(fieldType)) {
+				final SimplePositionedMutableByteRange dst = new SimplePositionedMutableByteRange(PRECISION);
+				final int writtenBytes = OrderedBytes.encodeNumeric(dst, node.decimalValue(), Order.ASCENDING);
+				final BytesRef term = new BytesRef(dst.getBytes(), 0, writtenBytes);
+				final StringField termField = new StringField(name, term, Store.NO);
+				doc.add(termField);
+				if (docValues) {
+					doc.add(new BinaryDocValuesField(name, term));
+				}
 			} else {
 				throw new UnsupportedOperationException("Unsupported number type: " + fieldType + " for field: " + name);
+			}
+			
+			if (docValues) {
+				if (NumericClassUtils.isFloat(fieldType)) {
+					doc.add(new FloatDocValuesField(name, node.floatValue()));
+				} else if (NumericClassUtils.isLong(fieldType) || NumericClassUtils.isInt(fieldType) || NumericClassUtils.isShort(fieldType)) {
+					doc.add(new NumericDocValuesField(name, node.longValue()));
+				}
+				// BigDecimals are handled above
 			}
 			break;
 		default:
 			break;
 		}
 	}
-
-	private boolean isFloat(Class<?> fieldType) {
-		return fieldType == Float.class || fieldType == float.class || FloatCollection.class.isAssignableFrom(fieldType);
-	}
-
-	private boolean isLong(Class<?> fieldType) {
-		return fieldType == Long.class || fieldType == long.class || LongCollection.class.isAssignableFrom(fieldType);
-	}
-	
-	private boolean isInt(Class<?> fieldType) {
-		return fieldType == Integer.class || fieldType == int.class || IntCollection.class.isAssignableFrom(fieldType);
-	}
-	
-	private boolean isShort(Class<?> fieldType) {
-		return fieldType == Short.class || fieldType == short.class;
-	}
-
 }

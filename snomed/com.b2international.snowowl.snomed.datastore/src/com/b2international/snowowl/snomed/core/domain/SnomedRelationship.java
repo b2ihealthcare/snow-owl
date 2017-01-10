@@ -22,8 +22,8 @@ package com.b2international.snowowl.snomed.core.domain;
 public class SnomedRelationship extends BaseSnomedCoreComponent implements ISnomedRelationship {
 
 	private boolean destinationNegated;
-	private int group;
-	private int unionGroup;
+	private Integer group;
+	private Integer unionGroup;
 	private CharacteristicType characteristicType;
 	private RelationshipRefinability refinability;
 	private RelationshipModifier modifier;
@@ -74,12 +74,12 @@ public class SnomedRelationship extends BaseSnomedCoreComponent implements ISnom
 	}
 
 	@Override
-	public int getGroup() {
+	public Integer getGroup() {
 		return group;
 	}
 
 	@Override
-	public int getUnionGroup() {
+	public Integer getUnionGroup() {
 		return unionGroup;
 	}
 
@@ -114,11 +114,11 @@ public class SnomedRelationship extends BaseSnomedCoreComponent implements ISnom
 		this.destinationNegated = destinationNegated;
 	}
 
-	public void setGroup(final int group) {
+	public void setGroup(final Integer group) {
 		this.group = group;
 	}
 
-	public void setUnionGroup(final int unionGroup) {
+	public void setUnionGroup(final Integer unionGroup) {
 		this.unionGroup = unionGroup;
 	}
 

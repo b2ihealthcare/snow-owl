@@ -1000,6 +1000,10 @@ If omitted, then default strategy will be used.
 |1000
 |The time to wait between 2 job polling actions It is in milliseconds.
 
+|cisNumberOfReauthTries
+|2
+|The maximum number of re-authentication attempts when a 401 Not authorized response is received.
+
 |enforceNamespace
 |
 |A SNOMED CT namespace identifier to use when generating new SNOMED CT component IDs regardless of the user defined namespace. Use INT keyword to enforce international IDs.

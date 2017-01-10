@@ -190,6 +190,11 @@ public class MEMStoreAccessor extends LongIDStoreAccessor implements Raw, Durabl
     return getStore().loadBranches(startID, endID, branchHandler);
   }
 
+  public void renameBranch(int branchID, String newName)
+  {
+    getStore().renameBranch(branchID, newName);
+  }
+
   public void loadCommitInfos(CDOBranch branch, long startTime, long endTime, CDOCommitInfoHandler handler)
   {
     getStore().loadCommitInfos(branch, startTime, endTime, handler);

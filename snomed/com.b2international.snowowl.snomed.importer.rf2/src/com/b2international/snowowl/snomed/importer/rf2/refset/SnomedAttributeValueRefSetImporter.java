@@ -15,17 +15,19 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.refset;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.InputStream;
-import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -91,34 +93,21 @@ public class SnomedAttributeValueRefSetImporter extends AbstractSnomedRefSetImpo
 	protected SnomedRefSetType getRefSetType() {
 		return SnomedRefSetType.ATTRIBUTE_VALUE;
 	}
-
+	
 	@Override
-	protected SnomedAttributeValueRefSetMember doImportRow(final AssociatingRefSetRow currentRow) {
-
-		final SnomedAttributeValueRefSetMember editedMember = (SnomedAttributeValueRefSetMember) getOrCreateMember(currentRow.getUuid());
-		
-		if (skipCurrentRow(currentRow, editedMember)) {
-			getLogger().warn("Not importing attribute value reference set member '{}' with effective time '{}'; it should have been filtered from the input file.",
-					currentRow.getUuid(), 
-					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
-
-			return null;
-		}
-
-		if (currentRow.getEffectiveTime() != null) {
-			editedMember.setEffectiveTime(currentRow.getEffectiveTime());
-			editedMember.setReleased(true);
+	protected void applyRow(SnomedAttributeValueRefSetMember member, AssociatingRefSetRow row, Collection<SnomedAttributeValueRefSetMember> componentsToAttach) {
+		if (row.getEffectiveTime() != null) {
+			member.setEffectiveTime(row.getEffectiveTime());
+			member.setReleased(true);
 		} else {
-			editedMember.unsetEffectiveTime();
+			member.unsetEffectiveTime();
 		}
-
-		editedMember.setRefSet(getOrCreateRefSet(currentRow.getRefSetId(), currentRow.getReferencedComponentId()));
-		editedMember.setActive(currentRow.isActive());
-		editedMember.setModuleId(currentRow.getModuleId());
-		editedMember.setReferencedComponentId(currentRow.getReferencedComponentId());
-		editedMember.setValueId(currentRow.getAssociatedComponentId());
 		
-		return editedMember;
+		member.setRefSet(getOrCreateRefSet(row.getRefSetId(), row.getReferencedComponentId()));
+		member.setActive(row.isActive());
+		member.setModuleId(row.getModuleId());
+		member.setReferencedComponentId(row.getReferencedComponentId());
+		member.setValueId(row.getAssociatedComponentId());
 	}
 
 	@Override
@@ -127,48 +116,34 @@ public class SnomedAttributeValueRefSetImporter extends AbstractSnomedRefSetImpo
 	}
 
 	@Override
-	protected SnomedAttributeValueRefSetMember createRefSetMember() {
+	protected SnomedAttributeValueRefSetMember createMember() {
 		return SnomedRefSetFactory.eINSTANCE.createSnomedAttributeValueRefSetMember();
 	}
 	
 	@Override
-	protected boolean addToMembersList(final SnomedAttributeValueRefSetMember currentMember) {
-		
-		final String refSetIdentifierId = currentMember.getRefSetIdentifierId();
-		final String referencedComponentId = currentMember.getReferencedComponentId();
-		
-		if (Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR.equals(refSetIdentifierId) || 
-				Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(refSetIdentifierId)) {
-			
-			final Inactivatable inactivatableComponent = getInactivatableComponent(referencedComponentId);
-			
-			if (null == inactivatableComponent) {
-				String message = MessageFormat.format("Inactivatable component with ID ''{0}'' could not be found, skipping refset member.", currentMember.getReferencedComponentId());
-				getLogger().warn(message);
-				log(message);
-				return false;
+	protected void attach(Collection<SnomedAttributeValueRefSetMember> componentsToAttach) {
+		final Collection<String> containerComponentIds = componentsToAttach.stream().map(SnomedAttributeValueRefSetMember::getReferencedComponentId).collect(Collectors.toSet());
+		final Map<String, Component> containerComponents = getComponents(containerComponentIds).stream().collect(Collectors.toMap(Component::getId, c -> c));
+		final Collection<SnomedAttributeValueRefSetMember> attachToRegular = newHashSet();
+		for (SnomedAttributeValueRefSetMember member : componentsToAttach) {
+			Component container = containerComponents.get(member.getReferencedComponentId());
+			if (container instanceof Inactivatable && isInactivationMember(member.getRefSetIdentifierId())) {
+				((Inactivatable) container).getInactivationIndicatorRefSetMembers().add(member);
+			} else if (container instanceof Relationship && isRefinabilityMember(member.getRefSetIdentifierId())) {
+				((Relationship) container).getRefinabilityRefSetMembers().add(member);
+			} else {
+				attachToRegular.add(member);
 			}
-			
-			inactivatableComponent.getInactivationIndicatorRefSetMembers().add(currentMember);
-			return true;
-		
-		} 
-		
-		if (Concepts.REFSET_RELATIONSHIP_REFINABILITY.equals(refSetIdentifierId)) {
-
-			final Relationship relationship = getRelationship(referencedComponentId);
-			
-			if (null == relationship) {
-				String message = MessageFormat.format("Relationship with ID ''{0}'' could not be found, skipping refset member.", currentMember.getReferencedComponentId());
-				getLogger().warn(message);
-				log(message);
-				return false;
-			}
-			
-			relationship.getRefinabilityRefSetMembers().add(currentMember);
-			return true;
 		}
-
-		return	super.addToMembersList(currentMember);
+		super.attach(attachToRegular);
 	}
+
+	private boolean isRefinabilityMember(String refSetIdentifierId) {
+		return Concepts.REFSET_RELATIONSHIP_REFINABILITY.equals(refSetIdentifierId);
+	}
+
+	private boolean isInactivationMember(String refSetIdentifierId) {
+		return Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR.equals(refSetIdentifierId) || Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(refSetIdentifierId);
+	}
+	
 }

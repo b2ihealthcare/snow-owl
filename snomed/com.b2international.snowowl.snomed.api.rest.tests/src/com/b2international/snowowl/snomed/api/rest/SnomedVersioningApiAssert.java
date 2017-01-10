@@ -17,11 +17,15 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.Dates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.jayway.restassured.http.ContentType;
@@ -73,16 +77,17 @@ public class SnomedVersioningApiAssert {
 				.when().post("/codesystems/{shortNameOrOid}/versions", shortName);
 	}
 	
-	public static Collection<String> getEffectiveDates(final String uniqueId) {
+	public static Collection<String> getEffectiveDates(final String codeSystemShortName) {
 		final Map<?, ?> response = givenAuthenticatedRequest(ADMIN_API)
 			.and().contentType(ContentType.JSON)
-			.when().get("/codesystems/{shortName}/versions", uniqueId)
+			.when().get("/codesystems/{shortName}/versions", codeSystemShortName)
 			.then().extract().body().as(Map.class);
 		
 		if (!response.containsKey("items")) {
 			return Collections.emptyList();
 		} else {
 			final List<String> effectiveDates = Lists.newArrayList();
+			@SuppressWarnings("unchecked")
 			final List<Map<?, ?>> items = (List<Map<?, ?>>) response.get("items");
 			for (final Map<?, ?> version : items) {
 				final String effectiveDate = (String) version.get("effectiveDate");
@@ -93,4 +98,22 @@ public class SnomedVersioningApiAssert {
 		}
 	}
 	
+	public static String getLatestAvailableVersionDateAsString(final String codeSystemShortName) {
+		return Dates.formatByGmt(getLatestAvailableVersionDate(codeSystemShortName), DateFormats.SHORT);
+	}
+	
+	public static Date getLatestAvailableVersionDate(final String codeSystemShortName) {
+		Date latestEffectiveDate = new Date();
+		for (final String effectiveDate : getEffectiveDates(codeSystemShortName)) {
+			Date effDate = Dates.parse(effectiveDate, DateFormats.SHORT);
+			if (latestEffectiveDate.before(effDate)) {
+				latestEffectiveDate = effDate;
+			}
+		}
+
+		final Calendar calendar = Calendar.getInstance();
+		calendar.setTime(latestEffectiveDate);
+		calendar.add(Calendar.DATE, 1);
+		return calendar.getTime();
+	}
 }

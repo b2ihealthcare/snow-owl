@@ -64,14 +64,14 @@ public interface ISnomedRelationship extends SnomedCoreComponent, IComponentEdge
 	 * 
 	 * @return the relationship group, or 0 if this relationship can not be grouped, or is in an unnumbered, singleton group
 	 */
-	int getGroup();
+	Integer getGroup();
 
 	/**
 	 * If multiple relationship destinations are to be taken as a disjunction, the relationships are assigned a common, positive union group number.
 	 * 
 	 * @return the relationship union group, or 0 if this relationship is not part of a disjunction
 	 */
-	int getUnionGroup();
+	Integer getUnionGroup();
 
 	/**
 	 * Returns the characteristic type of the relationship.

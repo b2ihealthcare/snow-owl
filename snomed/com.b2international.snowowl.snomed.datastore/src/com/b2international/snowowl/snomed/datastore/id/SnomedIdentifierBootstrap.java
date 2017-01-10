@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfi
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.cis.CisSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
+import com.b2international.snowowl.snomed.datastore.id.gen.SequentialItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
@@ -80,8 +81,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 		}
 	}
 
-	private void registerSnomedIdentifierService(final SnomedIdentifierConfiguration conf, final Environment env,
-			final ISnomedIdentiferReservationService reservationService) {
+	private void registerSnomedIdentifierService(final SnomedIdentifierConfiguration conf, final Environment env, final ISnomedIdentiferReservationService reservationService) {
 		ISnomedIdentifierService identifierService = null;
 
 		switch (conf.getStrategy()) {
@@ -93,7 +93,8 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 				}
 			};
 			LOGGER.info("Snow Owl is configured to use embedded identifier service.");
-			identifierService = new DefaultSnomedIdentifierService(indexProvider, ItemIdGenerationStrategy.RANDOM, reservationService, conf);
+			final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(indexProvider, reservationService); 
+			identifierService = new DefaultSnomedIdentifierService(indexProvider, generationStrategy, reservationService, conf);
 			break;
 		case CIS:
 			final ObjectMapper mapper = new ObjectMapper();

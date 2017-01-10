@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public class DocLoadPerformanceTest extends BaseIndexTest {
 
-	protected static final int NOI = 1_000_000;
+	protected static final int NUM_INDEXED_DOCUMENTS = 1_000_000;
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
@@ -48,8 +48,11 @@ public class DocLoadPerformanceTest extends BaseIndexTest {
 		index().write(new IndexWrite<Void>() {
 			@Override
 			public Void execute(Writer index) throws IOException {
-				for (int i = 0; i < NOI; i++) {
-					index.put(String.valueOf(i), new Data("field1"+i, "field2"+i));
+				for (int i = 0; i < NUM_INDEXED_DOCUMENTS; i++) {
+					final Data data = new Data();
+					data.setField1("field1_" + i);
+					data.setField2("field2_" + i);
+					index.put(String.valueOf(i), data);
 				}
 				index.commit();
 				return null;
@@ -70,7 +73,7 @@ public class DocLoadPerformanceTest extends BaseIndexTest {
 			});
 			System.err.println("Docload took: " + w);
 			System.err.println("---------------");
-			assertEquals(NOI, hits.getHits().size());
+			assertEquals(NUM_INDEXED_DOCUMENTS, hits.getHits().size());
 		}
 		
 	}

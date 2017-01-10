@@ -20,6 +20,7 @@ import static com.b2international.commons.StringUtils.isEmpty;
 import java.io.Serializable;
 import java.util.Set;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -27,7 +28,6 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicTypePredicat
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.DataTypeWidgetModel;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
 /**
@@ -45,7 +45,7 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable, 
 	private String uuid;
 	private String referencedComponentId; 
 	private String selectedLabel = "";
-	private String selectedValue = "";
+	private Object selectedValue = "";
 	private String selectedUom;
 	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
 
@@ -108,12 +108,12 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable, 
 		firePropertyChange(PROP_SELECTED_UOM, oldSelectedUom, newSelectedUom);
 	}
 	
-	public String getSelectedValue() {
+	public Object getSelectedValue() {
 		return selectedValue;
 	}
 	
-	public void setSelectedValue(String newSelectedValue) {
-		String oldSelectedValue = this.selectedValue;
+	public void setSelectedValue(Object newSelectedValue) {
+		Object oldSelectedValue = this.selectedValue;
 		this.selectedValue = newSelectedValue;
 		firePropertyChange(PROP_SELECTED_VALUE, oldSelectedValue, newSelectedValue);
 	}
@@ -181,7 +181,7 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable, 
 	
 	@Override
 	protected boolean isPopulated() {
-		return !isEmpty(getSelectedLabel()) && !isEmpty(selectedValue);
+		return !isEmpty(getSelectedLabel()) && !CompareUtils.isEmpty(selectedValue);
 	}
 	
 	@Override
@@ -232,7 +232,7 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable, 
 	 */
 	public boolean isNotSpecified() {
 		if (DataType.BOOLEAN.equals(getAllowedType())) {
-			return Strings.isNullOrEmpty(getSelectedValue());
+			return CompareUtils.isEmpty(getSelectedValue());
 		} else {
 			throw new IllegalArgumentException("The given dataType is not a boolean.");
 		}

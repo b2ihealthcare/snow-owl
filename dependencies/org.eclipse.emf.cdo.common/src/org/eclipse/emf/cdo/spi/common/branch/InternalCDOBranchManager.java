@@ -12,6 +12,8 @@ package org.eclipse.emf.cdo.spi.common.branch;
 
 import java.io.IOException;
 
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.common.branch.CDOBranchChangedEvent.ChangeKind;
 import org.eclipse.emf.cdo.common.branch.CDOBranchHandler;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import org.eclipse.emf.cdo.common.protocol.CDODataInput;
@@ -54,7 +56,21 @@ public interface InternalCDOBranchManager extends CDOBranchManager, ILifecycle
 
   public InternalCDOBranch createBranch(int id, String name, InternalCDOBranch baseBranch, long baseTimeStamp);
 
+  /**
+   * @since 4.3
+   */
+  public void renameBranch(CDOBranch branch, String newName);
+
+  /**
+   * @deprecated As of 4.3 use {@link #handleBranchChanged(InternalCDOBranch, ChangeKind)}.
+   */
+  @Deprecated
   public void handleBranchCreated(InternalCDOBranch branch);
+
+  /**
+   * @since 4.3
+   */
+  public void handleBranchChanged(InternalCDOBranch branch, ChangeKind changeKind);
 
   /**
    * @author Eike Stepper
@@ -185,5 +201,22 @@ public interface InternalCDOBranchManager extends CDOBranchManager, ILifecycle
         return baseTimeStamp;
       }
     }
+  }
+
+  /**
+   * If the meaning of this type isn't clear, there really should be more of a description here...
+   *
+   * @author Mathieu Velten
+   * @since 4.3
+   */
+  public interface BranchLoader2 extends BranchLoader
+  {
+    /**
+     * @deprecated Not yet implemented.
+     */
+    @Deprecated
+    public void deleteBranch(int branchID);
+
+    public void renameBranch(int branchID, String newName);
   }
 }

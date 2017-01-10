@@ -15,6 +15,9 @@
  */
 package com.b2international.index.query;
 
+import java.util.Collections;
+import java.util.Set;
+
 import com.b2international.index.query.Query.AfterWhereBuilder;
 import com.b2international.index.query.Query.QueryBuilder;
 
@@ -35,10 +38,17 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 	private SortBy sortBy = SortBy.NONE;
 	private boolean withScores = false;
 
+	private Set<String> fields = Collections.emptySet();
+
 	DefaultQueryBuilder(Class<T> select, Class<?> from, Class<?> scope) {
 		this.select = select;
 		this.from = from;
 		this.scope = scope;
+	}
+	
+	QueryBuilder<T> fields(Set<String> fields) {
+		this.fields = fields;
+		return this;
 	}
 
 	@Override
@@ -82,6 +92,7 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 		query.setOffset(offset);
 		query.setSortBy(sortBy);
 		query.setWithScores(withScores);
+		query.setFields(fields);
 		return query;
 	}
 }

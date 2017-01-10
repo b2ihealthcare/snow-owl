@@ -275,5 +275,14 @@ public class SnomedIdentifiers {
 	public boolean importSupported() {
 		return identifierService.importSupported();
 	}
+
+	public static boolean isConceptIdentifier(String identifier) {
+		try {
+			return ComponentCategory.CONCEPT == getComponentCategory(identifier);
+		} catch (IllegalArgumentException e) {
+			// ignored
+		}
+		return false;
+	}
 	
 }

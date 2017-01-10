@@ -31,6 +31,9 @@ import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator
 import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 
+/**
+ * @deprecated - see {@link IEscgQueryEvaluatorService}
+ */ 
 public class EscgQueryEvaluatorService implements IEscgQueryEvaluatorService {
 
 	private final EscgRewriter rewriter;

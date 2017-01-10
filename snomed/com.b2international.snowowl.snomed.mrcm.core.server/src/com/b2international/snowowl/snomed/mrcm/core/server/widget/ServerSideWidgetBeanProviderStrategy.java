@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -141,7 +142,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 				if (includeUnsanctioned) {
 					beans.add(widgetBean);
 				} else {
-					if (!StringUtils.isEmpty(widgetBean.getSelectedLabel()) && !StringUtils.isEmpty(widgetBean.getSelectedValue())) {
+					if (!StringUtils.isEmpty(widgetBean.getSelectedLabel()) && !CompareUtils.isEmpty(widgetBean.getSelectedValue())) {
 						beans.add(widgetBean);
 					}
 				}

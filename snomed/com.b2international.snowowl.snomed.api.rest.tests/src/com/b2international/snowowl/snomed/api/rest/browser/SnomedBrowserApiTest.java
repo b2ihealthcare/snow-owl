@@ -19,6 +19,7 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPa
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.whenDeletingBranchWithPath;
@@ -29,16 +30,25 @@ import static com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserA
 import static com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiAssert.createIsaRelationship;
 import static com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiAssert.generateComponentId;
 import static com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiAssert.givenConceptRequestBody;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.api.domain.browser.SnomedBrowserDescriptionType;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.response.ValidatableResponse;
 
 /**
@@ -132,6 +142,7 @@ public class SnomedBrowserApiTest extends AbstractSnomedApiTest {
 				creationDate);
 		final ValidatableResponse response = assertComponentCreatedWithStatus(createMainPath(), createRequestBody, 200);
 
+		@SuppressWarnings("unchecked")
 		final Map<String, Object> concept = response.and().extract().as(Map.class);
 		concept.put("active", false);
 
@@ -148,6 +159,7 @@ public class SnomedBrowserApiTest extends AbstractSnomedApiTest {
 				creationDate);
 		final ValidatableResponse response = assertComponentCreatedWithStatus(createMainPath(), createRequestBody, 200);
 
+		@SuppressWarnings("unchecked")
 		final Map<String, Object> concept = response.and().extract().as(Map.class);
 		concept.remove("relationships");
 
@@ -155,4 +167,99 @@ public class SnomedBrowserApiTest extends AbstractSnomedApiTest {
 		assertComponentUpdatedWithStatus(createMainPath(), concept.get("conceptId").toString(), concept, 200);
 	}
 
+	@Test
+	public void updateConceptWithNewComponents() {
+		final Date creationDate = new Date();
+		final String fsn = "New FSN at " + creationDate;
+		final ImmutableList<?> descriptions = createDescriptions(fsn, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, creationDate);
+		final ImmutableList<?> relationships = createIsaRelationship(ROOT_CONCEPT, MODULE_SCT_CORE, creationDate);
+		final Map<String, Object> createRequestBody = givenConceptRequestBody(null, true, fsn, MODULE_SCT_CORE, descriptions, relationships,
+				creationDate);
+		final ValidatableResponse response = assertComponentCreatedWithStatus(createMainPath(), createRequestBody, 200);
+		
+		@SuppressWarnings("unchecked")
+		Map<String, Object> concept = response.and().extract().as(Map.class);
+		
+		String conceptId = concept.get("conceptId").toString();
+		
+		List<Object> descriptionsList = getListElement(concept, "descriptions");
+		descriptionsList.addAll(createNewDescriptions(5));
+		
+		List<Object> relationshipsList = getListElement(concept, "relationships");
+		relationshipsList.addAll(createNewRelationships(5, conceptId));
+		
+		ValidatableResponse updateResponse = assertComponentUpdatedWithStatus(createMainPath(), conceptId, concept, 200);
+		
+		@SuppressWarnings("unchecked")
+		Map<String, Object> updatedConcept = updateResponse.and().extract().as(Map.class);
+		
+		List<Object> updatedDescriptions = getListElement(updatedConcept, "descriptions");
+		assertEquals(7, updatedDescriptions.size());
+		
+		List<Object> updatedRelationships = getListElement(updatedConcept, "relationships");
+		assertEquals(6, updatedRelationships.size());
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<Object> getListElement(Map<String, Object> concept, String elementName) {
+		Object listElement = concept.get(elementName);
+		if (listElement instanceof List<?>) {
+			return (List<Object>) listElement;
+		}
+		return null;
+	}
+
+	private List<?> createNewDescriptions(int quantity) {
+		List<Map<String, Object>> results = newArrayList();
+		for (int i = 0; i < quantity; i++) {
+			final Map<String, Object> description = ImmutableMap.<String, Object>builder()
+					.put("conceptId", "")
+					.put("active", true)
+					.put("term", String.format("New extra Synonym %s", i))
+					.put("type", SnomedBrowserDescriptionType.SYNONYM)
+					.put("lang", "en")
+					.put("moduleId", MODULE_SCT_CORE)
+					.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE)
+					.put("acceptabilityMap", ACCEPTABLE_ACCEPTABILITY_MAP)
+					.build();
+			results.add(description);
+		}
+		return results;
+	}
+	
+	private List<?> createNewRelationships(int quantity, String sourceId) {
+		List<Map<String, Object>> results = newArrayList();
+		
+		for (int i = 0; i < quantity; i++) {
+			
+			final Map<?, ?> type = ImmutableMap.<String, Object>builder()
+					.put("conceptId", TEMPORAL_CONTEXT)
+					.put("fsn", "Temporal context value (qualifier value)")
+					.build();
+			
+			final Map<?, ?> target = ImmutableMap.<String, Object>builder()
+					.put("active", true)
+					.put("moduleId", MODULE_SCT_CORE)
+					.put("conceptId", DISEASE)
+					.put("fsn", "Disease (disorder)")
+					.put("definitionStatus", DefinitionStatus.PRIMITIVE)
+					.build();
+			
+			final Map<String, Object> relationship = ImmutableMap.<String, Object>builder()
+					.put("sourceId", sourceId)
+					.put("modifier", RelationshipModifier.EXISTENTIAL)
+					.put("groupId", "0")
+					.put("characteristicType", CharacteristicType.ADDITIONAL_RELATIONSHIP)
+					.put("active", true)
+					.put("type", type)
+					.put("moduleId", MODULE_SCT_CORE)
+					.put("target", target)
+					.build();
+
+			results.add(relationship);
+		}
+		
+		return results;
+	}
+	
 }

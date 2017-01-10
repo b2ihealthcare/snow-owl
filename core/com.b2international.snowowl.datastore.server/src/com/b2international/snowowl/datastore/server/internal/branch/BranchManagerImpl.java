@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -90,27 +91,55 @@ public abstract class BranchManagerImpl implements BranchManager {
 			// throw AlreadyExistsException if exists before trying to enter the sync block
 			throw new AlreadyExistsException(Branch.class.getSimpleName(), path);
 		} else {
-			// prevents problematic branch creation from multiple threads, but allows them 
-			// to respond back successfully if branch did not exist before creation and it does now
-			final ReentrantLock lock = locks.getUnchecked(path);
-			try {
-				if (lock.tryLock(1L, TimeUnit.MINUTES)) {
-					existingBranch = getBranchFromStore(path);
-					if (existingBranch != null) {
-						return (InternalBranch) existingBranch;
-					} else {
-						final InternalBranch reopenedBranch = reopen(parent, name, metadata);
-						sendChangeEvent(reopenedBranch.path()); // Explicit notification (creation)
-						return reopenedBranch; 
-					}
+			return create(parent, name, metadata);
+		}
+	}
+	
+	private InternalBranch create(final InternalBranch parent, final String name, final Metadata metadata) {
+		// prevents problematic branch creation from multiple threads, but allows them 
+		// to respond back successfully if branch did not exist before creation and it does now
+		final String parentPath = parent.path();
+		return locked(parentPath, new Callable<InternalBranch>() {
+			@Override
+			public InternalBranch call() throws Exception {
+				// check again and return if exists, otherwise open the child branch
+				final Branch existingBranch = getBranchFromStore(toAbsolutePath(parentPath, name));
+				if (existingBranch != null) {
+					return (InternalBranch) existingBranch;
 				} else {
-					throw new RequestTimeoutException();
+					final InternalBranch createdBranch = doReopen(parent, name, metadata);
+					sendChangeEvent(createdBranch.path()); // Explicit notification (creation)
+					return createdBranch;
 				}
-			} catch (InterruptedException e) {
-				throw new SnowowlRuntimeException(e);
-			} finally {
-				lock.unlock();
 			}
+		});
+	}
+	
+	final InternalBranch reopen(final InternalBranch parent, final String name, final Metadata metadata) {
+		return locked(parent.path(), new Callable<InternalBranch>() {
+			@Override
+			public InternalBranch call() throws Exception {
+				return doReopen(parent, name, metadata);
+			}
+		});
+	}
+	
+	private InternalBranch locked(final String lockPath, Callable<InternalBranch> callable) {
+		final ReentrantLock lock = locks.getUnchecked(lockPath);
+		try {
+			if (lock.tryLock(1L, TimeUnit.MINUTES)) {
+				try {
+					return callable.call();
+				} finally {
+					lock.unlock();
+				}
+			} else {
+				throw new RequestTimeoutException();
+			}
+		} catch (RequestTimeoutException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new SnowowlRuntimeException(e);
 		}
 	}
 
@@ -118,7 +147,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return parentPath.concat(Branch.SEPARATOR).concat(name);
 	}
 
-	abstract InternalBranch reopen(InternalBranch parent, String name, Metadata metadata);
+	abstract InternalBranch doReopen(InternalBranch parent, String name, Metadata metadata);
 
 	@Override
 	public final Branch getMainBranch() {

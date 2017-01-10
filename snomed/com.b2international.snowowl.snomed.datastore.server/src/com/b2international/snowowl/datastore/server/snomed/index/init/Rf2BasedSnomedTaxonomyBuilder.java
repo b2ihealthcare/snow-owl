@@ -88,10 +88,12 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 	public void applyNodeChanges(final String conceptFilePath) {
 		parseFile(conceptFilePath, 5, new RecordParserCallback<String>() {
 			@Override public void handleRecord(final int recordCount, final List<String> record) {
+				final String id = record.get(0);
+				final boolean active = ACTIVE_STATUS.equals(record.get(2));
 				
 				final TaxonomyBuilderNode node = new TaxonomyBuilderNode() {
-					@Override public boolean isCurrent() { return ACTIVE_STATUS.equals(record.get(2)); }
-					@Override public String getId() { return record.get(0); }
+					@Override public boolean isCurrent() { return active; }
+					@Override public String getId() { return id; }
 				};
 				
 				if (node.isCurrent()) {
@@ -107,22 +109,28 @@ public class Rf2BasedSnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder
 	public void applyEdgeChanges(final String relationshipFilePath) {
 		parseFile(relationshipFilePath, 10, new RecordParserCallback<String>() {
 			@Override public void handleRecord(final int recordCount, final List<String> record) {
+				final String id = record.get(0);
+				final boolean active = ACTIVE_STATUS.equals(record.get(2));
+				final String sourceId = record.get(4);
+				final String destinationId = record.get(5);
+				final String typeId = record.get(7);
+				final String rowCharacteristicTypeId = record.get(8);
 				
 				addEdge(new TaxonomyBuilderEdge() {
 					@Override public boolean isCurrent() {
-						return ACTIVE_STATUS.equals(record.get(2));
+						return active;
 					}
 					@Override public String getId() {
-						return record.get(0);
+						return id;
 					}
 					@Override public boolean isValid() {
-						return Concepts.IS_A.equals(record.get(7)) && characteristicTypeId.equals(record.get(8));
+						return Concepts.IS_A.equals(typeId) && characteristicTypeId.equals(rowCharacteristicTypeId);
 					}
 					@Override public String getSoureId() {
-						return record.get(4);
+						return sourceId;
 					}
 					@Override public String getDestinationId() {
-						return record.get(5);
+						return destinationId;
 					}
 				});
 				

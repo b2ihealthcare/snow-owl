@@ -16,9 +16,12 @@
 package com.b2international.snowowl.snomed.datastore.id.cis;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -34,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,6 +49,8 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
  */
 class CisClient {
 
+	private static final String BAD_TOKEN = "bad_token";
+	
 	private static final int MAX_CONNECTIONS_PER_ROUTE = 20;
 	private static final Logger LOGGER = LoggerFactory.getLogger(CisClient.class);
 
@@ -57,6 +61,8 @@ class CisClient {
 	private final ObjectMapper mapper;
 
 	private final HttpClient client;
+	
+	private AtomicReference<String> token = new AtomicReference<>(BAD_TOKEN);
 
 	public CisClient(final SnomedIdentifierConfiguration conf, final ObjectMapper mapper) {
 		this.baseUrl = conf.getCisBaseUrl();
@@ -92,7 +98,6 @@ class CisClient {
 		try {
 			final HttpResponse response = client.execute(request);
 			checkResponseStatus(response);
-
 			final HttpEntity entity = response.getEntity();
 			return EntityUtils.toString(entity);
 		} catch (IOException e) {
@@ -110,15 +115,13 @@ class CisClient {
 	}
 
 	private void checkResponseStatus(final HttpResponse response) {
-		final int statusCode = response.getStatusLine().getStatusCode();
-
-		switch (statusCode) {
-		case 200:
-			break;
-		default:
-			LOGGER.error(response.getStatusLine().getReasonPhrase());
-			// TODO check other status codes
-			throw new BadRequestException(response.getStatusLine().getReasonPhrase());
+		final StatusLine statusLine = response.getStatusLine();
+		final int statusCode = statusLine.getStatusCode();
+		final String reasonPhrase = statusLine.getReasonPhrase();
+		
+		if (statusCode != HttpStatus.SC_OK) {
+			LOGGER.error("{} {}", statusCode, reasonPhrase);
+			throw new CisClientException(statusCode, reasonPhrase);
 		}
 	}
 
@@ -127,7 +130,9 @@ class CisClient {
 			client.getConnectionManager().shutdown();
 	}
 
-	public String login() {
+	public void login() {
+		final String tokenBeforeLogin = getToken();
+		
 		LogUtils.logUserAccess(LOGGER, username, "Logging in to Component Identifier service.");
 
 		HttpPost request = null;
@@ -139,7 +144,13 @@ class CisClient {
 			final String response = execute(request);
 			final JsonNode node = mapper.readValue(response, JsonNode.class);
 			
-			return node.get("token").asText();
+			String tokenAfterLogin = node.get("token").asText();
+			
+			// If this replacement fails, someone changed the token by the time we got here; let them have their ways.
+			if (token.compareAndSet(tokenBeforeLogin, tokenAfterLogin)) {
+				LOGGER.info("Received token from CIS: {}", tokenAfterLogin);
+			}
+			
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Exception while logging in.", e);
 		} finally {
@@ -148,16 +159,23 @@ class CisClient {
 		}
 	}
 
-	public void logout(final String token) {
+	public void logout() {
+		final String tokenBeforeLogout = token.getAndSet(BAD_TOKEN);
+		
+		// If this is already set to BAD_TOKEN, we are no longer logged in
+		if (BAD_TOKEN.equals(tokenBeforeLogout)) {
+			return;
+		}
+		
 		LogUtils.logUserAccess(LOGGER, username, "Logging out from Component Identifier service.");
 
 		HttpPost request = null;
 
 		try {
 			final JsonNodeFactory factory = JsonNodeFactory.instance;
-		    final JsonNode node = factory.objectNode().set("token", factory.textNode(token));
+		    final JsonNode node = factory.objectNode().set("token", factory.textNode(tokenBeforeLogout));
 		    
-			request = httpPost("logout", mapper.writeValueAsString(node));
+			request = httpPost("logout", node);
 			client.execute(request);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Exception while logging out.", e);
@@ -165,5 +183,9 @@ class CisClient {
 			if (null != request)
 				release(request);
 		}
+	}
+
+	public String getToken() {
+		return token.get();
 	}
 }

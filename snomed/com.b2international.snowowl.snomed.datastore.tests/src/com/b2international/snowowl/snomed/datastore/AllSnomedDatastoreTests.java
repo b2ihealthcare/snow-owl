@@ -19,6 +19,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestTest;
+import com.b2international.snowowl.snomed.core.ecl.SnomedEclRewriterTest;
 import com.b2international.snowowl.snomed.core.tree.TerminologyTreeTest;
 import com.b2international.snowowl.snomed.datastore.id.memory.BulkInMemorySnomedIdentifierServiceTest;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceTest;
@@ -59,7 +61,9 @@ import com.b2international.snowowl.snomed.datastore.internal.id.reservations.Sno
 	RelationshipChangeProcessorTest.class,
 	RefSetMemberChangeProcessorTest.class,
 	ConstraintChangeProcessorTest.class,
-	ConceptChangeProcessorTest.class
+	ConceptChangeProcessorTest.class,
+	SnomedEclEvaluationRequestTest.class,
+	SnomedEclRewriterTest.class
 })
 public class AllSnomedDatastoreTests {
 

@@ -32,6 +32,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
+import com.b2international.snowowl.api.japi.cdo.RenameCDOBranchTest;
 import com.b2international.snowowl.api.japi.codesystem.CodeSystemRequestTest;
 import com.b2international.snowowl.api.japi.commitinfo.CommitInfoRequestTest;
 import com.b2international.snowowl.api.rest.auth.BasicAuthenticationTest;
@@ -49,6 +50,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @RunWith(Suite.class)
 @SuiteClasses({ 
 	BasicAuthenticationTest.class,
+	RenameCDOBranchTest.class,
 	CodeSystemApiTest.class,
 	CodeSystemRequestTest.class,
 	CommitInfoRequestTest.class

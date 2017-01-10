@@ -85,10 +85,10 @@ public class SnomedPublishManager extends PublishManager {
 	protected LongSet getUnversionedComponentStorageKeys(final IBranchPath branchPath) {
 		return SnomedRequests.prepareBulkRead()
 				.setBody(BulkRequest.<BranchContext>create()
-						.add(SnomedRequests.prepareSearchConcept().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-						.add(SnomedRequests.prepareSearchDescription().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-						.add(SnomedRequests.prepareSearchRelationship().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-						.add(SnomedRequests.prepareSearchMember().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)))
+						.add(SnomedRequests.prepareSearchConcept().all().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+						.add(SnomedRequests.prepareSearchDescription().all().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+						.add(SnomedRequests.prepareSearchRelationship().all().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+						.add(SnomedRequests.prepareSearchMember().all().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)))
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<BulkResponse, LongSet>() {

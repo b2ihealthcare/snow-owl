@@ -26,6 +26,7 @@ import com.b2international.snowowl.dsl.ESCGRewriter;
 import com.b2international.snowowl.dsl.ESCGStandaloneSetup;
 import com.b2international.snowowl.dsl.parser.antlr.ESCGParser;
 import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
+import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.dsl.query.ast.RValue;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -34,7 +35,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
  * Utility service singleton for ESCG expressions.
- * 
+ * @deprecated - see {@link IEscgQueryEvaluatorService}
  */
 public enum EscgUtils implements EscgRewriter {
 	

@@ -16,6 +16,7 @@
 package com.b2international.index.query;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
@@ -31,6 +32,20 @@ public abstract class SetPredicate<T> extends Predicate {
 	SetPredicate(String field, Iterable<T> values) {
 		super(field);
 		this.values = ImmutableSet.copyOf(values);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(getField(), values);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (super.equals(obj)) {
+			final SetPredicate<?> other = (SetPredicate<?>) obj;
+			return Objects.equals(values, other.values);
+		}
+		return false;
 	}
 	
 	public Set<T> values() {

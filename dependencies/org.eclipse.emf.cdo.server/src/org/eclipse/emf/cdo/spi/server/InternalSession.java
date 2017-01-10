@@ -12,6 +12,7 @@ package org.eclipse.emf.cdo.spi.server;
 
 import org.eclipse.emf.cdo.common.CDOCommonRepository;
 import org.eclipse.emf.cdo.common.CDOCommonSession;
+import org.eclipse.emf.cdo.common.branch.CDOBranchChangedEvent.ChangeKind;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -29,7 +30,7 @@ import java.util.Set;
 
 /**
  * @author Eike Stepper
- * @since 3.0
+ * @since 4.3
  * @noextend This interface is not intended to be extended by clients.
  * @noimplement This interface is not intended to be implemented by clients.
  */
@@ -72,7 +73,16 @@ public interface InternalSession extends ISession, CDOIDProvider, CDOPermissionP
   public void sendRepositoryStateNotification(CDOCommonRepository.State oldState, CDOCommonRepository.State newState,
       CDOID rootResourceID) throws Exception;
 
+  /**
+   * @deprecated As of 4.3 use {@link #sendBranchNotification(InternalCDOBranch, ChangeKind)}.
+   */
+  @Deprecated
   public void sendBranchNotification(InternalCDOBranch branch) throws Exception;
+   
+  /**
+   * @since 4.3
+   */
+  public void sendBranchNotification(InternalCDOBranch branch, ChangeKind changeKind) throws Exception;
 
   public void sendCommitNotification(CDOCommitInfo commitInfo) throws Exception;
 

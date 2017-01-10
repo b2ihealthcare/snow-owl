@@ -42,6 +42,7 @@ import com.google.common.collect.ImmutableSortedSet;
 /**
  * Query evaluator transforming a parsed {@link com.b2international.snowowl.snomed.dsl.query.RValue right value} 
  * into a {@link Expression expression}.
+ * @deprecated - see {@link IEscgQueryEvaluatorService}
  */
 public class IndexQueryQueryEvaluator implements IQueryEvaluator<Expression, com.b2international.snowowl.snomed.dsl.query.RValue> {
 

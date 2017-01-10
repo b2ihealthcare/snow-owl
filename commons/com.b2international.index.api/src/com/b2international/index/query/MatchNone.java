@@ -18,9 +18,9 @@ package com.b2international.index.query;
 /**
  * @since 4.7
  */
-public class MatchNone implements Expression {
+public enum MatchNone implements Expression {
 
-	MatchNone() {}
+	INSTANCE;
 	
 	@Override
 	public String toString() {

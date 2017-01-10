@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.cis;
 
+import static com.b2international.index.query.Expressions.exactMatch;
+
 import java.util.Collection;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.index.Doc;
+import com.b2international.index.query.Expression;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -30,11 +36,30 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Doc
 public class SctId {
 
+	public static class Fields {
+		public static final String SEQUENCE = "sequence";
+		public static final String NAMESPACE = "namespace";
+		public static final String PARTITION_ID = "partitionId";
+	}
+	
+	public static class Expressions {
+
+		public static Expression namespace(String namespace) {
+			final boolean intNamespace = CompareUtils.isEmpty(namespace);
+			return exactMatch(Fields.NAMESPACE, intNamespace ? 0L : Long.parseLong(namespace));
+		}
+
+		public static Expression partitionId(String namespace, ComponentCategory category) {
+			final boolean intNamespace = CompareUtils.isEmpty(namespace);
+			return exactMatch(Fields.PARTITION_ID, (intNamespace ? "0" : "1") + Integer.toString(category.ordinal()));
+		}
+	}
+	
 	private String sctid;
 
 	private long sequence;
 
-	private long namespace;
+	private String namespace;
 
 	private String partitionId;
 
@@ -93,7 +118,7 @@ public class SctId {
 	/**
 	 * @return the namespace
 	 */
-	public long getNamespace() {
+	public String getNamespace() {
 		return namespace;
 	}
 
@@ -101,15 +126,10 @@ public class SctId {
 	 * @param namespace
 	 *            the namespace to set
 	 */
-	public void setNamespace(long namespace) {
-		this.namespace = namespace;
+	public void setNamespace(String namespace) {
+		this.namespace = CompareUtils.isEmpty(namespace) ? SnomedIdentifiers.INT_NAMESPACE : namespace;
 	}
 	
-	@JsonIgnore
-	public void setNamespace(String namespace) {
-		this.namespace = null == namespace ? 0 : Integer.valueOf(namespace);
-	}
-
 	/**
 	 * @return the partitionId
 	 */

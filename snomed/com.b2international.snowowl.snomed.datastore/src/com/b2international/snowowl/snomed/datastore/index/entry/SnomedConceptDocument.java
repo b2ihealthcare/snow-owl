@@ -51,6 +51,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -297,10 +298,13 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 				mapTargetComponentType(componentType);
 			}
 			
-			return structural(SnomedRefSetUtil.isStructural(refSet.getId(), refSet.getType()))
+			Builder b = structural(SnomedRefSetUtil.isStructural(refSet.getId(), refSet.getType()))
 					.refSetType(refSet.getType())
-					.referencedComponentType(getValue(refSet.getReferencedComponentType()))
 					.refSetStorageKey(refSet.getStorageKey());
+			if (!Strings.isNullOrEmpty(refSet.getReferencedComponentType())) {
+				b.referencedComponentType(getValue(refSet.getReferencedComponentType()));
+			}
+			return b;
 		}
 		
 		Builder mapTargetComponentType(int mapTargetComponentType) {

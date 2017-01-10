@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.importer.rf2.terminology;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -24,8 +25,6 @@ import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ParseInt;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedFactory;
@@ -40,7 +39,7 @@ import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporter<RelationshipRow, Relationship> {
+public final class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporter<RelationshipRow, Relationship> {
 
 	private static final Map<String, CellProcessor> CELLPROCESSOR_MAPPING = ImmutableMap.<String, CellProcessor>builder()
 				.put(RelationshipRow.PROP_ID, NullObjectPattern.INSTANCE)
@@ -86,56 +85,44 @@ public class SnomedRelationshipImporter extends AbstractSnomedTerminologyImporte
 	}
 
 	@Override
-	protected void importRow(final RelationshipRow currentRow) {
-
-		final Relationship editedRelationship = getOrCreateComponent(currentRow.getSourceId(), currentRow.getId());
-		
-		if (skipCurrentRow(currentRow, editedRelationship)) {
-			getLogger().warn("Not importing concept '{}' with effective time '{}'; it should have been filtered from the input file.",
-					currentRow.getId(), 
-					EffectiveTimes.format(currentRow.getEffectiveTime(), DateFormats.SHORT));
-
-			return;
-		}
-
-		if (currentRow.getEffectiveTime() != null) {
-			editedRelationship.setEffectiveTime(currentRow.getEffectiveTime());
-			editedRelationship.setReleased(true);
+	protected void applyRow(Relationship component, RelationshipRow row, Collection<Relationship> componentsToAttach) {
+		if (row.getEffectiveTime() != null) {
+			component.setEffectiveTime(row.getEffectiveTime());
+			component.setReleased(true);
 		} else {
-			editedRelationship.unsetEffectiveTime();
+			component.unsetEffectiveTime();
 		}
 
-		editedRelationship.setActive(currentRow.isActive());
-		editedRelationship.setModule(getConceptSafe(currentRow.getModuleId(), SnomedRf2Headers.FIELD_MODULE_ID, currentRow.getId()));
-		editedRelationship.setDestination(getConceptSafe(currentRow.getDestinationId(), SnomedRf2Headers.FIELD_DESTINATION_ID, currentRow.getId()));
-		editedRelationship.setType(getConceptSafe(currentRow.getTypeId(), SnomedRf2Headers.FIELD_TYPE_ID, currentRow.getId()));
-		editedRelationship.setCharacteristicType(getConceptSafe(currentRow.getCharacteristicTypeId(), SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, currentRow.getId()));
-		editedRelationship.setModifier(getConceptSafe(currentRow.getModifierId(), SnomedRf2Headers.FIELD_MODIFIER_ID, currentRow.getId()));
-		editedRelationship.setGroup(currentRow.getRelationshipGroup());
+		component.setActive(row.isActive());
+		component.setModule(getConceptSafe(row.getModuleId(), SnomedRf2Headers.FIELD_MODULE_ID, row.getId()));
+		
+		if (component.getSource() == null || !component.getSource().getId().equals(row.getSourceId())) {
+			component.setSource(getConceptSafe(row.getSourceId(), SnomedRf2Headers.FIELD_SOURCE_ID, row.getId()));
+		}
+		component.setDestination(getConceptSafe(row.getDestinationId(), SnomedRf2Headers.FIELD_DESTINATION_ID, row.getId()));
+		component.setType(getConceptSafe(row.getTypeId(), SnomedRf2Headers.FIELD_TYPE_ID, row.getId()));
+		component.setCharacteristicType(getConceptSafe(row.getCharacteristicTypeId(), SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, row.getId()));
+		component.setModifier(getConceptSafe(row.getModifierId(), SnomedRf2Headers.FIELD_MODIFIER_ID, row.getId()));
+		component.setGroup(row.getRelationshipGroup());
 		
 		// Universal "has active ingredient" relationships should be put into a union group
-		if (Concepts.HAS_ACTIVE_INGREDIENT.equals(currentRow.getTypeId()) 
-				&& Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(currentRow.getModifierId())
-				&& editedRelationship.getUnionGroup() != 1) {
+		if (Concepts.HAS_ACTIVE_INGREDIENT.equals(row.getTypeId()) 
+				&& Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(row.getModifierId())
+				&& component.getUnionGroup() != 1) {
 			
-			editedRelationship.setUnionGroup(1);
+			component.setUnionGroup(1);
 		}
-		
-		getImportContext().conceptVisited(currentRow.getSourceId());
+		getImportContext().conceptVisited(row.getSourceId());
 	}
 	
 	@Override
-	protected Relationship createComponent(final String containerId, final String componentId) {
-		final Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
-		relationship.setId(componentId);
-		relationship.setSource(getConceptSafe(containerId, SnomedRf2Headers.FIELD_SOURCE_ID, componentId));
-		
-		return relationship;
+	protected void attach(Collection<Relationship> componentsToAttach) {
+		// nothing to do, we already registered the relationships to the source concepts
 	}
 	
 	@Override
-	protected Relationship getComponent(final String componentId) {
-		return getRelationship(componentId);
+	protected Relationship createCoreComponent() {
+		return SnomedFactory.eINSTANCE.createRelationship();
 	}
 	
 }

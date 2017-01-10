@@ -119,8 +119,9 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 		
 		ExpressionBuilder builder = Expressions.builder();
 		
-		//Delta export effective time range constraint
-		if (exportContext.getContentSubType() == ContentSubType.DELTA) {
+		if (onlyUnpublished) {
+			builder.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
+		} else if (exportContext.getContentSubType() == ContentSubType.DELTA) {
 			Date deltaExportStartEffectiveTime = exportContext.getDeltaExportStartEffectiveTime();
 			Date deltaExportEndEffectiveTime = exportContext.getDeltaExportEndEffectiveTime();
 			
@@ -135,20 +136,16 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 				if (deltaExportEndEffectiveTime != null) {
 					to = deltaExportEndEffectiveTime.getTime();
 				}
-				return SnomedDocument.Expressions.effectiveTime(from, to);
+				
+				builder.must(SnomedDocument.Expressions.effectiveTime(from, to));
 			}
-		} 
+		}
 		
 		//module constraint
 		Set<String> modulesToExport = exportContext.getModulesToExport();
 		if (!CompareUtils.isEmpty(modulesToExport)) {
 			builder.must(SnomedDocument.Expressions.modules(modulesToExport));
 		}
-		
-		//add unpublished constraint
-		if (onlyUnpublished) {
-			builder.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
-		} 
 		
 		//add whatever else subclasses would add
 		appendExpressionConstraint(builder);

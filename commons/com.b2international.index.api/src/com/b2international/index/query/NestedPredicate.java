@@ -18,7 +18,7 @@ package com.b2international.index.query;
 /**
  * @since 4.7
  */
-public class NestedPredicate extends Predicate {
+public final class NestedPredicate extends Predicate {
 
 	private final Expression expression;
 

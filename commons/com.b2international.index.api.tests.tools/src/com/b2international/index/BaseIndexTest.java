@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public abstract class BaseIndexTest {
 
-	protected static final String KEY = "key";
+	protected static final String KEY1 = "key1";
 	protected static final String KEY2 = "key2";
 	
 	private Index index;
@@ -93,10 +93,10 @@ public abstract class BaseIndexTest {
 		});
 	}
 	
-	protected final <T> Iterable<T> search(final Query<T> query) {
-		return index().read(new IndexRead<Iterable<T>>() {
+	protected final <T> Hits<T> search(final Query<T> query) {
+		return index().read(new IndexRead<Hits<T>>() {
 			@Override
-			public Iterable<T> execute(Searcher index) throws IOException {
+			public Hits<T> execute(Searcher index) throws IOException {
 				return index.search(query);
 			}
 		});

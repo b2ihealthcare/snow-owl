@@ -181,4 +181,11 @@ public interface CDOBranch extends IContainer<CDOBranch>, Comparable<CDOBranch>
    * current time}.
    */
   public CDOBranch createBranch(String name);
+
+  /**
+   * Renames this branch with the given new name.
+   *
+   * @since 4.3
+   */
+  public void rename(String newName);
 }

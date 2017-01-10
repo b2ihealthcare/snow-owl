@@ -10,6 +10,7 @@
  */
 package org.eclipse.emf.cdo.server.internal.net4j.protocol;
 
+import org.eclipse.emf.cdo.common.branch.CDOBranchChangedEvent.ChangeKind;
 import org.eclipse.emf.cdo.common.protocol.CDODataInput;
 import org.eclipse.emf.cdo.common.protocol.CDODataOutput;
 import org.eclipse.emf.cdo.common.protocol.CDOProtocolConstants;
@@ -50,7 +51,7 @@ public class CreateBranchIndication extends CDOServerWriteIndication
         branchInfo.getBaseTimeStamp());
 
     InternalSessionManager sessionManager = getRepository().getSessionManager();
-    sessionManager.sendBranchNotification(getSession(), branch);
+    sessionManager.sendBranchNotification(getSession(), branch, ChangeKind.CREATED);
 
     out.writeInt(branch.getID());
     out.writeLong(branch.getBase().getTimeStamp());

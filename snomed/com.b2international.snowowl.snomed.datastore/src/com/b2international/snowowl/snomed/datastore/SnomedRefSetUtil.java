@@ -205,7 +205,7 @@ public abstract class SnomedRefSetUtil {
 	 * @return the identifier concept ID of the SNOMED&nbsp;CT concrete domain reference set.
 	 */
 	public static String getRefSetId(final DataType dataType) {
-		return DATATYPE_TO_REFSET_MAP.get(dataType);
+		return getConcreteDomainRefSetMap().get(dataType);
 	}
 	
 	/**
@@ -214,8 +214,8 @@ public abstract class SnomedRefSetUtil {
 	 * @return the proper datatype for the specified reference set id
 	 */
 	public static DataType getDataType(String refsetId) {
-		if (DATATYPE_TO_REFSET_MAP.inverse().containsKey(refsetId)) {
-			return DATATYPE_TO_REFSET_MAP.inverse().get(refsetId);
+		if (getConcreteDomainRefSetMap().inverse().containsKey(refsetId)) {
+			return getConcreteDomainRefSetMap().inverse().get(refsetId);
 		} else {
 			return AMT_REFSET_TO_DATATYPE_MAP.get(refsetId);
 		}
