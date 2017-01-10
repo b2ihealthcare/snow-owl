@@ -79,7 +79,7 @@ public class DefaultSnomedIdentifierServiceTest {
 		try {
 			identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT);
 		} catch (final BadRequestException e) {
-			assertThat(e.getMessage()).isEqualTo(String.format("Couldn't generate identifier in maximum (%s) number of attempts",
+			assertThat(e.getMessage()).isEqualTo(String.format("Couldn't generate identifier in %s number of attempts",
 					SnomedIdentifierConfiguration.DEFAULT_ID_GENERATION_ATTEMPTS));
 		}
 	}
