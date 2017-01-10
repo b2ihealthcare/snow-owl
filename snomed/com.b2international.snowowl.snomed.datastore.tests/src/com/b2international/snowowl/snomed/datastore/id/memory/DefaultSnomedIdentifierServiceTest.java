@@ -15,29 +15,32 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.memory;
 
-import static org.junit.Assert.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Iterator;
 import java.util.List;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.commons.FileUtils;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.store.MemStore;
-import com.b2international.snowowl.datastore.store.Store;
+import com.b2international.snowowl.datastore.store.IndexStore;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
-import com.google.common.collect.Iterables;
 import com.b2international.snowowl.snomed.datastore.id.gen.SequentialItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.io.Files;
 
 /**
  * @since 4.7
@@ -59,6 +62,25 @@ public class DefaultSnomedIdentifierServiceTest {
 
 	private static final String INT_NAMESPACE = null;
 	private static final String B2I_NAMESPACE = "1000129";
+	
+	private IndexStore<SctId> store;
+	
+	@Before
+	public void setup() {
+		store = new IndexStore<>(Files.createTempDir(), SctId.class);
+		
+		store.configureSearchable(SctId.Fields.NAMESPACE);
+		store.configureSearchable(SctId.Fields.PARTITION_ID);
+		store.configureSortable(SctId.Fields.SEQUENCE);
+	}
+	
+	@After
+	public void tearDown() {
+		if (store != null) {
+			store.dispose();
+			FileUtils.deleteDirectory(store.getDirectory());
+		}
+	}
 
 	@Test
 	public void issue_SO_1945_testItemIdPoolExhausted() throws Exception {
@@ -86,7 +108,6 @@ public class DefaultSnomedIdentifierServiceTest {
 
 	@Test
 	public void issue_SO_2138_testItemIdsReturnedInSequence() throws Exception {
-		final Store<SctId> store = new MemStore<>();
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
 		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
@@ -105,12 +126,14 @@ public class DefaultSnomedIdentifierServiceTest {
 	
 	@Test
 	public void issue_SO_2138_testItemIdWraparound() throws Exception {
-		final Store<SctId> store = new MemStore<>();
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
 		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
-		
+
+		// Register a few existing SCTIDs to see if sorting works
 		identifiers.register("999999999999998003");
+		identifiers.register("999999999999997008");
+		identifiers.register("101009");
 		
 		List<String> actualIds = ImmutableList.copyOf(identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT, 2));
 		List<String> expectedIds = ImmutableList.of("999999999999999006", "100005");
@@ -119,8 +142,6 @@ public class DefaultSnomedIdentifierServiceTest {
 	
 	@Test
 	public void issue_SO_2138_testSkipReservedRange() throws Exception {
-		final Store<SctId> store = new MemStore<>();
-		
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		reservationService.create("noTwoHundreds", Reservations.range(200L, 299L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
 		
@@ -135,8 +156,6 @@ public class DefaultSnomedIdentifierServiceTest {
 	
 	@Test
 	public void issue_SO_2138_testSkipReservedRangeWithWraparound() throws Exception {
-		final Store<SctId> store = new MemStore<>();
-		
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		reservationService.create("nothingAboveTwoHundred", Reservations.range(200L, 9999_9999_9999_999L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
 		
@@ -151,8 +170,6 @@ public class DefaultSnomedIdentifierServiceTest {
 	
 	@Test(expected=IllegalStateException.class)
 	public void issue_SO_2138_testCoveringReservedRanges() throws Exception {
-		final Store<SctId> store = new MemStore<>();
-		
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		reservationService.create("nothingAboveOneHundredNinetyNine", Reservations.range(200L, 9999_9999_9999_999L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
 		reservationService.create("nothingBelowOneHundredNinetyNine", Reservations.range(100L, 198L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));

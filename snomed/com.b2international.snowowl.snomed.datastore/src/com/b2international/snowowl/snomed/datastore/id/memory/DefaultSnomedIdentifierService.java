@@ -63,6 +63,11 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	public DefaultSnomedIdentifierService(final Store<SctId> store, final ItemIdGenerationStrategy generationStrategy,
 			final ISnomedIdentiferReservationService reservationService, final SnomedIdentifierConfiguration config) {
 		super(reservationService, config);
+		
+		store.configureSearchable(SctId.Fields.NAMESPACE);
+		store.configureSearchable(SctId.Fields.PARTITION_ID);
+		store.configureSortable(SctId.Fields.SEQUENCE);
+		
 		this.store = store;
 		this.generationStrategy = generationStrategy;
 	}
