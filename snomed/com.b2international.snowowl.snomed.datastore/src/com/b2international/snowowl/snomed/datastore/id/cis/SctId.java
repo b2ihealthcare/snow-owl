@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.cis;
 
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.exactMatch;
 
 import java.util.Collection;
 
@@ -23,6 +23,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -58,7 +59,7 @@ public class SctId {
 
 	private long sequence;
 
-	private long namespace;
+	private String namespace;
 
 	private String partitionId;
 
@@ -117,7 +118,7 @@ public class SctId {
 	/**
 	 * @return the namespace
 	 */
-	public long getNamespace() {
+	public String getNamespace() {
 		return namespace;
 	}
 
@@ -125,15 +126,10 @@ public class SctId {
 	 * @param namespace
 	 *            the namespace to set
 	 */
-	public void setNamespace(long namespace) {
-		this.namespace = namespace;
+	public void setNamespace(String namespace) {
+		this.namespace = CompareUtils.isEmpty(namespace) ? SnomedIdentifiers.INT_NAMESPACE : namespace;
 	}
 	
-	@JsonIgnore
-	public void setNamespaceFromString(String namespace) {
-		this.namespace = CompareUtils.isEmpty(namespace) ? 0L : Long.valueOf(namespace);
-	}
-
 	/**
 	 * @return the partitionId
 	 */
