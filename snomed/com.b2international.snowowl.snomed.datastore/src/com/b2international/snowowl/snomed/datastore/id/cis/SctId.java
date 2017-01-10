@@ -15,17 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.cis;
 
-import static com.b2international.index.query.Expressions.*;
 
 import java.util.Collection;
 
-<<<<<<< HEAD
-=======
 import com.b2international.commons.CompareUtils;
-import com.b2international.index.Doc;
-import com.b2international.index.query.Expression;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
->>>>>>> e13afa7... SO-2138 Add static helper classes for SctId fields and expressions
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -43,24 +37,11 @@ public class SctId {
 		public static final String PARTITION_ID = "partitionId";
 	}
 	
-	public static class Expressions {
-
-		public static Expression namespace(String namespace) {
-			final boolean intNamespace = CompareUtils.isEmpty(namespace);
-			return exactMatch(Fields.NAMESPACE, intNamespace ? 0L : Long.parseLong(namespace));
-		}
-
-		public static Expression partitionId(String namespace, ComponentCategory category) {
-			final boolean intNamespace = CompareUtils.isEmpty(namespace);
-			return exactMatch(Fields.PARTITION_ID, (intNamespace ? "0" : "1") + Integer.toString(category.ordinal()));
-		}
-	}
-	
 	private String sctid;
 
 	private long sequence;
 
-	private long namespace;
+	private String namespace;
 
 	private String partitionId;
 
@@ -119,7 +100,7 @@ public class SctId {
 	/**
 	 * @return the namespace
 	 */
-	public long getNamespace() {
+	public String getNamespace() {
 		return namespace;
 	}
 
@@ -127,15 +108,10 @@ public class SctId {
 	 * @param namespace
 	 *            the namespace to set
 	 */
-	public void setNamespace(long namespace) {
-		this.namespace = namespace;
+	public void setNamespace(String namespace) {
+		this.namespace = CompareUtils.isEmpty(namespace) ? SnomedIdentifiers.INT_NAMESPACE : namespace;
 	}
 	
-	@JsonIgnore
-	public void setNamespaceFromString(String namespace) {
-		this.namespace = CompareUtils.isEmpty(namespace) ? 0L : Long.valueOf(namespace);
-	}
-
 	/**
 	 * @return the partitionId
 	 */

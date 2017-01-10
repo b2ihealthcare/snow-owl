@@ -360,7 +360,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		sctId.setSctid(componentId);
 		sctId.setStatus(status.getSerializedName());
 		sctId.setSequence(identifier.getItemId());
-		sctId.setNamespaceFromString(identifier.getNamespace());
+		sctId.setNamespace(identifier.getNamespace());
 		sctId.setPartitionId(String.format("%s%s", identifier.getFormatIdentifier(), identifier.getComponentIdentifier()));
 		sctId.setCheckDigit(identifier.getCheckDigit());
 
