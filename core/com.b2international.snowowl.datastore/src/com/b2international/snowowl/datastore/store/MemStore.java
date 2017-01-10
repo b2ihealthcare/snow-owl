@@ -22,11 +22,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
 import com.b2international.snowowl.datastore.store.query.Query;
+import com.b2international.snowowl.datastore.store.query.SortBy;
 import com.b2international.snowowl.datastore.store.query.Where;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 
@@ -97,11 +100,15 @@ public class MemStore<T> implements Store<T> {
 		checkArgument(query != null, "Query may not be null");
 		checkArgument(offset >= 0, "Offset must be zero or positive");
 		checkArgument(limit >= 1, "Limit should be at least one");
-		return FluentIterable.from(values())
-				.filter(Predicates.and(toPredicates(query)))
-				.skip(offset)
-				.limit(limit)
-				.toSortedList(query.sortBy().toOrdering());
+		
+		Iterable<T> matchingValues = Iterables.filter(values(), Predicates.and(toPredicates(query)));
+		
+		if (query.sortBy() != SortBy.INDEX_ORDER) {
+			// Need to sort matches in advance
+			matchingValues = ImmutableSortedSet.copyOf(query.sortBy().toOrdering(), matchingValues);
+		}
+		
+		return FluentIterable.from(matchingValues).skip(offset).limit(limit).toList();
 	}
 	
 	@Override

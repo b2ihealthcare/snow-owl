@@ -63,9 +63,13 @@ public interface SortBy {
 		
 		@Override
 		public <T> Ordering<T> toOrdering() {
-			return Ordering.natural().onResultOf(new Function<T, Comparable<?>>() {
-				public Comparable<?> apply(Object input) { return (Comparable<?>) ReflectionUtils.getGetterValue(input, property()); };
+			final Ordering<T> orderingOnField = Ordering.natural().onResultOf(new Function<T, Comparable<?>>() {
+				public Comparable<?> apply(Object input) { 
+					return (Comparable<?>) ReflectionUtils.getGetterValue(input, property()); 
+				};
 			});
+			
+			return ascending ? orderingOnField : orderingOnField.reverse();
 		}
 	}
 }
