@@ -20,6 +20,7 @@ import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.checkId;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 import static java.util.Collections.emptyList;
+import static org.eclipse.emf.cdo.common.branch.CDOBranchPoint.UNSPECIFIED_DATE;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -76,6 +77,7 @@ import com.b2international.snowowl.datastore.history.HistoryInfoConfiguration;
 import com.b2international.snowowl.datastore.history.HistoryInfoDetailsBuilder;
 import com.b2international.snowowl.datastore.history.NullHistoryInfoConfiguration;
 import com.b2international.snowowl.datastore.history.Version;
+import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
@@ -103,8 +105,8 @@ public enum HistoryInfoProvider {
 	 * @throws SnowowlServiceException if history can not be retrieved for some reason (including integrity issues
 	 * related to historical data)
 	 */
-	public Collection<IHistoryInfo> getHistoryInfo(final CDOView view, final HistoryInfoConfiguration configuration) throws SnowowlServiceException {
-		return getHistoryInfo(view, configuration, DEFAULT_TIMEOUT);
+	public Collection<IHistoryInfo> getHistoryInfo(final HistoryInfoConfiguration configuration) throws SnowowlServiceException {
+		return getHistoryInfo(configuration, DEFAULT_TIMEOUT);
 	}
 	
 	/**
@@ -117,19 +119,32 @@ public enum HistoryInfoProvider {
 	 * @throws SnowowlServiceException if history can not be retrieved for some reason (including integrity issues
 	 * related to historical data)
 	 */
-	public Collection<IHistoryInfo> getHistoryInfo(final CDOView view, final HistoryInfoConfiguration configuration, final long timeout) throws SnowowlServiceException {
+	public Collection<IHistoryInfo> getHistoryInfo(final HistoryInfoConfiguration configuration, final long timeout) throws SnowowlServiceException {
 		checkNotNull(configuration, "History configuration object may not be null.");
 		
 		if (NullHistoryInfoConfiguration.isNullConfiguration(configuration)) {
 			return ImmutableList.of();
 		}
 		
-		try (final InternalHistoryInfoConfiguration internalConfiguration = new InternalHistoryInfoConfigurationImpl(configuration, getConnection(), view)) {
-			return getHistoryInfo(internalConfiguration, timeout);
-		} catch (final SQLException e) {
-			final String msg = "Error while trying to get history for component: '" + configuration.getStorageKey() + "'.";
-			LOGGER.error(msg, e);
-			throw new SnowowlServiceException(msg, e);
+		CDOView view = null;
+		final IDBStoreAccessor accessor = CDOServerUtils.getAccessor(configuration.getStorageKey());
+		
+		try {
+			
+			StoreThreadLocal.setAccessor(accessor);
+			view = openView(configuration);
+			
+			try (final InternalHistoryInfoConfiguration internalConfiguration = new InternalHistoryInfoConfigurationImpl(configuration, getConnection(), view)) {
+				return getHistoryInfo(internalConfiguration, timeout);
+			} catch (final SQLException e) {
+				final String msg = "Error while trying to get history for component: '" + configuration.getStorageKey() + "'.";
+				LOGGER.error(msg, e);
+				throw new SnowowlServiceException(msg, e);
+			}
+			
+		} finally {
+			StoreThreadLocal.release();
+			LifecycleUtil.deactivate(view);
 		}
 	}
 	
@@ -391,6 +406,13 @@ public enum HistoryInfoProvider {
 		return branchPoint;
 	}
 	
+	private CDOView openView(final HistoryInfoConfiguration configuration) {
+		final long cdoId = configuration.getStorageKey();
+		final ICDOConnection connection = getServiceForClass(ICDOConnectionManager.class).get(cdoId);
+		final CDOBranch branch = connection.getBranch(configuration.getBranchPath());
+		return connection.createView(branch, UNSPECIFIED_DATE, false);
+	}
+
 	private Connection getConnection() {
 		return ((IDBStoreAccessor) StoreThreadLocal.getAccessor()).getConnection();
 	}
