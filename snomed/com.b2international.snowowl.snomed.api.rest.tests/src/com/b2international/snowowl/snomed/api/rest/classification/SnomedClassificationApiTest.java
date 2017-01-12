@@ -88,7 +88,6 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		// verify inferred relationships for parent
 		for (Map<String, Object> relationshipChange : parentInferredRelationships) {
 			assertEquals(ChangeNature.INFERRED.name(), relationshipChange.get("changeNature"));
-			assertEquals(null, relationshipChange.get("id"));
 			switch ((String) relationshipChange.get("typeId")) {
 			case Concepts.IS_A:
 				assertEquals(Concepts.ROOT_CONCEPT, relationshipChange.get("destinationId"));
@@ -102,7 +101,6 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		// verify inferred relationships for parent
 		for (Map<String, Object> relationshipChange : childInferredRelationships) {
 			assertEquals(ChangeNature.INFERRED.name(), relationshipChange.get("changeNature"));
-			assertEquals(null, relationshipChange.get("id"));
 			switch ((String) relationshipChange.get("typeId")) {
 			case Concepts.IS_A:
 				assertEquals(parentConcept, relationshipChange.get("destinationId"));
