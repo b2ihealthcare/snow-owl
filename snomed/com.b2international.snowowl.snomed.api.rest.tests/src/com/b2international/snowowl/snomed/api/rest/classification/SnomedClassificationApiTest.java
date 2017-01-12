@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
@@ -59,7 +60,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void offerInferredRelationship() throws Exception {
+	public void persistInferredRelationship() throws Exception {
 		// create a parent concept and a random target concept
 		final Map<?, ?> parentBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
 		final String parentConcept = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, parentBody);
@@ -72,7 +73,8 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		final String childConcept = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, body);
 
 		// classify
-		final Multimap<String, Map<String, Object>> relationshipChangesBySourceId = classify(testBranchPath.getPath());
+		final String classificationRunId = waitForClassificationToComplete(testBranchPath.getPath());
+		final Multimap<String, Map<String, Object>> relationshipChangesBySourceId = classify(testBranchPath.getPath(), classificationRunId);
 		
 		// verify a new inferred relationship on child
 		final Collection<Map<String, Object>> parentInferredRelationships = relationshipChangesBySourceId.get(parentConcept);
@@ -85,6 +87,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		// verify inferred relationships for parent
 		for (Map<String, Object> relationshipChange : parentInferredRelationships) {
 			assertEquals(ChangeNature.INFERRED.name(), relationshipChange.get("changeNature"));
+			assertEquals(null, relationshipChange.get("id"));
 			switch ((String) relationshipChange.get("typeId")) {
 			case Concepts.IS_A:
 				assertEquals(Concepts.ROOT_CONCEPT, relationshipChange.get("destinationId"));
@@ -98,6 +101,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		// verify inferred relationships for parent
 		for (Map<String, Object> relationshipChange : childInferredRelationships) {
 			assertEquals(ChangeNature.INFERRED.name(), relationshipChange.get("changeNature"));
+			assertEquals(null, relationshipChange.get("id"));
 			switch ((String) relationshipChange.get("typeId")) {
 			case Concepts.IS_A:
 				assertEquals(parentConcept, relationshipChange.get("destinationId"));
@@ -107,9 +111,41 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 				break;
 			}
 		}
+		
+		// run and save the classification
+		waitForClassificationSaveToComplete(testBranchPath.getPath(), classificationRunId);
+		
+		assertEquals(2, getInferredRelationshipCount(parentConcept));
+		assertEquals(2, getInferredRelationshipCount(childConcept));
+	}
+
+	private int getInferredRelationshipCount(final String conceptId) {
+		final List<Map<String, Object>> relationships = assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, conceptId, "relationships(\"active\":true)")
+			.and().extract().jsonPath()
+			.getList("relationships.items");
+		
+		int inferredRelationships = 0;
+		for (Map<String, Object> relationship : relationships) {
+			if (relationship.get("characteristicType").equals(CharacteristicType.INFERRED_RELATIONSHIP.toString())) {
+				inferredRelationships++;
+			}
+		}
+		return inferredRelationships;
 	}
 	
-	private Multimap<String, Map<String, Object>> classify(String branch) throws Exception {
+	private Multimap<String, Map<String, Object>> classify(String branch, String classificationRunId) throws Exception {
+		// get relationship changes
+		final Collection<Map<String, Object>> items = RestExtensions.get(SnomedApiTestConstants.SCT_API, branch, "classifications", classificationRunId, "relationship-changes").body().path("items");
+		// index all relationship changes by their source ID
+		return Multimaps.index(items, new Function<Map<String, Object>, String>() {
+			@Override
+			public String apply(Map<String, Object> input) {
+				return (String) input.get("sourceId");
+			}
+		});
+	}
+
+	private String waitForClassificationToComplete(String branch) throws InterruptedException {
 		final Map<String, Object> classifyReq = ImmutableMap.<String, Object>of("reasonerId", SnomedCoreConfiguration.ELK_REASONER_ID); 
 		final Response classificationCreated = RestExtensions.postJson(SnomedApiTestConstants.SCT_API, classifyReq, branch, "classifications");
 		classificationCreated.then().statusCode(201);
@@ -122,19 +158,25 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 			classificationStatus = ClassificationStatus.valueOf(RestExtensions.get(SnomedApiTestConstants.SCT_API, branch, "classifications", classificationRunId).body().<String>path("status"));
 		} while(ClassificationStatus.RUNNING == classificationStatus || ClassificationStatus.SCHEDULED == classificationStatus);
 		assertEquals(ClassificationStatus.COMPLETED, classificationStatus);
-		// get relationship changes
-		final Collection<Map<String, Object>> items = RestExtensions.get(SnomedApiTestConstants.SCT_API, branch, "classifications", classificationRunId, "relationship-changes").body().path("items");
-		// index all relationship changes by their source ID
-		return Multimaps.index(items, new Function<Map<String, Object>, String>() {
-			@Override
-			public String apply(Map<String, Object> input) {
-				return (String) input.get("sourceId");
-			}
-		});
+		return classificationRunId;
 	}
 
+	private String waitForClassificationSaveToComplete(String branch, String classificationRunId) throws InterruptedException {
+		final Map<String, Object> persistRequest = ImmutableMap.<String, Object>of("status", ClassificationStatus.SAVED.toString()); 
+		final Response persistResponse = RestExtensions.putJson(SnomedApiTestConstants.SCT_API, persistRequest, branch, "classifications", classificationRunId);
+		persistResponse.then().statusCode(204);
+		// wait for persisting relationships to complete, but no more than 1 min
+		ClassificationStatus classificationStatus;
+		do {
+			Thread.sleep(500);
+			classificationStatus = ClassificationStatus.valueOf(RestExtensions.get(SnomedApiTestConstants.SCT_API, branch, "classifications", classificationRunId).body().<String>path("status"));
+		} while(ClassificationStatus.SAVING_IN_PROGRESS == classificationStatus);
+		assertEquals(ClassificationStatus.SAVED, classificationStatus);
+		return classificationRunId;
+	}
+	
 	@Test
-	public void offerRedundantRelationships() throws Exception {
+	public void persistRedundantRelationship() throws Exception {
 		// create a parent concept
 		final Map<?, ?> conceptReq = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
 		final String concept = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptReq);
@@ -145,12 +187,16 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		assertComponentExists(testBranchPath, SnomedComponentType.RELATIONSHIP, relationship1Id).body("id", equalTo(relationship1Id));
 		assertComponentExists(testBranchPath, SnomedComponentType.RELATIONSHIP, relationship2Id).body("id", equalTo(relationship2Id));
 		
-		final Multimap<String, Map<String, Object>> relationshipChangesBySourceId = classify(testBranchPath.getPath());
+		final String classificationRunId = waitForClassificationToComplete(testBranchPath.getPath());
+		final Multimap<String, Map<String, Object>> relationshipChangesBySourceId = classify(testBranchPath.getPath(), classificationRunId);
 		
 		final Collection<Map<String, Object>> conceptRelationshipChanges = relationshipChangesBySourceId.get(concept);
 		assertEquals(1, conceptRelationshipChanges.size());
 		final Map<String, Object> relationshipChange = Iterables.getOnlyElement(conceptRelationshipChanges);
 		assertEquals(ChangeNature.REDUNDANT.name(), relationshipChange.get("changeNature"));
+		
+		// save the classification
+		waitForClassificationSaveToComplete(testBranchPath.getPath(), classificationRunId);
 	}
 	
 }
