@@ -47,7 +47,7 @@ import com.jayway.restassured.response.ValidatableResponse;
  */
 public abstract class SnomedComponentApiAssert {
 
-	public static Map<?, ?> givenConceptRequestBody(final String conceptId, final String parentId, final String moduleId, final Map<?, ?> fsnAcceptabilityMap, final boolean skipComment) {
+	public static Map<String, Object> givenConceptRequestBody(final String conceptId, final String parentId, final String moduleId, final Map<?, ?> fsnAcceptabilityMap, final boolean skipComment) {
 
 		final Date creationDate = new Date();
 		final Map<?, ?> fsnDescription = givenDescriptionRequestBody(creationDate, "New FSN at ", fsnAcceptabilityMap, FULLY_SPECIFIED_NAME);

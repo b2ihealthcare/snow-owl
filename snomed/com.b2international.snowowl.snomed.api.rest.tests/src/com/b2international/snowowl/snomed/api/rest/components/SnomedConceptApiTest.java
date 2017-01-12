@@ -42,9 +42,11 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -390,4 +392,29 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertComponentCanBeDeleted(nestedBranchPath, SnomedComponentType.CONCEPT, parentId);
 		assertComponentNotExists(nestedBranchPath, SnomedComponentType.CONCEPT, parentId);
 	}
+	
+	@Test
+	public void createConceptWithMember() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		
+		// create a test refset
+		final Map<String,Object> refSetReq = createRefSetRequestBody(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT, Concepts.REFSET_SIMPLE_TYPE);
+		final String createdRefSetId = assertComponentCreated(testBranchPath, SnomedComponentType.REFSET, refSetReq);
+		assertComponentExists(testBranchPath, SnomedComponentType.REFSET, createdRefSetId);
+		
+		// create concept with member
+		final ImmutableMap.Builder<String, Object> req = ImmutableMap.builder();
+		req.putAll(givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false));
+		
+		final ImmutableList.Builder<Map<String, Object>> members = ImmutableList.builder();
+		members.add(createRefSetMemberRequestBody(null, createdRefSetId));
+		req.put("members", members.build());
+		
+		// verify that member got created
+		final String conceptId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, req.build());
+		final List<Object> actualMembers = assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, conceptId, "members()")
+			.extract().path("members.items");
+		assertEquals(1, actualMembers.size());
+	}
+	
 }
