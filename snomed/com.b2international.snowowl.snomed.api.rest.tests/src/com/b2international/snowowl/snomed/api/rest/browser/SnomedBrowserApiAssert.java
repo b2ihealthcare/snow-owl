@@ -161,7 +161,7 @@ public class SnomedBrowserApiAssert {
 		final Map<?, ?> isaRelationship = ImmutableMap.<String, Object>builder()
 				.put("sourceId", "")
 				.put("effectiveTime", creationDate)
-				.put("modifier", RelationshipModifier.UNIVERSAL)
+				.put("modifier", RelationshipModifier.EXISTENTIAL)
 				.put("groupId", "0")
 				.put("characteristicType", CharacteristicType.STATED_RELATIONSHIP)
 				.put("active", true)

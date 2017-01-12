@@ -72,7 +72,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final Map<?, ?> requestBody = givenConceptRequestBody(null, "", MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);		
 		assertComponentCreatedWithStatus(createMainPath(), SnomedComponentType.CONCEPT, requestBody, 400)
 		.and().body("message", equalTo("1 validation error"))
-		.and().body("violations", hasItem("'parentId' may not be empty (was '')"));
+		.and().body("violations", hasItem("'destinationId' may not be empty (was '')"));
 	}
 
 	@Test
