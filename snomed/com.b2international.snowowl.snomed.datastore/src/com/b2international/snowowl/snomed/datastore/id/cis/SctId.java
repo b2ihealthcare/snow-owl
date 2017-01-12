@@ -46,7 +46,7 @@ public class SctId {
 
 		public static Expression namespace(String namespace) {
 			final boolean intNamespace = CompareUtils.isEmpty(namespace);
-			return exactMatch(Fields.NAMESPACE, intNamespace ? 0L : Long.parseLong(namespace));
+			return exactMatch(Fields.NAMESPACE, intNamespace ? SnomedIdentifiers.INT_NAMESPACE : namespace);
 		}
 
 		public static Expression partitionId(String namespace, ComponentCategory category) {
