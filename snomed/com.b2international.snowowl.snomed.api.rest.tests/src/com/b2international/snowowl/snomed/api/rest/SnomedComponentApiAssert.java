@@ -85,13 +85,13 @@ public abstract class SnomedComponentApiAssert {
 				.build();
 	}
 	
-	private static Builder<Object, Object> createRelationshipRequestBuilder(final String sourceId, 
+	private static Builder<String, Object> createRelationshipRequestBuilder(final String sourceId, 
 			final String typeId, 
 			final String destinationId, 
 			final String moduleId, 
 			final String comment) {
 
-		return ImmutableMap.builder()
+		return ImmutableMap.<String, Object>builder()
 				.put("sourceId", sourceId)
 				.put("typeId", typeId)
 				.put("destinationId", destinationId)
@@ -99,7 +99,7 @@ public abstract class SnomedComponentApiAssert {
 				.put("commitComment", comment);
 	}
 
-	public static Map<?, ?> givenRelationshipRequestBody(final String sourceId, 
+	public static Map<String, Object> givenRelationshipRequestBody(final String sourceId, 
 			final String typeId, 
 			final String destinationId, 
 			final String moduleId, 
@@ -109,7 +109,7 @@ public abstract class SnomedComponentApiAssert {
 				.build();
 	}
 
-	public static Map<?, ?> givenRelationshipRequestBody(final String sourceId, 
+	public static Map<String, Object> givenRelationshipRequestBody(final String sourceId, 
 			final String typeId, 
 			final String destinationId, 
 			final String moduleId, 
@@ -124,9 +124,10 @@ public abstract class SnomedComponentApiAssert {
 	public static ValidatableResponse assertComponentReadWithStatus(final IBranchPath branchPath, 
 			final SnomedComponentType componentType, 
 			final String componentId, 
-			final int statusCode) {
+			final int statusCode,
+			final String... expansions) {
 
-		return getComponent(branchPath, componentType, componentId)
+		return getComponent(branchPath, componentType, componentId, expansions)
 				.then().log().ifValidationFails().assertThat().statusCode(statusCode);
 	}
 
@@ -146,8 +147,8 @@ public abstract class SnomedComponentApiAssert {
 	 * @param componentType the expected component type
 	 * @param componentId the expected component identifier
 	 */
-	public static ValidatableResponse assertComponentExists(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId) {
-		return assertComponentReadWithStatus(branchPath, componentType, componentId, 200);
+	public static ValidatableResponse assertComponentExists(final IBranchPath branchPath, final SnomedComponentType componentType, final String componentId, final String... expansions) {
+		return assertComponentReadWithStatus(branchPath, componentType, componentId, 200, expansions);
 	}
 
 	/**
