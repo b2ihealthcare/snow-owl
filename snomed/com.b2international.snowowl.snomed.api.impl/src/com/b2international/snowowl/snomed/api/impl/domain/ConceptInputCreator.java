@@ -1,6 +1,7 @@
 package com.b2international.snowowl.snomed.api.impl.domain;
 
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescription;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationship;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
@@ -11,6 +12,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateR
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 public class ConceptInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedConceptCreateRequest, SnomedConceptUpdateRequest, SnomedBrowserConcept> {
@@ -20,14 +22,17 @@ public class ConceptInputCreator extends AbstractInputCreator implements Compone
 		final SnomedConceptCreateRequestBuilder builder = SnomedRequests
 				.prepareNewConcept()
 				.setModuleId(getModuleOrDefault(concept))
-				.setDefinitionStatus(concept.getDefinitionStatus())
-				.setParent(getParentId(concept));
+				.setDefinitionStatus(concept.getDefinitionStatus());
 		
 		String conceptId = concept.getConceptId();
 		if (conceptId != null) {
 			builder.setId(conceptId);
 		}
 
+		for (ISnomedBrowserRelationship relationship : concept.getRelationships()) {
+			builder.addRelationship(inputFactory.createComponentInput(branchPath, relationship, SnomedRelationshipCreateRequest.class));
+		}
+		
 		for (ISnomedBrowserDescription description : concept.getDescriptions()) {
 			builder.addDescription(inputFactory.createComponentInput(branchPath, description, SnomedDescriptionCreateRequest.class));
 		}
