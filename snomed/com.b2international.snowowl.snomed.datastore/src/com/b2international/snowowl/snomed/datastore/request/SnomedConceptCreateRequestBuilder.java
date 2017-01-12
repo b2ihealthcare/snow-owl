@@ -20,9 +20,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.List;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
 
 /**
  * @since 4.5
@@ -30,27 +29,30 @@ import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
 public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCreateRequestBuilder<SnomedConceptCreateRequestBuilder> {
 
 	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
-	private String parentId;
-	private IdGenerationStrategy isAIdGenerationStrategy;
 	private List<SnomedDescriptionCreateRequest> descriptions = newArrayList();
+	private List<SnomedRelationshipCreateRequest> relationships = newArrayList();
 	
 	SnomedConceptCreateRequestBuilder() {
 		super(ComponentCategory.CONCEPT);
 	}
 
-	public SnomedConceptCreateRequestBuilder setParent(String parentId) {
-		this.parentId = parentId;
+	public SnomedConceptCreateRequestBuilder addParent(String parentId) {
+		return addRelationship(SnomedRequests.prepareNewRelationship()
+				.setDestinationId(parentId)
+				.setTypeId(Concepts.IS_A));
+	}
+	
+	public SnomedConceptCreateRequestBuilder addRelationship(SnomedRelationshipCreateRequestBuilder relationship) {
+		return addRelationship((SnomedRelationshipCreateRequest) relationship.build());
+	}
+	
+	public SnomedConceptCreateRequestBuilder addRelationship(SnomedRelationshipCreateRequest relationship) {
+		this.relationships.add(relationship);
 		return getSelf();
 	}
 	
-	public SnomedConceptCreateRequestBuilder setIsAId(IdGenerationStrategy idGenerationStrategy) {
-		this.isAIdGenerationStrategy = idGenerationStrategy;
-		return getSelf();
-	}
-	
-	public SnomedConceptCreateRequestBuilder setDefinitionStatus(DefinitionStatus definitionStatus) {
-		this.definitionStatus = definitionStatus;
-		return getSelf();
+	public SnomedConceptCreateRequestBuilder addDescription(SnomedDescriptionCreateRequestBuilder description) {
+		return addDescription((SnomedDescriptionCreateRequest) description.build());
 	}
 	
 	public SnomedConceptCreateRequestBuilder addDescription(SnomedDescriptionCreateRequest description) {
@@ -58,8 +60,9 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		return getSelf();
 	}
 	
-	public SnomedConceptCreateRequestBuilder addDescription(SnomedDescriptionCreateRequestBuilder description) {
-		return addDescription((SnomedDescriptionCreateRequest) description.build());
+	public SnomedConceptCreateRequestBuilder setDefinitionStatus(DefinitionStatus definitionStatus) {
+		this.definitionStatus = definitionStatus;
+		return getSelf();
 	}
 	
 	@Override
@@ -71,10 +74,8 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	protected void init(BaseSnomedComponentCreateRequest request) {
 		final SnomedConceptCreateRequest req = (SnomedConceptCreateRequest) request;
 		req.setDefinitionStatus(definitionStatus);
-		// TODO use default namespace???
-		req.setIsAIdGenerationStrategy(isAIdGenerationStrategy == null ? new ReservingIdStrategy(ComponentCategory.RELATIONSHIP) : isAIdGenerationStrategy);
 		req.setDescriptions(descriptions);
-		req.setParentId(parentId);
+		req.setRelationships(relationships);
 	}
 
 }

@@ -159,7 +159,7 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 		final SnomedConceptCreateRequestBuilder conceptReq = SnomedRequests
 				.prepareNewConcept()
 				.setModuleId(moduleId)
-				.setParent(Concepts.REFSET_SIMPLE_TYPE);
+				.addParent(Concepts.REFSET_SIMPLE_TYPE);
 		
 		// TODO acceptability in a refset description
 		conceptReq.addDescription(

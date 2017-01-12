@@ -23,11 +23,13 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.0
@@ -37,7 +39,6 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 	@Nonnull
 	private Boolean active;
 	
-	@NotEmpty
 	private String sourceId;
 
 	@NotEmpty
@@ -139,6 +140,10 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 	@Override
 	public String execute(TransactionContext context) {
 		ensureUniqueId("Relationship", context);
+		
+		if (Strings.isNullOrEmpty(getSourceId())) {
+			throw new BadRequestException("'sourceId' may not be empty (was '%s')", getSourceId());
+		}
 		
 		try {
 			final Relationship relationship = SnomedComponents.newRelationship()
