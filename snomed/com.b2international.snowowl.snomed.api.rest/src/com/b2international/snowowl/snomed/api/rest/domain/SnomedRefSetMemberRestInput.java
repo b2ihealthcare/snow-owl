@@ -19,6 +19,8 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
 
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberCreateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 
@@ -64,6 +66,15 @@ public class SnomedRefSetMemberRestInput {
 	
 	public String getReferenceSetId() {
 		return referenceSetId;
+	}
+
+	public SnomedRefSetMemberCreateRequestBuilder toRequestBuilder() {
+		final SnomedRefSetMemberCreateRequestBuilder req = SnomedRequests.prepareNewMember();
+		req.setReferenceSetId(getReferenceSetId());
+		req.setReferencedComponentId(getReferencedComponentId());
+		req.setModuleId(getModuleId());
+		req.setProperties(getProperties());
+		return req;
 	}
 	
 }

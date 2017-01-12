@@ -58,6 +58,10 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 	SnomedRefSetMemberCreateRequest() {
 	}
 	
+	public String getModuleId() {
+		return moduleId;
+	}
+	
 	void setReferencedComponentId(String referencedComponentId) {
 		this.referencedComponentId = referencedComponentId;
 	}

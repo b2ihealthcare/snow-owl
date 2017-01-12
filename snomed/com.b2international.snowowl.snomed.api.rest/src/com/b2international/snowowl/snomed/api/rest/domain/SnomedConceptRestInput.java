@@ -29,6 +29,7 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 
 	private List<SnomedDescriptionRestInput> descriptions = Collections.emptyList();
 	private List<SnomedRelationshipRestInput> relationships = Collections.emptyList();
+	private List<SnomedRefSetMemberRestInput> members = Collections.emptyList();
 
 	public List<SnomedDescriptionRestInput> getDescriptions() {
 		return descriptions;
@@ -37,6 +38,10 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 	public List<SnomedRelationshipRestInput> getRelationships() {
 		return relationships;
 	}
+	
+	public List<SnomedRefSetMemberRestInput> getMembers() {
+		return members;
+	}
 
 	public void setDescriptions(List<SnomedDescriptionRestInput> descriptions) {
 		this.descriptions = descriptions;
@@ -44,6 +49,10 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 	
 	public void setRelationships(List<SnomedRelationshipRestInput> relationships) {
 		this.relationships = relationships;
+	}
+	
+	public void setMembers(List<SnomedRefSetMemberRestInput> members) {
+		this.members = members;
 	}
 
 	@Override
@@ -71,6 +80,10 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 			}
 			
 			req.addDescription(restDescription.toRequestBuilder());
+		}
+		
+		for (SnomedRefSetMemberRestInput restMember : getMembers()) {
+			req.addMember(restMember.toRequestBuilder());
 		}
 		
 		return req;

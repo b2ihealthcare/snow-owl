@@ -31,6 +31,7 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
 	private List<SnomedDescriptionCreateRequest> descriptions = newArrayList();
 	private List<SnomedRelationshipCreateRequest> relationships = newArrayList();
+	private List<SnomedRefSetMemberCreateRequest> members = newArrayList();
 	
 	SnomedConceptCreateRequestBuilder() {
 		super(ComponentCategory.CONCEPT);
@@ -60,6 +61,15 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		return getSelf();
 	}
 	
+	public SnomedConceptCreateRequestBuilder addMember(SnomedRefSetMemberCreateRequestBuilder member) {
+		return addMember((SnomedRefSetMemberCreateRequest) member.build());
+	}
+	
+	public SnomedConceptCreateRequestBuilder addMember(SnomedRefSetMemberCreateRequest member) {
+		this.members.add(member);
+		return getSelf();
+	}
+
 	public SnomedConceptCreateRequestBuilder setDefinitionStatus(DefinitionStatus definitionStatus) {
 		this.definitionStatus = definitionStatus;
 		return getSelf();
@@ -76,6 +86,7 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		req.setDefinitionStatus(definitionStatus);
 		req.setDescriptions(descriptions);
 		req.setRelationships(relationships);
+		req.setMembers(members);
 	}
 
 }

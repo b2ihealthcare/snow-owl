@@ -57,6 +57,8 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	
 	@Size(min = 1)
 	private List<SnomedRelationshipCreateRequest> relationships = Collections.emptyList();
+	
+	private List<SnomedRefSetMemberCreateRequest> members = Collections.emptyList();
 
 	@NotNull
 	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
@@ -78,6 +80,10 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	void setRelationships(final List<SnomedRelationshipCreateRequest> relationships) {
 		this.relationships = ImmutableList.copyOf(relationships);
 	}
+	
+	void setMembers(final List<SnomedRefSetMemberCreateRequest> members) {
+		this.members = ImmutableList.copyOf(members);
+	}
 
 	@Override
 	public String execute(TransactionContext context) {
@@ -88,6 +94,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 
 		convertDescriptions(context, concept.getId());
 		convertRelationships(context, concept.getId());
+		convertMembers(context, concept.getId());
 
 		return concept.getId();
 	}
@@ -167,6 +174,17 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		
 		if (!requiredRelationships.isEmpty()) {
 			throw new BadRequestException("The following relationships must be supplied with the concept [%s].", Joiner.on(",").join(requiredRelationships));
+		}
+	}
+	
+	private void convertMembers(final TransactionContext context, final String conceptId) {
+		for (final SnomedRefSetMemberCreateRequest memberRequest : members) {
+			memberRequest.setReferencedComponentId(conceptId);
+			if (null == memberRequest.getModuleId()) {
+				memberRequest.setModuleId(getModuleId());
+			}
+			
+			memberRequest.execute(context);
 		}
 	}
 
