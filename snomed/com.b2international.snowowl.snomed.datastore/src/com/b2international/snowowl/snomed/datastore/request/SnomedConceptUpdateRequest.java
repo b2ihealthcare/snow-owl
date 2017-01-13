@@ -16,12 +16,19 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.emf.ecore.EObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentStatusConflictException;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -32,14 +39,22 @@ import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.InactivationReason;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 /**
  * @since 4.5
@@ -52,6 +67,9 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 	private SubclassDefinitionStatus subclassDefinitionStatus;
 	private InactivationIndicator inactivationIndicator;
 	private Multimap<AssociationType, String> associationTargets;
+	private List<ISnomedDescription> descriptions;
+	private List<ISnomedRelationship> relationships;
+	private List<SnomedReferenceSetMember> members;
 	
 	SnomedConceptUpdateRequest(String componentId) {
 		super(componentId);
@@ -73,14 +91,31 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 		this.associationTargets = associationTargets;
 	}
 	
+	void setDescriptions(List<ISnomedDescription> descriptions) {
+		this.descriptions = descriptions;
+	}
+	
+	void setRelationships(List<ISnomedRelationship> relationships) {
+		this.relationships = relationships;
+	}
+	
+	void setMembers(List<SnomedReferenceSetMember> members) {
+		this.members = members;
+	}
+	
 	@Override
-	public Void execute(TransactionContext context) {
+	public Boolean execute(TransactionContext context) {
 		final Concept concept = context.lookup(getComponentId(), Concept.class);
 
 		boolean changed = false;
 		changed |= updateModule(context, concept);
 		changed |= updateDefinitionStatus(context, concept);
 		changed |= updateSubclassDefinitionStatus(context, concept);
+		changed |= updateComponents(context, concept, concept.getDescriptions(), descriptions, description -> description.getId(), id -> SnomedRequests.prepareDeleteDescription().setComponentId(id).build());
+		changed |= updateComponents(context, concept, concept.getOutboundRelationships(), relationships, relationship -> relationship.getId(), id -> SnomedRequests.prepareDeleteRelationship().setComponentId(id).build());
+		// TODO load all members referencing this concept except inactivation related ones
+		// XXX currently we support only concrete domain members to be updated
+		changed |= updateComponents(context, concept, concept.getConcreteDomainRefSetMembers(), filterMembers(context, members), member -> member.getUuid(), id -> SnomedRequests.prepareDeleteMember().setComponentId(id).build());
 		changed |= processInactivation(context, concept);
 
 		if (changed) {
@@ -103,7 +138,24 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 			}
 		}
 		
-		return null;
+		return changed;
+	}
+
+	private Iterable<SnomedReferenceSetMember> filterMembers(TransactionContext context, List<SnomedReferenceSetMember> members) {
+		if (members == null) return null;
+		final Set<String> referenceSets = members.stream().map(member -> member.getReferenceSetId()).collect(Collectors.toSet());
+		final Map<String, SnomedReferenceSet> refSetsById = SnomedRequests.prepareSearchRefSet()
+				.setLimit(referenceSets.size())
+				.setComponentIds(referenceSets)
+				.build()
+				.execute(context)
+				.getItems()
+				.stream()
+				.collect(Collectors.toMap(SnomedReferenceSet::getId, Function.identity()));
+		
+		return members.stream()
+				.filter(member -> refSetsById.get(member.getReferenceSetId()).getType() == SnomedRefSetType.CONCRETE_DATA_TYPE)
+				.collect(Collectors.toSet());
 	}
 
 	private boolean isDifferentToPreviousRelease(Concept concept, ISnomedConcept releasedConcept) {
@@ -265,4 +317,43 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 			}
 		}
 	}
+	
+	private <T extends EObject, U extends SnomedComponent> boolean updateComponents(final TransactionContext context, 
+			final Concept concept, 
+			final Iterable<T> previousComponents,
+			final Iterable<U> currentComponents, 
+			final com.google.common.base.Function<T, String> idProvider,
+			final Function<String, Request<TransactionContext, Void>> toDeleteRequest) {
+		boolean changed = false;
+		if (currentComponents == null) {
+			return changed;
+		}
+		
+		
+		// collect new/changed/deleted components and process them
+		final Map<String, T> previousComponentsById = Maps.uniqueIndex(previousComponents, idProvider);
+		final Map<String, U> currentComponentsById = Maps.uniqueIndex(currentComponents, component -> component.getId());
+		
+		return Sets.union(previousComponentsById.keySet(), currentComponentsById.keySet())
+			.stream()
+			.map(componentId -> {
+				if (!previousComponentsById.containsKey(componentId) && currentComponentsById.containsKey(componentId)) {
+					// new component
+					return currentComponentsById.get(componentId).toCreateRequest(concept.getId());
+				} else if (previousComponentsById.containsKey(componentId) && currentComponentsById.containsKey(componentId)) {
+					// changed component
+					return currentComponentsById.get(componentId).toUpdateRequest();
+				} else if (previousComponentsById.containsKey(componentId) && !currentComponentsById.containsKey(componentId)) {
+					// deleted component
+					return toDeleteRequest.apply(componentId);
+				} else {
+					throw new IllegalStateException("Invalid case, should not happen");
+				}
+			})
+			.map(req -> req.execute(context))
+			.filter(Boolean.class::isInstance)
+			.map(Boolean.class::cast)
+			.reduce(Boolean.FALSE, (r1, r2) -> r1 || r2);
+	}
+	
 }

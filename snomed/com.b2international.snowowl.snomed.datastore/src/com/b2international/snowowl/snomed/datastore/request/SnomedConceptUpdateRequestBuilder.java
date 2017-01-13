@@ -15,10 +15,16 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.List;
+
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 
 /**
@@ -26,10 +32,13 @@ import com.google.common.collect.Multimap;
  */
 public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponentUpdateRequestBuilder<SnomedConceptUpdateRequestBuilder, SnomedConceptUpdateRequest> {
 
-	private Multimap<AssociationType, String> associationTargets;
 	private DefinitionStatus definitionStatus;
-	private InactivationIndicator inactivationIndicator;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
+	private Multimap<AssociationType, String> associationTargets;
+	private InactivationIndicator inactivationIndicator;
+	private List<ISnomedDescription> descriptions;
+	private List<ISnomedRelationship> relationships;
+	private List<SnomedReferenceSetMember> members;
 
 	SnomedConceptUpdateRequestBuilder(String componentId) {
 		super(componentId);
@@ -42,31 +51,49 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 	
 	public SnomedConceptUpdateRequestBuilder setAssociationTargets(Multimap<AssociationType, String> associationTargets) {
 		this.associationTargets = associationTargets;
-		return this;
+		return getSelf();
 	}
 	
 	public SnomedConceptUpdateRequestBuilder setDefinitionStatus(DefinitionStatus definitionStatus) {
 		this.definitionStatus = definitionStatus;
-		return this;
+		return getSelf();
 	}
 	
 	public SnomedConceptUpdateRequestBuilder setInactivationIndicator(InactivationIndicator inactivationIndicator) {
 		this.inactivationIndicator = inactivationIndicator;
-		return this;
+		return getSelf();
 	}
 	
 	public SnomedConceptUpdateRequestBuilder setSubclassDefinitionStatus(SubclassDefinitionStatus subclassDefinitionStatus) {
 		this.subclassDefinitionStatus = subclassDefinitionStatus;
-		return this;
+		return getSelf();
+	}
+	
+	public SnomedConceptUpdateRequestBuilder setDescriptions(Iterable<? extends ISnomedDescription> descriptions) {
+		this.descriptions = ImmutableList.copyOf(descriptions);
+		return getSelf();
+	}
+	
+	public SnomedConceptUpdateRequestBuilder setRelationships(Iterable<? extends ISnomedRelationship> relationships) {
+		this.relationships = ImmutableList.copyOf(relationships);
+		return getSelf();
+	}
+	
+	public SnomedConceptUpdateRequestBuilder setMembers(Iterable<? extends SnomedReferenceSetMember> members) {
+		this.members = ImmutableList.copyOf(members);
+		return getSelf();
 	}
 	
 	@Override
 	protected void init(SnomedConceptUpdateRequest req) {
 		super.init(req);
-		req.setAssociationTargets(associationTargets);
 		req.setDefinitionStatus(definitionStatus);
-		req.setInactivationIndicator(inactivationIndicator);
 		req.setSubclassDefinitionStatus(subclassDefinitionStatus);
+		req.setAssociationTargets(associationTargets);
+		req.setInactivationIndicator(inactivationIndicator);
+		req.setDescriptions(descriptions);
+		req.setRelationships(relationships);
+		req.setMembers(members);
 	}
 	
 }
