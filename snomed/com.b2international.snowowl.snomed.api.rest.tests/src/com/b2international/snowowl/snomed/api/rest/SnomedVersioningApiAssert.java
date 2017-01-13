@@ -51,11 +51,11 @@ public class SnomedVersioningApiAssert {
 		.then().assertThat().statusCode(status);
 	}
 
-	public static void assertVersionPostStatus(final String version, final String effectiveDate, final int status) {
-		assertVersionPostStatus(version, effectiveDate, "SNOMEDCT", status);
+	public static void assertVersionCreated(final String version, final String effectiveDate, final int status) {
+		assertVersionCreated(version, effectiveDate, "SNOMEDCT", status);
 	}
 	
-	public static void assertVersionPostStatus(final String version, final String effectiveDate, final String shortName, final int status) {
+	public static void assertVersionCreated(final String version, final String effectiveDate, final String shortName, final int status) {
 		whenCreatingVersion(version, effectiveDate, shortName)
 		.then().assertThat().statusCode(status);
 	}
