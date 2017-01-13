@@ -22,6 +22,9 @@ import java.util.List;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 
 /**
  * @since 4.5
@@ -37,6 +40,8 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		super(ComponentCategory.CONCEPT);
 	}
 
+	// Relationship List builders
+	
 	public SnomedConceptCreateRequestBuilder addParent(String parentId) {
 		return addRelationship(SnomedRequests.prepareNewRelationship()
 				.setDestinationId(parentId)
@@ -52,6 +57,17 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		return getSelf();
 	}
 	
+	public SnomedConceptCreateRequestBuilder addRelationship(ISnomedRelationship relationship) {
+		return addRelationship((SnomedRelationshipCreateRequest) relationship.toCreateRequest());
+	}
+	
+	public SnomedConceptCreateRequestBuilder addRelationships(Iterable<? extends ISnomedRelationship> relationships) {
+		relationships.forEach(this::addRelationship);
+		return getSelf();
+	}
+	
+	// Description List builders
+	
 	public SnomedConceptCreateRequestBuilder addDescription(SnomedDescriptionCreateRequestBuilder description) {
 		return addDescription((SnomedDescriptionCreateRequest) description.build());
 	}
@@ -61,6 +77,17 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		return getSelf();
 	}
 	
+	public SnomedConceptCreateRequestBuilder addDescription(ISnomedDescription description) {
+		return addDescription((SnomedDescriptionCreateRequest) description.toCreateRequest());
+	}
+	
+	public SnomedConceptCreateRequestBuilder addDescriptions(Iterable<? extends ISnomedDescription> descriptions) {
+		descriptions.forEach(this::addDescription);
+		return getSelf();
+	}
+	
+	// Reference Set Member List builders
+	
 	public SnomedConceptCreateRequestBuilder addMember(SnomedRefSetMemberCreateRequestBuilder member) {
 		return addMember((SnomedRefSetMemberCreateRequest) member.build());
 	}
@@ -69,6 +96,17 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		this.members.add(member);
 		return getSelf();
 	}
+	
+	public SnomedConceptCreateRequestBuilder addMember(SnomedReferenceSetMember member) {
+		return addMember((SnomedRefSetMemberCreateRequest) member.toCreateRequest());
+	}
+	
+	public SnomedConceptCreateRequestBuilder addMembers(Iterable<? extends SnomedReferenceSetMember> members) {
+		members.forEach(this::addMember);
+		return getSelf();
+	}
+	
+	// Concept property builders
 
 	public SnomedConceptCreateRequestBuilder setDefinitionStatus(DefinitionStatus definitionStatus) {
 		this.definitionStatus = definitionStatus;
