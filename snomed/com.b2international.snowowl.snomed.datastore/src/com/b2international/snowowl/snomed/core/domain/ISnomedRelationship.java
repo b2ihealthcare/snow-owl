@@ -16,6 +16,9 @@
 package com.b2international.snowowl.snomed.core.domain;
 
 import com.b2international.snowowl.core.domain.IComponentEdge;
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * Represents a SNOMED CT description.
@@ -94,4 +97,33 @@ public interface ISnomedRelationship extends SnomedCoreComponent, IComponentEdge
 	 * @return the modifier of this relationship
 	 */
 	RelationshipModifier getModifier();
+	
+	@Override
+	default Request<TransactionContext, String> toCreateRequest(String containerId) {
+		return SnomedRequests.prepareNewRelationship()
+				.setActive(isActive())
+				.setCharacteristicType(getCharacteristicType())
+				.setDestinationId(getDestinationId())
+				.setDestinationNegated(isDestinationNegated())
+				.setGroup(getGroup())
+				.setId(getId())
+				.setModifier(getModifier())
+				.setModuleId(getModuleId())
+				.setSourceId(containerId)
+				.setTypeId(getTypeId())
+				.setUnionGroup(getUnionGroup())
+				.build();
+	}
+	
+	@Override
+	default Request<TransactionContext, Boolean> toUpdateRequest() {
+		return SnomedRequests.prepareUpdateRelationship(getId())
+				.setActive(isActive())
+				.setCharacteristicType(getCharacteristicType())
+				.setGroup(getGroup())
+				.setModifier(getModifier())
+				.setModuleId(getModuleId())
+				.setUnionGroup(getUnionGroup())
+				.build();
+	}
 }

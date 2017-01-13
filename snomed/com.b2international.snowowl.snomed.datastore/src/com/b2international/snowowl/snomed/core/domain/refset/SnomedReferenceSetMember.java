@@ -17,8 +17,11 @@ package com.b2international.snowowl.snomed.core.domain.refset;
 
 import java.util.Map;
 
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.google.common.base.Function;
@@ -62,5 +65,23 @@ public interface SnomedReferenceSetMember extends SnomedComponent {
 	 */
 	@JsonAnyGetter
 	Map<String, Object> getProperties();
+	
+	@Override
+	default Request<TransactionContext, String> toCreateRequest(String containerId) {
+		return SnomedRequests.prepareNewMember()
+				.setReferencedComponentId(containerId)
+				.setReferenceSetId(getReferenceSetId())
+				.setModuleId(getModuleId())
+				.setProperties(getProperties())
+				.build();
+	}
+	
+	@Override
+	default Request<TransactionContext, Boolean> toUpdateRequest() {
+		return SnomedRequests.prepareUpdateMember()
+				.setMemberId(getId())
+				.setSource(getProperties())
+				.build();
+	}
 
 }

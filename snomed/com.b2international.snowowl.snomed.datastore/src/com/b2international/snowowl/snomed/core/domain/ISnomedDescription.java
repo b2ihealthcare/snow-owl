@@ -17,6 +17,9 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.Map;
 
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.Multimap;
 
 /**
@@ -91,5 +94,33 @@ public interface ISnomedDescription extends SnomedCoreComponent {
 	 * @return related association targets, or {@code null} if the description is still active
 	 */
 	Multimap<AssociationType, String> getAssociationTargets();
+
+	@Override
+	default Request<TransactionContext, Boolean> toUpdateRequest() {
+		return SnomedRequests.prepareUpdateDescription(getId())
+			.setAcceptability(getAcceptabilityMap())
+			.setActive(isActive())
+			.setAssociationTargets(getAssociationTargets())
+			.setCaseSignificance(getCaseSignificance())
+			.setInactivationIndicator(getInactivationIndicator())
+			.setModuleId(getModuleId())
+			.build();
+	}
+
+	@Override
+	default Request<TransactionContext, String> toCreateRequest(final String conceptId) {
+		return SnomedRequests.prepareNewDescription()
+			.setAcceptability(getAcceptabilityMap())
+			.setCaseSignificance(getCaseSignificance())
+			// ensure that the description's conceptId property is the right one
+			.setConceptId(conceptId)
+			// XXX assuming that the ID is always set in this case
+			.setId(getId())
+			.setLanguageCode(getLanguageCode())
+			.setModuleId(getModuleId())
+			.setTerm(getTerm())
+			.setTypeId(getTypeId())
+			.build();
+	}
 
 }

@@ -20,6 +20,9 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Set;
 
 import com.b2international.snowowl.core.domain.IComponentNode;
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.collect.Multimap;
@@ -138,5 +141,32 @@ public interface ISnomedConcept extends SnomedCoreComponent, IComponentNode, Def
 	 */
 	@JsonIgnore
 	long[] getStatedAncestorIds();
+	
+	@Override
+	default Request<TransactionContext, String> toCreateRequest(String containerId) {
+		return SnomedRequests.prepareNewConcept()
+				.addMembers(getMembers())
+				.addRelationships(getRelationships())
+				.addDescriptions(getDescriptions())
+				.setId(getId())
+				.setModuleId(getModuleId())
+				.setDefinitionStatus(getDefinitionStatus())
+				.build();
+	}
+	
+	@Override
+	default Request<TransactionContext, Boolean> toUpdateRequest() {
+		return SnomedRequests.prepareUpdateConcept(getId())
+				.setActive(isActive())
+				.setAssociationTargets(getAssociationTargets())
+				.setDefinitionStatus(getDefinitionStatus())
+				.setInactivationIndicator(getInactivationIndicator())
+				.setModuleId(getModuleId())
+				.setSubclassDefinitionStatus(getSubclassDefinitionStatus())
+				.setDescriptions(getDescriptions())
+				.setRelationships(getRelationships())
+				.setMembers(getMembers())
+				.build();
+	}
 
 }

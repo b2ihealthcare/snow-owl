@@ -18,6 +18,8 @@ package com.b2international.snowowl.snomed.core.domain;
 import java.util.Date;
 
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -59,4 +61,26 @@ public interface SnomedComponent extends IComponent {
 	 */
 	@JsonIgnore
 	Float getScore();
+	
+	/**
+	 * Creates an update {@link Request} to update the component to the state represented by this instance.
+	 * @return
+	 */
+	Request<TransactionContext, Boolean> toUpdateRequest();
+	
+	/**
+	 * Creates a create {@link Request} to create the component represented by this instance.
+	 * @return
+	 */
+	default Request<TransactionContext, String> toCreateRequest() {
+		return toCreateRequest(null);
+	}
+	
+	/**
+	 * Creates a create {@link Request} to create the component represented by this instance.
+	 * @param containerId the container component identifier to enforce attachment to it, may be <code>null</code> 
+	 * @return
+	 */
+	Request<TransactionContext, String> toCreateRequest(String containerId);
+	
 }

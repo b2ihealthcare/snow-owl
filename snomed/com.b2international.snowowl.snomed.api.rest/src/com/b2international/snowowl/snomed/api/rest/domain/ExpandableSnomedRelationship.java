@@ -158,5 +158,5 @@ public class ExpandableSnomedRelationship implements ISnomedRelationship {
 	public Float getScore() {
 		return wrappedRelationship.getScore();
 	}
-
+	
 }
