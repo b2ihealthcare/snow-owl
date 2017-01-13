@@ -282,6 +282,11 @@
 								<versionRange>[3.2.2,3.3.0)</versionRange>
 							</restrictTo>
 						</filter>
+						<filter>
+            				<type>p2-installable-unit</type>
+            				<id>javax.annotation</id>
+            				<removeAll />
+         				</filter>
 					</filters>
 					<environments>
 						<environment>

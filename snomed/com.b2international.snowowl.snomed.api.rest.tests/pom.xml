@@ -138,7 +138,7 @@
       		<repositories>
       			<repository>
         			<id>so_server_site</id>
-        			<url>http://jenkins:8081/nexus/content/repositories/snapshots.unzip/com/b2international/snowowl/com.b2international.snowowl.server.update/${project.version}/com.b2international.snowowl.server.update-${project.version}.zip-unzip/</url>
+        			<url>${nexus.url}/content/repositories/snapshots.unzip/com/b2international/snowowl/com.b2international.snowowl.server.update/${project.version}/com.b2international.snowowl.server.update-${project.version}.zip-unzip/</url>
         			<layout>p2</layout>
      			</repository>
       		</repositories>
