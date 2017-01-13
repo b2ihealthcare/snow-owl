@@ -47,6 +47,13 @@ import com.google.common.collect.Lists;
 public class SnomedIdentifiers {
 	
 	public static final String INT_NAMESPACE = "INT";
+	
+	public static final long MIN_INT_ITEMID = 100L;
+	public static final long MIN_INT_METADATA_ITEMID = 9000_0000_0000_000L; // SNOMED CT Model Component IDs are placed at the end of the range
+	public static final long MAX_INT_ITEMID = 9999_9999_9999_999L; // 8 + 7 = 15 digits for itemId
+	
+	public static final long MAX_NAMESPACE_ITEMID = 9999_9999L; // 8 digits for itemId, 7 digits for namespaceId
+	public static final long MIN_NAMESPACE_ITEMID = 1L;
 
 	private final ISnomedIdentifierService identifierService;
 	

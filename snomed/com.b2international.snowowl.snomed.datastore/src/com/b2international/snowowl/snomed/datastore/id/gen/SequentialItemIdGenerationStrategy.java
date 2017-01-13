@@ -30,6 +30,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.ReservationRangeImpl;
@@ -144,18 +145,12 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 		}
 	}
 	
-	private static final long MIN_INT_ITEMID = 100L;
-	private static final long MAX_INT_ITEMID = 9999_9999_9999_999L; // 8 + 7 = 15 digits for itemId
-	
-	private static final long MIN_NAMESPACE_ITEMID = 1L;
-	private static final long MAX_NAMESPACE_ITEMID = 9999_9999L; // 8 digits for itemId, 7 digits for namespaceId
-
 	private static long getLowerInclusiveId(final String namespace) {
-		return CompareUtils.isEmpty(namespace) ? MIN_INT_ITEMID : MIN_NAMESPACE_ITEMID;
+		return CompareUtils.isEmpty(namespace) ? SnomedIdentifiers.MIN_INT_ITEMID : SnomedIdentifiers.MIN_NAMESPACE_ITEMID;
 	}
 	
 	private static long getUpperExclusiveId(final String namespace) {
-		return CompareUtils.isEmpty(namespace) ? MAX_INT_ITEMID : MAX_NAMESPACE_ITEMID;
+		return CompareUtils.isEmpty(namespace) ? SnomedIdentifiers.MAX_INT_ITEMID : SnomedIdentifiers.MAX_NAMESPACE_ITEMID;
 	}
 	
 	private final Provider<Index> store;
