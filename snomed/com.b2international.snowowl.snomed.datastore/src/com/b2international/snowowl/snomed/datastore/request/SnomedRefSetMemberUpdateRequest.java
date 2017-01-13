@@ -37,7 +37,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.5
  */
-final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionContext, Void> {
+final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionContext, Boolean> {
 
 	@NotEmpty
 	private final String memberId;
@@ -55,7 +55,7 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 	}
 
 	@Override
-	public Void execute(TransactionContext context) {
+	public Boolean execute(TransactionContext context) {
 		final SnomedRefSetMember member = context.lookup(memberId, SnomedRefSetMember.class);
 		final SnomedRefSetType type = member.getRefSet().getType();
 		RefSetSupport.check(type);
@@ -82,7 +82,7 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 		if (changed && !isEffectiveTimeUpdate()) {
 			member.unsetEffectiveTime();
 		}
-		return null;
+		return changed;
 	}
 	
 	private boolean updateAcceptability(SnomedLanguageRefSetMember member) {
@@ -159,8 +159,8 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 	}
 
 	@Override
-	protected Class<Void> getReturnType() {
-		return Void.class;
+	protected Class<Boolean> getReturnType() {
+		return Boolean.class;
 	}
 
 }

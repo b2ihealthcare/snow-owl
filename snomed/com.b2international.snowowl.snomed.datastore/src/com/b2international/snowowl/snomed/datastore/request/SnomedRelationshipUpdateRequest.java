@@ -70,7 +70,7 @@ public final class SnomedRelationshipUpdateRequest extends BaseSnomedComponentUp
 	}
 	
 	@Override
-	public Void execute(TransactionContext context) {
+	public Boolean execute(TransactionContext context) {
 		final Relationship relationship = context.lookup(getComponentId(), Relationship.class);
 
 		boolean changed = false;
@@ -102,7 +102,7 @@ public final class SnomedRelationshipUpdateRequest extends BaseSnomedComponentUp
 			}
 		}
 		
-		return null;
+		return changed;
 	}
 	
 	private boolean isDifferentToPreviousRelease(Relationship relationship, ISnomedRelationship releasedRelationship) {

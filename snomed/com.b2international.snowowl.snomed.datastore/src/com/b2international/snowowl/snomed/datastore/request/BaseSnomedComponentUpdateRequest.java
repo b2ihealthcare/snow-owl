@@ -28,7 +28,7 @@ import com.b2international.snowowl.snomed.Concept;
  * @since 4.5
  * @param <B>
  */
-public abstract class BaseSnomedComponentUpdateRequest extends BaseRequest<TransactionContext, Void> {
+public abstract class BaseSnomedComponentUpdateRequest extends BaseRequest<TransactionContext, Boolean> {
 
 	private final String componentId;
 	
@@ -64,8 +64,8 @@ public abstract class BaseSnomedComponentUpdateRequest extends BaseRequest<Trans
 	}
 	
 	@Override
-	protected final Class<Void> getReturnType() {
-		return Void.class;
+	protected final Class<Boolean> getReturnType() {
+		return Boolean.class;
 	}
 	
 	protected String getLatestReleaseBranch(TransactionContext context) {

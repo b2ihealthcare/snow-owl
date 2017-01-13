@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.events.Request;
 /**
  * @since 4.5
  */
-public abstract class BaseSnomedComponentUpdateRequestBuilder<B extends BaseSnomedComponentUpdateRequestBuilder<B, R>, R extends BaseSnomedComponentUpdateRequest> extends BaseSnomedTransactionalRequestBuilder<B, Void> {
+public abstract class BaseSnomedComponentUpdateRequestBuilder<B extends BaseSnomedComponentUpdateRequestBuilder<B, R>, R extends BaseSnomedComponentUpdateRequest> extends BaseSnomedTransactionalRequestBuilder<B, Boolean> {
 
 	private final String componentId;
 	
@@ -46,7 +46,7 @@ public abstract class BaseSnomedComponentUpdateRequestBuilder<B extends BaseSnom
 	}
 	
 	@Override
-	protected final Request<TransactionContext, Void> doBuild() {
+	protected final Request<TransactionContext, Boolean> doBuild() {
 		final R req = create(componentId);
 		init(req);
 		return req;

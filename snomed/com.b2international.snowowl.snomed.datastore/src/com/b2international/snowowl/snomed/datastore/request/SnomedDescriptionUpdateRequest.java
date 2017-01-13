@@ -69,7 +69,7 @@ public final class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpd
 	}
 	
 	@Override
-	public Void execute(TransactionContext context) {
+	public Boolean execute(TransactionContext context) {
 		final Description description = context.lookup(getComponentId(), Description.class);
 
 		boolean changed = false;
@@ -103,7 +103,7 @@ public final class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpd
 			}
 		}
 		
-		return null;
+		return changed;
 	}
 
 	private void updateAcceptability(TransactionContext context, final Description description) {
