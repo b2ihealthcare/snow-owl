@@ -15,10 +15,17 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
+import java.util.List;
+
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMemberImpl;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptUpdateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.Multimap;
 
 /**
@@ -30,17 +37,14 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 	private SubclassDefinitionStatus subclassDefinitionStatus;
 	private Multimap<AssociationType, String> associationTargets;
 	private InactivationIndicator inactivationIndicator;
+	private List<SnomedDescription> descriptions;
+	private List<SnomedRelationship> relationships;
+	private List<SnomedReferenceSetMemberImpl> members;
 
-	/**
-	 * @return
-	 */
 	public DefinitionStatus getDefinitionStatus() {
 		return definitionStatus;
 	}
 
-	/**
-	 * @return
-	 */
 	public SubclassDefinitionStatus getSubclassDefinitionStatus() {
 		return subclassDefinitionStatus;
 	}
@@ -89,6 +93,44 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 	 */
 	public void setInactivationIndicator(final InactivationIndicator inactivationIndicator) {
 		this.inactivationIndicator = inactivationIndicator;
+	}
+
+	public List<SnomedDescription> getDescriptions() {
+		return descriptions;
+	}
+	
+	public List<SnomedReferenceSetMemberImpl> getMembers() {
+		return members;
+	}
+	
+	public List<SnomedRelationship> getRelationships() {
+		return relationships;
+	}
+	
+	public void setDescriptions(List<SnomedDescription> descriptions) {
+		this.descriptions = descriptions;
+	}
+	
+	public void setMembers(List<SnomedReferenceSetMemberImpl> members) {
+		this.members = members;
+	}
+	
+	public void setRelationships(List<SnomedRelationship> relationships) {
+		this.relationships = relationships;
+	}
+
+	public SnomedConceptUpdateRequestBuilder toRequestBuilder(String conceptId) {
+		return SnomedRequests
+				.prepareUpdateConcept(conceptId)
+				.setActive(isActive())
+				.setModuleId(getModuleId())
+				.setAssociationTargets(getAssociationTargets())
+				.setDefinitionStatus(getDefinitionStatus())
+				.setInactivationIndicator(getInactivationIndicator())
+				.setSubclassDefinitionStatus(getSubclassDefinitionStatus())
+				.setMembers(getMembers())
+				.setRelationships(getRelationships())
+				.setDescriptions(getDescriptions());
 	}
 
 }

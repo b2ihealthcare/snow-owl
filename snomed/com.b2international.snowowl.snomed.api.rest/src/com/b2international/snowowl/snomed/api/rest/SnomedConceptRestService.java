@@ -277,16 +277,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 		final String userId = principal.getName();
 		final String commitComment = body.getCommitComment();
-		final SnomedConceptRestUpdate update = body.getChange();
-
-		SnomedRequests
-			.prepareUpdateConcept(conceptId)
-			.setActive(update.isActive())
-			.setModuleId(update.getModuleId())
-			.setAssociationTargets(update.getAssociationTargets())
-			.setDefinitionStatus(update.getDefinitionStatus())
-			.setInactivationIndicator(update.getInactivationIndicator())
-			.setSubclassDefinitionStatus(update.getSubclassDefinitionStatus())
+		body.getChange().toRequestBuilder(conceptId)
 			.build(repositoryId, branchPath, userId, commitComment)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);
