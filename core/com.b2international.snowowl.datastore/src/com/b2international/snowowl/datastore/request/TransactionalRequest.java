@@ -15,8 +15,9 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -29,7 +30,6 @@ import com.b2international.snowowl.core.events.metrics.MetricsThreadLocal;
 import com.b2international.snowowl.core.events.metrics.Timer;
 import com.b2international.snowowl.core.exceptions.ApiException;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Strings;
 
 /**
  * @since 4.5
@@ -37,6 +37,7 @@ import com.google.common.base.Strings;
 public final class TransactionalRequest extends BaseRequest<BranchContext, CommitResult> {
 
 	@JsonProperty
+	@NotNull
 	private final String commitComment;
 	
 	@JsonProperty
@@ -49,7 +50,6 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 	TransactionalRequest(String userId, String commitComment, Request<TransactionContext, ?> next, long preRequestPreparationTime) {
 		this.next = checkNotNull(next, "next");
 		this.userId = userId;
-		checkArgument(!Strings.isNullOrEmpty(commitComment), "Commit comment may not be null or empty.");
 		this.commitComment = commitComment;
 		this.preRequestPreparationTime = preRequestPreparationTime;
 	}
