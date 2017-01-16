@@ -70,17 +70,17 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 	}
 	
 	public SnomedConceptUpdateRequestBuilder setDescriptions(Iterable<? extends ISnomedDescription> descriptions) {
-		this.descriptions = ImmutableList.copyOf(descriptions);
+		this.descriptions = descriptions != null ? ImmutableList.copyOf(descriptions) : null;
 		return getSelf();
 	}
 	
 	public SnomedConceptUpdateRequestBuilder setRelationships(Iterable<? extends ISnomedRelationship> relationships) {
-		this.relationships = ImmutableList.copyOf(relationships);
+		this.relationships = relationships != null ? ImmutableList.copyOf(relationships) : null;
 		return getSelf();
 	}
 	
 	public SnomedConceptUpdateRequestBuilder setMembers(Iterable<? extends SnomedReferenceSetMember> members) {
-		this.members = ImmutableList.copyOf(members);
+		this.members = members != null ? ImmutableList.copyOf(members) : null;
 		return getSelf();
 	}
 	
