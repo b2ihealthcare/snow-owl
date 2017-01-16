@@ -231,8 +231,8 @@ public abstract class CDOServerUtils {
 				
 				session = openSession(commitInfo.getUserID(), repositoryUuid);
 				
-				final CDOCommitInfo delegateCommitInfo = CDOCommitInfoUtils.removeUuidFromComment(commitInfo);
-				repository.sendCommitNotification(session, delegateCommitInfo);
+//				final CDOCommitInfo delegateCommitInfo = CDOCommitInfoUtils.removeUuidFromComment(commitInfo);
+				repository.sendCommitNotification(session, commitInfo);
 				
 			} finally {
 				

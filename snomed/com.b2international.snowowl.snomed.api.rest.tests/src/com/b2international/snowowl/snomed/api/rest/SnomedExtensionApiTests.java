@@ -53,7 +53,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 })
 public class SnomedExtensionApiTests {
 
-private static final String EXT_BRANCH_PATH = "MAIN/2016-01-31/SNOMEDCT-B2I";
+	public static final String EXT_BRANCH_PATH = "MAIN/2016-01-31/SNOMEDCT-B2I";
 	
 	@ClassRule
 	public static final RuleChain appRule = RuleChain

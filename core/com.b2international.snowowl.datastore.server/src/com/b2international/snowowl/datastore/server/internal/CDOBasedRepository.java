@@ -20,6 +20,7 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,6 +61,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
+import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
@@ -384,10 +386,21 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 			final long commitTimestamp = commitInfo.getTimeStamp();
 			((CDOBranchManagerImpl) service(BranchManager.class)).handleCommit(branch.getID(), commitTimestamp);
 			// send out the currently enqueued commit notification, if there is any (import might skip sending commit notifications until a certain point)
-			final RepositoryCommitNotification notification = commitNotifications.remove(commitTimestamp);
-			if (notification != null) {
-				notification.publish(events());
+			RepositoryCommitNotification notification = commitNotifications.remove(commitTimestamp);
+			if (notification == null) {
+				// make sure we always send out commit notification
+				// required in case of manual commit notifications via CDO API
+				notification = new RepositoryCommitNotification(id(),
+					CDOCommitInfoUtils.getUuid(commitInfo),
+					branch.getPathName(),
+					commitInfo.getTimeStamp(),
+					commitInfo.getUserID(),
+					commitInfo.getComment(),
+					Collections.emptyList(),
+					Collections.emptyList(),
+					Collections.emptyList());
 			}
+			notification.publish(events());
         }
 	}
 	
