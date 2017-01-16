@@ -19,9 +19,9 @@ import java.util.List;
 
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.google.common.collect.ImmutableList;
@@ -36,7 +36,7 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 	private SubclassDefinitionStatus subclassDefinitionStatus;
 	private Multimap<AssociationType, String> associationTargets;
 	private InactivationIndicator inactivationIndicator;
-	private List<ISnomedDescription> descriptions;
+	private List<SnomedDescription> descriptions;
 	private List<ISnomedRelationship> relationships;
 	private List<SnomedReferenceSetMember> members;
 
@@ -69,7 +69,7 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 		return getSelf();
 	}
 	
-	public SnomedConceptUpdateRequestBuilder setDescriptions(Iterable<? extends ISnomedDescription> descriptions) {
+	public SnomedConceptUpdateRequestBuilder setDescriptions(Iterable<? extends SnomedDescription> descriptions) {
 		this.descriptions = descriptions != null ? ImmutableList.copyOf(descriptions) : null;
 		return getSelf();
 	}

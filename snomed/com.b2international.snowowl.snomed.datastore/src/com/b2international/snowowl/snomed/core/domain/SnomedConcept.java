@@ -27,8 +27,8 @@ public class SnomedConcept extends BaseSnomedCoreComponent implements ISnomedCon
 	private SubclassDefinitionStatus subclassDefinitionStatus;
 	private InactivationIndicator inactivationIndicator;
 	private Multimap<AssociationType, String> associationTargets;
-	private ISnomedDescription fsn;
-	private ISnomedDescription pt;
+	private SnomedDescription fsn;
+	private SnomedDescription pt;
 	private SnomedDescriptions descriptions;
 	private SnomedRelationships relationships;
 	private SnomedConcepts ancestors;
@@ -76,12 +76,12 @@ public class SnomedConcept extends BaseSnomedCoreComponent implements ISnomedCon
 	}
 
 	@Override
-	public ISnomedDescription getFsn() {
+	public SnomedDescription getFsn() {
 		return fsn;
 	}
 	
 	@Override
-	public ISnomedDescription getPt() {
+	public SnomedDescription getPt() {
 		return pt;
 	}
 	
@@ -139,11 +139,11 @@ public class SnomedConcept extends BaseSnomedCoreComponent implements ISnomedCon
 		this.relationships = relationships;
 	}
 	
-	public void setFsn(ISnomedDescription fsn) {
+	public void setFsn(SnomedDescription fsn) {
 		this.fsn = fsn;
 	}
 	
-	public void setPt(ISnomedDescription pt) {
+	public void setPt(SnomedDescription pt) {
 		this.pt = pt;
 	}
 	

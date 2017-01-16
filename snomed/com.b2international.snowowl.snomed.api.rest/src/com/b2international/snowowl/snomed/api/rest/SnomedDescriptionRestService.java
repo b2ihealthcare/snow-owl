@@ -49,7 +49,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestU
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
@@ -193,7 +193,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Description not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/descriptions/{descriptionId}", method=RequestMethod.GET)
-	public DeferredResult<ISnomedDescription> read(
+	public DeferredResult<SnomedDescription> read(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,

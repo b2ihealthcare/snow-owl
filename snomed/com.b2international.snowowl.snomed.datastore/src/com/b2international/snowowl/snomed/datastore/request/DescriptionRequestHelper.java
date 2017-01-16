@@ -28,7 +28,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
@@ -58,7 +58,7 @@ public abstract class DescriptionRequestHelper {
 	 * @param locales		a list of {@link Locale}s to use, in order of preference
 	 * @return 				the preferred term for the concept, or {@code null} if no results could be retrieved
 	 */
-	public ISnomedDescription getPreferredTerm(final String conceptId, final List<ExtendedLocale> locales) {
+	public SnomedDescription getPreferredTerm(final String conceptId, final List<ExtendedLocale> locales) {
 		final SnomedDescriptionSearchRequestBuilder req = preparePtSearch(conceptId, locales);
 		return Iterables.getOnlyElement(execute(req).getItems(), null);
 	}
@@ -84,9 +84,9 @@ public abstract class DescriptionRequestHelper {
 	 * @param locales    a list of {@link Locale}s to use, in order of preference
 	 * @return the preferred term for the concept
 	 */
-	public ISnomedDescription getFullySpecifiedName(final String conceptId, final List<ExtendedLocale> locales) {
+	public SnomedDescription getFullySpecifiedName(final String conceptId, final List<ExtendedLocale> locales) {
 		final SnomedDescriptionSearchRequestBuilder req = prepareFsnSearchByAcceptability(conceptId, locales);
-		ISnomedDescription fsn = Iterables.getOnlyElement(execute(req).getItems(), null);
+		SnomedDescription fsn = Iterables.getOnlyElement(execute(req).getItems(), null);
 		
 		if (fsn != null) {
 			return fsn;
@@ -106,12 +106,12 @@ public abstract class DescriptionRequestHelper {
 		return Iterables.getOnlyElement(execute(prepareFsnSearchDefault(conceptId)).getItems(), null);
 	}
 
-	public Map<String, ISnomedDescription> getFullySpecifiedNames(Set<String> conceptIds, List<ExtendedLocale> locales) {
+	public Map<String, SnomedDescription> getFullySpecifiedNames(Set<String> conceptIds, List<ExtendedLocale> locales) {
 		if (conceptIds.isEmpty()) {
 			return Collections.emptyMap();
 		}
 		
-		final Map<String, ISnomedDescription> fsnMap = newHashMap();
+		final Map<String, SnomedDescription> fsnMap = newHashMap();
 		
 		fsnMap.putAll(convertToMap(execute(prepareFsnSearchByAcceptability(conceptIds, locales))));
 		
@@ -201,21 +201,21 @@ public abstract class DescriptionRequestHelper {
 				.filterByExtendedLocales(locales);
 	}
 
-	private Map<String, ISnomedDescription> convertToMap(SnomedDescriptions descriptions) {
+	private Map<String, SnomedDescription> convertToMap(SnomedDescriptions descriptions) {
 		return extractFirstDescription(indexByConceptId(descriptions));
 	}
 	
-	private Multimap<String, ISnomedDescription> indexByConceptId(SnomedDescriptions descriptions) {
-		return Multimaps.index(descriptions.getItems(), new Function<ISnomedDescription, String>() {
-			@Override public String apply(ISnomedDescription description) {
+	private Multimap<String, SnomedDescription> indexByConceptId(SnomedDescriptions descriptions) {
+		return Multimaps.index(descriptions.getItems(), new Function<SnomedDescription, String>() {
+			@Override public String apply(SnomedDescription description) {
 				return description.getConceptId();
 			}
 		});
 	}
 	
-	private Map<String, ISnomedDescription> extractFirstDescription(Multimap<String, ISnomedDescription> activeFsnsById) {
-		return Maps.transformValues(activeFsnsById.asMap(), new Function<Collection<ISnomedDescription>, ISnomedDescription>() {
-			@Override public ISnomedDescription apply(Collection<ISnomedDescription> descriptions) {
+	private Map<String, SnomedDescription> extractFirstDescription(Multimap<String, SnomedDescription> activeFsnsById) {
+		return Maps.transformValues(activeFsnsById.asMap(), new Function<Collection<SnomedDescription>, SnomedDescription>() {
+			@Override public SnomedDescription apply(Collection<SnomedDescription> descriptions) {
 				return Iterables.getFirst(descriptions, null);
 			}
 		});
@@ -223,7 +223,7 @@ public abstract class DescriptionRequestHelper {
 	
 	protected abstract SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req);
 
-	public Map<String, ISnomedDescription> getPreferredTerms(Set<String> conceptIds, List<ExtendedLocale> locales) {
+	public Map<String, SnomedDescription> getPreferredTerms(Set<String> conceptIds, List<ExtendedLocale> locales) {
 		if (conceptIds.isEmpty()) {
 			return Collections.emptyMap();
 		}

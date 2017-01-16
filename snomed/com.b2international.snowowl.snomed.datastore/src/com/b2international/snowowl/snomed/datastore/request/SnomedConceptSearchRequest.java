@@ -45,7 +45,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator2;
@@ -328,14 +328,14 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 			requestBuilder.withParsedTerm();
 		}
 		
-		final Collection<ISnomedDescription> items = requestBuilder
+		final Collection<SnomedDescription> items = requestBuilder
 			.build()
 			.execute(context)
 			.getItems();
 		
 		final Map<String, Float> conceptMap = newHashMap();
 		
-		for (ISnomedDescription description : items) {
+		for (SnomedDescription description : items) {
 			if (!conceptMap.containsKey(description.getConceptId())) {
 				conceptMap.put(description.getConceptId(), description.getScore());
 			}

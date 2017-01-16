@@ -48,7 +48,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -160,7 +160,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 
 	private void expandPreferredTerm(List<ISnomedConcept> results, final Set<String> conceptIds, final DescriptionRequestHelper helper) {
 		if (expand().containsKey("pt")) {
-			final Map<String, ISnomedDescription> terms = helper.getPreferredTerms(conceptIds, locales());
+			final Map<String, SnomedDescription> terms = helper.getPreferredTerms(conceptIds, locales());
 			for (ISnomedConcept concept : results) {
 				((SnomedConcept) concept).setPt(terms.get(concept.getId()));
 			}
@@ -169,7 +169,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 
 	private void expandFullySpecifiedName(List<ISnomedConcept> results, final Set<String> conceptIds, final DescriptionRequestHelper helper) {
 		if (expand().containsKey("fsn")) {
-			final Map<String, ISnomedDescription> terms = helper.getFullySpecifiedNames(conceptIds, locales());
+			final Map<String, SnomedDescription> terms = helper.getFullySpecifiedNames(conceptIds, locales());
 			for (ISnomedConcept concept : results) {
 				((SnomedConcept) concept).setFsn(terms.get(concept.getId()));
 			}
@@ -188,15 +188,15 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 				.build()
 				.execute(context());
 			
-			final Multimap<String, ISnomedDescription> descriptionsByConceptId = Multimaps.index(descriptions, new Function<ISnomedDescription, String>() {
+			final Multimap<String, SnomedDescription> descriptionsByConceptId = Multimaps.index(descriptions, new Function<SnomedDescription, String>() {
 				@Override
-				public String apply(ISnomedDescription input) {
+				public String apply(SnomedDescription input) {
 					return input.getConceptId();
 				}
 			});
 			
 			for (ISnomedConcept concept : results) {
-				final List<ISnomedDescription> conceptDescriptions = ImmutableList.copyOf(descriptionsByConceptId.get(concept.getId()));
+				final List<SnomedDescription> conceptDescriptions = ImmutableList.copyOf(descriptionsByConceptId.get(concept.getId()));
 				((SnomedConcept) concept).setDescriptions(new SnomedDescriptions(conceptDescriptions, 0, conceptDescriptions.size(), conceptDescriptions.size()));
 			}
 		}

@@ -44,7 +44,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
@@ -128,14 +128,14 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				SnomedCoreComponent referencedComponent = snomedReferenceSetMember.getReferencedComponent();
 				String id = referencedComponent.getId();
 				if (referencedComponent instanceof ISnomedConcept) {
-					ISnomedDescription pt = ((ISnomedConcept) referencedComponent).getPt();
+					SnomedDescription pt = ((ISnomedConcept) referencedComponent).getPt();
 					if (pt == null) {
 						labelMap.put(id, id); 
 					} else {
 						labelMap.put(id, pt.getTerm());
 					}
-				} else if (referencedComponent instanceof ISnomedDescription) {
-					labelMap.put(id, ((ISnomedDescription) referencedComponent).getTerm());
+				} else if (referencedComponent instanceof SnomedDescription) {
+					labelMap.put(id, ((SnomedDescription) referencedComponent).getTerm());
 				} else if (referencedComponent instanceof ISnomedRelationship) {
 					ISnomedRelationship relationship = (ISnomedRelationship) referencedComponent;
 					labelMap.put(id, String.format("%s - %s - %s",relationship.getSourceId(), relationship.getTypeId(), relationship.getDestinationId()));

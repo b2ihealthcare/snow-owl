@@ -38,7 +38,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -180,7 +180,7 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.getSync();
 		
-		for (final ISnomedDescription description : descriptions) {
+		for (final SnomedDescription description : descriptions) {
 			members.add(context.createSimpleTypeRefSetMember(
 					createDescriptionTypePair(description.getId()), 
 					moduleId, 

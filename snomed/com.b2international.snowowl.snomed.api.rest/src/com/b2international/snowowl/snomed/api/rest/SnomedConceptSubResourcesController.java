@@ -43,7 +43,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedInboundRelations
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedOutboundRelationships;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -347,7 +347,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/pt",
 			method = RequestMethod.GET)
-	public @ResponseBody ISnomedDescription getPreferredTerm(
+	public @ResponseBody SnomedDescription getPreferredTerm(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -371,7 +371,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		}
 		
 		final DescriptionService descriptionService = new DescriptionService(bus, branchPath);
-		final ISnomedDescription pt = descriptionService.getPreferredTerm(conceptId, extendedLocales);
+		final SnomedDescription pt = descriptionService.getPreferredTerm(conceptId, extendedLocales);
 		
 		if (pt == null) {
 			throw new PreferredTermNotFoundException(conceptId);
@@ -391,7 +391,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/fsn",
 			method = RequestMethod.GET)
-	public @ResponseBody ISnomedDescription getFullySpecifiedName(
+	public @ResponseBody SnomedDescription getFullySpecifiedName(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -415,7 +415,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		}
 		
 		final DescriptionService descriptionService = new DescriptionService(bus, branchPath);
-		final ISnomedDescription fsn = descriptionService.getFullySpecifiedName(conceptId, extendedLocales);
+		final SnomedDescription fsn = descriptionService.getFullySpecifiedName(conceptId, extendedLocales);
 		
 		if (fsn == null) {
 			throw new FullySpecifiedNameNotFoundException(conceptId);

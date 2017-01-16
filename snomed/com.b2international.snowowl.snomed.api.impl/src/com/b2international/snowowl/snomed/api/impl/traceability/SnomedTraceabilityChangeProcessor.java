@@ -70,7 +70,7 @@ import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserR
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationshipTarget;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationshipType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -353,9 +353,9 @@ public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 	}
 	
 	private List<ISnomedBrowserDescription> convertDescriptions(SnomedDescriptions descriptions) {
-		return FluentIterable.from(descriptions).transform(new Function<ISnomedDescription, ISnomedBrowserDescription>() {
+		return FluentIterable.from(descriptions).transform(new Function<SnomedDescription, ISnomedBrowserDescription>() {
 			@Override
-			public ISnomedBrowserDescription apply(ISnomedDescription input) {
+			public ISnomedBrowserDescription apply(SnomedDescription input) {
 				final SnomedBrowserDescription convertedDescription = new SnomedBrowserDescription();
 				
 				convertedDescription.setAcceptabilityMap(input.getAcceptabilityMap());

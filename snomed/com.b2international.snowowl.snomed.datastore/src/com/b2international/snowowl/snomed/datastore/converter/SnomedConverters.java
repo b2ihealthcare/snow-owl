@@ -22,7 +22,7 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.converter.ResourceConverter;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -47,7 +47,7 @@ public class SnomedConverters {
 		return new SnomedConceptConverter(context, expand, locales);
 	}
 	
-	public static ResourceConverter<SnomedDescriptionIndexEntry, ISnomedDescription, SnomedDescriptions> newDescriptionConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
+	public static ResourceConverter<SnomedDescriptionIndexEntry, SnomedDescription, SnomedDescriptions> newDescriptionConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		return new SnomedDescriptionConverter(context, expand, locales);
 	}
 	

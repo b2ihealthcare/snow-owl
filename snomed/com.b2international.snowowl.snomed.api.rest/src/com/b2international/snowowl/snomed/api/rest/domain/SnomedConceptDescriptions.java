@@ -17,20 +17,20 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import java.util.List;
 
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 
 /**
  * @since 1.0
  */
 public class SnomedConceptDescriptions {
 
-	private List<ISnomedDescription> conceptDescriptions;
+	private List<SnomedDescription> conceptDescriptions;
 
-	public List<ISnomedDescription> getConceptDescriptions() {
+	public List<SnomedDescription> getConceptDescriptions() {
 		return conceptDescriptions;
 	}
 
-	public void setConceptDescriptions(final List<ISnomedDescription> conceptDescriptions) {
+	public void setConceptDescriptions(final List<SnomedDescription> conceptDescriptions) {
 		this.conceptDescriptions = conceptDescriptions;
 	}
 

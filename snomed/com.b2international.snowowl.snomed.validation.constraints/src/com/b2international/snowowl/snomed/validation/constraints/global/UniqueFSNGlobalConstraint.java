@@ -44,7 +44,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
@@ -104,7 +104,7 @@ public class UniqueFSNGlobalConstraint implements IGlobalConstraint {
 			
 			final HashMultimap<String, String> fsnToIdsMap = HashMultimap.<String, String>create();
 			
-			for (final ISnomedDescription description : descriptions.getItems()) {
+			for (final SnomedDescription description : descriptions.getItems()) {
 				fsnToIdsMap.put(description.getTerm(), description.getConceptId());
 			}
 			

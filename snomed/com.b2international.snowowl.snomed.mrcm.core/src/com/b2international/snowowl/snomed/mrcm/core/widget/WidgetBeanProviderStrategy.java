@@ -30,7 +30,7 @@ import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.CaseSignificance;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
@@ -212,7 +212,7 @@ public abstract class WidgetBeanProviderStrategy {
 				Lists.transform(conceptWidgetModel.getDescriptionContainerModel().getChildren(), new UncheckedCastFunction<WidgetModel, DescriptionWidgetModel>(DescriptionWidgetModel.class)));
 		
 		// Create and populate instance beans for matching models
-		for (final ISnomedDescription description : getDescriptions()) {
+		for (final SnomedDescription description : getDescriptions()) {
 			if (!description.isActive()) {
 				continue;
 			}
@@ -312,7 +312,7 @@ public abstract class WidgetBeanProviderStrategy {
 		return !groupModel.isUngrouped() && !Sets.intersection(unusedModel.getAllowedTypeIds(), WidgetBeanUtils.NEVER_GROUPED_RELATIONSHIP_TYPE_IDS).isEmpty();
 	}
 	
-	abstract protected Collection<ISnomedDescription> getDescriptions();
+	abstract protected Collection<SnomedDescription> getDescriptions();
 	
 	abstract protected Collection<SnomedRelationship> getRelationships();
 

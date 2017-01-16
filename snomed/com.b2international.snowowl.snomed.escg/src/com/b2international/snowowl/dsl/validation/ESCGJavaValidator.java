@@ -30,7 +30,7 @@ import com.b2international.snowowl.dsl.escg.RefSet;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -214,7 +214,7 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 			return;
 		}
 		
-		for (ISnomedDescription description : concept.getDescriptions()) {
+		for (SnomedDescription description : concept.getDescriptions()) {
 			if (description.getTerm().equals(term)) {
 				if (Concepts.FULLY_SPECIFIED_NAME.equals(description.getTypeId())) {
 					warning("This is the fully specified name, not the preferred term.", termAttribute, NON_MATCHING_TERM);

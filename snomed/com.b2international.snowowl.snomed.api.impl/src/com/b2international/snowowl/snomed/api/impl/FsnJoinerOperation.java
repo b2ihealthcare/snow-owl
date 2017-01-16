@@ -22,7 +22,7 @@ import java.util.Set;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
@@ -52,16 +52,16 @@ public abstract class FsnJoinerOperation<T> {
 			return ImmutableList.of();
 		}
 		
-		Map<String, ISnomedDescription> descriptionsByConcept = initDescriptionsByConcept(concepts);
+		Map<String, SnomedDescription> descriptionsByConcept = initDescriptionsByConcept(concepts);
 		return convertConceptEntries(concepts, descriptionsByConcept);
 	}
 
-	private Map<String, ISnomedDescription> initDescriptionsByConcept(Iterable<ISnomedConcept> conceptEntries) {
+	private Map<String, SnomedDescription> initDescriptionsByConcept(Iterable<ISnomedConcept> conceptEntries) {
 		final Set<String> conceptIds = FluentIterable.from(conceptEntries).transform(IComponent.ID_FUNCTION).toSet();
 		return descriptionService.getFullySpecifiedNames(conceptIds, locales);
 	}
 
-	private List<T> convertConceptEntries(Iterable<ISnomedConcept> concepts, Map<String, ISnomedDescription> descriptionsByConcept) {
+	private List<T> convertConceptEntries(Iterable<ISnomedConcept> concepts, Map<String, SnomedDescription> descriptionsByConcept) {
 		final ImmutableList.Builder<T> resultBuilder = ImmutableList.builder();
 
 		for (final ISnomedConcept conceptEntry : concepts) {
@@ -71,11 +71,11 @@ public abstract class FsnJoinerOperation<T> {
 		return resultBuilder.build();
 	}
 
-	private Optional<String> getTerm(Map<String, ISnomedDescription> descriptionsByConcept, final String conceptId) {
+	private Optional<String> getTerm(Map<String, SnomedDescription> descriptionsByConcept, final String conceptId) {
 		return Optional.fromNullable(descriptionsByConcept.get(conceptId))
-				.transform(new Function<ISnomedDescription, String>() {
+				.transform(new Function<SnomedDescription, String>() {
 					@Override
-					public String apply(ISnomedDescription input) {
+					public String apply(SnomedDescription input) {
 						return input.getTerm();
 					}
 				});

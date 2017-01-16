@@ -44,7 +44,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
@@ -83,7 +83,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 				throw new BadRequestException("A list of language reference set identifiers must be specified if acceptability is set.");
 			}
 			
-			final ImmutableMultimap.Builder<String, ISnomedDescription> buckets = ImmutableMultimap.builder();
+			final ImmutableMultimap.Builder<String, SnomedDescription> buckets = ImmutableMultimap.builder();
 			
 			int position = 0;
 			int total = 0;
@@ -108,7 +108,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 				position += subTotal;
 			}
 			
-			List<ISnomedDescription> concatenatedList = buckets.build().values().asList();
+			List<SnomedDescription> concatenatedList = buckets.build().values().asList();
 			return new SnomedDescriptions(concatenatedList, offset(), limit(), total);
 			
 		} else {

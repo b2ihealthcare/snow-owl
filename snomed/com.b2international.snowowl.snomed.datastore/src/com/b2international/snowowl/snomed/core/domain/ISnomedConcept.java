@@ -85,14 +85,14 @@ public interface ISnomedConcept extends SnomedCoreComponent, IComponentNode, Def
 	 * 
 	 * @return
 	 */
-	ISnomedDescription getFsn();
+	SnomedDescription getFsn();
 	
 	/**
 	 * Returns the preferred term of the SNOMED CT Concept.
 	 * 
 	 * @return
-	 */
-	ISnomedDescription getPt();
+	 **/
+	SnomedDescription getPt();
 
 	/**
 	 * Returns the descriptions of the SNOMED CT Concept.

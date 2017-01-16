@@ -41,7 +41,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.EscgExpressionConstants;
@@ -77,7 +77,7 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 
 		@Override 
 		public QuickSearchElement apply(final ISnomedConcept input) {
-			final ISnomedDescription pt = input.getPt();
+			final SnomedDescription pt = input.getPt();
 			final String label = pt != null ? pt.getTerm() : input.getId();
 			return new CompactQuickSearchElement(
 					input.getId(), 

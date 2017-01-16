@@ -39,7 +39,7 @@ import com.b2international.snowowl.core.api.ITreeComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
@@ -216,7 +216,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, SnomedConceptDocument>() {
 			@Override
 			public SnomedConceptDocument apply(ISnomedConcept input) {
-				final ISnomedDescription pt = input.getPt();
+				final SnomedDescription pt = input.getPt();
 				final String preferredTerm = pt == null ? input.getId() : pt.getTerm();
 				return SnomedConceptDocument.builder(input).label(preferredTerm).build();
 			}

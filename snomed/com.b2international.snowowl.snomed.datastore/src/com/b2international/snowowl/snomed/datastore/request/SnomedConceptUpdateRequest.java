@@ -39,10 +39,10 @@ import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -67,7 +67,7 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 	private SubclassDefinitionStatus subclassDefinitionStatus;
 	private InactivationIndicator inactivationIndicator;
 	private Multimap<AssociationType, String> associationTargets;
-	private List<ISnomedDescription> descriptions;
+	private List<SnomedDescription> descriptions;
 	private List<ISnomedRelationship> relationships;
 	private List<SnomedReferenceSetMember> members;
 	
@@ -91,7 +91,7 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 		this.associationTargets = associationTargets;
 	}
 	
-	void setDescriptions(List<ISnomedDescription> descriptions) {
+	void setDescriptions(List<SnomedDescription> descriptions) {
 		this.descriptions = descriptions;
 	}
 	

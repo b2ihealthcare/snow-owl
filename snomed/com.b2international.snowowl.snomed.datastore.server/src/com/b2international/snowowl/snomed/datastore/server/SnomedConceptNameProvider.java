@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -45,7 +45,7 @@ public class SnomedConceptNameProvider implements ISnomedConceptNameProvider {
 	
 	@Override
 	public String getComponentLabel(final IBranchPath branchPath, final String componentId) {
-		final ISnomedDescription pt = new DescriptionRequestHelper() {
+		final SnomedDescription pt = new DescriptionRequestHelper() {
 			@Override
 			protected SnomedDescriptions execute(final SnomedDescriptionSearchRequestBuilder req) {
 				return req.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(bus.get()).getSync(NAME_PROVIDER_TIMEOUT, TimeUnit.MILLISECONDS);

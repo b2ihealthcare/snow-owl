@@ -22,8 +22,8 @@ import java.util.List;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 
 /**
@@ -77,11 +77,11 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		return getSelf();
 	}
 	
-	public SnomedConceptCreateRequestBuilder addDescription(ISnomedDescription description) {
+	public SnomedConceptCreateRequestBuilder addDescription(SnomedDescription description) {
 		return addDescription((SnomedDescriptionCreateRequest) description.toCreateRequest());
 	}
 	
-	public SnomedConceptCreateRequestBuilder addDescriptions(Iterable<? extends ISnomedDescription> descriptions) {
+	public SnomedConceptCreateRequestBuilder addDescriptions(Iterable<? extends SnomedDescription> descriptions) {
 		descriptions.forEach(this::addDescription);
 		return getSelf();
 	}
