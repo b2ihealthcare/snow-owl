@@ -46,7 +46,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
-import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
@@ -417,8 +416,6 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			return;
 		}
 		
-		final SnomedEditingContext editingContext = importContext.getEditingContext();
-		
 		try {
 
 			boolean existingVersionFound = false;
@@ -443,13 +440,6 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				} else {
 					getLogger().warn("Existing SNOMED CT version found for effective time {}.", lastUnitEffectiveTimeKey);
 				}
-			}
-			
-			if (editingContext.isDirty()) {
-				new CDOServerCommitBuilder(importContext.getUserId(), importContext.getCommitMessage(), importContext.getAggregator(lastUnitEffectiveTimeKey))
-					.sendCommitNotification(false)
-					.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
-					.commit();
 			}
 			
 			if (!existingVersionFound && importContext.isVersionCreationEnabled()) {
@@ -480,25 +470,11 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				ApplicationContext.getInstance().getService(ITagService.class).tag(configuration);
 			}
 			
-		} catch (final CommitException e) {
-			throw new ImportException("Cannot create tag for SNOMED CT " + lastUnitEffectiveTimeKey, e);
 		} finally {
-			importContext.setCommitTime(CDOServerUtils.getLastCommitTime(editingContext.getTransaction().getBranch()));
+			importContext.setCommitTime(CDOServerUtils.getLastCommitTime(importContext.getEditingContext().getTransaction().getBranch()));
 			if (!importContext.isCommitNotificationEnabled()) {
-				final RepositoryCommitNotification notification = new RepositoryCommitNotification(SnomedDatastoreActivator.REPOSITORY_UUID,
-						importContext.getCommitId(),
-						importContext.getEditingContext().getBranch(),
-						importContext.getCommitTime(),
-						importContext.getUserId(),
-						importContext.getCommitMessage(),
-						Collections.emptyList(),
-						Collections.emptyList(),
-						Collections.emptyList());
-				
-				notification.publish(ApplicationContext.getInstance().getService(IEventBus.class));
-				
-//				final CDOCommitInfo commitInfo = createCommitInfo(importContext.getCommitTime(), importContext.getPreviousTime());
-//				CDOServerUtils.sendCommitNotification(commitInfo);
+				final CDOCommitInfo commitInfo = createCommitInfo(importContext.getCommitTime(), importContext.getPreviousTime());
+				CDOServerUtils.sendCommitNotification(commitInfo);
 			}
 		}
 	}
@@ -511,7 +487,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		final String repositoryUuid = info.getUUID();
 		final IBranchPath branchPath = getImportBranchPath();
 		
-		return CDOCommitInfoUtils.createEmptyCommitInfo(repositoryUuid, branchPath, importContext.getUserId(), Strings.nullToEmpty(importContext.getCommitMessage()), timestamp, previousTimestamp);
+		return CDOCommitInfoUtils.createEmptyCommitInfo(repositoryUuid, branchPath, importContext.getUserId(), String.format("%s%s", importContext.getCommitId(), Strings.nullToEmpty(importContext.getCommitMessage())), timestamp, previousTimestamp);
 		
 	}
 	

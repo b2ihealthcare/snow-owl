@@ -169,22 +169,19 @@ public abstract class CDOCommitInfoUtils {
 		final String _comment = Strings.nullToEmpty(comment);
 		final Matcher matcher = CDOCommitInfoConstants.UUID_PATETRN.matcher(_comment);
 		
-		String $ = null;
+		String commitId = null;
 		
 		while (matcher.find()) {
 			
-			$ = matcher.group(0);
+			commitId = matcher.group(0);
 			break;
 			
 		}
 		
-		if (StringUtils.isEmpty($)) {
-			
-			$ = UUID.randomUUID().toString();
-			
+		if (StringUtils.isEmpty(commitId)) {
+			commitId = UUID.randomUUID().toString();
 		}
-		
-		return $;
+		return commitId;
 	}
 	
 	/**
