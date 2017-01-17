@@ -50,19 +50,19 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	/**
 	 * Returns the associated concept's identifier, eg. "{@code 363698007}".
 	 * 
-	 * @return the concept identifier
+	 * @return the concept identifier or <code>null</code> if the concept is currently not set
 	 */
 	public String getConceptId() {
-		return getConcept().getId();
+		return getConcept() == null ? null : getConcept().getId();
 	}
 
 	/**
 	 * Returns the description type identifier, eg. "{@code 900000000000013009}".
 	 * 
-	 * @return the type identifier
+	 * @return the type identifier or <code>null</code> if the type is currently not set
 	 */
 	public String getTypeId() {
-		return getType().getId();
+		return getType() == null ? null : getType().getId();
 	}
 
 	/**

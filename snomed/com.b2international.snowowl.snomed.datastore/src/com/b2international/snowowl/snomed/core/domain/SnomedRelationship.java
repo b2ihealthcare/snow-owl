@@ -45,7 +45,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	}
 
 	public String getSourceId() {
-		return getSourceConcept().getId();
+		return getSourceConcept() == null ? null : getSourceConcept().getId();
 	}
 	
 	/**
@@ -58,7 +58,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	}
 
 	public String getDestinationId() {
-		return getDestinationConcept().getId();
+		return getDestinationConcept() == null ? null : getDestinationConcept().getId();
 	}
 
 	/**
@@ -85,7 +85,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * @return the relationship type identifier
 	 */
 	public String getTypeId() {
-		return getTypeConcept().getId();
+		return getTypeConcept() == null ? null : getTypeConcept().getId();
 	}
 
 	/**
