@@ -19,6 +19,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -37,7 +39,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public final class TransactionalRequest extends BaseRequest<BranchContext, CommitResult> {
 
 	@JsonProperty
-	@NotNull
+	@NotEmpty
 	private final String commitComment;
 	
 	@JsonProperty
