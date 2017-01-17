@@ -23,7 +23,7 @@ import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMemberImpl;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.Multimap;
@@ -39,7 +39,7 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 	private InactivationIndicator inactivationIndicator;
 	private List<SnomedDescription> descriptions;
 	private List<SnomedRelationship> relationships;
-	private List<SnomedReferenceSetMemberImpl> members;
+	private List<SnomedReferenceSetMember> members;
 
 	public DefinitionStatus getDefinitionStatus() {
 		return definitionStatus;
@@ -99,7 +99,7 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 		return descriptions;
 	}
 	
-	public List<SnomedReferenceSetMemberImpl> getMembers() {
+	public List<SnomedReferenceSetMember> getMembers() {
 		return members;
 	}
 	
@@ -111,7 +111,7 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 		this.descriptions = descriptions;
 	}
 	
-	public void setMembers(List<SnomedReferenceSetMemberImpl> members) {
+	public void setMembers(List<SnomedReferenceSetMember> members) {
 		this.members = members;
 	}
 	
