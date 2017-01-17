@@ -26,7 +26,7 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -97,11 +97,11 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 				.setLocales(locales())
 				.build()
 				.execute(context());
-			final Map<String, ISnomedConcept> sourceConceptsById = Maps.uniqueIndex(sourceConcepts, ID_FUNCTION);
+			final Map<String, SnomedConcept> sourceConceptsById = Maps.uniqueIndex(sourceConcepts, ID_FUNCTION);
 			for (SnomedRelationship relationship : results) {
 				final String sourceId = relationship.getSourceId();
 				if (sourceConceptsById.containsKey(sourceId)) {
-					final ISnomedConcept sourceConcept = sourceConceptsById.get(sourceId);
+					final SnomedConcept sourceConcept = sourceConceptsById.get(sourceId);
 					((SnomedRelationship) relationship).setSource(sourceConcept);
 				}
 			}
@@ -122,11 +122,11 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 				.setLocales(locales())
 				.build()
 				.execute(context());
-			final Map<String, ISnomedConcept> destinationConceptsById = Maps.uniqueIndex(destinationConcepts, ID_FUNCTION);
+			final Map<String, SnomedConcept> destinationConceptsById = Maps.uniqueIndex(destinationConcepts, ID_FUNCTION);
 			for (SnomedRelationship relationship : results) {
 				final String destinationId = relationship.getDestinationId();
 				if (destinationConceptsById.containsKey(destinationId)) {
-					final ISnomedConcept destinationConcept = destinationConceptsById.get(destinationId);
+					final SnomedConcept destinationConcept = destinationConceptsById.get(destinationId);
 					((SnomedRelationship) relationship).setDestination(destinationConcept);
 				}
 			}
@@ -147,11 +147,11 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 				.setLocales(locales())
 				.build()
 				.execute(context());
-			final Map<String, ISnomedConcept> typeConceptsById = Maps.uniqueIndex(typeConcepts, ID_FUNCTION);
+			final Map<String, SnomedConcept> typeConceptsById = Maps.uniqueIndex(typeConcepts, ID_FUNCTION);
 			for (SnomedRelationship relationship : results) {
 				final String typeId = relationship.getTypeId();
 				if (typeConceptsById.containsKey(typeId)) {
-					final ISnomedConcept typeConcept = typeConceptsById.get(typeId);
+					final SnomedConcept typeConcept = typeConceptsById.get(typeId);
 					((SnomedRelationship) relationship).setType(typeConcept);
 				}
 			}

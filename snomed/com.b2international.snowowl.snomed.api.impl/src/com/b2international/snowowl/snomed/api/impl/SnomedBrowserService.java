@@ -69,7 +69,7 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ConceptEnum;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
@@ -127,7 +127,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		
 		final IBranchPath branchPath = internalConceptRef.getBranch().branchPath();
 		final String conceptId = conceptRef.getComponentId();
-		final ISnomedConcept concept = SnomedRequests.prepareGetConcept()
+		final SnomedConcept concept = SnomedRequests.prepareGetConcept()
 				.setComponentId(conceptId)
 				.setLocales(locales)
 				.setExpand("pt(),fsn(),descriptions(limit:"+Integer.MAX_VALUE+"),relationships(limit:"+Integer.MAX_VALUE+")")
@@ -335,7 +335,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				descriptionService) {
 			
 			@Override
-			protected Iterable<ISnomedConcept> getConceptEntries(String conceptId) {
+			protected Iterable<SnomedConcept> getConceptEntries(String conceptId) {
 				final Set<String> typeIds = newHashSet();
 				for (final SnomedRelationship relationship : relationships) {
 					typeIds.add(relationship.getTypeId());
@@ -344,7 +344,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			}
 
 			@Override
-			protected SnomedBrowserRelationshipType convertConceptEntry(ISnomedConcept conceptEntry, Optional<String> optionalFsn) {
+			protected SnomedBrowserRelationshipType convertConceptEntry(SnomedConcept conceptEntry, Optional<String> optionalFsn) {
 				final SnomedBrowserRelationshipType type = new SnomedBrowserRelationshipType();
 				type.setConceptId(conceptEntry.getId());
 				type.setFsn(optionalFsn.or(conceptEntry.getId()));
@@ -364,7 +364,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				descriptionService) {
 			
 			@Override
-			protected Iterable<ISnomedConcept> getConceptEntries(String conceptId) {
+			protected Iterable<SnomedConcept> getConceptEntries(String conceptId) {
 				final Set<String> destinationConceptIds = newHashSet();
 				for (final SnomedRelationship relationship : relationships) {
 					destinationConceptIds.add(relationship.getDestinationId());
@@ -373,7 +373,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			}
 
 			@Override
-			protected SnomedBrowserRelationshipTarget convertConceptEntry(ISnomedConcept destinationConcept, Optional<String> optionalFsn) {
+			protected SnomedBrowserRelationshipTarget convertConceptEntry(SnomedConcept destinationConcept, Optional<String> optionalFsn) {
 				final SnomedBrowserRelationshipTarget target = new SnomedBrowserRelationshipTarget();
 				target.setActive(destinationConcept.isActive());
 				target.setConceptId(destinationConcept.getId());
@@ -415,7 +415,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				.getSync();
 	}
 
-	protected SnomedBrowserRelationshipTarget getSnomedBrowserRelationshipTarget(ISnomedConcept destinationConcept, String branch, List<ExtendedLocale> locales) {
+	protected SnomedBrowserRelationshipTarget getSnomedBrowserRelationshipTarget(SnomedConcept destinationConcept, String branch, List<ExtendedLocale> locales) {
 		final DescriptionService descriptionService = new DescriptionService(bus, branch);
 		final SnomedBrowserRelationshipTarget target = new SnomedBrowserRelationshipTarget();
 
@@ -444,7 +444,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		return new FsnJoinerOperation<ISnomedBrowserParentConcept>(conceptRef.getComponentId(), locales, descriptionService) {
 			
 			@Override
-			protected Iterable<ISnomedConcept> getConceptEntries(String conceptId) {
+			protected Iterable<SnomedConcept> getConceptEntries(String conceptId) {
 				return SnomedRequests.prepareGetConcept()
 						.setComponentId(conceptId)
 						.setExpand("ancestors(form:\"inferred\",direct:true)")
@@ -455,7 +455,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			}
 
 			@Override
-			protected ISnomedBrowserParentConcept convertConceptEntry(ISnomedConcept conceptEntry, Optional<String> optionalFsn) {
+			protected ISnomedBrowserParentConcept convertConceptEntry(SnomedConcept conceptEntry, Optional<String> optionalFsn) {
 				final String childConceptId = conceptEntry.getId();
 				final SnomedBrowserParentConcept convertedConcept = new SnomedBrowserParentConcept(); 
 
@@ -478,7 +478,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		return new FsnJoinerOperation<ISnomedBrowserChildConcept>(conceptRef.getComponentId(), locales, descriptionService) {
 			
 			@Override
-			protected Iterable<ISnomedConcept> getConceptEntries(String conceptId) {
+			protected Iterable<SnomedConcept> getConceptEntries(String conceptId) {
 				return SnomedRequests.prepareSearchConcept()
 						.all()
 						.filterByActive(true)
@@ -491,7 +491,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			}
 
 			@Override
-			protected ISnomedBrowserChildConcept convertConceptEntry(ISnomedConcept conceptEntry, Optional<String> optionalFsn) {
+			protected ISnomedBrowserChildConcept convertConceptEntry(SnomedConcept conceptEntry, Optional<String> optionalFsn) {
 				final String childConceptId = conceptEntry.getId();
 				final SnomedBrowserChildConcept convertedConcept = new SnomedBrowserChildConcept(); 
 
@@ -555,8 +555,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			})
 			.toSet();
 		
-		final Iterable<ISnomedConcept> conceptIndexEntries = getConcepts(branchPath, conceptIds);
-		final Map<String, ISnomedConcept> conceptMap = Maps.uniqueIndex(conceptIndexEntries, IComponent.ID_FUNCTION);
+		final Iterable<SnomedConcept> conceptIndexEntries = getConcepts(branchPath, conceptIds);
+		final Map<String, SnomedConcept> conceptMap = Maps.uniqueIndex(conceptIndexEntries, IComponent.ID_FUNCTION);
 		
 		final Map<String, SnomedDescription> fsnPropertyMap; 
 		switch (resultConceptTermType) {
@@ -589,7 +589,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 					@Override
 					public SnomedBrowserDescriptionResultDetails call() throws Exception {
 						final String conceptId = description.getConceptId();
-						final ISnomedConcept conceptIndexEntry = conceptMap.get(conceptId);
+						final SnomedConcept conceptIndexEntry = conceptMap.get(conceptId);
 						final SnomedBrowserDescriptionResultDetails details = new SnomedBrowserDescriptionResultDetails();
 						
 						if (conceptIndexEntry != null) {

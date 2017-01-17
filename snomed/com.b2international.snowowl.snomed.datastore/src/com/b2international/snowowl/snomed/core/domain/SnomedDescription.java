@@ -37,8 +37,8 @@ public final class SnomedDescription extends BaseSnomedCoreComponent {
 	private DescriptionInactivationIndicator descriptionInactivationIndicator;
 	private Map<String, Acceptability> acceptabilityMap;
 	private Multimap<AssociationType, String> associationTargets;
-	private ISnomedConcept concept;
-	private ISnomedConcept type;
+	private SnomedConcept concept;
+	private SnomedConcept type;
 
 	public SnomedDescription() {
 	}
@@ -70,7 +70,7 @@ public final class SnomedDescription extends BaseSnomedCoreComponent {
 	 *  
 	 * @return the container concept
 	 */
-	public ISnomedConcept getConcept() {
+	public SnomedConcept getConcept() {
 		return concept;
 	}
 
@@ -79,7 +79,7 @@ public final class SnomedDescription extends BaseSnomedCoreComponent {
 	 *  
 	 * @return the type concept
 	 */
-	public ISnomedConcept getType() {
+	public SnomedConcept getType() {
 		return type;
 	}
 
@@ -149,12 +149,12 @@ public final class SnomedDescription extends BaseSnomedCoreComponent {
 	}
 	
 	@JsonIgnore
-	public void setConcept(ISnomedConcept concept) {
+	public void setConcept(SnomedConcept concept) {
 		this.concept = concept;
 	}
 	
 	@JsonIgnore	
-	public void setType(ISnomedConcept type) {
+	public void setType(SnomedConcept type) {
 		this.type = type;
 	}
 

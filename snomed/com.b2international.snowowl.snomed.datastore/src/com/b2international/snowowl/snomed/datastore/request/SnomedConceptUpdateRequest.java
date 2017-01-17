@@ -38,7 +38,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
@@ -125,7 +125,7 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 				if (concept.isReleased()) {
 					long start = new Date().getTime();
 					final String branchPath = getLatestReleaseBranch(context);
-					final ISnomedConcept releasedConcept = SnomedRequests.prepareGetConcept()
+					final SnomedConcept releasedConcept = SnomedRequests.prepareGetConcept()
 							.setComponentId(getComponentId())
 							.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 							.execute(context.service(IEventBus.class))
@@ -158,7 +158,7 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 				.collect(Collectors.toSet());
 	}
 
-	private boolean isDifferentToPreviousRelease(Concept concept, ISnomedConcept releasedConcept) {
+	private boolean isDifferentToPreviousRelease(Concept concept, SnomedConcept releasedConcept) {
 		if (releasedConcept.isActive() != concept.isActive()) return true;
 		if (!releasedConcept.getModuleId().equals(concept.getModule().getId())) return true;
 		if (!releasedConcept.getDefinitionStatus().getConceptId().equals(concept.getDefinitionStatus().getId())) return true;

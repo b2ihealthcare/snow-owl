@@ -42,7 +42,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptDescripti
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedInboundRelationships;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedOutboundRelationships;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -279,9 +279,9 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 				.setExpand(String.format("descendants(form:\"%s\",direct:%s,offset:%d,limit:%d)", form, direct, offset, limit))
 				.build(repositoryId, branchPath)
 				.execute(bus)
-				.then(new Function<ISnomedConcept, SnomedConcepts>() {
+				.then(new Function<SnomedConcept, SnomedConcepts>() {
 					@Override
-					public SnomedConcepts apply(ISnomedConcept input) {
+					public SnomedConcepts apply(SnomedConcept input) {
 						return input.getDescendants();
 					}
 				}));
@@ -328,9 +328,9 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 				.setExpand(String.format("ancestors(form:\"%s\",direct:%s,offset:%d,limit:%d)", form, direct, offset, limit))
 				.build(repositoryId, branchPath)
 				.execute(bus)
-				.then(new Function<ISnomedConcept, SnomedConcepts>() {
+				.then(new Function<SnomedConcept, SnomedConcepts>() {
 					@Override
-					public SnomedConcepts apply(ISnomedConcept input) {
+					public SnomedConcepts apply(SnomedConcept input) {
 						return input.getAncestors();
 					}
 				}));

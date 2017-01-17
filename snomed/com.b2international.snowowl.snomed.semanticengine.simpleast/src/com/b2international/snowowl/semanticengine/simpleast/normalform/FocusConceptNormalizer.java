@@ -27,7 +27,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
@@ -92,7 +92,7 @@ public class FocusConceptNormalizer {
 		Set<SnomedConceptDocument> proximatePrimitiveSuperTypes = new HashSet<SnomedConceptDocument>();
 		
 		for (ConceptRef concept : focusConcepts) {
-			final ISnomedConcept fc = SnomedRequests.prepareGetConcept()
+			final SnomedConcept fc = SnomedRequests.prepareGetConcept()
 					.setComponentId(concept.getConceptId())
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
@@ -149,7 +149,7 @@ public class FocusConceptNormalizer {
 	}
 
 
-	private Set<SnomedConceptDocument> getProximatePrimitiveSuperTypes(ISnomedConcept concept) {
+	private Set<SnomedConceptDocument> getProximatePrimitiveSuperTypes(SnomedConcept concept) {
 		Set<SnomedConceptDocument> proximatePrimitiveSuperTypes = new HashSet<SnomedConceptDocument>();
 		
 		if (concept.getDefinitionStatus().isPrimitive()) {

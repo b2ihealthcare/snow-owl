@@ -25,7 +25,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.scripting.services.api.IHierarchicalService;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
@@ -154,9 +154,9 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 				.setExpand("ancestors(limit:"+Integer.MAX_VALUE+",direct:true,form:\"inferred\")")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
-				.then(new Function<ISnomedConcept, SnomedConcepts>() {
+				.then(new Function<SnomedConcept, SnomedConcepts>() {
 					@Override
-					public SnomedConcepts apply(ISnomedConcept input) {
+					public SnomedConcepts apply(SnomedConcept input) {
 						return input.getAncestors();
 					}
 				})
@@ -174,9 +174,9 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 				.setExpand("ancestors(limit:"+Integer.MAX_VALUE+",direct:false,form:\"inferred\")")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
-				.then(new Function<ISnomedConcept, SnomedConcepts>() {
+				.then(new Function<SnomedConcept, SnomedConcepts>() {
 					@Override
-					public SnomedConcepts apply(ISnomedConcept input) {
+					public SnomedConcepts apply(SnomedConcept input) {
 						return input.getAncestors();
 					}
 				})
@@ -194,9 +194,9 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 				.setExpand("ancestors(limit:"+0+",direct:true,form:\"inferred\")")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
-				.then(new Function<ISnomedConcept, SnomedConcepts>() {
+				.then(new Function<SnomedConcept, SnomedConcepts>() {
 					@Override
-					public SnomedConcepts apply(ISnomedConcept input) {
+					public SnomedConcepts apply(SnomedConcept input) {
 						return input.getAncestors();
 					}
 				})
@@ -213,9 +213,9 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 				.setExpand("ancestors(limit:"+0+",direct:false,form:\"inferred\")")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
-				.then(new Function<ISnomedConcept, SnomedConcepts>() {
+				.then(new Function<SnomedConcept, SnomedConcepts>() {
 					@Override
-					public SnomedConcepts apply(ISnomedConcept input) {
+					public SnomedConcepts apply(SnomedConcept input) {
 						return input.getAncestors();
 					}
 				})
@@ -274,20 +274,20 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
-				.then(new Function<SnomedRelationships, Collection<ISnomedConcept>>() {
+				.then(new Function<SnomedRelationships, Collection<SnomedConcept>>() {
 					@Override
-					public Collection<ISnomedConcept> apply(SnomedRelationships input) {
-						return FluentIterable.from(input).transform(new Function<SnomedRelationship, ISnomedConcept>() {
+					public Collection<SnomedConcept> apply(SnomedRelationships input) {
+						return FluentIterable.from(input).transform(new Function<SnomedRelationship, SnomedConcept>() {
 							@Override
-							public ISnomedConcept apply(SnomedRelationship input) {
+							public SnomedConcept apply(SnomedRelationship input) {
 								return input.getSourceConcept();
 							}
 						}).toList();
 					}
 				})
-				.then(new Function<Collection<ISnomedConcept>, Collection<SnomedConceptDocument>>() {
+				.then(new Function<Collection<SnomedConcept>, Collection<SnomedConceptDocument>>() {
 					@Override
-					public Collection<SnomedConceptDocument> apply(Collection<ISnomedConcept> input) {
+					public Collection<SnomedConceptDocument> apply(Collection<SnomedConcept> input) {
 						return SnomedConceptDocument.fromConcepts(input);
 					}
 				})

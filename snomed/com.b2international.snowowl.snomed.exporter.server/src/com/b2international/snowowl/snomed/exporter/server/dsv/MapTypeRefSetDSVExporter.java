@@ -43,11 +43,11 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
@@ -127,8 +127,8 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			for (SnomedReferenceSetMember snomedReferenceSetMember : refSet.getMembers()) {
 				SnomedCoreComponent referencedComponent = snomedReferenceSetMember.getReferencedComponent();
 				String id = referencedComponent.getId();
-				if (referencedComponent instanceof ISnomedConcept) {
-					SnomedDescription pt = ((ISnomedConcept) referencedComponent).getPt();
+				if (referencedComponent instanceof SnomedConcept) {
+					SnomedDescription pt = ((SnomedConcept) referencedComponent).getPt();
 					if (pt == null) {
 						labelMap.put(id, id); 
 					} else {
@@ -151,20 +151,20 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					.setLocales(languageSetting.getLanguagePreference())
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 					.execute(bus)
-							.then(new Function<SnomedConcepts, Collection<ISnomedConcept>>() {
+							.then(new Function<SnomedConcepts, Collection<SnomedConcept>>() {
 								@Override
-								public Collection<ISnomedConcept> apply(SnomedConcepts input) {
-									final Collection<ISnomedConcept> additionalConcepts = newHashSet();
+								public Collection<SnomedConcept> apply(SnomedConcepts input) {
+									final Collection<SnomedConcept> additionalConcepts = newHashSet();
 									additionalConcepts.addAll(input.getItems());
-									for (ISnomedConcept concept : input) {
+									for (SnomedConcept concept : input) {
 										additionalConcepts.addAll(concept.getDescendants().getItems());
 									}
 									return additionalConcepts;
 								}
 							})
-							.then(new Function<Collection<ISnomedConcept>, Collection<SnomedConceptDocument>>() {
+							.then(new Function<Collection<SnomedConcept>, Collection<SnomedConceptDocument>>() {
 								@Override
-								public Collection<SnomedConceptDocument> apply(Collection<ISnomedConcept> input) {
+								public Collection<SnomedConceptDocument> apply(Collection<SnomedConcept> input) {
 									return SnomedConceptDocument.fromConcepts(input);
 								}
 							}).getSync();

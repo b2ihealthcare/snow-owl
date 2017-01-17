@@ -25,7 +25,7 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -93,7 +93,7 @@ final class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, St
 		// if not, then check if any of the specified parents is subTypeOf the requiredSuperType
 		final long superTypeIdLong = Long.parseLong(requiredSuperType);
 		final SnomedConcepts parentConcepts = SnomedRequests.prepareSearchConcept().setLimit(parents.size()).setComponentIds(parents).build().execute(context);
-		for (ISnomedConcept parentConcept : parentConcepts) {
+		for (SnomedConcept parentConcept : parentConcepts) {
 			if (parentConcept.getParentIds() != null) {
 				if (PrimitiveSets.newLongOpenHashSet(parentConcept.getParentIds()).contains(superTypeIdLong)) {
 					return true;

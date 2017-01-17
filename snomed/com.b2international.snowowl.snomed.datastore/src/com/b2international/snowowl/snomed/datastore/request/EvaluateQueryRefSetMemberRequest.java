@@ -30,7 +30,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.request.BaseResourceRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
@@ -69,12 +69,12 @@ public final class EvaluateQueryRefSetMemberRequest extends BaseResourceRequest<
 		// GET matching members of a query
 		final SnomedConcepts matchingConcepts = SnomedRequests.prepareSearchConcept().filterByEscg(query).all().build().execute(context);
 		
-		final Map<String, ISnomedConcept> conceptsToAdd = newHashMap();
+		final Map<String, SnomedConcept> conceptsToAdd = newHashMap();
 		final Collection<SnomedReferenceSetMember> membersToRemove = newHashSet();
 		final Map<String, String> conceptsToActivate = Maps.newHashMap();
 
 		// add all matching first
-		for (ISnomedConcept matchedConcept : matchingConcepts.getItems()) {
+		for (SnomedConcept matchedConcept : matchingConcepts.getItems()) {
 			if (matchedConcept.isActive()) {
 				conceptsToAdd.put(matchedConcept.getId(), matchedConcept);
 			}
@@ -114,7 +114,7 @@ public final class EvaluateQueryRefSetMemberRequest extends BaseResourceRequest<
 			}
 		}).transform(IComponent.ID_FUNCTION).toSet());
 		
-		final Map<String, ISnomedConcept> concepts;
+		final Map<String, SnomedConcept> concepts;
 		if (expand().containsKey("referencedComponent")) {
 			final Options expandOptions = expand().getOptions("referencedComponent");
 			concepts = Maps.uniqueIndex(SnomedRequests.prepareSearchConcept()

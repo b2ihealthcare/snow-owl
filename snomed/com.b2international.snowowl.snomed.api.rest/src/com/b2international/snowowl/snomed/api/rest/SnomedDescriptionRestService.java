@@ -58,9 +58,6 @@ import com.wordnik.swagger.annotations.ApiParam;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
-/**
- * @since 1.0
- */
 @Api("Descriptions")
 @RestController
 @RequestMapping(
@@ -75,8 +72,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
-	// FIXME: Route clashes with path "/{path}/concepts/{id}/descriptions" -- Spring thinks "concepts/{id}" is part of "{path}"
-	// @RequestMapping(value="/{path:**}/descriptions", method=RequestMethod.GET)
+	@RequestMapping(value="/{path:**}/descriptions", method=RequestMethod.GET)
 	public @ResponseBody DeferredResult<SnomedDescriptions> search(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")

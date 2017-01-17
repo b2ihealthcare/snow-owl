@@ -48,7 +48,7 @@ import com.b2international.snowowl.datastore.server.version.NodeTransformerImpl;
 import com.b2international.snowowl.emf.compare.DiffCollector;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -73,7 +73,7 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 	private final Function<SnomedReferenceSetMember, String> conceptToLabelFunction = new Function<SnomedReferenceSetMember, String>() {
 		@Override
 		public String apply(SnomedReferenceSetMember input) {
-			return ((ISnomedConcept) input.getReferencedComponent()).getPt().getTerm();
+			return ((SnomedConcept) input.getReferencedComponent()).getPt().getTerm();
 		}
 	};
 

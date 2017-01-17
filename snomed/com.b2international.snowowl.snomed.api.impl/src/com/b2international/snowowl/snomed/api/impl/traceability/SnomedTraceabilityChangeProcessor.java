@@ -69,7 +69,7 @@ import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserD
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationship;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationshipTarget;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationshipType;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -291,7 +291,7 @@ public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 				final Set<String> hasChildrenStated = collectNonLeafs(conceptIds, branch, bus, Concepts.STATED_RELATIONSHIP);
 				final Set<String> hasChildrenInferred = collectNonLeafs(conceptIds, branch, bus, Concepts.INFERRED_RELATIONSHIP);
 				
-				for (ISnomedConcept concept : concepts) {
+				for (SnomedConcept concept : concepts) {
 					SnomedBrowserConcept convertedConcept = new SnomedBrowserConcept();
 					
 					convertedConcept.setActive(concept.isActive());

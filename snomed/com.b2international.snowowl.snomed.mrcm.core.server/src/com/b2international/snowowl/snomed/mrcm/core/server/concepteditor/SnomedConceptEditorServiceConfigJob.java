@@ -28,7 +28,7 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.IWidgetModelProvider;
  * @see ServiceConfigJob
  * @see IWidgetModelProvider
  */
-public class SnomedConceptEditorServiceConfigJob extends AbstractServerServiceConfigJob<ISnomedConceptEditorService> {
+public class SnomedConceptEditorServiceConfigJob extends AbstractServerServiceConfigJob<SnomedConceptEditorService> {
 
 	public SnomedConceptEditorServiceConfigJob() {
 		super("SNOMED CT concept editor service configuration...", MrcmCoreServerActivator.PLUGIN_ID);
@@ -39,8 +39,8 @@ public class SnomedConceptEditorServiceConfigJob extends AbstractServerServiceCo
 	 * @see com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob#getServiceClass()
 	 */
 	@Override
-	protected Class<ISnomedConceptEditorService> getServiceClass() {
-		return ISnomedConceptEditorService.class;
+	protected Class<SnomedConceptEditorService> getServiceClass() {
+		return SnomedConceptEditorService.class;
 	}
 
 	/*

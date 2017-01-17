@@ -30,7 +30,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -100,10 +100,10 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 					})
 					.toSet();
 			
-			final Map<String, ISnomedConcept> conceptsById = getConceptMap(expandOptions, conceptIds);
+			final Map<String, SnomedConcept> conceptsById = getConceptMap(expandOptions, conceptIds);
 			
 			for (SnomedDescription description : results) {
-				final ISnomedConcept concept = conceptsById.get(description.getConceptId());
+				final SnomedConcept concept = conceptsById.get(description.getConceptId());
 				((SnomedDescription) description).setConcept(concept);
 			}
 		}
@@ -118,16 +118,16 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 					})
 					.toSet();
 			
-			final Map<String, ISnomedConcept> conceptsById = getConceptMap(expandOptions, conceptIds);
+			final Map<String, SnomedConcept> conceptsById = getConceptMap(expandOptions, conceptIds);
 			
 			for (SnomedDescription description : results) {
-				final ISnomedConcept type = conceptsById.get(description.getTypeId());
+				final SnomedConcept type = conceptsById.get(description.getTypeId());
 				((SnomedDescription) description).setType(type);
 			}
 		}
 	}
 
-	private Map<String, ISnomedConcept> getConceptMap(final Options expandOptions, final Set<String> conceptIds) {
+	private Map<String, SnomedConcept> getConceptMap(final Options expandOptions, final Set<String> conceptIds) {
 		final SnomedConcepts types = SnomedRequests
 			.prepareSearchConcept()
 			.setLimit(conceptIds.size())
@@ -137,7 +137,7 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 			.build()
 			.execute(context());
 		
-		final Map<String, ISnomedConcept> conceptsById = Maps.uniqueIndex(types, ID_FUNCTION);
+		final Map<String, SnomedConcept> conceptsById = Maps.uniqueIndex(types, ID_FUNCTION);
 		return conceptsById;
 	}
 

@@ -27,7 +27,7 @@ import com.b2international.snowowl.dsl.scg.Concept;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.semanticengine.subsumption.SubsumptionTester;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
@@ -161,7 +161,7 @@ public class FocusConceptNormalizer {
 				.getSync();
 		//for (int i = 0; i < outgoingRelationships.length; i++) {
 		for (SnomedRelationship relationship : outboundRelationships) {
-			ISnomedConcept destinationConcept = relationship.getDestinationConcept();
+			SnomedConcept destinationConcept = relationship.getDestinationConcept();
 			SnomedConceptDocument destinationConceptDocument = SnomedConceptDocument.builder(destinationConcept).build();
 			
 			if (destinationConcept.getDefinitionStatus().isPrimitive()) {

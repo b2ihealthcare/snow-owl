@@ -29,7 +29,7 @@ import com.b2international.snowowl.dsl.escg.NumericalAssignmentGroup;
 import com.b2international.snowowl.dsl.escg.RefSet;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -202,7 +202,7 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 
 	private void checkNonMatchingTerm(String id, String term, EAttribute termAttribute) {
 		
-		final ISnomedConcept concept = SnomedRequests.prepareGetConcept()
+		final SnomedConcept concept = SnomedRequests.prepareGetConcept()
 				.setComponentId(id)
 				.setExpand("descriptions(),pt()")
 				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
@@ -235,7 +235,7 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 			return;
 		}
 		
-		final ISnomedConcept entry = Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept().setLimit(1).setComponentIds(Collections.singleton(concept.getId())).build(SnomedDatastoreActivator.REPOSITORY_UUID, activeBranch.get()).execute(bus.get()).getSync(), null);
+		final SnomedConcept entry = Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept().setLimit(1).setComponentIds(Collections.singleton(concept.getId())).build(SnomedDatastoreActivator.REPOSITORY_UUID, activeBranch.get()).execute(bus.get()).getSync(), null);
 		if (entry != null && !entry.isActive()) {
 			warning("Concept is inactive", EscgPackage.eINSTANCE.getConcept_Id(), INACTIVE_CONCEPT);
 		}

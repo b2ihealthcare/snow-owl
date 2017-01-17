@@ -48,7 +48,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptRestInput
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptRestUpdate;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
@@ -161,7 +161,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/concepts/{conceptId}", method=RequestMethod.GET)
-	public @ResponseBody DeferredResult<ISnomedConcept> read(
+	public @ResponseBody DeferredResult<SnomedConcept> read(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,

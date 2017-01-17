@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
@@ -193,7 +193,7 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 		
 		// then add all matching members 
 		final SnomedConcepts matchingEscgConcepts = SnomedRequests.prepareSearchConcept().filterByEscg(getQuery()).all().build().execute(context);
-		for (ISnomedConcept concept : matchingEscgConcepts.getItems()) {
+		for (SnomedConcept concept : matchingEscgConcepts.getItems()) {
 			 SnomedComponents
 				.newSimpleMember()
 				.withReferencedComponent(concept.getId())

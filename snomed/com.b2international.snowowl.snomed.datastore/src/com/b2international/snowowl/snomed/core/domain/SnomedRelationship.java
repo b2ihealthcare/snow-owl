@@ -33,9 +33,9 @@ public final class SnomedRelationship extends BaseSnomedCoreComponent {
 	private Integer unionGroup;
 	private CharacteristicType characteristicType;
 	private RelationshipModifier modifier;
-	private ISnomedConcept source;
-	private ISnomedConcept destination;
-	private ISnomedConcept type;
+	private SnomedConcept source;
+	private SnomedConcept destination;
+	private SnomedConcept type;
 
 	public SnomedRelationship() {
 	}
@@ -53,7 +53,7 @@ public final class SnomedRelationship extends BaseSnomedCoreComponent {
 	 * 
 	 * @return
 	 */
-	public ISnomedConcept getSourceConcept() {
+	public SnomedConcept getSourceConcept() {
 		return source;
 	}
 
@@ -66,7 +66,7 @@ public final class SnomedRelationship extends BaseSnomedCoreComponent {
 	 * 
 	 * @return
 	 */
-	public ISnomedConcept getDestinationConcept() {
+	public SnomedConcept getDestinationConcept() {
 		return destination;
 	}
 
@@ -93,7 +93,7 @@ public final class SnomedRelationship extends BaseSnomedCoreComponent {
 	 * 
 	 * @return
 	 */
-	public ISnomedConcept getTypeConcept() {
+	public SnomedConcept getTypeConcept() {
 		return type;
 	}
 
@@ -133,7 +133,7 @@ public final class SnomedRelationship extends BaseSnomedCoreComponent {
 		return modifier;
 	}
 
-	public void setSource(ISnomedConcept source) {
+	public void setSource(SnomedConcept source) {
 		this.source = source;
 	}
 	
@@ -142,7 +142,7 @@ public final class SnomedRelationship extends BaseSnomedCoreComponent {
 		setSource(new SnomedConcept(sourceId));
 	}
 	
-	public void setDestination(ISnomedConcept destination) {
+	public void setDestination(SnomedConcept destination) {
 		this.destination = destination;
 	}
 	
@@ -151,7 +151,7 @@ public final class SnomedRelationship extends BaseSnomedCoreComponent {
 		setDestination(new SnomedConcept(destinationId));
 	}
 	
-	public void setType(ISnomedConcept type) {
+	public void setType(SnomedConcept type) {
 		this.type = type;
 	}
 	

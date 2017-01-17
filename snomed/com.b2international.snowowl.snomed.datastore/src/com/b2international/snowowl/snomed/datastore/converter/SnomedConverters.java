@@ -21,7 +21,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.converter.ResourceConverter;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -43,7 +43,7 @@ public class SnomedConverters {
 	
 	private SnomedConverters() {}
 	
-	public static ResourceConverter<SnomedConceptDocument, ISnomedConcept, SnomedConcepts> newConceptConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
+	public static ResourceConverter<SnomedConceptDocument, SnomedConcept, SnomedConcepts> newConceptConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		return new SnomedConceptConverter(context, expand, locales);
 	}
 	
