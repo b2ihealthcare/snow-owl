@@ -17,14 +17,17 @@ package com.b2international.snowowl.snomed.core.domain.refset;
 
 import java.util.Map;
 
-import com.b2international.snowowl.snomed.core.domain.BaseSnomedComponent;
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * @since 4.5
  */
-public class SnomedReferenceSetMemberImpl extends BaseSnomedComponent implements SnomedReferenceSetMember {
+public class SnomedReferenceSetMemberImpl extends SnomedComponent implements SnomedReferenceSetMember {
 
 	private SnomedRefSetType type;
 	private SnomedCoreComponent referencedComponent;
@@ -66,4 +69,23 @@ public class SnomedReferenceSetMemberImpl extends BaseSnomedComponent implements
 	public void setProperties(Map<String, Object> properties) {
 		this.properties = properties;
 	}
+	
+	@Override
+	public Request<TransactionContext, String> toCreateRequest(String containerId) {
+		return SnomedRequests.prepareNewMember()
+				.setReferencedComponentId(containerId)
+				.setReferenceSetId(getReferenceSetId())
+				.setModuleId(getModuleId())
+				.setProperties(getProperties())
+				.build();
+	}
+	
+	@Override
+	public Request<TransactionContext, Boolean> toUpdateRequest() {
+		return SnomedRequests.prepareUpdateMember()
+				.setMemberId(getId())
+				.setSource(getProperties())
+				.build();
+	}
+	
 }

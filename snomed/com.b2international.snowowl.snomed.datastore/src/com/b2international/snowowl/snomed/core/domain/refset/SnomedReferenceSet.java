@@ -15,15 +15,12 @@
  */
 package com.b2international.snowowl.snomed.core.domain.refset;
 
-import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * @since 4.5
  */
-public interface SnomedReferenceSet extends SnomedComponent {
+public interface SnomedReferenceSet {
 
 	/**
 	 * Returns the type of the reference set.
@@ -52,14 +49,4 @@ public interface SnomedReferenceSet extends SnomedComponent {
 	 */
 	SnomedReferenceSetMembers getMembers();
 	
-	@Override
-	default Request<TransactionContext, String> toCreateRequest(String containerId) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	default Request<TransactionContext, Boolean> toUpdateRequest() {
-		throw new UnsupportedOperationException("Reference sets does not support update operation yet");
-	}
-
 }

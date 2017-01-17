@@ -17,62 +17,99 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.Date;
 
-import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.domain.BaseComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Holds common properties of SNOMED CT components.
+ * @since 4.0
  */
-public interface SnomedComponent extends IComponent {
+public abstract class SnomedComponent extends BaseComponent {
+
+	private Boolean active;
+	private Date effectiveTime;
+	private String moduleId;
+	private String iconId;
+	private Float score;
 
 	/**
 	 * Returns the component's current status as a boolean value.
 	 *  
 	 * @return {@code true} if the component is active, {@code false} if it is inactive
 	 */
-	Boolean isActive();
+	public Boolean isActive() {
+		return active;
+	}
 
 	/**
 	 * Returns the date at which the current state of the component becomes effective.
 	 * 
 	 * @return the component's effective time
 	 */
-	Date getEffectiveTime();
+	public Date getEffectiveTime() {
+		return effectiveTime;
+	}
 
 	/**
 	 * Returns the containing module's concept identifier.
 	 * 
 	 * @return the module identifier for the component
 	 */
-	String getModuleId();
-	
+	public String getModuleId() {
+		return moduleId;
+	}
+
 	/**
 	 * @beta - this method is subject to changes or even removal in future releases.  
 	 * @return - the icon ID associated with this component
 	 */
 	@JsonIgnore
-	String getIconId();
-	
+	public String getIconId() {
+		return iconId;
+	}
+
 	/**
 	 * @beta - this method is subject to changes or even removal in future releases.
 	 * @return - the score associated with this component if it's a match in a query, can be <code>null</code>
 	 */
 	@JsonIgnore
-	Float getScore();
+	public Float getScore() {
+		return score;
+	}
+
+	public void setActive(final Boolean active) {
+		this.active = active;
+	}
+
+	public void setEffectiveTime(final Date effectiveTime) {
+		this.effectiveTime = effectiveTime;
+	}
+
+	public void setModuleId(final String moduleId) {
+		this.moduleId = moduleId;
+	}
+	
+	public void setIconId(String iconId) {
+		this.iconId = iconId;
+	}
+	
+	public void setScore(Float score) {
+		this.score = score;
+	}
 	
 	/**
 	 * Creates an update {@link Request} to update the component to the state represented by this instance.
 	 * @return
 	 */
-	Request<TransactionContext, Boolean> toUpdateRequest();
+	public abstract Request<TransactionContext, Boolean> toUpdateRequest();
 	
 	/**
 	 * Creates a create {@link Request} to create the component represented by this instance.
 	 * @return
 	 */
-	default Request<TransactionContext, String> toCreateRequest() {
+	public final Request<TransactionContext, String> toCreateRequest() {
 		return toCreateRequest(null);
 	}
 	
@@ -81,6 +118,6 @@ public interface SnomedComponent extends IComponent {
 	 * @param containerId the container component identifier to enforce attachment to it, may be <code>null</code> 
 	 * @return
 	 */
-	Request<TransactionContext, String> toCreateRequest(String containerId);
+	public abstract Request<TransactionContext, String> toCreateRequest(String containerId);
 	
 }

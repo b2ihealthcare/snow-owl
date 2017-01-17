@@ -20,7 +20,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 /**
  * @since 4.6
  */
-public abstract class SnomedCoreComponent extends BaseSnomedComponent {
+public abstract class SnomedCoreComponent extends SnomedComponent {
 
 	private SnomedReferenceSetMembers members;
 
