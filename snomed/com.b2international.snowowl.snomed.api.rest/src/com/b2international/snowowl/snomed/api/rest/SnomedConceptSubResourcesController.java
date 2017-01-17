@@ -61,7 +61,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  * @since 1.0
  */
 @Api("Concepts")
-@RestController
+//@RestController
 @RequestMapping(
 		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedConceptSubResourcesController extends AbstractSnomedRestService {
