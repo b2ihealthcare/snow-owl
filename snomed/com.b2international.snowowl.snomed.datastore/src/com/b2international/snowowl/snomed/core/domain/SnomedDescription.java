@@ -29,7 +29,7 @@ import com.google.common.collect.Multimap;
  * <p>
  * Information about the inactivation reason can also be retrieved from this object if applicable.
  */
-public final class SnomedDescription extends BaseSnomedCoreComponent {
+public final class SnomedDescription extends SnomedCoreComponent {
 
 	private String term;
 	private String languageCode;

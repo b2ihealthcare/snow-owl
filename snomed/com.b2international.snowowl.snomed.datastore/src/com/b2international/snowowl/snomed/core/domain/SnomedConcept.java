@@ -32,7 +32,7 @@ import com.google.common.collect.Multimap;
  * If the component status is not active, additional information about the inactivation reason and associated concepts can also be retrieved from this
  * object.
  */
-public final class SnomedConcept extends BaseSnomedCoreComponent implements DefinitionStatusProvider {
+public final class SnomedConcept extends SnomedCoreComponent implements DefinitionStatusProvider {
 
 	/**
 	 * Helper function to get ancestors of a given {@link SnomedConcept}.

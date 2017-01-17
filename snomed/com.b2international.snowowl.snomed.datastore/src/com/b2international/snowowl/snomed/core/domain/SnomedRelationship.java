@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * Represents a SNOMEd&nbsp;CT relationship.
  * 
  */
-public final class SnomedRelationship extends BaseSnomedCoreComponent {
+public final class SnomedRelationship extends SnomedCoreComponent {
 
 	private static final long serialVersionUID = -1131388567716570593L;
 	
