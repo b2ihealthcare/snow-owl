@@ -32,7 +32,7 @@ import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
@@ -94,7 +94,7 @@ public class LinkageRefSetGenerator {
 		Iterator<ReferencedComponentDelta> subsumedDeltasIterator = subsumedDeltas.iterator();
 		Iterator<ReferencedComponentDelta> relatedDeltasIterator = relatedDeltas.iterator();
 
-		List<List<ISnomedRelationship>> transitiveClosure = Lists.newArrayList();
+		List<List<SnomedRelationship>> transitiveClosure = Lists.newArrayList();
 		TransitiveClosureExtractorFunction transitiveClosureExtractorFunction = new TransitiveClosureExtractorFunction();
 		TransitiveRelationExtractorFunction transitiveRelationExtractorFunction = new TransitiveRelationExtractorFunction();
 
@@ -103,20 +103,20 @@ public class LinkageRefSetGenerator {
 			transitiveClosureMonitor.worked(1);
 		}
 		while (relatedDeltasIterator.hasNext()) {
-			List<ISnomedRelationship> list = transitiveRelationExtractorFunction.apply(relatedDeltasIterator.next());
+			List<SnomedRelationship> list = transitiveRelationExtractorFunction.apply(relatedDeltasIterator.next());
 			transitiveClosure.add(list);
 			transitiveClosureMonitor.worked(1);
 		}
 		SubMonitor redundantRelationshipFilterMonitor = subMonitor.newChild(1);
 		redundantRelationshipFilterMonitor.setWorkRemaining(transitiveClosure.size());
 		redundantRelationshipFilterMonitor.setTaskName("Filtering redundant relationships...");
-		Set<ISnomedRelationship> statementSet = Sets.newLinkedHashSet();
-		for (List<ISnomedRelationship> relationshipMiniList : transitiveClosure) {
+		Set<SnomedRelationship> statementSet = Sets.newLinkedHashSet();
+		for (List<SnomedRelationship> relationshipMiniList : transitiveClosure) {
 			statementSet.addAll(relationshipMiniList);
 			redundantRelationshipFilterMonitor.worked(1);
 		}
 
-		Iterator<ISnomedRelationship> statementSetIterator = statementSet.iterator();
+		Iterator<SnomedRelationship> statementSetIterator = statementSet.iterator();
 		StatementToRelationshipRefSetMemberTransformerFunction function = new StatementToRelationshipRefSetMemberTransformerFunction(refSet);
 		List<SnomedRefSetMember> refSetMembers = Lists.newArrayList();
 		SubMonitor addMembersMonitor = subMonitor.newChild(1);
@@ -144,24 +144,24 @@ public class LinkageRefSetGenerator {
 		}
 	}
 
-	private final class TransitiveClosureExtractorFunction implements Function<ReferencedComponentDelta, List<ISnomedRelationship>> {
+	private final class TransitiveClosureExtractorFunction implements Function<ReferencedComponentDelta, List<SnomedRelationship>> {
 
 		@Override
-		public List<ISnomedRelationship> apply(final ReferencedComponentDelta input) {
+		public List<SnomedRelationship> apply(final ReferencedComponentDelta input) {
 			return collectSuperTypeStatements(input.getReferencedComponent(), input.getRelatedTo());
 		}
 
-		private List<ISnomedRelationship> collectSuperTypeStatements(String conceptId, String subsumingConceptId) {
+		private List<SnomedRelationship> collectSuperTypeStatements(String conceptId, String subsumingConceptId) {
 			if (conceptId.equals(subsumingConceptId)) {
 				return Collections.emptyList();
 			}
 
-			final List<ISnomedRelationship> statements = Lists.newArrayList();
-			for (ISnomedRelationship outboundStatement : getActiveOutboundIsaStatements(editingContext.getBranch(), conceptId)) {
+			final List<SnomedRelationship> statements = Lists.newArrayList();
+			for (SnomedRelationship outboundStatement : getActiveOutboundIsaStatements(editingContext.getBranch(), conceptId)) {
 				if (subsumingConceptId.equals(outboundStatement.getDestinationId())) {
 					statements.add(outboundStatement);
 				} else {
-					List<ISnomedRelationship> temporaryStatements = collectSuperTypeStatements(outboundStatement.getDestinationId(), subsumingConceptId);
+					List<SnomedRelationship> temporaryStatements = collectSuperTypeStatements(outboundStatement.getDestinationId(), subsumingConceptId);
 					if (!temporaryStatements.isEmpty()){
 						statements.addAll(temporaryStatements);
 						statements.add(outboundStatement);
@@ -172,44 +172,44 @@ public class LinkageRefSetGenerator {
 		}
 	}
 
-	private final class TransitiveRelationExtractorFunction implements Function<ReferencedComponentDelta, List<ISnomedRelationship>> {
+	private final class TransitiveRelationExtractorFunction implements Function<ReferencedComponentDelta, List<SnomedRelationship>> {
 
 		@Override
-		public List<ISnomedRelationship> apply(ReferencedComponentDelta input) {
+		public List<SnomedRelationship> apply(ReferencedComponentDelta input) {
 			String conceptId = input.getReferencedComponent();
 			String relatedConceptId = input.getRelatedTo();
 
-			Set<ISnomedRelationship> conceptOutboundRelationships = Sets.newHashSet();
+			Set<SnomedRelationship> conceptOutboundRelationships = Sets.newHashSet();
 			conceptOutboundRelationships.addAll(getOutboundStatementsById(editingContext.getBranch(), conceptId).getItems());
 
-			Set<ISnomedRelationship> relatedConceptInboundRelationships = Sets.newHashSet();
+			Set<SnomedRelationship> relatedConceptInboundRelationships = Sets.newHashSet();
 			relatedConceptInboundRelationships.addAll(getInboundStatementsById(editingContext.getBranch(), relatedConceptId).getItems());
-			Set<ISnomedRelationship> commonRelationships = Sets.union(conceptOutboundRelationships, relatedConceptInboundRelationships);
+			Set<SnomedRelationship> commonRelationships = Sets.union(conceptOutboundRelationships, relatedConceptInboundRelationships);
 
-			List<ISnomedRelationship> statements = Lists.newArrayList();
+			List<SnomedRelationship> statements = Lists.newArrayList();
 
-			for (ISnomedRelationship relationshipMini : commonRelationships) {
+			for (SnomedRelationship relationshipMini : commonRelationships) {
 				final String typeId = relationshipMini.getTypeId();
 				if (relationshipMini.isActive() && !Concepts.IS_A.equals(relationshipMini.getTypeId()) && relationTester.isRelated(relatedConceptId, conceptId, typeId)) {
-					List<ISnomedRelationship> list = collectRelationshipTargetStatements(relatedConceptId, conceptId, typeId, new HashSet<String>());
+					List<SnomedRelationship> list = collectRelationshipTargetStatements(relatedConceptId, conceptId, typeId, new HashSet<String>());
 					statements.addAll(list);
 				}
 			}
 			return statements;
 		}
 
-		private List<ISnomedRelationship> collectRelationshipTargetStatements(String relatedConceptId, String conceptId, String typeId, Set<String> visited) {
+		private List<SnomedRelationship> collectRelationshipTargetStatements(String relatedConceptId, String conceptId, String typeId, Set<String> visited) {
 			if (!visited.add(conceptId)){
 				return Collections.emptyList();
 			}
 			
-			final List<ISnomedRelationship> statements = Lists.newArrayList();
-			for (ISnomedRelationship outboundRelationship : getActiveOutboundStatements(editingContext.getBranch(), conceptId, typeId)) {
+			final List<SnomedRelationship> statements = Lists.newArrayList();
+			for (SnomedRelationship outboundRelationship : getActiveOutboundStatements(editingContext.getBranch(), conceptId, typeId)) {
 				final String relationshipTargetId = outboundRelationship.getDestinationId();
 				if (relatedConceptId.equals(relationshipTargetId)) {
 					statements.add(outboundRelationship);
 				} else {
-					final List<ISnomedRelationship> temporaryStatements = collectRelationshipTargetStatements(relatedConceptId, relationshipTargetId, typeId, visited);
+					final List<SnomedRelationship> temporaryStatements = collectRelationshipTargetStatements(relatedConceptId, relationshipTargetId, typeId, visited);
 					if (!temporaryStatements.isEmpty()){
 						statements.addAll(temporaryStatements);
 						statements.add(outboundRelationship);
@@ -221,7 +221,7 @@ public class LinkageRefSetGenerator {
 
 	}
 
-	private final class StatementToRelationshipRefSetMemberTransformerFunction implements Function<ISnomedRelationship, SnomedRefSetMember> {
+	private final class StatementToRelationshipRefSetMemberTransformerFunction implements Function<SnomedRelationship, SnomedRefSetMember> {
 
 		private final SnomedRegularRefSet refSet;
 
@@ -230,7 +230,7 @@ public class LinkageRefSetGenerator {
 		}
 
 		@Override
-		public SnomedRefSetMember apply(ISnomedRelationship input) {
+		public SnomedRefSetMember apply(SnomedRelationship input) {
 			return editingContext.createSimpleTypeRefSetMember(ComponentIdentifierPair.create(
 					SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, input.getId()), moduleId, refSet);
 		}

@@ -28,7 +28,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 
 /**
@@ -88,7 +88,7 @@ public final class SnomedRelationshipUpdateRequest extends BaseSnomedComponentUp
 				if (relationship.isReleased()) {
 					long start = new Date().getTime();
 					final String branchPath = getLatestReleaseBranch(context);
-					final ISnomedRelationship releasedRelationship = SnomedRequests.prepareGetRelationship()
+					final SnomedRelationship releasedRelationship = SnomedRequests.prepareGetRelationship()
 							.setComponentId(getComponentId())
 							.build(context.id(), branchPath)
 							.execute(context.service(IEventBus.class))
@@ -105,7 +105,7 @@ public final class SnomedRelationshipUpdateRequest extends BaseSnomedComponentUp
 		return changed;
 	}
 	
-	private boolean isDifferentToPreviousRelease(Relationship relationship, ISnomedRelationship releasedRelationship) {
+	private boolean isDifferentToPreviousRelease(Relationship relationship, SnomedRelationship releasedRelationship) {
 		if (releasedRelationship.isActive() != relationship.isActive()) return true;
 		if (!releasedRelationship.getModuleId().equals(relationship.getModule().getId())) return true;
 		if (!releasedRelationship.getDestinationId().equals(relationship.getDestination().getId())) return true;

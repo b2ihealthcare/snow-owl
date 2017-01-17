@@ -19,7 +19,7 @@ import java.util.List;
 
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
@@ -37,7 +37,7 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 	private Multimap<AssociationType, String> associationTargets;
 	private InactivationIndicator inactivationIndicator;
 	private List<SnomedDescription> descriptions;
-	private List<ISnomedRelationship> relationships;
+	private List<SnomedRelationship> relationships;
 	private List<SnomedReferenceSetMember> members;
 
 	SnomedConceptUpdateRequestBuilder(String componentId) {
@@ -74,7 +74,7 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 		return getSelf();
 	}
 	
-	public SnomedConceptUpdateRequestBuilder setRelationships(Iterable<? extends ISnomedRelationship> relationships) {
+	public SnomedConceptUpdateRequestBuilder setRelationships(Iterable<? extends SnomedRelationship> relationships) {
 		this.relationships = relationships != null ? ImmutableList.copyOf(relationships) : null;
 		return getSelf();
 	}

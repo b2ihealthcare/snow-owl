@@ -27,7 +27,7 @@ import com.b2international.snowowl.core.validation.ComponentValidationConstraint
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -48,25 +48,25 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends Compon
 
 	public static final String ID = "com.b2international.snowowl.snomed.validation.constraints.component.SnomedConceptUniqueGroupedRelationshipTypeConstraint";
 	
-	private static final class UniqueRelationshipTypePredicate implements Predicate<ISnomedRelationship> {
+	private static final class UniqueRelationshipTypePredicate implements Predicate<SnomedRelationship> {
 		
-		private final Multimap<Integer, ISnomedRelationship> groupToRelationshipsMultimap;
+		private final Multimap<Integer, SnomedRelationship> groupToRelationshipsMultimap;
 
-		private UniqueRelationshipTypePredicate(final Multimap<Integer, ISnomedRelationship> groupToRelationshipMultimap) {
+		private UniqueRelationshipTypePredicate(final Multimap<Integer, SnomedRelationship> groupToRelationshipMultimap) {
 			this.groupToRelationshipsMultimap = groupToRelationshipMultimap;
 		}
 		
 		@Override
-		public boolean apply(final ISnomedRelationship rship) {
+		public boolean apply(final SnomedRelationship rship) {
 			
-			Collection<ISnomedRelationship> relationshipsInGroup = groupToRelationshipsMultimap.get(rship.getGroup());
-			List<ISnomedRelationship> relationshipsInGroupWithSameCharType = FluentIterable.from(relationshipsInGroup).filter(new Predicate<ISnomedRelationship>() {
-				@Override public boolean apply(ISnomedRelationship input) {
+			Collection<SnomedRelationship> relationshipsInGroup = groupToRelationshipsMultimap.get(rship.getGroup());
+			List<SnomedRelationship> relationshipsInGroupWithSameCharType = FluentIterable.from(relationshipsInGroup).filter(new Predicate<SnomedRelationship>() {
+				@Override public boolean apply(SnomedRelationship input) {
 					return input.getCharacteristicType() == rship.getCharacteristicType();
 				}
 			}).toList();
 			
-			for (final ISnomedRelationship relationship : relationshipsInGroupWithSameCharType) {
+			for (final SnomedRelationship relationship : relationshipsInGroupWithSameCharType) {
 				if (relationship != rship && relationshipsEquivalent(rship, relationship)) {
 					return false;
 				}
@@ -74,7 +74,7 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends Compon
 			return true;
 		}
 
-		private boolean relationshipsEquivalent(final ISnomedRelationship r1, final ISnomedRelationship r2) {
+		private boolean relationshipsEquivalent(final SnomedRelationship r1, final SnomedRelationship r2) {
 			if (r1.getTypeId() == null) {
 				if (r2.getTypeId() != null) {
 					return false;
@@ -105,20 +105,20 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends Compon
 			.execute(getBus())
 			.getSync();
 			
-		final Multimap<Integer, ISnomedRelationship> groupToRelationshipsMultimap = ArrayListMultimap.create();
+		final Multimap<Integer, SnomedRelationship> groupToRelationshipsMultimap = ArrayListMultimap.create();
 		
-		for (ISnomedRelationship relationship : relationships.getItems()) {
+		for (SnomedRelationship relationship : relationships.getItems()) {
 			if (relationship.getGroup() > 0) {
 				groupToRelationshipsMultimap.put(relationship.getGroup(), relationship);
 			}
 		}
 
-		final List<ISnomedRelationship> invalidRelationships = FluentIterable.from(groupToRelationshipsMultimap.values())
+		final List<SnomedRelationship> invalidRelationships = FluentIterable.from(groupToRelationshipsMultimap.values())
 				.filter(Predicates.not(new UniqueRelationshipTypePredicate(groupToRelationshipsMultimap))).toList();
 
 		final List<ComponentValidationDiagnostic> diagnostics = Lists.newArrayList();
 
-		for (final ISnomedRelationship relationship : invalidRelationships) {
+		for (final SnomedRelationship relationship : invalidRelationships) {
 			final String message = createErrorMessage(component, relationship, branchPath);
 			diagnostics.add(new ComponentValidationDiagnosticImpl(component.getId(), message, ID, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, error()));
 		}
@@ -131,7 +131,7 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends Compon
 		
 	}
 
-	private String createErrorMessage(final SnomedConceptDocument component, final ISnomedRelationship relationship, final IBranchPath branchPath) {
+	private String createErrorMessage(final SnomedConceptDocument component, final SnomedRelationship relationship, final IBranchPath branchPath) {
 		return String.format("'%s' has a relationship of type '%s' which is non-unique within its group (%s).", component.getLabel(),
 				relationship.getTypeConcept().getPt().getTerm(), relationship.getGroup());
 	}

@@ -26,7 +26,7 @@ import com.b2international.snowowl.semanticengine.simpleast.normalform.Attribute
 import com.b2international.snowowl.semanticengine.simpleast.utils.QueryAstUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
@@ -259,7 +259,7 @@ public class SubsumptionTester {
 					.execute(getBus())
 					.getSync();
 
-			for (ISnomedRelationship relationship : outboundRelationships) {
+			for (SnomedRelationship relationship : outboundRelationships) {
 				if (relationship.getTypeId().equals(CONCEPT_ID_SAME_AS) || relationship.getTypeId().equals(CONCEPT_ID_REPLACED_BY)) {
 					replacementConceptId = relationship.getDestinationId();
 					break;

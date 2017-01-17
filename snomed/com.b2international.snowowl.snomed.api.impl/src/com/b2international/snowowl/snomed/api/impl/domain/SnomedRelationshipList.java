@@ -17,10 +17,10 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 
 import com.b2international.snowowl.core.domain.AbstractComponentList;
 import com.b2international.snowowl.core.domain.IComponentList;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 
 /**
  */
-public class SnomedRelationshipList extends AbstractComponentList<ISnomedRelationship> implements IComponentList<ISnomedRelationship> {
+public class SnomedRelationshipList extends AbstractComponentList<SnomedRelationship> implements IComponentList<SnomedRelationship> {
 	// Empty class body
 }

@@ -71,7 +71,7 @@ import com.b2international.snowowl.snomed.core.domain.ConceptEnum;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -310,13 +310,13 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		return SnomedBrowserDescriptionType.getByConceptId(typeId);
 	}
 
-	private List<ISnomedBrowserRelationship> convertRelationships(final Iterable<ISnomedRelationship> relationships, final IComponentRef sourceConceptRef, final List<ExtendedLocale> locales) {
+	private List<ISnomedBrowserRelationship> convertRelationships(final Iterable<SnomedRelationship> relationships, final IComponentRef sourceConceptRef, final List<ExtendedLocale> locales) {
 		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(sourceConceptRef, InternalComponentRef.class);
 		final IBranchPath branchPath = internalConceptRef.getBranch().branchPath();
 		final DescriptionService descriptionService = new DescriptionService(bus, sourceConceptRef.getBranchPath());
 
 		final ImmutableMap.Builder<String, ISnomedBrowserRelationship> convertedRelationshipBuilder = ImmutableMap.builder();
-		for (final ISnomedRelationship relationship : relationships) {
+		for (final SnomedRelationship relationship : relationships) {
 			final SnomedBrowserRelationship convertedRelationship = new SnomedBrowserRelationship(relationship.getId());
 			convertedRelationship.setActive(relationship.isActive());
 			convertedRelationship.setCharacteristicType(relationship.getCharacteristicType());
@@ -337,7 +337,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			@Override
 			protected Iterable<ISnomedConcept> getConceptEntries(String conceptId) {
 				final Set<String> typeIds = newHashSet();
-				for (final ISnomedRelationship relationship : relationships) {
+				for (final SnomedRelationship relationship : relationships) {
 					typeIds.add(relationship.getTypeId());
 				}
 				return getConcepts(branchPath, typeIds);
@@ -366,7 +366,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			@Override
 			protected Iterable<ISnomedConcept> getConceptEntries(String conceptId) {
 				final Set<String> destinationConceptIds = newHashSet();
-				for (final ISnomedRelationship relationship : relationships) {
+				for (final SnomedRelationship relationship : relationships) {
 					destinationConceptIds.add(relationship.getDestinationId());
 				}
 				return getConcepts(branchPath, destinationConceptIds);
@@ -392,7 +392,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			}
 		});
 		
-		for (ISnomedRelationship entry : relationships) {
+		for (SnomedRelationship entry : relationships) {
 			SnomedBrowserRelationship rel = (SnomedBrowserRelationship) convertedRelationships.get(entry.getId());
 			SnomedBrowserRelationshipType type = typesById.get(entry.getTypeId());
 			SnomedBrowserRelationshipTarget target = targetsById.get(entry.getDestinationId());

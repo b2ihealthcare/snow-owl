@@ -39,7 +39,7 @@ import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -68,7 +68,7 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 	private InactivationIndicator inactivationIndicator;
 	private Multimap<AssociationType, String> associationTargets;
 	private List<SnomedDescription> descriptions;
-	private List<ISnomedRelationship> relationships;
+	private List<SnomedRelationship> relationships;
 	private List<SnomedReferenceSetMember> members;
 	
 	SnomedConceptUpdateRequest(String componentId) {
@@ -95,7 +95,7 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 		this.descriptions = descriptions;
 	}
 	
-	void setRelationships(List<ISnomedRelationship> relationships) {
+	void setRelationships(List<SnomedRelationship> relationships) {
 		this.relationships = relationships;
 	}
 	

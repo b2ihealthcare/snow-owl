@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -130,7 +130,7 @@ final class EclExpression {
 					.then(new Function<SnomedRelationships, Set<String>>() {
 						@Override
 						public Set<String> apply(SnomedRelationships input) {
-							return FluentIterable.from(input).transform(ISnomedRelationship::getSourceId).toSet();
+							return FluentIterable.from(input).transform(SnomedRelationship::getSourceId).toSet();
 						}
 					});
 		}

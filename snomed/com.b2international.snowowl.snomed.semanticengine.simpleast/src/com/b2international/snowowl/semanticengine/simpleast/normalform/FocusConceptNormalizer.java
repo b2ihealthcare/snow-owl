@@ -28,7 +28,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -166,7 +166,7 @@ public class FocusConceptNormalizer {
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
-		for (ISnomedRelationship relationship : outboundRelationships) {
+		for (SnomedRelationship relationship : outboundRelationships) {
 			proximatePrimitiveSuperTypes.addAll(getProximatePrimitiveSuperTypes(relationship.getDestinationConcept()));
 		}
 		return filterSuperTypesToProximate(proximatePrimitiveSuperTypes);

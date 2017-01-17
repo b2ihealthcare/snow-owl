@@ -44,7 +44,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedOutboundRelation
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
@@ -182,8 +182,8 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 							final SnomedInboundRelationships result = new SnomedInboundRelationships();
 							result.setTotal(input.getTotal());
 							
-							final List<ISnomedRelationship> members = newArrayList();
-							for (ISnomedRelationship relationship : input) {
+							final List<ExpandableSnomedRelationship> members = newArrayList();
+							for (SnomedRelationship relationship : input) {
 								members.add(new ExpandableSnomedRelationship(relationship, expand));
 							}
 							

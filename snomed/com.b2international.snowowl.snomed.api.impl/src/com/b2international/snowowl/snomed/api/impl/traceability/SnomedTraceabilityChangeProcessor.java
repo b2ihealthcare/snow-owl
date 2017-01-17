@@ -71,7 +71,7 @@ import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserR
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationshipType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
@@ -375,9 +375,9 @@ public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 	}
 
 	private List<ISnomedBrowserRelationship> convertRelationships(SnomedRelationships relationships) {
-		return FluentIterable.from(relationships).transform(new Function<ISnomedRelationship, ISnomedBrowserRelationship>() {
+		return FluentIterable.from(relationships).transform(new Function<SnomedRelationship, ISnomedBrowserRelationship>() {
 			@Override
-			public ISnomedBrowserRelationship apply(ISnomedRelationship input) {
+			public ISnomedBrowserRelationship apply(SnomedRelationship input) {
 				final SnomedBrowserRelationship convertedRelationship = new SnomedBrowserRelationship();
 				
 				convertedRelationship.setActive(input.isActive());

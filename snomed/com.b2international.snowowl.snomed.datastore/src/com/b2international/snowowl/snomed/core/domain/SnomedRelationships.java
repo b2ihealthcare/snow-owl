@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,13 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 /**
  * @since 4.5
  */
-public final class SnomedRelationships extends PageableCollectionResource<ISnomedRelationship> {
+public final class SnomedRelationships extends PageableCollectionResource<SnomedRelationship> {
 
 	public SnomedRelationships(int offset, int limit, int total) {
-		super(Collections.<ISnomedRelationship>emptyList(), offset, limit, total);
+		super(Collections.emptyList(), offset, limit, total);
 	}
 
-	public SnomedRelationships(List<ISnomedRelationship> items, int offset, int limit, int total) {
+	public SnomedRelationships(List<SnomedRelationship> items, int offset, int limit, int total) {
 		super(items, offset, limit, total);
 	}
 

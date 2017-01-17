@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.datastore.server;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
@@ -30,7 +30,7 @@ public class SnomedRelationshipNameProvider implements ISnomedRelationshipNamePr
 
 	@Override
 	public String getComponentLabel(IBranchPath branchPath, String componentId) {
-		final ISnomedRelationship relationship = SnomedRequests.prepareGetRelationship()
+		final SnomedRelationship relationship = SnomedRequests.prepareGetRelationship()
 				.setComponentId(componentId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))

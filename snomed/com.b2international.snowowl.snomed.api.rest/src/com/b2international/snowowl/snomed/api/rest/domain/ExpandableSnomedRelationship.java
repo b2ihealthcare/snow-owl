@@ -4,19 +4,18 @@ import java.util.Date;
 
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class ExpandableSnomedRelationship implements ISnomedRelationship {
+public class ExpandableSnomedRelationship {
 	
-	private ISnomedRelationship wrappedRelationship;
+	private SnomedRelationship wrappedRelationship;
 	private SnomedConceptMini source;
 	private SnomedConceptMini type;
 	
-	public ExpandableSnomedRelationship(ISnomedRelationship wrappedRelationship, String[] expand) {
+	public ExpandableSnomedRelationship(SnomedRelationship wrappedRelationship, String[] expand) {
 		this.wrappedRelationship = wrappedRelationship;
 		final ISnomedConcept source = wrappedRelationship.getSourceConcept();
 		for (String expandParam : expand) {
@@ -38,27 +37,22 @@ public class ExpandableSnomedRelationship implements ISnomedRelationship {
 	}
 	
 	@JsonIgnore
-	@Override
 	public long getStorageKey() {
 		return -1;
 	}
 	
-	@Override
 	public SnomedReferenceSetMembers getMembers() {
 		return null;
 	}
 	
-	@Override
 	public ISnomedConcept getDestinationConcept() {
 		return null;
 	}
 	
-	@Override
 	public ISnomedConcept getSourceConcept() {
 		return null;
 	}
 	
-	@Override
 	public ISnomedConcept getTypeConcept() {
 		return null;
 	}
@@ -79,82 +73,62 @@ public class ExpandableSnomedRelationship implements ISnomedRelationship {
 		return type;
 	}
 
-	@Override
 	public Boolean isActive() {
 		return wrappedRelationship.isActive();
 	}
 
-	@Override
 	public Date getEffectiveTime() {
 		return wrappedRelationship.getEffectiveTime();
 	}
 
-	@Override
 	public String getModuleId() {
 		return wrappedRelationship.getModuleId();
 	}
 
-	@Override
 	public String getId() {
 		return wrappedRelationship.getId();
 	}
 
-	@Override
 	public Boolean isReleased() {
 		return wrappedRelationship.isReleased();
 	}
 
-	@Override
 	public String getSourceId() {
 		return wrappedRelationship.getSourceId();
 	}
 
-	@Override
 	public String getDestinationId() {
 		return wrappedRelationship.getDestinationId();
 	}
 
-	@Override
 	public boolean isDestinationNegated() {
 		return wrappedRelationship.isDestinationNegated();
 	}
 
-	@Override
 	public String getTypeId() {
 		return wrappedRelationship.getTypeId();
 	}
 
-	@Override
 	public Integer getGroup() {
 		return wrappedRelationship.getGroup();
 	}
 
-	@Override
 	public Integer getUnionGroup() {
 		return wrappedRelationship.getUnionGroup();
 	}
 
-	@Override
 	public CharacteristicType getCharacteristicType() {
 		return wrappedRelationship.getCharacteristicType();
 	}
 
-	@Override
-	public RelationshipRefinability getRefinability() {
-		return wrappedRelationship.getRefinability();
-	}
-
-	@Override
 	public RelationshipModifier getModifier() {
 		return wrappedRelationship.getModifier();
 	}
 	
-	@Override
 	public String getIconId() {
 		return wrappedRelationship.getIconId();
 	}
 	
-	@Override
 	public Float getScore() {
 		return wrappedRelationship.getScore();
 	}

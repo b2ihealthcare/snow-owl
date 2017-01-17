@@ -22,7 +22,7 @@ import java.util.List;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 
@@ -57,11 +57,11 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		return getSelf();
 	}
 	
-	public SnomedConceptCreateRequestBuilder addRelationship(ISnomedRelationship relationship) {
+	public SnomedConceptCreateRequestBuilder addRelationship(SnomedRelationship relationship) {
 		return addRelationship((SnomedRelationshipCreateRequest) relationship.toCreateRequest());
 	}
 	
-	public SnomedConceptCreateRequestBuilder addRelationships(Iterable<? extends ISnomedRelationship> relationships) {
+	public SnomedConceptCreateRequestBuilder addRelationships(Iterable<? extends SnomedRelationship> relationships) {
 		relationships.forEach(this::addRelationship);
 		return getSelf();
 	}

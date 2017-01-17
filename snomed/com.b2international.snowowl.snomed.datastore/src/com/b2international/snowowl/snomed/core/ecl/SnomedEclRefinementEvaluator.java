@@ -42,7 +42,7 @@ import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -624,7 +624,7 @@ final class SnomedEclRefinementEvaluator {
 				.setFields(fieldsToLoad.build());
 		
 		// XXX more than 1000 IDs will be filtered using Java instead of in the query to gain performance
-		final Predicate<ISnomedRelationship> sourcePredicate;
+		final Predicate<SnomedRelationship> sourcePredicate;
 		if (sourceFilter.size() < 1000) {
 			req.filterBySource(sourceFilter);
 			sourcePredicate = Predicates.alwaysTrue();
@@ -632,7 +632,7 @@ final class SnomedEclRefinementEvaluator {
 			sourcePredicate = relationship -> sourceFilter.contains(relationship.getSourceId());
 		}
 		
-		final Predicate<ISnomedRelationship> destinationPredicate;
+		final Predicate<SnomedRelationship> destinationPredicate;
 		if (destinationFilter.size() < 1000) {
 			req.filterByDestination(destinationFilter);
 			destinationPredicate = Predicates.alwaysTrue();
@@ -651,9 +651,9 @@ final class SnomedEclRefinementEvaluator {
 				.then(new Function<SnomedRelationships, Collection<Property>>() {
 					@Override
 					public Collection<Property> apply(SnomedRelationships input) {
-						return FluentIterable.from(input).filter(Predicates.and(sourcePredicate, destinationPredicate)).transform(new Function<ISnomedRelationship, Property>() {
+						return FluentIterable.from(input).filter(Predicates.and(sourcePredicate, destinationPredicate)).transform(new Function<SnomedRelationship, Property>() {
 							@Override
-							public Property apply(ISnomedRelationship input) {
+							public Property apply(SnomedRelationship input) {
 								return new Property(input.getId(), input.getSourceId(), input.getTypeId(), input.getDestinationId(), input.getGroup());
 							}
 						}).toSet();

@@ -52,7 +52,7 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
@@ -545,7 +545,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		final String relationshipId = referencedComponentPair.getComponentId();
 		
 		// Try to retrieve from the lightweight store first
-		final ISnomedRelationship relationshipMini = Iterables.getOnlyElement(SnomedRequests.prepareSearchRelationship()
+		final SnomedRelationship relationshipMini = Iterables.getOnlyElement(SnomedRequests.prepareSearchRelationship()
 				.setLimit(1)
 				.setComponentIds(Collections.singleton(relationshipId))
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())

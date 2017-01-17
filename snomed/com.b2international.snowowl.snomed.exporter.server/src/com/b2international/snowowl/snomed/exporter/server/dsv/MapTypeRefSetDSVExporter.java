@@ -45,7 +45,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -136,8 +136,8 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					}
 				} else if (referencedComponent instanceof SnomedDescription) {
 					labelMap.put(id, ((SnomedDescription) referencedComponent).getTerm());
-				} else if (referencedComponent instanceof ISnomedRelationship) {
-					ISnomedRelationship relationship = (ISnomedRelationship) referencedComponent;
+				} else if (referencedComponent instanceof SnomedRelationship) {
+					SnomedRelationship relationship = (SnomedRelationship) referencedComponent;
 					labelMap.put(id, String.format("%s - %s - %s",relationship.getSourceId(), relationship.getTypeId(), relationship.getDestinationId()));
 				}
 			}

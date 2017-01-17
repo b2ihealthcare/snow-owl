@@ -26,7 +26,7 @@ import com.b2international.snowowl.scripting.services.api.IHierarchicalService;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
@@ -277,9 +277,9 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 				.then(new Function<SnomedRelationships, Collection<ISnomedConcept>>() {
 					@Override
 					public Collection<ISnomedConcept> apply(SnomedRelationships input) {
-						return FluentIterable.from(input).transform(new Function<ISnomedRelationship, ISnomedConcept>() {
+						return FluentIterable.from(input).transform(new Function<SnomedRelationship, ISnomedConcept>() {
 							@Override
-							public ISnomedConcept apply(ISnomedRelationship input) {
+							public ISnomedConcept apply(SnomedRelationship input) {
 								return input.getSourceConcept();
 							}
 						}).toList();

@@ -39,7 +39,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRest
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestUpdate;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -100,7 +100,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/relationships/{relationshipId}", method=RequestMethod.GET)
-	public DeferredResult<ISnomedRelationship> read(
+	public DeferredResult<SnomedRelationship> read(
 			@ApiParam(value="The branch path")
 			@PathVariable("path") 
 			final String branchPath,

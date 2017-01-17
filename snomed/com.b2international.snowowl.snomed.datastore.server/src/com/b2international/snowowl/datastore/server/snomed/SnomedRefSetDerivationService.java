@@ -39,7 +39,7 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
@@ -201,7 +201,7 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 
 		final SnomedRegularRefSet refSet = context.createSnomedSimpleTypeRefSet(format("{0} - relationships", refSetName), RELATIONSHIP);
 		
-		for (ISnomedRelationship relationship : getEdgesBetween(context.getBranch(), componentIds)) {
+		for (SnomedRelationship relationship : getEdgesBetween(context.getBranch(), componentIds)) {
 			members.add(context.createSimpleTypeRefSetMember(
 					createRelationshipTypePair(relationship.getId()), 
 					moduleId, 
