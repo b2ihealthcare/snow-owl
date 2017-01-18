@@ -36,7 +36,7 @@ public class SnomedRelationshipNameProvider implements ISnomedRelationshipNamePr
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 		// TODO expand proper labels if name providers are viable
-		return String.format("%s - %s - %s", relationship.getSourceConcept().getId(), relationship.getTypeConcept().getId(), relationship.getDestinationConcept().getId());
+		return String.format("%s - %s - %s", relationship.getSource().getId(), relationship.getType().getId(), relationship.getDestination().getId());
 	}
 	
 }

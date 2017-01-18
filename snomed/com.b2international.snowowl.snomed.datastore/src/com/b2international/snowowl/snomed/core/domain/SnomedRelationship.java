@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.domain;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -44,8 +45,9 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 		setId(id);
 	}
 
+	@JsonProperty
 	public String getSourceId() {
-		return getSourceConcept() == null ? null : getSourceConcept().getId();
+		return getSource() == null ? null : getSource().getId();
 	}
 	
 	/**
@@ -53,12 +55,13 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * 
 	 * @return
 	 */
-	public SnomedConcept getSourceConcept() {
+	public SnomedConcept getSource() {
 		return source;
 	}
 
+	@JsonProperty
 	public String getDestinationId() {
-		return getDestinationConcept() == null ? null : getDestinationConcept().getId();
+		return getDestination() == null ? null : getDestination().getId();
 	}
 
 	/**
@@ -66,7 +69,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * 
 	 * @return
 	 */
-	public SnomedConcept getDestinationConcept() {
+	public SnomedConcept getDestination() {
 		return destination;
 	}
 
@@ -84,8 +87,9 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * 
 	 * @return the relationship type identifier
 	 */
+	@JsonProperty
 	public String getTypeId() {
-		return getTypeConcept() == null ? null : getTypeConcept().getId();
+		return getType() == null ? null : getType().getId();
 	}
 
 	/**
@@ -93,7 +97,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * 
 	 * @return
 	 */
-	public SnomedConcept getTypeConcept() {
+	public SnomedConcept getType() {
 		return type;
 	}
 
@@ -137,17 +141,17 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 		this.source = source;
 	}
 	
-	@JsonProperty
-	void setSourceId(String sourceId) {
+	@JsonIgnore
+	public void setSourceId(String sourceId) {
 		setSource(new SnomedConcept(sourceId));
 	}
-	
+
 	public void setDestination(SnomedConcept destination) {
 		this.destination = destination;
 	}
 	
-	@JsonProperty
-	void setDestinationId(String destinationId) {
+	@JsonIgnore
+	public void setDestinationId(String destinationId) {
 		setDestination(new SnomedConcept(destinationId));
 	}
 	
@@ -155,8 +159,8 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 		this.type = type;
 	}
 	
-	@JsonProperty
-	void setTypeId(String typeId) {
+	@JsonIgnore
+	public void setTypeId(String typeId) {
 		setType(new SnomedConcept(typeId));
 	}
 	

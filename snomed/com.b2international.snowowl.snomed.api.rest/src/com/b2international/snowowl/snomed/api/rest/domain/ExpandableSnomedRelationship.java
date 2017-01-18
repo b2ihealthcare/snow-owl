@@ -17,7 +17,7 @@ public class ExpandableSnomedRelationship {
 	
 	public ExpandableSnomedRelationship(SnomedRelationship wrappedRelationship, String[] expand) {
 		this.wrappedRelationship = wrappedRelationship;
-		final SnomedConcept source = wrappedRelationship.getSourceConcept();
+		final SnomedConcept source = wrappedRelationship.getSource();
 		for (String expandParam : expand) {
 			if ("source.fsn".equals(expandParam)) {
 				if (source.getFsn() != null) {
@@ -26,7 +26,7 @@ public class ExpandableSnomedRelationship {
 					setSource(new SnomedConceptMini(source.getId()));
 				}
 			} else if ("type.fsn".equals(expandParam)) {
-				final SnomedConcept type = wrappedRelationship.getTypeConcept();
+				final SnomedConcept type = wrappedRelationship.getType();
 				if (type.getFsn() != null) {
 					setType(new SnomedConceptMini(type.getId(), type.getFsn().getTerm()));
 				} else {

@@ -280,7 +280,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 						return FluentIterable.from(input).transform(new Function<SnomedRelationship, SnomedConcept>() {
 							@Override
 							public SnomedConcept apply(SnomedRelationship input) {
-								return input.getSourceConcept();
+								return input.getSource();
 							}
 						}).toList();
 					}

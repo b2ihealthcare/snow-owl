@@ -161,7 +161,7 @@ public class FocusConceptNormalizer {
 				.getSync();
 		//for (int i = 0; i < outgoingRelationships.length; i++) {
 		for (SnomedRelationship relationship : outboundRelationships) {
-			SnomedConcept destinationConcept = relationship.getDestinationConcept();
+			SnomedConcept destinationConcept = relationship.getDestination();
 			SnomedConceptDocument destinationConceptDocument = SnomedConceptDocument.builder(destinationConcept).build();
 			
 			if (destinationConcept.getDefinitionStatus().isPrimitive()) {

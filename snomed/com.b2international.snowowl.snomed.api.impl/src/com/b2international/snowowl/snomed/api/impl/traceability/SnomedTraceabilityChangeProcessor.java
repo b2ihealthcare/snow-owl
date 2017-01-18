@@ -394,12 +394,12 @@ public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 				convertedRelationship.setType(type);
 				
 				final SnomedBrowserRelationshipTarget target = new SnomedBrowserRelationshipTarget();
-				target.setActive(input.getDestinationConcept().isActive());
+				target.setActive(input.getDestination().isActive());
 				target.setConceptId(input.getDestinationId());
-				target.setDefinitionStatus(input.getDestinationConcept().getDefinitionStatus());
-				target.setEffectiveTime(input.getDestinationConcept().getEffectiveTime());
+				target.setDefinitionStatus(input.getDestination().getDefinitionStatus());
+				target.setEffectiveTime(input.getDestination().getEffectiveTime());
 				target.setFsn(input.getDestinationId());
-				target.setModuleId(input.getDestinationConcept().getModuleId());
+				target.setModuleId(input.getDestination().getModuleId());
 				convertedRelationship.setTarget(target);
 				
 				return convertedRelationship;

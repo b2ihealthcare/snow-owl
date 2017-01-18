@@ -306,12 +306,12 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 			final Row row = sheet.createRow(rowNum);
 			
 			createCell(row, relationship.getId(), 0, DEFAULT_STYLE);
-			createCell(row, relationship.getSourceConcept().getId(), 1, DEFAULT_STYLE);
-			createCell(row, getPtOrId(relationship.getSourceConcept()), 2, DEFAULT_STYLE);
-			createCell(row, relationship.getTypeConcept().getId(), 3, DEFAULT_STYLE);
-			createCell(row, getPtOrId(relationship.getTypeConcept()), 4, DEFAULT_STYLE);
-			createCell(row, relationship.getDestinationConcept().getId(), 5, DEFAULT_STYLE);
-			createCell(row, getPtOrId(relationship.getDestinationConcept()), 6, DEFAULT_STYLE);
+			createCell(row, relationship.getSource().getId(), 1, DEFAULT_STYLE);
+			createCell(row, getPtOrId(relationship.getSource()), 2, DEFAULT_STYLE);
+			createCell(row, relationship.getType().getId(), 3, DEFAULT_STYLE);
+			createCell(row, getPtOrId(relationship.getType()), 4, DEFAULT_STYLE);
+			createCell(row, relationship.getDestination().getId(), 5, DEFAULT_STYLE);
+			createCell(row, getPtOrId(relationship.getDestination()), 6, DEFAULT_STYLE);
 			createCell(row, relationship.isActive() ? "Active" : "Inactive", 7, DEFAULT_STYLE);
 			createCell(row, getExportedEffectiveTime(relationship.getEffectiveTime()), 8, DEFAULT_STYLE);
 			createCell(row, relationship.getModuleId(), 9, DEFAULT_STYLE);

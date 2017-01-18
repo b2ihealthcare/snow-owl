@@ -88,8 +88,8 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 		@Override
 		public String apply(SnomedReferenceSetMember input) {
 			final SnomedRelationship relationship = (SnomedRelationship) input.getReferencedComponent();
-			return String.format("%s %s %s", relationship.getSourceConcept().getPt().getTerm(),
-					relationship.getTypeConcept().getPt().getTerm(), relationship.getDestinationConcept().getPt().getTerm());
+			return String.format("%s %s %s", relationship.getSource().getPt().getTerm(),
+					relationship.getType().getPt().getTerm(), relationship.getDestination().getPt().getTerm());
 		}
 	};
 

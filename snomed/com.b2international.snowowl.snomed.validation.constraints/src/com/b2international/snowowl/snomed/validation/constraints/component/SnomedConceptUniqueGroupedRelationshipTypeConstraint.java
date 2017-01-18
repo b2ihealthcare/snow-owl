@@ -133,7 +133,7 @@ public class SnomedConceptUniqueGroupedRelationshipTypeConstraint extends Compon
 
 	private String createErrorMessage(final SnomedConceptDocument component, final SnomedRelationship relationship, final IBranchPath branchPath) {
 		return String.format("'%s' has a relationship of type '%s' which is non-unique within its group (%s).", component.getLabel(),
-				relationship.getTypeConcept().getPt().getTerm(), relationship.getGroup());
+				relationship.getType().getPt().getTerm(), relationship.getGroup());
 	}
 
 	private List<ExtendedLocale> getLocales() {

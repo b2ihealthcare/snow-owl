@@ -167,7 +167,7 @@ public class FocusConceptNormalizer {
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 		for (SnomedRelationship relationship : outboundRelationships) {
-			proximatePrimitiveSuperTypes.addAll(getProximatePrimitiveSuperTypes(relationship.getDestinationConcept()));
+			proximatePrimitiveSuperTypes.addAll(getProximatePrimitiveSuperTypes(relationship.getDestination()));
 		}
 		return filterSuperTypesToProximate(proximatePrimitiveSuperTypes);
 	}

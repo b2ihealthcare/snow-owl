@@ -65,7 +65,7 @@ public class SnomedConceptNotRelatedToItselfConstraint extends ComponentValidati
 	}
 
 	private String createErrorMessage(final SnomedConceptDocument component, final SnomedRelationship relationship, final IBranchPath branchPath) {
-		return String.format("'%s' has an active relationship of type '%s' which points to itself.", component.getLabel(), relationship.getTypeConcept().getPt().getTerm());
+		return String.format("'%s' has an active relationship of type '%s' which points to itself.", component.getLabel(), relationship.getType().getPt().getTerm());
 	}
 
 	private List<ExtendedLocale> getLocales() {
