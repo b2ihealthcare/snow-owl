@@ -15,30 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.request;
 
-import java.util.Set;
-
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilder;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 5.5
  */
-public final class SnomedIdentifierRegisterRequestBuilder extends BaseRepositoryRequestBuilder<SnomedIdentifierRegisterRequestBuilder, Boolean> {
+public final class SnomedIdentifierRegisterRequestBuilder extends AbstractSnomedIdentifierEnumeratedRequestBuilder<SnomedIdentifierRegisterRequestBuilder, Boolean> {
 
-	private Set<String> componentIds;
-
-	public SnomedIdentifierRegisterRequestBuilder setComponentId(String componentId) {
-		this.componentIds = ImmutableSet.of(componentId);
-		return getSelf();
-	}
-
-	public SnomedIdentifierRegisterRequestBuilder setComponentIds(Set<String> componentIds) {
-		this.componentIds = ImmutableSet.copyOf(componentIds);
-		return getSelf();
-	}
-	
 	@Override
 	protected Request<RepositoryContext, Boolean> doBuild() {
 		return new SnomedIdentifierRegisterRequest(componentIds);

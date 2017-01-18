@@ -17,30 +17,20 @@ package com.b2international.snowowl.snomed.datastore.id.request;
 
 import java.util.Set;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 
 /**
  * @since 5.5
  */
-final class SnomedIdentifierDeprecateRequest extends BaseRequest<RepositoryContext, Boolean> {
-
-	private final Set<String> componentIds;
+final class SnomedIdentifierDeprecateRequest extends AbstractSnomedIdentifierEnumeratedRequest {
 
 	SnomedIdentifierDeprecateRequest(final Set<String> componentIds) {
-		this.componentIds = componentIds;
+		super(componentIds);
 	}
-
+	
 	@Override
-	public Boolean execute(RepositoryContext context) {
-		context.service(ISnomedIdentifierService.class).deprecate(componentIds);
-		return Boolean.TRUE;
-	}
-
-	@Override
-	protected Class<Boolean> getReturnType() {
-		return Boolean.class;
+	protected void doExecute(ISnomedIdentifierService identifierService, Set<String> componentIds) {
+		identifierService.deprecate(componentIds);
 	}
 
 }

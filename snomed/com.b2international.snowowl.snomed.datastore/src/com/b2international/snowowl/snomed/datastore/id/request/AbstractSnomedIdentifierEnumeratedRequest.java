@@ -17,21 +17,32 @@ package com.b2international.snowowl.snomed.datastore.id.request;
 
 import java.util.Set;
 
-import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 
 /**
  * @since 5.5
  */
-final class SnomedIdentifierGenerateRequest extends AbstractSnomedIdentifierCountedRequest {
+abstract class AbstractSnomedIdentifierEnumeratedRequest extends BaseRequest<RepositoryContext, Boolean> {
 
-	SnomedIdentifierGenerateRequest(ComponentCategory category, String namespace, int quantity) {
-		super(category, namespace, quantity);
+	private final Set<String> componentIds;
+
+	AbstractSnomedIdentifierEnumeratedRequest(Set<String> componentIds) {
+		this.componentIds = componentIds;
 	}
-	
+
 	@Override
-	protected Set<String> doExecute(ISnomedIdentifierService identifierService, String namespace, ComponentCategory category, int quantity) {
-		return identifierService.generate(namespace, category, quantity);
+	public final Boolean execute(RepositoryContext context) {
+		doExecute(context.service(ISnomedIdentifierService.class), componentIds);
+		return Boolean.TRUE;
+	}
+
+	protected abstract void doExecute(ISnomedIdentifierService identifierService, Set<String> componentIds);
+
+	@Override
+	protected final Class<Boolean> getReturnType() {
+		return Boolean.class;
 	}
 
 }

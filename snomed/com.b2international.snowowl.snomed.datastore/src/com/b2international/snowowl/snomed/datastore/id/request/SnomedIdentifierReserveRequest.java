@@ -15,42 +15,20 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.request;
 
-import javax.annotation.Nonnegative;
-import javax.validation.constraints.NotNull;
+import java.util.Set;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.domain.SnomedComponentIds;
 
-/**
- * @since 4.5
- */
-final class SnomedIdentifierReserveRequest extends BaseRequest<RepositoryContext, SnomedComponentIds> {
-
-	@NotNull
-	private final ComponentCategory category;
-	
-	private final String namespace;
-
-	@Nonnegative
-	private final int quantity;
+final class SnomedIdentifierReserveRequest extends AbstractSnomedIdentifierCountedRequest {
 
 	SnomedIdentifierReserveRequest(ComponentCategory category, String namespace, int quantity) {
-		this.category = category;
-		this.namespace = namespace;
-		this.quantity = quantity;
+		super(category, namespace, quantity);
 	}
-
+	
 	@Override
-	public SnomedComponentIds execute(RepositoryContext context) {
-		return new SnomedComponentIds(context.service(ISnomedIdentifierService.class).reserve(namespace, category, quantity));
-	}
-
-	@Override
-	protected Class<SnomedComponentIds> getReturnType() {
-		return SnomedComponentIds.class;
+	protected Set<String> doExecute(ISnomedIdentifierService identifierService, String namespace, ComponentCategory category, int quantity) {
+		return identifierService.reserve(namespace, category, quantity);
 	}
 
 }

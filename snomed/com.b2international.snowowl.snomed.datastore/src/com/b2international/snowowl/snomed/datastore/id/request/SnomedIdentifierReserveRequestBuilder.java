@@ -17,33 +17,12 @@ package com.b2international.snowowl.snomed.datastore.id.request;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.id.domain.SnomedComponentIds;
 
 /**
  * @since 5.5
  */
-public final class SnomedIdentifierReserveRequestBuilder extends BaseRepositoryRequestBuilder<SnomedIdentifierReserveRequestBuilder, SnomedComponentIds> {
-
-	private ComponentCategory category;
-	private String namespace;
-	private int quantity = 1;
-	
-	public SnomedIdentifierReserveRequestBuilder setCategory(ComponentCategory category) {
-		this.category = category;
-		return getSelf();
-	}
-	
-	public SnomedIdentifierReserveRequestBuilder setNamespace(String namespace) {
-		this.namespace = namespace;
-		return getSelf();
-	}
-	
-	public SnomedIdentifierReserveRequestBuilder setQuantity(int quantity) {
-		this.quantity = quantity;
-		return getSelf();
-	}
+public final class SnomedIdentifierReserveRequestBuilder extends AbstractSnomedIdentifierCountedRequestBuilder<SnomedIdentifierReserveRequestBuilder> {
 	
 	@Override
 	protected Request<RepositoryContext, SnomedComponentIds> doBuild() {

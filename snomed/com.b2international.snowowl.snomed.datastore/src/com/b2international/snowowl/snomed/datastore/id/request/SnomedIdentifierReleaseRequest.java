@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,30 +17,20 @@ package com.b2international.snowowl.snomed.datastore.id.request;
 
 import java.util.Set;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 
 /**
- * @since 4.5
+ * @since 5.5
  */
-final class SnomedIdentifierReleaseRequest extends BaseRequest<RepositoryContext, Boolean> {
-
-	private final Set<String> componentIds;
+final class SnomedIdentifierReleaseRequest extends AbstractSnomedIdentifierEnumeratedRequest {
 
 	SnomedIdentifierReleaseRequest(final Set<String> componentIds) {
-		this.componentIds = componentIds;
+		super(componentIds);
 	}
-
+	
 	@Override
-	public Boolean execute(RepositoryContext context) {
-		context.service(ISnomedIdentifierService.class).release(componentIds);
-		return Boolean.TRUE;
-	}
-
-	@Override
-	protected Class<Boolean> getReturnType() {
-		return Boolean.class;
+	protected void doExecute(ISnomedIdentifierService identifierService, Set<String> componentIds) {
+		identifierService.release(componentIds);
 	}
 
 }

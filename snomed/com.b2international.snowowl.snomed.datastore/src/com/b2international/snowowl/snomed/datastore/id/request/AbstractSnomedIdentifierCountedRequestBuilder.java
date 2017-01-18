@@ -15,23 +15,32 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.request;
 
-import java.util.Set;
-
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.id.domain.SnomedComponentIds;
 
 /**
  * @since 5.5
  */
-final class SnomedIdentifierGenerateRequest extends AbstractSnomedIdentifierCountedRequest {
+public abstract class AbstractSnomedIdentifierCountedRequestBuilder<B extends AbstractSnomedIdentifierCountedRequestBuilder<B>> extends BaseRepositoryRequestBuilder<B, SnomedComponentIds> {
 
-	SnomedIdentifierGenerateRequest(ComponentCategory category, String namespace, int quantity) {
-		super(category, namespace, quantity);
+	protected ComponentCategory category;
+	protected String namespace;
+	protected int quantity = 1;
+	
+	public B setCategory(ComponentCategory category) {
+		this.category = category;
+		return getSelf();
 	}
 	
-	@Override
-	protected Set<String> doExecute(ISnomedIdentifierService identifierService, String namespace, ComponentCategory category, int quantity) {
-		return identifierService.generate(namespace, category, quantity);
+	public B setNamespace(String namespace) {
+		this.namespace = namespace;
+		return getSelf();
+	}
+	
+	public B setQuantity(int quantity) {
+		this.quantity = quantity;
+		return getSelf();
 	}
 
 }
