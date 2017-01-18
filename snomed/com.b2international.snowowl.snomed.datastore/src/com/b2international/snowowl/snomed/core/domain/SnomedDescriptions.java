@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.5
@@ -29,7 +31,12 @@ public final class SnomedDescriptions extends PageableCollectionResource<SnomedD
 		super(Collections.emptyList(), offset, limit, total);
 	}
 
-	public SnomedDescriptions(List<SnomedDescription> items, int offset, int limit, int total) {
+	@JsonCreator
+	public SnomedDescriptions(
+			@JsonProperty("items") List<SnomedDescription> items, 
+			@JsonProperty("offset") int offset, 
+			@JsonProperty("limit") int limit, 
+			@JsonProperty("total") int total) {
 		super(items, offset, limit, total);
 	}
 
