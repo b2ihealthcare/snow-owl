@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -43,8 +44,8 @@ public class SnomedRelationshipValidator extends AbstractSnomedValidator {
 	private Collection<String> relationshipSourceAndDestinationAreEqual = Sets.newHashSet();
 	private Collection<String> missingReferencedConcepts = Sets.newHashSet();
 	
-	public SnomedRelationshipValidator(final ImportConfiguration configuration, final SnomedValidationContext context) throws IOException {
-		super(configuration, configuration.toURL(configuration.getRelationshipsFile()), ComponentImportType.RELATIONSHIP, context, SnomedRf2Headers.RELATIONSHIP_HEADER);
+	public SnomedRelationshipValidator(final ImportConfiguration configuration, final SnomedValidationContext context, final File relationshipsFile) throws IOException {
+		super(configuration, configuration.toURL(relationshipsFile), ComponentImportType.RELATIONSHIP, context, SnomedRf2Headers.RELATIONSHIP_HEADER);
 	}
 
 	@Override

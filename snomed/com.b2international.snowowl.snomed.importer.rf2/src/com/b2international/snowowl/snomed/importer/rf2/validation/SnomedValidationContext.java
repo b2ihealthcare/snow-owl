@@ -151,11 +151,11 @@ public final class SnomedValidationContext {
 		}
 
 		if (isValidReleaseFile(configuration.getRelationshipsFile())) {
-			releaseFileValidators.add(new SnomedRelationshipValidator(configuration, this));
+			releaseFileValidators.add(new SnomedRelationshipValidator(configuration, this, configuration.getRelationshipsFile()));
 		}
 		
 		if (isValidReleaseFile(configuration.getStatedRelationshipsFile())) {
-			releaseFileValidators.add(new SnomedRelationshipValidator(configuration, this));
+			releaseFileValidators.add(new SnomedRelationshipValidator(configuration, this, configuration.getStatedRelationshipsFile()));
 		}
 	}
 	
