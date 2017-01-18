@@ -5,7 +5,13 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - SnomedDescription REST representation changes
- * `acceptabilityMap` changed to `acceptability`
+ * Changed `acceptabilityMap` to `acceptability`
+ * Changed `descriptionInactivationIndicator` to `inactivationIndicator`
+- SnomedRelationship REST representation changes
+ * Changed `sourceConcept` to `source`
+ * Changed `typeConcept` to `type`
+ * Changed `destinationConcept` to `destination`
+ * Removed `refinability`
 - POST /{path}/concepts
  * Added support for relationship creation as part of concept creation
  * Added support for member creation as part of concept creation
