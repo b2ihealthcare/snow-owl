@@ -17,14 +17,14 @@ package com.b2international.snowowl.snomed.datastore.id.request;
 
 import java.util.Set;
 
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 
 /**
  * @since 5.5
  */
-final class SnomedIdentifierRegisterRequest extends BaseRequest<BranchContext, Boolean> {
+final class SnomedIdentifierRegisterRequest extends BaseRequest<RepositoryContext, Boolean> {
 
 	private final Set<String> componentIds;
 
@@ -33,7 +33,7 @@ final class SnomedIdentifierRegisterRequest extends BaseRequest<BranchContext, B
 	}
 
 	@Override
-	public Boolean execute(BranchContext context) {
+	public Boolean execute(RepositoryContext context) {
 		context.service(ISnomedIdentifierService.class).register(componentIds);
 		return Boolean.TRUE;
 	}

@@ -17,15 +17,15 @@ package com.b2international.snowowl.snomed.datastore.id.request;
 
 import java.util.Set;
 
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.BaseBranchRequestBuilder;
+import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilder;
 import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 5.5
  */
-public final class SnomedIdentifierPublishRequestBuilder extends BaseBranchRequestBuilder<SnomedIdentifierPublishRequestBuilder, Boolean> {
+public final class SnomedIdentifierPublishRequestBuilder extends BaseRepositoryRequestBuilder<SnomedIdentifierPublishRequestBuilder, Boolean> {
 
 	private Set<String> componentIds;
 
@@ -40,7 +40,7 @@ public final class SnomedIdentifierPublishRequestBuilder extends BaseBranchReque
 	}
 	
 	@Override
-	protected Request<BranchContext, Boolean> doBuild() {
+	protected Request<RepositoryContext, Boolean> doBuild() {
 		return new SnomedIdentifierPublishRequest(componentIds);
 	}
 

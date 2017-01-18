@@ -17,16 +17,16 @@ package com.b2international.snowowl.snomed.datastore.id.request;
 
 import java.util.Set;
 
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.BaseBranchRequestBuilder;
+import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctIds;
 import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 5.5
  */
-public final class SnomedIdentifierGetRequestBuilder extends BaseBranchRequestBuilder<SnomedIdentifierGetRequestBuilder, SctIds> {
+public final class SnomedIdentifierGetRequestBuilder extends BaseRepositoryRequestBuilder<SnomedIdentifierGetRequestBuilder, SctIds> {
 
 	private Set<String> componentIds;
 
@@ -41,7 +41,7 @@ public final class SnomedIdentifierGetRequestBuilder extends BaseBranchRequestBu
 	}
 	
 	@Override
-	protected Request<BranchContext, SctIds> doBuild() {
+	protected Request<RepositoryContext, SctIds> doBuild() {
 		return new SnomedIdentifierGetRequest(componentIds);
 	}
 
