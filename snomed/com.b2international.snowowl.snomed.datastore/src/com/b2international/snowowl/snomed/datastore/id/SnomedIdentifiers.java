@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,26 +21,12 @@ import java.util.Collection;
 
 import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.datastore.id.action.BulkDeprecateAction;
-import com.b2international.snowowl.snomed.datastore.id.action.BulkGenerateAction;
-import com.b2international.snowowl.snomed.datastore.id.action.BulkPublishAction;
-import com.b2international.snowowl.snomed.datastore.id.action.BulkRegisterAction;
-import com.b2international.snowowl.snomed.datastore.id.action.BulkReserveAction;
-import com.b2international.snowowl.snomed.datastore.id.action.DeprecateAction;
-import com.b2international.snowowl.snomed.datastore.id.action.GenerateAction;
-import com.b2international.snowowl.snomed.datastore.id.action.IIdAction;
-import com.b2international.snowowl.snomed.datastore.id.action.PublishAction;
-import com.b2international.snowowl.snomed.datastore.id.action.RegisterAction;
-import com.b2international.snowowl.snomed.datastore.id.action.ReserveAction;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedComponentIdentifierValidator;
 import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierImpl;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 /**
- * Shortcut methods to create SNOMED CT Identifiers.
- * <p><i>TODO: add support to track/take into account global reservations, currently it uses internal ID and Reservation services</i></p>
- * <p>Mostly used from test cases</p> 
+ * Contains utility methods related to SCTID part checks.
  * 
  * @since 4.0
  */
@@ -55,141 +41,36 @@ public class SnomedIdentifiers {
 	public static final long MAX_NAMESPACE_ITEMID = 9999_9999L; // 8 digits for itemId, 7 digits for namespaceId
 	public static final long MIN_NAMESPACE_ITEMID = 1L;
 
-	private final ISnomedIdentifierService identifierService;
-	
-	private final Collection<IIdAction<?>> executedActions = Lists.newArrayList();
-
-	public SnomedIdentifiers(final ISnomedIdentifierService identifierService) {
-		this.identifierService = identifierService;
-	}
-	
-	public void rollback() {
-		for (final IIdAction<?> action : executedActions) {
-			action.rollback();
-		}
-	}
-
-	public void commit() {
-		for (final IIdAction<?> action : executedActions) {
-			action.commit();
-		}
-	}
-
-	public String generate(final String namespace, final ComponentCategory category) {
-		final GenerateAction action = new GenerateAction(namespace, category, identifierService);
-		executeAction(action);
-
-		return action.get();
-	}
-
-	public void register(final String componentId) {
-		validate(componentId);
-		
-		final RegisterAction action = new RegisterAction(componentId, identifierService);
-		executeAction(action);
-	}
-
-	public String reserve(final String namespace, final ComponentCategory category) {
-		final ReserveAction action = new ReserveAction(namespace, category, identifierService);
-		executeAction(action);
-
-		return action.get();
-	}
-
-	public void deprecate(final String componentId) {
-		validate(componentId);
-		
-		final DeprecateAction action = new DeprecateAction(componentId, identifierService);
-		executeAction(action);
-	}
-
-	public void publish(final String componentId) {
-		validate(componentId);
-		
-		final PublishAction action = new PublishAction(componentId, identifierService);
-		executeAction(action);
-	}
-
-	public Collection<String> generate(final String namespace, final ComponentCategory category, final int quantity) {
-		final BulkGenerateAction action = new BulkGenerateAction(namespace, category, quantity, identifierService);
-		executeAction(action);
-
-		return action.get();
-	}
-
-	public void register(final Collection<String> componentIds) {
-		validate(componentIds);
-		
-		final BulkRegisterAction action = new BulkRegisterAction(componentIds, identifierService);
-		executeAction(action);
-	}
-
-	public Collection<String> reserve(final String namespace, final ComponentCategory category, final int quantity) {
-		final BulkReserveAction action = new BulkReserveAction(namespace, category, quantity, identifierService);
-		executeAction(action);
-
-		return action.get();
-	}
-
-	public void deprecate(final Collection<String> componentIds) {
-		validate(componentIds);
-		
-		final BulkDeprecateAction action = new BulkDeprecateAction(componentIds, identifierService);
-		executeAction(action);
-	}
-
-	public void publish(final Collection<String> componentIds) {
-		validate(componentIds);
-		
-		final BulkPublishAction action = new BulkPublishAction(componentIds, identifierService);
-		executeAction(action);
-	}
-
-	private void executeAction(final IIdAction<?> action) {
-		try {
-			executedActions.add(action);
-			action.execute();
-		} catch (Exception e) {
-			action.setFailed(true);
-			throw e;
-		}
-	}
-
 	/**
-	 * Creates a {@link SnomedIdentifierImpl} from the given {@link String} componentId.
+	 * Validates the given componentId by using the rules defined in the latest
+	 * SNOMED CT Identifier specification, which are the following constraints:
+	 * <ul>
+	 * <li>Can't start with leading zeros</li>
+	 * <li>Lengths should be between 6 and 18 characters</li>
+	 * <li>Should parse to a long value</li>
+	 * <li>Should pass the Verhoeff check-digit test</li>
+	 * </ul>
 	 * 
 	 * @param componentId
-	 * @return
+	 * @see VerhoeffCheck
+	 * @throws IllegalArgumentException
+	 *             - if the given componentId is invalid according to the SNOMED
+	 *             CT Identifier specification
 	 */
-	public static SnomedIdentifier create(String componentId) {
-		validate(componentId);
+	public static void validate(final String componentId) throws IllegalArgumentException {
+		checkArgument(!Strings.isNullOrEmpty(componentId), "SCTID may not be null or empty");
+		checkArgument(!componentId.startsWith("0"), "SCTID can't start with leading zero");
+		checkArgument(componentId.length() >= 6 && componentId.length() <= 18, "SCTID length must be between 6-18 characters");
 		
 		try {
-			final int checkDigit = Character.getNumericValue(componentId.charAt(componentId.length() - 1));
-			final int componentIdentifier = getComponentIdentifier(componentId);
-			final int partitionIdentifier = getPartitionIdentifier(componentId);
-			final String namespace = getNamespace(componentId, partitionIdentifier);
-			final long itemId = partitionIdentifier == 0 ? Long.parseLong(componentId.substring(0, componentId.length() - 3))
-					: Long.parseLong(componentId.substring(0, componentId.length() - 10));
-			return new SnomedIdentifierImpl(itemId, namespace, partitionIdentifier, componentIdentifier, checkDigit);
-		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException(String.format("Invalid SNOMED identifier: %s.", componentId));
+			Long.parseLong(componentId);
+		} catch (final NumberFormatException e) {
+			throw new IllegalArgumentException("SCTID should be parseable to a long value");
 		}
+		
+		checkArgument(VerhoeffCheck.validateLastChecksumDigit(componentId), "ComponentId should pass Verhoeff check-digit test");
 	}
 
-	public static String getNamespace(String componentId) {
-		return getNamespace(componentId, getPartitionIdentifier(componentId));
-	}
-	
-	public static String getNamespace(String componentId, final int partitionIdentifier) {
-		return partitionIdentifier == 0 ? null
-				: componentId.substring(componentId.length() - 10, componentId.length() - 3);
-	}
-
-	private static int getPartitionIdentifier(String componentId) {
-		return Character.getNumericValue(componentId.charAt(componentId.length() - 3));
-	}
-	
 	/**
 	 * Validates the given collection of componentIds by using the rules defined
 	 * in the latest SNOMED CT Identifier specification, which are the following
@@ -207,89 +88,112 @@ public class SnomedIdentifiers {
 	 *             - if the given collection contains a component ID which is
 	 *             invalid according to the SNOMED CT Identifier specification
 	 */
-	public static void validate(Collection<String> componentIds) {
+	public static void validate(final Collection<String> componentIds) {
 		for (final String componentId : componentIds) {
 			validate(componentId);
 		}
 	}
 
-	/**
-	 * Validates the given componentId by using the rules defined in the latest SNOMED CT Identifier specification, which are the following constraints:
-	 * <ul>
-	 * 	<li>Can't start with leading zeros</li>
-	 * 	<li>Lengths should be between 6 and 18 characters</li>
-	 * 	<li>Should parse to a long value</li>
-	 * 	<li>Should pass the Verhoeff check-digit test</li>
-	 * </ul>
-	 * 
-	 * @param componentId
-	 * @see VerhoeffCheck
-	 * @throws IllegalArgumentException - if the given componentId is invalid according to the SNOMED CT Identifier specification
-	 */
-	public static void validate(String componentId) throws IllegalArgumentException {
-		checkArgument(!Strings.isNullOrEmpty(componentId), "ComponentId must be defined");
-		checkArgument(!componentId.startsWith("0"), "ComponentId can't start with leading zeros");
-		checkArgument(componentId.length() >= 6 && componentId.length() <= 18, "ComponentId's length should be between 6-18 character length");
-		try {
-			Long.parseLong(componentId);
-		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("ComponentId should be a number");
+	public static String getNamespace(final String componentId) {
+		final boolean shortForm = isShortForm(componentId);
+		
+		if (shortForm) {
+			return null;
+		} else {
+			return componentId.substring(componentId.length() - 10, componentId.length() - 3);
 		}
-		checkArgument(VerhoeffCheck.validateLastChecksumDigit(componentId), "ComponentId should pass Verhoeff check-digit test");
+	}
+
+	private static boolean isShortForm(final String componentId) {
+		final char firstPartitionIdDigit = componentId.charAt(componentId.length() - 3);
+		
+		if (firstPartitionIdDigit == '0') {
+			return true;
+		} else if (firstPartitionIdDigit == '1') {
+			return false;
+		} else {
+			throw new IllegalArgumentException(String.format("First digit of partition identifier must be '0' or '1', got '%s' for input '%s'.", firstPartitionIdDigit, componentId));
+		}
 	}
 	
-	/**
-	 * Extracts the component identifier from the given component ID.
-	 * 
-	 * @param componentId
-	 * @return
-	 */
-	private static int getComponentIdentifier(String componentId) {
-		final char ciChar = componentId.charAt(componentId.length() - 2);
-		final int ci = Character.digit(ciChar, 10);
-		if (ci == -1) {
-			throw new IllegalArgumentException("Invalid component identifier " + ciChar);
-		}
-		return ci;
-	}
-	
-	/**
-	 * Returns the component category for a SNOMED CT identifier, or <code>null</code> in case of invalid 
-	 * @param componentId
-	 * @return
-	 * @throws IllegalArgumentException - if the given component ID is not a valid SNOMED CT Component Identifier
-	 */
-	public static ComponentCategory getComponentCategory(String componentId) {
-		validate(componentId);
+	public static ComponentCategory getComponentCategory(final String componentId) {
 		return ComponentCategory.getByOrdinal(getComponentIdentifier(componentId));
 	}
 	
-	/**
-	 * Constructs a {@link SnomedIdentifierValidator} to validate IDs of the given {@link ComponentCategory}.
-	 * @param category
-	 * @return
-	 */
-	public static SnomedIdentifierValidator getIdentifierValidator(ComponentCategory category) {
-		switch (category) {
-		case CONCEPT:
-		case DESCRIPTION:
-		case RELATIONSHIP:
-			return new SnomedComponentIdentifierValidator(category);
-		default: throw new UnsupportedOperationException("Can't create validator for category: " + category);
+	private static int getComponentIdentifier(final String componentId) {
+		final char secondPartitionIdDigit = componentId.charAt(componentId.length() - 2);
+		final int ci = Character.digit(secondPartitionIdDigit, 10);
+		
+		if (ci >= 0 && ci <= 2) {
+			return ci;
+		} else {
+			throw new IllegalArgumentException(String.format("Second digit of partition identifier must be between '0' and '2', got '%s' for input '%s'.", secondPartitionIdDigit, componentId));
 		}
-	}
-	
-	public boolean importSupported() {
-		return identifierService.importSupported();
 	}
 
-	public static boolean isConceptIdentifier(String identifier) {
-		try {
-			return ComponentCategory.CONCEPT == getComponentCategory(identifier);
-		} catch (IllegalArgumentException e) {
-			// ignored
+	public static SnomedIdentifierValidator getIdentifierValidator(final ComponentCategory category) {
+		switch (category) {
+			case CONCEPT:
+			case DESCRIPTION:
+			case RELATIONSHIP:
+				return new SnomedComponentIdentifierValidator(category);
+			default: 
+				throw new UnsupportedOperationException("Can't create validator for category: " + category);
 		}
-		return false;
+	}
+
+	public static boolean isConceptIdentifier(final String componentId) {
+		try {
+			return ComponentCategory.CONCEPT == getComponentCategory(componentId);
+		} catch (final IllegalArgumentException e) {
+			return false;
+		}
+	}
+
+	public static long getItemId(final String componentId) {
+		final boolean shortForm = isShortForm(componentId);
+		final String itemId;
+		
+		if (shortForm) {
+			itemId = componentId.substring(0, componentId.length() - 3);
+		} else {
+			itemId = componentId.substring(0, componentId.length() - 10);
+		}
+		
+		try {
+			return Long.parseLong(itemId);
+		} catch (final NumberFormatException e) {
+			throw new IllegalArgumentException(String.format("Item identifier must be parseable to a long, got '%s' for input '%s'.", itemId, componentId));
+		}
+	}
+
+	public static String getPartitionId(final String componentId) {
+		return componentId.substring(componentId.length() - 3, componentId.length() - 1);
+	}
+
+	public static int getCheckDigit(final String componentId) {
+		final char checkDigit = componentId.charAt(componentId.length() - 1);
+		final int cd = Character.digit(checkDigit, 10);
+		
+		if (cd >= 0 && cd <= 9) {
+			return cd;
+		} else {
+			throw new IllegalArgumentException(String.format("Check digit must be between '0' and '9', got '%s' for input '%s'.", checkDigit, componentId));
+		}
 	}
 	
+	/**
+	 * Creates a {@link SnomedIdentifier} instance from the given {@link String} componentId.
+	 */
+	public static SnomedIdentifier create(final String componentId) {
+		validate(componentId);
+		
+		final long itemId = getItemId(componentId);
+		final String namespace = getNamespace(componentId);
+		final int formatIdentifier = isShortForm(componentId) ? 0 : 1;
+		final int componentIdentifier = getComponentIdentifier(componentId);
+		final int checkDigit = getCheckDigit(componentId);
+		
+		return new SnomedIdentifierImpl(itemId, namespace, formatIdentifier, componentIdentifier, checkDigit);
+	}
 }

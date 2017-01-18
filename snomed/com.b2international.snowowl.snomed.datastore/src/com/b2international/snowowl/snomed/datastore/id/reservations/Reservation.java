@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,8 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 public interface Reservation {
 
 	/**
-	 * Returns <code>true</code> if the given identifier is included in this {@link Reservation}'s range.
-	 * 
-	 * @param identifier
-	 * @return
+	 * @param identifier the component identifier to check
+	 * @return <code>true</code> if the given identifier is included in this {@link Reservation}'s range, <code>false</code> otherwise
 	 */
 	boolean includes(SnomedIdentifier identifier);
 
