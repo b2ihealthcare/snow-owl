@@ -34,7 +34,7 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	private String term;
 	private String languageCode;
 	private CaseSignificance caseSignificance;
-	private DescriptionInactivationIndicator descriptionInactivationIndicator;
+	private DescriptionInactivationIndicator inactivationIndicator;
 	private Map<String, Acceptability> acceptabilityMap;
 	private Multimap<AssociationType, String> associationTargets;
 	private SnomedConcept concept;
@@ -52,6 +52,7 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	 * 
 	 * @return the concept identifier or <code>null</code> if the concept is currently not set
 	 */
+	@JsonProperty
 	public String getConceptId() {
 		return getConcept() == null ? null : getConcept().getId();
 	}
@@ -61,6 +62,7 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	 * 
 	 * @return the type identifier or <code>null</code> if the type is currently not set
 	 */
+	@JsonProperty
 	public String getTypeId() {
 		return getType() == null ? null : getType().getId();
 	}
@@ -128,7 +130,7 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	 * reason has been given
 	 */
 	public DescriptionInactivationIndicator getInactivationIndicator() {
-		return descriptionInactivationIndicator;
+		return inactivationIndicator;
 	}
 
 	/**
@@ -140,20 +142,20 @@ public final class SnomedDescription extends SnomedCoreComponent {
 		return associationTargets;
 	}
 
+	@JsonIgnore
 	public void setConceptId(final String conceptId) {
 		setConcept(new SnomedConcept(conceptId));
 	}
 
+	@JsonIgnore
 	public void setTypeId(final String typeId) {
 		setType(new SnomedConcept(typeId));
 	}
 	
-	@JsonIgnore
 	public void setConcept(SnomedConcept concept) {
 		this.concept = concept;
 	}
 	
-	@JsonIgnore	
 	public void setType(SnomedConcept type) {
 		this.type = type;
 	}
@@ -175,8 +177,8 @@ public final class SnomedDescription extends SnomedCoreComponent {
 		this.acceptabilityMap = acceptabilityMap;
 	}
 	
-	public void setDescriptionInactivationIndicator(final DescriptionInactivationIndicator descriptionInactivationIndicator) {
-		this.descriptionInactivationIndicator = descriptionInactivationIndicator;
+	public void setInactivationIndicator(final DescriptionInactivationIndicator descriptionInactivationIndicator) {
+		this.inactivationIndicator = descriptionInactivationIndicator;
 	}
 	
 	public void setAssociationTargets(Multimap<AssociationType, String> associationTargets) {
@@ -234,9 +236,9 @@ public final class SnomedDescription extends SnomedCoreComponent {
 		builder.append(getCaseSignificance());
 		builder.append(", getAcceptabilityMap()=");
 		builder.append(getAcceptabilityMap());
-		if (null != descriptionInactivationIndicator) {
+		if (null != inactivationIndicator) {
 			builder.append(", getDescriptionInactivationIndicator()=")
-				.append(descriptionInactivationIndicator);
+				.append(inactivationIndicator);
 			
 		}
 		builder.append(", getAssociationTargets()=");

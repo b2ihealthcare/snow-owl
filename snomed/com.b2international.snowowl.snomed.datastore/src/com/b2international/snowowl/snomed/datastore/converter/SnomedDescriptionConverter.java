@@ -151,7 +151,7 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 				
 				@Override
 				protected void setInactivationIndicator(SnomedDescription result, String valueId) {
-					((SnomedDescription) result).setDescriptionInactivationIndicator(DescriptionInactivationIndicator.getInactivationIndicatorByValueId(valueId));				
+					((SnomedDescription) result).setInactivationIndicator(DescriptionInactivationIndicator.getInactivationIndicatorByValueId(valueId));				
 				}
 			}.expand(results, descriptionIds);
 		}
