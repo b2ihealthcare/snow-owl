@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,43 +16,23 @@
 package com.b2international.snowowl.snomed.datastore.id.action;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.datastore.id.request.AbstractSnomedIdentifierCountedRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.inject.Provider;
 
 /**
  * @since 4.5
  */
-public class GenerateAction extends IdAction<String> {
+public class GenerateAction extends AbstractCountedIdAction {
 
-	private final String namespace;
-	private final ComponentCategory category;
-
-	private String componentId;
-
-	public GenerateAction(final String namespace, final ComponentCategory category, ISnomedIdentifierService identifierService) {
-		super(identifierService);
-		this.namespace = namespace;
-		this.category = category;
+	public GenerateAction(final Provider<IEventBus> bus, final String namespace, final ComponentCategory category, final int quantity) {
+		super(bus, namespace, category, quantity);
 	}
-
+	
 	@Override
-	public void rollback() {
-		if (!isFailed())
-			identifierService.release(componentId);
-	}
-
-	@Override
-	public void execute() {
-		this.componentId = identifierService.generate(namespace, category);
-	}
-
-	@Override
-	public void commit() {
-		// do nothing
-	}
-
-	@Override
-	public String get() {
-		return componentId;
+	protected AbstractSnomedIdentifierCountedRequestBuilder<?> createRequestBuilder() {
+		return SnomedRequests.identifiers().prepareGenerate();
 	}
 
 }

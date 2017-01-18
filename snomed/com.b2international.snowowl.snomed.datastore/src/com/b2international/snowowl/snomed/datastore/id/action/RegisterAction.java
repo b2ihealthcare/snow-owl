@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,39 +15,25 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.action;
 
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import java.util.Set;
+
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.datastore.id.request.AbstractSnomedIdentifierEnumeratedRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.inject.Provider;
 
 /**
  * @since 4.5
  */
-public class RegisterAction extends IdAction<String> {
+public class RegisterAction extends AbstractEnumeratedIdAction {
 
-	private final String componentId;
-
-	public RegisterAction(final String componentId, final ISnomedIdentifierService identifierService) {
-		super(identifierService);
-		this.componentId = componentId;
+	public RegisterAction(final Provider<IEventBus> bus, final Set<String> componentIds) {
+		super(bus, componentIds);
 	}
 
 	@Override
-	public void rollback() {
-		if (!isFailed())
-			identifierService.release(componentId);
-	}
-
-	@Override
-	public void execute() {
-		identifierService.register(componentId);
-	}
-
-	@Override
-	public void commit() {
-		// do nothing
-	}
-
-	@Override
-	public String get() {
-		return componentId;
+	protected AbstractSnomedIdentifierEnumeratedRequestBuilder<?, Boolean> createRequestBuilder() {
+		return SnomedRequests.identifiers().prepareRegister();
 	}
 
 }

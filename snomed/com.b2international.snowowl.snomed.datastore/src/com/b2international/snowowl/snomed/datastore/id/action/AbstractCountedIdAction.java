@@ -22,30 +22,56 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.id.request.AbstractSnomedIdentifierCountedRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.Provider;
 
 /**
  * @since 4.5
  */
-public class ReserveAction extends AbstractCountedIdAction {
+abstract class AbstractCountedIdAction extends AbstractIdAction<Set<String>> {
 
-	public ReserveAction(final Provider<IEventBus> bus, final String namespace, final ComponentCategory category, final int quantity) {
-		super(bus, namespace, category, quantity);
+	private final String namespace;
+	private final ComponentCategory category;
+	private final int quantity;
+
+	public AbstractCountedIdAction(final Provider<IEventBus> bus, final String namespace, final ComponentCategory category, final int quantity) {
+		super(bus);
+		this.namespace = namespace;
+		this.category = category;
+		this.quantity = quantity;
 	}
 	
 	@Override
-	protected AbstractSnomedIdentifierCountedRequestBuilder<?> createRequestBuilder() {
-		return SnomedRequests.identifiers().prepareGenerate();
+	protected final Set<String> doExecute() {
+		return createRequestBuilder()
+				.setNamespace(namespace)
+				.setCategory(category)
+				.setQuantity(quantity)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.execute(bus.get())
+				.then(response -> ImmutableSet.copyOf(response.getItems()))
+				.getSync();
 	}
 	
+	protected abstract AbstractSnomedIdentifierCountedRequestBuilder<?> createRequestBuilder();
+
 	@Override
-	protected void doCommit(Set<String> componentIds) {
+	protected final void doRollback(Set<String> storedResults) {
 		SnomedRequests.identifiers()
-				.prepareRegister()
-				.setComponentIds(componentIds)
+				.prepareRelease()
+				.setComponentIds(storedResults)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(bus.get())
 				.getSync();
 	}
-
+	
+	@Override
+	public String toString() {
+		return Objects.toStringHelper(this)
+				.add("namespace", namespace)
+				.add("category", category)
+				.add("quantity", quantity)
+				.toString();
+	}
 }

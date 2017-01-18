@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,34 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.action;
 
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
+ * Encapsulates an atomic action related to generating identifiers.
+ * <p>
+ * Actions can be aggregated into a log, in which identifier state changes resulting from these actions can either be finalized,
+ * or rolled back if necessary.
+ * 
  * @since 4.5
  */
-abstract class IdAction<I extends Object> implements IIdAction<I> {
+public interface IdAction<T> {
 
-	protected final ISnomedIdentifierService identifierService;
+	Logger LOGGER = LoggerFactory.getLogger("id-action");
+	
+	/**
+	 * @return the computed result for this action
+	 */
+	T execute();
 
-	private boolean failed = false;
+	/**
+	 * Attempts to issue a compensating (rollback) request for this action, if it failed to execute.
+	 */
+	void rollback();
 
-	public IdAction(final ISnomedIdentifierService identifierService) {
-		this.identifierService = identifierService;
-	}
-
-	public ISnomedIdentifierService getIdentifierService() {
-		return identifierService;
-	}
-
-	@Override
-	public void setFailed(boolean failed) {
-		this.failed = failed;
-	}
-
-	@Override
-	public boolean isFailed() {
-		return failed;
-	}
+	/**
+	 * Issues additional request(s) for this action to finalize changes, if executing the action succeeded.
+	 */
+	void commit();
 
 }
