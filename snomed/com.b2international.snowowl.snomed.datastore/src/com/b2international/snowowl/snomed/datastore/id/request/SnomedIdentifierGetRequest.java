@@ -15,11 +15,13 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.request;
 
-import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctIds;
 
 /**
@@ -27,15 +29,16 @@ import com.b2international.snowowl.snomed.datastore.id.domain.SctIds;
  */
 final class SnomedIdentifierGetRequest extends BaseRequest<BranchContext, SctIds> {
 
-	private final Collection<String> componentIds;
+	private final Set<String> componentIds;
 
-	SnomedIdentifierGetRequest(final Collection<String> componentIds) {
+	SnomedIdentifierGetRequest(final Set<String> componentIds) {
 		this.componentIds = componentIds;
 	}
 
 	@Override
 	public SctIds execute(BranchContext context) {
-		return new SctIds(context.service(ISnomedIdentifierService.class).getSctIds(componentIds));
+		final Map<String, SctId> sctIds = context.service(ISnomedIdentifierService.class).getSctIds(componentIds);
+		return new SctIds(sctIds.values());
 	}
 
 	@Override

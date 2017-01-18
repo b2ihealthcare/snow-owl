@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.request;
 
-import java.util.Collection;
+import java.util.Set;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
@@ -26,9 +26,9 @@ import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
  */
 final class SnomedIdentifierDeprecateRequest extends BaseRequest<BranchContext, Boolean> {
 
-	private final Collection<String> componentIds;
+	private final Set<String> componentIds;
 
-	SnomedIdentifierDeprecateRequest(final Collection<String> componentIds) {
+	SnomedIdentifierDeprecateRequest(final Set<String> componentIds) {
 		this.componentIds = componentIds;
 	}
 
