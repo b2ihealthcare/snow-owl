@@ -152,6 +152,10 @@ public abstract class SnomedRequests {
 	public static Reviews review() {
 		return RepositoryRequests.reviews();
 	}
+	
+	public static Identifiers identifiers() {
+		return new Identifiers();
+	}
 
 	public static QueryRefSetEvaluationRequestBuilder prepareQueryRefSetEvaluation(String referenceSetId) {
 		return new QueryRefSetEvaluationRequestBuilder().setReferenceSetId(referenceSetId);
