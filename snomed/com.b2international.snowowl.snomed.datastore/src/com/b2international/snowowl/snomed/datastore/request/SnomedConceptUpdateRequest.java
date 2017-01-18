@@ -38,11 +38,11 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -51,6 +51,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.InactivationReason;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -154,7 +155,10 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 				.collect(Collectors.toMap(SnomedReferenceSet::getId, Function.identity()));
 		
 		return members.stream()
-				.filter(member -> refSetsById.get(member.getReferenceSetId()).getType() == SnomedRefSetType.CONCRETE_DATA_TYPE)
+				.filter(member -> {
+					final SnomedReferenceSet refSet = refSetsById.get(member.getReferenceSetId());
+					return refSet != null && refSet.getType() == SnomedRefSetType.CONCRETE_DATA_TYPE;
+				})
 				.collect(Collectors.toSet());
 	}
 
@@ -328,7 +332,18 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 		if (currentComponents == null) {
 			return changed;
 		}
-		
+
+		// pre process all incoming components
+		currentComponents.forEach(component -> {
+			// all incoming components should define their ID in order to be processed
+			if (Strings.isNullOrEmpty(component.getId())) {
+				throw new BadRequestException("New components require their id to be set.");
+			}
+			// all components should have their module ID set
+			if (Strings.isNullOrEmpty(component.getModuleId())) {
+				throw new BadRequestException("It is required to specify the moduleId for the components.");
+			}
+		});
 		
 		// collect new/changed/deleted components and process them
 		final Map<String, T> previousComponentsById = Maps.uniqueIndex(previousComponents, idProvider);
