@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,40 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.events;
+package com.b2international.snowowl.snomed.datastore.id.request;
 
+import javax.annotation.Nonnegative;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.domain.SnomedComponentIds;
 
 /**
- * New unique SNOMED CT Identifier generation request event.
- * 
- * @since 4.0
+ * @since 5.5
  */
-final class SnomedIdentifierGenerateRequest extends BaseRequest<BranchContext, String> {
+final class SnomedIdentifierGenerateRequest extends BaseRequest<BranchContext, SnomedComponentIds> {
 
 	@NotNull
 	private final ComponentCategory category;
 	
 	private final String namespace;
 
-	SnomedIdentifierGenerateRequest(ComponentCategory category, String namespace) {
+	@Nonnegative
+	private final int quantity;
+
+	SnomedIdentifierGenerateRequest(ComponentCategory category, String namespace, int quantity) {
 		this.category = category;
 		this.namespace = namespace;
+		this.quantity = quantity;
+	}
+	
+	@Override
+	public SnomedComponentIds execute(BranchContext context) {
+		return new SnomedComponentIds(context.service(ISnomedIdentifierService.class).generate(namespace, category, quantity));
 	}
 
 	@Override
-	public String execute(BranchContext context) {
-		return context.service(ISnomedIdentifierService.class).generate(namespace, category);
-	}
-
-	@Override
-	protected Class<String> getReturnType() {
-		return String.class;
+	protected Class<SnomedComponentIds> getReturnType() {
+		return SnomedComponentIds.class;
 	}
 
 }

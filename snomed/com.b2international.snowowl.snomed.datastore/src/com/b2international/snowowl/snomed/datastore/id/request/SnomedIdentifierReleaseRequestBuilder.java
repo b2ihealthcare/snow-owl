@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,34 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.events;
+package com.b2international.snowowl.snomed.datastore.id.request;
+
+import java.util.Collection;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.request.BaseBranchRequestBuilder;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.5
  */
-public final class SnomedIdentifierGenerateRequestBuilder extends BaseBranchRequestBuilder<SnomedIdentifierGenerateRequestBuilder, String> {
+public final class SnomedIdentifierReleaseRequestBuilder extends BaseBranchRequestBuilder<SnomedIdentifierReleaseRequestBuilder, Boolean> {
 
-	private ComponentCategory category;
-	private String namespace;
-	
-	public SnomedIdentifierGenerateRequestBuilder setCategory(ComponentCategory category) {
-		this.category = category;
+	private Collection<String> componentIds;
+
+	public SnomedIdentifierReleaseRequestBuilder setComponentId(String componentId) {
+		return setComponentIds(ImmutableList.of(componentId));
+	}
+
+	public SnomedIdentifierReleaseRequestBuilder setComponentIds(Collection<String> componentIds) {
+		this.componentIds = componentIds;
 		return getSelf();
 	}
 	
-	public SnomedIdentifierGenerateRequestBuilder setNamespace(String namespace) {
-		this.namespace = namespace;
-		return getSelf();
-	}
-
 	@Override
-	protected Request<BranchContext, String> doBuild() {
-		return new SnomedIdentifierGenerateRequest(category, namespace);
+	protected Request<BranchContext, Boolean> doBuild() {
+		return new SnomedIdentifierReleaseRequest(componentIds);
 	}
 
 }
