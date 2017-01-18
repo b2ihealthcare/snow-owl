@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.id.cis;
+package com.b2international.snowowl.snomed.datastore.id.domain;
 
 import static com.b2international.index.query.Expressions.exactMatch;
 
@@ -27,9 +27,10 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * Bean to represent a SNOMED CT id used by IHTSDO's ID generation service.
- * Instances of this class are meant to be serialized and deserialized to and
- * from Json.
+ * Represents a SNOMED CT identifier.
+ * <p>
+ * Note that properties must match the format used by SNOMED's component identifier service,
+ * as this class is also used for marshalling results via Jackson when communicating over an HTTP client.
  * 
  * @since 4.5
  */
@@ -337,6 +338,11 @@ public class SctId {
 	@JsonIgnore
 	public boolean isDeprecated() {
 		return IdentifierStatus.DEPRECATED.getSerializedName().equals(this.status);
+	}
+
+	@JsonIgnore
+	public ComponentCategory getComponentCategory() {
+		return SnomedIdentifiers.getComponentCategory(sctid);
 	}
 	
 }
