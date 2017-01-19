@@ -17,18 +17,16 @@ package com.b2international.snowowl.snomed.datastore.id.action;
 
 import java.util.Set;
 
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.id.request.AbstractSnomedIdentifierEnumeratedRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.inject.Provider;
 
 /**
  * @since 4.5
  */
 public class ReleaseAction extends AbstractEnumeratedIdAction {
 
-	public ReleaseAction(final Provider<IEventBus> bus, final Set<String> componentIds) {
-		super(bus, componentIds);
+	public ReleaseAction(final Set<String> componentIds) {
+		super(componentIds);
 	}
 
 	@Override

@@ -17,14 +17,13 @@ package com.b2international.snowowl.snomed.datastore.id.action;
 
 import java.util.Set;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.id.domain.SnomedComponentIds;
 import com.b2international.snowowl.snomed.datastore.id.request.AbstractSnomedIdentifierCountedRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
-import com.google.inject.Provider;
 
 /**
  * @since 4.5
@@ -35,35 +34,33 @@ abstract class AbstractCountedIdAction extends AbstractIdAction<Set<String>> {
 	private final ComponentCategory category;
 	private final int quantity;
 
-	public AbstractCountedIdAction(final Provider<IEventBus> bus, final String namespace, final ComponentCategory category, final int quantity) {
-		super(bus);
+	public AbstractCountedIdAction(final String namespace, final ComponentCategory category, final int quantity) {
 		this.namespace = namespace;
 		this.category = category;
 		this.quantity = quantity;
 	}
 	
 	@Override
-	protected final Set<String> doExecute() {
-		return createRequestBuilder()
+	protected final Set<String> doExecute(RepositoryContext context) {
+		final SnomedComponentIds result = createRequestBuilder()
 				.setNamespace(namespace)
 				.setCategory(category)
 				.setQuantity(quantity)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(bus.get())
-				.then(response -> ImmutableSet.copyOf(response.getItems()))
-				.getSync();
+				.build()
+				.execute(context);
+				
+		return ImmutableSet.copyOf(result);
 	}
 	
 	protected abstract AbstractSnomedIdentifierCountedRequestBuilder<?> createRequestBuilder();
 
 	@Override
-	protected final void doRollback(Set<String> storedResults) {
+	protected final void doRollback(RepositoryContext context, Set<String> storedResults) {
 		SnomedRequests.identifiers()
 				.prepareRelease()
 				.setComponentIds(storedResults)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(bus.get())
-				.getSync();
+				.build()
+				.execute(context);
 	}
 	
 	@Override

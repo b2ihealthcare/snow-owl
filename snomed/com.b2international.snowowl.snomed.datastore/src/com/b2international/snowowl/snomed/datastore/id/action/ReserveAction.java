@@ -17,20 +17,18 @@ package com.b2international.snowowl.snomed.datastore.id.action;
 
 import java.util.Set;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.id.request.AbstractSnomedIdentifierCountedRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.inject.Provider;
 
 /**
  * @since 4.5
  */
 public class ReserveAction extends AbstractCountedIdAction {
 
-	public ReserveAction(final Provider<IEventBus> bus, final String namespace, final ComponentCategory category, final int quantity) {
-		super(bus, namespace, category, quantity);
+	public ReserveAction(final String namespace, final ComponentCategory category, final int quantity) {
+		super(namespace, category, quantity);
 	}
 	
 	@Override
@@ -39,13 +37,12 @@ public class ReserveAction extends AbstractCountedIdAction {
 	}
 	
 	@Override
-	protected void doCommit(Set<String> componentIds) {
+	protected void doCommit(final RepositoryContext context, final Set<String> componentIds) {
 		SnomedRequests.identifiers()
 				.prepareRegister()
 				.setComponentIds(componentIds)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(bus.get())
-				.getSync();
+				.build()
+				.execute(context);
 	}
 
 }

@@ -20,61 +20,60 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.google.inject.Provider;
 
 /**
  * @since 5.5
  */
 public class IdActionRecorder {
 
-	private final Provider<IEventBus> bus;
+	private final RepositoryContext context;
 	private final List<IdAction<?>> actions = newArrayList();
 
-	public IdActionRecorder(final Provider<IEventBus> bus) {
-		this.bus = bus;
+	public IdActionRecorder(final RepositoryContext context) {
+		this.context = context;
 	}
 
 	public void rollback() {
 		for (final IdAction<?> action : actions) {
-			action.rollback();
+			action.rollback(context);
 		}
 	}
 
 	public void commit() {
 		for (final IdAction<?> action : actions) {
-			action.commit();
+			action.commit(context);
 		}
 	}
 
 	public Set<String> generate(final String namespace, final ComponentCategory category, final int quantity) {
-		final GenerateAction action = new GenerateAction(bus, namespace, category, quantity);
+		final GenerateAction action = new GenerateAction(namespace, category, quantity);
 		return executeAction(action);
 	}
 
 	public void register(final Set<String> componentIds) {
-		final RegisterAction action = new RegisterAction(bus, componentIds);
+		final RegisterAction action = new RegisterAction(componentIds);
 		executeAction(action);
 	}
 
 	public Set<String> reserve(final String namespace, final ComponentCategory category, final int quantity) {
-		final ReserveAction action = new ReserveAction(bus, namespace, category, quantity);
+		final ReserveAction action = new ReserveAction(namespace, category, quantity);
 		return executeAction(action);
 	}
 
 	public void deprecate(final Set<String> componentIds) {
-		final DeprecateAction action = new DeprecateAction(bus, componentIds);
+		final DeprecateAction action = new DeprecateAction(componentIds);
 		executeAction(action);
 	}
 
 	public void publish(final Set<String> componentIds) {
-		final PublishAction action = new PublishAction(bus, componentIds);
+		final PublishAction action = new PublishAction(componentIds);
 		executeAction(action);
 	}
 
 	private <T> T executeAction(final IdAction<T> action) {
-		final T result = action.execute();
+		final T result = action.execute(context);
 		actions.add(action);
 		return result;
 	}

@@ -17,12 +17,10 @@ package com.b2international.snowowl.snomed.datastore.id.action;
 
 import java.util.Set;
 
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.snomed.datastore.id.request.AbstractSnomedIdentifierEnumeratedRequestBuilder;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
-import com.google.inject.Provider;
 
 /**
  * @since 4.5
@@ -31,18 +29,16 @@ abstract class AbstractEnumeratedIdAction extends AbstractIdAction<Boolean> {
 
 	private final Set<String> componentIds;
 
-	public AbstractEnumeratedIdAction(final Provider<IEventBus> bus, final Set<String> componentIds) {
-		super(bus);
+	public AbstractEnumeratedIdAction(final Set<String> componentIds) {
 		this.componentIds = ImmutableSet.copyOf(componentIds);
 	}
 
 	@Override
-	protected final Boolean doExecute() {
+	protected final Boolean doExecute(RepositoryContext context) {
 		return createRequestBuilder()
 				.setComponentIds(componentIds)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(bus.get())
-				.getSync();
+				.build()
+				.execute(context);
 	}
 
 	protected abstract AbstractSnomedIdentifierEnumeratedRequestBuilder<?, Boolean> createRequestBuilder();

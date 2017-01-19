@@ -16,18 +16,16 @@
 package com.b2international.snowowl.snomed.datastore.id.action;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.id.request.AbstractSnomedIdentifierCountedRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.inject.Provider;
 
 /**
  * @since 4.5
  */
 public class GenerateAction extends AbstractCountedIdAction {
 
-	public GenerateAction(final Provider<IEventBus> bus, final String namespace, final ComponentCategory category, final int quantity) {
-		super(bus, namespace, category, quantity);
+	public GenerateAction(final String namespace, final ComponentCategory category, final int quantity) {
+		super(namespace, category, quantity);
 	}
 	
 	@Override

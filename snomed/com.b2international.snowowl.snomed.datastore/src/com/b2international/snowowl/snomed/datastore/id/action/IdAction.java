@@ -18,6 +18,8 @@ package com.b2international.snowowl.snomed.datastore.id.action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
+
 /**
  * Encapsulates an atomic action related to generating identifiers.
  * <p>
@@ -33,16 +35,16 @@ public interface IdAction<T> {
 	/**
 	 * @return the computed result for this action
 	 */
-	T execute();
+	T execute(RepositoryContext context);
 
 	/**
 	 * Attempts to issue a compensating (rollback) request for this action, if it failed to execute.
 	 */
-	void rollback();
+	void rollback(RepositoryContext context);
 
 	/**
 	 * Issues additional request(s) for this action to finalize changes, if executing the action succeeded.
 	 */
-	void commit();
+	void commit(RepositoryContext context);
 
 }
