@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.index;
 
+import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -47,13 +48,13 @@ import com.b2international.snowowl.datastore.index.IndexCommitChangeSet;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessor;
 import com.b2international.snowowl.snomed.datastore.index.change.ConstraintChangeProcessor;
 import com.b2international.snowowl.snomed.datastore.index.change.DescriptionChangeProcessor;
@@ -63,6 +64,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.google.common.collect.ImmutableList;
@@ -77,14 +79,11 @@ import com.google.common.collect.Sets;
  */
 public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 
-	private final ISnomedIdentifierService identifierService;
-	
 	private Taxonomy inferredTaxonomy;
 	private Taxonomy statedTaxonomy;
 	
-	SnomedCDOChangeProcessor(final IBranchPath branchPath, final RevisionIndex index, final ISnomedIdentifierService identifierService) {
+	SnomedCDOChangeProcessor(final IBranchPath branchPath, final RevisionIndex index) {
 		super(branchPath, index);
-		this.identifierService = identifierService;
 	}
 	
 	/*updates the documents in the indexes based on the dirty, detached and new components.*/
@@ -200,10 +199,15 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 	
 	@Override
 	protected void postUpdateDocuments(IndexCommitChangeSet commitChangeSet) {
-		final Collection<String> releasableComponentIds = getReleasableComponentIds(commitChangeSet.getRevisionDeletions());
+		final Set<String> releasableComponentIds = getReleasableComponentIds(commitChangeSet.getRevisionDeletions());
 		if (!releasableComponentIds.isEmpty()) {
-			identifierService.release(releasableComponentIds);
+			SnomedRequests.identifiers().prepareRelease()
+					.setComponentIds(releasableComponentIds)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+					.execute(getServiceForClass(IEventBus.class))
+					.getSync();
 		}
+			
 	}
 	
 	private void collectIds(final Set<String> sourceIds, final Set<String> destinationIds, Iterable<Relationship> newRelationships, CharacteristicType characteristicType) {
@@ -215,8 +219,8 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 		}
 	}
 
-	private Collection<String> getReleasableComponentIds(Multimap<Class<? extends Revision>, Long> deletions) {
-		final Collection<String> releasableComponentIds = newHashSet();
+	private Set<String> getReleasableComponentIds(Multimap<Class<? extends Revision>, Long> deletions) {
+		final Set<String> releasableComponentIds = newHashSet();
 		for (Class<? extends Revision> type : deletions.keySet()) {
 			if (isCoreComponent(type)) {
 				releasableComponentIds.addAll(getReleasableComponentIds((Class<? extends RevisionDocument>) type, deletions.get(type)));

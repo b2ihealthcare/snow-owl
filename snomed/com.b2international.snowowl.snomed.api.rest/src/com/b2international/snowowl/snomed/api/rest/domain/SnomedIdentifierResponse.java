@@ -22,6 +22,10 @@ public class SnomedIdentifierResponse {
 
 	private String id;
 	
+	public SnomedIdentifierResponse(String id) {
+		this.id = id;
+	}
+
 	public String getId() {
 		return id;
 	}

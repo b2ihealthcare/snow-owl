@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,8 +79,6 @@ import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.core.events.SnomedIdentifierBulkReleaseRequestBuilder;
-import com.b2international.snowowl.snomed.core.events.SnomedIdentifierGenerateRequestBuilder;
 import com.b2international.snowowl.snomed.core.preference.ModulePreference;
 import com.b2international.snowowl.snomed.core.store.SnomedComponentBuilder;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
@@ -574,10 +572,9 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	public void releaseIds() {
 		if (!newComponentIds.isEmpty()) {
 			final IEventBus bus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
-			final String branch = BranchPathUtils.createPath(transaction).getPath();
-			new SnomedIdentifierBulkReleaseRequestBuilder()
+			SnomedRequests.identifiers().prepareRelease()
 				.setComponentIds(newComponentIds)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(bus)
 				.getSync();
 			
@@ -1618,13 +1615,13 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
 	public String generateComponentId(final ComponentCategory componentNature, final String namespace) {
 		final IEventBus bus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
-		final String branch = BranchPathUtils.createPath(transaction).getPath();
-		final String generatedId = new SnomedIdentifierGenerateRequestBuilder()
+		final String generatedId = SnomedRequests.identifiers().prepareGenerate()
 				.setCategory(componentNature)
 				.setNamespace(namespace)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(bus)
-				.getSync();
+				.getSync()
+				.getOnlyItem();
 		newComponentIds.add(generatedId);
 		return generatedId;
 	}

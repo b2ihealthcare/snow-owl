@@ -28,11 +28,13 @@ import org.eclipse.emf.spi.cdo.InternalCDOTransaction;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.importer.ImportAction;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.rf2.csv.AbstractTerminologyComponentRow;
 import com.b2international.snowowl.snomed.importer.rf2.model.AbstractSnomedImporter;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportConfiguration;
@@ -42,8 +44,8 @@ import com.google.common.collect.Sets;
 
 public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTerminologyComponentRow, C extends Component> extends AbstractSnomedImporter<T, C> {
 
-	private final Collection<String> componentIdsToRegister = Sets.newHashSet();
-	private final SnomedIdentifiers snomedIdentifiers;
+	private final Set<String> componentIdsToRegister = Sets.newHashSet();
+	private boolean importSupported;
 
 	protected AbstractSnomedTerminologyImporter(final SnomedImportConfiguration<T> importConfiguration, 
 			final SnomedImportContext importContext, 
@@ -51,7 +53,7 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 			final String releaseFileIdentifier) {
 		
 		super(importConfiguration, importContext, releaseFileStream, releaseFileIdentifier);
-		this.snomedIdentifiers = new SnomedIdentifiers(ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class));
+		this.importSupported = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class).importSupported();
 	}
 
 	@Override
@@ -83,7 +85,7 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 	@Override
 	protected void registerNewComponent(C component) {
 		getComponentLookup().addNewComponent(component, component.getId());
-		if (snomedIdentifiers.importSupported()) {
+		if (importSupported) {
 			componentIdsToRegister.add(component.getId());
 		}
 	}
@@ -95,18 +97,17 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 	
 	@Override
 	protected void preCommit(final InternalCDOTransaction transaction) throws SnowowlServiceException {
-		if (snomedIdentifiers.importSupported() && !componentIdsToRegister.isEmpty()) {
-			snomedIdentifiers.register(componentIdsToRegister);
+		if (importSupported && !componentIdsToRegister.isEmpty()) {
+			SnomedRequests.identifiers().prepareRegister()
+					.setComponentIds(componentIdsToRegister)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync();
+
 			componentIdsToRegister.clear();
 		}
 
 		super.preCommit(transaction);
-	}
-
-	@Override
-	protected void handleCommitException() {
-		snomedIdentifiers.rollback();
-		super.handleCommitException();
 	}
 	
 	@Override
