@@ -87,17 +87,13 @@ public class SnomedRefSetCloner {
 				newRefSetMember = editingContext.createSimpleTypeRefSetMember(identifierPair, originalMemberIndexEntry.getModuleId(), cloneRefSet);
 				break;
 			case COMPLEX_MAP:
-				String mapTargetId = originalMemberIndexEntry.getMapTargetComponentId();
-				String mapTargetComponentType = originalMemberIndexEntry.getMapTargetComponentType();
-				specialFieldPair = ComponentIdentifierPair.<String>createWithUncheckedComponentId(mapTargetComponentType, mapTargetId);
-				SnomedComplexMapRefSetMember newComplexMapRefSetMember = editingContext.createComplexMapRefSetMember(identifierPair, specialFieldPair, originalMemberIndexEntry.getModuleId(), (SnomedMappingRefSet) cloneRefSet);
+				newRefSetMember = createMapping(cloneRefSet, originalMemberIndexEntry, identifierPair);
+				break;
+			case EXTENDED_MAP:
+				SnomedComplexMapRefSetMember mappingRefSetMember = createMapping(cloneRefSet, originalMemberIndexEntry, identifierPair);
 				SnomedRefSetMemberIndexEntry complexMapRefSetMemberIndexEntry = (SnomedRefSetMemberIndexEntry) originalMemberIndexEntry;
-				newComplexMapRefSetMember.setCorrelationId(complexMapRefSetMemberIndexEntry.getCorrelationId());
-				newComplexMapRefSetMember.setMapAdvice(complexMapRefSetMemberIndexEntry.getMapAdvice());
-				newComplexMapRefSetMember.setMapGroup(complexMapRefSetMemberIndexEntry.getMapGroup());
-				newComplexMapRefSetMember.setMapPriority(complexMapRefSetMemberIndexEntry.getMapPriority());
-				newComplexMapRefSetMember.setMapRule(complexMapRefSetMemberIndexEntry.getMapRule());
-				newRefSetMember = newComplexMapRefSetMember;
+				mappingRefSetMember.setMapCategoryId(complexMapRefSetMemberIndexEntry.getMapCategoryId());
+				newRefSetMember = mappingRefSetMember;
 				break;
 			case SIMPLE_MAP:
 				specialFieldPair = ComponentIdentifierPair.<String>create(originalMemberIndexEntry.getMapTargetComponentType(), originalMemberIndexEntry.getMapTargetComponentId());
@@ -111,5 +107,28 @@ public class SnomedRefSetCloner {
 		}
 		
 		return newMembers;
+	}
+
+	/**
+	 * @param cloneRefSet
+	 * @param originalMemberIndexEntry
+	 * @param identifierPair
+	 * @return complex type mapping
+	 */
+	private SnomedComplexMapRefSetMember createMapping(SnomedRegularRefSet cloneRefSet, SnomedRefSetMemberIndexEntry originalMemberIndexEntry,
+			ComponentIdentifierPair<String> identifierPair) {
+		
+		ComponentIdentifierPair<String> specialFieldPair;
+		String mapTargetId = originalMemberIndexEntry.getMapTargetComponentId();
+		String mapTargetComponentType = originalMemberIndexEntry.getMapTargetComponentType();
+		specialFieldPair = ComponentIdentifierPair.<String>createWithUncheckedComponentId(mapTargetComponentType, mapTargetId);
+		SnomedComplexMapRefSetMember newComplexMapRefSetMember = editingContext.createComplexMapRefSetMember(identifierPair, specialFieldPair, originalMemberIndexEntry.getModuleId(), (SnomedMappingRefSet) cloneRefSet);
+		SnomedRefSetMemberIndexEntry complexMapRefSetMemberIndexEntry = (SnomedRefSetMemberIndexEntry) originalMemberIndexEntry;
+		newComplexMapRefSetMember.setCorrelationId(complexMapRefSetMemberIndexEntry.getCorrelationId());
+		newComplexMapRefSetMember.setMapAdvice(complexMapRefSetMemberIndexEntry.getMapAdvice());
+		newComplexMapRefSetMember.setMapGroup(complexMapRefSetMemberIndexEntry.getMapGroup());
+		newComplexMapRefSetMember.setMapPriority(complexMapRefSetMemberIndexEntry.getMapPriority());
+		newComplexMapRefSetMember.setMapRule(complexMapRefSetMemberIndexEntry.getMapRule());
+		return newComplexMapRefSetMember;
 	}
 }
