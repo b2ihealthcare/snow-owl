@@ -136,10 +136,6 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 		final String effectiveTime = row.get(1);
 		final String componentId = row.get(COLUMN_REFERENCED_COMPONENT_ID);
 		if (!isComponentExists(componentId, getComponentType(componentId))) {
-			// skip missing lang refset referenced components (FIXME support members with missing refcomps)
-			if (this instanceof SnomedLanguageRefSetValidator) {
-				return;
-			}
 			referencedComponentNotExist.add(getMissingComponentMessage(uuid, effectiveTime, componentId));
 		}
 	}
