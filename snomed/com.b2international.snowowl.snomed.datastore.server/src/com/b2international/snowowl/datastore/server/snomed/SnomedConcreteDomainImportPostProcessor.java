@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.snomed;
 
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_B2I_EXTENSION;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_ROOT;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
@@ -37,8 +38,7 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -48,10 +48,10 @@ import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.ISnomedPostProcessorContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.6
@@ -181,65 +181,47 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 		final String defaultLanguageCode = context.getDefaultLanguageCode();
 		final String defaultLanguageRefsetId = context.getDefaultLanguageRefsetId();
 		
-		final Description fsn = createDescription(concept.getId(), fsnTerm, FULLY_SPECIFIED_NAME, Acceptability.PREFERRED, defaultLanguageCode, defaultLanguageRefsetId, context);
-		final Description pt = createDescription(concept.getId(), ptTerm, SYNONYM, Acceptability.PREFERRED, defaultLanguageCode, defaultLanguageRefsetId, context);
-		
-		concept.getDescriptions().add(fsn);
-		concept.getDescriptions().add(pt);
-		
-		final Relationship statedIsa = createIsaRelationship(identifierConceptId, parent, CharacteristicType.STATED_RELATIONSHIP, context);
-		final Relationship inferredIsa = createIsaRelationship(identifierConceptId, parent, CharacteristicType.INFERRED_RELATIONSHIP, context);
-		
-		concept.getOutboundRelationships().add(statedIsa);
-		concept.getOutboundRelationships().add(inferredIsa);
+		createDescription(concept.getId(), fsnTerm, FULLY_SPECIFIED_NAME, Acceptability.PREFERRED, defaultLanguageCode, defaultLanguageRefsetId, context);
+		createDescription(concept.getId(), ptTerm, SYNONYM, Acceptability.PREFERRED, defaultLanguageCode, defaultLanguageRefsetId, context);
+		createIsaRelationship(identifierConceptId, parent, CharacteristicType.STATED_RELATIONSHIP, context);
+		createIsaRelationship(identifierConceptId, parent, CharacteristicType.INFERRED_RELATIONSHIP, context);
 	}
 
-	private Relationship createIsaRelationship(final String source, final String destination, final CharacteristicType characteristicType, final ImportOnlySnomedTransactionContext context) {
-
-		Relationship relationship = SnomedComponents.newRelationship()
-			.withIdFromNamespace(B2I_NAMESPACE)
-			.withActive(true)
-			.withModule(MODULE_B2I_EXTENSION)
-			.withSource(source)
-			.withDestination(destination)
-			.isa()
-			.withCharacteristicType(characteristicType)
-			.withModifier(RelationshipModifier.EXISTENTIAL)
-			.build(context);
-		
-		SnomedIdentifiers identifiers = context.service(SnomedIdentifiers.class);
-		identifiers.register(relationship.getId());
-		
-		return relationship;
+	private void createIsaRelationship(final String source, final String destination, final CharacteristicType characteristicType, final ImportOnlySnomedTransactionContext context) {
+		SnomedRequests.prepareNewRelationship() 
+			.setIdFromNamespace(B2I_NAMESPACE)
+			.setActive(true)
+			.setModuleId(MODULE_B2I_EXTENSION)
+			.setSourceId(source)
+			.setDestinationId(destination)
+			.setTypeId(IS_A)
+			.setCharacteristicType(characteristicType)
+			.setModifier(RelationshipModifier.EXISTENTIAL)
+			.build()
+			.execute(context);
 	}
 
-	private Description createDescription(final String conceptId, final String term, final String type, final Acceptability acceptability, final String languageCode, final String languageRefsetId, final ImportOnlySnomedTransactionContext context) {
+	private void createDescription(final String conceptId, final String term, final String type, final Acceptability acceptability, final String languageCode, final String languageRefsetId, final ImportOnlySnomedTransactionContext context) {
+		final String descriptionId = SnomedRequests.prepareNewDescription()
+			.setIdFromNamespace(B2I_NAMESPACE)
+			// .setActive(true)
+			.setModuleId(MODULE_B2I_EXTENSION)
+			.setConceptId(conceptId)
+			.setLanguageCode(languageCode)
+			.setTypeId(type)
+			.setTerm(term)
+			.setCaseSignificance(CaseSignificance.CASE_INSENSITIVE)
+			.build()
+			.execute(context);
 		
-		final Description description = SnomedComponents.newDescription()
-			.withIdFromNamespace(B2I_NAMESPACE)
-			.withActive(true)
-			.withModule(MODULE_B2I_EXTENSION)
-			.withConcept(conceptId)
-			.withLanguageCode(languageCode)
-			.withType(type)
-			.withTerm(term)
-			.withCaseSignificance(CaseSignificance.CASE_INSENSITIVE)
-			.build(context);
-		
-		SnomedIdentifiers identifiers = context.service(SnomedIdentifiers.class);
-		identifiers.register(description.getId());
-		
-		final SnomedLanguageRefSetMember languageRefSetMember = SnomedComponents.newLanguageMember()
-			.withActive(true)
-			.withModule(MODULE_B2I_EXTENSION)
-			.withRefSet(languageRefsetId)
-			.withReferencedComponent(description.getId())
-			.withAcceptability(acceptability)
-			.build(context);
-		
-		description.getLanguageRefSetMembers().add(languageRefSetMember);
-		
-		return description;
+		SnomedRequests.prepareNewMember()
+			// .setActive(true)
+			.setModuleId(MODULE_B2I_EXTENSION)
+			.setReferenceSetId(languageRefsetId)
+			.setReferencedComponentId(descriptionId)
+			.setProperties(ImmutableMap.of(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, acceptability.getConceptId()))
+			.build()
+			.execute(context);
 	}
 	
 	private boolean isDefaultConcreteDomainConfiguration(final SnomedCoreConfiguration config) {
