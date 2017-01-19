@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
 
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
@@ -35,10 +34,6 @@ public final class SnomedDescriptionCreateRequestBuilder extends SnomedComponent
 	private String typeId = Concepts.SYNONYM;
 	private String languageCode = "en";
 	private Map<String, Acceptability> acceptabilityMap = newHashMap();
-	
-	SnomedDescriptionCreateRequestBuilder() {
-		super(ComponentCategory.DESCRIPTION);
-	}
 	
 	public SnomedDescriptionCreateRequestBuilder setCaseSignificance(CaseSignificance caseSignificance) {
 		this.caseSignificance = caseSignificance;

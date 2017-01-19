@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,9 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
+import com.b2international.snowowl.snomed.core.domain.NamespaceIdStrategy;
 
 /**
  * @since 4.5
@@ -34,10 +33,6 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	private IdGenerationStrategy isAIdGenerationStrategy;
 	private List<SnomedDescriptionCreateRequest> descriptions = newArrayList();
 	
-	SnomedConceptCreateRequestBuilder() {
-		super(ComponentCategory.CONCEPT);
-	}
-
 	public SnomedConceptCreateRequestBuilder setParent(String parentId) {
 		this.parentId = parentId;
 		return getSelf();
@@ -71,10 +66,13 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	protected void init(BaseSnomedComponentCreateRequest request) {
 		final SnomedConceptCreateRequest req = (SnomedConceptCreateRequest) request;
 		req.setDefinitionStatus(definitionStatus);
-		// TODO use default namespace???
-		req.setIsAIdGenerationStrategy(isAIdGenerationStrategy == null ? new ReservingIdStrategy(ComponentCategory.RELATIONSHIP) : isAIdGenerationStrategy);
 		req.setDescriptions(descriptions);
 		req.setParentId(parentId);
+		
+		// If not specified, the IS A relationship ID will come from the same namespace as the concept's ID
+		req.setIsAIdGenerationStrategy(isAIdGenerationStrategy == null 
+				? new NamespaceIdStrategy(req.getIdGenerationStrategy().getNamespace()) 
+				: isAIdGenerationStrategy);
 	}
 
 }
