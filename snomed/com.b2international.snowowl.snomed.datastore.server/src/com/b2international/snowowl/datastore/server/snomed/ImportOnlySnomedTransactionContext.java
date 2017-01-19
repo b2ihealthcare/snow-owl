@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,6 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.inject.Provider;
 
@@ -42,13 +40,10 @@ import com.google.inject.Provider;
 public class ImportOnlySnomedTransactionContext implements TransactionContext {
 
 	private final SnomedEditingContext editingContext;
-	private final SnomedIdentifiers snomedIdentifiers;
 	private Branch branch;
 
 	public ImportOnlySnomedTransactionContext(final SnomedEditingContext editingContext) {
 		this.editingContext = editingContext;
-		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
-		snomedIdentifiers = new SnomedIdentifiers(identifierService);
 	}
 	
 	@Override
@@ -77,9 +72,7 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 
 	@Override
 	public <T> T service(final Class<T> type) {
-		if (type.isAssignableFrom(SnomedIdentifiers.class)) {
-			return type.cast(snomedIdentifiers);
-		} else if (type.isAssignableFrom(SnomedEditingContext.class)) {
+		if (type.isAssignableFrom(SnomedEditingContext.class)) {
 			return type.cast(editingContext);
 		}
 		return ApplicationContext.getInstance().getServiceChecked(type);
