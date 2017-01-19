@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 
@@ -138,12 +139,11 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 
 	@Override
 	public String execute(TransactionContext context) {
-		ensureUniqueId("Relationship", context);
-		
 		try {
+			final String relationshipId = ((ConstantIdStrategy) getIdGenerationStrategy()).getId();
 			final Relationship relationship = SnomedComponents.newRelationship()
 					.withActive(isActive())
-					.withId(getIdGenerationStrategy())
+					.withId(relationshipId)
 					.withModule(getModuleId())
 					.withSource(getSourceId())
 					.withDestination(getDestinationId())
@@ -154,15 +154,9 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 					.withModifier(getModifier())
 					.withDestinationNegated(isDestinationNegated())
 					.build(context);
-
 			return relationship.getId();
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
-	}
-	
-	@Override
-	protected void checkComponentExists(TransactionContext context, String componentId) throws ComponentNotFoundException {
-		SnomedRequests.prepareGetRelationship().setComponentId(componentId).build().execute(context);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -86,8 +87,6 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 
 	@Override
 	public String execute(TransactionContext context) {
-		ensureUniqueId("Concept", context);
-		
 		final Concept concept = convertConcept(context);
 		context.add(concept);
 
@@ -99,8 +98,9 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 
 	private Concept convertConcept(final TransactionContext context) {
 		try {
+			final String conceptId = ((ConstantIdStrategy) getIdGenerationStrategy()).getId();
 			return SnomedComponents.newConcept()
-					.withId(getIdGenerationStrategy())
+					.withId(conceptId)
 					.withModule(getModuleId())
 					.withDefinitionStatus(definitionStatus)
 					.build(context);
@@ -170,10 +170,5 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		} catch (final ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
-	}
-
-	@Override
-	protected void checkComponentExists(TransactionContext context, String componentId) throws ComponentNotFoundException {
-		SnomedRequests.prepareGetConcept().setComponentId(componentId).build().execute(context);
 	}
 }
