@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
@@ -36,10 +35,6 @@ public final class SnomedConceptBuilder extends SnomedComponentBuilder<SnomedCon
 	private boolean exhaustive = false;
 	private final Collection<Description> descriptions = newHashSet();
 	private final Collection<Relationship> relationships = newHashSet();
-
-	protected SnomedConceptBuilder() {
-		super(ComponentCategory.CONCEPT);
-	}
 
 	/**
 	 * Specifies the exhaustive flag to use for the new concept.
