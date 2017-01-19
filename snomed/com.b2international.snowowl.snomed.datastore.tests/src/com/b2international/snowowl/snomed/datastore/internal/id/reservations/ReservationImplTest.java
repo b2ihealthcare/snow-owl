@@ -33,7 +33,7 @@ import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfi
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
@@ -65,14 +65,15 @@ public class ReservationImplTest {
 				return String.valueOf(counter++);
 			}
 		}, new SnomedIdentifierReservationServiceImpl(), new SnomedIdentifierConfiguration());
-		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(identifierService);
 		final Set<ComponentCategory> components = Collections.singleton(ComponentCategory.CONCEPT);
 		final Reservation range = Reservations.range(200, 300, null, components);
-		for (int i = 200; i <= 300; i++) {
-			final String id = snomedIdentifiers.generate(null, ComponentCategory.CONCEPT);
+		final Set<String> componentIds = identifierService.generate(null, ComponentCategory.CONCEPT, 300 - 200 + 1);
+		
+		for (String id : componentIds) { 
 			final SnomedIdentifier identifier = SnomedIdentifiers.create(id);
 			assertTrue(range.includes(identifier));
 		}
+		
 		store.admin().delete();
 	}
 	
