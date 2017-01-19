@@ -163,7 +163,8 @@ final class IdRequest extends DelegatingRequest<BranchContext, BranchContext, Co
 			final Request<?, ?> wrappedRequest = transactionalRequest.getNext();
 	
 			if (wrappedRequest instanceof BaseSnomedComponentCreateRequest) {
-				return getComponentCreateRequestsFromList(ImmutableList.of(wrappedRequest));
+				final BaseSnomedComponentCreateRequest createRequest = (BaseSnomedComponentCreateRequest) wrappedRequest;
+				return getComponentCreateRequestsFromList(ImmutableList.copyOf(createRequest.getNestedRequests()));
 			} else if (wrappedRequest instanceof BulkRequest) {
 				final BulkRequest<?> bulkRequest = (BulkRequest<?>) wrappedRequest;
 				return getComponentCreateRequestsFromList(ImmutableList.copyOf(bulkRequest.getRequests()));

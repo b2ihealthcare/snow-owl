@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -170,5 +171,14 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		} catch (final ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
+	}
+	
+	@Override
+	public Collection<SnomedComponentCreateRequest> getNestedRequests() {
+		return ImmutableList.<SnomedComponentCreateRequest>builder()
+			.add(this)
+			.addAll(descriptions)
+		//	.addAll(relationships)
+			.build();
 	}
 }

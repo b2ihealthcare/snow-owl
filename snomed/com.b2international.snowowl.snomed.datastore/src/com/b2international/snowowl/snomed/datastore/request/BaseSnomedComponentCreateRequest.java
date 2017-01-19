@@ -15,12 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Collection;
+
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.0
@@ -54,6 +57,10 @@ public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<Trans
 	@Override
 	protected final Class<String> getReturnType() {
 		return String.class;
+	}
+	
+	public Collection<SnomedComponentCreateRequest> getNestedRequests() {
+		return ImmutableList.of(this);
 	}
 
 }
