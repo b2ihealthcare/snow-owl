@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,9 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
-import com.b2international.snowowl.snomed.core.domain.RegisteringIdStrategy;
+import com.b2international.snowowl.snomed.core.domain.NamespaceIdStrategy;
 import com.b2international.snowowl.snomed.datastore.request.SnomedComponentCreateRequestBuilder;
 
 /**
@@ -64,29 +63,19 @@ public abstract class AbstractSnomedComponentRestInput<I extends SnomedComponent
 	}
 
 	protected abstract I createRequestBuilder();
-
-	/**
-	 * Returns with the component category for the concrete SNOMED&nbsp;CT component input.
-	 * @return the component category of the concrete component.
-	 */
-	protected abstract ComponentCategory getComponentCategory();
 	
 	protected I toRequestBuilder() {
 		final I req = createRequestBuilder();
-		req.setId(createIdGenerationStrategy(getId()));
-		req.setModuleId(getModuleId());
+		req.setId(createIdGenerationStrategy(id));
+		req.setModuleId(moduleId);
 		return req;
 	}
 
-	protected IdGenerationStrategy createIdGenerationStrategy(final String idOrNull) {
-		return createIdGenerationStrategy(idOrNull, getComponentCategory());
-	}
-
-	protected IdGenerationStrategy createIdGenerationStrategy(final String idOrNull, ComponentCategory componentCategory) {
-		if (null == idOrNull) {
-			return new ReservingIdStrategy(componentCategory, getNamespaceId());
+	protected IdGenerationStrategy createIdGenerationStrategy(String idOrNull) {
+		if (idOrNull == null) {
+			return new NamespaceIdStrategy(namespaceId);
 		} else {
-			return new RegisteringIdStrategy(idOrNull);
+			return new ConstantIdStrategy(idOrNull);
 		}
 	}
 }

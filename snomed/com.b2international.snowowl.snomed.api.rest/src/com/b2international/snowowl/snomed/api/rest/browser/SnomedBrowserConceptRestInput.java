@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.api.rest.domain.AbstractSnomedComponentRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
@@ -72,11 +71,6 @@ public class SnomedBrowserConceptRestInput extends AbstractSnomedComponentRestIn
 		} else {
 			throw new BadRequestException("At least one isA relationship is required.");
 		}
-	}
-
-	@Override
-	protected ComponentCategory getComponentCategory() {
-		return ComponentCategory.CONCEPT;
 	}
 
 	public List<SnomedDescriptionRestInput> getDescriptions() {
