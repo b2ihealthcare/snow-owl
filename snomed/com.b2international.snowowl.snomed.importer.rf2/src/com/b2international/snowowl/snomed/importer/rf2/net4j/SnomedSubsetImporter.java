@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -51,7 +50,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
+import com.b2international.snowowl.snomed.core.domain.NamespaceIdStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -306,7 +305,7 @@ public class SnomedSubsetImporter {
 			.setId(conceptId)
 			.setModuleId(moduleId)
 			.setParent(parentConceptId)
-			.setIsAId(new ReservingIdStrategy(ComponentCategory.RELATIONSHIP, Concepts.B2I_NAMESPACE))
+			.setIsAId(new NamespaceIdStrategy(Concepts.B2I_NAMESPACE))
 			.addDescription(SnomedRequests
 					.prepareNewDescription()
 					.setIdFromNamespace(Concepts.B2I_NAMESPACE)
@@ -410,7 +409,7 @@ public class SnomedSubsetImporter {
 					.prepareNewConcept()
 					.setModuleId(moduleId)
 					.setParent(refSetType)
-					.setIsAId(new ReservingIdStrategy(ComponentCategory.RELATIONSHIP, Concepts.B2I_NAMESPACE))
+					.setIsAId(new NamespaceIdStrategy(Concepts.B2I_NAMESPACE))
 					.addDescription(SnomedRequests
 							.prepareNewDescription()
 							.setIdFromNamespace(Concepts.B2I_NAMESPACE)
