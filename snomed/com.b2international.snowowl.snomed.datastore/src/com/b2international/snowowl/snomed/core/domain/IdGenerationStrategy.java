@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
-import com.b2international.snowowl.core.domain.BranchContext;
-
 /**
  * Implementations allow clients to generate component identifiers conforming to
  * the specified constraints.
@@ -24,11 +22,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 public interface IdGenerationStrategy {
 
 	/**
-	 * Generates a new ID.
-	 * 
-	 * @param context
-	 *            the branch context.
+	 * @return the namespace of the identifier to be used
 	 */
-	String generate(BranchContext context);
-
+	String getNamespace();
 }

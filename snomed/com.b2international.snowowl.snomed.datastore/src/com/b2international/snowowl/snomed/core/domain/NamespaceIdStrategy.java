@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,32 +15,26 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
-import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.google.common.base.Objects;
 
 /**
  * @since 4.5
  */
-public class RegisteringIdStrategy implements IdGenerationStrategy {
+public class NamespaceIdStrategy implements IdGenerationStrategy {
 
-	private final String id;
+	private final String namespace;
 
-	public RegisteringIdStrategy(final String id) {
-		this.id = id;
+	public NamespaceIdStrategy(final String namespace) {
+		this.namespace = namespace;
 	}
 
 	@Override
-	public String generate(final BranchContext context) {
-		final SnomedIdentifiers snomedIdentifiers = context.service(SnomedIdentifiers.class);
-		snomedIdentifiers.register(id);
-		return id;
+	public String getNamespace() {
+		return namespace;
 	}
-
+	
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this)
-				.add("id", id)
-				.toString();
+		return Objects.toStringHelper(this).add("namespace", namespace).toString();
 	}
 }
