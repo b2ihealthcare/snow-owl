@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,26 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map.Entry;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.metrics.Metrics;
 import com.b2international.snowowl.core.events.metrics.Timer;
+import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -43,17 +44,18 @@ import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.TransactionalRequest;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.core.domain.NamespaceIdStrategy;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.id.action.IdActionRecorder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Multimap;
 
@@ -68,11 +70,20 @@ final class IdRequest extends DelegatingRequest<BranchContext, BranchContext, Co
 	public static final int ID_GENERATION_ATTEMPTS = 9999_9999;
 
 	private static final long serialVersionUID = 1L;
-	private static final ImmutableMap<ComponentCategory, Class<? extends SnomedComponentDocument>> CATEGORY_TO_DOC_MAP = ImmutableMap
-			.<ComponentCategory, Class<? extends SnomedComponentDocument>> builder()
-			.put(ComponentCategory.CONCEPT, SnomedConceptDocument.class)
-			.put(ComponentCategory.RELATIONSHIP, SnomedRelationshipIndexEntry.class)
-			.put(ComponentCategory.DESCRIPTION, SnomedDescriptionIndexEntry.class).build();
+	
+	private static final Map<ComponentCategory, Class<? extends SnomedComponentDocument>> CATEGORY_TO_DOCUMENT_CLASS_MAP;
+	
+	static {
+		CATEGORY_TO_DOCUMENT_CLASS_MAP = ImmutableMap.<ComponentCategory, Class<? extends SnomedComponentDocument>>builder()
+				.put(ComponentCategory.CONCEPT, SnomedConceptDocument.class)
+				.put(ComponentCategory.RELATIONSHIP, SnomedRelationshipIndexEntry.class)
+				.put(ComponentCategory.DESCRIPTION, SnomedDescriptionIndexEntry.class)
+				.build();
+	}
+
+	private static Class<? extends SnomedComponentDocument> getDocumentClass(final ComponentCategory category) {
+		return CATEGORY_TO_DOCUMENT_CLASS_MAP.get(category);
+	}
 
 	protected IdRequest(final Request<BranchContext, CommitResult> next) {
 		super(next);
@@ -81,170 +92,162 @@ final class IdRequest extends DelegatingRequest<BranchContext, BranchContext, Co
 	@Override
 	public CommitResult execute(final BranchContext context) {
 
-		final ISnomedIdentifierService identifierService = context.service(ISnomedIdentifierService.class);
-		final SnomedIdentifiers snomedIdentifiers = new SnomedIdentifiers(identifierService);
+		final IdActionRecorder recorder = new IdActionRecorder(context);
 
 		try {
 
-			final Multimap<ComponentCategory, BaseSnomedComponentCreateRequest> bulkCreateRequests = extractBulkCreateRequests(next());
+			final Multimap<ComponentCategory, BaseSnomedComponentCreateRequest> componentCreateRequests = getComponentCreateRequests(next());
 
-			if (!bulkCreateRequests.isEmpty()) {
-
-				final Timer idGenerationTimer = context.service(Metrics.class).timer("bulkIdGeneration");
+			if (!componentCreateRequests.isEmpty()) {
+				final Timer idGenerationTimer = context.service(Metrics.class).timer("idGeneration");
 
 				try {
-
 					idGenerationTimer.start();
 
-					for (final Entry<ComponentCategory, Collection<BaseSnomedComponentCreateRequest>> entry : bulkCreateRequests.asMap().entrySet()) {
+					for (final ComponentCategory category : componentCreateRequests.keySet()) {
+						final Class<? extends SnomedComponentDocument> documentClass = getDocumentClass(category);
+						final Collection<BaseSnomedComponentCreateRequest> categoryRequests = componentCreateRequests.get(category);
+						
+						final Set<String> userSuppliedIds = FluentIterable.from(categoryRequests)
+								.filter(request -> request.getIdGenerationStrategy() instanceof ConstantIdStrategy)
+								.transform(request -> ((ConstantIdStrategy) request.getIdGenerationStrategy()).getId())
+								.toSet();
+						
+						final Set<String> existingIds = getExistingIds(context, userSuppliedIds, documentClass);
+						if (!existingIds.isEmpty()) {
+							// TODO: Report all existing identifiers
+							throw new AlreadyExistsException(category.getDisplayName(), Iterables.getFirst(existingIds, null));
+						}
+						
+						final Multimap<String, BaseSnomedComponentCreateRequest> requestsByNamespace = FluentIterable.from(categoryRequests)
+								.filter(request -> request.getIdGenerationStrategy() instanceof NamespaceIdStrategy)
+								.index(request -> getNamespaceKey(request));
 
-						final ComponentCategory componentCategory = entry.getKey();
-						final Collection<BaseSnomedComponentCreateRequest> requests = entry.getValue();
-
-						final Multimap<String, BaseSnomedComponentCreateRequest> nameSpaceToRequestMap = FluentIterable.from(requests)
-								.index(new Function<BaseSnomedComponentCreateRequest, String>() {
-									@Override
-									public String apply(final BaseSnomedComponentCreateRequest input) {
-										return getNamespace(input);
-									}
-								});
-
-						for (final Entry<String, Collection<BaseSnomedComponentCreateRequest>> nameSpaceEntry : nameSpaceToRequestMap.asMap()
-								.entrySet()) {
-
-							final String namespace = nameSpaceEntry.getKey();
-							final Collection<BaseSnomedComponentCreateRequest> requestsWithNamespace = nameSpaceEntry.getValue();
-
-							final String namespaceToUse = namespace.equals(SnomedIdentifiers.INT_NAMESPACE) ? null : namespace;
-
-							final Collection<String> ids = newArrayList(
-									snomedIdentifiers.reserve(namespaceToUse, componentCategory, requestsWithNamespace.size()));
-
-							final Collection<String> uniqueIds = getUniqueIds(ids, context, snomedIdentifiers, componentCategory,
-									requestsWithNamespace.size(), namespaceToUse);
+						for (final String namespace : requestsByNamespace.keySet()) {
+							final String convertedNamespace = namespace.equals(SnomedIdentifiers.INT_NAMESPACE) ? null : namespace;
+							final Collection<BaseSnomedComponentCreateRequest> namespaceRequests = requestsByNamespace.get(namespace);
+							final int count = namespaceRequests.size();
+							
+							final Set<String> uniqueIds = getUniqueIds(context, recorder, category, documentClass, count, convertedNamespace);
 
 							final Iterator<String> idsToUse = Iterators.consumingIterator(uniqueIds.iterator());
-
-							for (final BaseSnomedComponentCreateRequest createRequest : requestsWithNamespace) {
+							for (final BaseSnomedComponentCreateRequest createRequest : namespaceRequests) {
 								createRequest.setIdGenerationStrategy(new ConstantIdStrategy(idsToUse.next()));
 							}
 
-							checkState(Iterators.size(idsToUse) == 0, "More SNOMED CT ids have been requested than the amount of create requests");
-
+							checkState(!idsToUse.hasNext(), "More SNOMED CT ids have been requested than used.");
 						}
-
 					}
 
 				} finally {
 					idGenerationTimer.stop();
 				}
-
 			}
 
-			final CommitResult commitInfo = next(DelegatingBranchContext.basedOn(context).bind(SnomedIdentifiers.class, snomedIdentifiers).build());
-
-			snomedIdentifiers.commit();
-
+			final CommitResult commitInfo = next(context);
+			recorder.commit();
 			return commitInfo;
 
 		} catch (final Exception e) {
-			// TODO check exception type and decide what to do (e.g. rollback ID
-			// request or not)
-			snomedIdentifiers.rollback();
-
+			
+			recorder.rollback();
 			throw e;
 		}
 	}
 
-	private Collection<String> getUniqueIds(final Collection<String> ids, final BranchContext context, final SnomedIdentifiers snomedIdentifiers,
-			final ComponentCategory componentCategory, final int quantity, final String namespaceToUse) {
-
-		for (int i = 0; i < ID_GENERATION_ATTEMPTS; i++) {
-
-			final Collection<String> existingIds = getExistingIds(context, ids, CATEGORY_TO_DOC_MAP.get(componentCategory));
-
-			if (!existingIds.isEmpty()) {
-
-				ids.removeAll(existingIds);
-
-				final Collection<String> newIds = snomedIdentifiers.reserve(namespaceToUse, componentCategory, existingIds.size());
-
-				ids.addAll(newIds);
-
-			} else {
-
-				return ids;
-
+	private Multimap<ComponentCategory, BaseSnomedComponentCreateRequest> getComponentCreateRequests(final Request<?, ?> request) {
+		final Request<?, ?> firstNonDelegatingRequest = getFirstNonDelegatingRequest(request);
+	
+		if (firstNonDelegatingRequest instanceof TransactionalRequest) {
+			final TransactionalRequest transactionalRequest = (TransactionalRequest) firstNonDelegatingRequest;
+			final Request<?, ?> wrappedRequest = transactionalRequest.getNext();
+	
+			if (wrappedRequest instanceof BaseSnomedComponentCreateRequest) {
+				return getComponentCreateRequestsFromList(ImmutableList.of(wrappedRequest));
+			} else if (wrappedRequest instanceof BulkRequest) {
+				final BulkRequest<?> bulkRequest = (BulkRequest<?>) wrappedRequest;
+				return getComponentCreateRequestsFromList(ImmutableList.copyOf(bulkRequest.getRequests()));
 			}
 		}
-
-		throw new BadRequestException("There are insufficient number of component ids available for category: %s",
-				componentCategory.getDisplayName());
+	
+		return ImmutableMultimap.of();
 	}
 
-	private Collection<String> getExistingIds(final BranchContext context, final Collection<String> ids, final Class<? extends SnomedComponentDocument> clazz) {
+	private Request<?, ?> getFirstNonDelegatingRequest(final Request<?, ?> request) {
+		Request<?, ?> firstNonDelegatingRequest = request;
 		
-		try {
-			
-			Hits<? extends SnomedComponentDocument> hits = context.service(RevisionSearcher.class).search(Query.select(clazz)
-					.where(RevisionDocument.Expressions.ids(ids))
-					.limit(ids.size())
-					.build());
-			
-			return FluentIterable.from(hits).transform(ComponentUtils.getIdFunction()).toSet();
-			
-		} catch (IOException e) {
-			throw new SnowowlRuntimeException(e);
+		while (firstNonDelegatingRequest instanceof DelegatingRequest) {
+			firstNonDelegatingRequest = ((DelegatingRequest<?, ?, ?>) firstNonDelegatingRequest).next();
 		}
 		
+		return firstNonDelegatingRequest;
 	}
 
-	private String getNamespace(final SnomedComponentCreateRequest createRequest) {
-		final IdGenerationStrategy idGenerationStrategy = createRequest.getIdGenerationStrategy();
-		if (idGenerationStrategy instanceof ReservingIdStrategy) {
-			final String namespace = ((ReservingIdStrategy) idGenerationStrategy).getNamespaceId();
-			return namespace == null ? SnomedIdentifiers.INT_NAMESPACE : namespace;
-		}
-		return SnomedIdentifiers.INT_NAMESPACE;
-	}
-
-	private Multimap<ComponentCategory, BaseSnomedComponentCreateRequest> extractBulkCreateRequests(final Request<?, ?> next) {
-
-		final Request<?, ?> firstNonDelegateRequest = getFirstNonDelegatingRequest(next);
-
-		if (firstNonDelegateRequest instanceof TransactionalRequest) {
-			final TransactionalRequest transactionalRequest = (TransactionalRequest) firstNonDelegateRequest;
-			final Request<?, ?> nextRequest = transactionalRequest.getNext();
-
-			if (nextRequest instanceof BulkRequest) {
-				return collectCreateRequests((BulkRequest<?>) nextRequest);
-			}
-		}
-
-		return ImmutableMultimap.<ComponentCategory, BaseSnomedComponentCreateRequest> of();
-	}
-
-	private Multimap<ComponentCategory, BaseSnomedComponentCreateRequest> collectCreateRequests(final BulkRequest<?> bulkRequest) {
-		return FluentIterable.from(bulkRequest.getRequests()).filter(BaseSnomedComponentCreateRequest.class)
-				.index(new Function<Request<?, ?>, ComponentCategory>() {
-					@Override
-					public ComponentCategory apply(final Request<?, ?> input) {
-						if (input instanceof SnomedConceptCreateRequest) {
-							return ComponentCategory.CONCEPT;
-						} else if (input instanceof SnomedDescriptionCreateRequest) {
-							return ComponentCategory.DESCRIPTION;
-						} else if (input instanceof SnomedRelationshipCreateRequest) {
-							return ComponentCategory.RELATIONSHIP;
-						}
-						throw new NotImplementedException("Unknown create request type: %s", input.getClass().getName());
+	private Multimap<ComponentCategory, BaseSnomedComponentCreateRequest> getComponentCreateRequestsFromList(final List<Request<?, ?>> requestList) {
+		return FluentIterable.from(requestList)
+				.filter(BaseSnomedComponentCreateRequest.class)
+				.filter(request -> request.getIdGenerationStrategy() instanceof NamespaceIdStrategy)
+				.index(request -> {
+					if (request instanceof SnomedConceptCreateRequest) {
+						return ComponentCategory.CONCEPT;
+					} else if (request instanceof SnomedDescriptionCreateRequest) {
+						return ComponentCategory.DESCRIPTION;
+					} else if (request instanceof SnomedRelationshipCreateRequest) {
+						return ComponentCategory.RELATIONSHIP;
+					} else {
+						throw new NotImplementedException("Unknown create request type: %s", request.getClass().getName());
 					}
 				});
 	}
 
-	private Request<?, ?> getFirstNonDelegatingRequest(final Request<?, ?> next) {
-		if (next instanceof DelegatingRequest) {
-			return getFirstNonDelegatingRequest(((DelegatingRequest<?, ?, ?>) next).next());
+	private Set<String> getUniqueIds(final BranchContext context, final IdActionRecorder recorder, 
+			final ComponentCategory category, 
+			final Class<? extends SnomedComponentDocument> documentClass, 
+			final int quantity, 
+			final String namespace) {
+		
+		final Set<String> uniqueIds = newHashSet(); 
+				
+		for (int i = 0; i < ID_GENERATION_ATTEMPTS && uniqueIds.size() < quantity; i++) {
+
+			final Set<String> candidateIds = recorder.reserve(namespace, category, quantity - uniqueIds.size());
+			uniqueIds.addAll(candidateIds);
+			
+			final Set<String> existingIds = getExistingIds(context, candidateIds, documentClass);
+			uniqueIds.removeAll(existingIds);
 		}
-		return next;
+
+		if (uniqueIds.size() == quantity) {
+			return uniqueIds;
+		} else {
+			throw new BadRequestException("There are insufficient number of component ids available for category: %s", category.getDisplayName());
+		}
+	}
+
+	private Set<String> getExistingIds(final BranchContext context, final Set<String> ids, final Class<? extends SnomedComponentDocument> documentClass) {
+		
+		try {
+			
+			final Query<? extends SnomedComponentDocument> getComponentsById = Query.selectPartial(documentClass, RevisionDocument.Fields.ID)
+					.where(RevisionDocument.Expressions.ids(ids))
+					.limit(ids.size())
+					.build();
+			
+			final Hits<? extends SnomedComponentDocument> hits = context.service(RevisionSearcher.class).search(getComponentsById);
+			return FluentIterable.from(hits).transform(SnomedComponentDocument::getId).toSet();
+			
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
+		}
+	}
+
+	/**
+	 * @return a namespace key intended to be used as a key in a collection;
+	 *         <code>null</code> values are converted to {@link SnomedIdentifiers#INT_NAMESPACE}.
+	 */
+	private String getNamespaceKey(final SnomedComponentCreateRequest createRequest) {
+		final IdGenerationStrategy idGenerationStrategy = createRequest.getIdGenerationStrategy();
+		final String namespace = idGenerationStrategy.getNamespace();
+		return namespace == null ? SnomedIdentifiers.INT_NAMESPACE : namespace;
 	}
 }
