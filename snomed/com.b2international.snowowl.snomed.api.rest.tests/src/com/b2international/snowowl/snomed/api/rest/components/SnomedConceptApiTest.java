@@ -53,8 +53,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -517,7 +517,6 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertEquals(2, updatedConcept.getRelationships().getTotal());
 	}
 	
-	@Ignore("Requires concrete domain refset member support via REST API")
 	@Test
 	public void addMemberViaConceptUpdate() throws Exception {
 		givenBranchWithPath(testBranchPath);
@@ -539,7 +538,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final List<SnomedReferenceSetMember> changedMembers = newArrayList(); 
 		final ImmutableMap.Builder<String, Object> updateReq = ImmutableMap.builder();
 		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
-		newMember.setId(getIdentifierService().generate(null, ComponentCategory.RELATIONSHIP));
+		newMember.setId(UUID.randomUUID().toString());
 		newMember.setActive(true);
 		newMember.setReferenceSetId(SnomedRefSetUtil.getConcreteDomainRefSetMap().get(DataType.STRING));
 		newMember.setModuleId(newConcept.getModuleId());

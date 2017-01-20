@@ -24,6 +24,7 @@ import javax.annotation.Nonnull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.ClassUtils;
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -31,6 +32,7 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
@@ -117,6 +119,9 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 		case QUERY:
 			member = createQueryTypeMember(context);
 			break;
+		case CONCRETE_DATA_TYPE:
+			member = createConcreteDomainMember(context);
+			break;
 		default: throw new UnsupportedOperationException("Not implemented support for creation of '"+type+"' members");
 		}
 		
@@ -145,11 +150,14 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 			// XXX referenced component ID for query type reference set cannot be defined, validate only if defined
 			// TODO support other terminologies when enabling mappings
 			SnomedIdentifiers.validate(referencedComponentId);
-			final short referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId);
-			if (refSet.getReferencedComponentType() != referencedComponentType) {
-				final String expectedType = SnomedTerminologyComponentConstants.getId(referencedComponentType);
-				final String actualType = SnomedTerminologyComponentConstants.getId(refSet.getReferencedComponentType());
-				throw new BadRequestException("'%s' reference set can't reference '%s | %s' component. Only '%s' components are allowed.", refSet.getIdentifierId(), referencedComponentId, expectedType, actualType);
+			final short refSetReferencedComponentType = refSet.getReferencedComponentType();
+			if (CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT != refSetReferencedComponentType) {
+				final short referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId);
+				if (refSetReferencedComponentType != referencedComponentType) {
+					final String expectedType = SnomedTerminologyComponentConstants.getId(referencedComponentType);
+					final String actualType = SnomedTerminologyComponentConstants.getId(refSetReferencedComponentType);
+					throw new BadRequestException("'%s' reference set can't reference '%s | %s' component. Only '%s' components are allowed.", refSet.getIdentifierId(), referencedComponentId, expectedType, actualType);
+				}
 			}
 		} else if (SnomedRefSetType.QUERY != type) {
 			throw new BadRequestException("'%s' cannot be null or empty for '%s' type reference sets.", SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, type);
@@ -224,6 +232,20 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 			.withReferencedComponent(memberRefSetId)
 			.withQuery(getQuery())
 			.addTo(context);
+	}
+	
+	private SnomedRefSetMember createConcreteDomainMember(TransactionContext context) {
+		return SnomedComponents.newConcreteDomainReferenceSetMember()
+				.withActive(isActive())
+				.withAttributeLabel((String) properties.get(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME))
+				.withCharacteristicType(CharacteristicType.getByConceptId((String) properties.get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)))
+				.withModule(getModuleId())
+				.withOperatorId((String) properties.get(SnomedRf2Headers.FIELD_OPERATOR_ID))
+				.withReferencedComponent(referencedComponentId)
+				.withRefSet(referenceSetId)
+				.withSerializedValue((String) properties.get(SnomedRf2Headers.FIELD_VALUE))
+				.withUom((String) properties.get(SnomedRf2Headers.FIELD_UNIT_ID))
+				.addTo(context);
 	}
 
 }

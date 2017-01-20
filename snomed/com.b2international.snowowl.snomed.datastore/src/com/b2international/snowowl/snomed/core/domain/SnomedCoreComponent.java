@@ -16,10 +16,19 @@
 package com.b2international.snowowl.snomed.core.domain;
 
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 /**
  * @since 4.6
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "id", visible = true)
+@JsonTypeIdResolver(SnomedCoreComponent.SnomedComponentCategoryResolver.class)
 public abstract class SnomedCoreComponent extends SnomedComponent {
 
 	private SnomedReferenceSetMembers members;
@@ -34,6 +43,61 @@ public abstract class SnomedCoreComponent extends SnomedComponent {
 	 */
 	public SnomedReferenceSetMembers getMembers() {
 		return members;
+	}
+	
+	/**
+	 * @since 5.5
+	 */
+	static class SnomedComponentCategoryResolver implements TypeIdResolver {
+
+		private JavaType baseType;
+
+		@Override
+		public void init(JavaType bt) {
+			baseType = bt;
+		}
+		
+		@Override
+		public Id getMechanism() {
+			return Id.CUSTOM;
+		}
+
+		@Override
+		public String idFromValue(Object value) {
+			return idFromValueAndType(value, value.getClass());
+		}
+
+		@Override
+		public String idFromBaseType() {
+			throw new UnsupportedOperationException();
+		}
+		
+	    @Override
+	    public String idFromValueAndType(Object value, Class<?> clazz) {
+	    	if (value instanceof SnomedCoreComponent) {
+	    		return ((SnomedCoreComponent) value).getId();
+	    	}
+	    	throw new IllegalArgumentException("Unsupported value: " + value);
+	    }
+
+	    @Override
+	    public JavaType typeFromId(String type) {
+	    	final Class<? extends SnomedCoreComponent> clazz;
+	    	switch (SnomedIdentifiers.getComponentCategory(type)) {
+	    	case CONCEPT:
+	    		clazz = SnomedConcept.class;
+	    		break;
+	    	case DESCRIPTION:
+	    		clazz = SnomedDescription.class;
+	    		break;
+	    	case RELATIONSHIP:
+	    		clazz = SnomedRelationship.class;
+	    		break;
+	    	default: throw new IllegalArgumentException("Unknown core component type: " + type);
+	    	}
+	    	return TypeFactory.defaultInstance().constructSpecializedType(baseType, clazz);
+	    }
+	    
 	}
 	
 }
