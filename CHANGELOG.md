@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 ## 5.5.0
 
+### Added
+ - Support for inactive component creation. See endpoints:
+  * POST /{path}/concepts
+  * POST /{path}/descriptions
+  * POST /{path}/relationships
+  * POST /{path}/members
+
 ### Changed
 - SnomedDescription REST representation changes
  * Changed `acceptabilityMap` to `acceptability`
@@ -11,7 +18,7 @@ All notable changes to this project will be documented in this file.
  * Changed `sourceConcept` to `source`
  * Changed `typeConcept` to `type`
  * Changed `destinationConcept` to `destination`
- * Removed `refinability`
+ * Removed `refinability` property
 - POST /{path}/concepts
  * Added support for relationship creation as part of concept creation
  * Added support for member creation as part of concept creation
