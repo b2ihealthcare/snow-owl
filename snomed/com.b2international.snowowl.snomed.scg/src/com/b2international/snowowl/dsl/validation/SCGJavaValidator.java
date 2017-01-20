@@ -15,13 +15,17 @@
  */
 package com.b2international.snowowl.dsl.validation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.CheckType;
 
@@ -47,8 +51,8 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ConceptParentAdapter;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -77,13 +81,17 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 	public static final String NON_MATCHING_TERM = "nomMatchingTerm";
 	public static final String INACTIVE_CONCEPT = "inactiveConcept";
 	
-	private final Provider<String> branch;
 	private final Provider<IEventBus> bus;
 
 	@Inject
-	public SCGJavaValidator(Provider<String> branch, Provider<IEventBus> bus) {
-		this.branch = branch;
+	public SCGJavaValidator(Provider<IEventBus> bus) {
 		this.bus = bus;
+	}
+	
+	@Override
+	protected boolean isResponsible(Map<Object, Object> context, EObject eObject) {
+		// context must have the associated activeBranch key, otherwise we cannot validate the target
+		return super.isResponsible(context, eObject) && context.containsKey("activeBranch");
 	}
 	
 	/**
@@ -135,7 +143,7 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 		SCGExpressionExtractor extractor = new SCGExpressionExtractor(expression);
 		NormalFormWrapper normalForm = new NormalFormWrapper(extractor.getFocusConceptIdList(), wrapRelationshipGroups(extractor.getGroupConcepts()));
 		
-		IBranchPath branchPath = BranchPathUtils.createPath(branch.get());
+		IBranchPath branchPath = BranchPathUtils.createPath(getBranch());
 		try (SnomedEditingContext editingContext = new SnomedEditingContext(branchPath)) {
 			com.b2international.snowowl.snomed.Concept concept = editingContext.buildDraftConceptFromNormalForm(normalForm);
 			concept.eAdapters().add(new ConceptParentAdapter(extractor.getFocusConceptIdList()));
@@ -212,7 +220,7 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 				.setComponentId(id)
 				.setExpand("descriptions(),pt()")
 				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.get())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 		
@@ -253,7 +261,12 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 	}
 
 	private SnomedConcept getConcept(String id) {
-		return Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept().setLimit(1).setComponentIds(Collections.singleton(id)).build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.get()).execute(bus.get()).getSync(), null);
+		return Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept().setLimit(1).setComponentIds(Collections.singleton(id)).build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch()).execute(bus.get()).getSync(), null);
+	}
+
+	private String getBranch() {
+		checkArgument(getContext().containsKey("activeBranch"), "Active branch scope is required to execute this validator");
+		return (String) getContext().get("activeBranch");
 	}
 
 }

@@ -15,9 +15,13 @@
  */
 package com.b2international.snowowl.dsl.validation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.Collections;
+import java.util.Map;
 
 import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.CheckType;
 
@@ -52,13 +56,17 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 	public static final String INVALID_NUMERICAL_CONCEPT = "invalidNumericalConcept";
 	public static final String INVALID_INGREDIENT_CONCEPT = "invalidIngredientConcept";
 	
-	private final Provider<String> activeBranch;
 	private final Provider<IEventBus> bus;
 
 	@Inject
-	public ESCGJavaValidator(Provider<String> activeBranch, Provider<IEventBus> bus) {
-		this.activeBranch = activeBranch;
+	public ESCGJavaValidator(Provider<IEventBus> bus) {
 		this.bus = bus;
+	}
+	
+	@Override
+	protected boolean isResponsible(Map<Object, Object> context, EObject eObject) {
+		// context must have the associated activeBranch key, otherwise we cannot validate the target
+		return super.isResponsible(context, eObject) && context.containsKey("activeBranch");
 	}
 	
 	/**
@@ -115,7 +123,7 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 			boolean conceptIdExists = SnomedRequests.prepareSearchConcept()
 					.setLimit(0)
 					.setComponentIds(Collections.singleton(concept.getId()))
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID, activeBranch.get())
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(bus.get())
 					.getSync().getTotal() > 0;
 
@@ -150,7 +158,7 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 			boolean exists = SnomedRequests.prepareSearchConcept()
 					.setLimit(0)
 					.setComponentIds(Collections.singleton(refSet.getId()))
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID, activeBranch.get())
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(bus.get())
 					.getSync().getTotal() > 0;
 			
@@ -202,15 +210,16 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 
 	private void checkNonMatchingTerm(String id, String term, EAttribute termAttribute) {
 		
-		final SnomedConcept concept = SnomedRequests.prepareGetConcept()
-				.setComponentId(id)
+		final SnomedConcept concept = Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept()
+				.setLimit(1)
+				.setComponentIds(Collections.singleton(id))
 				.setExpand("descriptions(),pt()")
 				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, activeBranch.get())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.getSync();
+				.getSync(), null);
 		
-		if (concept.getPt() != null && concept.getPt().getTerm().equals(term)) {
+		if (concept == null || (concept.getPt() != null && concept.getPt().getTerm().equals(term))) {
 			return;
 		}
 		
@@ -235,7 +244,7 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 			return;
 		}
 		
-		final SnomedConcept entry = Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept().setLimit(1).setComponentIds(Collections.singleton(concept.getId())).build(SnomedDatastoreActivator.REPOSITORY_UUID, activeBranch.get()).execute(bus.get()).getSync(), null);
+		final SnomedConcept entry = Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept().setLimit(1).setComponentIds(Collections.singleton(concept.getId())).build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch()).execute(bus.get()).getSync(), null);
 		if (entry != null && !entry.isActive()) {
 			warning("Concept is inactive", EscgPackage.eINSTANCE.getConcept_Id(), INACTIVE_CONCEPT);
 		}
@@ -270,4 +279,10 @@ public class ESCGJavaValidator extends AbstractESCGJavaValidator {
 					EscgPackage.eINSTANCE.getNumericalAssignmentGroup_IngredientConcept(), INVALID_INGREDIENT_CONCEPT);
 		}
 	}
+	
+	private String getBranch() {
+		checkArgument(getContext().containsKey("activeBranch"), "Active branch scope is required to execute this validator");
+		return (String) getContext().get("activeBranch");
+	}
+	
 }

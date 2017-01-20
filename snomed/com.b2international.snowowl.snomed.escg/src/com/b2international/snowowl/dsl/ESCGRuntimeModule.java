@@ -39,13 +39,4 @@ public class ESCGRuntimeModule extends com.b2international.snowowl.dsl.AbstractE
 		};
 	}
 	
-	public Provider<String> provideActiveBranch() {
-		return new Provider<String>() {
-			@Override
-			public String get() {
-				throw new UnsupportedOperationException("This class requires active branch scope");
-			}
-		};
-	}
-
 }
