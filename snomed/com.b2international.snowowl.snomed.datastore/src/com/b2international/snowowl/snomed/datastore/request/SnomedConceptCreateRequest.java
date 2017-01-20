@@ -195,7 +195,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		return ImmutableList.<SnomedComponentCreateRequest>builder()
 			.add(this)
 			.addAll(descriptions)
-		//	.addAll(relationships)
+			.addAll(relationships)
 			.build();
 	}
 
