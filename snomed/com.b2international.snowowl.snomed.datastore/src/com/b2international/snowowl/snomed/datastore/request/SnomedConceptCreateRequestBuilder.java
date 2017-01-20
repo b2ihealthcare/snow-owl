@@ -35,6 +35,10 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	private List<SnomedRelationshipCreateRequest> relationships = newArrayList();
 	private List<SnomedRefSetMemberCreateRequest> members = newArrayList();
 	
+	SnomedConceptCreateRequestBuilder() { 
+		super();
+	}
+	
 	// Relationship List builders
 	
 	public SnomedConceptCreateRequestBuilder addParent(String parentId) {

@@ -35,6 +35,10 @@ public final class SnomedDescriptionCreateRequestBuilder extends SnomedComponent
 	private String languageCode = "en";
 	private Map<String, Acceptability> acceptabilityMap = newHashMap();
 	
+	SnomedDescriptionCreateRequestBuilder() { 
+		super();
+	}
+	
 	public SnomedDescriptionCreateRequestBuilder setCaseSignificance(CaseSignificance caseSignificance) {
 		this.caseSignificance = caseSignificance;
 		return getSelf();

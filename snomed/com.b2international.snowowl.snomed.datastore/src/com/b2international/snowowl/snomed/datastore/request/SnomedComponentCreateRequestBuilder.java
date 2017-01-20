@@ -32,6 +32,10 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 	private Boolean active = Boolean.TRUE;
 	private IdGenerationStrategy idGenerationStrategy;
 	
+	protected SnomedComponentCreateRequestBuilder() { 
+		super();
+	}
+	
 	public final B setId(String id) {
 		this.idGenerationStrategy = new ConstantIdStrategy(id);
 		return getSelf();
