@@ -21,6 +21,7 @@ import java.util.Map;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -104,6 +105,7 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	@Override
 	public Request<TransactionContext, String> toCreateRequest(String containerId) {
 		return SnomedRequests.prepareNewMember()
+				.setActive(isActive())
 				.setReferencedComponentId(containerId)
 				.setReferenceSetId(getReferenceSetId())
 				.setModuleId(getModuleId())
@@ -113,9 +115,12 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	
 	@Override
 	public Request<TransactionContext, Boolean> toUpdateRequest() {
+		final Map<String, Object> changes = newHashMap(getProperties());
+		changes.put(SnomedRf2Headers.FIELD_ACTIVE, isActive());
+		changes.put(SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		return SnomedRequests.prepareUpdateMember()
 				.setMemberId(getId())
-				.setSource(getProperties())
+				.setSource(changes)
 				.build();
 	}
 	
