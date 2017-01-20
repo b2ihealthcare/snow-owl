@@ -108,6 +108,7 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 			final String descriptionId = ((ConstantIdStrategy) getIdGenerationStrategy()).getId();
 			final Description description = SnomedComponents.newDescription()
 				.withId(descriptionId)
+				.withActive(isActive())
 				.withModule(getModuleId())
 				.withCaseSignificance(getCaseSignificance())
 				.withTerm(getTerm())

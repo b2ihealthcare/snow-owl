@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -97,7 +97,7 @@ public class SnomedConceptEditorService implements ISnomedConceptEditorService {
 		final Collection<SnomedConstraintDocument> predicates = SnomedRequests.prepareGetApplicablePredicates(branchPath.getPath(), Collections.singleton(conceptIdString), getAncestors(branchPath.getPath(), conceptIdString), Collections.<String>emptySet()).getSync();
 
 		// Create regular index entry
-		final ISnomedConcept concept = SnomedRequests.prepareGetConcept()
+		final SnomedConcept concept = SnomedRequests.prepareGetConcept()
 				.setComponentId(conceptIdString)
 				.setExpand("pt()")
 				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
@@ -115,7 +115,7 @@ public class SnomedConceptEditorService implements ISnomedConceptEditorService {
 				.setComponentId(conceptId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.then(ISnomedConcept.GET_ANCESTORS)
+				.then(SnomedConcept.GET_ANCESTORS)
 				.getSync();
 	}
 

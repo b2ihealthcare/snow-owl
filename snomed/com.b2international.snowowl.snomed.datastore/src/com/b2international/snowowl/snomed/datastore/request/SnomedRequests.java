@@ -37,7 +37,7 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
@@ -233,10 +233,10 @@ public abstract class SnomedRequests {
 				@Override
 				public Set<String> apply(SnomedConcepts input) {
 					final Set<String> descendantDomainIds = newHashSet();
-					for (ISnomedConcept concept : input) {
+					for (SnomedConcept concept : input) {
 						descendantDomainIds.add(concept.getId());
 						// add parents and ancestors of the concept as well
-						descendantDomainIds.addAll(ISnomedConcept.GET_ANCESTORS.apply(concept));
+						descendantDomainIds.addAll(SnomedConcept.GET_ANCESTORS.apply(concept));
 					}
 					return descendantDomainIds;
 				}

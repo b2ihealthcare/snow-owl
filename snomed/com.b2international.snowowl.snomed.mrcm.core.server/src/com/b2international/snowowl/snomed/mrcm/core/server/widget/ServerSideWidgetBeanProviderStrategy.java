@@ -25,7 +25,7 @@ import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -58,7 +58,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 	private final IBranchPath branchPath;
 	private final String conceptId;
 	
-	private Collection<ISnomedDescription> descriptions;
+	private Collection<SnomedDescription> descriptions;
 
 	public ServerSideWidgetBeanProviderStrategy(final String conceptId, final ConceptWidgetModel conceptWidgetModel, final IBranchPath branchPath, final boolean includeUnsanctioned) {
 		super(conceptWidgetModel, includeUnsanctioned);
@@ -67,7 +67,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 	}
 
 	@Override
-	protected Collection<ISnomedDescription> getDescriptions() {
+	protected Collection<SnomedDescription> getDescriptions() {
 		if (descriptions == null) {
 			this.descriptions = SnomedRequests.prepareSearchDescription()
 					.all()

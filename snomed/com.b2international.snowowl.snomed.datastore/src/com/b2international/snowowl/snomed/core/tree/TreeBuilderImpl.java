@@ -33,7 +33,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -167,7 +167,7 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 	}
 
 	private List<SnomedConceptDocument> getDefaultTopLevelConcepts(final String branch) {
-		final ISnomedConcept root = SnomedRequests.prepareGetConcept()
+		final SnomedConcept root = SnomedRequests.prepareGetConcept()
 				.setComponentId(Concepts.ROOT_CONCEPT)
 				.setExpand(String.format("pt(),descendants(form:\"%s\",direct:true,expand(pt()))", getForm()))
 				.setLocales(getLocales())
@@ -175,7 +175,7 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 				.execute(getBus())
 				.getSync();
 	
-		final Collection<ISnomedConcept> requiredTreeItemConcepts = newHashSet();
+		final Collection<SnomedConcept> requiredTreeItemConcepts = newHashSet();
 		requiredTreeItemConcepts.add(root);
 		requiredTreeItemConcepts.addAll(root.getDescendants().getItems());
 	

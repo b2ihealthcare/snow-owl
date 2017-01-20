@@ -36,7 +36,7 @@ import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.component.IconIdProviderUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -95,7 +95,7 @@ public class WidgetBeanProvider {
 			monitor = new NullProgressMonitor();
 		}
 		
-		final ISnomedConcept concept = SnomedRequests.prepareGetConcept()
+		final SnomedConcept concept = SnomedRequests.prepareGetConcept()
 				.setComponentId(conceptId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getBus())

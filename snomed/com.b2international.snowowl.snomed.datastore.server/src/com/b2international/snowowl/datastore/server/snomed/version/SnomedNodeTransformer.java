@@ -48,9 +48,9 @@ import com.b2international.snowowl.datastore.server.version.NodeTransformerImpl;
 import com.b2international.snowowl.emf.compare.DiffCollector;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -73,23 +73,23 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 	private final Function<SnomedReferenceSetMember, String> conceptToLabelFunction = new Function<SnomedReferenceSetMember, String>() {
 		@Override
 		public String apply(SnomedReferenceSetMember input) {
-			return ((ISnomedConcept) input.getReferencedComponent()).getPt().getTerm();
+			return ((SnomedConcept) input.getReferencedComponent()).getPt().getTerm();
 		}
 	};
 
 	private final Function<SnomedReferenceSetMember, String> descriptionToLabelFunction = new Function<SnomedReferenceSetMember, String>() {
 		@Override
 		public String apply(SnomedReferenceSetMember input) {
-			return ((ISnomedDescription) input.getReferencedComponent()).getTerm();
+			return ((SnomedDescription) input.getReferencedComponent()).getTerm();
 		}
 	};
 
 	private final Function<SnomedReferenceSetMember, String> relationshipToLabelFunction = new Function<SnomedReferenceSetMember, String>() {
 		@Override
 		public String apply(SnomedReferenceSetMember input) {
-			final ISnomedRelationship relationship = (ISnomedRelationship) input.getReferencedComponent();
-			return String.format("%s %s %s", relationship.getSourceConcept().getPt().getTerm(),
-					relationship.getTypeConcept().getPt().getTerm(), relationship.getDestinationConcept().getPt().getTerm());
+			final SnomedRelationship relationship = (SnomedRelationship) input.getReferencedComponent();
+			return String.format("%s %s %s", relationship.getSource().getPt().getTerm(),
+					relationship.getType().getPt().getTerm(), relationship.getDestination().getPt().getTerm());
 		}
 	};
 

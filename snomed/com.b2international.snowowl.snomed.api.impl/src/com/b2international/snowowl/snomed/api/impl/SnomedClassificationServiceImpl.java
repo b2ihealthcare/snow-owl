@@ -71,8 +71,8 @@ import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserR
 import com.b2international.snowowl.snomed.api.impl.domain.classification.ClassificationRun;
 import com.b2international.snowowl.snomed.api.impl.domain.classification.EquivalentConcept;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
@@ -338,11 +338,11 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 				}
 			}
 
-			final Map<String, ISnomedDescription> fsnMap = new DescriptionService(bus, branchPath).getFullySpecifiedNames(conceptIds, locales);
+			final Map<String, SnomedDescription> fsnMap = new DescriptionService(bus, branchPath).getFullySpecifiedNames(conceptIds, locales);
 			for (final IEquivalentConceptSet conceptSet : conceptSets) {
 				for (final IEquivalentConcept equivalentConcept : conceptSet.getEquivalentConcepts()) {
 					final String equivalentConceptId = equivalentConcept.getId();
-					final ISnomedDescription fsn = fsnMap.get(equivalentConceptId);
+					final SnomedDescription fsn = fsnMap.get(equivalentConceptId);
 					if (fsn != null) {
 						((EquivalentConcept) equivalentConcept).setLabel(fsn.getTerm());
 					} else {
@@ -394,7 +394,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 					inferred.setType(new SnomedBrowserRelationshipType(relationshipChange.getTypeId()));
 					inferred.setSourceId(relationshipChange.getSourceId());
 
-					final ISnomedConcept targetConcept = SnomedRequests.prepareGetConcept()
+					final SnomedConcept targetConcept = SnomedRequests.prepareGetConcept()
 							.setComponentId(relationshipChange.getDestinationId())
 							.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 							.execute(bus)

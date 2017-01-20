@@ -38,8 +38,8 @@ import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ITreeComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
@@ -189,7 +189,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 				.doi(input.getDoi());
 	}
 	
-	public static Builder builder(ISnomedConcept input) {
+	public static Builder builder(SnomedConcept input) {
 		final Builder builder = builder()
 				.storageKey(input.getStorageKey())
 				.id(input.getId())
@@ -212,14 +212,11 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		return builder;
 	}
 	
-	public static List<SnomedConceptDocument> fromConcepts(Iterable<ISnomedConcept> concepts) {
-		return FluentIterable.from(concepts).transform(new Function<ISnomedConcept, SnomedConceptDocument>() {
-			@Override
-			public SnomedConceptDocument apply(ISnomedConcept input) {
-				final ISnomedDescription pt = input.getPt();
-				final String preferredTerm = pt == null ? input.getId() : pt.getTerm();
-				return SnomedConceptDocument.builder(input).label(preferredTerm).build();
-			}
+	public static List<SnomedConceptDocument> fromConcepts(Iterable<? extends SnomedConcept> concepts) {
+		return FluentIterable.from(concepts).transform((input) -> {
+			final SnomedDescription pt = input.getPt();
+			final String preferredTerm = pt == null ? input.getId() : pt.getTerm();
+			return SnomedConceptDocument.builder(input).label(preferredTerm).build();
 		}).toList();
 	}
 

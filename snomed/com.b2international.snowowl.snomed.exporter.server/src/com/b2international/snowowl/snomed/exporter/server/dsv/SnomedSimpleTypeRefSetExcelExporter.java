@@ -42,10 +42,10 @@ import com.b2international.snowowl.datastore.server.importer.AbstractTerminology
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -266,7 +266,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		int rowNum = 1;
 		
 		for (final SnomedCoreComponent component : descriptions) {
-			final ISnomedDescription description = (ISnomedDescription) component;
+			final SnomedDescription description = (SnomedDescription) component;
 			
 			final Row row = sheet.createRow(rowNum);
 			
@@ -301,17 +301,17 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		int rowNum = 1;
 		
 		for (final SnomedCoreComponent component : relationships) {
-			final ISnomedRelationship relationship = (ISnomedRelationship) component;
+			final SnomedRelationship relationship = (SnomedRelationship) component;
 			
 			final Row row = sheet.createRow(rowNum);
 			
 			createCell(row, relationship.getId(), 0, DEFAULT_STYLE);
-			createCell(row, relationship.getSourceConcept().getId(), 1, DEFAULT_STYLE);
-			createCell(row, getPtOrId(relationship.getSourceConcept()), 2, DEFAULT_STYLE);
-			createCell(row, relationship.getTypeConcept().getId(), 3, DEFAULT_STYLE);
-			createCell(row, getPtOrId(relationship.getTypeConcept()), 4, DEFAULT_STYLE);
-			createCell(row, relationship.getDestinationConcept().getId(), 5, DEFAULT_STYLE);
-			createCell(row, getPtOrId(relationship.getDestinationConcept()), 6, DEFAULT_STYLE);
+			createCell(row, relationship.getSource().getId(), 1, DEFAULT_STYLE);
+			createCell(row, getPtOrId(relationship.getSource()), 2, DEFAULT_STYLE);
+			createCell(row, relationship.getType().getId(), 3, DEFAULT_STYLE);
+			createCell(row, getPtOrId(relationship.getType()), 4, DEFAULT_STYLE);
+			createCell(row, relationship.getDestination().getId(), 5, DEFAULT_STYLE);
+			createCell(row, getPtOrId(relationship.getDestination()), 6, DEFAULT_STYLE);
 			createCell(row, relationship.isActive() ? "Active" : "Inactive", 7, DEFAULT_STYLE);
 			createCell(row, getExportedEffectiveTime(relationship.getEffectiveTime()), 8, DEFAULT_STYLE);
 			createCell(row, relationship.getModuleId(), 9, DEFAULT_STYLE);
@@ -323,7 +323,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		}
 	}
 	
-	private String getPtOrId(ISnomedConcept concept) {
+	private String getPtOrId(SnomedConcept concept) {
 		return concept.getPt() == null ? concept.getId() : concept.getPt().getTerm();
 	}
 

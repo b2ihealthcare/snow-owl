@@ -45,7 +45,7 @@ import com.b2international.snowowl.datastore.index.diff.VersionCompareConfigurat
 import com.b2international.snowowl.datastore.server.version.VersionCompareHierarchyBuilderImpl;
 import com.b2international.snowowl.datastore.version.NodeDiffPredicate;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider;
@@ -108,7 +108,7 @@ public class SnomedVersionCompareHierarchyBuilder extends VersionCompareHierarch
 		final List<ExtendedLocale> locales = context.getService(LanguageSetting.class).getLanguagePreference();
 		final IEventBus bus = context.getService(IEventBus.class);
 		
-		final Map<String, ISnomedDescription> pts = newHashMap();
+		final Map<String, SnomedDescription> pts = newHashMap();
 		for (final IBranchPath branch : componentIdsByBranch.keySet()) {
 			final Set<String> componentIds = newHashSet(componentIdsByBranch.get(branch));
 			pts.putAll(new DescriptionRequestHelper() {
@@ -118,9 +118,9 @@ public class SnomedVersionCompareHierarchyBuilder extends VersionCompareHierarch
 				}
 			}.getPreferredTerms(componentIds, locales));
 		}
-		return Maps.transformValues(pts, new Function<ISnomedDescription, String>() {
+		return Maps.transformValues(pts, new Function<SnomedDescription, String>() {
 			@Override
-			public String apply(ISnomedDescription input) {
+			public String apply(SnomedDescription input) {
 				return input.getTerm();
 			}
 		});

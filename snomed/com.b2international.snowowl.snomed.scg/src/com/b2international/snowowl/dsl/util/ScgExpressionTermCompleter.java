@@ -24,7 +24,7 @@ import com.b2international.snowowl.dsl.scg.Concept;
 import com.b2international.snowowl.dsl.scg.Expression;
 import com.b2international.snowowl.dsl.scg.Group;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -75,11 +75,11 @@ public class ScgExpressionTermCompleter {
 	}
 
 	private void addTerm(Concept concept) {
-		final ISnomedDescription pt = getPt(concept.getId());
+		final SnomedDescription pt = getPt(concept.getId());
 		concept.setTerm(pt == null ? concept.getId() : pt.getTerm());
 	}
 
-	private ISnomedDescription getPt(String id) {
+	private SnomedDescription getPt(String id) {
 		return SnomedRequests.prepareGetConcept()
 				.setComponentId(id)
 				.setExpand("pt()")

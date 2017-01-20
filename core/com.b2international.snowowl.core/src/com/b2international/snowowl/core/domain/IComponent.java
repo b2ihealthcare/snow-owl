@@ -40,12 +40,7 @@ public interface IComponent extends Serializable {
 	 * 
 	 * @since 4.6
 	 */
-	Function<IComponent, String> ID_FUNCTION = new Function<IComponent, String>() {
-		@Override
-		public String apply(IComponent input) {
-			return input.getId();
-		}
-	};
+	Function<IComponent, String> ID_FUNCTION = IComponent::getId;
 
 	/**
 	 * Returns the component identifier.

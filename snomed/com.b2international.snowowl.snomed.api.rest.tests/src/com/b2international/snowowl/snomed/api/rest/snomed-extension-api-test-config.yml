@@ -15,6 +15,7 @@ auth:
   type: PROP_FILE
   
 snomed:
+  concreteDomainSupport: false
   ids:
     strategy : EMBEDDED
   

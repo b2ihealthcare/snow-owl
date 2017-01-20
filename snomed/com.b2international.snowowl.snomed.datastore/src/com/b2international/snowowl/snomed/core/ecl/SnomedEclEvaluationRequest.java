@@ -47,7 +47,7 @@ import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
@@ -244,7 +244,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 					@Override
 					public Set<String> apply(SnomedConcepts concepts) {
 						final Set<String> parents = newHashSet();
-						for (ISnomedConcept concept : concepts) {
+						for (SnomedConcept concept : concepts) {
 							addParentIds(concept, parents);
 						}
 						return parents;
@@ -265,7 +265,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 					@Override
 					public Set<String> apply(SnomedConcepts concepts) {
 						final Set<String> ancestors = newHashSet();
-						for (ISnomedConcept concept : concepts) {
+						for (SnomedConcept concept : concepts) {
 							addParentIds(concept, ancestors);
 							addAncestorIds(concept, ancestors);
 						}
@@ -292,7 +292,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 						@Override
 						public Set<String> apply(SnomedConcepts concepts) {
 							final Set<String> ancestors = newHashSet();
-							for (ISnomedConcept concept : concepts) {
+							for (SnomedConcept concept : concepts) {
 								ancestors.add(concept.getId());
 								addParentIds(concept, ancestors);
 								addAncestorIds(concept, ancestors);
@@ -446,7 +446,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 		};
 	}
 	
-	private static void addParentIds(ISnomedConcept concept, final Set<String> collection) {
+	private static void addParentIds(SnomedConcept concept, final Set<String> collection) {
 		if (concept.getParentIds() != null) {
 			for (long parent : concept.getParentIds()) {
 				if (IComponent.ROOT_IDL != parent) {
@@ -456,7 +456,7 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 		}
 	}
 	
-	private static void addAncestorIds(ISnomedConcept concept, Set<String> collection) {
+	private static void addAncestorIds(SnomedConcept concept, Set<String> collection) {
 		if (concept.getAncestorIds() != null) {
 			for (long ancestor : concept.getAncestorIds()) {
 				if (IComponent.ROOT_IDL != ancestor) {

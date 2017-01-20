@@ -23,7 +23,6 @@ import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
  */
 public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponentCreateRequestBuilder<SnomedRelationshipCreateRequestBuilder> {
 
-	private Boolean active = Boolean.TRUE;
 	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
 	private String destinationId;
 	private String sourceId;
@@ -33,10 +32,7 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 	private int unionGroup = 0;
 	private String typeId;
 
-	public SnomedRelationshipCreateRequestBuilder setActive(Boolean active) {
-		this.active = active;
-		return getSelf();
-	}
+	SnomedRelationshipCreateRequestBuilder() {	}
 	
 	public SnomedRelationshipCreateRequestBuilder setDestinationId(String destinationId) {
 		this.destinationId = destinationId;
@@ -81,7 +77,6 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 	@Override
 	protected void init(BaseSnomedComponentCreateRequest request) {
 		final SnomedRelationshipCreateRequest req = (SnomedRelationshipCreateRequest) request;
-		req.setActive(active);
 		req.setCharacteristicType(characteristicType);
 		req.setDestinationId(destinationId);
 		req.setSourceId(sourceId);

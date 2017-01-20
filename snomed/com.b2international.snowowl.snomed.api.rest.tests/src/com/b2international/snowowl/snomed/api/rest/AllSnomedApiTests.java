@@ -79,7 +79,7 @@ public class AllSnomedApiTests {
 	
 	@ClassRule
 	public static final RuleChain appRule = RuleChain
-			.outerRule(SnowOwlAppRule.snowOwl().clearResources(true).config(PlatformUtil.toAbsolutePath(AllSnomedApiTests.class, "rest-configuration.yml")))
+			.outerRule(SnowOwlAppRule.snowOwl().clearResources(true).config(PlatformUtil.toAbsolutePath(AllSnomedApiTests.class, "snomed-api-test-config.yml")))
 			.around(new BundleStartRule("com.b2international.snowowl.api.rest"))
 			.around(new BundleStartRule("com.b2international.snowowl.snomed.api.rest"))
 			.around(new SnomedContentRule(SnomedReleases.newSnomedInternationalRelease(), Resources.Snomed.MINI_RF2_INT, ContentSubType.FULL));

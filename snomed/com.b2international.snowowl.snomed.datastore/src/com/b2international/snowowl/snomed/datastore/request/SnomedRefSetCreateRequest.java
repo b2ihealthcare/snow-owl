@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Collection;
+import java.util.Set;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -22,7 +25,8 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
@@ -74,23 +78,31 @@ final class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, St
 	
 	private void checkParent(TransactionContext context) {
 		final String refSetTypeRootParent = SnomedRefSetUtil.getConceptId(type);
-		final String desiredParent = conceptReq.getParentId();
-		if (!refSetTypeRootParent.equals(desiredParent) && !isSuperTypeOfById(context, refSetTypeRootParent, desiredParent)) {
-			throw new BadRequestException("'%s' type reference sets should be subtype of '%s' concept. Cannot create as subtype of '%s'.", type, refSetTypeRootParent, desiredParent);
+		final Set<String> parents = conceptReq.getParents();
+		if (!isValidParentage(context, refSetTypeRootParent, parents)) {
+			throw new BadRequestException("'%s' type reference sets should be subtype of '%s' concept.", type, refSetTypeRootParent);
 		}
 	}
 
-	private boolean isSuperTypeOfById(TransactionContext context, String superTypeId, String subTypeId) {
-		final ISnomedConcept subTypeConcept = SnomedRequests.prepareGetConcept().setComponentId(subTypeId).build().execute(context);
-		final long superTypeIdLong = Long.parseLong(superTypeId);
-		if (subTypeConcept.getParentIds() != null) {
-			if (PrimitiveSets.newLongOpenHashSet(subTypeConcept.getParentIds()).contains(superTypeIdLong)) {
-				return true;
-			}
+	private boolean isValidParentage(TransactionContext context, String requiredSuperType, Collection<String> parents) {
+		// first check if the requiredSuperType is specified in the parents collection
+		if (parents.contains(requiredSuperType)) {
+			return true;
 		}
-		if (subTypeConcept.getAncestorIds() != null) {
-			if (PrimitiveSets.newLongOpenHashSet(subTypeConcept.getAncestorIds()).contains(superTypeIdLong)) {
-				return true;
+		
+		// if not, then check if any of the specified parents is subTypeOf the requiredSuperType
+		final long superTypeIdLong = Long.parseLong(requiredSuperType);
+		final SnomedConcepts parentConcepts = SnomedRequests.prepareSearchConcept().setLimit(parents.size()).setComponentIds(parents).build().execute(context);
+		for (SnomedConcept parentConcept : parentConcepts) {
+			if (parentConcept.getParentIds() != null) {
+				if (PrimitiveSets.newLongOpenHashSet(parentConcept.getParentIds()).contains(superTypeIdLong)) {
+					return true;
+				}
+			}
+			if (parentConcept.getAncestorIds() != null) {
+				if (PrimitiveSets.newLongOpenHashSet(parentConcept.getAncestorIds()).contains(superTypeIdLong)) {
+					return true;
+				}
 			}
 		}
 		return false;

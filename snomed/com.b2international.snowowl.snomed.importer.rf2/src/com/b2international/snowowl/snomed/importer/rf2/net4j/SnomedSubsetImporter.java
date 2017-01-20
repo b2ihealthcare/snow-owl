@@ -50,7 +50,6 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.NamespaceIdStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -304,8 +303,10 @@ public class SnomedSubsetImporter {
 			.prepareNewConcept()
 			.setId(conceptId)
 			.setModuleId(moduleId)
-			.setParent(parentConceptId)
-			.setIsAId(new NamespaceIdStrategy(Concepts.B2I_NAMESPACE))
+			.addRelationship(SnomedRequests.prepareNewRelationship()
+					.setIdFromNamespace(Concepts.B2I_NAMESPACE)
+					.setDestinationId(parentConceptId)
+					.setTypeId(Concepts.IS_A))
 			.addDescription(SnomedRequests
 					.prepareNewDescription()
 					.setIdFromNamespace(Concepts.B2I_NAMESPACE)
@@ -408,8 +409,10 @@ public class SnomedSubsetImporter {
 			SnomedConceptCreateRequestBuilder identifierConceptReq = SnomedRequests
 					.prepareNewConcept()
 					.setModuleId(moduleId)
-					.setParent(refSetType)
-					.setIsAId(new NamespaceIdStrategy(Concepts.B2I_NAMESPACE))
+					.addRelationship(SnomedRequests.prepareNewRelationship()
+							.setIdFromNamespace(Concepts.B2I_NAMESPACE)
+							.setDestinationId(refSetType)
+							.setTypeId(Concepts.IS_A))
 					.addDescription(SnomedRequests
 							.prepareNewDescription()
 							.setIdFromNamespace(Concepts.B2I_NAMESPACE)

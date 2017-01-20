@@ -26,26 +26,26 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedComponentCreat
 public abstract class AbstractSnomedComponentRestInput<I extends SnomedComponentCreateRequestBuilder<I>> {
 
 	private String id;
+	private Boolean active = Boolean.TRUE;
 	private String moduleId;
 	private String namespaceId;
 
-	/**
-	 * @return
-	 */
+	public Boolean isActive() {
+		return active;
+	}
+	
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+	
 	public String getId() {
 		return id;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getModuleId() {
 		return moduleId;
 	}
 	
-	/**
-	 * @return
-	 */
 	public String getNamespaceId() {
 		return namespaceId;
 	}
@@ -66,8 +66,9 @@ public abstract class AbstractSnomedComponentRestInput<I extends SnomedComponent
 	
 	protected I toRequestBuilder() {
 		final I req = createRequestBuilder();
-		req.setId(createIdGenerationStrategy(id));
-		req.setModuleId(moduleId);
+		req.setId(createIdGenerationStrategy(getId()));
+		req.setModuleId(getModuleId());
+		req.setActive(isActive());
 		return req;
 	}
 

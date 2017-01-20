@@ -36,7 +36,7 @@ public abstract class SnomedApiTestConstants {
 	/**
 	 * An acceptability map which specifies that the corresponding description is acceptable in the UK language reference set.
 	 */
-	public static final Map<?, ?> ACCEPTABLE_ACCEPTABILITY_MAP = ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE);
+	public static final Map<String, Acceptability> ACCEPTABLE_ACCEPTABILITY_MAP = ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE);
 
 	/**
 	 * An acceptability map which specifies that the corresponding description is preferred in the UK language reference set.

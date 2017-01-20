@@ -42,9 +42,9 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedConceptDescripti
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedInboundRelationships;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedOutboundRelationships;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
@@ -61,7 +61,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  * @since 1.0
  */
 @Api("Concepts")
-@RestController
+//@RestController
 @RequestMapping(
 		produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedConceptSubResourcesController extends AbstractSnomedRestService {
@@ -182,8 +182,8 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 							final SnomedInboundRelationships result = new SnomedInboundRelationships();
 							result.setTotal(input.getTotal());
 							
-							final List<ISnomedRelationship> members = newArrayList();
-							for (ISnomedRelationship relationship : input) {
+							final List<ExpandableSnomedRelationship> members = newArrayList();
+							for (SnomedRelationship relationship : input) {
 								members.add(new ExpandableSnomedRelationship(relationship, expand));
 							}
 							
@@ -279,9 +279,9 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 				.setExpand(String.format("descendants(form:\"%s\",direct:%s,offset:%d,limit:%d)", form, direct, offset, limit))
 				.build(repositoryId, branchPath)
 				.execute(bus)
-				.then(new Function<ISnomedConcept, SnomedConcepts>() {
+				.then(new Function<SnomedConcept, SnomedConcepts>() {
 					@Override
-					public SnomedConcepts apply(ISnomedConcept input) {
+					public SnomedConcepts apply(SnomedConcept input) {
 						return input.getDescendants();
 					}
 				}));
@@ -328,9 +328,9 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 				.setExpand(String.format("ancestors(form:\"%s\",direct:%s,offset:%d,limit:%d)", form, direct, offset, limit))
 				.build(repositoryId, branchPath)
 				.execute(bus)
-				.then(new Function<ISnomedConcept, SnomedConcepts>() {
+				.then(new Function<SnomedConcept, SnomedConcepts>() {
 					@Override
-					public SnomedConcepts apply(ISnomedConcept input) {
+					public SnomedConcepts apply(SnomedConcept input) {
 						return input.getAncestors();
 					}
 				}));
@@ -347,7 +347,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/pt",
 			method = RequestMethod.GET)
-	public @ResponseBody ISnomedDescription getPreferredTerm(
+	public @ResponseBody SnomedDescription getPreferredTerm(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -371,7 +371,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		}
 		
 		final DescriptionService descriptionService = new DescriptionService(bus, branchPath);
-		final ISnomedDescription pt = descriptionService.getPreferredTerm(conceptId, extendedLocales);
+		final SnomedDescription pt = descriptionService.getPreferredTerm(conceptId, extendedLocales);
 		
 		if (pt == null) {
 			throw new PreferredTermNotFoundException(conceptId);
@@ -391,7 +391,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 	@RequestMapping(
 			value="/{path:**}/concepts/{conceptId}/fsn",
 			method = RequestMethod.GET)
-	public @ResponseBody ISnomedDescription getFullySpecifiedName(
+	public @ResponseBody SnomedDescription getFullySpecifiedName(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
 			final String branchPath,
@@ -415,7 +415,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 		}
 		
 		final DescriptionService descriptionService = new DescriptionService(bus, branchPath);
-		final ISnomedDescription fsn = descriptionService.getFullySpecifiedName(conceptId, extendedLocales);
+		final SnomedDescription fsn = descriptionService.getFullySpecifiedName(conceptId, extendedLocales);
 		
 		if (fsn == null) {
 			throw new FullySpecifiedNameNotFoundException(conceptId);

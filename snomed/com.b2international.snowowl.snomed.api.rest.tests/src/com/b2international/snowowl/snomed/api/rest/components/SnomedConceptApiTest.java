@@ -20,19 +20,40 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.INVALID_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.whenDeletingBranchWithPath;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeDeleted;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeUpdated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreatedWithStatus;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentExists;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotCreated;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotExists;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.createRefSetMemberRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.createRefSetRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenRelationshipRequestBody;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.either;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.everyItem;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -42,9 +63,21 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
+import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -73,7 +106,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final Map<?, ?> requestBody = givenConceptRequestBody(null, "", MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);		
 		assertComponentCreatedWithStatus(createMainPath(), SnomedComponentType.CONCEPT, requestBody, 400)
 		.and().body("message", equalTo("1 validation error"))
-		.and().body("violations", hasItem("'parentId' may not be empty (was '')"));
+		.and().body("violations", hasItem("'destinationId' may not be empty (was '')"));
 	}
 
 	@Test
@@ -391,4 +424,142 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertComponentCanBeDeleted(nestedBranchPath, SnomedComponentType.CONCEPT, parentId);
 		assertComponentNotExists(nestedBranchPath, SnomedComponentType.CONCEPT, parentId);
 	}
+	
+	@Test
+	public void createConceptWithMember() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		
+		// create a test refset
+		final Map<String,Object> refSetReq = createRefSetRequestBody(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT, Concepts.REFSET_SIMPLE_TYPE);
+		final String createdRefSetId = assertComponentCreated(testBranchPath, SnomedComponentType.REFSET, refSetReq);
+		assertComponentExists(testBranchPath, SnomedComponentType.REFSET, createdRefSetId);
+		
+		// create concept with member
+		final ImmutableMap.Builder<String, Object> req = ImmutableMap.builder();
+		req.putAll(givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false));
+		
+		final ImmutableList.Builder<Map<String, Object>> members = ImmutableList.builder();
+		members.add(createRefSetMemberRequestBody(null, createdRefSetId));
+		req.put("members", members.build());
+		
+		// verify that member got created
+		final String conceptId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, req.build());
+		final List<Object> actualMembers = assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, conceptId, "members()")
+			.extract().path("members.items");
+		assertEquals(1, actualMembers.size());
+	}
+	
+	@Test
+	public void addDescriptionViaConceptUpdate() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		
+		// create a concept
+		final Map<String, Object> conceptCreateReq = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String newConceptId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptCreateReq);
+		// get the current state of description list
+		final SnomedConcept newConcept = assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, newConceptId, "descriptions()").extract().as(SnomedConcept.class);
+		// two descriptions should exist at this point, one FSN, one PT
+		assertEquals(2, newConcept.getDescriptions().getTotal());
+		
+		// update concept with a new Text Definition	
+		final List<SnomedDescription> changedDescriptions = newArrayList(newConcept.getDescriptions()); 
+		final ImmutableMap.Builder<String, Object> updateReq = ImmutableMap.builder();
+		final SnomedDescription newDescription = new SnomedDescription();
+		newDescription.setId(getIdentifierService().generate(null, ComponentCategory.DESCRIPTION));
+		newDescription.setActive(true);
+		newDescription.setAcceptabilityMap(ACCEPTABLE_ACCEPTABILITY_MAP);
+		newDescription.setTypeId(Concepts.TEXT_DEFINITION);
+		newDescription.setTerm("Text Definiton " + new Date());
+		newDescription.setLanguageCode("en");
+		newDescription.setCaseSignificance(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE);
+		newDescription.setModuleId(newConcept.getModuleId());
+		changedDescriptions.add(newDescription);
+		
+		updateReq.put("commitComment", "Add new description via concept update");
+		updateReq.put("descriptions", changedDescriptions);
+		assertComponentCanBeUpdated(testBranchPath, SnomedComponentType.CONCEPT, newConceptId, updateReq.build());
+		
+		final SnomedConcept updatedConcept = assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, newConceptId, "descriptions()").extract().as(SnomedConcept.class);
+		assertEquals(3, updatedConcept.getDescriptions().getTotal());
+	}
+	
+	@Test
+	public void addRelationshipViaConceptUpdate() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		
+		// create a concept
+		final Map<String, Object> conceptCreateReq = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String newConceptId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptCreateReq);
+		// get the current state of relationship list
+		final SnomedConcept newConcept = assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, newConceptId, "relationships()").extract().as(SnomedConcept.class);
+		// one relationship should exist at this point, one stated ISA to the parent
+		assertEquals(1, newConcept.getRelationships().getTotal());
+		
+		// update concept with a new stated relationship	
+		final List<SnomedRelationship> changedRelationships = newArrayList(newConcept.getRelationships()); 
+		final ImmutableMap.Builder<String, Object> updateReq = ImmutableMap.builder();
+		final SnomedRelationship newRelationships = new SnomedRelationship();
+		newRelationships.setId(getIdentifierService().generate(null, ComponentCategory.RELATIONSHIP));
+		newRelationships.setActive(true);
+		newRelationships.setCharacteristicType(CharacteristicType.STATED_RELATIONSHIP);
+		newRelationships.setTypeId(FINDING_CONTEXT);
+		newRelationships.setDestinationId(DISEASE);
+		newRelationships.setModuleId(newConcept.getModuleId());
+		newRelationships.setGroup(0);
+		newRelationships.setUnionGroup(0);
+		newRelationships.setModifier(RelationshipModifier.EXISTENTIAL);
+		changedRelationships.add(newRelationships);
+		
+		updateReq.put("commitComment", "Add new relationship via concept update");
+		updateReq.put("relationships", changedRelationships);
+		assertComponentCanBeUpdated(testBranchPath, SnomedComponentType.CONCEPT, newConceptId, updateReq.build());
+		
+		final SnomedConcept updatedConcept = assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, newConceptId, "relationships()").extract().as(SnomedConcept.class);
+		assertEquals(2, updatedConcept.getRelationships().getTotal());
+	}
+	
+	@Test
+	public void addMemberViaConceptUpdate() throws Exception {
+		givenBranchWithPath(testBranchPath);
+		
+		// create a test refset
+		final Map<String,Object> refSetReq = createRefSetRequestBody(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT, Concepts.REFSET_SIMPLE_TYPE);
+		final String createdRefSetId = assertComponentCreated(testBranchPath, SnomedComponentType.REFSET, refSetReq);
+		assertComponentExists(testBranchPath, SnomedComponentType.REFSET, createdRefSetId);
+		
+		// create a concept
+		final Map<String, Object> conceptCreateReq = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
+		final String newConceptId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptCreateReq);
+		// get the current state of relationship list
+		final SnomedConcept newConcept = assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, newConceptId, "members()").extract().as(SnomedConcept.class);
+		// members should be empty at this point
+		assertEquals(0, newConcept.getMembers().getTotal());
+		
+		// add a new concrete domain member via concept update endpoint
+		final List<SnomedReferenceSetMember> changedMembers = newArrayList(); 
+		final ImmutableMap.Builder<String, Object> updateReq = ImmutableMap.builder();
+		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
+		newMember.setId(UUID.randomUUID().toString());
+		newMember.setActive(true);
+		newMember.setReferenceSetId(SnomedRefSetUtil.getConcreteDomainRefSetMap().get(DataType.STRING));
+		newMember.setModuleId(newConcept.getModuleId());
+		newMember.setProperties(ImmutableMap.<String, Object>builder()
+				.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, FINDING_CONTEXT)
+				.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.STATED_RELATIONSHIP)
+				.put(SnomedRf2Headers.FIELD_VALUE, "Value")
+				.build());
+		changedMembers.add(newMember);
+		
+		updateReq.put("commitComment", "Add new concrete domain member via concept update");
+		updateReq.put("members", changedMembers);
+		assertComponentCanBeUpdated(testBranchPath, SnomedComponentType.CONCEPT, newConceptId, updateReq.build());
+		
+		final SnomedConcept updatedConcept = assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, newConceptId, "members()").extract().as(SnomedConcept.class);
+		assertEquals(1, updatedConcept.getMembers().getTotal());
+	}
+	
+	private ISnomedIdentifierService getIdentifierService() {
+		return ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
+	}
+	
 }

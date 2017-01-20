@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -97,7 +97,7 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 						}
 						
 						final ApplicationContext context = ApplicationContext.getInstance();
-						final List<ISnomedConcept> snomedConcepts = SnomedRequests.prepareSearchConcept()
+						final List<SnomedConcept> snomedConcepts = SnomedRequests.prepareSearchConcept()
 								.all()
 								.filterByActive(true)
 								.filterByAncestor(snomedConceptId)

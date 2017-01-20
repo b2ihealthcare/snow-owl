@@ -1,6 +1,44 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.5.0
+
+### Added
+ - Support for inactive component creation. See endpoints:
+  * POST /{path}/concepts
+  * POST /{path}/descriptions
+  * POST /{path}/relationships
+  * POST /{path}/members
+
+### Changed
+- SnomedDescription REST representation changes
+ * Changed `acceptabilityMap` to `acceptability`
+ * Changed `descriptionInactivationIndicator` to `inactivationIndicator`
+- SnomedRelationship REST representation changes
+ * Changed `sourceConcept` to `source`
+ * Changed `typeConcept` to `type`
+ * Changed `destinationConcept` to `destination`
+ * Removed `refinability` property
+- POST /{path}/concepts
+ * Added support for relationship creation as part of concept creation
+ * Added support for member creation as part of concept creation
+- POST /{path}/concepts/{id}/updates
+ * Added support for description updates
+ * Added support for relationship updates
+ * Added support for member updates
+- Swagger API
+ * Replaced ISnomed* types with the corresponding Snomed* type
+
+### Removed
+- The following endpoints have been completely removed from the REST API (equivalent requests can be initiated via expansion parameters, see GET /{path}/concepts endpoint)
+ * GET /{path}/concepts/ancestors
+ * GET /{path}/concepts/descriptions
+ * GET /{path}/concepts/descendants
+ * GET /{path}/concepts/outbound-relationships
+ * GET /{path}/concepts/inbound-relationships
+ * GET /{path}/concepts/pt
+ * GET /{path}/concepts/fsn
+
 ## 5.4.0
 
 ### Added
@@ -8,7 +46,7 @@ All notable changes to this project will be documented in this file.
 - Support BigDecimal property mapping in index API
 
 ### Changed
-- GET /concepts now supports filtering by ECL expressions via `ecl` query parameter
+- GET /{path}/concepts now supports filtering by ECL expressions via `ecl` query parameter
 - Deprecated `escg` filter on GET /concepts endpoint. Use the `ecl` query parameter instead
 - Snow Owl now uses sequential SNOMED CT identifier generation instead of random
 

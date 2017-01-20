@@ -33,7 +33,7 @@ import com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchCont
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -64,7 +64,7 @@ public class SnomedDescriptionQuickSearchContentProvider extends AbstractQuickSe
 					
 					final List<QuickSearchElement> hits = newArrayList();
 					
-					for (ISnomedDescription description : input) {
+					for (SnomedDescription description : input) {
 						final CompactQuickSearchElement hit = new CompactQuickSearchElement(description.getId(), 
 								description.getTypeId(), 
 								description.getTerm(), 

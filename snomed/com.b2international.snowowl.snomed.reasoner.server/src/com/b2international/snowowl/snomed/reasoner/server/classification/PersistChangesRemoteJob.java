@@ -51,7 +51,7 @@ import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasone
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -209,11 +209,11 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 				.setExpand("descendants(limit:"+Integer.MAX_VALUE+",direct:false,form:\"stated\")")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.then(new Function<ISnomedConcept, LongSet>() {
+				.then(new Function<SnomedConcept, LongSet>() {
 					@Override
-					public LongSet apply(ISnomedConcept input) {
+					public LongSet apply(SnomedConcept input) {
 						final LongSet descendantIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(input.getDescendants().getTotal());
-						for (ISnomedConcept descendant : input.getDescendants()) {
+						for (SnomedConcept descendant : input.getDescendants()) {
 							descendantIds.add(Long.parseLong(descendant.getId()));
 						}
 						return descendantIds;

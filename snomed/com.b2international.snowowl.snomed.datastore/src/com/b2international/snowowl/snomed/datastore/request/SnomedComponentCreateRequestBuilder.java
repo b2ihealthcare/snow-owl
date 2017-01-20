@@ -29,6 +29,7 @@ import com.b2international.snowowl.snomed.core.domain.NamespaceIdStrategy;
 public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedComponentCreateRequestBuilder<B>> extends BaseSnomedTransactionalRequestBuilder<B, String> {
 	
 	private String moduleId;
+	private Boolean active = Boolean.TRUE;
 	private IdGenerationStrategy idGenerationStrategy;
 	
 	public final B setId(String id) {
@@ -46,6 +47,11 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 		return getSelf();
 	}
 	
+	public final B setActive(Boolean active) {
+		this.active = active;
+		return getSelf();
+	}
+	
 	public final B setModuleId(String moduleId) {
 		this.moduleId = moduleId;
 		return getSelf();
@@ -56,6 +62,7 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 		final BaseSnomedComponentCreateRequest req = createRequest();
 		req.setIdGenerationStrategy(idGenerationStrategy);
 		req.setModuleId(moduleId);
+		req.setActive(active == null ? Boolean.TRUE : active);
 		init(req);
 		return req;
 	}
