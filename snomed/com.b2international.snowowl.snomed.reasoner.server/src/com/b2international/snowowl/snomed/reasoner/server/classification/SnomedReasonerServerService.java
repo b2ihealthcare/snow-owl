@@ -71,7 +71,7 @@ import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcThreadLocal;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -115,9 +115,9 @@ import com.google.common.primitives.Longs;
  */
 public class SnomedReasonerServerService extends CollectingService<Reasoner, ClassificationRequest> implements SnomedReasonerService, IDisposableService {
 
-	private static final Ordering<ISnomedConcept> STORAGE_KEY_ORDERING = Ordering.from(new Comparator<ISnomedConcept>() {
+	private static final Ordering<SnomedConcept> STORAGE_KEY_ORDERING = Ordering.from(new Comparator<SnomedConcept>() {
 		@Override
-		public int compare(ISnomedConcept o1, ISnomedConcept o2) {
+		public int compare(SnomedConcept o1, SnomedConcept o2) {
 			return Longs.compare(o1.getStorageKey(), o2.getStorageKey());
 		}
 	}).nullsLast();
@@ -407,9 +407,9 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 					.setComponentId(Long.toString(id))
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-					.then(new Function<ISnomedConcept, ChangeConcept>() {
+					.then(new Function<SnomedConcept, ChangeConcept>() {
 						@Override
-						public ChangeConcept apply(ISnomedConcept input) {
+						public ChangeConcept apply(SnomedConcept input) {
 							return new ChangeConcept(id, Long.parseLong(input.getIconId()));
 						}
 					})
@@ -458,21 +458,21 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		
 		final LongSet unsatisfiableConceptIds = taxonomy.getUnsatisfiableConceptIds();
 		if (!unsatisfiableConceptIds.isEmpty()) {
-			final List<ISnomedConcept> unsatisfiableEntries = convertIdsToIndexEntries(branchPath, unsatisfiableConceptIds);
+			final List<SnomedConcept> unsatisfiableEntries = convertIdsToIndexEntries(branchPath, unsatisfiableConceptIds);
 			results.add(new UnsatisfiableSet(unsatisfiableEntries));
 		}
 		
 		final List<LongSet> equivalentConceptSets = taxonomy.getEquivalentConceptIds();
 		for (final LongSet equivalentConceptSet : equivalentConceptSets) {
-			final List<ISnomedConcept> equivalentEntries = convertIdsToIndexEntries(branchPath, equivalentConceptSet);
-			final ISnomedConcept suggestedConcept = equivalentEntries.remove(0);
+			final List<SnomedConcept> equivalentEntries = convertIdsToIndexEntries(branchPath, equivalentConceptSet);
+			final SnomedConcept suggestedConcept = equivalentEntries.remove(0);
 			results.add(new EquivalenceSet(suggestedConcept, equivalentEntries));
 		}
 		
 		return results;
 	}
 
-	private List<ISnomedConcept> convertIdsToIndexEntries(final IBranchPath branchPath, final LongSet conceptIds) { 
+	private List<SnomedConcept> convertIdsToIndexEntries(final IBranchPath branchPath, final LongSet conceptIds) { 
 		final Set<String> conceptIdFilter = LongSets.toStringSet(conceptIds);
 		final SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
 				.setLimit(conceptIds.size())
@@ -482,10 +482,10 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getInstance().getService(IEventBus.class))
 				.getSync();
-		final Map<String, ISnomedConcept> existingConcepts = FluentIterable.from(concepts).uniqueIndex(IComponent.ID_FUNCTION);
-		final List<ISnomedConcept> convertedSet = newArrayListWithExpectedSize(conceptIdFilter.size());
+		final Map<String, SnomedConcept> existingConcepts = FluentIterable.from(concepts).uniqueIndex(IComponent.ID_FUNCTION);
+		final List<SnomedConcept> convertedSet = newArrayListWithExpectedSize(conceptIdFilter.size());
 		for (final String conceptId : conceptIdFilter) {
-			final ISnomedConcept concept = existingConcepts.get(conceptId);
+			final SnomedConcept concept = existingConcepts.get(conceptId);
 			if (null == concept) {
 				final SnomedConcept fakeConcept = new SnomedConcept();
 				fakeConcept.setId(conceptId);

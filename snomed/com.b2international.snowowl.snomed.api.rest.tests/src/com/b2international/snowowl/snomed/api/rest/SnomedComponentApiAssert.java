@@ -47,7 +47,7 @@ import com.jayway.restassured.response.ValidatableResponse;
  */
 public abstract class SnomedComponentApiAssert {
 
-	public static Map<?, ?> givenConceptRequestBody(final String conceptId, final String parentId, final String moduleId, final Map<?, ?> fsnAcceptabilityMap, final boolean skipComment) {
+	public static Map<String, Object> givenConceptRequestBody(final String conceptId, final String parentId, final String moduleId, final Map<?, ?> fsnAcceptabilityMap, final boolean skipComment) {
 
 		final Date creationDate = new Date();
 		final Map<?, ?> fsnDescription = givenDescriptionRequestBody(creationDate, "New FSN at ", fsnAcceptabilityMap, FULLY_SPECIFIED_NAME);
@@ -58,9 +58,10 @@ public abstract class SnomedComponentApiAssert {
 				.put("descriptions", ImmutableList.of(fsnDescription, ptDescription));
 
 		if (parentId != null) {
-			conceptBuilder.put("parentId", parentId);
+			final Map<?, ?> isa = givenRelationshipRequestBody(null, Concepts.IS_A, parentId, null, null);
+			conceptBuilder.put("relationships", ImmutableList.of(isa));			
 		}
-		
+
 		if (conceptId != null) {
 			conceptBuilder.put("id", conceptId);
 		}
@@ -90,13 +91,23 @@ public abstract class SnomedComponentApiAssert {
 			final String destinationId, 
 			final String moduleId, 
 			final String comment) {
-
-		return ImmutableMap.<String, Object>builder()
-				.put("sourceId", sourceId)
-				.put("typeId", typeId)
-				.put("destinationId", destinationId)
-				.put("moduleId", moduleId)
-				.put("commitComment", comment);
+		final Builder<String, Object> builder = ImmutableMap.<String, Object>builder();
+		if (sourceId != null) {
+			builder.put("sourceId", sourceId);
+		}
+		if (typeId != null) {
+			builder.put("typeId", typeId);
+		}
+		if (destinationId != null) {
+			builder.put("destinationId", destinationId);
+		}
+		if (moduleId != null) {
+			builder.put("moduleId", moduleId);
+		}
+		if (comment != null) {
+			builder.put("commitComment", comment);
+		}
+		return builder;
 	}
 
 	public static Map<String, Object> givenRelationshipRequestBody(final String sourceId, 

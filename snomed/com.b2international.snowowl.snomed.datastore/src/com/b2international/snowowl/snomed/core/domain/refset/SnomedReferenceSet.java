@@ -15,39 +15,80 @@
  */
 package com.b2international.snowowl.snomed.core.domain.refset;
 
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * @since 4.5
  */
-public interface SnomedReferenceSet extends SnomedComponent {
+public final class SnomedReferenceSet extends SnomedComponent {
+
+	private SnomedRefSetType type;
+	private String referencedComponentType;
+	private String mapTargetComponentType;
+	private SnomedReferenceSetMembers members;
 
 	/**
 	 * Returns the type of the reference set.
 	 * 
 	 * @return
 	 */
-	SnomedRefSetType getType();
+	public SnomedRefSetType getType() {
+		return type;
+	}
 
 	/**
 	 * Returns the type of the referenced component.
 	 * 
 	 * @return
 	 */
-	String getReferencedComponentType();
-	
+	public String getReferencedComponentType() {
+		return referencedComponentType;
+	}
+
 	/**
 	 * Returns the type of the map target if this reference set is a mapping reference set.
 	 * @return
 	 */
-	String getMapTargetComponentType();
+	public String getMapTargetComponentType() {
+		return mapTargetComponentType;
+	}
 
 	/**
 	 * Returns all members of the reference set.
 	 * 
 	 * @return
 	 */
-	SnomedReferenceSetMembers getMembers();
+	public SnomedReferenceSetMembers getMembers() {
+		return members;
+	}
+	
+	public void setReferencedComponentType(String referencedComponent) {
+		this.referencedComponentType = referencedComponent;
+	}
+	
+	public void setMapTargetComponentType(String mapTargetComponentType) {
+		this.mapTargetComponentType = mapTargetComponentType;
+	}
+	
+	public void setType(SnomedRefSetType type) {
+		this.type = type;
+	}
+	
+	public void setMembers(SnomedReferenceSetMembers members) {
+		this.members = members;
+	}
+	
+	@Override
+	public Request<TransactionContext, String> toCreateRequest(String containerId) {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public Request<TransactionContext, Boolean> toUpdateRequest() {
+		throw new UnsupportedOperationException("Reference sets does not support update operation yet");
+	}
 
 }

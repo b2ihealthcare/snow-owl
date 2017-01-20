@@ -178,8 +178,8 @@ public class SnomedBranchRequestTest {
 				.setAcceptability(ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED));
 		
 		final AsyncRequest<CommitResult> conceptRequest = SnomedRequests.prepareNewConcept()
-				.setParent(Concepts.ROOT_CONCEPT)
 				.setModuleId(Concepts.MODULE_ROOT)
+				.addParent(Concepts.ROOT_CONCEPT)
 				.addDescription(fsnBuilder)
 				.addDescription(ptBuilder)
 				.build(REPOSITORY_ID, first.path(), "user", "Created new concept");

@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.core.domain.refset;
 
 import java.io.Serializable;
 
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 
 /**
  * @since 4.5
@@ -30,7 +30,7 @@ public interface MemberChange extends Comparable<MemberChange>, Serializable {
 	
 	MemberChangeKind getChangeKind();
 	
-	ISnomedConcept getReferencedComponent();
+	SnomedConcept getReferencedComponent();
 	
 	String getMemberId();
 	

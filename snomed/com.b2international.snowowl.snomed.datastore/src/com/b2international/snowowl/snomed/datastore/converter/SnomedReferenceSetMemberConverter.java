@@ -38,7 +38,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMemberImpl;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -99,7 +99,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 						for (SnomedReferenceSetMember member : membersByTargetComponent.get(targetComponentId)) {
 							final Map<String, Object> newProps = newHashMap(member.getProperties());
 							newProps.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, targetComponent);
-							((SnomedReferenceSetMemberImpl) member).setProperties(newProps);
+							((SnomedReferenceSetMember) member).setProperties(newProps);
 						}
 					}
 				}
@@ -161,7 +161,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 		
 		for (SnomedCoreComponent component : components) {
 			for (SnomedReferenceSetMember member : referencedComponentIdToMemberMap.get(component.getId())) {
-				((SnomedReferenceSetMemberImpl) member).setReferencedComponent(component);
+				((SnomedReferenceSetMember) member).setReferencedComponent(component);
 			}
 		}
 	}
@@ -190,7 +190,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 
 	@Override
 	protected SnomedReferenceSetMember toResource(SnomedRefSetMemberIndexEntry entry) {
-		final SnomedReferenceSetMemberImpl member = new SnomedReferenceSetMemberImpl();
+		final SnomedReferenceSetMember member = new SnomedReferenceSetMember();
 		member.setStorageKey(entry.getStorageKey());
 		member.setId(entry.getId());
 		member.setEffectiveTime(EffectiveTimes.toDate(entry.getEffectiveTime()));
@@ -227,7 +227,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 		}
 	}
 
-	private void setReferencedComponent(SnomedReferenceSetMemberImpl member, String referencedComponentId, short referencedComponentType) {
+	private void setReferencedComponent(SnomedReferenceSetMember member, String referencedComponentId, short referencedComponentType) {
 		final SnomedCoreComponent component;
 		switch (referencedComponentType) {
 		// TODO support query type refset refcomp expansion, currently it's a concept

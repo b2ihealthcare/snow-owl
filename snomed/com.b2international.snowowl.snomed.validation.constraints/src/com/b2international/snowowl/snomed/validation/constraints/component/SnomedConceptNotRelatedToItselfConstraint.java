@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.validation.ComponentValidationConstraint;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnostic;
 import com.b2international.snowowl.core.validation.ComponentValidationDiagnosticImpl;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -56,7 +56,7 @@ public class SnomedConceptNotRelatedToItselfConstraint extends ComponentValidati
 			.getSync();
 		
 		if (!relationships.getItems().isEmpty()) {
-			for (ISnomedRelationship relationship : relationships) {
+			for (SnomedRelationship relationship : relationships) {
 				return new ComponentValidationDiagnosticImpl(conceptId, createErrorMessage(component, relationship, branchPath), ID, CONCEPT_NUMBER, error());
 			}
 		}
@@ -64,8 +64,8 @@ public class SnomedConceptNotRelatedToItselfConstraint extends ComponentValidati
 		return createOk(conceptId, ID, CONCEPT_NUMBER);
 	}
 
-	private String createErrorMessage(final SnomedConceptDocument component, final ISnomedRelationship relationship, final IBranchPath branchPath) {
-		return String.format("'%s' has an active relationship of type '%s' which points to itself.", component.getLabel(), relationship.getTypeConcept().getPt().getTerm());
+	private String createErrorMessage(final SnomedConceptDocument component, final SnomedRelationship relationship, final IBranchPath branchPath) {
+		return String.format("'%s' has an active relationship of type '%s' which points to itself.", component.getLabel(), relationship.getType().getPt().getTerm());
 	}
 
 	private List<ExtendedLocale> getLocales() {

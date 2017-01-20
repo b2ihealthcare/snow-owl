@@ -21,8 +21,8 @@ import java.util.Set;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
@@ -30,7 +30,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 /**
- * Given a set of {@link ISnomedConcept concepts}, collects the corresponding "preferred" fully
+ * Given a set of {@link SnomedConcept concepts}, collects the corresponding "preferred" fully
  * specified names of each entry, and makes them available for converting to a response object.
  */
 public abstract class FsnJoinerOperation<T> {
@@ -47,41 +47,41 @@ public abstract class FsnJoinerOperation<T> {
 	}
 
 	public final List<T> run() {
-		final Iterable<ISnomedConcept> concepts = getConceptEntries(conceptId);
+		final Iterable<SnomedConcept> concepts = getConceptEntries(conceptId);
 		if (Iterables.isEmpty(concepts)) {
 			return ImmutableList.of();
 		}
 		
-		Map<String, ISnomedDescription> descriptionsByConcept = initDescriptionsByConcept(concepts);
+		Map<String, SnomedDescription> descriptionsByConcept = initDescriptionsByConcept(concepts);
 		return convertConceptEntries(concepts, descriptionsByConcept);
 	}
 
-	private Map<String, ISnomedDescription> initDescriptionsByConcept(Iterable<ISnomedConcept> conceptEntries) {
+	private Map<String, SnomedDescription> initDescriptionsByConcept(Iterable<SnomedConcept> conceptEntries) {
 		final Set<String> conceptIds = FluentIterable.from(conceptEntries).transform(IComponent.ID_FUNCTION).toSet();
 		return descriptionService.getFullySpecifiedNames(conceptIds, locales);
 	}
 
-	private List<T> convertConceptEntries(Iterable<ISnomedConcept> concepts, Map<String, ISnomedDescription> descriptionsByConcept) {
+	private List<T> convertConceptEntries(Iterable<SnomedConcept> concepts, Map<String, SnomedDescription> descriptionsByConcept) {
 		final ImmutableList.Builder<T> resultBuilder = ImmutableList.builder();
 
-		for (final ISnomedConcept conceptEntry : concepts) {
+		for (final SnomedConcept conceptEntry : concepts) {
 			resultBuilder.add(convertConceptEntry(conceptEntry, getTerm(descriptionsByConcept, conceptEntry.getId())));
 		}
 
 		return resultBuilder.build();
 	}
 
-	private Optional<String> getTerm(Map<String, ISnomedDescription> descriptionsByConcept, final String conceptId) {
+	private Optional<String> getTerm(Map<String, SnomedDescription> descriptionsByConcept, final String conceptId) {
 		return Optional.fromNullable(descriptionsByConcept.get(conceptId))
-				.transform(new Function<ISnomedDescription, String>() {
+				.transform(new Function<SnomedDescription, String>() {
 					@Override
-					public String apply(ISnomedDescription input) {
+					public String apply(SnomedDescription input) {
 						return input.getTerm();
 					}
 				});
 	}
 
-	protected abstract Iterable<ISnomedConcept> getConceptEntries(String conceptId);
+	protected abstract Iterable<SnomedConcept> getConceptEntries(String conceptId);
 
-	protected abstract T convertConceptEntry(ISnomedConcept concept, Optional<String> optionalFsn);
+	protected abstract T convertConceptEntry(SnomedConcept concept, Optional<String> optionalFsn);
 }

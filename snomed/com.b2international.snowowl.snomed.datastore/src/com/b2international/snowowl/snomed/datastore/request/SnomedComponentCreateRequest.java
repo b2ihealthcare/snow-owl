@@ -28,4 +28,6 @@ public interface SnomedComponentCreateRequest extends Request<TransactionContext
 
 	String getModuleId();
 
+	Boolean isActive();
+
 }

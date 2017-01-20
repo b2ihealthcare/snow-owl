@@ -46,8 +46,8 @@ import com.b2international.snowowl.dsl.scg.ScgPackage;
 import com.b2international.snowowl.dsl.util.ScgAttributeFinderVisitor;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ConceptParentAdapter;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper;
@@ -120,7 +120,7 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 			return;
 		
 		try {
-			ISnomedConcept resolvedConcept = getConcept(concept.getId());
+			SnomedConcept resolvedConcept = getConcept(concept.getId());
 
 			// Concept id is not valid if the concept id length is less then 6 or longer then 18 -> should't be existed at all -> don't show 2 error messages
 			if (concept.getId().length() < 6 || concept.getId().length() > 18) {
@@ -216,7 +216,7 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 	
 	private void checkNonMatchingTerm(String id, String term, EAttribute termAttribute) {
 		
-		final ISnomedConcept concept = SnomedRequests.prepareGetConcept()
+		final SnomedConcept concept = SnomedRequests.prepareGetConcept()
 				.setComponentId(id)
 				.setExpand("descriptions(),pt()")
 				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
@@ -228,7 +228,7 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 			return;
 		}
 		
-		for (ISnomedDescription description : concept.getDescriptions()) {
+		for (SnomedDescription description : concept.getDescriptions()) {
 			if (description.getTerm().equals(term)) {
 				if (Concepts.FULLY_SPECIFIED_NAME.equals(description.getTypeId())) {
 					warning("This is the fully specified name, not the preferred term.", termAttribute, NON_MATCHING_TERM);
@@ -254,13 +254,13 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 			return;
 		}
 		
-		final ISnomedConcept entry = getConcept(concept.getId());
+		final SnomedConcept entry = getConcept(concept.getId());
 		if (entry != null && !entry.isActive()) {
 			warning("Concept is inactive", ScgPackage.eINSTANCE.getConcept_Id(), INACTIVE_CONCEPT);
 		}
 	}
 
-	private ISnomedConcept getConcept(String id) {
+	private SnomedConcept getConcept(String id) {
 		return Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept().setLimit(1).setComponentIds(Collections.singleton(id)).build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch()).execute(bus.get()).getSync(), null);
 	}
 

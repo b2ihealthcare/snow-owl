@@ -17,17 +17,17 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import java.util.List;
 
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 
 /**
  * @since 1.0
  */
 public class SnomedOutboundRelationships {
 
-	private List<ISnomedRelationship> outboundRelationships;
+	private List<SnomedRelationship> outboundRelationships;
 	private int total;
 
-	public List<ISnomedRelationship> getOutboundRelationships() {
+	public List<SnomedRelationship> getOutboundRelationships() {
 		return outboundRelationships;
 	}
 
@@ -35,7 +35,7 @@ public class SnomedOutboundRelationships {
 		return total;
 	}
 
-	public void setOutboundRelationships(final List<ISnomedRelationship> outboundRelationships) {
+	public void setOutboundRelationships(final List<SnomedRelationship> outboundRelationships) {
 		this.outboundRelationships = outboundRelationships;
 	}
 

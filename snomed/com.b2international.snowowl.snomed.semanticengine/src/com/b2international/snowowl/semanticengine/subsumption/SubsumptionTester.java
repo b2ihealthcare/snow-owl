@@ -28,8 +28,8 @@ import com.b2international.snowowl.dsl.scg.Group;
 import com.b2international.snowowl.dsl.scg.ScgFactory;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.semanticengine.utils.SemanticUtils;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -185,7 +185,7 @@ public class SubsumptionTester {
 	 */
 	public boolean isSubsumed(Concept predicate, Concept candidate) {
 		
-		final ISnomedConcept candidateConcept = SnomedRequests.prepareGetConcept()
+		final SnomedConcept candidateConcept = SnomedRequests.prepareGetConcept()
 				.setComponentId(candidate.getId())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
@@ -201,7 +201,7 @@ public class SubsumptionTester {
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
 			//for (int i = 0; i < outgoingRelationships.length; i++) {
-			for (ISnomedRelationship relationship : outboundRelationships) {
+			for (SnomedRelationship relationship : outboundRelationships) {
 				if (relationship.getTypeId().equals(CONCEPT_ID_SAME_AS) || relationship.getTypeId().equals(CONCEPT_ID_REPLACED_BY)) {
 					replacementConceptId = relationship.getDestinationId();
 					break;

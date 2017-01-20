@@ -41,7 +41,10 @@ public abstract class RefSetSupport {
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.DESCRIPTION)
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.RELATIONSHIP)
 			.put(SnomedRefSetType.LANGUAGE, SnomedTerminologyComponentConstants.DESCRIPTION)
-			.put(SnomedRefSetType.QUERY, SnomedTerminologyComponentConstants.REFSET).build();
+			.put(SnomedRefSetType.QUERY, SnomedTerminologyComponentConstants.REFSET)
+			.put(SnomedRefSetType.CONCRETE_DATA_TYPE, SnomedTerminologyComponentConstants.CONCEPT)
+//			.put(SnomedRefSetType.CONCRETE_DATA_TYPE, SnomedTerminologyComponentConstants.RELATIONSHIP)
+			.build();
 
 	public static boolean isSupported(SnomedRefSetType type) {
 		return SUPPORTED_REFERENCED_COMPONENTS.containsKey(type);

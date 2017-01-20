@@ -40,8 +40,8 @@ import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProv
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.EscgExpressionConstants;
@@ -65,7 +65,7 @@ import com.google.common.primitives.Ints;
  */
 public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearchContentProvider implements IQuickSearchContentProvider {
 
-	private static final class SnomedConceptConverterFunction implements Function<ISnomedConcept, QuickSearchElement> {
+	private static final class SnomedConceptConverterFunction implements Function<SnomedConcept, QuickSearchElement> {
 		
 		private final String queryExpression;
 		private final boolean approximate;
@@ -76,8 +76,8 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 		}
 
 		@Override 
-		public QuickSearchElement apply(final ISnomedConcept input) {
-			final ISnomedDescription pt = input.getPt();
+		public QuickSearchElement apply(final SnomedConcept input) {
+			final SnomedDescription pt = input.getPt();
 			final String label = pt != null ? pt.getTerm() : input.getId();
 			return new CompactQuickSearchElement(
 					input.getId(), 
@@ -132,7 +132,7 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 		final List<QuickSearchElement> quickSearchElements = Lists.newArrayList();
 
 		final SnomedConcepts matches = req.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(getEventBus()).getSync();
-		final Map<String, ISnomedConcept> concepts = newHashMap(FluentIterable.from(matches).uniqueIndex(IComponent.ID_FUNCTION));
+		final Map<String, SnomedConcept> concepts = newHashMap(FluentIterable.from(matches).uniqueIndex(IComponent.ID_FUNCTION));
 		// XXX sort only non-fuzzy matches
 		final List<QuickSearchElement> results = FluentIterable.from(matches)
 				.transform(new SnomedConceptConverterFunction(queryExpression, false))
@@ -158,9 +158,9 @@ public class SnomedConceptQuickSearchContentProvider extends AbstractQuickSearch
 			final SnomedConcepts fuzzyMatches = req.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(getEventBus()).getSync();
 
 			final ImmutableList<QuickSearchElement> approximateResults = FluentIterable.from(fuzzyMatches)
-					.filter(new Predicate<ISnomedConcept>() {
+					.filter(new Predicate<SnomedConcept>() {
 						@Override
-						public boolean apply(ISnomedConcept input) {
+						public boolean apply(SnomedConcept input) {
 							return !concepts.containsKey(input.getId());
 						}
 					}).transform(new SnomedConceptConverterFunction(queryExpression, true))

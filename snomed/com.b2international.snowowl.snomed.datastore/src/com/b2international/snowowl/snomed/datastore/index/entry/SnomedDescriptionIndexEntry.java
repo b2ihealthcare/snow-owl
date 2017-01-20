@@ -43,7 +43,7 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -67,7 +67,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		return new Builder();
 	}
 	
-	public static Builder builder(final ISnomedDescription input) {
+	public static Builder builder(final SnomedDescription input) {
 		final Builder builder = builder()
 				.storageKey(input.getStorageKey())
 				.id(input.getId())
@@ -134,10 +134,10 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 				.effectiveTime(doc.getEffectiveTime());
 	}
 	
-	public static List<SnomedDescriptionIndexEntry> fromDescriptions(Iterable<ISnomedDescription> descriptions) {
-		return FluentIterable.from(descriptions).transform(new Function<ISnomedDescription, SnomedDescriptionIndexEntry>() {
+	public static List<SnomedDescriptionIndexEntry> fromDescriptions(Iterable<SnomedDescription> descriptions) {
+		return FluentIterable.from(descriptions).transform(new Function<SnomedDescription, SnomedDescriptionIndexEntry>() {
 			@Override
-			public SnomedDescriptionIndexEntry apply(ISnomedDescription input) {
+			public SnomedDescriptionIndexEntry apply(SnomedDescription input) {
 				return builder(input).build();
 			}
 		}).toList();

@@ -35,7 +35,7 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -61,7 +61,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		return new Builder();
 	}
 
-	public static Builder builder(final ISnomedRelationship input) {
+	public static Builder builder(final SnomedRelationship input) {
 		final Builder builder = builder()
 				.storageKey(input.getStorageKey())
 				.id(input.getId())
@@ -121,10 +121,10 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				.effectiveTime(input.getEffectiveTime());
 	}
 	
-	public static Collection<SnomedRelationshipIndexEntry> fromRelationships(Iterable<ISnomedRelationship> relationships) {
-		return FluentIterable.from(relationships).transform(new Function<ISnomedRelationship, SnomedRelationshipIndexEntry>() {
+	public static Collection<SnomedRelationshipIndexEntry> fromRelationships(Iterable<SnomedRelationship> relationships) {
+		return FluentIterable.from(relationships).transform(new Function<SnomedRelationship, SnomedRelationshipIndexEntry>() {
 			@Override
-			public SnomedRelationshipIndexEntry apply(ISnomedRelationship input) {
+			public SnomedRelationshipIndexEntry apply(SnomedRelationship input) {
 				return builder(input).build();
 			}
 		}).toSet();

@@ -17,17 +17,17 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.datastore.request.RevisionGetRequest;
 import com.b2international.snowowl.datastore.request.RevisionGetRequestBuilder;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 
 /**
  * @since 4.5
  */
-public final class SnomedDescriptionGetRequestBuilder extends RevisionGetRequestBuilder<SnomedDescriptionGetRequestBuilder, ISnomedDescription> {
+public final class SnomedDescriptionGetRequestBuilder extends RevisionGetRequestBuilder<SnomedDescriptionGetRequestBuilder, SnomedDescription> {
 
 	SnomedDescriptionGetRequestBuilder() {}
 
 	@Override
-	protected RevisionGetRequest<ISnomedDescription> createGet() {
+	protected RevisionGetRequest<SnomedDescription> createGet() {
 		return new SnomedDescriptionGetRequest();
 	}
 

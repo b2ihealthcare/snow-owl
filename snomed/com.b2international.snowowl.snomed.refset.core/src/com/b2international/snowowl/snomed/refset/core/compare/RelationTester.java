@@ -22,7 +22,7 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -37,7 +37,7 @@ public class RelationTester {
 	public boolean isRelated(String branch, String predicateId, String candidateId) {
 		Set<String> visited = Sets.newHashSet();
 		visited.add(candidateId);
-		for (ISnomedRelationship relationship : LinkageRefSetGenerator.getOutboundStatementsById(branch, candidateId)) {
+		for (SnomedRelationship relationship : LinkageRefSetGenerator.getOutboundStatementsById(branch, candidateId)) {
 			// Ignore 'Is a' relationships, they are in the subsumption category.
 			if (!Concepts.IS_A.equals(relationship.getTypeId())) {
 				if (predicateId.equals(relationship.getDestinationId())) {
@@ -51,7 +51,7 @@ public class RelationTester {
 	}
 
 	public boolean isRelated(String branch, String predicateId, String candidateId, String relationshipTypeId) {
-		for (ISnomedRelationship relationship : LinkageRefSetGenerator.getActiveOutboundStatements(branch, candidateId, relationshipTypeId)) {
+		for (SnomedRelationship relationship : LinkageRefSetGenerator.getActiveOutboundStatements(branch, candidateId, relationshipTypeId)) {
 			// Ignore 'Is a' relationships, they are in the subsumption category.
 			if (relationshipTypeId.equals(relationship.getTypeId())) {
 				Set<String> visited = Sets.newHashSet();
@@ -71,7 +71,7 @@ public class RelationTester {
 			return false;
 		}
 		
-		for (ISnomedRelationship relationship : LinkageRefSetGenerator.getActiveOutboundStatements(branch, candidateId, relationshipTypeId)) {
+		for (SnomedRelationship relationship : LinkageRefSetGenerator.getActiveOutboundStatements(branch, candidateId, relationshipTypeId)) {
 			if (relationshipTypeId.equals(relationship.getTypeId())) {
 				String relationshipTargetId = relationship.getDestinationId();
 				if (predicateId.equals(relationshipTargetId)) {

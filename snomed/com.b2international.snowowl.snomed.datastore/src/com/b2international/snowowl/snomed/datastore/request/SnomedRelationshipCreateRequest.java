@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import javax.annotation.Nonnull;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -23,21 +22,19 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.0
  */
 public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRequest {
 
-	@Nonnull
-	private Boolean active;
-	
-	@NotEmpty
 	private String sourceId;
 
 	@NotEmpty
@@ -96,10 +93,6 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 		return modifier;
 	}
 	
-	public Boolean isActive() {
-		return active;
-	}
-
 	void setSourceId(final String sourceId) {
 		this.sourceId = sourceId;
 	}
@@ -132,13 +125,13 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 		this.modifier = modifier;
 	}
 	
-	void setActive(final Boolean active) {
-		this.active = active;
-	}
-
 	@Override
 	public String execute(TransactionContext context) {
 		ensureUniqueId("Relationship", context);
+		
+		if (Strings.isNullOrEmpty(getSourceId())) {
+			throw new BadRequestException("'sourceId' may not be empty (was '%s')", getSourceId());
+		}
 		
 		try {
 			final Relationship relationship = SnomedComponents.newRelationship()

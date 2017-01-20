@@ -32,7 +32,7 @@ import com.b2international.snowowl.dsl.scg.ScgFactory;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.semanticengine.utils.SemanticUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -85,7 +85,7 @@ public class ConceptDefinitionNormalizer {
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
 			//for (int i = 0; i < outgoingRelationships.length; i++) {
-			for (ISnomedRelationship relationship : outboundRelationships) {
+			for (SnomedRelationship relationship : outboundRelationships) {
 				if (!Concepts.ADDITIONAL_RELATIONSHIP.equals(relationship.getCharacteristicType())) {
 					
 					int relationshipGroup = relationship.getGroup();

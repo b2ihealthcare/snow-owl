@@ -28,7 +28,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.validation.ComponentValidationStatus;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -72,7 +72,7 @@ public class FullySpecifiedNameUniquenessValidator implements IValidator {
 				.getSync();
 		
 		if (descriptions.getItems().size() != 0) {
-			for (final ISnomedDescription description : descriptions.getItems()) {
+			for (final SnomedDescription description : descriptions.getItems()) {
 				if (fsn.equals(description.getTerm())) {
 					return new ComponentValidationStatus(IStatus.ERROR, SnomedDatastoreActivator.PLUGIN_ID,
 							"Fully specified name is not unique.");

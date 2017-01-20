@@ -15,18 +15,19 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import org.eclipse.xtext.util.Pair;
+import org.eclipse.xtext.util.Tuples;
 
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -35,10 +36,12 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.google.common.base.Joiner;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
@@ -51,37 +54,35 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 
 	@Size(min = 2)
 	private List<SnomedDescriptionCreateRequest> descriptions = Collections.emptyList();
-
-	@NotEmpty
-	private String parentId;
-
-	@NotNull
-	private IdGenerationStrategy isAIdGenerationStrategy;
 	
+	@Size(min = 1)
+	private List<SnomedRelationshipCreateRequest> relationships = Collections.emptyList();
+	
+	private List<SnomedRefSetMemberCreateRequest> members = Collections.emptyList();
+
 	@NotNull
 	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
+	
+	@NotNull
+	private SubclassDefinitionStatus subclassDefinitionStatus = SubclassDefinitionStatus.NON_DISJOINT_SUBCLASSES;
 
 	SnomedConceptCreateRequest() {
-	}
-	
-	String getParentId() {
-		return parentId;
 	}
 	
 	void setDefinitionStatus(DefinitionStatus definitionStatus) {
 		this.definitionStatus = definitionStatus;
 	}
 	
-	void setParentId(final String parentId) {
-		this.parentId = parentId;
-	}
-
-	void setIsAIdGenerationStrategy(final IdGenerationStrategy isAIdGenerationStrategy) {
-		this.isAIdGenerationStrategy = isAIdGenerationStrategy;
-	}
-
 	void setDescriptions(final List<SnomedDescriptionCreateRequest> descriptions) {
 		this.descriptions = ImmutableList.copyOf(descriptions);
+	}
+	
+	void setRelationships(final List<SnomedRelationshipCreateRequest> relationships) {
+		this.relationships = ImmutableList.copyOf(relationships);
+	}
+	
+	void setMembers(final List<SnomedRefSetMemberCreateRequest> members) {
+		this.members = ImmutableList.copyOf(members);
 	}
 
 	@Override
@@ -93,6 +94,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 
 		convertDescriptions(context, concept.getId());
 		convertRelationships(context, concept.getId());
+		convertMembers(context, concept.getId());
 
 		return concept.getId();
 	}
@@ -101,8 +103,10 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		try {
 			return SnomedComponents.newConcept()
 					.withId(getIdGenerationStrategy())
+					.withActive(isActive())
 					.withModule(getModuleId())
 					.withDefinitionStatus(definitionStatus)
+					.withExhaustive(subclassDefinitionStatus.isExhaustive())
 					.build(context);
 		} catch (final ComponentNotFoundException e) {
 			throw e.toBadRequestException();
@@ -154,26 +158,46 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		return FluentIterable.from(concepts).transform(IComponent.ID_FUNCTION).toSet();
 	}
 
-	// TODO: Add support for multiple relationship creation requests
 	private void convertRelationships(final TransactionContext context, String conceptId) {
-		try {
+		final Set<Pair<String, CharacteristicType>> requiredRelationships = newHashSet(Tuples.pair(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP));
+		
+		for (final SnomedRelationshipCreateRequest relationshipRequest : relationships) {
+			relationshipRequest.setSourceId(conceptId);
 			
-			SnomedRequests.prepareNewRelationship()
-					.setId(isAIdGenerationStrategy)
-					.setModuleId(getModuleId())
-					.setSourceId(conceptId)
-					.setDestinationId(parentId)
-					.setTypeId(IS_A)
-					.build()
-					.execute(context);
+			if (null == relationshipRequest.getModuleId()) {
+				relationshipRequest.setModuleId(getModuleId());
+			}
 			
-		} catch (final ComponentNotFoundException e) {
-			throw e.toBadRequestException();
+			relationshipRequest.execute(context);
+			
+			requiredRelationships.remove(Tuples.pair(relationshipRequest.getTypeId(), relationshipRequest.getCharacteristicType()));
+		}
+		
+		if (!requiredRelationships.isEmpty()) {
+			throw new BadRequestException("The following relationships must be supplied with the concept [%s].", Joiner.on(",").join(requiredRelationships));
+		}
+	}
+	
+	private void convertMembers(final TransactionContext context, final String conceptId) {
+		for (final SnomedRefSetMemberCreateRequest memberRequest : members) {
+			memberRequest.setReferencedComponentId(conceptId);
+			if (null == memberRequest.getModuleId()) {
+				memberRequest.setModuleId(getModuleId());
+			}
+			
+			memberRequest.execute(context);
 		}
 	}
 
 	@Override
 	protected void checkComponentExists(TransactionContext context, String componentId) throws ComponentNotFoundException {
 		SnomedRequests.prepareGetConcept().setComponentId(componentId).build().execute(context);
+	}
+
+	/**
+	 * @return all parent concept IDs from the relationship create requests.
+	 */
+	Set<String> getParents() {
+		return relationships.stream().filter(req -> Concepts.IS_A.equals(req.getTypeId())).map(req -> req.getDestinationId()).collect(Collectors.toSet());
 	}
 }
