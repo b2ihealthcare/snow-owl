@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import javax.annotation.Nonnull;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -36,9 +35,6 @@ import com.google.common.base.Strings;
  */
 public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRequest {
 
-	@Nonnull
-	private Boolean active;
-	
 	private String sourceId;
 
 	@NotEmpty
@@ -97,10 +93,6 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 		return modifier;
 	}
 	
-	public Boolean isActive() {
-		return active;
-	}
-
 	void setSourceId(final String sourceId) {
 		this.sourceId = sourceId;
 	}
@@ -133,10 +125,6 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 		this.modifier = modifier;
 	}
 	
-	void setActive(final Boolean active) {
-		this.active = active;
-	}
-
 	@Override
 	public String execute(TransactionContext context) {
 		ensureUniqueId("Relationship", context);

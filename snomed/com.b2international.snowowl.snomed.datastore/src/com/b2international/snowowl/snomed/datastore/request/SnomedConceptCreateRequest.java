@@ -103,6 +103,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		try {
 			return SnomedComponents.newConcept()
 					.withId(getIdGenerationStrategy())
+					.withActive(isActive())
 					.withModule(getModuleId())
 					.withDefinitionStatus(definitionStatus)
 					.withExhaustive(subclassDefinitionStatus.isExhaustive())

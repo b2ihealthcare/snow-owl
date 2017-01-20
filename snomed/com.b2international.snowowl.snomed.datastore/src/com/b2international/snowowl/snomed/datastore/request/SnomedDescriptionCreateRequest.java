@@ -108,6 +108,7 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 		try {
 			final Description description = SnomedComponents.newDescription()
 				.withId(getIdGenerationStrategy())
+				.withActive(isActive())
 				.withModule(getModuleId())
 				.withCaseSignificance(getCaseSignificance())
 				.withTerm(getTerm())

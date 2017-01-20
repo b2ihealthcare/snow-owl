@@ -19,6 +19,8 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.ClassUtils;
@@ -45,6 +47,9 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 
 	private static final String REFSET_DESCRIPTION = "refSetDescription";
 
+	@Nonnull
+	private Boolean active = Boolean.TRUE;
+	
 	@NotEmpty
 	private String moduleId;
 	
@@ -58,8 +63,12 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 	SnomedRefSetMemberCreateRequest() {
 	}
 	
-	public String getModuleId() {
+	String getModuleId() {
 		return moduleId;
+	}
+	
+	Boolean isActive() {
+		return active;
 	}
 	
 	void setReferencedComponentId(String referencedComponentId) {
@@ -74,8 +83,11 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 		this.moduleId = moduleId;
 	}
 	
+	void setActive(Boolean active) {
+		this.active = active;
+	}
+	
 	void setProperties(Map<String, Object> properties) {
-		
 		this.properties.putAll(properties);
 	}
 	
@@ -96,6 +108,7 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 		case SIMPLE:
 			member = SnomedComponents
 				.newSimpleMember()
+				.withActive(isActive())
 				.withReferencedComponent(referencedComponentId)
 				.withModule(moduleId)
 				.withRefSet(referenceSetId)
@@ -196,6 +209,7 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 		for (SnomedConcept concept : matchingEscgConcepts.getItems()) {
 			 SnomedComponents
 				.newSimpleMember()
+				.withActive(isActive())
 				.withReferencedComponent(concept.getId())
 				.withModule(moduleId)
 				.withRefSet(memberRefSetId)
@@ -204,7 +218,8 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 		
 		return SnomedComponents
 			.newQueryMember()
-			.withModule(moduleId)
+			.withActive(isActive())
+			.withModule(getModuleId())
 			.withRefSet(referenceSetId)
 			.withReferencedComponent(memberRefSetId)
 			.withQuery(getQuery())

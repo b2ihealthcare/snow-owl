@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -35,6 +36,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<TransactionContext, String> implements SnomedComponentCreateRequest {
 
+	@Nonnull
+	private Boolean active = Boolean.TRUE;
+	
 	@NotNull
 	private IdGenerationStrategy idGenerationStrategy;
 	
@@ -49,14 +53,23 @@ public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<Trans
 	public String getModuleId() {
 		return moduleId;
 	}
+	
+	@Override
+	public Boolean isActive() {
+		return active;
+	}
 
 	@JsonIgnore
 	final void setIdGenerationStrategy(final IdGenerationStrategy idGenerationStrategy) {
 		this.idGenerationStrategy = idGenerationStrategy;
 	}
 
-	void setModuleId(final String moduleId) {
+	final void setModuleId(final String moduleId) {
 		this.moduleId = moduleId;
+	}
+	
+	final void setActive(Boolean active) {
+		this.active = active;
 	}
 	
 	@Override
