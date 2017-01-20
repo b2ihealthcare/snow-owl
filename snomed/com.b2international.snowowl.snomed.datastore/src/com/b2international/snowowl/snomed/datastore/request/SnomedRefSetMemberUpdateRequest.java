@@ -103,7 +103,7 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 	}
 
 	private boolean updateActivityStatus(SnomedRefSetMember member) {
-		final Object activeValue = properties.get("active");
+		final Object activeValue = properties.get(SnomedRf2Headers.FIELD_ACTIVE);
 		if (activeValue instanceof Boolean) {
 			final Boolean newStatus = (Boolean) activeValue;
 			if (!Objects.equals(member.isActive(), newStatus)) {
@@ -115,7 +115,7 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 	}
 	
 	private boolean updateModule(SnomedRefSetMember member) {
-		final Object value = properties.get("moduleId");
+		final Object value = properties.get(SnomedRf2Headers.FIELD_MODULE_ID);
 		if (value instanceof String) {
 			final String newModuleId = (String) value;
 			if (!Objects.equals(member.getModuleId(), newModuleId)) {
