@@ -72,6 +72,7 @@ public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<Trans
 		return String.class;
 	}
 	
+	@JsonIgnore
 	public Collection<SnomedComponentCreateRequest> getNestedRequests() {
 		return ImmutableList.of(this);
 	}
