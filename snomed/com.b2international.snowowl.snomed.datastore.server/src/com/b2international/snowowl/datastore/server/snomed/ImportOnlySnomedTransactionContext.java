@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.snomed;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.ecore.EObject;
@@ -26,7 +25,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.datastore.server.CDOServerUtils;
+import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -109,9 +108,11 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 	}
 
 	@Override
-	public long commit(final String userId, final String commitComment) {
+	public long commit(final String userId, final String commitComment, final String parentContextDescription) {
 		try {
-			final CDOCommitInfo info = CDOServerUtils.commit(editingContext.getTransaction(), userId, commitComment, new NullProgressMonitor());
+			final CDOCommitInfo info = new CDOServerCommitBuilder(userId, commitComment, editingContext.getTransaction())
+					.parentContextDescription(parentContextDescription)
+					.commitOne();
 			return info.getTimeStamp();
 		} catch (final CommitException e) {
 			throw new SnowowlRuntimeException(e);
