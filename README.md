@@ -91,3 +91,7 @@ While this should be enough to run the process, in production builds we recommen
 3. Copy the `target_platform_<version>` folder to a webserver, or use `Nexus` to serve the site as unzipped p2 (requires Nexus OSS with Unzip Plugin installed, see previous section)
 4. Define an `http` URL as `target.platform.url` parameter in the global Maven `.m2/settings.xml` file
 5. Run Snow Owl maven process with `mvn clean verify -Ptp_dependencies -Psite -Pdist` (*NOTE: the tp_dependencies profile will use the prefetched local p2 repository instead of querying all remote sites*)
+
+## Versioning
+
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/b2ihealthcare/snow-owl/tags). [CHANGELOG.md](CHANGELOG.md) contains a curated, chronologically ordered list of notable changes for each version.  
