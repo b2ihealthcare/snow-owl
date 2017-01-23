@@ -94,16 +94,29 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 			final Component component = (Component) t;
 			component.setId(id);
 			component.setActive(active);
-			component.setEffectiveTime(effectiveTime);
-			component.setReleased(effectiveTime != null);
 			component.setModule(context.lookup(moduleId, Concept.class));
+
+			if (effectiveTime == null) {
+				component.unsetEffectiveTime();
+				component.setReleased(false);
+			} else {
+				component.setEffectiveTime(effectiveTime);
+				component.setReleased(true);
+			}
+			
 		} else if (t instanceof SnomedRefSetMember) {
 			final SnomedRefSetMember member = (SnomedRefSetMember) t;
 			member.setUuid(id);
 			member.setActive(active);
-			member.setEffectiveTime(effectiveTime);
-			member.setReleased(effectiveTime != null);
 			member.setModuleId(moduleId);
+			
+			if (effectiveTime == null) {
+				member.unsetEffectiveTime();
+				member.setReleased(false);
+			} else {
+				member.setEffectiveTime(effectiveTime);
+				member.setReleased(true);
+			}
 		}
 	}
 
