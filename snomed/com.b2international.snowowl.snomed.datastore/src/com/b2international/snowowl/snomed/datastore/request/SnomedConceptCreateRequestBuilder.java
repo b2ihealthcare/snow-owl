@@ -34,6 +34,7 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	private List<SnomedDescriptionCreateRequest> descriptions = newArrayList();
 	private List<SnomedRelationshipCreateRequest> relationships = newArrayList();
 	private List<SnomedRefSetMemberCreateRequest> members = newArrayList();
+	private SnomedRefSetCreateRequest refSet;
 	
 	SnomedConceptCreateRequestBuilder() { 
 		super();
@@ -43,6 +44,7 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	
 	public SnomedConceptCreateRequestBuilder addParent(String parentId) {
 		return addRelationship(SnomedRequests.prepareNewRelationship()
+				.setIdFromNamespace(getIdGenerationStrategy().getNamespace())
 				.setDestinationId(parentId)
 				.setTypeId(Concepts.IS_A));
 	}
@@ -112,6 +114,17 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		return getSelf();
 	}
 	
+	// Reference set builder
+	
+	public SnomedConceptCreateRequestBuilder setRefSet(SnomedRefSetCreateRequestBuilder refSet) {
+		return setRefSet((SnomedRefSetCreateRequest) refSet.build());
+	}
+	
+	public SnomedConceptCreateRequestBuilder setRefSet(SnomedRefSetCreateRequest refSet) {
+		this.refSet = refSet;
+		return getSelf();
+	}
+	
 	@Override
 	protected BaseSnomedComponentCreateRequest createRequest() {
 		return new SnomedConceptCreateRequest();
@@ -124,6 +137,7 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		req.setDescriptions(descriptions);
 		req.setRelationships(relationships);
 		req.setMembers(members);
+		req.setRefSet(refSet);
 	}
 
 }

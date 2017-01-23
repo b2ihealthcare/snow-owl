@@ -169,12 +169,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			final Principal principal) {
 		
 		final SnomedRefSetRestInput change = body.getChange();
-		
-		final String createdRefSetId = SnomedRequests
-			.prepareNewRefSet()
-			.setIdentifierConcept(change.toRequestBuilder())
-			.setType(change.getType())
-			.setReferencedComponentType(change.getReferencedComponentType())
+		final String createdRefSetId = change.toRequestBuilder() 
 			.build(repositoryId, branchPath, principal.getName(), body.getCommitComment())
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS)

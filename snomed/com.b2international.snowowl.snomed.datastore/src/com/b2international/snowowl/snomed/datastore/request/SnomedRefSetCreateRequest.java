@@ -15,24 +15,20 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Collection;
-import java.util.Set;
-
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.b2international.collections.PrimitiveSets;
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.5
@@ -42,70 +38,61 @@ final class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, St
 	@NotNull
 	private final SnomedRefSetType type;
 	
-	@NotNull
+	@NotEmpty
 	private final String referencedComponentType;
 	
-	@Valid
-	private final SnomedConceptCreateRequest conceptReq;
+	private String identifierId;
 	
-	SnomedRefSetCreateRequest(SnomedRefSetType type, String referencedComponentType, SnomedConceptCreateRequest conceptReq) {
+	SnomedRefSetCreateRequest(SnomedRefSetType type, String referencedComponentType) {
 		this.type = type;
 		this.referencedComponentType = referencedComponentType;
-		this.conceptReq = conceptReq;
+	}
+
+	SnomedRefSetType getRefSetType() {
+		return type;
+	}
+
+	void setIdentifierId(String identifierId) {
+		this.identifierId = identifierId;
 	}
 	
 	@Override
 	public String execute(TransactionContext context) {
 		RefSetSupport.check(type);
-		RefSetSupport.checkType(type, referencedComponentType);
-		checkParent(context);
 		
-		final String identifierConceptId = this.conceptReq.execute(context);
+		if (Strings.isNullOrEmpty(identifierId)) {
+			throw new BadRequestException("Reference set identifier ID may not be null or empty.");
+		}
 		
 		// FIXME due to different resource lists we need access to the specific editing context (which will be removed later)
 		final SnomedRefSetEditingContext refSetContext = context.service(SnomedEditingContext.class).getRefSetEditingContext();
+		final SnomedRefSet refSet;
 		
-		final SnomedRegularRefSet refSet = SnomedComponents
-			.newRegularReferenceSet()
-			.withType(type)
-			.withReferencedComponentType(referencedComponentType)
-			.withIdentifierConceptId(identifierConceptId)
-			.build(context);
+		switch (type) {
+			case SIMPLE:
+			case QUERY:
+				RefSetSupport.checkType(type, referencedComponentType);
+				
+				refSet = SnomedComponents
+					.newRegularReferenceSet()
+					.withType(type)
+					.withReferencedComponentType(referencedComponentType)
+					.withIdentifierConceptId(identifierId)
+					.build(context);
+				break;
+			case CONCRETE_DATA_TYPE:
+				refSet = SnomedComponents
+					.newConcreteDomainReferenceSet()
+					.withDataType(SnomedRefSetUtil.getDataType(identifierId))
+					.withIdentifierConceptId(identifierId)
+					.build(context);
+				break;
+			default:
+				throw new IllegalArgumentException("Unsupported reference set type " + type + " for reference set identifier " + identifierId);
+		}
 		
 		refSetContext.add(refSet);
-		return identifierConceptId;
-	}
-	
-	private void checkParent(TransactionContext context) {
-		final String refSetTypeRootParent = SnomedRefSetUtil.getConceptId(type);
-		final Set<String> parents = conceptReq.getParents();
-		if (!isValidParentage(context, refSetTypeRootParent, parents)) {
-			throw new BadRequestException("'%s' type reference sets should be subtype of '%s' concept.", type, refSetTypeRootParent);
-		}
-	}
-
-	private boolean isValidParentage(TransactionContext context, String requiredSuperType, Collection<String> parents) {
-		// first check if the requiredSuperType is specified in the parents collection
-		if (parents.contains(requiredSuperType)) {
-			return true;
-		}
-		
-		// if not, then check if any of the specified parents is subTypeOf the requiredSuperType
-		final long superTypeIdLong = Long.parseLong(requiredSuperType);
-		final SnomedConcepts parentConcepts = SnomedRequests.prepareSearchConcept().setLimit(parents.size()).setComponentIds(parents).build().execute(context);
-		for (SnomedConcept parentConcept : parentConcepts) {
-			if (parentConcept.getParentIds() != null) {
-				if (PrimitiveSets.newLongOpenHashSet(parentConcept.getParentIds()).contains(superTypeIdLong)) {
-					return true;
-				}
-			}
-			if (parentConcept.getAncestorIds() != null) {
-				if (PrimitiveSets.newLongOpenHashSet(parentConcept.getAncestorIds()).contains(superTypeIdLong)) {
-					return true;
-				}
-			}
-		}
-		return false;
+		return identifierId;
 	}
 
 	@Override

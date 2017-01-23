@@ -60,6 +60,10 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 		this.moduleId = moduleId;
 		return getSelf();
 	}
+	
+	IdGenerationStrategy getIdGenerationStrategy() {
+		return idGenerationStrategy;
+	}
 
 	@Override
 	protected final Request<TransactionContext, String> doBuild() {
