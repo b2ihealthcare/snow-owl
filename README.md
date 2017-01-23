@@ -110,4 +110,4 @@ We use [SemVer](http://semver.org/) for versioning. [CHANGELOG.md](CHANGELOG.md)
 
 ## License
 
-This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache 2.0 License. See [LICENSE](LICENSE) for details and refer to [NOTICE](NOTICE) for additional licencing notes and uses of third-party components.
