@@ -20,6 +20,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.events.metrics.Metrics;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 
 /**
  * Repository Commit Request builder. Repository commit requests should always be executed in async mode.
@@ -32,6 +33,7 @@ public class RepositoryCommitRequestBuilder extends BaseBranchRequestBuilder<Rep
 	private String commitComment = "";
 	private Request<TransactionContext, ?> body;
 	private long preparationTime = Metrics.SKIP;
+	private String parentContextDescription = DatastoreLockContextDescriptions.ROOT;
 
 	public final RepositoryCommitRequestBuilder setUserId(String userId) {
 		this.userId = userId;
@@ -63,10 +65,15 @@ public class RepositoryCommitRequestBuilder extends BaseBranchRequestBuilder<Rep
 		this.preparationTime = preparationTime;
 		return getSelf();
 	}
+	
+	public final RepositoryCommitRequestBuilder setParentContextDescription(String parentContextDescription) {
+		this.parentContextDescription = parentContextDescription;
+		return getSelf();
+	}
 
 	@Override
 	protected final Request<BranchContext, CommitResult> doBuild() {
-		return new TransactionalRequest(userId, commitComment, body, preparationTime);
+		return new TransactionalRequest(userId, commitComment, body, preparationTime, parentContextDescription);
 	}
 	
 	@Override

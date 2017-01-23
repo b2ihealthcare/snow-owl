@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.server.internal;
 
 import java.util.ConcurrentModificationException;
 
+import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.ecore.EObject;
 
@@ -30,7 +31,7 @@ import com.b2international.snowowl.core.exceptions.CycleDetectedException;
 import com.b2international.snowowl.core.exceptions.LockedException;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
-import com.b2international.snowowl.datastore.server.CDOServerUtils;
+import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 
 /**
  * @since 4.5
@@ -88,9 +89,12 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 	}
 
 	@Override
-	public long commit(String userId, String commitComment) {
+	public long commit(String userId, String commitComment, String parentContextDescription) {
 		try {
-			return CDOServerUtils.commit(editingContext.getTransaction(), userId, commitComment, null).getTimeStamp();
+			final CDOCommitInfo info = new CDOServerCommitBuilder(userId, commitComment, editingContext.getTransaction())
+					.parentContextDescription(parentContextDescription)
+					.commitOne();
+			return info.getTimeStamp();
 		} catch (final CommitException e) {
 			final RepositoryLockException cause = Exceptions.extractCause(e, getClass().getClassLoader(), RepositoryLockException.class);
 			if (cause != null) {
