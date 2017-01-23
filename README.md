@@ -3,11 +3,13 @@
 ## Introduction
 Snow Owl<sup>®</sup> is a terminology server and a collaborative terminology authoring platform.  The authoring platform maintains terminology artifacts developed by a team and supported by business workflows that are driven by external task management systems like Bugzilla and JIRA.  With its modular design, the server can maintain multiple terminologies where new terminologies can be plugged-in to the platform.  The functionality of Snow Owl is exposed via a REST API.
 
-## Java
+## Getting Started
 
-The required JDK version is Java 8 update 102 or later.
+These instructions will get Snow Owl up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy Snow Owl on a live system.
 
-## Dev
+### Prerequisites
+
+From [version 5.1.0](CHANGELOG.md#510), Snow Owl requires Java 8 update 102 or later.
 
 Snow Owl is an Equinox-OSGi based server (using either Virgo or standalone OSGi). To develop plug-ins for Snow Owl you need to use Eclipse as IDE: 
 * Use latest Neon Eclipse IDE for Eclipse Committers: http://www.eclipse.org/downloads/packages/eclipse-ide-eclipse-committers/neon1a
