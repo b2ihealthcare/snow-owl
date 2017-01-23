@@ -106,7 +106,7 @@ See the [administration guide](documentation/src/main/asciidoc/administration_gu
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/b2ihealthcare/snow-owl/tags). [CHANGELOG.md](CHANGELOG.md) contains a curated, chronologically ordered list of notable changes for each version.
+We use [SemVer](http://semver.org/) for versioning. [CHANGELOG.md](CHANGELOG.md) contains a curated, chronologically ordered list of notable changes for each version.
 
 ## License
 
