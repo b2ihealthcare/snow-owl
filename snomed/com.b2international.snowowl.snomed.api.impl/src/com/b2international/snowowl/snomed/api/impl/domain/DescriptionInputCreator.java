@@ -1,7 +1,6 @@
 package com.b2international.snowowl.snomed.api.impl.domain;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import com.b2international.commons.ClassUtils;
@@ -10,6 +9,7 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.request.BaseSnomedComponentUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -18,15 +18,21 @@ public class DescriptionInputCreator extends AbstractInputCreator implements Com
 
 	@Override
 	public SnomedDescriptionCreateRequest createInput(String branchPath, SnomedBrowserDescription description, InputFactory inputFactory) {
-		return (SnomedDescriptionCreateRequest) SnomedRequests
-				.prepareNewDescription()
+		final SnomedDescriptionCreateRequestBuilder builder = SnomedRequests.prepareNewDescription()
 				.setModuleId(getModuleOrDefault(description))
 				.setLanguageCode(description.getLang())
 				.setTypeId(description.getType().getConceptId())
 				.setTerm(description.getTerm())
 				.setAcceptability(description.getAcceptabilityMap())
-				.setCaseSignificance(description.getCaseSignificance())
-				.build();
+				.setCaseSignificance(description.getCaseSignificance());
+		
+		if (description.getDescriptionId() != null) {
+			builder.setId(description.getDescriptionId());
+		} else {
+			builder.setIdFromNamespace(getDefaultNamespace());
+		}
+		
+		return (SnomedDescriptionCreateRequest) builder.build();
 	}
 
 	@Override
