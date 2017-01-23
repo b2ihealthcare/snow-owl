@@ -94,4 +94,8 @@ While this should be enough to run the process, in production builds we recommen
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/b2ihealthcare/snow-owl/tags). [CHANGELOG.md](CHANGELOG.md) contains a curated, chronologically ordered list of notable changes for each version.  
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/b2ihealthcare/snow-owl/tags). [CHANGELOG.md](CHANGELOG.md) contains a curated, chronologically ordered list of notable changes for each version.
+
+## License
+
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
