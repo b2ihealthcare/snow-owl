@@ -21,7 +21,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,7 +39,6 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
-import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.TransactionalRequest;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
@@ -52,7 +50,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
@@ -62,7 +59,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 4.5
  */
-final class IdRequest extends DelegatingRequest<BranchContext, BranchContext, CommitResult> {
+final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C, R> {
 
 	/** 
 	 * The maximum number of identifier service reservation calls (after which a namespace is known to be completely full). 
@@ -85,12 +82,12 @@ final class IdRequest extends DelegatingRequest<BranchContext, BranchContext, Co
 		return CATEGORY_TO_DOCUMENT_CLASS_MAP.get(category);
 	}
 
-	protected IdRequest(final Request<BranchContext, CommitResult> next) {
+	protected IdRequest(final Request<C, R> next) {
 		super(next);
 	}
 
 	@Override
-	public CommitResult execute(final BranchContext context) {
+	public R execute(final C context) {
 
 		final IdActionRecorder recorder = new IdActionRecorder(context);
 
@@ -144,7 +141,7 @@ final class IdRequest extends DelegatingRequest<BranchContext, BranchContext, Co
 				}
 			}
 
-			final CommitResult commitInfo = next(context);
+			final R commitInfo = next(context);
 			recorder.commit();
 			return commitInfo;
 
@@ -156,49 +153,42 @@ final class IdRequest extends DelegatingRequest<BranchContext, BranchContext, Co
 	}
 
 	private Multimap<ComponentCategory, BaseSnomedComponentCreateRequest> getComponentCreateRequests(final Request<?, ?> request) {
-		final Request<?, ?> firstNonDelegatingRequest = getFirstNonDelegatingRequest(request);
+		final ImmutableMultimap.Builder<ComponentCategory, BaseSnomedComponentCreateRequest> resultBuilder = ImmutableMultimap.builder();
+		collectComponentCreateRequests(request, resultBuilder);
+		return resultBuilder.build();
+	}
 	
-		if (firstNonDelegatingRequest instanceof TransactionalRequest) {
-			final TransactionalRequest transactionalRequest = (TransactionalRequest) firstNonDelegatingRequest;
-			final Request<?, ?> wrappedRequest = transactionalRequest.getNext();
-	
-			if (wrappedRequest instanceof BaseSnomedComponentCreateRequest) {
-				final BaseSnomedComponentCreateRequest createRequest = (BaseSnomedComponentCreateRequest) wrappedRequest;
-				return getComponentCreateRequestsFromList(ImmutableList.copyOf(createRequest.getNestedRequests()));
-			} else if (wrappedRequest instanceof BulkRequest) {
-				final BulkRequest<?> bulkRequest = (BulkRequest<?>) wrappedRequest;
-				return getComponentCreateRequestsFromList(ImmutableList.copyOf(bulkRequest.getRequests()));
+	private void collectComponentCreateRequests(Request<?, ?> request, ImmutableMultimap.Builder<ComponentCategory, BaseSnomedComponentCreateRequest> resultBuilder) {
+		
+		if (request instanceof DelegatingRequest) {
+			collectComponentCreateRequests(((DelegatingRequest<?, ?, ?>) request).next(), resultBuilder);
+		} else if (request instanceof TransactionalRequest) {
+			collectComponentCreateRequests(((TransactionalRequest) request).getNext(), resultBuilder);
+		} else if (request instanceof BaseSnomedComponentCreateRequest) {
+			final BaseSnomedComponentCreateRequest createRequest = (BaseSnomedComponentCreateRequest) request;
+			for (SnomedComponentCreateRequest nestedRequest : createRequest.getNestedRequests()) {
+				ComponentCategory category = getComponentCategory(nestedRequest);
+				resultBuilder.put(category, (BaseSnomedComponentCreateRequest) nestedRequest);
+				// XXX: we could recurse here, but only concept creation requests have actual nested requests at the moment
+			}
+		} else if (request instanceof BulkRequest) {
+			final BulkRequest<?> bulkRequest = (BulkRequest<?>) request;
+			for (Request<?, ?> bulkRequestItem : bulkRequest.getRequests()) {
+				collectComponentCreateRequests(bulkRequestItem, resultBuilder);
 			}
 		}
-	
-		return ImmutableMultimap.of();
 	}
 
-	private Request<?, ?> getFirstNonDelegatingRequest(final Request<?, ?> request) {
-		Request<?, ?> firstNonDelegatingRequest = request;
-		
-		while (firstNonDelegatingRequest instanceof DelegatingRequest) {
-			firstNonDelegatingRequest = ((DelegatingRequest<?, ?, ?>) firstNonDelegatingRequest).next();
+	private ComponentCategory getComponentCategory(SnomedComponentCreateRequest request) {
+		if (request instanceof SnomedConceptCreateRequest) {
+			return ComponentCategory.CONCEPT;
+		} else if (request instanceof SnomedDescriptionCreateRequest) {
+			return ComponentCategory.DESCRIPTION;
+		} else if (request instanceof SnomedRelationshipCreateRequest) {
+			return ComponentCategory.RELATIONSHIP;
+		} else {
+			throw new NotImplementedException("Unknown create request type: %s", request.getClass().getName());
 		}
-		
-		return firstNonDelegatingRequest;
-	}
-
-	private Multimap<ComponentCategory, BaseSnomedComponentCreateRequest> getComponentCreateRequestsFromList(final List<Request<?, ?>> requestList) {
-		return FluentIterable.from(requestList)
-				.filter(BaseSnomedComponentCreateRequest.class)
-				.filter(request -> request.getIdGenerationStrategy() instanceof NamespaceIdStrategy)
-				.index(request -> {
-					if (request instanceof SnomedConceptCreateRequest) {
-						return ComponentCategory.CONCEPT;
-					} else if (request instanceof SnomedDescriptionCreateRequest) {
-						return ComponentCategory.DESCRIPTION;
-					} else if (request instanceof SnomedRelationshipCreateRequest) {
-						return ComponentCategory.RELATIONSHIP;
-					} else {
-						throw new NotImplementedException("Unknown create request type: %s", request.getClass().getName());
-					}
-				});
 	}
 
 	private Set<String> getUniqueIds(final BranchContext context, final IdActionRecorder recorder, 
