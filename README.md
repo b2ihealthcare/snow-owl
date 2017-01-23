@@ -98,6 +98,10 @@ Please refer to the [installation guide](documentation/src/main/asciidoc/install
 
 The [SNOMED CT extension management guide](documentation/src/main/asciidoc/snomed_extension_management.adoc) provides details for managing multiple SNOMED extensions on a single terminology server.
 
+## Administration
+
+See the [administration guide](documentation/src/main/asciidoc/administration_guide.adoc). You may find the quick references for [console commands](documentation/src/main/asciidoc/administrative_console_reference.adoc) and the [administration REST API](documentation/src/main/asciidoc/administrative_rest_reference.adoc) helpful.
+
 ## Versioning
 
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/b2ihealthcare/snow-owl/tags). [CHANGELOG.md](CHANGELOG.md) contains a curated, chronologically ordered list of notable changes for each version.
