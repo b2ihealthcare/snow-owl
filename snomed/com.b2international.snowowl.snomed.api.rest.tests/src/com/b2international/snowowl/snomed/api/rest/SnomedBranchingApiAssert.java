@@ -46,7 +46,7 @@ public abstract class SnomedBranchingApiAssert {
 
 	private static final Set<String> FINISH_STATES = ImmutableSet.of(Merge.Status.COMPLETED.name(), Merge.Status.FAILED.name(), Merge.Status.CONFLICTS.name());
 
-	private static final long POLL_INTERVAL = TimeUnit.SECONDS.toMillis(1L);
+	private static final long POLL_INTERVAL = TimeUnit.MILLISECONDS.toMillis(200L);
 
 	private static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(30L);
 
