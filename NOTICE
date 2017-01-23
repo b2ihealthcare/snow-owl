@@ -22,7 +22,15 @@ Snow Owl incorporates the open source Protege system. Protege is available at ht
 THIRD PARTY COMPONENTS
 **********************
 This software includes third party software subject to the following licenses:
-- $WHAT from $WHO - under $LICENSE
-- $WHAT from $WHO - under $LICENSE
-- $WHAT from $WHO - under $LICENSE
-- $WHAT from $WHO - under $LICENSE
+- Base64 encoding implementation from http://iharder.net/base64 - under Public domain
+- IStatus implementations from Eclipse ECF - under Eclipse Public License v1.0
+- CDO Branch rename tests from Eclipse CDO - under Eclipse Public License v1.0
+- OS X VM workarounds from IBM - under Eclipse Public License v1.0
+- OrderedBytes implementation from Apache HBase - under Apache License v2.0
+- HTTP utility classes from Apache Tomcat - under Apache License v2.0
+- Time utility classes from Google Guava - under Apache License v2.0
+- Token replacer from niesfisch/tokenreplacer - under Apache License v2.0
+- Improved wildcard path matching from Spring Framework - under Apache License v2.0
+- XSSF parsing from Apache POI - under Apache License v2.0
+- super-csv from Kasper B. Graversen - under Apache License v2.0
+- Relationship Normal Form generation from SNOMED International - under Apache License v2.0
