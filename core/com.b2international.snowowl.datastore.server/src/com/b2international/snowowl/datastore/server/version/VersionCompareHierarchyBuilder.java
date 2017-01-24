@@ -57,12 +57,12 @@ public interface VersionCompareHierarchyBuilder {
 	NodeDiff createNode(final IBranchPath branchPath, final long storageKey, final Change change);
 
 	/**
-	 * Resolves labels for the given component ID set on the given {@link IBranchPath}.
+	 * Resolves labels for the given {@link NodeDiff component} set on the given {@link IBranchPath}.
 	 * 
-	 * @param componentIdsByBranch
+	 * @param nodesByBranch
 	 * @return
 	 */
-	Map<String, String> resolveLabels(Multimap<IBranchPath, String> componentIdsByBranch);
+	Map<String, String> resolveLabels(Multimap<IBranchPath, NodeDiff> nodesByBranch);
 
 	/**
 	 * Returns with a set of direct ancestor component IDs of a component on a branch.

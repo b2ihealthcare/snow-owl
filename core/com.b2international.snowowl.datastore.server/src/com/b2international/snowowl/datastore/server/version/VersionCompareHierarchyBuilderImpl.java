@@ -27,7 +27,6 @@ import static com.google.common.base.Predicates.and;
 import static com.google.common.base.Predicates.not;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +48,8 @@ import com.b2international.snowowl.datastore.index.diff.NodeDiffDerivation;
 import com.b2international.snowowl.datastore.index.diff.NodeDiffImpl;
 import com.b2international.snowowl.datastore.index.diff.VersionCompareConfiguration;
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
 /**
@@ -66,9 +67,17 @@ public abstract class VersionCompareHierarchyBuilderImpl implements VersionCompa
 		return false;
 	}
 
+	/**
+	 * Default implementation of {@link #resolveLabels(Multimap)} uses the {@link NodeDiff node}'s label.
+	 * If needed override with domain/terminology specific implementation.
+	 */
 	@Override
-	public Map<String, String> resolveLabels(Multimap<IBranchPath, String> componentIdsByBranch) {
-		return Collections.emptyMap();
+	public Map<String, String> resolveLabels(Multimap<IBranchPath, NodeDiff> componentIdsByBranch) {
+		Map<String, String> result = Maps.newHashMap();
+		for (NodeDiff nodeDiff : componentIdsByBranch.values()) {
+			result.put(nodeDiff.getId(), Strings.nullToEmpty(nodeDiff.getLabel()));
+		}
+		return result;
 	}
 	
 	@Override

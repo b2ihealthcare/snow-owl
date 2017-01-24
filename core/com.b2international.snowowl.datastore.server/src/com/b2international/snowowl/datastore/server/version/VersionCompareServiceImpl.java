@@ -126,9 +126,9 @@ public class VersionCompareServiceImpl implements VersionCompareService {
 			LOGGER.info("Hierarchy has been successfully collapsed. [" + stopwatch + "]");
 			subMonitor.worked(1);
 		
-			final Multimap<IBranchPath, String> nodesByBranch = ArrayListMultimap.create();
+			final Multimap<IBranchPath, NodeDiff> nodesByBranch = ArrayListMultimap.create();
 			for (NodeDiff node : nodes.values()) {
-				nodesByBranch.put(getBranchPath(configuration, diff, node.getStorageKey(), node), node.getId());
+				nodesByBranch.put(getBranchPath(configuration, diff, node.getStorageKey(), node), node);
 			}
 			final Map<String, String> labels = builder.resolveLabels(nodesByBranch);
 			for (NodeDiff node : nodes.values()) {
