@@ -259,17 +259,16 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 	
 	private String generateId(final String namespace, final ComponentCategory category) {
-		final String selectedNamespace = selectNamespace(namespace);
 		final StringBuilder builder = new StringBuilder();
 	
 		// generate the item identifier (value can be a function of component category and namespace)
-		builder.append(generationStrategy.generateItemId(selectedNamespace, category));
+		builder.append(generationStrategy.generateItemId(namespace, category));
 	
 		// append namespace and the first digit of the partition-identifier
-		if (Strings.isNullOrEmpty(selectedNamespace)) {
+		if (Strings.isNullOrEmpty(namespace)) {
 			builder.append('0');
 		} else {
-			builder.append(selectedNamespace);
+			builder.append(namespace);
 			builder.append('1');
 		}
 	

@@ -25,7 +25,6 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -69,28 +68,6 @@ public abstract class AbstractSnomedIdentifierService implements ISnomedIdentifi
 	
 	protected final SnomedIdentifierConfiguration getConfig() {
 		return config;
-	}
-
-	/**
-	 * Checks if the server's configuration specifies a fixed namespace to use for all operations.
-	 * <p>
-	 * If such a setting is present, any attempts of generating component IDs for a different namespace will be
-	 * changed to use the fixed namespace instead, otherwise the received namespace argument will pass through
-	 * unmodified. 
-	 */
-	protected final String selectNamespace(final String namespace) {
-		final String namespaceInConfig = getConfig().getEnforceNamespace();
-
-		// Is a fixed namespace given in the configuration file?
-		if (Strings.isNullOrEmpty(namespaceInConfig)) {
-			return namespace;
-		}
-		
-		if (SnomedIdentifiers.INT_NAMESPACE.equals(namespaceInConfig)) {
-			return null;
-		} else {
-			return namespaceInConfig;
-		}
 	}
 
 }

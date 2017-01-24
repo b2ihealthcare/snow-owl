@@ -53,9 +53,6 @@ public class SnomedIdentifierConfiguration {
 	private long cisTimeBetweenPollTries = 1000;
 	
 	@JsonProperty(required = false)
-	private String enforceNamespace;
-	
-	@JsonProperty(required = false)
 	private int cisMaxConnections = 100;
 	
 	@JsonProperty(required = false)
@@ -127,14 +124,6 @@ public class SnomedIdentifierConfiguration {
 
 	public void setCisTimeBetweenPollTries(long cisTimeBetweenPollTries) {
 		this.cisTimeBetweenPollTries = cisTimeBetweenPollTries;
-	}
-	
-	public String getEnforceNamespace() {
-		return enforceNamespace;
-	}
-	
-	public void setEnforceNamespace(String enforceNamespace) {
-		this.enforceNamespace = enforceNamespace;
 	}
 
 	public int getCisMaxConnections() {

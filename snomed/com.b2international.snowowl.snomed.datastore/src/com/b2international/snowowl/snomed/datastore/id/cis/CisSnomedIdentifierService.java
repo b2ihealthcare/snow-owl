@@ -611,12 +611,11 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	}
 
 	private RequestData createGenerationData(final String namespace, final ComponentCategory category) throws IOException {
-		return new GenerationData(selectNamespace(namespace), clientKey, category);
+		return new GenerationData(namespace, clientKey, category);
 	}
 
-	private RequestData createBulkGenerationData(final String namespace, final ComponentCategory category, final int quantity)
-			throws IOException {
-		return new BulkGenerationData(selectNamespace(namespace), clientKey, category, quantity);
+	private RequestData createBulkGenerationData(final String namespace, final ComponentCategory category, final int quantity) throws IOException {
+		return new BulkGenerationData(namespace, clientKey, category, quantity);
 	}
 	
 	private RequestData createRegistrationData(final String componentId) throws IOException {
