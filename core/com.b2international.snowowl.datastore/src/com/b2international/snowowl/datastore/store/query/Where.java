@@ -20,7 +20,7 @@ import com.google.common.base.Predicate;
 /**
  * @since 4.1
  */
-public interface Where extends Clause {
+public interface Where<T> extends Clause {
 
 	/**
 	 * @return the property to match the value against
@@ -30,13 +30,13 @@ public interface Where extends Clause {
 	/**
 	 * @return the value to use when finding matches
 	 */
-	String value();
+	T value();
 
 	/**
 	 * Converts this {@link Where} clause to a Guava {@link Predicate}.
 	 * 
 	 * @return
 	 */
-	<T> Predicate<T> toPredicate();
+	Predicate<T> toPredicate();
 
 }

@@ -20,14 +20,14 @@ import java.util.Objects;
 /**
  * @since 4.1
  */
-public class EqualsWhere extends WhereBase {
+public class EqualsWhere<T> extends WhereBase<T> {
 
-	EqualsWhere(String property, String value) {
+	EqualsWhere(String property, T value) {
 		super(property, value);
 	}
 
 	@Override
-	protected boolean matches(String actual) {
+	protected boolean matches(T actual) {
 		return Objects.equals(actual, value());
 	}
 

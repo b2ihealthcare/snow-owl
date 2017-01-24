@@ -29,6 +29,7 @@ import java.util.Set;
 import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
@@ -37,6 +38,7 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -205,14 +207,25 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 		final BooleanQuery result = new BooleanQuery();
 		for (Clause clause : query.clauses()) {
 			if (clause instanceof Where) {
-				final String property = ((Where) clause).property();
-				final String value = ((Where) clause).value();
+				final Where<?> where = (Where<?>) clause;
+				final String property = where.property();
+				final Object propertyValue = where.value();
+				final Class<?> propertyClass = propertyValue.getClass();
+				
 				if (clause instanceof EqualsWhere) {
-					result.add(new TermQuery(new Term(property, value)), Occur.MUST);
+					if (Long.class.isAssignableFrom(propertyClass) || long.class.isAssignableFrom(propertyClass)) {
+						result.add(NumericRangeQuery.newLongRange(property, (Long) propertyValue, (Long) propertyValue, true, true), Occur.MUST);
+					} else {
+						result.add(new TermQuery(new Term(property, String.valueOf(propertyValue))), Occur.MUST);
+					}
 				} else if (clause instanceof PrefixWhere) {
-					result.add(new PrefixQuery(new Term(property, value)), Occur.MUST);
+					result.add(new PrefixQuery(new Term(property, String.valueOf(propertyValue))), Occur.MUST);
 				} else if (clause instanceof LessThanWhere) {
-					result.add(TermRangeQuery.newStringRange(property, null, value, false, false), Occur.MUST);
+					if (Long.class.isAssignableFrom(propertyClass) || long.class.isAssignableFrom(propertyClass)) {
+						result.add(NumericRangeQuery.newLongRange(property, null, (Long) propertyValue, false, false), Occur.MUST);
+					} else {
+						result.add(TermRangeQuery.newStringRange(property, null, String.valueOf(propertyValue), false, false), Occur.MUST);
+					}
 				}
 			}
 		}
@@ -287,10 +300,16 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 		doc.add(new StoredField(SOURCE_FIELD, serialize(value)));
 		
 		for (String property : newHashSet(this.searchableFields)) {
-			doc.add(new StringField(property, String.valueOf(ReflectionUtils.getGetterValue(value, property)), Field.Store.NO));
+			Object propertyValue = ReflectionUtils.getGetterValue(value, property);
+			Class<?> propertyClass = propertyValue.getClass();
+			
+			if (Long.class.isAssignableFrom(propertyClass) || long.class.isAssignableFrom(propertyClass)) {
+				doc.add(new LongField(property, (long) propertyValue, Field.Store.NO));
+			} else {
+				doc.add(new StringField(property, String.valueOf(propertyValue), Field.Store.NO));
+			}
 		}
 
-		// Values are stored in String form, but sorting will be done numerically in case of long values
 		for (String property : this.sortFields) {
 			Object propertyValue = ReflectionUtils.getGetterValue(value, property);
 			Class<?> propertyClass = propertyValue.getClass();

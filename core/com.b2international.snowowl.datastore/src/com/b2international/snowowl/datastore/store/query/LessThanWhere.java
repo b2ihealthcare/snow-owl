@@ -15,19 +15,19 @@
  */
 package com.b2international.snowowl.datastore.store.query;
 
-import com.google.common.base.Strings;
+import com.google.common.collect.Ordering;
 
 /**
  * @since 4.2
  */
-public class LessThanWhere extends WhereBase {
+public class LessThanWhere<T extends Comparable<T>> extends WhereBase<T> {
 
-	LessThanWhere(String property, String value) {
+	LessThanWhere(String property, T value) {
 		super(property, value);
 	}
 
 	@Override
-	protected boolean matches(String actual) {
-		return Strings.nullToEmpty(actual).compareTo(value()) < 0;
+	protected boolean matches(T actual) {
+		return Ordering.natural().nullsFirst().compare(actual, value()) < 0;
 	}
 }

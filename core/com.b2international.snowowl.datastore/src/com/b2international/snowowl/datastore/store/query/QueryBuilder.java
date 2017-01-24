@@ -33,9 +33,9 @@ public class QueryBuilder {
 		this.query = new QueryImpl();
 	}
 	
-	public QueryBuilder match(String property, String value) {
+	public <T> QueryBuilder match(String property, T value) {
 		checkState(query != null, "Query already created, use another builder");
-		this.query.addClause(new EqualsWhere(property, value));
+		this.query.addClause(new EqualsWhere<T>(property, value));
 		return this;
 	}
 	
@@ -45,9 +45,9 @@ public class QueryBuilder {
 		return this;
 	}
 
-	public QueryBuilder lessThan(String property, String value) {
+	public <T extends Comparable<T>> QueryBuilder lessThan(String property, T value) {
 		checkState(query != null, "Query already created, use another builder");
-		this.query.addClause(new LessThanWhere(property, value));
+		this.query.addClause(new LessThanWhere<T>(property, value));
 		return this;
 	}
 	

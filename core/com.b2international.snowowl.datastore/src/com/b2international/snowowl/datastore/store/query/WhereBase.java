@@ -21,12 +21,12 @@ import com.google.common.base.Predicate;
 /**
  * @since 4.1
  */
-public abstract class WhereBase implements Where {
+public abstract class WhereBase<T> implements Where<T> {
 
 	private String property;
-	private String value;
+	private T value;
 	
-	public WhereBase(String property, String value) {
+	public WhereBase(String property, T value) {
 		this.property = property;
 		this.value = value;
 	}
@@ -37,24 +37,23 @@ public abstract class WhereBase implements Where {
 	}
 
 	@Override
-	public String value() {
+	public T value() {
 		return value;
 	}
 	
 	@Override
-	public final <T> Predicate<T> toPredicate() {
-		return new WherePredicate<T>();
+	public final Predicate<T> toPredicate() {
+		return new WherePredicate();
 	}
 	
-	protected abstract boolean matches(String actual);
+	protected abstract boolean matches(T actual);
 	
-	private class WherePredicate<T> implements Predicate<T> {
+	private class WherePredicate implements Predicate<T> {
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public boolean apply(T input) {
-			final Object value = ReflectionUtils.getGetterValue(input, property()); 
-			// TODO add non-string support
-			final String actual = String.valueOf(value);
+			final T actual = (T) ReflectionUtils.getGetterValue(input, property()); 
 			return matches(actual);
 		}
 

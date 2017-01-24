@@ -20,7 +20,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.1
  */
-public class PrefixWhere extends WhereBase {
+public class PrefixWhere extends WhereBase<String> {
 
 	PrefixWhere(String property, String value) {
 		super(property, value);
