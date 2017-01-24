@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.id.action;
+package com.b2international.snowowl.snomed.datastore.id.request;
+
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.Request;
 
 /**
- * @since 4.5
+ * @since 5.5
  */
-public interface IIdAction<I extends Object> {
+public final class SnomedIdentifierRegisterRequestBuilder extends AbstractSnomedIdentifierEnumeratedRequestBuilder<SnomedIdentifierRegisterRequestBuilder, Boolean> {
 
-	I get();
-
-	void rollback();
-
-	void execute();
-
-	void commit();
-	
-	void setFailed(boolean failed);
-	
-	boolean isFailed();
+	@Override
+	protected Request<RepositoryContext, Boolean> doBuild() {
+		return new SnomedIdentifierRegisterRequest(componentIds);
+	}
 
 }

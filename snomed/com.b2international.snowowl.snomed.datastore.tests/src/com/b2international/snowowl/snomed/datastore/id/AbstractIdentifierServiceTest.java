@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,16 @@ package com.b2international.snowowl.snomed.datastore.id;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Collection;
+import java.util.Set;
+
 import org.junit.Test;
 
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.datastore.id.cis.IdentifierStatus;
-import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
+import com.b2international.snowowl.snomed.datastore.id.domain.IdentifierStatus;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
+import com.google.common.collect.Sets;
 
 /**
  * @since 4.5
@@ -35,103 +39,119 @@ public abstract class AbstractIdentifierServiceTest {
 	protected abstract ISnomedIdentifierService getIdentifierService();
 
 	@Test
-	public void whenGeneratingId_ThenItShouldReturnTheGeneratedId() {
-		String componentId = null;
+	public void whenGeneratingIds_ThenItShouldReturnTheGeneratedIds() {
+		final Set<String> componentIds = Sets.newHashSet();
 
 		try {
-			componentId = getIdentifierService().generate(B2I_NAMESPACE, ComponentCategory.CONCEPT);
-			final SctId sctId = getIdentifierService().getSctId(componentId);
-			assertTrue("Status must be assigned", IdentifierStatus.ASSIGNED.getSerializedName().equals(sctId.getStatus()));
+			componentIds.addAll(getIdentifierService().generate(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2));
+			assertTrue(String.format("Component IDs size is %d instead of 2.", componentIds.size()), componentIds.size() == 2);
+
+			final Collection<SctId> sctIds = getIdentifierService().getSctIds(componentIds).values();
+			for (final SctId sctId : sctIds) {
+				assertTrue("Status must be assigned", IdentifierStatus.ASSIGNED.getSerializedName().equals(sctId.getStatus()));
+			}
 		} catch (Exception e) {
-			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
+			fail(String.format("Unexpected exception was thrown: %s.", e.getMessage()));
 		} finally {
-			if (null != componentId)
-				getIdentifierService().release(componentId);
+			if (!componentIds.isEmpty())
+				getIdentifierService().release(componentIds);
 		}
 	}
 
 	@Test
-	public void whenReservingId_ThenItShouldReturnTheReservedId() {
-		String componentId = null;
+	public void whenReservingIds_ThenItShouldReturnTheReservedIds() {
+		final Set<String> componentIds = Sets.newHashSet();
 
 		try {
-			componentId = getIdentifierService().reserve(B2I_NAMESPACE, ComponentCategory.CONCEPT);
-			final SctId sctId = getIdentifierService().getSctId(componentId);
-			assertTrue("Status must be reserved", IdentifierStatus.RESERVED.getSerializedName().equals(sctId.getStatus()));
+			componentIds.addAll(getIdentifierService().reserve(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2));
+			assertTrue(String.format("Component IDs size is %d instead of 2.", componentIds.size()), componentIds.size() == 2);
+
+			final Collection<SctId> sctIds = getIdentifierService().getSctIds(componentIds).values();
+			for (final SctId sctId : sctIds) {
+				assertTrue("Status must be reserved", IdentifierStatus.RESERVED.getSerializedName().equals(sctId.getStatus()));
+			}
 		} catch (Exception e) {
-			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
+			fail(String.format("Unexpected exception was thrown: %s.", e.getMessage()));
 		} finally {
-			if (null != componentId)
-				getIdentifierService().release(componentId);
+			if (!componentIds.isEmpty())
+				getIdentifierService().release(componentIds);
 		}
 	}
 
 	@Test
-	public void whenRegisteringReservedId_ThenItShouldBeRegistered() {
-		String componentId = null;
+	public void whenRegisteringReservedIds_ThenTheyShouldBeRegistered() {
+		final Set<String> componentIds = Sets.newHashSet();
 
 		try {
-			componentId = getIdentifierService().reserve(B2I_NAMESPACE, ComponentCategory.CONCEPT);
-			getIdentifierService().register(componentId);
-			final SctId sctId = getIdentifierService().getSctId(componentId);
-			assertTrue("Status must be assigned", IdentifierStatus.ASSIGNED.getSerializedName().equals(sctId.getStatus()));
+			componentIds.addAll(getIdentifierService().reserve(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2));
+			assertTrue(String.format("Component IDs size is %d instead of 2.", componentIds.size()), componentIds.size() == 2);
+			getIdentifierService().register(componentIds);
+			final Collection<SctId> sctIds = getIdentifierService().getSctIds(componentIds).values();
+			for (final SctId sctId : sctIds) {
+				assertTrue("Status must be assigned", IdentifierStatus.ASSIGNED.getSerializedName().equals(sctId.getStatus()));
+			}
 		} catch (Exception e) {
-			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
+			fail(String.format("Unexpected exception was thrown: %s.", e.getMessage()));
 		} finally {
-			if (null != componentId)
-				getIdentifierService().release(componentId);
+			if (!componentIds.isEmpty())
+				getIdentifierService().release(componentIds);
 		}
 	}
 
 	@Test
-	public void whenReleasingReservedId_ThenItShouldBeAvailable() {
+	public void whenReleasingReservedIds_ThenTheyShouldBeAvailable() {
 		try {
-			final String componentId = getIdentifierService().reserve(B2I_NAMESPACE, ComponentCategory.CONCEPT);
-			getIdentifierService().register(componentId);
-			getIdentifierService().release(componentId);
-			final SctId sctId = getIdentifierService().getSctId(componentId);
-			assertTrue("Status must be available", IdentifierStatus.AVAILABLE.getSerializedName().equals(sctId.getStatus()));
+			final Set<String> componentIds = getIdentifierService().reserve(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
+			getIdentifierService().register(componentIds);
+			getIdentifierService().release(componentIds);
+			final Collection<SctId> sctIds = getIdentifierService().getSctIds(componentIds).values();
+			for (final SctId sctId : sctIds) {
+				assertTrue("Status must be available", IdentifierStatus.AVAILABLE.getSerializedName().equals(sctId.getStatus()));
+			}
 		} catch (Exception e) {
-			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
+			fail(String.format("Unexpected exception was thrown: %s.", e.getMessage()));
 		}
 	}
 
 	@Test
-	public void whenPublishingAssignedId_ThenItShouldBePublished() {
+	public void whenPublishingAssignedIds_ThenTheyShouldBePublished() {
 		try {
-			final String componentId = getIdentifierService().generate(B2I_NAMESPACE, ComponentCategory.CONCEPT);
-			getIdentifierService().publish(componentId);
-			final SctId sctId = getIdentifierService().getSctId(componentId);
-			assertTrue("Status must be published", IdentifierStatus.PUBLISHED.getSerializedName().equals(sctId.getStatus()));
+			final Set<String> componentIds = getIdentifierService().generate(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
+			getIdentifierService().publish(componentIds);
+			final Collection<SctId> sctIds = getIdentifierService().getSctIds(componentIds).values();
+			for (final SctId sctId : sctIds) {
+				assertTrue("Status must be published", IdentifierStatus.PUBLISHED.getSerializedName().equals(sctId.getStatus()));
+			}
 		} catch (Exception e) {
-			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
+			fail(String.format("Unexpected exception was thrown: %s.", e.getMessage()));
 		}
 	}
 
 	@Test
-	public void whenDeprecatingAssignedId_ThenItShouldBeDeprecated() {
+	public void whenDeprecatingAssignedIds_ThenTheyShouldBeDeprecated() {
 		try {
-			final String componentId = getIdentifierService().generate(B2I_NAMESPACE, ComponentCategory.CONCEPT);
-			getIdentifierService().deprecate(componentId);
-			final SctId sctId = getIdentifierService().getSctId(componentId);
-			assertTrue("Status must be deprecated", IdentifierStatus.DEPRECATED.getSerializedName().equals(sctId.getStatus()));
+			final Set<String> componentIds = getIdentifierService().generate(B2I_NAMESPACE, ComponentCategory.CONCEPT, 2);
+			getIdentifierService().deprecate(componentIds);
+			final Collection<SctId> sctIds = getIdentifierService().getSctIds(componentIds).values();
+			for (final SctId sctId : sctIds) {
+				assertTrue("Status must be deprecated", IdentifierStatus.DEPRECATED.getSerializedName().equals(sctId.getStatus()));
+			}
 		} catch (Exception e) {
-			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
+			fail(String.format("Unexpected exception was thrown: %s.", e.getMessage()));
 		}
 	}
 
 	@Test
 	public void whenReleasingPublishedId_ThenExceptionShouldBeThrown() {
 		try {
-			final String componentId = getIdentifierService().generate(B2I_NAMESPACE, ComponentCategory.CONCEPT);
-			getIdentifierService().publish(componentId);
-			getIdentifierService().release(componentId);
-			fail("No exception was thrown when released published ID.");
+			final Set<String> componentIds = getIdentifierService().generate(B2I_NAMESPACE, ComponentCategory.CONCEPT, 1);
+			getIdentifierService().publish(componentIds);
+			getIdentifierService().release(componentIds);
+			fail("No exception was thrown when releasing already published ID.");
 		} catch (BadRequestException e) {
 			// correct behavior
 		} catch (Exception e) {
 			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
 		}
 	}
-
 }

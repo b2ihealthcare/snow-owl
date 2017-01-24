@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -46,9 +47,16 @@ public class SnomedRefSetRestInput extends SnomedConceptRestInput {
 	@Override
 	public SnomedConceptCreateRequestBuilder toRequestBuilder() {
 		final SnomedConceptCreateRequestBuilder req = super.toRequestBuilder();
+		
 		if (getRelationships().isEmpty()) {
 			req.addParent(SnomedRefSetUtil.getConceptId(getType()));
 		}
+
+		req.setRefSet(
+			SnomedRequests.prepareNewRefSet()
+				.setType(type)
+				.setReferencedComponentType(referencedComponentType));
+
 		return req;
 	}
 	

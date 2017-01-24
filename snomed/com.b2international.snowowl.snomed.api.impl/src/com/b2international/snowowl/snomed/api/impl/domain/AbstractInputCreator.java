@@ -2,6 +2,7 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponent;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 
 public abstract class AbstractInputCreator {
 
@@ -10,4 +11,7 @@ public abstract class AbstractInputCreator {
 		return moduleId != null ? moduleId : SnomedConstants.Concepts.MODULE_SCT_CORE;
 	}
 	
+	protected String getDefaultNamespace() {
+		return SnomedIdentifiers.INT_NAMESPACE;
+	}
 }

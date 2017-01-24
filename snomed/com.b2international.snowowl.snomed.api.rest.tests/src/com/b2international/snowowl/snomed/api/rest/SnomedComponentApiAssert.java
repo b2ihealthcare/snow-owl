@@ -31,6 +31,7 @@ import java.util.Map;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -50,20 +51,22 @@ public abstract class SnomedComponentApiAssert {
 	public static Map<String, Object> givenConceptRequestBody(final String conceptId, final String parentId, final String moduleId, final Map<?, ?> fsnAcceptabilityMap, final boolean skipComment) {
 
 		final Date creationDate = new Date();
-		final Map<?, ?> fsnDescription = givenDescriptionRequestBody(creationDate, "New FSN at ", fsnAcceptabilityMap, FULLY_SPECIFIED_NAME);
-		final Map<?, ?> ptDescription = givenDescriptionRequestBody(creationDate, "New PT at ", PREFERRED_ACCEPTABILITY_MAP, SYNONYM);
+		final Map<?, ?> fsnDescription = givenDescriptionRequestBody(creationDate, moduleId, "New FSN at ", fsnAcceptabilityMap, FULLY_SPECIFIED_NAME);
+		final Map<?, ?> ptDescription = givenDescriptionRequestBody(creationDate, moduleId, "New PT at ", PREFERRED_ACCEPTABILITY_MAP, SYNONYM);
 
 		final ImmutableMap.Builder<String, Object> conceptBuilder = ImmutableMap.<String, Object>builder()
 				.put("moduleId", moduleId)
 				.put("descriptions", ImmutableList.of(fsnDescription, ptDescription));
 
 		if (parentId != null) {
-			final Map<?, ?> isa = givenRelationshipRequestBody(null, Concepts.IS_A, parentId, null, null);
+			final Map<?, ?> isa = givenRelationshipRequestBody(null, Concepts.IS_A, parentId, Concepts.MODULE_SCT_CORE, null);
 			conceptBuilder.put("relationships", ImmutableList.of(isa));			
 		}
 
 		if (conceptId != null) {
 			conceptBuilder.put("id", conceptId);
+		} else {
+			conceptBuilder.put("namespaceId", SnomedIdentifiers.INT_NAMESPACE);
 		}
 
 		if (!skipComment) {
@@ -73,12 +76,13 @@ public abstract class SnomedComponentApiAssert {
 		return conceptBuilder.build();
 	}
 
-	public static ImmutableMap<String, Object> givenDescriptionRequestBody(String termPrefix, Map<?, ?> acceptabilityMap, String typeId) {
-		return givenDescriptionRequestBody(new Date(), termPrefix, acceptabilityMap, typeId);
+	public static ImmutableMap<String, Object> givenDescriptionRequestBody(String moduleId, String termPrefix, Map<?, ?> acceptabilityMap, String typeId) {
+		return givenDescriptionRequestBody(new Date(), moduleId, termPrefix, acceptabilityMap, typeId);
 	}
 	
-	private static ImmutableMap<String, Object> givenDescriptionRequestBody(final Date creationDate, String termPrefix, Map<?, ?> acceptabilityMap, String typeId) {
+	private static ImmutableMap<String, Object> givenDescriptionRequestBody(final Date creationDate, String moduleId, String termPrefix, Map<?, ?> acceptabilityMap, String typeId) {
 		return ImmutableMap.<String, Object>builder()
+				.put("moduleId", moduleId)
 				.put("typeId", typeId)
 				.put("term", termPrefix + creationDate)
 				.put("languageCode", "en")
@@ -91,22 +95,20 @@ public abstract class SnomedComponentApiAssert {
 			final String destinationId, 
 			final String moduleId, 
 			final String comment) {
-		final Builder<String, Object> builder = ImmutableMap.<String, Object>builder();
+
+		final ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
+				.put("moduleId", moduleId)
+				.put("typeId", typeId)
+				.put("destinationId", destinationId);
+				
 		if (sourceId != null) {
-			builder.put("sourceId", sourceId);
-		}
-		if (typeId != null) {
-			builder.put("typeId", typeId);
-		}
-		if (destinationId != null) {
-			builder.put("destinationId", destinationId);
-		}
-		if (moduleId != null) {
-			builder.put("moduleId", moduleId);
-		}
+				builder.put("sourceId", sourceId);
+		}	
+		
 		if (comment != null) {
-			builder.put("commitComment", comment);
+				builder.put("commitComment", comment);
 		}
+		
 		return builder;
 	}
 
@@ -429,7 +431,7 @@ public abstract class SnomedComponentApiAssert {
 	}
 	
 	public static Map<String, Object> createRefSetRequestBody(SnomedRefSetType type, String referencedComponentType, String parent) {
-		final Map<String, Object> conceptBody = (Map<String, Object>) givenConceptRequestBody(null, parent, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, true);
+		final Map<String, Object> conceptBody = givenConceptRequestBody(null, parent, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP, true);
 		final Builder<String, Object> requestBody = ImmutableMap.builder();
 		requestBody.putAll(conceptBody);
 		requestBody.put("commitComment", String.format("New %s type reference set with %s members", type, referencedComponentType));

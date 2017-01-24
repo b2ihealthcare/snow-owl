@@ -15,22 +15,19 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.memory;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
-import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.eclipse.emf.cdo.spi.server.Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.VerhoeffCheck;
+import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
@@ -43,18 +40,19 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.id.cis.IdentifierStatus;
-import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
+import com.b2international.snowowl.snomed.datastore.id.domain.IdentifierStatus;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
+import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.inject.Provider;
 
 /**
@@ -84,270 +82,152 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 
 	@Override
-	public SctId getSctId(final String componentId) {
-		final SctId storedSctId = getFromStore(componentId);
-
-		if (null != storedSctId) {
-			return storedSctId;
-		} else {
-			return buildSctId(componentId, IdentifierStatus.AVAILABLE);
-		}
-	}
-
-	@Override
-	public Collection<SctId> getSctIds() {
-		return store.get().read(new IndexRead<Collection<SctId>>() {
-			@Override
-			public Collection<SctId> execute(Searcher index) throws IOException {
-				return ImmutableList.copyOf(index.search(Query.select(SctId.class).where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build()));
-			}
-		});
-	}
-
-	@Override
-	public String generate(final String namespace, final ComponentCategory category) {
+	public Set<String> generate(final String namespace, final ComponentCategory category, final int quantity) {
 		checkNotNull(category, "Component category must not be null.");
+		checkArgument(quantity > 0, "Number of requested IDs should be non-negative.");
 		checkCategory(category);
 
-		LOGGER.debug(String.format("Generating component ID for category %s.", category.getDisplayName()));
+		LOGGER.debug("Generating {} component IDs for category {}.", quantity, category.getDisplayName());
 
-		final String componentId = generateId(namespace, category);
-		final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
+		final Set<String> componentIds = generateIds(namespace, category, quantity);
+		final Map<String, SctId> sctIds = FluentIterable.from(componentIds).toMap(componentId -> buildSctId(componentId, IdentifierStatus.ASSIGNED));
+		putSctIds(sctIds);
+		return componentIds;
+	}
+
+	@Override
+	public void register(final Set<String> componentIds) {
+		LOGGER.debug(String.format("Registering {} component IDs.", componentIds.size()));
+
+		final Map<String, SctId> sctIds = getSctIds(componentIds);
+		final Map<String, SctId> problemSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.<SctId>not(Predicates.or(
+				SctId::isAvailable, 
+				SctId::isReserved, 
+				SctId::isAssigned))));
 		
-		putSctId(componentId, sctId);
+		if (!problemSctIds.isEmpty()) {
+			throw new SctIdStatusException("Cannot register %s component IDs because they are not available, reserved, or already assigned.", problemSctIds);
+		}
 
-		return componentId;
-	}
-
-	@Override
-	public void register(final String componentId) {
-		LOGGER.debug(String.format("Registering component ID %s.", componentId));
-
-		final SctId sctId = getSctId(componentId);
-		if (!sctId.matches(IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)) {
-			LOGGER.warn(String.format("Cannot register ID %s as it is already present with status %s.", componentId, sctId.getStatus()));
-		} else {
+		final Map<String, SctId> availableOrReservedSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.or(
+				SctId::isAvailable, 
+				SctId::isReserved)));
+		
+		for (final SctId sctId : availableOrReservedSctIds.values()) {
 			sctId.setStatus(IdentifierStatus.ASSIGNED.getSerializedName());
-			putSctId(componentId, sctId);
 		}
+		
+		putSctIds(availableOrReservedSctIds);
 	}
 
 	@Override
-	public String reserve(final String namespace, final ComponentCategory category) {
+	public Set<String> reserve(final String namespace, final ComponentCategory category, final int quantity) {
 		checkNotNull(category, "Component category must not be null.");
+		checkArgument(quantity > 0, "Number of requested IDs should be non-negative.");
 		checkCategory(category);
 
-		LOGGER.debug(String.format("Reserving component ID for category %s.", category.getDisplayName()));
+		LOGGER.debug("Reserving {} component IDs for category {}.", quantity, category.getDisplayName());
 
-		final String componentId = generateId(namespace, category);
-		final SctId sctId = buildSctId(componentId, IdentifierStatus.RESERVED);
-		putSctId(componentId, sctId);
-
-		return componentId;
-	}
-
-	@Override
-	public void deprecate(final String componentId) {
-		final SctId sctId = getSctId(componentId);
-		if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.PUBLISHED)) {
-			LOGGER.debug(String.format("Deprecating component ID %s.", componentId));
-
-			sctId.setStatus(IdentifierStatus.DEPRECATED.getSerializedName());
-			putSctId(componentId, sctId);
-		} else if (!sctId.isDeprecated()) {
-			throw new BadRequestException(String.format("Cannot deprecate ID in state %s.", sctId.getStatus()));
-		}
-	}
-
-	@Override
-	public void release(final String componentId) {
-		final SctId sctId = getSctId(componentId);
-		if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
-			LOGGER.debug(String.format("Releasing component ID %s.", componentId));
-			store.get().write(new IndexWrite<Void>() {
-				@Override
-				public Void execute(Writer index) throws IOException {
-					index.remove(SctId.class, componentId);
-					index.commit();
-					return null;
-				}
-			});
-		} else if (!sctId.isAvailable()) {
-			throw new BadRequestException(String.format("Cannot release ID in state %s.", sctId.getStatus()));
-		}
-	}
-
-	@Override
-	public void publish(final String componentId) {
-		final SctId sctId = getSctId(componentId);
-		if (sctId.isAssigned()) {
-			LOGGER.debug("Publishing component ID {}.", componentId);
-			sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
-			putSctId(componentId, sctId);
-		} else if (!sctId.isPublished()) {
-			throw new BadRequestException("Cannot publish ID '%s' in state %s.", sctId.getSctid(), sctId.getStatus());
-		}
-	}
-
-	@Override
-	public Collection<String> generate(final String namespace, final ComponentCategory category, final int quantity) {
-		checkNotNull(category, "Component category must not be null.");
-		checkCategory(category);
-
-		LOGGER.debug(String.format("Generating %d component IDs for category %s.", quantity, category.getDisplayName()));
-
-		final Map<String, SctId> sctIds = Maps.newHashMap();
-		final Collection<String> componentIds = generateIds(namespace, category, quantity);
-
-		for (final String componentId : componentIds) {
-			final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
-			sctIds.put(componentId, sctId);
-		}
-
+		final Set<String> componentIds = generateIds(namespace, category, quantity);
+		final Map<String, SctId> sctIds = FluentIterable.from(componentIds).toMap(componentId -> buildSctId(componentId, IdentifierStatus.RESERVED));
 		putSctIds(sctIds);
 		return componentIds;
 	}
 
 	@Override
-	public void register(final Collection<String> componentIds) {
-		final Map<String, SctId> sctIds = Maps.newHashMap();
-		final Set<String> registeredComponentIds = newHashSet();
+	public void release(final Set<String> componentIds) {
+		LOGGER.debug("Releasing {} component IDs.", componentIds.size());
 
-		LOGGER.debug(String.format("Registering %d component IDs.", componentIds.size()));
+		final Map<String, SctId> sctIds = getSctIds(componentIds);
+		final Map<String, SctId> problemSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.<SctId>not(Predicates.or(
+				SctId::isAssigned, 
+				SctId::isReserved, 
+				SctId::isAvailable))));
 
-		try {
-			for (final SctId sctId : getSctIds(componentIds)) {
-				if (!sctId.matches(IdentifierStatus.AVAILABLE, IdentifierStatus.RESERVED)) {
-					LOGGER.warn("Cannot register ID {} as it is already present with status {}.", sctId.getSctid(), sctId.getStatus());
-				} else {
-					sctId.setStatus(IdentifierStatus.ASSIGNED.getSerializedName());
-					sctIds.put(sctId.getSctid(), sctId);
-				}
-			}
-			putSctIds(sctIds);
-		} catch (Exception e) {
-			// remove the registered component IDs
-			removeSctIds(registeredComponentIds);
-			throw e;
-		}
-	}
-
-	@Override
-	public Collection<String> reserve(final String namespace, final ComponentCategory category, final int quantity) {
-		checkNotNull(category, "Component category must not be null.");
-		checkCategory(category);
-
-		LOGGER.debug(String.format("Reserving %d component IDs for category %s.", quantity, category.getDisplayName()));
-
-		final Map<String, SctId> sctIds = Maps.newHashMap();
-		final Collection<String> componentIds = generateIds(namespace, category, quantity);
-
-		for (final String componentId : componentIds) {
-			final SctId sctId = buildSctId(componentId, IdentifierStatus.RESERVED);
-			sctIds.put(componentId, sctId);
+		if (!problemSctIds.isEmpty()) {
+			throw new SctIdStatusException("Cannot release %s component IDs because they are not assigned, reserved, or already available.", problemSctIds);
 		}
 
-		putSctIds(sctIds);
-		return componentIds;
-	}
-
-	@Override
-	public void deprecate(final Collection<String> componentIds) {
-		final Map<String, SctId> deprecatedSctIds = Maps.newHashMap();
-
-		LOGGER.debug(String.format("Deprecating %d component IDs.", componentIds.size()));
-
-		for (final SctId sctId : getSctIds(componentIds)) {
-			if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.PUBLISHED)) {
-				sctId.setStatus(IdentifierStatus.DEPRECATED.getSerializedName());
-				deprecatedSctIds.put(sctId.getSctid(), sctId);
-			} else if (!sctId.isDeprecated()) {
-				throw new BadRequestException(String.format("Cannot deprecate ID in state %s.", sctId.getStatus()));
-			}
-		}
-
-		putSctIds(deprecatedSctIds);
-	}
-
-	@Override
-	public void release(final Collection<String> componentIds) {
-		final Set<String> releasedComponentIds = newHashSet();
-
-		LOGGER.debug(String.format("Releasing %d component IDs.", componentIds.size()));
-
-		for (final SctId sctId : getSctIds(componentIds)) {
-			if (sctId.matches(IdentifierStatus.ASSIGNED, IdentifierStatus.RESERVED)) {
-				releasedComponentIds.add(sctId.getSctid());
-			} else if (!sctId.isAvailable()) {
-				throw new BadRequestException(String.format("Cannot release ID in state %s.", sctId.getStatus()));
-			}
-		}
-
-		removeSctIds(releasedComponentIds);
-	}
-
-	@Override
-	public void publish(final Collection<String> componentIds) {
-		final Map<String, SctId> publishedSctIds = Maps.newHashMap();
-
-		LOGGER.debug("Publishing {} component IDs.", componentIds.size());
-
-		for (final SctId sctId : getSctIds(componentIds)) {
-			if (sctId.isAssigned()) {
-				sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
-				publishedSctIds.put(sctId.getSctid(), sctId);
-			} else if (!sctId.isPublished()) {
-				throw new BadRequestException("Cannot publish ID '%s' in state '%s'.", sctId.getSctid(), sctId.getStatus());
-			}
-		}
-
-		putSctIds(publishedSctIds);
-	}
-
-	@Override
-	public Collection<SctId> getSctIds(final Collection<String> componentIds) {
-		final List<SctId> existingIds = store.get().read(index -> index.search(Query.select(SctId.class).where(Expressions.matchAny(DocumentMapping._ID, componentIds)).limit(componentIds.size()).build()).getHits());
-		if (existingIds.size() == componentIds.size()) {
-			return existingIds;
-		} else {
-			final Set<String> existingIdentifiers = existingIds.stream().map(SctId::getSctid).collect(Collectors.toSet());
-			final List<SctId> ids = newArrayListWithExpectedSize(componentIds.size());
-			ids.addAll(existingIds);
-			for (String componentId : componentIds) {
-				if (!existingIdentifiers.contains(componentId)) {
-					ids.add(buildSctId(componentId, IdentifierStatus.AVAILABLE));
-				}
-			}
-			return ids;
-		}
-	}
-
-	private String generateId(final String namespace, final ComponentCategory category) {
-		return generateIds(namespace, category, 1).iterator().next();
-	}
-
-	private Collection<String> generateIds(final String namespace, final ComponentCategory category, final int quantity) {
-		final Collection<String> componentIds = Lists.newArrayList();
-
-		while (componentIds.size() < quantity) {
-			String componentId = generateComponentId(namespace, category);
-			int i = 1;
-			while (isReserved(componentId)) {
-				if (i == getConfig().getMaxIdGenerationAttempts()) {
-					throw new BadRequestException("Couldn't generate identifier in maximum (%s) number of attempts", getConfig().getMaxIdGenerationAttempts());
-				}
-				componentId = generateComponentId(namespace, category);
-				i++;
-			}
-
-			componentIds.add(componentId);
-		}
-
-		return componentIds;
-	}
+		final Map<String, SctId> assignedOrReservedSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.or(
+				SctId::isAssigned, 
+				SctId::isReserved)));
 	
-	private boolean isReserved(String componentId) {
-		return getReservationService().isReserved(componentId) || getFromStore(componentId) != null;
+		// XXX: It might be better to keep the last state change recorded in the index on these SctIds, but for now we remove them entirely
+		removeSctIds(assignedOrReservedSctIds.keySet());
+	}
+
+	@Override
+	public void deprecate(final Set<String> componentIds) {
+		LOGGER.debug("Deprecating {} component IDs.", componentIds.size());
+
+		final Map<String, SctId> sctIds = getSctIds(componentIds);
+		final Map<String, SctId> problemSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.<SctId>not(Predicates.or(
+				SctId::isAssigned, 
+				SctId::isPublished, 
+				SctId::isDeprecated))));
+		
+		if (!problemSctIds.isEmpty()) {
+			throw new SctIdStatusException("Cannot deprecate %s component IDs because they are not assigned, published, or already deprecated.", problemSctIds);
+		}
+
+		final Map<String, SctId> assignedOrPublishedSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.or(
+				SctId::isAssigned, 
+				SctId::isPublished)));
+		
+		for (final SctId sctId : assignedOrPublishedSctIds.values()) {
+			sctId.setStatus(IdentifierStatus.DEPRECATED.getSerializedName());
+		}
+		
+		putSctIds(assignedOrPublishedSctIds);
+	}
+
+	@Override
+	public void publish(final Set<String> componentIds) {
+		LOGGER.debug("Publishing {} component IDs.", componentIds.size());
+		
+		final Map<String, SctId> sctIds = getSctIds(componentIds);
+		final Map<String, SctId> problemSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.<SctId>not(Predicates.or(
+				SctId::isAssigned, 
+				SctId::isPublished))));
+		
+		if (!problemSctIds.isEmpty()) {
+			throw new SctIdStatusException("Cannot publish %s component IDs because they are not assigned or already published.", problemSctIds);
+		}
+		
+		final Map<String, SctId> assignedSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, SctId::isAssigned));
+		
+		for (final SctId sctId : assignedSctIds.values()) {
+			sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
+		}
+		
+		putSctIds(assignedSctIds);
+	}
+
+	@Override
+	public Map<String, SctId> getSctIds(final Set<String> componentIds) {
+		final Query<SctId> getSctIdsQuery = Query.select(SctId.class)
+				.where(Expressions.matchAny(DocumentMapping._ID, componentIds))
+				.limit(componentIds.size())
+				.build();
+		
+		final Hits<SctId> existingIds = store.get().read(index -> index.search(getSctIdsQuery));
+		final Map<String, SctId> existingIdsMap = Maps.uniqueIndex(existingIds, SctId::getSctid);
+		
+		if (existingIdsMap.size() == componentIds.size()) {
+			return existingIdsMap;
+		} else {
+			final Set<String> knownComponentIds = existingIdsMap.keySet();
+			final Set<String> difference = ImmutableSet.copyOf(Sets.difference(componentIds, knownComponentIds));
+			
+			final ImmutableMap.Builder<String, SctId> resultBuilder = ImmutableMap.builder();
+			resultBuilder.putAll(existingIdsMap);
+			
+			for (final String componentId : difference) {
+				resultBuilder.put(componentId, buildSctId(componentId, IdentifierStatus.AVAILABLE));
+			}
+			
+			return resultBuilder.build();
+		}
 	}
 
 	@Override
@@ -355,46 +235,79 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		return true;
 	}
 
-	private String generateComponentId(final String namespace, final ComponentCategory category) {
+	private Set<String> generateIds(final String namespace, final ComponentCategory category, final int quantity) {
+		final ImmutableSet.Builder<String> componentIds = ImmutableSet.builder();
+		final int maxAttempts = getConfig().getMaxIdGenerationAttempts();
+
+		for (int i = 0; i < quantity; i++) {
+			final String componentId = generateId(namespace, category, maxAttempts);
+			componentIds.add(componentId);
+		}
+
+		return componentIds.build();
+	}
+
+	private String generateId(final String namespace, final ComponentCategory category, final int maxAttempts) {
+		for (int attempt = 0; attempt < maxAttempts; attempt++) {
+			final String componentId = generateId(namespace, category);
+			if (!isGeneratedIdDisallowed(componentId)) {
+				return componentId;
+			}
+		}
+		
+		throw new BadRequestException("Couldn't generate identifier in maximum (%s) number of attempts", maxAttempts);
+	}
+	
+	private String generateId(final String namespace, final ComponentCategory category) {
 		final String selectedNamespace = selectNamespace(namespace);
 		final StringBuilder builder = new StringBuilder();
-
-		// generate the SCT Item ID (value can be a function of component category and namespace)
+	
+		// generate the item identifier (value can be a function of component category and namespace)
 		builder.append(generationStrategy.generateItemId(selectedNamespace, category));
-
-		// append namespace and the first part of the partition-identifier
+	
+		// append namespace and the first digit of the partition-identifier
 		if (Strings.isNullOrEmpty(selectedNamespace)) {
 			builder.append('0');
 		} else {
 			builder.append(selectedNamespace);
 			builder.append('1');
 		}
-
-		// append the second part of the partition-identifier
+	
+		// append the second digit of the partition-identifier
 		builder.append(category.ordinal());
-
-		// calc check-digit
+	
+		// add Verhoeff check digit last
 		builder.append(VerhoeffCheck.calculateChecksum(builder, false));
-
+	
 		return builder.toString();
 	}
 
+	private boolean isGeneratedIdDisallowed(String componentId) {
+		if (getReservationService().isReserved(componentId)) {
+			return true;
+		}
+		
+		final SctId sctId = readSctId(componentId);
+		
+		if (sctId == null) {
+			return false;
+		} else {
+			return !sctId.isAvailable();
+		}
+	}
+
 	private SctId buildSctId(final String componentId, final IdentifierStatus status) {
-		final SnomedIdentifier identifier = SnomedIdentifiers.create(componentId);
 		final SctId sctId = new SctId();
+		
 		sctId.setSctid(componentId);
 		sctId.setStatus(status.getSerializedName());
-		sctId.setSequence(identifier.getItemId());
-		sctId.setNamespace(identifier.getNamespace());
-		sctId.setPartitionId(String.format("%s%s", identifier.getFormatIdentifier(), identifier.getComponentIdentifier()));
-		sctId.setCheckDigit(identifier.getCheckDigit());
+		sctId.setSequence(SnomedIdentifiers.getItemId(componentId));
+		sctId.setNamespace(SnomedIdentifiers.getNamespace(componentId));
+		sctId.setPartitionId(SnomedIdentifiers.getPartitionId(componentId));
+		sctId.setCheckDigit(SnomedIdentifiers.getCheckDigit(componentId));
 
-		// TODO set remaining attributes
+		// TODO: Other attributes of SctId could also be set here
 		return sctId;
-	}
-	
-	private void putSctId(final String id, final SctId sctId) {
-		putSctIds(ImmutableMap.of(id, sctId));
 	}
 	
 	private void putSctIds(final Map<String, SctId> ids) {
@@ -419,11 +332,11 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		});
 	}
 	
-	private SctId getFromStore(final String componentId) {
+	private SctId readSctId(final String id) {
 		return store.get().read(new IndexRead<SctId>() {
 			@Override
 			public SctId execute(Searcher index) throws IOException {
-				return index.get(SctId.class, componentId);
+				return index.get(SctId.class, id);
 			}
 		});
 	}

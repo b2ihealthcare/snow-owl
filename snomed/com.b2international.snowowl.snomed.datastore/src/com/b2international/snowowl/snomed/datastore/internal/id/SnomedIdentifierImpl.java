@@ -33,10 +33,10 @@ public final class SnomedIdentifierImpl implements SnomedIdentifier {
 	private int componentIdentifier;
 	private int checkDigit;
 
-	public SnomedIdentifierImpl(final long itemId, final String namespace, final int partitionIdentifier, final int componentIdentifier, final int checkDigit) {
+	public SnomedIdentifierImpl(final long itemId, final String namespace, final int formatIdentifier, final int componentIdentifier, final int checkDigit) {
 		this.itemId = itemId;
 		this.namespace = namespace;
-		this.formatIdentifier = partitionIdentifier;
+		this.formatIdentifier = formatIdentifier;
 		this.componentIdentifier = componentIdentifier;
 		this.checkDigit = checkDigit;
 	}

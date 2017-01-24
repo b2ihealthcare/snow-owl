@@ -47,11 +47,11 @@ public class ReservationRangeImpl implements Reservation {
 	}
 	
 	private long getItemIdMin() {
-		return this.itemIdRange.lowerEndpoint();
+		return itemIdRange.lowerEndpoint();
 	}
 
 	private long getItemIdMax() {
-		return this.itemIdRange.upperEndpoint();
+		return itemIdRange.upperEndpoint();
 	}
 
 	private String getNamespace() {
@@ -73,7 +73,7 @@ public class ReservationRangeImpl implements Reservation {
 	@Override
 	public boolean includes(SnomedIdentifier identifier) {
 		checkNotNull(identifier, "identifier");
-		return itemIdRange.contains(identifier.getItemId()) && Objects.equal(identifier.getNamespace(), getNamespace()) && getComponents().contains(identifier.getComponentCategory());
+		return affects(identifier.getNamespace(), identifier.getComponentCategory()) && itemIdRange.contains(identifier.getItemId());
 	}
 	
 	@Override

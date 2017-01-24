@@ -17,8 +17,6 @@ package com.b2international.snowowl.datastore.request;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import javax.validation.constraints.NotNull;
-
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -48,12 +46,15 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 	private final Request<TransactionContext, ?> next;
 
 	private final long preRequestPreparationTime;
+	
+	private final String parentContextDescription;
 
-	TransactionalRequest(String userId, String commitComment, Request<TransactionContext, ?> next, long preRequestPreparationTime) {
+	TransactionalRequest(String userId, String commitComment, Request<TransactionContext, ?> next, long preRequestPreparationTime, String parentContextDescription) {
 		this.next = checkNotNull(next, "next");
 		this.userId = userId;
 		this.commitComment = commitComment;
 		this.preRequestPreparationTime = preRequestPreparationTime;
+		this.parentContextDescription = parentContextDescription;
 	}
 	
 	@Override
@@ -83,7 +84,7 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 			 * FIXME: at this point, the component identifier might have changed even though the input 
 			 * required an exact ID to be assigned. What to do?
 			 */
-			final long commitTimestamp = context.commit(userId, commitComment);
+			final long commitTimestamp = context.commit(userId, commitComment, parentContextDescription);
 			return new CommitResult(commitTimestamp, body);
 		} finally {
 			commitTimer.stop();

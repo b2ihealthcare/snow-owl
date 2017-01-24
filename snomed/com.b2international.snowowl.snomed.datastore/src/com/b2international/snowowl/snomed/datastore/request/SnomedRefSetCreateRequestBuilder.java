@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -25,36 +26,33 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 public final class SnomedRefSetCreateRequestBuilder extends BaseSnomedTransactionalRequestBuilder<SnomedRefSetCreateRequestBuilder, String> {
 
 	private SnomedRefSetType type;
-	private String referencedComponentType;
-	private Request<TransactionContext, String> conceptReq;
-
+	private String referencedComponentType = CoreTerminologyBroker.UNSPECIFIED;
+	private String identifierId;
+	
 	SnomedRefSetCreateRequestBuilder() {
 		super();
 	}
 
 	public SnomedRefSetCreateRequestBuilder setType(SnomedRefSetType type) {
 		this.type = type;
-		return this;
+		return getSelf();
 	}
 	
 	public SnomedRefSetCreateRequestBuilder setReferencedComponentType(String referencedComponentType) {
 		this.referencedComponentType = referencedComponentType;
-		return this;
+		return getSelf();
 	}
 	
-	public SnomedRefSetCreateRequestBuilder setIdentifierConcept(SnomedConceptCreateRequestBuilder conceptReq) {
-		this.conceptReq = conceptReq.build();
-		return this;
-	}
-	
-	public SnomedRefSetCreateRequestBuilder setIdentifierConcept(Request<TransactionContext, String> conceptReq) {
-		this.conceptReq = conceptReq;
-		return this;
+	public SnomedRefSetCreateRequestBuilder setIdentifierId(String identifierId) {
+		this.identifierId = identifierId;
+		return getSelf();
 	}
 	
 	@Override
 	public Request<TransactionContext, String> doBuild() {
-		return new SnomedRefSetCreateRequest(type, referencedComponentType, (SnomedConceptCreateRequest) conceptReq);
+		final SnomedRefSetCreateRequest createRequest = new SnomedRefSetCreateRequest(type, referencedComponentType);
+		createRequest.setIdentifierId(identifierId);
+		return createRequest;
 	}
 	
 }

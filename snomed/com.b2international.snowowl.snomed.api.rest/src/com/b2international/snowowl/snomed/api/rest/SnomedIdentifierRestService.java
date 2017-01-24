@@ -25,13 +25,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedIdentifierRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedIdentifierResponse;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
-import com.b2international.snowowl.snomed.core.events.SnomedIdentifierGenerateRequestBuilder;
-import com.google.common.base.Function;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
@@ -58,20 +56,13 @@ public class SnomedIdentifierRestService extends AbstractRestService {
 	@RequestMapping(method = RequestMethod.POST, consumes = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(value = HttpStatus.CREATED)
 	public DeferredResult<SnomedIdentifierResponse> generate(@RequestBody final SnomedIdentifierRequest request) {
-		return DeferredResults.wrap(
-				new SnomedIdentifierGenerateRequestBuilder()
+		return DeferredResults.wrap(SnomedRequests.identifiers()
+					.prepareGenerate()
 					.setCategory(request.getType())
 					.setNamespace(request.getNamespace())
-					.build(repositoryId, Branch.MAIN_PATH)
+					.build(repositoryId)
 					.execute(bus)
-					.then(new Function<String, SnomedIdentifierResponse>() {
-						@Override
-						public SnomedIdentifierResponse apply(String input) {
-							final SnomedIdentifierResponse response = new SnomedIdentifierResponse();
-							response.setId(input);							
-							return response;
-						}
-					}));
+					.then(result -> new SnomedIdentifierResponse(result.getOnlyItem())));
 	}
 	
 }

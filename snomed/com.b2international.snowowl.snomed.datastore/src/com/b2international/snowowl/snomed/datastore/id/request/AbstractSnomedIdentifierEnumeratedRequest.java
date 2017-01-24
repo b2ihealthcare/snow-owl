@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,33 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.events;
+package com.b2international.snowowl.snomed.datastore.id.request;
 
-import java.util.Collection;
+import java.util.Set;
 
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 
 /**
- * @since 4.5
+ * @since 5.5
  */
-final class SnomedIdentifierBulkReleaseRequest extends BaseRequest<BranchContext, Boolean> {
+abstract class AbstractSnomedIdentifierEnumeratedRequest extends BaseRequest<RepositoryContext, Boolean> {
 
-	private final Collection<String> componentIds;
+	private final Set<String> componentIds;
 
-	SnomedIdentifierBulkReleaseRequest(final Collection<String> componentIds) {
+	AbstractSnomedIdentifierEnumeratedRequest(Set<String> componentIds) {
 		this.componentIds = componentIds;
 	}
 
 	@Override
-	public Boolean execute(BranchContext context) {
-		context.service(ISnomedIdentifierService.class).release(componentIds);
+	public final Boolean execute(RepositoryContext context) {
+		doExecute(context.service(ISnomedIdentifierService.class), componentIds);
 		return Boolean.TRUE;
 	}
 
+	protected abstract void doExecute(ISnomedIdentifierService identifierService, Set<String> componentIds);
+
 	@Override
-	protected Class<Boolean> getReturnType() {
+	protected final Class<Boolean> getReturnType() {
 		return Boolean.class;
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 import java.util.Collections;
 import java.util.List;
 
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
@@ -87,11 +86,6 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 		}
 		
 		return req;
-	}
-
-	@Override
-	protected ComponentCategory getComponentCategory() {
-		return ComponentCategory.CONCEPT;
 	}
 
 	@Override

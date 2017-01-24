@@ -22,10 +22,10 @@ import org.slf4j.Logger;
 public interface ISnomedPostProcessorContext {
 
 	/**
-	 * @return the SCT editing context for this post-processing run
+	 * @return the branch path this importer is working on
 	 */
-	SnomedEditingContext getEditingContext();
-
+	String branch();
+	
 	/**
 	 * @return the identifier of the user associated with this import
 	 */

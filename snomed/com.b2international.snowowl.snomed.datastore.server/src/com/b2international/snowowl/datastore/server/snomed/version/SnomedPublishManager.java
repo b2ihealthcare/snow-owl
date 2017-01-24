@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
@@ -72,14 +70,8 @@ import com.google.common.base.Function;
  */
 public class SnomedPublishManager extends PublishManager {
 
-	private final SnomedIdentifiers snomedIdentifiers;
-	
 	private Set<String> componentIdsToPublish = newHashSet();
 	private Collection<SnomedModuleDependencyRefSetMember> newModuleDependencyRefSetMembers;
-	
-	public SnomedPublishManager() {
-		this.snomedIdentifiers = new SnomedIdentifiers(ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class));
-	}
 	
 	@Override
 	protected LongSet getUnversionedComponentStorageKeys(final IBranchPath branchPath) {
@@ -213,7 +205,11 @@ public class SnomedPublishManager extends PublishManager {
 	@Override
 	public void postCommit() {
 		if (!CompareUtils.isEmpty(componentIdsToPublish)) {
-			snomedIdentifiers.publish(componentIdsToPublish);
+			SnomedRequests.identifiers().preparePublish()
+					.setComponentIds(componentIdsToPublish)
+					.build(getRepositoryUuid())
+					.execute(getEventBus())
+					.getSync();
 		}
 		super.postCommit();
 	}

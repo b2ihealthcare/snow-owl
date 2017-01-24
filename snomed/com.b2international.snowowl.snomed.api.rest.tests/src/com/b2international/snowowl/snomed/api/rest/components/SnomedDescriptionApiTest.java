@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -177,7 +177,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createDescriptionWithPredefinedId() {
 		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
-		final String descriptionId = identifierService.reserve(null, ComponentCategory.DESCRIPTION);
+		final String descriptionId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.DESCRIPTION, 1));
 		Map<Object, Object> requestBody = createRequestBuilder(DISEASE, "Description with predefined id", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM,
 				"New description with predefined id")
 				.put("id", descriptionId)

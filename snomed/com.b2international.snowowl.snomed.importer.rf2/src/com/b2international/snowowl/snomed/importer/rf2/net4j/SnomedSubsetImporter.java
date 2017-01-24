@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.server.snomed.ImportOnlySnomedTransactionContext;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
@@ -56,6 +57,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedUnimportedRefSets;
 import com.b2international.snowowl.snomed.refset.core.automap.CsvVariableFieldCountParser;
@@ -182,7 +184,7 @@ public class SnomedSubsetImporter {
 			}
 
 			final String comment = new StringBuilder("Imported ").append(information.getSubsetName()).append(".").toString();
-			context.commit(userId, comment);
+			context.commit(userId, comment, DatastoreLockContextDescriptions.ROOT);
 		} catch (IOException e) {
 			LOGGER.error("Error while reading input file.");
 			throw new SnowowlServiceException("Error while reading input file.", e);
@@ -335,7 +337,7 @@ public class SnomedSubsetImporter {
 			.build()
 			.execute(context);
 		
-		context.commit(userId, "Created '" + label + "' concept");
+		context.commit(userId, "Created '" + label + "' concept", DatastoreLockContextDescriptions.ROOT);
 	}
 
 	/*
@@ -406,6 +408,11 @@ public class SnomedSubsetImporter {
 			this.moduleId = context.lookup(refSetType, Concept.class).getModule().getId();
 			final String languageReferenceSetId = context.service(SnomedEditingContext.class).getLanguageRefSetId();
 			
+			SnomedRefSetCreateRequestBuilder refSetCreateReq = SnomedRequests
+					.prepareNewRefSet()
+					.setType(SnomedRefSetType.SIMPLE)
+					.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT);
+			
 			SnomedConceptCreateRequestBuilder identifierConceptReq = SnomedRequests
 					.prepareNewConcept()
 					.setModuleId(moduleId)
@@ -426,7 +433,8 @@ public class SnomedSubsetImporter {
 							.setModuleId(moduleId)
 							.setTerm(label)
 							.setTypeId(Concepts.SYNONYM)
-							.preferredIn(languageReferenceSetId));
+							.preferredIn(languageReferenceSetId))
+					.setRefSet(refSetCreateReq);
 			
 			final String cmtRefSetId = getIdIfCMTConcept(label);
 			if (cmtRefSetId == null) {
@@ -435,13 +443,7 @@ public class SnomedSubsetImporter {
 				identifierConceptReq.setId(cmtRefSetId);
 			}
 			
-			this.refSetId = SnomedRequests
-				.prepareNewRefSet()
-				.setType(SnomedRefSetType.SIMPLE)
-				.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
-				.setIdentifierConcept(identifierConceptReq)
-				.build()
-				.execute(context);
+			this.refSetId = identifierConceptReq.build().execute(context);
 			
 			// We create an inferred ISA manually to the same parent
 			SnomedRequests.prepareNewRelationship()

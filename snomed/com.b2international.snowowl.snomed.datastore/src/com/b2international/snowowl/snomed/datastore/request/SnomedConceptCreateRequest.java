@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -29,6 +30,7 @@ import javax.validation.constraints.Size;
 import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -37,10 +39,14 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Joiner;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultiset;
@@ -59,6 +65,8 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	private List<SnomedRelationshipCreateRequest> relationships = Collections.emptyList();
 	
 	private List<SnomedRefSetMemberCreateRequest> members = Collections.emptyList();
+	
+	private SnomedRefSetCreateRequest refSetRequest;
 
 	@NotNull
 	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
@@ -84,11 +92,13 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	void setMembers(final List<SnomedRefSetMemberCreateRequest> members) {
 		this.members = ImmutableList.copyOf(members);
 	}
+	
+	void setRefSet(SnomedRefSetCreateRequest refSet) {
+		this.refSetRequest = refSet;
+	}
 
 	@Override
 	public String execute(TransactionContext context) {
-		ensureUniqueId("Concept", context);
-		
 		final Concept concept = convertConcept(context);
 		context.add(concept);
 
@@ -96,13 +106,15 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		convertRelationships(context, concept.getId());
 		convertMembers(context, concept.getId());
 
+		createRefSet(context, concept.getId());
 		return concept.getId();
 	}
 
 	private Concept convertConcept(final TransactionContext context) {
 		try {
+			final String conceptId = ((ConstantIdStrategy) getIdGenerationStrategy()).getId();
 			return SnomedComponents.newConcept()
-					.withId(getIdGenerationStrategy())
+					.withId(conceptId)
 					.withActive(isActive())
 					.withModule(getModuleId())
 					.withDefinitionStatus(definitionStatus)
@@ -188,10 +200,57 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 			memberRequest.execute(context);
 		}
 	}
+	
+	private void createRefSet(final TransactionContext context, String conceptId) {
+		if (refSetRequest == null) {
+			return;
+		}
+		
+		checkParent(context);
+		refSetRequest.setIdentifierId(conceptId);
+		refSetRequest.execute(context);
+	}
+	
+	private void checkParent(TransactionContext context) {
+		final SnomedRefSetType refSetType = refSetRequest.getRefSetType();
+		final String refSetTypeRootParent = SnomedRefSetUtil.getConceptId(refSetType);
+		final Set<String> parents = getParents();
+		if (!isValidParentage(context, refSetTypeRootParent, parents)) {
+			throw new BadRequestException("'%s' type reference sets should be subtype of '%s' concept.", refSetType, refSetTypeRootParent);
+		}
+	}
 
+	private boolean isValidParentage(TransactionContext context, String requiredSuperType, Collection<String> parents) {
+		// first check if the requiredSuperType is specified in the parents collection
+		if (parents.contains(requiredSuperType)) {
+			return true;
+		}
+		
+		// if not, then check if any of the specified parents is subTypeOf the requiredSuperType
+		final long superTypeIdLong = Long.parseLong(requiredSuperType);
+		final SnomedConcepts parentConcepts = SnomedRequests.prepareSearchConcept().setLimit(parents.size()).setComponentIds(parents).build().execute(context);
+		for (SnomedConcept parentConcept : parentConcepts) {
+			if (parentConcept.getParentIds() != null) {
+				if (PrimitiveSets.newLongOpenHashSet(parentConcept.getParentIds()).contains(superTypeIdLong)) {
+					return true;
+				}
+			}
+			if (parentConcept.getAncestorIds() != null) {
+				if (PrimitiveSets.newLongOpenHashSet(parentConcept.getAncestorIds()).contains(superTypeIdLong)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	@Override
-	protected void checkComponentExists(TransactionContext context, String componentId) throws ComponentNotFoundException {
-		SnomedRequests.prepareGetConcept().setComponentId(componentId).build().execute(context);
+	public Collection<SnomedComponentCreateRequest> getNestedRequests() {
+		return ImmutableList.<SnomedComponentCreateRequest>builder()
+			.add(this)
+			.addAll(descriptions)
+			.addAll(relationships)
+			.build();
 	}
 
 	/**

@@ -27,6 +27,8 @@ public class ConceptInputCreator extends AbstractInputCreator implements Compone
 		String conceptId = concept.getConceptId();
 		if (conceptId != null) {
 			builder.setId(conceptId);
+		} else {
+			builder.setIdFromNamespace(getDefaultNamespace());
 		}
 
 		for (ISnomedBrowserRelationship relationship : concept.getRelationships()) {

@@ -181,8 +181,11 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 	private SnomedRefSetMember createQueryTypeMember(TransactionContext context) {
 		// create identifier concept for the new refset
 		// TODO can a user change the location of the new query type refset or not
+		final String refSetNamespace = SnomedIdentifiers.getNamespace(referenceSetId);
+		
 		final SnomedConceptCreateRequestBuilder conceptReq = SnomedRequests
 				.prepareNewConcept()
+				.setIdFromNamespace(refSetNamespace)
 				.setModuleId(moduleId)
 				.addParent(Concepts.REFSET_SIMPLE_TYPE);
 		
@@ -190,6 +193,7 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 		conceptReq.addDescription(
 				SnomedRequests
 					.prepareNewDescription()
+					.setIdFromNamespace(refSetNamespace)
 					.setTerm(getNewRefSetDescription())
 					.setModuleId(moduleId)
 					.setTypeId(Concepts.FULLY_SPECIFIED_NAME)
@@ -198,19 +202,19 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 		conceptReq.addDescription(
 				SnomedRequests
 					.prepareNewDescription()
+					.setIdFromNamespace(refSetNamespace)
 					.setTerm(getNewRefSetDescription())
 					.setModuleId(moduleId)
 					.setTypeId(Concepts.SYNONYM)
 					.preferredIn(Concepts.REFSET_LANGUAGE_TYPE_UK));
 		
+		conceptReq.setRefSet(
+				SnomedRequests.prepareNewRefSet()
+					.setType(SnomedRefSetType.SIMPLE)
+					.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT));
+		
 		// create new simple type reference set first
-		final String memberRefSetId = SnomedRequests
-			.prepareNewRefSet()
-			.setType(SnomedRefSetType.SIMPLE)
-			.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
-			.setIdentifierConcept(conceptReq)
-			.build()
-			.execute(context);
+		final String memberRefSetId = new IdRequest<>(conceptReq.build()).execute(context);
 		
 		// then add all matching members 
 		final SnomedConcepts matchingEscgConcepts = SnomedRequests.prepareSearchConcept().filterByEscg(getQuery()).all().build().execute(context);

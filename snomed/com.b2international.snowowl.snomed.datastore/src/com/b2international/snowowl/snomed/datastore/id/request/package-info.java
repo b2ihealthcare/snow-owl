@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 /**
- * Defines SNOMED CT domain events/actions to communicate with the internal service via async/sync eventing.
+ * Defines SNOMED CT requests for identifier generation and maintenance.
  * 
  * @since 4.0 
  */
-package com.b2international.snowowl.snomed.core.events;
+package com.b2international.snowowl.snomed.datastore.id.request;

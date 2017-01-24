@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest.components;
 
+import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
@@ -60,6 +61,7 @@ import org.junit.Test;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
@@ -74,12 +76,15 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.jayway.restassured.response.ValidatableResponse;
 
@@ -141,7 +146,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createConceptWithGeneratedId() {
 		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
-		final String conceptId = identifierService.reserve(null, ComponentCategory.CONCEPT);
+		final String conceptId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.CONCEPT, 1));
 		final Map<?, ?> requestBody = givenConceptRequestBody(conceptId, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);		
 		final String createdId = assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, requestBody);
 		assertEquals("Pre-generated and returned concept ID should match.", conceptId, createdId);
@@ -158,7 +163,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	public void createConceptWithGeneratedIdOnBranch() {
 		givenBranchWithPath(testBranchPath);
 		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
-		final String conceptId = identifierService.reserve(null, ComponentCategory.CONCEPT);
+		final String conceptId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.CONCEPT, 1));
 		final Map<?, ?> requestBody = givenConceptRequestBody(conceptId, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
 		final String createdId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, requestBody);
 		assertEquals("Pre-generated and returned concept ID should match.", conceptId, createdId);
@@ -464,7 +469,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final List<SnomedDescription> changedDescriptions = newArrayList(newConcept.getDescriptions()); 
 		final ImmutableMap.Builder<String, Object> updateReq = ImmutableMap.builder();
 		final SnomedDescription newDescription = new SnomedDescription();
-		newDescription.setId(getIdentifierService().generate(null, ComponentCategory.DESCRIPTION));
+		newDescription.setId(generateId(ComponentCategory.DESCRIPTION));
 		newDescription.setActive(true);
 		newDescription.setAcceptabilityMap(ACCEPTABLE_ACCEPTABILITY_MAP);
 		newDescription.setTypeId(Concepts.TEXT_DEFINITION);
@@ -480,6 +485,15 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		
 		final SnomedConcept updatedConcept = assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, newConceptId, "descriptions()").extract().as(SnomedConcept.class);
 		assertEquals(3, updatedConcept.getDescriptions().getTotal());
+	}
+
+	private String generateId(ComponentCategory category) {
+		return SnomedRequests.identifiers().prepareGenerate()
+				.setCategory(category)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.execute(getServiceForClass(IEventBus.class))
+				.getSync()
+				.getOnlyItem();
 	}
 	
 	@Test
@@ -498,7 +512,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final List<SnomedRelationship> changedRelationships = newArrayList(newConcept.getRelationships()); 
 		final ImmutableMap.Builder<String, Object> updateReq = ImmutableMap.builder();
 		final SnomedRelationship newRelationships = new SnomedRelationship();
-		newRelationships.setId(getIdentifierService().generate(null, ComponentCategory.RELATIONSHIP));
+		newRelationships.setId(generateId(ComponentCategory.RELATIONSHIP));
 		newRelationships.setActive(true);
 		newRelationships.setCharacteristicType(CharacteristicType.STATED_RELATIONSHIP);
 		newRelationships.setTypeId(FINDING_CONTEXT);
@@ -555,10 +569,6 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		
 		final SnomedConcept updatedConcept = assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, newConceptId, "members()").extract().as(SnomedConcept.class);
 		assertEquals(1, updatedConcept.getMembers().getTotal());
-	}
-	
-	private ISnomedIdentifierService getIdentifierService() {
-		return ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
 	}
 	
 }

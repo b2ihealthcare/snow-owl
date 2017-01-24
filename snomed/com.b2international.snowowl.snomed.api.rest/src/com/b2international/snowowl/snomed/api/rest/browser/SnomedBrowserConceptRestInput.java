@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.api.rest.browser;
 import java.util.Collections;
 import java.util.List;
 
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.rest.domain.AbstractSnomedComponentRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestInput;
@@ -60,11 +59,6 @@ public class SnomedBrowserConceptRestInput extends AbstractSnomedComponentRestIn
 		}
 
 		return req;
-	}
-
-	@Override
-	protected ComponentCategory getComponentCategory() {
-		return ComponentCategory.CONCEPT;
 	}
 
 	public List<SnomedDescriptionRestInput> getDescriptions() {
