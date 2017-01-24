@@ -25,8 +25,8 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.AttributeClauseList;
 import com.b2international.snowowl.semanticengine.simpleast.utils.QueryAstUtils;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
@@ -204,12 +204,12 @@ public class SubsumptionTester {
 	}
 		
 	public boolean isSubsumed(String predicate, String candidate) {
-		final ISnomedConcept predicateConceptMini = getConcept(predicate);
-		final ISnomedConcept candidateConceptMini = getConcept(candidate);
+		final SnomedConcept predicateConceptMini = getConcept(predicate);
+		final SnomedConcept candidateConceptMini = getConcept(candidate);
 		return isSubsumed(predicateConceptMini, candidateConceptMini);
 	}
 	
-	private ISnomedConcept getConcept(String conceptId) {
+	private SnomedConcept getConcept(String conceptId) {
 		return SnomedRequests.prepareGetConcept().setComponentId(conceptId).build(SnomedDatastoreActivator.REPOSITORY_UUID, branch).execute(getBus()).getSync();
 	}
 
@@ -240,11 +240,11 @@ public class SubsumptionTester {
 	 * 		</ul>
 	 * </ol>
 	 * 
-	 * @param predicate	the predicate {@link ISnomedConcept}
-	 * @param candidate	the candidate {@link ISnomedConcept}
+	 * @param predicate	the predicate {@link SnomedConcept}
+	 * @param candidate	the candidate {@link SnomedConcept}
 	 * @return
 	 */
-	public boolean isSubsumed(ISnomedConcept predicate, ISnomedConcept candidate) {
+	public boolean isSubsumed(SnomedConcept predicate, SnomedConcept candidate) {
 		final String candidateId;
 		if (candidate.isActive()) {
 			candidateId = candidate.getId();
@@ -259,7 +259,7 @@ public class SubsumptionTester {
 					.execute(getBus())
 					.getSync();
 
-			for (ISnomedRelationship relationship : outboundRelationships) {
+			for (SnomedRelationship relationship : outboundRelationships) {
 				if (relationship.getTypeId().equals(CONCEPT_ID_SAME_AS) || relationship.getTypeId().equals(CONCEPT_ID_REPLACED_BY)) {
 					replacementConceptId = relationship.getDestinationId();
 					break;

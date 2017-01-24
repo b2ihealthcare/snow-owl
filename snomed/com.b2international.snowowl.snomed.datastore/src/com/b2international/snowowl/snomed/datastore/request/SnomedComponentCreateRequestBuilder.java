@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,13 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.RegisteringIdStrategy;
-import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
+import com.b2international.snowowl.snomed.core.domain.NamespaceIdStrategy;
 
 /**
  * @since 4.5
@@ -32,21 +29,20 @@ import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
 public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedComponentCreateRequestBuilder<B>> extends BaseSnomedTransactionalRequestBuilder<B, String> {
 	
 	private String moduleId;
+	private Boolean active = Boolean.TRUE;
 	private IdGenerationStrategy idGenerationStrategy;
-	private ComponentCategory category;
 	
-	protected SnomedComponentCreateRequestBuilder(ComponentCategory category) {
+	protected SnomedComponentCreateRequestBuilder() { 
 		super();
-		this.category = checkNotNull(category);
 	}
 	
 	public final B setId(String id) {
-		this.idGenerationStrategy = new RegisteringIdStrategy(id);
+		this.idGenerationStrategy = new ConstantIdStrategy(id);
 		return getSelf();
 	}
 	
 	public final B setIdFromNamespace(String namespace) {
-		this.idGenerationStrategy = new ReservingIdStrategy(category, namespace);
+		this.idGenerationStrategy = new NamespaceIdStrategy(namespace);
 		return getSelf();
 	}
 	
@@ -55,17 +51,26 @@ public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedCompon
 		return getSelf();
 	}
 	
+	public final B setActive(Boolean active) {
+		this.active = active;
+		return getSelf();
+	}
+	
 	public final B setModuleId(String moduleId) {
 		this.moduleId = moduleId;
 		return getSelf();
+	}
+	
+	IdGenerationStrategy getIdGenerationStrategy() {
+		return idGenerationStrategy;
 	}
 
 	@Override
 	protected final Request<TransactionContext, String> doBuild() {
 		final BaseSnomedComponentCreateRequest req = createRequest();
-		// FIXME use default namespace???
-		req.setIdGenerationStrategy(idGenerationStrategy == null ? new ReservingIdStrategy(category) : idGenerationStrategy);
+		req.setIdGenerationStrategy(idGenerationStrategy);
 		req.setModuleId(moduleId);
+		req.setActive(active == null ? Boolean.TRUE : active);
 		init(req);
 		return req;
 	}

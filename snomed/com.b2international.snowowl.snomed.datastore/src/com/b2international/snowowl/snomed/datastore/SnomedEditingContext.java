@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,21 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getAttribute;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.*;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_INSENSITIVE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_SENSITIVE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.INFERRED_RELATIONSHIP;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFIER_VALUE_TOPLEVEL_CONCEPT;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFYING_RELATIONSHIP;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_COMPLEX_MAP_TYPE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_SIMPLE_TYPE;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.STATED_RELATIONSHIP;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.COMPONENT_IS_RELEASED_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_CONCEPT_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_ONLY_FSN_DESCRIPTION_MESSAGE;
@@ -75,12 +89,10 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.core.events.SnomedIdentifierBulkReleaseRequestBuilder;
-import com.b2international.snowowl.snomed.core.events.SnomedIdentifierGenerateRequestBuilder;
 import com.b2international.snowowl.snomed.core.preference.ModulePreference;
 import com.b2international.snowowl.snomed.core.store.SnomedComponentBuilder;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
@@ -574,10 +586,9 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	public void releaseIds() {
 		if (!newComponentIds.isEmpty()) {
 			final IEventBus bus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
-			final String branch = BranchPathUtils.createPath(transaction).getPath();
-			new SnomedIdentifierBulkReleaseRequestBuilder()
+			SnomedRequests.identifiers().prepareRelease()
 				.setComponentIds(newComponentIds)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(bus)
 				.getSync();
 			
@@ -1009,9 +1020,9 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				return SnomedInactivationPlan.NULL_IMPL;
 			}
 			
-			plan.markForInactivation(FluentIterable.from(getInboundRelationshipsFromIndex(concept.getId())).transform(new Function<ISnomedRelationship, Long>() {
+			plan.markForInactivation(FluentIterable.from(getInboundRelationshipsFromIndex(concept.getId())).transform(new Function<SnomedRelationship, Long>() {
 				@Override
-				public Long apply(ISnomedRelationship input) {
+				public Long apply(SnomedRelationship input) {
 					return input.getStorageKey();
 				}
 			}).toSet());
@@ -1213,15 +1224,15 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 
 	public final List<Relationship> getInboundRelationships(String conceptId) {
-		return FluentIterable.from(getInboundRelationshipsFromIndex(conceptId)).transform(new Function<ISnomedRelationship, Relationship>() {
+		return FluentIterable.from(getInboundRelationshipsFromIndex(conceptId)).transform(new Function<SnomedRelationship, Relationship>() {
 			@Override
-			public Relationship apply(ISnomedRelationship input) {
+			public Relationship apply(SnomedRelationship input) {
 				return (Relationship) lookup(input.getStorageKey());
 			}
 		}).toList();
 	}
 
-	private Iterable<ISnomedRelationship> getInboundRelationshipsFromIndex(String conceptId) {
+	private Iterable<SnomedRelationship> getInboundRelationshipsFromIndex(String conceptId) {
 		return SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterByDestination(conceptId)
@@ -1618,13 +1629,13 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
 	public String generateComponentId(final ComponentCategory componentNature, final String namespace) {
 		final IEventBus bus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
-		final String branch = BranchPathUtils.createPath(transaction).getPath();
-		final String generatedId = new SnomedIdentifierGenerateRequestBuilder()
+		final String generatedId = SnomedRequests.identifiers().prepareGenerate()
 				.setCategory(componentNature)
 				.setNamespace(namespace)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(bus)
-				.getSync();
+				.getSync()
+				.getOnlyItem();
 		newComponentIds.add(generatedId);
 		return generatedId;
 	}

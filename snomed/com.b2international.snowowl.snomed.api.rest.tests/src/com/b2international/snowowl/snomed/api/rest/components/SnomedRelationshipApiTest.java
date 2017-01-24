@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Maps;
 
@@ -94,7 +95,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createRelationshipWithPredefinedId() {
 		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
-		final String relationshipId = identifierService.reserve(null, ComponentCategory.RELATIONSHIP);
+		final String relationshipId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.RELATIONSHIP, 1));
 		Map<String, Object> requestBody = createRelationshipRequestBuilder(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship with predefined id")
 			.put("id", relationshipId)
 			.build();
@@ -236,7 +237,6 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	@Ignore("Universal relationship modifier concept not present in minified dataset")
 	public void changeRelationshipModifier() {
 		final Map<?, ?> createRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
 		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, createRequestBody);

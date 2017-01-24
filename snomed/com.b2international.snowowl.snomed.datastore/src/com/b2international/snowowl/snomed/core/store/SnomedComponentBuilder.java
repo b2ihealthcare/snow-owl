@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.store;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.Date;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -24,70 +22,35 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.eclipse.emf.cdo.CDOObject;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
-import com.b2international.snowowl.snomed.core.domain.UUIDIdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.RegisteringIdStrategy;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.google.common.base.Strings;
 
 /**
  * @since 4.5
  *
- * @param <T>
- *            - the type of the Component to build.
+ * @param <T> the type of the Component to build.
  */
 public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B, T>, T extends CDOObject> extends SnomedBaseComponentBuilder<B, T> {
 
+	private String id;
 	private Date effectiveTime;
 	private String moduleId;
 	private boolean active = true;
-	private IdGenerationStrategy identifierGenerationStrategy;
-	private ComponentCategory category;
-
-	protected SnomedComponentBuilder(ComponentCategory category) {
-		this.category = category;
-	}
 
 	/**
 	 * Specifies the SNOMED CT Identifier.
 	 * 
-	 * @param identifier
-	 *            - the ID to use for the newly created Concept.
+	 * @param id the ID to use for the newly created component.
 	 * @return
 	 */
-	public final B withId(String identifier) {
-		return withId(new RegisteringIdStrategy(identifier));
-	}
-
-	/**
-	 * Specifies the SNOMED CT Identifier generation strategy to use when generating the ID for the new Concept.
-	 * 
-	 * @param strategy
-	 *            - the identifier generation strategy to use
-	 * @return
-	 */
-	public final B withId(IdGenerationStrategy strategy) {
-		this.identifierGenerationStrategy = strategy;
+	public final B withId(String id) {
+		this.id = id;
 		return getSelf();
 	}
 
 	/**
-	 * Specifies the namespace to use when generating a completely new ID for the SNOMED CT Component.
-	 * 
-	 * @param namespace
-	 * @return
-	 */
-	public final B withIdFromNamespace(String namespace) {
-		return withId(new ReservingIdStrategy(category, namespace));
-	}
-
-	/**
-	 * Specifies the activity flag to use for the new concept.
+	 * Specifies the activity flag to use for the new component.
 	 * 
 	 * @param active
 	 * @return
@@ -98,7 +61,7 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	}
 
 	/**
-	 * Specifies the module of the newly created concept.
+	 * Specifies the module of the newly created component.
 	 * 
 	 * @param moduleId
 	 * @return
@@ -109,7 +72,7 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	}
 
 	/**
-	 * Specifies the effective time of the newly created concept.
+	 * Specifies the effective time of the newly created component.
 	 * 
 	 * @param effectiveTime
 	 * @return
@@ -122,31 +85,38 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	/**
 	 * Builds and returns a component based on the configured properties.
 	 * 
-	 * @param context
-	 *            - the context to use when building the component.
+	 * @param context the context to use when building the component
 	 * @return
 	 */
 	@OverridingMethodsMustInvokeSuper
 	protected void init(T t, TransactionContext context) {
-		final String module = Strings.isNullOrEmpty(moduleId) ? context.config().getModuleConfig(SnomedCoreConfiguration.class).getDefaultModule() : moduleId; 
 		if (t instanceof Component) {
 			final Component component = (Component) t;
-			final String identifier = identifierGenerationStrategy.generate(context);
-			component.setId(identifier);
+			component.setId(id);
 			component.setActive(active);
-			component.setEffectiveTime(effectiveTime);
-			component.setReleased(effectiveTime != null);
-			component.setModule(context.lookup(module, Concept.class));
-			component.unsetEffectiveTime();
+			component.setModule(context.lookup(moduleId, Concept.class));
+
+			if (effectiveTime == null) {
+				component.unsetEffectiveTime();
+				component.setReleased(false);
+			} else {
+				component.setEffectiveTime(effectiveTime);
+				component.setReleased(true);
+			}
+			
 		} else if (t instanceof SnomedRefSetMember) {
 			final SnomedRefSetMember member = (SnomedRefSetMember) t;
-			checkArgument(identifierGenerationStrategy instanceof UUIDIdGenerationStrategy, "Only UUIDs can be used for reference set member IDs");
-			member.setUuid(identifierGenerationStrategy.generate(context));
+			member.setUuid(id);
 			member.setActive(active);
-			member.setEffectiveTime(effectiveTime);
-			member.setReleased(effectiveTime != null);
-			member.setModuleId(module);
-			member.unsetEffectiveTime();
+			member.setModuleId(moduleId);
+			
+			if (effectiveTime == null) {
+				member.unsetEffectiveTime();
+				member.setReleased(false);
+			} else {
+				member.setEffectiveTime(effectiveTime);
+				member.setReleased(true);
+			}
 		}
 	}
 

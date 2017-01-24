@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.Collections;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -29,7 +30,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequestB
 import com.google.inject.Provider;
 
 /**
- * Reserves all currently taken IDs by using the given {@link SnomedTerminologyBrowser#isUniqueId(com.b2international.snowowl.core.api.IBranchPath, String)}
+ * Includes all IDs which are currently in used on the terminology store's MAIN branch (computed dynamically). 
  * 
  * @since 4.0
  */
@@ -43,25 +44,30 @@ public class UniqueInStoreReservation implements Reservation {
 	
 	@Override
 	public boolean includes(SnomedIdentifier identifier) {
-		final SnomedSearchRequestBuilder<?, ? extends PageableCollectionResource<?>> req;
-		switch (identifier.getComponentCategory()) {
-		case CONCEPT:
-			req = SnomedRequests.prepareSearchConcept();
-			break;
-		case DESCRIPTION:
-			req = SnomedRequests.prepareSearchDescription();
-			break;
-		case RELATIONSHIP:
-			req = SnomedRequests.prepareSearchRelationship();
-			break;
-		default: throw new NotImplementedException();
+		final SnomedSearchRequestBuilder<?, ? extends PageableCollectionResource<?>> searchRequest;
+		final ComponentCategory category = identifier.getComponentCategory();
+		
+		switch (category) {
+			case CONCEPT:
+				searchRequest = SnomedRequests.prepareSearchConcept();
+				break;
+			case DESCRIPTION:
+				searchRequest = SnomedRequests.prepareSearchDescription();
+				break;
+			case RELATIONSHIP:
+				searchRequest = SnomedRequests.prepareSearchRelationship();
+				break;
+			default: 
+				throw new NotImplementedException("Cannot check whether components of type '%s' are unique.", category);
 		}
-		return req
+		
+		final PageableCollectionResource<?> results = searchRequest
 				.setLimit(0)
 				.setComponentIds(Collections.singleton(identifier.toString()))
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, BranchPathUtils.createMainPath().getPath())
 				.execute(bus.get())
-				.getSync().getTotal() > 0;
+				.getSync();
+		
+		return results.getTotal() > 0;
 	}
-
 }

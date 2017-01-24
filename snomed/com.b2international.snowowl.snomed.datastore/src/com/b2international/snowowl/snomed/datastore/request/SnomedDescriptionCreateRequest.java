@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 
 /**
@@ -103,11 +104,11 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 
 	@Override
 	public String execute(TransactionContext context) {
-		ensureUniqueId("Description", context);
-		
 		try {
+			final String descriptionId = ((ConstantIdStrategy) getIdGenerationStrategy()).getId();
 			final Description description = SnomedComponents.newDescription()
-				.withId(getIdGenerationStrategy())
+				.withId(descriptionId)
+				.withActive(isActive())
 				.withModule(getModuleId())
 				.withCaseSignificance(getCaseSignificance())
 				.withTerm(getTerm())
@@ -125,10 +126,5 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
-	}
-
-	@Override
-	protected void checkComponentExists(TransactionContext context, String componentId) throws ComponentNotFoundException {
-		SnomedRequests.prepareGetDescription().setComponentId(componentId).build().execute(context);
 	}
 }

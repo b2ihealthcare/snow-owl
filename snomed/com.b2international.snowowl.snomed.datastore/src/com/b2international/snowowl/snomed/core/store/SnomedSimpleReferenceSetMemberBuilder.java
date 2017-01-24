@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.store;
 
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 
@@ -23,10 +22,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
  * @since 4.5
  */
 public final class SnomedSimpleReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedSimpleReferenceSetMemberBuilder, SnomedRefSetMember> {
-
-	SnomedSimpleReferenceSetMemberBuilder() {
-		super(ComponentCategory.SET_MEMBER);
-	}
 
 	@Override
 	protected SnomedRefSetMember create() {

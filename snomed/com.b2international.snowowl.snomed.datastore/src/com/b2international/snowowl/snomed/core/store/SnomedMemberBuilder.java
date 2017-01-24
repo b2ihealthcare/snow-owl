@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
  */
 package com.b2international.snowowl.snomed.core.store;
 
+import java.util.UUID;
+
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.core.domain.UUIDIdGenerationStrategy;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
@@ -32,9 +32,8 @@ public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B, T>, T
 	private String referenceSetId;
 	private String referencedComponent;
 	
-	protected SnomedMemberBuilder(ComponentCategory category) {
-		super(category);
-		withId(new UUIDIdGenerationStrategy());
+	protected SnomedMemberBuilder() {
+		withId(UUID.randomUUID().toString());
 	}
 	
 	/**

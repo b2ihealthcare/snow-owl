@@ -211,7 +211,8 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 					final int oldNumber = unionGroup.getUnionGroupNumber();
 					final int newNumber = otherUnionGroup.get().getUnionGroupNumber();
 
-					if (oldNumber != newNumber) {
+					// If the current union group number is 0, it has a single relationship only, and should be kept that way
+					if (oldNumber != 0 && oldNumber != newNumber) {
 						newNumberMap.put(unionGroup, newNumber);
 					}
 				}
@@ -617,7 +618,8 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 					final int oldNumber = group.getGroupNumber();
 					final int newNumber = otherGroup.get().getGroupNumber();
 
-					if (oldNumber != newNumber) {
+					// If the current group number is 0, it has a single relationship only, and should be kept that way
+					if (oldNumber != 0 && oldNumber != newNumber) {
 						newNumberMap.put(group, newNumber);
 						group.adjustOrder(otherGroup.get());
 					}

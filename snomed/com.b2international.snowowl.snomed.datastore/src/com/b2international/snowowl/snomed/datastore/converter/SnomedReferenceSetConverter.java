@@ -24,7 +24,6 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
@@ -67,14 +66,14 @@ final class SnomedReferenceSetConverter extends BaseRevisionResourceConverter<Sn
 					req.setLimit(expandOptions.get("limit", Integer.class));
 				}
 
-				((SnomedReferenceSetImpl) refSet).setMembers(req.build().execute(context()));
+				refSet.setMembers(req.build().execute(context()));
 			}
 		}
 	}
 	
 	@Override
 	public SnomedReferenceSet toResource(SnomedConceptDocument entry) {
-		final SnomedReferenceSetImpl refset = new SnomedReferenceSetImpl();
+		final SnomedReferenceSet refset = new SnomedReferenceSet();
 		refset.setStorageKey(entry.getRefSetStorageKey());
 		refset.setId(entry.getId());
 		refset.setEffectiveTime(EffectiveTimes.toDate(entry.getEffectiveTime()));

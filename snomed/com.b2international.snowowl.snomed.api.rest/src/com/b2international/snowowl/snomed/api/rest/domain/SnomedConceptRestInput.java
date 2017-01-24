@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 import java.util.Collections;
 import java.util.List;
 
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
@@ -28,40 +27,31 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<SnomedConceptCreateRequestBuilder> {
 
 	private List<SnomedDescriptionRestInput> descriptions = Collections.emptyList();
-	private String isAId;
-	private String parentId;
+	private List<SnomedRelationshipRestInput> relationships = Collections.emptyList();
+	private List<SnomedRefSetMemberRestInput> members = Collections.emptyList();
 
-	/**
-	 * @return
-	 */
 	public List<SnomedDescriptionRestInput> getDescriptions() {
 		return descriptions;
 	}
-
-	/**
-	 * @return
-	 */
-	public String getIsAId() {
-		return isAId;
+	
+	public List<SnomedRelationshipRestInput> getRelationships() {
+		return relationships;
 	}
-
-	/**
-	 * @return
-	 */
-	public String getParentId() {
-		return parentId;
+	
+	public List<SnomedRefSetMemberRestInput> getMembers() {
+		return members;
 	}
 
 	public void setDescriptions(List<SnomedDescriptionRestInput> descriptions) {
 		this.descriptions = descriptions;
 	}
-
-	public void setIsAId(final String isAId) {
-		this.isAId = isAId;
+	
+	public void setRelationships(List<SnomedRelationshipRestInput> relationships) {
+		this.relationships = relationships;
 	}
-
-	public void setParentId(final String parentId) {
-		this.parentId = parentId;
+	
+	public void setMembers(List<SnomedRefSetMemberRestInput> members) {
+		this.members = members;
 	}
 
 	@Override
@@ -72,22 +62,30 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 	@Override
 	public SnomedConceptCreateRequestBuilder toRequestBuilder() {
 		final SnomedConceptCreateRequestBuilder req = super.toRequestBuilder();
-		req.setIsAId(createIdGenerationStrategy(getIsAId(), ComponentCategory.RELATIONSHIP));
+		
+		for (SnomedRelationshipRestInput restRelationship : getRelationships()) {
+			// Propagate namespace from concept if not present
+			if (null == restRelationship.getNamespaceId()) {
+				restRelationship.setNamespaceId(getNamespaceId());
+			}
+			
+			req.addRelationship(restRelationship.toRequestBuilder());
+		}
+		
 		for (SnomedDescriptionRestInput restDescription : getDescriptions()) {
-			// Propagate namespace from concept if present, and the description does not already have one
+			// Propagate namespace from concept if not present
 			if (null == restDescription.getNamespaceId()) {
 				restDescription.setNamespaceId(getNamespaceId());
 			}
 			
 			req.addDescription(restDescription.toRequestBuilder());
 		}
-		req.setParent(getParentId());
+		
+		for (SnomedRefSetMemberRestInput restMember : getMembers()) {
+			req.addMember(restMember.toRequestBuilder());
+		}
+		
 		return req;
-	}
-
-	@Override
-	protected ComponentCategory getComponentCategory() {
-		return ComponentCategory.CONCEPT;
 	}
 
 	@Override
@@ -99,10 +97,8 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 		builder.append(getModuleId());
 		builder.append(", getDescriptions()=");
 		builder.append(getDescriptions());
-		builder.append(", getIsAId()=");
-		builder.append(getIsAId());
-		builder.append(", getParentId()=");
-		builder.append(getParentId());
+		builder.append(", getRelationships()=");
+		builder.append(getRelationships());
 		builder.append("]");
 		return builder.toString();
 	}

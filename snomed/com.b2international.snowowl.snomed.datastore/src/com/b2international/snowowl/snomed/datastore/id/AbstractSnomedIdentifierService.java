@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,41 @@ package com.b2international.snowowl.snomed.datastore.id;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Map;
+
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
-import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 /**
  * @since 4.5
  */
 public abstract class AbstractSnomedIdentifierService implements ISnomedIdentifierService {
+
+	public static final class SctIdStatusException extends BadRequestException {
+		
+		private final Map<String, Object> additionalInfo;
+
+		public SctIdStatusException(String message, Map<String, SctId> problemSctIds) {
+			super(message, problemSctIds.size());
+			this.additionalInfo = ImmutableMap.copyOf(Maps.transformValues(problemSctIds, SctId::getStatus));
+		}
+
+		@Override
+		protected Map<String, Object> getAdditionalInfo() {
+			return additionalInfo;
+		}
+	}
+
+	protected static void checkCategory(ComponentCategory category) {
+		checkArgument(category == ComponentCategory.CONCEPT 
+				|| category == ComponentCategory.DESCRIPTION
+				|| category == ComponentCategory.RELATIONSHIP, "Cannot generate ID for component category %s.", category);
+	}
 
 	private final ISnomedIdentiferReservationService reservationService;
 	private final SnomedIdentifierConfiguration config;
@@ -36,34 +62,12 @@ public abstract class AbstractSnomedIdentifierService implements ISnomedIdentifi
 		this.config = checkNotNull(config);
 	}
 
-	protected final void checkCategory(ComponentCategory category) {
-		checkArgument(category == ComponentCategory.CONCEPT || category == ComponentCategory.DESCRIPTION
-				|| category == ComponentCategory.RELATIONSHIP, "Cannot generate ID for component category %s.", category);
-	}
-	
 	protected final ISnomedIdentiferReservationService getReservationService() {
 		return reservationService;
 	}
 	
 	protected final SnomedIdentifierConfiguration getConfig() {
 		return config;
-	}
-
-	/**
-	 * Method to enforce the namespace used for the new component ID if defined.
-	 * @param namespace
-	 * @return
-	 */
-	protected final String selectNamespace(final String namespace) {
-		final String enforceNamespace = getConfig().getEnforceNamespace();
-		if (!Strings.isNullOrEmpty(enforceNamespace)) {
-			if (SnomedIdentifiers.INT_NAMESPACE.equals(enforceNamespace)) {
-				return null;
-			} else {
-				return enforceNamespace;
-			}
-		}
-		return namespace;
 	}
 
 }

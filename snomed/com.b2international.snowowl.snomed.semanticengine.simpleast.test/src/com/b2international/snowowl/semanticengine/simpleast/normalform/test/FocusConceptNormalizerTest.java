@@ -37,7 +37,7 @@ import com.b2international.snowowl.semanticengine.simpleast.normalform.FocusConc
 import com.b2international.snowowl.semanticengine.simpleast.normalform.FocusConceptNormalizer;
 import com.b2international.snowowl.semanticengine.simpleast.test.SnomedConcepts;
 import com.b2international.snowowl.semanticengine.simpleast.utils.QueryAstUtils;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -121,9 +121,9 @@ public class FocusConceptNormalizerTest {
 				.setComponentId(conceptId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.then(new Function<ISnomedConcept, SnomedConceptDocument>() {
+				.then(new Function<SnomedConcept, SnomedConceptDocument>() {
 					@Override
-					public SnomedConceptDocument apply(ISnomedConcept input) {
+					public SnomedConceptDocument apply(SnomedConcept input) {
 						return SnomedConceptDocument.builder(input).build();
 					}
 				})

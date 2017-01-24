@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
@@ -26,7 +25,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
  */
 public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInput<SnomedRelationshipCreateRequestBuilder> {
 
-	private Boolean active = Boolean.TRUE;
 	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
 	private String destinationId;
 	private boolean destinationNegated = false;
@@ -36,10 +34,6 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 	private String typeId;
 	private int unionGroup = 0;
 
-	public Boolean isActive() {
-		return active;
-	}
-	
 	public CharacteristicType getCharacteristicType() {
 		return characteristicType;
 	}
@@ -112,7 +106,6 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 	@Override
 	public SnomedRelationshipCreateRequestBuilder toRequestBuilder() {
 		return super.toRequestBuilder()
-				.setActive(isActive())
 				.setCharacteristicType(getCharacteristicType())
 				.setDestinationId(getDestinationId())
 				.setDestinationNegated(isDestinationNegated())
@@ -123,11 +116,6 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 				.setUnionGroup(getUnionGroup());
 	}
 
-	@Override
-	protected ComponentCategory getComponentCategory() {
-		return ComponentCategory.RELATIONSHIP;
-	}
-	
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();

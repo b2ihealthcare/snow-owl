@@ -37,7 +37,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.5
  */
-final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionContext, Void> {
+final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionContext, Boolean> {
 
 	@NotEmpty
 	private final String memberId;
@@ -55,7 +55,7 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 	}
 
 	@Override
-	public Void execute(TransactionContext context) {
+	public Boolean execute(TransactionContext context) {
 		final SnomedRefSetMember member = context.lookup(memberId, SnomedRefSetMember.class);
 		final SnomedRefSetType type = member.getRefSet().getType();
 		RefSetSupport.check(type);
@@ -82,7 +82,7 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 		if (changed && !isEffectiveTimeUpdate()) {
 			member.unsetEffectiveTime();
 		}
-		return null;
+		return changed;
 	}
 	
 	private boolean updateAcceptability(SnomedLanguageRefSetMember member) {
@@ -103,7 +103,7 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 	}
 
 	private boolean updateActivityStatus(SnomedRefSetMember member) {
-		final Object activeValue = properties.get("active");
+		final Object activeValue = properties.get(SnomedRf2Headers.FIELD_ACTIVE);
 		if (activeValue instanceof Boolean) {
 			final Boolean newStatus = (Boolean) activeValue;
 			if (!Objects.equals(member.isActive(), newStatus)) {
@@ -115,7 +115,7 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 	}
 	
 	private boolean updateModule(SnomedRefSetMember member) {
-		final Object value = properties.get("moduleId");
+		final Object value = properties.get(SnomedRf2Headers.FIELD_MODULE_ID);
 		if (value instanceof String) {
 			final String newModuleId = (String) value;
 			if (!Objects.equals(member.getModuleId(), newModuleId)) {
@@ -159,8 +159,8 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 	}
 
 	@Override
-	protected Class<Void> getReturnType() {
-		return Void.class;
+	protected Class<Boolean> getReturnType() {
+		return Boolean.class;
 	}
 
 }

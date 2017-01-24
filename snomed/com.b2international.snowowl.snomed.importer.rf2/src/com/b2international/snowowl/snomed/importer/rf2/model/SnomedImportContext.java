@@ -210,6 +210,11 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 			refSetMemberLookup.clear();
 		}
 	}
+	
+	@Override
+	public String branch() {
+		return editingContext.getBranch();
+	}
 
 	/**
 	 * Returns the editing context used for applying modifications on the SNOMED CT terminology, based on the incoming
@@ -217,7 +222,6 @@ public class SnomedImportContext implements ISnomedPostProcessorContext, AutoClo
 	 * 
 	 * @return the editing context for this import run
 	 */
-	@Override
 	public SnomedEditingContext getEditingContext() {
 		return editingContext;
 	}

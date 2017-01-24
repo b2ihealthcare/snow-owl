@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,16 +29,15 @@ import com.google.inject.Provider;
 /**
  * @since 4.0
  */
-public class Reservations {
+public abstract class Reservations {
 
-	private Reservations() {
-	}
-
+	private Reservations() { }
+	
 	/**
-	 * Creates a {@link Reservation} for the given single componentId.
+	 * Creates a {@link Reservation} for the given single component identifier.
 	 * 
-	 * @param componentId
-	 * @return a {@link Reservation} instance for the given componentId.
+	 * @param componentId the single identifier to reserve
+	 * @return a {@link Reservation} instance for the given identifier
 	 */
 	public static Reservation single(final String componentId) {
 		final SnomedIdentifier id = SnomedIdentifiers.create(componentId);
@@ -46,29 +45,21 @@ public class Reservations {
 	}
 
 	/**
-	 * Creates a new {@link Reservation} for the given range spec. The returned {@link Reservation} may conflict with IDs defined in the given range.
-	 * 
-	 * @param itemIdMin
-	 *            - the range's minimum value
-	 * @param itemIdMax
-	 *            - the range's maximum value
-	 * @param namespace
-	 *            - the namespace ID to use, may be <code>null</code> if it is an International SNOMED CT Identifier restriction
-	 * @param components
-	 *            - the compenent types affected, cannot be empty.
-	 * @return
+	 * @param itemIdMin the range's minimum value (inclusive)
+	 * @param itemIdMax the range's maximum value (inclusive)
+	 * @param namespace the namespace ID to use, or <code>null</code> to indicate the International namespace
+	 * @param components the set of component types affected, cannot be empty.
+	 * @return a {@link Reservation} for the given range specifications
 	 */
 	public static Reservation range(final long itemIdMin, final long itemIdMax, final String namespace, final Collection<ComponentCategory> components) {
 		return new ReservationRangeImpl(itemIdMin, itemIdMax, namespace, components);
 	}
 
 	/**
-	 * Creates a {@link Reservation} instance to reserve all SNOMED CT Identifiers when generating new IDs.
-	 * 
-	 * @param bus - the current bus to send reservation check requests
-	 * @return
+	 * @param bus the current bus to send reservation check requests
+	 * @return a {@link Reservation} instance that shows all SNOMED CT identifiers currently in store as included in its range
 	 */
-	public static Reservation uniqueInStore(Provider<IEventBus> bus) {
+	public static Reservation uniqueInStore(final Provider<IEventBus> bus) {
 		return new UniqueInStoreReservation(bus);
 	}
 

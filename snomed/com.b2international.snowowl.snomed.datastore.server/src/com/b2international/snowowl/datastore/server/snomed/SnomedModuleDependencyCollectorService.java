@@ -57,7 +57,7 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -371,7 +371,7 @@ public enum SnomedModuleDependencyCollectorService {
 					@Override
 					public LongKeyLongMap apply(SnomedConcepts input) {
 						final LongKeyLongMap result = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(input.getTotal());
-						for (ISnomedConcept concept : input) {
+						for (SnomedConcept concept : input) {
 							result.put(Long.parseLong(concept.getId()), Long.parseLong(concept.getModuleId()));
 						}
 						return result;

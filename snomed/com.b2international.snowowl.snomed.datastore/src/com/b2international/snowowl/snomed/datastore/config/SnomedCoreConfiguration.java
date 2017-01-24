@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.config;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -58,12 +57,6 @@ public class SnomedCoreConfiguration {
 	
 	@NotEmpty
 	private String language = DEFAULT_LANGUAGE;
-	
-	@NotNull
-	private String defaultNamespace = DEFAULT_NAMESPACE;
-	
-	@NotEmpty
-	private String defaultModule = DEFAULT_MODULE;
 	
 	@NotEmpty
 	private String concreteDomainTypeRefsetIdentifier = Concepts.REFSET_CONCRETE_DOMAIN_TYPE;
@@ -149,38 +142,6 @@ public class SnomedCoreConfiguration {
 	@JsonProperty
 	public String getLanguage() {
 		return language;
-	}
-	
-	/**
-	 * @return the default namespace used for SNOMED CT
-	 */
-	@JsonProperty
-	public String getDefaultNamespace() {
-		return defaultNamespace;
-	}
-	
-	/**
-	 * @param defaultNamespace the default namespace to set
-	 */
-	@JsonProperty
-	public void setDefaultNamespace(String defaultNamespace) {
-		this.defaultNamespace = defaultNamespace;
-	}
-	
-	/**
-	 * @return the default module user for SNOMED CT
-	 */
-	@JsonProperty
-	public String getDefaultModule() {
-		return defaultModule;
-	}
-	
-	/**
-	 * @param defaultModule the default module to set
-	 */
-	@JsonProperty
-	public void setDefaultModule(String defaultModule) {
-		this.defaultModule = defaultModule;
 	}
 	
 	/**

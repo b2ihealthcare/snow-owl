@@ -36,7 +36,7 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -91,7 +91,7 @@ public class ReasonerTaxonomyWalker {
 					@Override
 					public LongKeyLongMap apply(SnomedConcepts input) {
 						final LongKeyLongMap result = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(input.getTotal());
-						for (ISnomedConcept concept : input) {
+						for (SnomedConcept concept : input) {
 							result.put(Long.parseLong(concept.getId()), concept.getStorageKey());
 						}
 						return result;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,45 +15,34 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.action;
 
+import java.util.Set;
+
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.request.AbstractSnomedIdentifierCountedRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * @since 4.5
  */
-public class ReserveAction extends IdAction<String> {
+public class ReserveAction extends AbstractCountedIdAction {
 
-	private final String namespace;
-	private final ComponentCategory category;
-
-	private String componentId;
-
-	public ReserveAction(final String namespace, final ComponentCategory category, final ISnomedIdentifierService identifierService) {
-		super(identifierService);
-		this.namespace = namespace;
-		this.category = category;
+	public ReserveAction(final String namespace, final ComponentCategory category, final int quantity) {
+		super(namespace, category, quantity);
 	}
-
+	
 	@Override
-	public void rollback() {
-		if (!isFailed())
-			identifierService.release(componentId);
+	protected AbstractSnomedIdentifierCountedRequestBuilder<?> createRequestBuilder() {
+		return SnomedRequests.identifiers().prepareGenerate();
 	}
-
+	
 	@Override
-	public void execute() {
-		componentId = identifierService.reserve(namespace, category);
-	}
-
-	@Override
-	public void commit() {
-		if (!isFailed())
-			identifierService.register(componentId);
-	}
-
-	@Override
-	public String get() {
-		return componentId;
+	protected void doCommit(final RepositoryContext context, final Set<String> componentIds) {
+		SnomedRequests.identifiers()
+				.prepareRegister()
+				.setComponentIds(componentIds)
+				.build()
+				.execute(context);
 	}
 
 }

@@ -18,9 +18,6 @@ package com.b2international.snowowl.snomed.api.rest.browser;
 import java.util.Collections;
 import java.util.List;
 
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.api.rest.domain.AbstractSnomedComponentRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedRelationshipRestInput;
@@ -42,11 +39,16 @@ public class SnomedBrowserConceptRestInput extends AbstractSnomedComponentRestIn
 
 	@Override
 	public SnomedConceptCreateRequestBuilder toRequestBuilder() {
-		final String parentRelationshipId = getParentId();
-
 		final SnomedConceptCreateRequestBuilder req = super.toRequestBuilder();
-		req.setIsAId(createIdGenerationStrategy(parentRelationshipId));
 
+		for (SnomedRelationshipRestInput restRelationship : getRelationships()) {
+			if (null == restRelationship.getNamespaceId()) {
+				restRelationship.setNamespaceId(getNamespaceId());
+			}
+			
+			req.addRelationship(restRelationship.toRequestBuilder());
+		}
+		
 		for (SnomedDescriptionRestInput restDescription : getDescriptions()) {
 			// Propagate namespace from concept if present, and the description does not already have one
 			if (null == restDescription.getNamespaceId()) {
@@ -56,27 +58,7 @@ public class SnomedBrowserConceptRestInput extends AbstractSnomedComponentRestIn
 			req.addDescription(restDescription.toRequestBuilder());
 		}
 
-		req.setParent(parentRelationshipId);
 		return req;
-	}
-
-	private String getParentId() {
-		SnomedRelationshipRestInput parentRelationship = null;
-		for (SnomedRelationshipRestInput relationship : relationships) {
-			if (SnomedConstants.Concepts.IS_A.equals(relationship.getTypeId())) {
-				parentRelationship = relationship;
-			}
-		}
-		if (parentRelationship != null) {
-			return parentRelationship.getDestinationId();
-		} else {
-			throw new BadRequestException("At least one isA relationship is required.");
-		}
-	}
-
-	@Override
-	protected ComponentCategory getComponentCategory() {
-		return ComponentCategory.CONCEPT;
 	}
 
 	public List<SnomedDescriptionRestInput> getDescriptions() {

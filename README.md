@@ -3,11 +3,13 @@
 ## Introduction
 Snow Owl<sup>®</sup> is a terminology server and a collaborative terminology authoring platform.  The authoring platform maintains terminology artifacts developed by a team and supported by business workflows that are driven by external task management systems like Bugzilla and JIRA.  With its modular design, the server can maintain multiple terminologies where new terminologies can be plugged-in to the platform.  The functionality of Snow Owl is exposed via a REST API.
 
-## Java
+## Getting Started
 
-The required JDK version is Java 8 update 102 or later.
+These instructions will get Snow Owl up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy Snow Owl on a live system.
 
-## Dev
+### Prerequisites
+
+From [version 5.1.0](CHANGELOG.md#510), Snow Owl requires Java 8 update 102 or later.
 
 Snow Owl is an Equinox-OSGi based server (using either Virgo or standalone OSGi). To develop plug-ins for Snow Owl you need to use Eclipse as IDE: 
 * Use latest Neon Eclipse IDE for Eclipse Committers: http://www.eclipse.org/downloads/packages/eclipse-ide-eclipse-committers/neon1a
@@ -91,3 +93,29 @@ While this should be enough to run the process, in production builds we recommen
 3. Copy the `target_platform_<version>` folder to a webserver, or use `Nexus` to serve the site as unzipped p2 (requires Nexus OSS with Unzip Plugin installed, see previous section)
 4. Define an `http` URL as `target.platform.url` parameter in the global Maven `.m2/settings.xml` file
 5. Run Snow Owl maven process with `mvn clean verify -Ptp_dependencies -Psite -Pdist` (*NOTE: the tp_dependencies profile will use the prefetched local p2 repository instead of querying all remote sites*)
+
+## Deployment
+
+Please refer to the [installation guide](documentation/src/main/asciidoc/installation_guide.adoc). Prerequisites are detailed in the [software requirements](documentation/src/main/asciidoc/software_requirements.adoc) document. Then see the [configuration guide](documentation/src/main/asciidoc/configuration_guide.adoc) to configure for your particular installation.
+
+The [SNOMED CT extension management guide](documentation/src/main/asciidoc/snomed_extension_management.adoc) provides details for managing multiple SNOMED extensions on a single terminology server.
+
+## Administration
+
+See the [administration guide](documentation/src/main/asciidoc/administration_guide.adoc). You may find the quick references for [console commands](documentation/src/main/asciidoc/administrative_console_reference.adoc) and the [administration REST API](documentation/src/main/asciidoc/administrative_rest_reference.adoc) helpful.
+
+## Contributing
+
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+## Versioning
+
+We use [SemVer](http://semver.org) for versioning. [CHANGELOG.md](CHANGELOG.md) contains a curated, chronologically ordered list of notable changes for each version.
+
+## License
+
+This project is licensed under the Apache 2.0 License. See [LICENSE](LICENSE) for details and refer to [NOTICE](NOTICE) for additional licencing notes and uses of third-party components.
+
+## Acknowledgements
+
+In March 2015, [SNOMED International](http://snomed.org) generously licensed the Snow Owl Terminology Server components supporting SNOMED CT. They subsequently made the licensed code available to their [members](http://www.snomed.org/members) and the global community under an open-source license.

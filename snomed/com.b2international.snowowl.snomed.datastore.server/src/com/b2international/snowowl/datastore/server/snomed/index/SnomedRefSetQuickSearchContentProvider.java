@@ -37,7 +37,7 @@ import com.b2international.snowowl.datastore.quicksearch.AbstractQuickSearchCont
 import com.b2international.snowowl.datastore.quicksearch.IQuickSearchContentProvider;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
@@ -68,16 +68,16 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 	private static final class RefSetToQuickSearchElementConverter implements Function<SnomedReferenceSet, QuickSearchElement> {
 		
 		private final String queryExpression;
-		private final Map<String, ISnomedConcept> identifierConceptMap;
+		private final Map<String, SnomedConcept> identifierConceptMap;
 
-		public RefSetToQuickSearchElementConverter(String queryExpression, Map<String, ISnomedConcept> identifierConceptMap) {
+		public RefSetToQuickSearchElementConverter(String queryExpression, Map<String, SnomedConcept> identifierConceptMap) {
 			this.identifierConceptMap = identifierConceptMap;
 			this.queryExpression = queryExpression;
 		}
 
 		@Override 
 		public QuickSearchElement apply(final SnomedReferenceSet input) {
-			final ISnomedConcept concept = identifierConceptMap.get(input.getId());
+			final SnomedConcept concept = identifierConceptMap.get(input.getId());
 			final String label = concept.getPt() == null ? concept.getId() : concept.getPt().getTerm();
 			return new CompactQuickSearchElement(input.getId(), 
 					input.getIconId(), 
@@ -125,7 +125,7 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 		final SnomedConceptSearchRequestBuilder conceptRequest = buildConceptSearchRequest("", limit, conceptIds);
 		final SnomedConcepts matchingConcepts = conceptRequest.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(getEventBus()).getSync();
 
-		final Map<String, ISnomedConcept> matchingConceptsById = createMatchingConceptsMap(matchingConcepts);
+		final Map<String, SnomedConcept> matchingConceptsById = createMatchingConceptsMap(matchingConcepts);
 		return new QuickSearchContentResult(matchingRefSets.getTotal(), Lists.transform(matchingRefSets.getItems(),
 				new RefSetToQuickSearchElementConverter(filterText, matchingConceptsById)));
 	}
@@ -140,7 +140,7 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 			return new QuickSearchContentResult();
 		}
 
-		final Map<String, ISnomedConcept> matchingConceptsById = createMatchingConceptsMap(matchingConcepts);
+		final Map<String, SnomedConcept> matchingConceptsById = createMatchingConceptsMap(matchingConcepts);
 
 		final SnomedRefSetSearchRequestBuilder refSetRequest = buildRefSetSearchRequest(limit, configuration, matchingConceptsById.keySet(),
 				getRefSetTypes(configuration));
@@ -175,11 +175,11 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 			.setLimit(limit);
 	}
 	
-	private Map<String, ISnomedConcept> createMatchingConceptsMap(final SnomedConcepts matchingConcepts) {
-		final Map<String, ISnomedConcept> matchingConceptsById = FluentIterable.from(matchingConcepts)
-				.uniqueIndex(new Function<ISnomedConcept, String>() {
+	private Map<String, SnomedConcept> createMatchingConceptsMap(final SnomedConcepts matchingConcepts) {
+		final Map<String, SnomedConcept> matchingConceptsById = FluentIterable.from(matchingConcepts)
+				.uniqueIndex(new Function<SnomedConcept, String>() {
 					@Override
-					public String apply(ISnomedConcept input) {
+					public String apply(SnomedConcept input) {
 						return input.getId();
 					}
 				});

@@ -5,6 +5,7 @@ import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserR
 import com.b2international.snowowl.snomed.datastore.request.BaseSnomedComponentUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedComponentCreateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -12,7 +13,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 public class RelationshipInputCreator extends AbstractInputCreator implements ComponentInputCreator<SnomedRelationshipCreateRequest, SnomedRelationshipUpdateRequest, SnomedBrowserRelationship> {
 	@Override
 	public SnomedRelationshipCreateRequest createInput(String branchPath, SnomedBrowserRelationship relationship, InputFactory inputFactory) {
-		return (SnomedRelationshipCreateRequest) SnomedRequests
+		final SnomedRelationshipCreateRequestBuilder builder = SnomedRequests
 				.prepareNewRelationship()
 				.setModuleId(getModuleOrDefault(relationship))
 				.setTypeId(relationship.getType().getConceptId())
@@ -20,8 +21,15 @@ public class RelationshipInputCreator extends AbstractInputCreator implements Co
 				.setSourceId(relationship.getSourceId())
 				.setDestinationId(relationship.getTarget().getConceptId())
 				.setGroup(relationship.getGroupId())
-				.setModifier(relationship.getModifier())
-				.build();
+				.setModifier(relationship.getModifier());
+		
+		if (relationship.getRelationshipId() != null) {
+			builder.setId(relationship.getRelationshipId());
+		} else {
+			builder.setIdFromNamespace(getDefaultNamespace());
+		}
+		
+		return (SnomedRelationshipCreateRequest) builder.build();
 	}
 
 	@Override

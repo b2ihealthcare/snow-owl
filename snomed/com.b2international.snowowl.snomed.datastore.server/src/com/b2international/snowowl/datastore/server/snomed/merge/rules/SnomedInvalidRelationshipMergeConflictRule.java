@@ -33,7 +33,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -74,7 +74,7 @@ public class SnomedInvalidRelationshipMergeConflictRule extends AbstractSnomedMe
 				.execute(getEventBus())
 				.getSync();
 
-		for (ISnomedConcept concept : snomedConcepts) {
+		for (SnomedConcept concept : snomedConcepts) {
 			inactiveConceptIds.add(concept.getId());
 		}
 		

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,25 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Collection;
+
+import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.core.events.metrics.Metrics;
-import com.b2international.snowowl.core.events.metrics.Timer;
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
-import com.b2international.snowowl.snomed.core.domain.RegisteringIdStrategy;
-import com.b2international.snowowl.snomed.core.domain.ReservingIdStrategy;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.0
  */
 public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<TransactionContext, String> implements SnomedComponentCreateRequest {
 
+	@Nonnull
+	private Boolean active = Boolean.TRUE;
+	
 	@NotNull
 	private IdGenerationStrategy idGenerationStrategy;
 	
@@ -49,69 +48,33 @@ public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<Trans
 	public String getModuleId() {
 		return moduleId;
 	}
+	
+	@Override
+	public Boolean isActive() {
+		return active;
+	}
 
 	@JsonIgnore
 	final void setIdGenerationStrategy(final IdGenerationStrategy idGenerationStrategy) {
 		this.idGenerationStrategy = idGenerationStrategy;
 	}
 
-	void setModuleId(final String moduleId) {
+	final void setModuleId(final String moduleId) {
 		this.moduleId = moduleId;
+	}
+	
+	final void setActive(Boolean active) {
+		this.active = active;
 	}
 	
 	@Override
 	protected final Class<String> getReturnType() {
 		return String.class;
 	}
-
-	protected final void ensureUniqueId(String type, TransactionContext context) {
-		final Timer idGenerationTimer = context.service(Metrics.class).timer("idGeneration");
-		try {
-			
-			idGenerationTimer.start();
-			
-			if (getIdGenerationStrategy() instanceof RegisteringIdStrategy) {
-				final String componentId = getIdGenerationStrategy().generate(context);
-				
-				try {
-					checkComponentExists(context, componentId);
-					throw new AlreadyExistsException(type, componentId);
-				} catch (ComponentNotFoundException e) {
-					setIdGenerationStrategy(new ConstantIdStrategy(componentId));
-					return;
-				}
-			} else if (getIdGenerationStrategy() instanceof ReservingIdStrategy) {
-				String componentId = null;
-				
-				for (int i = 0; i < IdRequest.ID_GENERATION_ATTEMPTS; i++) {
-					componentId = getIdGenerationStrategy().generate(context);
-					
-					try {
-						checkComponentExists(context, componentId);
-					} catch (ComponentNotFoundException e) {
-						setIdGenerationStrategy(new RegisteringIdStrategy(componentId));
-						return;
-					}
-				}
-				
-				throw new BadRequestException("Couldn't generate unique identifier for %s after %d attempts.", type, IdRequest.ID_GENERATION_ATTEMPTS); 
-			} else if (getIdGenerationStrategy() instanceof ConstantIdStrategy) {
-				
-				String componentId = getIdGenerationStrategy().generate(context);
-				
-				try {
-					checkComponentExists(context, componentId);
-					throw new AlreadyExistsException(type, componentId);
-				} catch (ComponentNotFoundException e) {
-					return;
-				}
-				
-			}
-			
-		} finally {
-			idGenerationTimer.stop();
-		}
+	
+	@JsonIgnore
+	public Collection<SnomedComponentCreateRequest> getNestedRequests() {
+		return ImmutableList.of(this);
 	}
 
-	protected abstract void checkComponentExists(TransactionContext context, final String componentId) throws ComponentNotFoundException;
 }

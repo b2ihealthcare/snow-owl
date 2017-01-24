@@ -17,10 +17,10 @@ package com.b2international.snowowl.snomed.api.impl.domain;
 
 import com.b2international.snowowl.core.domain.AbstractComponentList;
 import com.b2international.snowowl.core.domain.IComponentList;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 
 /**
  */
-public class SnomedConceptList extends AbstractComponentList<ISnomedConcept> implements IComponentList<ISnomedConcept> {
+public class SnomedConceptList extends AbstractComponentList<SnomedConcept> implements IComponentList<SnomedConcept> {
 	// Empty class body
 }

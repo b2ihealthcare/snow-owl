@@ -35,7 +35,6 @@ import com.google.common.primitives.Longs;
  * Branch actions are performed in bulk, after all affected locks are acquired. Any caught exception will cause the method to
  * return, and the corresponding locks will be released.
  * 
- * @see BranchNamePredicate
  * @see BranchPathPredicate
  */
 public interface ICDOBranchActionManager {
@@ -48,27 +47,6 @@ public interface ICDOBranchActionManager {
 			return Longs.compare(o1.getBase().getTimeStamp(), o2.getBase().getTimeStamp());
 		}
 	};
-
-	/**
-	 * Predicate for comparing branches by their names.
-	 * 
-	 * @see ICDOBranchActionManager
-	 */
-	public static class BranchNamePredicate implements Predicate<CDOBranch> {
-		
-		private final String branchName;
-
-		public BranchNamePredicate(final String branchName) {
-			checkNotNull(branchName, "Branch name cannot be null.");
-			this.branchName = branchName;
-		}
-
-		@Override public boolean apply(final CDOBranch branch) {
-			checkNotNull(branch, "CDO branch cannot be null.");
-			checkNotNull(branch.getName(), "Branch name cannot be null for branch: %s", branch);
-			return branchName.equals(branch.getName());
-		}
-	}
 
 	/**
 	 * Predicate for comparing branches by their paths.

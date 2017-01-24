@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 
@@ -65,8 +66,8 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		givenBranchWithPath(testBranchPath);
 		// try to create member
 		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
-		final String referenceSetId = identifierService.reserve(null, ComponentCategory.CONCEPT);
-		final String referencedComponentId = identifierService.reserve(null, ComponentCategory.DESCRIPTION);
+		final String referenceSetId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.CONCEPT, 1));
+		final String referencedComponentId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.DESCRIPTION, 1));
 		final Map<String, Object> memberReq = createRefSetMemberRequestBody(referencedComponentId, referenceSetId);
 		assertComponentNotCreated(testBranchPath, SnomedComponentType.MEMBER, memberReq);
 	}
@@ -95,7 +96,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 		// try to create member
 		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
-		final String referencedComponentId = identifierService.reserve(null, ComponentCategory.DESCRIPTION);
+		final String referencedComponentId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.DESCRIPTION, 1));
 		final Map<String, Object> memberReq = createRefSetMemberRequestBody(referencedComponentId, createdRefSetId);
 		assertComponentNotCreated(testBranchPath, SnomedComponentType.MEMBER, memberReq).and().body("message",
 				CoreMatchers.equalTo(String.format("'%s' reference set can't reference '%s | %s' component. Only '%s' components are allowed.",
@@ -122,7 +123,8 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 		// create query type reference set member specify the ID
 		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
-		final Map<String, Object> memberReq = createRefSetMemberRequestBody(identifierService.reserve(null, ComponentCategory.CONCEPT), createdRefSetId);
+		final String conceptId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.CONCEPT, 1));
+		final Map<String, Object> memberReq = createRefSetMemberRequestBody(conceptId, createdRefSetId);
 		assertComponentNotCreated(testBranchPath, SnomedComponentType.MEMBER, memberReq).and().body("message",
 				CoreMatchers.equalTo(
 						String.format("'%s' type reference set members can't reference components manually, specify a '%s' property instead.",

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,51 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import static com.google.common.collect.Sets.newHashSet;
+
+import java.util.Set;
+
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Function;
 import com.google.common.collect.Multimap;
 
 /**
- * Represents a SNOMED&nbsp;CT concept.
- * 
+ * Represents a SNOMED CT concept.
+ * <p>
+ * If the component status is not active, additional information about the inactivation reason and associated concepts can also be retrieved from this
+ * object.
  */
-public class SnomedConcept extends BaseSnomedCoreComponent implements ISnomedConcept {
+public final class SnomedConcept extends SnomedCoreComponent implements DefinitionStatusProvider {
 
+	/**
+	 * Helper function to get ancestors of a given {@link SnomedConcept}.
+	 */
+	public static final Function<SnomedConcept, Set<String>> GET_ANCESTORS = (concept) -> {
+		final Set<String> ancestors = newHashSet();
+		for (long parent : concept.getParentIds()) {
+			ancestors.add(Long.toString(parent));
+		}
+		for (long ancestor : concept.getAncestorIds()) {
+			ancestors.add(Long.toString(ancestor));
+		}
+		for (long parent : concept.getStatedParentIds()) {
+			ancestors.add(Long.toString(parent));
+		}
+		for (long ancestor : concept.getStatedAncestorIds()) {
+			ancestors.add(Long.toString(ancestor));
+		}
+		return ancestors;
+	};
+	
 	private DefinitionStatus definitionStatus;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
 	private InactivationIndicator inactivationIndicator;
 	private Multimap<AssociationType, String> associationTargets;
-	private ISnomedDescription fsn;
-	private ISnomedDescription pt;
+	private SnomedDescription fsn;
+	private SnomedDescription pt;
 	private SnomedDescriptions descriptions;
 	private SnomedRelationships relationships;
 	private SnomedConcepts ancestors;
@@ -50,67 +81,112 @@ public class SnomedConcept extends BaseSnomedCoreComponent implements ISnomedCon
 		return definitionStatus;
 	}
 
-	@Override
+	/**
+	 * Returns the subclass definition status of the concept.
+	 * 
+	 * @return {@link SubclassDefinitionStatus#DISJOINT_SUBCLASSES} if the subclasses form a disjoint union,
+	 *         {@link SubclassDefinitionStatus#NON_DISJOINT_SUBCLASSES} otherwise
+	 */
 	public SubclassDefinitionStatus getSubclassDefinitionStatus() {
 		return subclassDefinitionStatus;
 	}
 
-	@Override
+	/**
+	 * Returns the concept's corresponding inactivation indicator member value.
+	 * 
+	 * @return the inactivation indicator value, or {@code null} if the concept is still active
+	 */
 	public InactivationIndicator getInactivationIndicator() {
 		return inactivationIndicator;
 	}
 
-	@Override
+	/**
+	 * Returns association reference set member targets keyed by the association type.
+	 * 
+	 * @return related association targets, or {@code null} if the concept is still active
+	 */
 	public Multimap<AssociationType, String> getAssociationTargets() {
 		return associationTargets;
 	}
-	
-	@Override
+
+	/**
+	 * Returns the descriptions of the SNOMED CT Concept.
+	 * 
+	 * @return
+	 */
 	public SnomedDescriptions getDescriptions() {
 		return descriptions;
 	}
-	
-	@Override
+
+	/**
+	 * Returns the relationships of the SNOMED CT Concept.
+	 * 
+	 * @return
+	 */
 	public SnomedRelationships getRelationships() {
 		return relationships;
 	}
 
-	@Override
-	public ISnomedDescription getFsn() {
+	/**
+	 * Returns the fully specified name of the SNOMED CT Concept.
+	 * 
+	 * @return
+	 */
+	public SnomedDescription getFsn() {
 		return fsn;
 	}
-	
-	@Override
-	public ISnomedDescription getPt() {
+
+	/**
+	 * Returns the preferred term of the SNOMED CT Concept.
+	 * 
+	 * @return
+	 */
+	public SnomedDescription getPt() {
 		return pt;
 	}
-	
-	@Override
+
+	/**
+	 * @return the ancestors of the SNOMED CT concept
+	 */
 	public SnomedConcepts getAncestors() {
 		return ancestors;
 	}
-	
-	@Override
+
+	/**
+	 * @return the descendants of the SNOMED CT concept
+	 */
 	public SnomedConcepts getDescendants() {
 		return descendants;
 	}
 
-	@Override
+	/**
+	 * @return the concept IDs of the ancestors
+	 */
+	@JsonIgnore
 	public long[] getAncestorIds() {
 		return ancestorIds;
 	}
-	
-	@Override
+
+	/**
+	 * @return the concept IDs of the parents
+	 */
+	@JsonIgnore
 	public long[] getParentIds() {
 		return parentIds;
 	}
-	
-	@Override
+
+	/**
+	 * @return the concept IDs of the stated ancestors
+	 */
+	@JsonIgnore
 	public long[] getStatedAncestorIds() {
 		return statedAncestorIds;
 	}
-	
-	@Override
+
+	/**
+	 * @return the concept IDs of the stated parents
+	 */
+	@JsonIgnore
 	public long[] getStatedParentIds() {
 		return statedParentIds;
 	}
@@ -139,11 +215,11 @@ public class SnomedConcept extends BaseSnomedCoreComponent implements ISnomedCon
 		this.relationships = relationships;
 	}
 	
-	public void setFsn(ISnomedDescription fsn) {
+	public void setFsn(SnomedDescription fsn) {
 		this.fsn = fsn;
 	}
 	
-	public void setPt(ISnomedDescription pt) {
+	public void setPt(SnomedDescription pt) {
 		this.pt = pt;
 	}
 	
@@ -169,6 +245,33 @@ public class SnomedConcept extends BaseSnomedCoreComponent implements ISnomedCon
 	
 	public void setStatedParentIds(final long[] statedParentIds) {
 		this.statedParentIds = statedParentIds;
+	}
+	
+	@Override
+	public Request<TransactionContext, String> toCreateRequest(String containerId) {
+		return SnomedRequests.prepareNewConcept()
+				.addMembers(getMembers())
+				.addRelationships(getRelationships())
+				.addDescriptions(getDescriptions())
+				.setId(getId())
+				.setModuleId(getModuleId())
+				.setDefinitionStatus(getDefinitionStatus())
+				.build();
+	}
+	
+	@Override
+	public Request<TransactionContext, Boolean> toUpdateRequest() {
+		return SnomedRequests.prepareUpdateConcept(getId())
+				.setActive(isActive())
+				.setAssociationTargets(getAssociationTargets())
+				.setDefinitionStatus(getDefinitionStatus())
+				.setInactivationIndicator(getInactivationIndicator())
+				.setModuleId(getModuleId())
+				.setSubclassDefinitionStatus(getSubclassDefinitionStatus())
+				.setDescriptions(getDescriptions())
+				.setRelationships(getRelationships())
+				.setMembers(getMembers())
+				.build();
 	}
 	
 	@Override

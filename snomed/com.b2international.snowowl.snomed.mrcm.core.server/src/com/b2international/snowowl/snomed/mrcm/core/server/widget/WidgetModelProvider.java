@@ -24,7 +24,7 @@ import java.util.Set;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
@@ -56,7 +56,7 @@ public enum WidgetModelProvider implements IWidgetModelProvider {
 				.setComponentId(conceptId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.then(ISnomedConcept.GET_ANCESTORS)
+				.then(SnomedConcept.GET_ANCESTORS)
 				.getSync();
 	}
 }

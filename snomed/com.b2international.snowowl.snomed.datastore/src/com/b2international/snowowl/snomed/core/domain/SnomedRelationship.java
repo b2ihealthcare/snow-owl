@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,28 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Represents a SNOMEd&nbsp;CT relationship.
  * 
  */
-public class SnomedRelationship extends BaseSnomedCoreComponent implements ISnomedRelationship {
+public final class SnomedRelationship extends SnomedCoreComponent {
 
+	private static final long serialVersionUID = -1131388567716570593L;
+	
 	private boolean destinationNegated;
 	private Integer group;
 	private Integer unionGroup;
 	private CharacteristicType characteristicType;
-	private RelationshipRefinability refinability;
 	private RelationshipModifier modifier;
-	private ISnomedConcept source;
-	private ISnomedConcept destination;
-	private ISnomedConcept type;
+	private SnomedConcept source;
+	private SnomedConcept destination;
+	private SnomedConcept type;
 
 	public SnomedRelationship() {
 	}
@@ -38,76 +45,123 @@ public class SnomedRelationship extends BaseSnomedCoreComponent implements ISnom
 		setId(id);
 	}
 
-	@Override
+	@JsonProperty
 	public String getSourceId() {
-		return getSourceConcept().getId();
+		return getSource() == null ? null : getSource().getId();
 	}
 	
-	@Override
-	public ISnomedConcept getSourceConcept() {
+	/**
+	 * Returns the source concept of this relationship.
+	 * 
+	 * @return
+	 */
+	public SnomedConcept getSource() {
 		return source;
 	}
 
-	@Override
+	@JsonProperty
 	public String getDestinationId() {
-		return getDestinationConcept().getId();
+		return getDestination() == null ? null : getDestination().getId();
 	}
-	
-	@Override
-	public ISnomedConcept getDestinationConcept() {
+
+	/**
+	 * Returns the destination concept of this relationship.
+	 * 
+	 * @return
+	 */
+	public SnomedConcept getDestination() {
 		return destination;
 	}
 
-	@Override
+	/**
+	 * Checks whether the destination concept's meaning should be negated ({@code ObjectComplementOf} semantics in OWL2).
+	 * 
+	 * @return {@code true} if the destination concept is negated, {@code false} if it should be interpreted normally
+	 */
 	public boolean isDestinationNegated() {
 		return destinationNegated;
 	}
 
-	@Override
+	/**
+	 * Returns the type identifier of this relationship.
+	 * 
+	 * @return the relationship type identifier
+	 */
+	@JsonProperty
 	public String getTypeId() {
-		return getTypeConcept().getId();
+		return getType() == null ? null : getType().getId();
 	}
-	
-	@Override
-	public ISnomedConcept getTypeConcept() {
+
+	/**
+	 * Returns the type concept of this relationship.
+	 * 
+	 * @return
+	 */
+	public SnomedConcept getType() {
 		return type;
 	}
 
-	@Override
+	/**
+	 * Returns the relationship group number.
+	 * 
+	 * @return the relationship group, or 0 if this relationship can not be grouped, or is in an unnumbered, singleton group
+	 */
 	public Integer getGroup() {
 		return group;
 	}
 
-	@Override
+	/**
+	 * If multiple relationship destinations are to be taken as a disjunction, the relationships are assigned a common, positive union group number.
+	 * 
+	 * @return the relationship union group, or 0 if this relationship is not part of a disjunction
+	 */
 	public Integer getUnionGroup() {
 		return unionGroup;
 	}
 
-	@Override
+	/**
+	 * Returns the characteristic type of the relationship.
+	 * 
+	 * @return the relationship's characteristic type
+	 */
 	public CharacteristicType getCharacteristicType() {
 		return characteristicType;
 	}
 
-	@Override
-	public RelationshipRefinability getRefinability() {
-		return refinability;
-	}
-
-	@Override
+	/**
+	 * Returns the relationship's modifier value.
+	 * 
+	 * @return the modifier of this relationship
+	 */
 	public RelationshipModifier getModifier() {
 		return modifier;
 	}
 
-	public void setSource(ISnomedConcept source) {
+	public void setSource(SnomedConcept source) {
 		this.source = source;
 	}
 	
-	public void setDestination(ISnomedConcept destination) {
+	@JsonIgnore
+	public void setSourceId(String sourceId) {
+		setSource(new SnomedConcept(sourceId));
+	}
+
+	public void setDestination(SnomedConcept destination) {
 		this.destination = destination;
 	}
 	
-	public void setType(ISnomedConcept type) {
+	@JsonIgnore
+	public void setDestinationId(String destinationId) {
+		setDestination(new SnomedConcept(destinationId));
+	}
+	
+	public void setType(SnomedConcept type) {
 		this.type = type;
+	}
+	
+	@JsonIgnore
+	public void setTypeId(String typeId) {
+		setType(new SnomedConcept(typeId));
 	}
 	
 	public void setDestinationNegated(final boolean destinationNegated) {
@@ -126,14 +180,39 @@ public class SnomedRelationship extends BaseSnomedCoreComponent implements ISnom
 		this.characteristicType = characteristicType;
 	}
 
-	public void setRefinability(final RelationshipRefinability refinability) {
-		this.refinability = refinability;
-	}
-
 	public void setModifier(final RelationshipModifier modifier) {
 		this.modifier = modifier;
 	}
 
+	@Override
+	public Request<TransactionContext, String> toCreateRequest(String containerId) {
+		return SnomedRequests.prepareNewRelationship()
+				.setActive(isActive())
+				.setCharacteristicType(getCharacteristicType())
+				.setDestinationId(getDestinationId())
+				.setDestinationNegated(isDestinationNegated())
+				.setGroup(getGroup())
+				.setId(getId())
+				.setModifier(getModifier())
+				.setModuleId(getModuleId())
+				.setSourceId(containerId)
+				.setTypeId(getTypeId())
+				.setUnionGroup(getUnionGroup())
+				.build();
+	}
+	
+	@Override
+	public Request<TransactionContext, Boolean> toUpdateRequest() {
+		return SnomedRequests.prepareUpdateRelationship(getId())
+				.setActive(isActive())
+				.setCharacteristicType(getCharacteristicType())
+				.setGroup(getGroup())
+				.setModifier(getModifier())
+				.setModuleId(getModuleId())
+				.setUnionGroup(getUnionGroup())
+				.build();
+	}
+	
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
@@ -161,8 +240,6 @@ public class SnomedRelationship extends BaseSnomedCoreComponent implements ISnom
 		builder.append(getUnionGroup());
 		builder.append(", getCharacteristicType()=");
 		builder.append(getCharacteristicType());
-		builder.append(", getRefinability()=");
-		builder.append(getRefinability());
 		builder.append(", getModifier()=");
 		builder.append(getModifier());
 		builder.append("]");

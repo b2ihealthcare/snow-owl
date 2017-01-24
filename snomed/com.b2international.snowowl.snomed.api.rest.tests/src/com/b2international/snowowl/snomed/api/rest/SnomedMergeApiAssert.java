@@ -114,10 +114,15 @@ public abstract class SnomedMergeApiAssert {
 				.put("languageCode", "en")
 				.put("acceptability", PREFERRED_ACCEPTABILITY_MAP)
 				.build();
+		
+		final Map<?, ?> isa = ImmutableMap.builder()
+				.put("typeId", Concepts.IS_A)
+				.put("destinationId", Concepts.ROOT_CONCEPT)
+				.build();
 
 		final ImmutableMap.Builder<String, Object> conceptBuilder = ImmutableMap.<String, Object>builder()
 				.put("commitComment", "New concept")
-				.put("parentId", Concepts.ROOT_CONCEPT)
+				.put("relationships", ImmutableList.of(isa))
 				.put("moduleId", Concepts.MODULE_SCT_CORE)
 				.put("descriptions", ImmutableList.of(fsnDescription, ptDescription));
 

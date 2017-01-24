@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.events.Requests;
  */
 public final class SnomedRefSetMemberCreateRequestBuilder extends BaseSnomedTransactionalRequestBuilder<SnomedRefSetMemberCreateRequestBuilder, String> {
 
+	private Boolean active = Boolean.TRUE;
 	private String moduleId;
 	private String referenceSetId;
 	private String referencedComponentId;
@@ -38,22 +39,27 @@ public final class SnomedRefSetMemberCreateRequestBuilder extends BaseSnomedTran
 	
 	public SnomedRefSetMemberCreateRequestBuilder setReferencedComponentId(String referencedComponentId) {
 		this.referencedComponentId = referencedComponentId;
-		return this;
+		return getSelf();
+	}
+	
+	public SnomedRefSetMemberCreateRequestBuilder setActive(Boolean active) {
+		this.active = active;
+		return getSelf();
 	}
 	
 	public SnomedRefSetMemberCreateRequestBuilder setModuleId(String moduleId) {
 		this.moduleId = moduleId;
-		return this;
+		return getSelf();
 	}
 	
 	public SnomedRefSetMemberCreateRequestBuilder setReferenceSetId(String referenceSetId) {
 		this.referenceSetId = referenceSetId;
-		return this;
+		return getSelf();
 	}
 	
 	public SnomedRefSetMemberCreateRequestBuilder setProperties(Map<String, Object> properties) {
 		this.properties = properties;
-		return this;
+		return getSelf();
 	}
 	
 	public SnomedRefSetMemberCreateRequestBuilder setSource(Map<String, Object> source) {
@@ -61,12 +67,13 @@ public final class SnomedRefSetMemberCreateRequestBuilder extends BaseSnomedTran
 		setReferencedComponentId((String) source.get("referencedComponentId"));
 		setReferenceSetId((String) source.get("referenceSetId"));
 		setProperties(source);
-		return this;
+		return getSelf();
 	}
 	
 	@Override
 	public Request<TransactionContext, String> doBuild() {
 		final SnomedRefSetMemberCreateRequest req = new SnomedRefSetMemberCreateRequest();
+		req.setActive(active == null ? Boolean.TRUE : active);
 		req.setModuleId(moduleId);
 		req.setReferencedComponentId(referencedComponentId);
 		req.setReferenceSetId(referenceSetId);

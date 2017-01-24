@@ -73,7 +73,7 @@ public class SnomedBrowserApiTest extends AbstractSnomedApiTest {
 		final ImmutableList<?> descriptions = createDescriptions(fsn, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, creationDate);
 		final Map<?, ?> requestBody = givenConceptRequestBody(null, true, fsn, MODULE_SCT_CORE, descriptions, null, creationDate);
 		assertComponentCreatedWithStatus(createMainPath(), requestBody, 400).and().body("message",
-				equalTo("At least one isA relationship is required."));
+				equalTo("1 validation error"));
 	}
 
 	@Test

@@ -30,11 +30,10 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
-import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -46,19 +45,19 @@ import com.google.common.collect.Multimap;
 /**
  * @since 4.0
  */
-final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<SnomedDescriptionIndexEntry, ISnomedDescription, SnomedDescriptions> {
+final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<SnomedDescriptionIndexEntry, SnomedDescription, SnomedDescriptions> {
 
 	SnomedDescriptionConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
 	}
 
 	@Override
-	protected SnomedDescriptions createCollectionResource(List<ISnomedDescription> results, int offset, int limit, int total) {
+	protected SnomedDescriptions createCollectionResource(List<SnomedDescription> results, int offset, int limit, int total) {
 		return new SnomedDescriptions(results, offset, limit, total);
 	}
 	
 	@Override
-	protected ISnomedDescription toResource(final SnomedDescriptionIndexEntry input) {
+	protected SnomedDescription toResource(final SnomedDescriptionIndexEntry input) {
 		final SnomedDescription result = new SnomedDescription();
 		result.setStorageKey(input.getStorageKey());
 		result.setAcceptabilityMap(input.getAcceptabilityMap());
@@ -79,57 +78,80 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 	}
 	
 	@Override
-	protected void expand(List<ISnomedDescription> results) {
-		final Set<String> descriptionIds = FluentIterable.from(results).transform(IComponent.ID_FUNCTION).toSet();
-
+	protected void expand(List<SnomedDescription> results) {
 		if (expand().isEmpty()) {
 			return;
 		}
 		
+		final Set<String> descriptionIds = FluentIterable.from(results).transform(IComponent.ID_FUNCTION).toSet();
+		
 		expandInactivationProperties(results, descriptionIds);
 		new MembersExpander(context(), expand(), locales()).expand(results, descriptionIds);
+		expandConcept(results, descriptionIds);
 		expandType(results, descriptionIds);
 	}
 
-	private void expandType(List<ISnomedDescription> results, final Set<String> descriptionIds) {
+	private void expandConcept(List<SnomedDescription> results, final Set<String> descriptionIds) {
+		if (expand().containsKey("concept")) {
+			final Options expandOptions = expand().get("concept", Options.class);
+			final Set<String> conceptIds = FluentIterable.from(results)
+					.transform(new Function<SnomedDescription, String>() {
+						@Override public String apply(SnomedDescription input) { return input.getConceptId(); }
+					})
+					.toSet();
+			
+			final Map<String, SnomedConcept> conceptsById = getConceptMap(expandOptions, conceptIds);
+			
+			for (SnomedDescription description : results) {
+				final SnomedConcept concept = conceptsById.get(description.getConceptId());
+				((SnomedDescription) description).setConcept(concept);
+			}
+		}
+	}
+	
+	private void expandType(List<SnomedDescription> results, final Set<String> descriptionIds) {
 		if (expand().containsKey("type")) {
 			final Options expandOptions = expand().get("type", Options.class);
-			final Set<String> typeIds = FluentIterable.from(results).transform(new Function<ISnomedDescription, String>() {
-				@Override
-				public String apply(ISnomedDescription input) {
-					return input.getTypeId();
-				}
-			}).toSet();
+			final Set<String> conceptIds = FluentIterable.from(results)
+					.transform(new Function<SnomedDescription, String>() {
+						@Override public String apply(SnomedDescription input) { return input.getTypeId(); }
+					})
+					.toSet();
 			
-			final SnomedConcepts types = SnomedRequests
-				.prepareSearchConcept()
-				.setLimit(typeIds.size())
-				.setComponentIds(typeIds)
-				.setLocales(locales())
-				.setExpand(expandOptions.get("expand", Options.class))
-				.build()
-				.execute(context());
+			final Map<String, SnomedConcept> conceptsById = getConceptMap(expandOptions, conceptIds);
 			
-			final Map<String, ISnomedConcept> typesById = Maps.uniqueIndex(types, ID_FUNCTION);
-			
-			for (ISnomedDescription description : results) {
-				final ISnomedConcept type = typesById.get(description.getTypeId());
+			for (SnomedDescription description : results) {
+				final SnomedConcept type = conceptsById.get(description.getTypeId());
 				((SnomedDescription) description).setType(type);
 			}
 		}
 	}
 
-	private void expandInactivationProperties(List<ISnomedDescription> results, final Set<String> descriptionIds) {
+	private Map<String, SnomedConcept> getConceptMap(final Options expandOptions, final Set<String> conceptIds) {
+		final SnomedConcepts types = SnomedRequests
+			.prepareSearchConcept()
+			.setLimit(conceptIds.size())
+			.setComponentIds(conceptIds)
+			.setLocales(locales())
+			.setExpand(expandOptions.get("expand", Options.class))
+			.build()
+			.execute(context());
+		
+		final Map<String, SnomedConcept> conceptsById = Maps.uniqueIndex(types, ID_FUNCTION);
+		return conceptsById;
+	}
+
+	private void expandInactivationProperties(List<SnomedDescription> results, final Set<String> descriptionIds) {
 		if (expand().containsKey("inactivationProperties")) {
-			new InactivationExpander<ISnomedDescription>(context(), Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR) {
+			new InactivationExpander<SnomedDescription>(context(), Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR) {
 				@Override
-				protected void setAssociationTargets(ISnomedDescription result,Multimap<AssociationType, String> associationTargets) {
+				protected void setAssociationTargets(SnomedDescription result,Multimap<AssociationType, String> associationTargets) {
 					((SnomedDescription) result).setAssociationTargets(associationTargets);
 				}
 				
 				@Override
-				protected void setInactivationIndicator(ISnomedDescription result, String valueId) {
-					((SnomedDescription) result).setDescriptionInactivationIndicator(DescriptionInactivationIndicator.getInactivationIndicatorByValueId(valueId));				
+				protected void setInactivationIndicator(SnomedDescription result, String valueId) {
+					((SnomedDescription) result).setInactivationIndicator(DescriptionInactivationIndicator.getInactivationIndicatorByValueId(valueId));				
 				}
 			}.expand(results, descriptionIds);
 		}

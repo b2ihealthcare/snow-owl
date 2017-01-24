@@ -53,11 +53,11 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 })
 public class SnomedExtensionApiTests {
 
-private static final String EXT_BRANCH_PATH = "MAIN/2016-01-31/SNOMEDCT-B2I";
+	public static final String EXT_BRANCH_PATH = "MAIN/2016-01-31/SNOMEDCT-B2I";
 	
 	@ClassRule
 	public static final RuleChain appRule = RuleChain
-			.outerRule(SnowOwlAppRule.snowOwl().clearResources(true).config(PlatformUtil.toAbsolutePath(SnomedExtensionApiTests.class, "rest-configuration.yml")))
+			.outerRule(SnowOwlAppRule.snowOwl().clearResources(true).config(PlatformUtil.toAbsolutePath(SnomedExtensionApiTests.class, "snomed-extension-api-test-config.yml")))
 			.around(new BundleStartRule("com.b2international.snowowl.api.rest"))
 			.around(new BundleStartRule("com.b2international.snowowl.snomed.api.rest"))
 			.around(new SnomedContentRule(SnomedReleases.newSnomedInternationalRelease(), Resources.Snomed.MINI_RF2__INT_20160131, ContentSubType.FULL))

@@ -31,7 +31,7 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
-import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
@@ -69,7 +69,7 @@ public final class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpd
 	}
 	
 	@Override
-	public Void execute(TransactionContext context) {
+	public Boolean execute(TransactionContext context) {
 		final Description description = context.lookup(getComponentId(), Description.class);
 
 		boolean changed = false;
@@ -88,7 +88,7 @@ public final class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpd
 					long start = new Date().getTime();
 					final String branchPath = getLatestReleaseBranch(context);
 					final IEventBus bus = context.service(IEventBus.class);
-					final ISnomedDescription releasedDescription = SnomedRequests
+					final SnomedDescription releasedDescription = SnomedRequests
 						.prepareGetDescription()
 						.setComponentId(getComponentId())
 						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
@@ -103,7 +103,7 @@ public final class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpd
 			}
 		}
 		
-		return null;
+		return changed;
 	}
 
 	private void updateAcceptability(TransactionContext context, final Description description) {
@@ -185,7 +185,7 @@ public final class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpd
 		inactivationUpdateRequest.execute(context);
 	}
 
-	private boolean isDifferentToPreviousRelease(Description description, ISnomedDescription releasedDescription) {
+	private boolean isDifferentToPreviousRelease(Description description, SnomedDescription releasedDescription) {
 		if (releasedDescription.isActive() != description.isActive()) return true;
 		if (!releasedDescription.getModuleId().equals(description.getModule().getId())) return true;
 		if (!releasedDescription.getConceptId().equals(description.getConcept().getId())) return true;

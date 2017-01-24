@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedFactory;
@@ -32,10 +31,6 @@ public final class SnomedDescriptionBuilder extends SnomedComponentBuilder<Snome
 	private String term;
 	private String languageCode = "en";
 	private String concept;
-
-	protected SnomedDescriptionBuilder() {
-		super(ComponentCategory.DESCRIPTION);
-	}
 
 	/**
 	 * Specifies the type of the new SNOMED CT Description.

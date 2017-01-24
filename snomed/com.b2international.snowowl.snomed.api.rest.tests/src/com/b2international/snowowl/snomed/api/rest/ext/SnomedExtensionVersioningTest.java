@@ -21,7 +21,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.assertVersionGetStatus;
-import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.assertVersionPostStatus;
+import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.assertVersionCreated;
 import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.getLatestAvailableVersionDateAsString;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -48,7 +48,7 @@ public class SnomedExtensionVersioningTest extends ExtensionTest {
 		final String versionDate = getLatestAvailableVersionDateAsString(B2I_EXT_SHORT_NAME);
 		final String versionId = UUID.randomUUID().toString();
 		
-		assertVersionPostStatus(versionId, versionDate, B2I_EXT_SHORT_NAME, 201);
+		assertVersionCreated(versionId, versionDate, B2I_EXT_SHORT_NAME, 201);
 		assertVersionGetStatus(versionId, 200, B2I_EXT_SHORT_NAME);
 	}
 	
@@ -57,7 +57,7 @@ public class SnomedExtensionVersioningTest extends ExtensionTest {
 		assertB2iExtensionExistsWithDefaults();
 		
 		final String versionDate = getLatestAvailableVersionDateAsString(B2I_EXT_SHORT_NAME);
-		assertVersionPostStatus("", versionDate, B2I_EXT_SHORT_NAME, 400);
+		assertVersionCreated("", versionDate, B2I_EXT_SHORT_NAME, 400);
 	}
 	
 	@Test
@@ -75,7 +75,7 @@ public class SnomedExtensionVersioningTest extends ExtensionTest {
 		final String versionDate = getLatestAvailableVersionDateAsString(B2I_EXT_SHORT_NAME);
 		final String versionId = UUID.randomUUID().toString();
 		
-		assertVersionPostStatus(versionId, versionDate, B2I_EXT_SHORT_NAME, 201);
+		assertVersionCreated(versionId, versionDate, B2I_EXT_SHORT_NAME, 201);
 		assertVersionGetStatus(versionId, 200, B2I_EXT_SHORT_NAME);
 		
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
