@@ -71,6 +71,7 @@ public class DefaultSnomedIdentifierServiceTest {
 		
 		store.configureSearchable(SctId.Fields.NAMESPACE);
 		store.configureSearchable(SctId.Fields.PARTITION_ID);
+		store.configureSearchable(SctId.Fields.SEQUENCE);
 		store.configureSortable(SctId.Fields.SEQUENCE);
 	}
 	
@@ -136,10 +137,10 @@ public class DefaultSnomedIdentifierServiceTest {
 		identifiers.register("101009");
 		
 		List<String> actualIds = ImmutableList.copyOf(identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT, 2));
-		List<String> expectedIds = ImmutableList.of("999999999999999006", "100005");
+		List<String> expectedIds = ImmutableList.of("102002", "103007");
 		assertEquals(expectedIds, actualIds);
 	}
-	
+
 	@Test
 	public void issue_SO_2138_testSkipReservedRange() throws Exception {
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();

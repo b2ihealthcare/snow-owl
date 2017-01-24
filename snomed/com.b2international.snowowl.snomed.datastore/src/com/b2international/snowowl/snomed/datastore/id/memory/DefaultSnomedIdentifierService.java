@@ -66,6 +66,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		
 		store.configureSearchable(SctId.Fields.NAMESPACE);
 		store.configureSearchable(SctId.Fields.PARTITION_ID);
+		store.configureSearchable(SctId.Fields.SEQUENCE);
 		store.configureSortable(SctId.Fields.SEQUENCE);
 		
 		this.store = store;

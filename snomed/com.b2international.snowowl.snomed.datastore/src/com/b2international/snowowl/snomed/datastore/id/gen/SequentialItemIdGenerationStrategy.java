@@ -56,7 +56,7 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 		private final AtomicLong counter;
 		
 		public ItemIdCounter(final String namespace, final ComponentCategory category) {
-			this.allowedRange = Range.closed(getLowerInclusiveId(namespace), getUpperExclusiveId(namespace));
+			this.allowedRange = Range.closedOpen(getLowerInclusiveId(namespace), getUpperExclusiveId(namespace));
 			
 			final SctId lastSctId = getLastSctId(namespace, category);
 			if (lastSctId != null) {
@@ -102,6 +102,7 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 			final Query query = QueryBuilder.newQuery()
 				.match(SctId.Fields.NAMESPACE, intNamespace ? SnomedIdentifiers.INT_NAMESPACE : namespace)
 				.match(SctId.Fields.PARTITION_ID, (intNamespace ? "0" : "1") + Integer.toString(category.ordinal()))
+				.lessThan(SctId.Fields.SEQUENCE, allowedRange.upperEndpoint())
 				.sortBy(SctId.Fields.SEQUENCE, true, false)
 				.build();
 			

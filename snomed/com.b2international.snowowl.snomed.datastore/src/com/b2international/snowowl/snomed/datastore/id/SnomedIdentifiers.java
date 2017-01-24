@@ -38,9 +38,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 /**
- * Shortcut methods to create SNOMED CT Identifiers.
- * <p><i>TODO: add support to track/take into account global reservations, currently it uses internal ID and Reservation services</i></p>
- * <p>Mostly used from test cases</p> 
+ * Utility methods to create SNOMED CT Identifiers and derive different parts from their string representations.
  * 
  * @since 4.0
  */
@@ -48,12 +46,12 @@ public class SnomedIdentifiers {
 	
 	public static final String INT_NAMESPACE = "INT";
 	
-	public static final long MIN_INT_ITEMID = 100L;
-	public static final long MIN_INT_METADATA_ITEMID = 9000_0000_0000_000L; // SNOMED CT Model Component IDs are placed at the end of the range
-	public static final long MAX_INT_ITEMID = 9999_9999_9999_999L; // 8 + 7 = 15 digits for itemId
+	public static final long MIN_INT_ITEMID = 100L; // inclusive
+	public static final long MIN_INT_METADATA_ITEMID = 9000_0000_0000_000L; // inclusive
+	public static final long MAX_INT_ITEMID = MIN_INT_METADATA_ITEMID; // 15 digits for itemId, restricted to non-metadata IDs, exclusive
 	
-	public static final long MAX_NAMESPACE_ITEMID = 9999_9999L; // 8 digits for itemId, 7 digits for namespaceId
-	public static final long MIN_NAMESPACE_ITEMID = 1L;
+	public static final long MIN_NAMESPACE_ITEMID = 1L; // inclusive
+	public static final long MAX_NAMESPACE_ITEMID = 9999_9999L + 1L; // 8 digits for itemId, exclusive
 
 	private final ISnomedIdentifierService identifierService;
 	
