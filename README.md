@@ -110,7 +110,7 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## Versioning
 
-We use [SemVer](http://semver.org) for versioning. [CHANGELOG.md](CHANGELOG.md) contains a curated, chronologically ordered list of notable changes for each version.
+Our [releases](https://github.com/b2ihealthcare/snow-owl/releases) use [semantic versioning](http://semver.org). You can find a chronologically ordered list of notable changes in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
