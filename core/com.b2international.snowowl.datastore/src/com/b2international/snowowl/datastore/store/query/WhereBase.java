@@ -53,8 +53,12 @@ public abstract class WhereBase<T> implements Where<T> {
 		@SuppressWarnings("unchecked")
 		@Override
 		public boolean apply(T input) {
-			final T actual = (T) ReflectionUtils.getGetterValue(input, property()); 
-			return matches(actual);
+			final Object actual = ReflectionUtils.getGetterValue(input, property());
+			if (value instanceof String) {
+				return matches((T) String.valueOf(actual));
+			} else {
+				return matches((T) actual);
+			}
 		}
 
 	}
