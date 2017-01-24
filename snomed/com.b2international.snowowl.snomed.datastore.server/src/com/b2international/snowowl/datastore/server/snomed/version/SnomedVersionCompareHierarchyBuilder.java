@@ -56,6 +56,8 @@ import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHe
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
@@ -104,14 +106,16 @@ public class SnomedVersionCompareHierarchyBuilder extends VersionCompareHierarch
 	}
 	
 	@Override
-	public Map<String, String> resolveLabels(Multimap<IBranchPath, String> componentIdsByBranch) {
+	public Map<String, String> resolveLabels(Multimap<IBranchPath, NodeDiff> componentsByBranch) {
 		final ApplicationContext context = ApplicationContext.getInstance();
 		final List<ExtendedLocale> locales = context.getService(LanguageSetting.class).getLanguagePreference();
 		final IEventBus bus = context.getService(IEventBus.class);
 		
 		final Map<String, ISnomedDescription> pts = newHashMap();
-		for (final IBranchPath branch : componentIdsByBranch.keySet()) {
-			final Set<String> componentIds = newHashSet(componentIdsByBranch.get(branch));
+		for (final IBranchPath branch : componentsByBranch.keySet()) {
+			final Set<NodeDiff> components = newHashSet(componentsByBranch.get(branch));
+			final Set<String> componentIds = getComponentIds(components);
+
 			pts.putAll(new DescriptionRequestHelper() {
 				@Override
 				protected SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req) {
@@ -125,6 +129,15 @@ public class SnomedVersionCompareHierarchyBuilder extends VersionCompareHierarch
 				return input.getTerm();
 			}
 		});
+	}
+
+	private ImmutableSet<String> getComponentIds(final Set<NodeDiff> components) {
+		return ImmutableSet.copyOf(Iterables.transform(components, new Function<NodeDiff, String>() {
+			@Override
+			public String apply(NodeDiff input) {
+				return input.getId();
+			}
+		}));
 	}
 	
 	@Override
