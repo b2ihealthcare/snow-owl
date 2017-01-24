@@ -144,6 +144,7 @@ public class SnomedIdentifiers {
 
 	public static boolean isConceptIdentifier(final String componentId) {
 		try {
+			validate(componentId);
 			return ComponentCategory.CONCEPT == getComponentCategory(componentId);
 		} catch (final IllegalArgumentException e) {
 			return false;
