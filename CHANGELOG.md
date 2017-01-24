@@ -4,11 +4,12 @@ All notable changes to this project will be documented in this file.
 ## 5.5.0
 
 ### Added
- - Support for inactive component creation. See endpoints:
-  * POST /{path}/concepts
-  * POST /{path}/descriptions
-  * POST /{path}/relationships
-  * POST /{path}/members
+- Support for inactive component creation. See endpoints:
+ * POST /{path}/concepts
+ * POST /{path}/descriptions
+ * POST /{path}/relationships
+ * POST /{path}/members
+- Support the complete SNOMED CT Identifier functionality via a dedicated Java API (`SnomedRequests.identifiers()`)
 
 ### Changed
 - SnomedDescription REST representation changes
@@ -38,6 +39,9 @@ All notable changes to this project will be documented in this file.
  * GET /{path}/concepts/inbound-relationships
  * GET /{path}/concepts/pt
  * GET /{path}/concepts/fsn
+- Removed `defaultModule` configuration option (requests should specify the desired module via `moduleId` parameter)
+- Removed `defaultNamespace` configuration option (requests should specify the desired namespace via `namespaceId` parameter)
+- Removed `enforceNamespace` configuration option
 
 ## 5.4.0
 
