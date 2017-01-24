@@ -941,10 +941,6 @@ reasoner used for this run).
 |inferredEditingEnabled
 |`false`
 |'true' will enable manual editing of inferred relationships and concrete domain elements.
-
-|defaultModule
-|`900000000000207008`
-|The default SNOMED CT Module to use when none is specified. The default module is SNOMED CT Core.
 |===
 
 --------------------------
@@ -1004,10 +1000,6 @@ If omitted, then default strategy will be used.
 |2
 |The maximum number of re-authentication attempts when a 401 Not authorized response is received.
 
-|enforceNamespace
-|
-|A SNOMED CT namespace identifier to use when generating new SNOMED CT component IDs regardless of the user defined namespace. Use INT keyword to enforce international IDs.
-
 |cisMaxConnections
 |100
 |Maximum number of simultaneous connections that Snow Owl can make to the CIS host via HTTP.
@@ -1029,7 +1021,6 @@ snomed:
     cisClientSoftwareKey : Snow Owl dev. deployment
     cisNumberOfPollTries : 1
     cisTimeBetweenPollTries : 1000
-    enforceNamespace: INT
     cisMaxConnections: 100
   ...
 --------------------------
