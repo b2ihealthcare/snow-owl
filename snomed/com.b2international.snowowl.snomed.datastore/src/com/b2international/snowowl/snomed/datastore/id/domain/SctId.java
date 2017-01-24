@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.id.domain;
 
 import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchRange;
 
 import java.util.Collection;
 
@@ -53,6 +54,10 @@ public class SctId {
 		public static Expression partitionId(String namespace, ComponentCategory category) {
 			final boolean intNamespace = CompareUtils.isEmpty(namespace);
 			return exactMatch(Fields.PARTITION_ID, (intNamespace ? "0" : "1") + Integer.toString(category.ordinal()));
+		}
+
+		public static Expression sequenceBetween(Long fromInclusive, Long toExclusive) {
+			return matchRange(Fields.SEQUENCE, fromInclusive, toExclusive, true, false);
 		}
 	}
 	

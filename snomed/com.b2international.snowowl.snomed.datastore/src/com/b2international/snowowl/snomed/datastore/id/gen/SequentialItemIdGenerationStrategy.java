@@ -63,7 +63,7 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 		private final AtomicLong counter;
 		
 		public ItemIdCounter(final String namespace, final ComponentCategory category) {
-			this.allowedRange = Range.closed(getLowerInclusiveId(namespace), getUpperExclusiveId(namespace));
+			this.allowedRange = Range.closedOpen(getLowerInclusiveId(namespace), getUpperExclusiveId(namespace));
 			
 			final SctId lastSctId = getLastSctId(namespace, category);
 			if (lastSctId != null) {
@@ -101,6 +101,7 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 					final Expression idsByNamespaceAndType = Expressions.builder()
 							.filter(SctId.Expressions.namespace(namespace))
 							.filter(SctId.Expressions.partitionId(namespace, category))
+							.filter(SctId.Expressions.sequenceBetween(allowedRange.lowerEndpoint(), allowedRange.upperEndpoint()))
 							.build();
 					
 					final Hits<SctId> hits = index.search(Query.select(SctId.class)
