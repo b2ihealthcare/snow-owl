@@ -1,10 +1,12 @@
 #
-# Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+# Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
 #
 
 authentication:
   type: PROP_FILE
 
+# Default username and password for RESTful API authentication
+# NOTE: changing the default username/password is recommended for production environments
 fileAuth:
   users:
     -
