@@ -29,8 +29,8 @@ repository:
     location: localhost:3306/
     settings: ?useServerPrepStmts=true&useCursorFetch=true
     
-	# Default username and password to access a local MySQL installation
-	# NOTE: changing the default username/password is recommended for production environments
+    # Default username and password to access a local MySQL installation
+    # NOTE: changing the default username/password is recommended for production environments
     username: snowowl
     password: snowowl
     
