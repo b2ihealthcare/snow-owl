@@ -575,6 +575,12 @@ repository:
 --------------------------
 <1> Update MySQL username and password, if neccessary
 
+=== File Authentication
+
+To use file based authentication, configure the `auth` property to `PROP_FILE` and the `fileAuth` configuration object to the desired username/password in the `snowowl_config.yml` file.
+
+WARNING: Building Snow Owl produces a ready to use, deployable package with the default passwords (`fileAuth` and `database` properties) configured. Usage of the default password configuration is not recommended in production environments. 
+
 === LDAP Authentication
 
 To use the configured LDAP instance, adjust `snowowl_jaas_configuration.properties` to
@@ -1014,10 +1020,10 @@ snomed:
   ...
   ids:
     strategy : CIS
-    cisBaseUrl : http://107.170.101.181
+    cisBaseUrl : <cis_host_and_port>
     cisContextRoot : api
-    cisUserName : snowowl-dev-b2i
-    cisPassword : hAAYLYMX5gc98SDEz9cr
+    cisUserName : <your-cis-username>
+    cisPassword : <your-cis-password>
     cisClientSoftwareKey : Snow Owl dev. deployment
     cisNumberOfPollTries : 1
     cisTimeBetweenPollTries : 1000
