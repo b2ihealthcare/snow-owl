@@ -39,6 +39,7 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.CharMatcher;
 
 /**
  * Base for all SNOMED&nbsp;CT reference set RF2 exporters.
@@ -128,7 +129,7 @@ public class SnomedRefSetExporter extends SnomedCompositeExporter implements Sno
 			@Override
 			protected String apply(final CDOTransaction transaction) {
 				final SnomedRefSet refSet = new SnomedRefSetLookupService().getComponent(getRefSetId(), transaction);
-				return buildRefSetFileName(refSetName, refSet);
+				return buildRefSetFileName(CharMatcher.anyOf("\\/").removeFrom(refSetName), refSet);
 			}
 		});
 	}
