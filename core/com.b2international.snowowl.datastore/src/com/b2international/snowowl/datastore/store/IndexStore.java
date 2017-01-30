@@ -55,6 +55,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.util.BytesRef;
 
+import com.b2international.commons.Pair;
 import com.b2international.commons.ReflectionUtils;
 import com.b2international.snowowl.datastore.store.query.Clause;
 import com.b2international.snowowl.datastore.store.query.EqualsWhere;
@@ -86,12 +87,13 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 	private Set<String> searchableFields = newHashSet();
 	private Set<String> sortFields = newHashSet();
 	
-	private LoadingCache<String, Method> propertyToMethodCache = CacheBuilder.newBuilder().build(CacheLoader.<String, Method>from(new Function<String, Method>() {
-		@Override
-		public Method apply(String input) {
-			return ReflectionUtils.getGetter(clazz, input);
-		}
-	}));
+	private LoadingCache<Pair<String, Class<?>>, Method> propertyToMethodCache = CacheBuilder.newBuilder()
+			.build(CacheLoader.<Pair<String, Class<?>>, Method> from(new Function<Pair<String, Class<?>>, Method>() {
+				@Override
+				public Method apply(Pair<String, Class<?>> input) {
+					return ReflectionUtils.getGetter(input.getB(), input.getA());
+				}
+			}));
 
 	/**
 	 * Creates a new Index based {@link Store} implementation working on the given directory.
@@ -297,13 +299,11 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 	@Override
 	public void configureSearchable(String property) {
 		this.searchableFields.add(checkNotNull(property));
-		propertyToMethodCache.put(property, ReflectionUtils.getGetter(clazz, property));
 	}
 	
 	@Override
 	public void configureSortable(String property) {
 		this.sortFields.add(checkNotNull(property));
-		propertyToMethodCache.put(property, ReflectionUtils.getGetter(clazz, property));
 	}
 
 	@Override
@@ -341,7 +341,7 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 		doc.add(new StoredField(SOURCE_FIELD, serialize(value)));
 		
 		for (String property : newHashSet(this.searchableFields)) {
-			Object propertyValue = ReflectionUtils.invokeSafe(value, propertyToMethodCache.getUnchecked(property));
+			Object propertyValue = ReflectionUtils.invokeSafe(value, propertyToMethodCache.getUnchecked(Pair.<String, Class<?>>identicalPairOf(property, value.getClass())));
 			Class<?> propertyClass = propertyValue.getClass();
 			
 			if (Long.class.isAssignableFrom(propertyClass) || long.class.isAssignableFrom(propertyClass)) {
@@ -352,7 +352,7 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 		}
 
 		for (String property : this.sortFields) {
-			Object propertyValue = ReflectionUtils.invokeSafe(value, propertyToMethodCache.getUnchecked(property));
+			Object propertyValue = ReflectionUtils.invokeSafe(value, propertyToMethodCache.getUnchecked(Pair.<String, Class<?>>identicalPairOf(property, value.getClass())));
 			Class<?> propertyClass = propertyValue.getClass();
 			
 			if (Long.class.isAssignableFrom(propertyClass) || long.class.isAssignableFrom(propertyClass)) {
