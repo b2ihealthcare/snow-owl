@@ -15,22 +15,23 @@
  */
 package com.b2international.snowowl.datastore.server.store;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.util.UUID;
 
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.b2international.commons.FileUtils;
 import com.b2international.snowowl.datastore.server.store.Types.Data;
 import com.b2international.snowowl.datastore.server.store.Types.EmptyData;
 import com.b2international.snowowl.datastore.store.IndexStore;
-import com.b2international.snowowl.datastore.store.Store;
 import com.b2international.snowowl.datastore.store.StoreException;
 import com.google.common.io.Files;
 
@@ -41,19 +42,33 @@ public class IndexStoreTests {
 
 	private static final String KEY = "key";
 	private static final String KEY2 = "key2";
-	private Store<Data> store;
+	private static final String KEY3 = "key3";
+	private static IndexStore<Data> store;
+	private static IndexStore<EmptyData> emptyStore;
 	
-	@Before
-	public void givenIndexStore() {
-		store = new IndexStore<Data>(tmpDir(), Data.class);
+	@BeforeClass
+	public static void givenIndexStore() {
+		store = new IndexStore<Data>(Files.createTempDir(), Data.class);
+		emptyStore = new IndexStore<EmptyData>(Files.createTempDir(), EmptyData.class);
+	}
+	
+	@AfterClass
+	public static void after() {
+		if (store != null) {
+			store.dispose();
+			FileUtils.deleteDirectory(store.getDirectory());
+		}
+		if (emptyStore != null) {
+			emptyStore.dispose();
+			FileUtils.deleteDirectory(emptyStore.getDirectory());
+		}
 	}
 
 	@Test(expected = StoreException.class)
 	public void whenStoringEmptyData_ThenThrowException() throws Exception {
-		final IndexStore<EmptyData> emptyStore = new IndexStore<EmptyData>(tmpDir(), EmptyData.class);
 		emptyStore.put(KEY, new EmptyData());
 	}
-	
+
 	@Test
 	public void whenStoringData_ThenItCanBeRetrieved() throws Exception {
 		final Data value = storeData();
@@ -85,6 +100,15 @@ public class IndexStoreTests {
 	}
 	
 	@Test
+	public void whenStoringMultipleData_ThenAllCanBeRetrievedViaKeys() throws Exception {
+		final Data value = storeData(KEY);
+		final Data value2 = storeData(KEY2);
+		assertThat(store.get(newHashSet(KEY, KEY2))).containsOnly(value, value2);
+		assertThat(store.get(newHashSet(KEY, KEY2, KEY3))).containsOnly(value, value2);
+		assertThat(store.get(newHashSet(UUID.randomUUID().toString(), UUID.randomUUID().toString()))).isEmpty();
+	}
+	
+	@Test
 	public void whenClearingStoredData_ThenValuesShouldReturnEmptyCollection() throws Exception {
 		whenStoringMultipleData_ThenAllCanBeRetrievedViaValues();
 		store.clear();
@@ -110,12 +134,6 @@ public class IndexStoreTests {
 		final Data newData = newData();
 		assertTrue(store.replace(KEY, value, newData));
 		assertEquals(newData, store.get(KEY));
-	}
-	
-	static File tmpDir() {
-		final File tmpDir = Files.createTempDir();
-		tmpDir.deleteOnExit();
-		return tmpDir;
 	}
 	
 	private Data storeData() {

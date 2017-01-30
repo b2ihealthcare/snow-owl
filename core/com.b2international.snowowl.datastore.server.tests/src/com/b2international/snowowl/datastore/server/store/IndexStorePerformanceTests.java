@@ -37,6 +37,7 @@ import com.b2international.snowowl.datastore.server.store.Types.State;
 import com.b2international.snowowl.datastore.store.IndexStore;
 import com.b2international.snowowl.datastore.store.Store;
 import com.google.common.collect.Lists;
+import com.google.common.io.Files;
 
 /**
  * @since 4.1
@@ -52,7 +53,7 @@ public class IndexStorePerformanceTests {
 
 	@Before
 	public void givenIndexStore() {
-		this.store = new IndexStore<ComplexData>(IndexStoreTests.tmpDir(), ComplexData.class);
+		this.store = new IndexStore<ComplexData>(Files.createTempDir(), ComplexData.class);
 		dataToStore.addAll(generateData(1000));
 	}
 	
