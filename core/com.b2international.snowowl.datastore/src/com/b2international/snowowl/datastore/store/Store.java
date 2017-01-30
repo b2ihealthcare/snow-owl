@@ -34,6 +34,8 @@ public interface Store<T> {
 	
 	T get(String key);
 	
+	Collection<T> get(Collection<String> keys);
+	
 	T remove(String key);
 	
 	Collection<T> removeAll(Collection<String> keys);

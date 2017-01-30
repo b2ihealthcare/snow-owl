@@ -39,7 +39,7 @@ public class ReflectionUtils {
 		}
 	}
 	
-	private static Method getGetter(Class<?> type, String property) {
+	public static Method getGetter(Class<?> type, String property) {
 		try {
 			return type.getMethod(property);
 		} catch (NoSuchMethodException | SecurityException e) {
@@ -47,6 +47,14 @@ public class ReflectionUtils {
 				return getGetter(type, "get".concat(StringUtils.capitalizeFirstLetter(property)));
 			}
 			throw new RuntimeException("Could not find applicable getter method: " + property, e);
+		}
+	}
+	
+	public static Object invokeSafe(Object object, Method method) {
+		try {
+			return method.invoke(object);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			throw new RuntimeException("Could not get value from method: " + object + "-" + method.getName(), e);
 		}
 	}
 	

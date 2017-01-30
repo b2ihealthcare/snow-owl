@@ -17,9 +17,11 @@ package com.b2international.snowowl.datastore.store;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
+import static java.util.Collections.emptyList;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +36,10 @@ import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queries.TermsFilter;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.NumericRangeQuery;
@@ -60,6 +64,11 @@ import com.b2international.snowowl.datastore.store.query.SortBy;
 import com.b2international.snowowl.datastore.store.query.SortBy.SortByField;
 import com.b2international.snowowl.datastore.store.query.Where;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Function;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -76,6 +85,13 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 	private Class<T> clazz;
 	private Set<String> searchableFields = newHashSet();
 	private Set<String> sortFields = newHashSet();
+	
+	private LoadingCache<String, Method> propertyToMethodCache = CacheBuilder.newBuilder().build(CacheLoader.<String, Method>from(new Function<String, Method>() {
+		@Override
+		public Method apply(String input) {
+			return ReflectionUtils.getGetter(clazz, input);
+		}
+	}));
 
 	/**
 	 * Creates a new Index based {@link Store} implementation working on the given directory.
@@ -118,6 +134,29 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 		try {
 			final Query query = matchKeyQuery(key);
 			return Iterables.getOnlyElement(searchIndex(query), null);
+		} catch (IOException e) {
+			throw new StoreException(e.getMessage(), e);
+		}
+	}
+	
+	@Override
+	public Collection<T> get(Collection<String> keys) {
+		
+		if (keys.isEmpty()) {
+			return emptyList();
+		}
+		
+		try {
+
+			List<BytesRef> uniqueBytesRefs = FluentIterable.from(ImmutableSet.copyOf(keys)).transform(new Function<String, BytesRef>() {
+				@Override
+				public BytesRef apply(String input) {
+					return new BytesRef(input);
+				}
+			}).copyInto(Lists.<BytesRef>newArrayList());
+			
+			return searchIndex(matchAllQuery(), new TermsFilter(ID_FIELD, uniqueBytesRefs));
+			
 		} catch (IOException e) {
 			throw new StoreException(e.getMessage(), e);
 		}
@@ -197,7 +236,7 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 	@Override
 	public Collection<T> search(com.b2international.snowowl.datastore.store.query.Query query, int offset, int limit) {
 		try {
-			return searchIndex(convertQuery(query), offset, limit, convertSortBy(query));
+			return searchIndex(convertQuery(query), null, offset, limit, convertSortBy(query));
 		} catch (IOException e) {
 			throw new StoreException("Failed to execute query '%s' on store '%s'.", query, getDirectory(), e);
 		}
@@ -258,11 +297,13 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 	@Override
 	public void configureSearchable(String property) {
 		this.searchableFields.add(checkNotNull(property));
+		propertyToMethodCache.put(property, ReflectionUtils.getGetter(clazz, property));
 	}
 	
 	@Override
 	public void configureSortable(String property) {
 		this.sortFields.add(checkNotNull(property));
+		propertyToMethodCache.put(property, ReflectionUtils.getGetter(clazz, property));
 	}
 
 	@Override
@@ -300,7 +341,7 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 		doc.add(new StoredField(SOURCE_FIELD, serialize(value)));
 		
 		for (String property : newHashSet(this.searchableFields)) {
-			Object propertyValue = ReflectionUtils.getGetterValue(value, property);
+			Object propertyValue = ReflectionUtils.invokeSafe(value, propertyToMethodCache.getUnchecked(property));
 			Class<?> propertyClass = propertyValue.getClass();
 			
 			if (Long.class.isAssignableFrom(propertyClass) || long.class.isAssignableFrom(propertyClass)) {
@@ -311,7 +352,7 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 		}
 
 		for (String property : this.sortFields) {
-			Object propertyValue = ReflectionUtils.getGetterValue(value, property);
+			Object propertyValue = ReflectionUtils.invokeSafe(value, propertyToMethodCache.getUnchecked(property));
 			Class<?> propertyClass = propertyValue.getClass();
 			
 			if (Long.class.isAssignableFrom(propertyClass) || long.class.isAssignableFrom(propertyClass)) {
@@ -336,19 +377,23 @@ public class IndexStore<T> extends SingleDirectoryIndexImpl implements Store<T> 
 	}
 	
 	private List<T> searchIndex(final Query query) throws IOException {
-		return searchIndex(query, Integer.MAX_VALUE);
-	}
-
-	private List<T> searchIndex(final Query query, final int limit) throws IOException {
-		return searchIndex(query, 0, limit, Sort.INDEXORDER);
+		return searchIndex(query, null, Integer.MAX_VALUE);
 	}
 	
-	private List<T> searchIndex(final Query query, final int offset, final int limit, final Sort sort) throws IOException {
+	private List<T> searchIndex(final Query query, Filter filter) throws IOException {
+		return searchIndex(query, filter, Integer.MAX_VALUE);
+	}
+
+	private List<T> searchIndex(final Query query, Filter filter, final int limit) throws IOException {
+		return searchIndex(query, filter, 0, limit, Sort.INDEXORDER);
+	}
+	
+	private List<T> searchIndex(final Query query, Filter filter, final int offset, final int limit, final Sort sort) throws IOException {
 		IndexSearcher searcher = null;
 		try {
 			searcher = manager.acquire();
 
-			final TopDocs docs = searcher.search(query, null, offset + limit, sort, false, false);
+			final TopDocs docs = searcher.search(query, filter, offset + limit, sort, false, false);
 			final ScoreDoc[] scoreDocs = docs.scoreDocs;
 			final ImmutableList.Builder<T> resultBuilder = ImmutableList.builder();
 

@@ -54,6 +54,16 @@ public class MemStore<T> implements Store<T> {
 	public T get(String key) {
 		return values.get(key);
 	}
+	
+	@Override
+	public Collection<T> get(Collection<String> keys) {
+		return FluentIterable.from(keys).transform(new Function<String, T>() {
+			@Override
+			public T apply(String input) {
+				return values.get(input);
+			}
+		}).filter(Predicates.notNull()).toList();
+	}
 
 	@Override
 	public boolean containsKey(String key) {
