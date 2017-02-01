@@ -1071,14 +1071,14 @@ public class SnomedRf2IndexInitializer extends Job {
 		final Collection<String> refSetMemberships = Sets.newHashSet(refSetIds);
 		
 		for (RefSetMemberChange change : changes) {
-			if (change.getChangeKind().equals(MemberChangeKind.ADDED)) {
-				refSetMemberships.add(Long.toString(change.getRefSetId()));
+			if (change.getChangeKind().equals(MemberChangeKind.REMOVED)) {
+				refSetMemberships.remove(Long.toString(change.getRefSetId()));
 			}
 		}
 		
 		for (RefSetMemberChange change : changes) {
-			if (change.getChangeKind().equals(MemberChangeKind.REMOVED)) {
-				refSetMemberships.remove(Long.toString(change.getRefSetId()));
+			if (change.getChangeKind().equals(MemberChangeKind.ADDED)) {
+				refSetMemberships.add(Long.toString(change.getRefSetId()));
 			}
 		}
 		
