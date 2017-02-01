@@ -61,7 +61,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api("Descriptions")
 @RestController
 @RequestMapping(
-		produces={ AbstractRestService.SO_MEDIA_TYPE })
+		produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 
 	@ApiOperation(
