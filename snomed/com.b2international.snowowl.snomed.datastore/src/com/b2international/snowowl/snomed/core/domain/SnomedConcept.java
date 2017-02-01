@@ -21,6 +21,7 @@ import java.util.Set;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
@@ -34,6 +35,8 @@ import com.google.common.collect.Multimap;
  */
 public final class SnomedConcept extends SnomedCoreComponent implements DefinitionStatusProvider {
 
+	public static final String EXPAND_REFSET = "referenceSet";
+	
 	/**
 	 * Helper function to get ancestors of a given {@link SnomedConcept}.
 	 */
@@ -53,7 +56,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		}
 		return ancestors;
 	};
-	
+
 	private DefinitionStatus definitionStatus;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
 	private InactivationIndicator inactivationIndicator;
@@ -68,6 +71,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	private long[] parentIds;
 	private long[] statedAncestorIds;
 	private long[] statedParentIds;
+	private SnomedReferenceSet referenceSet;
 
 	public SnomedConcept() {
 	}
@@ -245,6 +249,14 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	
 	public void setStatedParentIds(final long[] statedParentIds) {
 		this.statedParentIds = statedParentIds;
+	}
+	
+	public void setReferenceSet(SnomedReferenceSet referenceSet) {
+		this.referenceSet = referenceSet;
+	}
+	
+	public SnomedReferenceSet getReferenceSet() {
+		return referenceSet;
 	}
 	
 	@Override
