@@ -117,23 +117,23 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 			} 
 			
 			if (!isConcreteDomainRefsetExists(snomedCoreConfiguration.getBooleanDatatypeRefsetIdentifier(), context)) {
-				createRefSet(REFSET_BOOLEAN_DATATYPE, context);
-			}
-			
-			if (!isConcreteDomainRefsetExists(snomedCoreConfiguration.getDatetimeDatatypeRefsetIdentifier(), context)) {
-				createRefSet(REFSET_DATETIME_DATATYPE, context);
+				createRefSet(snomedCoreConfiguration.getBooleanDatatypeRefsetIdentifier(), context);
 			}
 			
 			if (!isConcreteDomainRefsetExists(snomedCoreConfiguration.getFloatDatatypeRefsetIdentifier(), context)) {
-				createRefSet(REFSET_FLOAT_DATATYPE, context);
-			}
-			
-			if (!isConcreteDomainRefsetExists(snomedCoreConfiguration.getIntegerDatatypeRefsetIdentifier(), context)) {
-				createRefSet(REFSET_INTEGER_DATATYPE, context);
+				createRefSet(snomedCoreConfiguration.getFloatDatatypeRefsetIdentifier(), context);
 			}
 			
 			if (!isConcreteDomainRefsetExists(snomedCoreConfiguration.getStringDatatypeRefsetIdentifier(), context)) {
-				createRefSet(REFSET_STRING_DATATYPE, context);
+				createRefSet(snomedCoreConfiguration.getStringDatatypeRefsetIdentifier(), context);
+			}
+			
+			if (!isConcreteDomainRefsetExists(snomedCoreConfiguration.getIntegerDatatypeRefsetIdentifier(), context)) {
+				createRefSet(snomedCoreConfiguration.getIntegerDatatypeRefsetIdentifier(), context);
+			}
+			
+			if (!isConcreteDomainRefsetExists(snomedCoreConfiguration.getDatetimeDatatypeRefsetIdentifier(), context)) {
+				createRefSet(snomedCoreConfiguration.getDatetimeDatatypeRefsetIdentifier(), context);
 			}
 			
 			if (context.getEditingContext().isDirty()) {
