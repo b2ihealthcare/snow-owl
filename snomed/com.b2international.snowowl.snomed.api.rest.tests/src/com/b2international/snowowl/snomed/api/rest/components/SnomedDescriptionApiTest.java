@@ -562,9 +562,8 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 			.accept(ContentType.JSON)
 			.queryParam("term", "<<")
-			.log().everything()
 			.get("/{path}/descriptions", Branch.MAIN_PATH)
-			.then().log().everything().assertThat()
+			.then().log().ifValidationFails().assertThat()
 			.statusCode(200);
 	}
 	
