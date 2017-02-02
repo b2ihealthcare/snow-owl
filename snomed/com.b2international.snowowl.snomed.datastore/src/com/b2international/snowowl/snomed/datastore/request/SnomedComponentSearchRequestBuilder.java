@@ -25,5 +25,16 @@ public abstract class SnomedComponentSearchRequestBuilder<B extends SnomedCompon
 	public final B isActiveMemberOf(String refSetId) {
 		return addOption(OptionKey.ACTIVE_MEMBER_OF, refSetId);
 	}
+	
+	/**
+	 * Filter matches to have their ID from the specified namespace.
+	 * 
+	 * @param namespaceId
+	 *            - the namespace identifier
+	 * @return
+	 */
+	public final B filterByNamespace(String namespaceId) {
+		return addOption(OptionKey.NAMESPACE, namespaceId);
+	}
 
 }

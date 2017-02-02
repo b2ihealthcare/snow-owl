@@ -96,11 +96,6 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		ECL,
 		
 		/**
-		 * Namespace part of concept ID to match (?)
-		 */
-		NAMESPACE,
-		
-		/**
 		 * The definition status to match
 		 */
 		DEFINITION_STATUS,
@@ -151,14 +146,11 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		ExpressionBuilder queryBuilder = Expressions.builder();
 		
 		addActiveClause(queryBuilder);
-		addModuleClause(queryBuilder);
 		addComponentIdFilter(queryBuilder);
+		addModuleClause(queryBuilder);
+		addNamespaceFilter(queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
 		addActiveMemberOfClause(queryBuilder);
-		
-		if (containsKey(OptionKey.NAMESPACE)) {
-			queryBuilder.must(namespace(getString(OptionKey.NAMESPACE)));
-		}
 		
 		if (containsKey(OptionKey.DEFINITION_STATUS)) {
 			if (Concepts.PRIMITIVE.equals(getString(OptionKey.DEFINITION_STATUS))) {

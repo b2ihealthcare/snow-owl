@@ -86,6 +86,10 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@RequestParam(value="module", required=false) 
 			final String moduleFilter,
 			
+			@ApiParam(value="The namespace to match")
+			@RequestParam(value="namespace", required=false) 
+			final String namespaceFilter,
+			
 			@ApiParam(value="The effective time to match (yyyyMMdd, exact matches only)")
 			@RequestParam(value="effectiveTime", required=false) 
 			final String effectiveTimeFilter,
@@ -135,12 +139,13 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareSearchDescription()
-					.filterByTerm(termFilter)
+					.filterByActive(activeFilter)
+					.filterByModule(moduleFilter)
+					.filterByNamespace(namespaceFilter)
 					.filterByConcept(conceptFilter)
+					.filterByTerm(termFilter)
 					.filterByType(typeFilter)
 					.filterByAcceptability(acceptabilityFilter)
-					.filterByModule(moduleFilter)
-					.filterByActive(activeFilter)
 					.filterByExtendedLocales(extendedLocales)
 					.setLimit(limit)
 					.setOffset(offset)

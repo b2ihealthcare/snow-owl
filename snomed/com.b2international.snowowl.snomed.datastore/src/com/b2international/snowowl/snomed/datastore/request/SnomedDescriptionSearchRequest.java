@@ -120,8 +120,10 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		// Add (presumably) most selective filters first
 		addActiveClause(queryBuilder);
 		addComponentIdFilter(queryBuilder);
-		addEffectiveTimeClause(queryBuilder);
 		addModuleClause(queryBuilder);
+		addNamespaceFilter(queryBuilder);
+		addEffectiveTimeClause(queryBuilder);
+		addActiveMemberOfClause(queryBuilder);
 		addLocaleFilter(context, queryBuilder, languageRefSetId);
 		addLanguageFilter(queryBuilder);
 		addActiveMemberOfClause(queryBuilder);

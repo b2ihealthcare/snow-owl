@@ -55,8 +55,9 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 		
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		addActiveClause(queryBuilder);
-		addModuleClause(queryBuilder);
 		addComponentIdFilter(queryBuilder);
+		addModuleClause(queryBuilder);
+		addNamespaceFilter(queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
 		addActiveMemberOfClause(queryBuilder);
 		addEclFilter(context, queryBuilder, OptionKey.SOURCE, SnomedRelationshipIndexEntry.Expressions::sourceIds);

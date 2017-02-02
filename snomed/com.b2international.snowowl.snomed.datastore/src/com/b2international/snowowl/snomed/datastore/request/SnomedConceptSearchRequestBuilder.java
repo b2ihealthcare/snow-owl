@@ -164,17 +164,6 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 		return addOption(SnomedConceptSearchRequest.OptionKey.DEFINITION_STATUS, definitionStatusId);
 	}
 
-	/**
-	 * Filter matches to have their ID from the specified namespace.
-	 * 
-	 * @param namespaceId
-	 *            - the namespace concept identifier
-	 * @return
-	 */
-	public final SnomedConceptSearchRequestBuilder filterByNamespace(String namespaceId) {
-		return addOption(SnomedConceptSearchRequest.OptionKey.NAMESPACE, namespaceId);
-	}
-
 	@Override
 	protected RevisionSearchRequest<SnomedConcepts> createSearch() {
 		return new SnomedConceptSearchRequest();

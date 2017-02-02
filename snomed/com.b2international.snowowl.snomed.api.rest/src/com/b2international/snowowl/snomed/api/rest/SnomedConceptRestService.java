@@ -92,6 +92,10 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@RequestParam(value="module", required=false) 
 			final String moduleFilter,
 			
+			@ApiParam(value="The namespace to match")
+			@RequestParam(value="namespace", required=false) 
+			final String namespaceFilter,
+			
 			@ApiParam(value="The effective time to match (yyyyMMdd, exact matches only)")
 			@RequestParam(value="effectiveTime", required=false) 
 			final String effectiveTimeFilter,
@@ -99,10 +103,6 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@ApiParam(value="The definition status to match")
 			@RequestParam(value="definitionStatus", required=false) 
 			final String definitionStatusFilter,
-			
-			@ApiParam(value="The namespace to match")
-			@RequestParam(value="namespace", required=false) 
-			final String namespaceFilter,
 			
 			@ApiParam(value="The description term to match")
 			@RequestParam(value="term", required=false) 

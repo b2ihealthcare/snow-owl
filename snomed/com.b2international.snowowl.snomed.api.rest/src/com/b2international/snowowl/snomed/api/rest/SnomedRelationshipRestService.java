@@ -92,6 +92,10 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@RequestParam(value="module", required=false) 
 			final String moduleFilter,
 			
+			@ApiParam(value="The namespace to match")
+			@RequestParam(value="namespace", required=false) 
+			final String namespaceFilter,
+			
 			@ApiParam(value="The effective time to match (yyyyMMdd, exact matches only)")
 			@RequestParam(value="effectiveTime", required=false) 
 			final String effectiveTimeFilter,
@@ -153,6 +157,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 					.setOffset(offset)
 					.filterByActive(activeFilter)
 					.filterByModule(moduleFilter)
+					.filterByNamespace(namespaceFilter)
 					.filterByEffectiveTime(effectiveTimeFilter)
 					.filterByCharacteristicType(characteristicTypeFilter)
 					.filterBySource(sourceFilter)
