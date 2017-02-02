@@ -61,7 +61,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api("Descriptions")
 @RestController
 @RequestMapping(
-		produces={ AbstractRestService.SO_MEDIA_TYPE })
+		produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 
 	@ApiOperation(
@@ -78,15 +78,31 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@PathVariable(value="path")
 			final String branch,
 
+			@ApiParam(value="The status to match")
+			@RequestParam(value="active", required=false) 
+			final Boolean activeFilter,
+
+			@ApiParam(value="The module identifier to match")
+			@RequestParam(value="module", required=false) 
+			final String moduleFilter,
+			
+			@ApiParam(value="The namespace to match")
+			@RequestParam(value="namespace", required=false) 
+			final String namespaceFilter,
+			
+			@ApiParam(value="The effective time to match (yyyyMMdd, exact matches only)")
+			@RequestParam(value="effectiveTime", required=false) 
+			final String effectiveTimeFilter,
+			
 			@ApiParam(value="The term to match")
 			@RequestParam(value="term", required=false) 
 			final String termFilter,
 
-			@ApiParam(value="The concept expression to match (limited ESCG allowed)")
+			@ApiParam(value="The concept ECL expression to match")
 			@RequestParam(value="concept", required=false) 
 			final String conceptFilter,
 			
-			@ApiParam(value="The type expression to match (limited ESCG allowed)")
+			@ApiParam(value="The type ECL expression to match")
 			@RequestParam(value="type", required=false) 
 			final String typeFilter,
 			
@@ -94,14 +110,6 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@RequestParam(value="acceptability", required=false) 
 			final Acceptability acceptabilityFilter,
 			
-			@ApiParam(value="The module identifier to match")
-			@RequestParam(value="module", required=false) 
-			final String moduleFilter,
-
-			@ApiParam(value="The status to match")
-			@RequestParam(value="active", required=false) 
-			final Boolean activeFilter,
-
 			@ApiParam(value="The starting offset in the list")
 			@RequestParam(value="offset", defaultValue="0", required=false) 
 			final int offset,
@@ -131,12 +139,13 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		return DeferredResults.wrap(
 				SnomedRequests
 					.prepareSearchDescription()
+					.filterByActive(activeFilter)
+					.filterByModule(moduleFilter)
+					.filterByNamespace(namespaceFilter)
+					.filterByConcept(conceptFilter)
 					.filterByTerm(termFilter)
-					.filterByConceptEscg(conceptFilter)
 					.filterByType(typeFilter)
 					.filterByAcceptability(acceptabilityFilter)
-					.filterByModule(moduleFilter)
-					.filterByActive(activeFilter)
 					.filterByExtendedLocales(extendedLocales)
 					.setLimit(limit)
 					.setOffset(offset)

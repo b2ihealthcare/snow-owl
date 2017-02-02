@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.functions.LongToStringFunction;
@@ -43,17 +44,17 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.tree.Trees;
@@ -75,8 +76,11 @@ import com.google.common.collect.TreeMultimap;
  */
 final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedConceptDocument, SnomedConcept, SnomedConcepts> {
 
+	private final SnomedReferenceSetConverter referenceSetConverter;
+
 	SnomedConceptConverter(final BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
+		this.referenceSetConverter = new SnomedReferenceSetConverter(context, expand().getOptions(SnomedConcept.EXPAND_REFSET).getOptions("expand"), locales);
 	}
 	
 	@Override
@@ -97,6 +101,10 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		result.setReleased(input.isReleased());
 		result.setSubclassDefinitionStatus(toSubclassDefinitionStatus(input.isExhaustive()));
 		result.setScore(input.getScore());
+		
+		if (expand().containsKey(SnomedConcept.EXPAND_REFSET) && input.getRefSetStorageKey() != CDOUtils.NO_STORAGE_KEY) {
+			result.setReferenceSet(referenceSetConverter.toResource(input));
+		}
 		
 		if (input.getAncestors() != null) {
 			result.setAncestorIds(input.getAncestors().toArray());
@@ -142,6 +150,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		expandRelationships(results, conceptIds);
 		expandDescendants(results, conceptIds);
 		expandAncestors(results, conceptIds);
+		referenceSetConverter.expand(results.stream().filter(c -> c.getReferenceSet() != null).map(SnomedConcept::getReferenceSet).collect(Collectors.toList()));
 	}
 
 	private void expandInactivationProperties(List<SnomedConcept> results, Set<String> conceptIds) {

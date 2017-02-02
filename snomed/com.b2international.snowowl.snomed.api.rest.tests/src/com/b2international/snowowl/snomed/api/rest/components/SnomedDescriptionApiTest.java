@@ -47,6 +47,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.Description;
@@ -554,6 +555,16 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		final Map<String, Object> updatedMember = Iterables.getOnlyElement(updatedMembers);
 		assertEquals(true, updatedMember.get(SnomedRf2Headers.FIELD_ACTIVE));
 		assertEquals(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED, updatedMember.get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID));
+	}
+	
+	@Test
+	public void issue_SO_2158_termFilter_throws_NPE() throws Exception {
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.accept(ContentType.JSON)
+			.queryParam("term", "<<")
+			.get("/{path}/descriptions", Branch.MAIN_PATH)
+			.then().log().ifValidationFails().assertThat()
+			.statusCode(200);
 	}
 	
 	private Collection<Map<String, Object>> getDescriptionMembers(IBranchPath branchPath, String descriptionId) {

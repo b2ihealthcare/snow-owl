@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.namespace;
+
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -27,7 +29,12 @@ public abstract class SnomedComponentSearchRequest<R> extends SnomedSearchReques
 	
 	enum OptionKey {
 		
-		ACTIVE_MEMBER_OF
+		ACTIVE_MEMBER_OF,
+		
+		/**
+		 * Namespace part of the component ID to match (?)
+		 */
+		NAMESPACE
 		
 	}
 	
@@ -45,6 +52,12 @@ public abstract class SnomedComponentSearchRequest<R> extends SnomedSearchReques
 					.build();
 				
 			queryBuilder.must(expression);
+		}
+	}
+	
+	protected final void addNamespaceFilter(ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.NAMESPACE)) {
+			queryBuilder.must(namespace(getString(OptionKey.NAMESPACE)));
 		}
 	}
 

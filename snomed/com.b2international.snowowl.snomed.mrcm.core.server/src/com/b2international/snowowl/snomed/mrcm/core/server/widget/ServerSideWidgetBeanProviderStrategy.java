@@ -72,7 +72,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 			this.descriptions = SnomedRequests.prepareSearchDescription()
 					.all()
 					.filterByActive(true)
-					.filterByConceptId(conceptId)
+					.filterByConcept(conceptId)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync().getItems();

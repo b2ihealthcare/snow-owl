@@ -23,6 +23,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 
 /**
@@ -35,6 +36,7 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	private List<SnomedRelationshipCreateRequest> relationships = newArrayList();
 	private List<SnomedRefSetMemberCreateRequest> members = newArrayList();
 	private SnomedRefSetCreateRequest refSet;
+	private SubclassDefinitionStatus subclassDefinitionStatus = SubclassDefinitionStatus.NON_DISJOINT_SUBCLASSES;
 	
 	SnomedConceptCreateRequestBuilder() { 
 		super();
@@ -114,6 +116,11 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 		return getSelf();
 	}
 	
+	public SnomedConceptCreateRequestBuilder setSubclassDefinitionStatus(SubclassDefinitionStatus subclassDefinitionStatus) {
+		this.subclassDefinitionStatus = subclassDefinitionStatus;
+		return getSelf();
+	}
+	
 	// Reference set builder
 	
 	public SnomedConceptCreateRequestBuilder setRefSet(SnomedRefSetCreateRequestBuilder refSet) {
@@ -134,6 +141,7 @@ public final class SnomedConceptCreateRequestBuilder extends SnomedComponentCrea
 	protected void init(BaseSnomedComponentCreateRequest request) {
 		final SnomedConceptCreateRequest req = (SnomedConceptCreateRequest) request;
 		req.setDefinitionStatus(definitionStatus);
+		req.setSubclassDefinitionStatus(subclassDefinitionStatus);
 		req.setDescriptions(descriptions);
 		req.setRelationships(relationships);
 		req.setMembers(members);

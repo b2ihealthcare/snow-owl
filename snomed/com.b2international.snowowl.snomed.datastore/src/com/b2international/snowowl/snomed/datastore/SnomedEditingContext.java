@@ -1244,7 +1244,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private Iterable<SnomedDescriptionIndexEntry> getRelatedDescriptions(String conceptId) {
 		return SnomedRequests.prepareSearchDescription()
 				.all()
-				.filterByConceptId(conceptId)
+				.filterByConcept(conceptId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedDescriptions, Iterable<SnomedDescriptionIndexEntry>>() {

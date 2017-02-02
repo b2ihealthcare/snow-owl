@@ -84,6 +84,26 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@PathVariable(value="path")
 			final String branch,
 
+			@ApiParam(value="The concept status to match")
+			@RequestParam(value="active", required=false) 
+			final Boolean activeFilter,
+			
+			@ApiParam(value="The concept module identifier to match")
+			@RequestParam(value="module", required=false) 
+			final String moduleFilter,
+			
+			@ApiParam(value="The namespace to match")
+			@RequestParam(value="namespace", required=false) 
+			final String namespaceFilter,
+			
+			@ApiParam(value="The effective time to match (yyyyMMdd, exact matches only)")
+			@RequestParam(value="effectiveTime", required=false) 
+			final String effectiveTimeFilter,
+			
+			@ApiParam(value="The definition status to match")
+			@RequestParam(value="definitionStatus", required=false) 
+			final String definitionStatusFilter,
+			
 			@ApiParam(value="The description term to match")
 			@RequestParam(value="term", required=false) 
 			final String termFilter,
@@ -96,14 +116,6 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@RequestParam(value="ecl", required=false) 
 			final String eclFilter,
 			
-			@ApiParam(value="The concept module identifier to match")
-			@RequestParam(value="module", required=false) 
-			final String moduleFilter,
-			
-			@ApiParam(value="The concept status to match")
-			@RequestParam(value="active", required=false) 
-			final Boolean activeFilter,
-
 			@ApiParam(value="The starting offset in the list")
 			@RequestParam(value="offset", defaultValue="0", required=false) 
 			final int offset,
@@ -135,11 +147,14 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.prepareSearchConcept()
 					.setLimit(limit)
 					.setOffset(offset)
+					.filterByActive(activeFilter)
+					.filterByModule(moduleFilter)
+					.filterByEffectiveTime(effectiveTimeFilter)
+					.filterByDefinitionStatus(definitionStatusFilter)
+					.filterByNamespace(namespaceFilter)
 					.filterByTerm(termFilter)
 					.filterByEscg(escgFilter)
 					.filterByEcl(eclFilter)
-					.filterByModule(moduleFilter)
-					.filterByActive(activeFilter)
 					.setExpand(expand)
 					.filterByExtendedLocales(extendedLocales)
 					.build(repositoryId, branch)

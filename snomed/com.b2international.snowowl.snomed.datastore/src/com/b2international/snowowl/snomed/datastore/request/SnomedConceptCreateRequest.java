@@ -77,6 +77,10 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	SnomedConceptCreateRequest() {
 	}
 	
+	void setSubclassDefinitionStatus(SubclassDefinitionStatus subclassDefinitionStatus) {
+		this.subclassDefinitionStatus = subclassDefinitionStatus;
+	}
+	
 	void setDefinitionStatus(DefinitionStatus definitionStatus) {
 		this.definitionStatus = definitionStatus;
 	}

@@ -268,7 +268,7 @@ public final class LuceneQueryBuilder {
 		final String term = predicate.term();
 		final MatchType type = predicate.type();
 		final Analyzer analyzer = AnalyzerImpls.getAnalyzer(predicate.analyzer());
-		final Query query;
+		Query query;
 		switch (type) {
 		case PHRASE:
 			{
@@ -312,7 +312,10 @@ public final class LuceneQueryBuilder {
 			break;
 		default: throw new UnsupportedOperationException("Unexpected text match type: " + type);
 		}
-		deque.push(query);		
+		if (query == null) {
+			query = new MatchNoDocsQuery();
+		}
+		deque.push(query);	
 	}
 	
 	private void visit(StringPredicate predicate) {

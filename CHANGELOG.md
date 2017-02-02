@@ -1,6 +1,26 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.6.0
+
+### Added
+- GET /{path}/relationships endpoint to search SNOMED CT Relationship components
+- Namespace filter support to
+ * GET /{path}/descriptions
+ * GET /{path}/relationships
+- EffectiveTime filter support to
+ * GET /{path}/concepts
+ * GET /{path}/descriptions
+ * GET /{path}/relationships
+- ECL expression support to `GET /{path}/descriptions` endpoint's concept and type filter 
+- `subclassDefinitionStatus` property to `SnomedConceptSearchRequest`
+- `referenceSet` expand option to GET /{path}/concepts
+
+### Bugs
+- Fixed NPE when using only delimiter characters in `termFilter` query parameter
+- Server now fails to start if multiple terminology repositories have the same storageKey namespace ID assigned
+- Source and target effective time values are now indexed on module dependency reference set member index documents
+
 ## 5.5.0
 
 ### Added

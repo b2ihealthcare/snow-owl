@@ -19,20 +19,16 @@ import static com.b2international.snowowl.datastore.index.RevisionDocument.Expre
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.acceptableIn;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.allTermPrefixesPresent;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.allTermsPresent;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.concepts;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.exactTerm;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.fuzzy;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.languageCodes;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.parsedTerm;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.preferredIn;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.types;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.IOException;
 import java.util.List;
 
-import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.collect.LongSets;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -49,7 +45,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMultimap;
 
 /**
@@ -59,8 +54,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 
 	enum OptionKey {
 		TERM,
-		CONCEPT_ESCG,
-		CONCEPT_ID,
+		CONCEPT,
 		TYPE,
 		ACCEPTABILITY,
 		LANGUAGE,
@@ -125,25 +119,16 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		// Add (presumably) most selective filters first
 		addActiveClause(queryBuilder);
-		addEffectiveTimeClause(queryBuilder);
-		addModuleClause(queryBuilder);
-		addConceptIdsFilter(queryBuilder);
 		addComponentIdFilter(queryBuilder);
+		addModuleClause(queryBuilder);
+		addNamespaceFilter(queryBuilder);
+		addEffectiveTimeClause(queryBuilder);
+		addActiveMemberOfClause(queryBuilder);
 		addLocaleFilter(context, queryBuilder, languageRefSetId);
 		addLanguageFilter(queryBuilder);
 		addActiveMemberOfClause(queryBuilder);
-		addEscgFilter(context, queryBuilder, OptionKey.CONCEPT_ESCG, new Function<LongSet, Expression>() {
-			@Override
-			public Expression apply(LongSet input) {
-				return concepts(LongSets.toStringSet(input));
-			}
-		});
-		addEscgFilter(context, queryBuilder, OptionKey.TYPE, new Function<LongSet, Expression>() {
-			@Override
-			public Expression apply(LongSet input) {
-				return types(LongSets.toStringSet(input));
-			}
-		});
+		addEclFilter(context, queryBuilder, OptionKey.CONCEPT, SnomedDescriptionIndexEntry.Expressions::concepts);
+		addEclFilter(context, queryBuilder, OptionKey.TYPE, SnomedDescriptionIndexEntry.Expressions::types);
 		
 		SortBy sortBy = SortBy.NONE;
 		
@@ -200,12 +185,6 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		disjuncts.add(allTermsPresent(searchTerm));
 		disjuncts.add(allTermPrefixesPresent(searchTerm));
 		return Expressions.dismax(disjuncts);
-	}
-
-	private void addConceptIdsFilter(ExpressionBuilder queryBuilder) {
-		if (containsKey(OptionKey.CONCEPT_ID)) {
-			queryBuilder.must(concepts(getCollection(OptionKey.CONCEPT_ID, String.class)));
-		}
 	}
 
 	private void addLanguageFilter(ExpressionBuilder queryBuilder) {

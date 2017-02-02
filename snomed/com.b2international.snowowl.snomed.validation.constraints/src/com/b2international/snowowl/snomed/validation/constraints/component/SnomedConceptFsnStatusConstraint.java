@@ -44,7 +44,7 @@ public class SnomedConceptFsnStatusConstraint extends ComponentValidationConstra
 			final SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
 				.setLimit(0)
 				.filterByActive(true)
-				.filterByConceptId(concept.getId())
+				.filterByConcept(concept.getId())
 				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getBus())
