@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.id.memory;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Sets.newLinkedHashSet;
 
 import java.util.Collection;
 import java.util.List;
@@ -103,7 +104,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
 
-		LOGGER.debug("Generating component ID for category {}.", category.getDisplayName());
+		//LOGGER.debug("Generating component ID for category {}.", category.getDisplayName());
 
 		final String componentId = generateId(namespace, category);
 		final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
@@ -343,15 +344,20 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 
 	private Collection<String> generateIds(final String namespace, final ComponentCategory category, final int quantity) {
-		final Collection<String> componentIds = Lists.newArrayList();
+		
+		final Set<String> componentIds = newLinkedHashSet();
 
 		while (componentIds.size() < quantity) {
+			
 			String componentId = generateComponentId(namespace, category);
+			
 			int i = 1;
-			while (isReserved(componentId)) {
+			while (isDisallowed(componentId, componentIds)) {
+				
 				if (i == getConfig().getMaxIdGenerationAttempts()) {
 					throw new BadRequestException("Couldn't generate identifier in %s number of attempts", getConfig().getMaxIdGenerationAttempts());
 				}
+				
 				componentId = generateComponentId(namespace, category);
 				i++;
 			}
@@ -362,8 +368,8 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		return componentIds;
 	}
 	
-	private boolean isReserved(String componentId) {
-		return getReservationService().isReserved(componentId) || store.containsKey(componentId);
+	private boolean isDisallowed(String componentId, Set<String> componentIds) {
+		return componentIds.contains(componentId) || getReservationService().isReserved(componentId) || store.containsKey(componentId);
 	}
 
 	private String generateComponentId(final String namespace, final ComponentCategory category) {
