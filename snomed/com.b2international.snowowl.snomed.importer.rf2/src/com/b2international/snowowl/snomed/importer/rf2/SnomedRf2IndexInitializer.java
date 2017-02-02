@@ -21,6 +21,7 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.File;
 import java.io.FileReader;
@@ -44,10 +45,6 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bak.pcj.map.LongKeyFloatMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.csv.CsvLexer.EOL;
 import com.b2international.commons.csv.CsvParser;
@@ -67,6 +64,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.index.ComponentCompareFieldsUpdater;
 import com.b2international.snowowl.datastore.index.DocumentCompositeUpdater;
+import com.b2international.snowowl.datastore.index.DocumentUpdater;
 import com.b2international.snowowl.datastore.index.DocumentUpdaterBase;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
 import com.b2international.snowowl.datastore.server.snomed.index.NamespaceMapping;
@@ -102,8 +100,10 @@ import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberCha
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberImmutablePropertyUpdater;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberMutablePropertyUpdater;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMutablePropertyUpdater;
+import com.b2international.snowowl.snomed.datastore.index.update.ComponentConstraintUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.RefSetIconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.RefSetParentageUpdater;
+import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMembershipUpdater;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.snor.ConstraintFormIsApplicableForValidationPredicate;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
@@ -124,6 +124,10 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+
+import bak.pcj.map.LongKeyFloatMap;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
 
 /**
  * RF2 based incremental index initializer job.
@@ -898,42 +902,32 @@ public class SnomedRf2IndexInitializer extends Job {
 	}
 	
 	private void indexUnvisitedConcepts(final Set<String> unvisitedConcepts, final Set<String> dirtyConceptsForCompareReindex) {
+		
 		final SnomedIndexServerService snomedIndexService = getSnomedIndexService();
-		for (final String conceptIdString : unvisitedConcepts) {
-			final SnomedConceptIndexEntry concept = ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getConcept(branchPath, conceptIdString);
-			// can happen as concepts referenced in MRCM rules might not exist at this time
-			if (concept != null) {
-				final long conceptIdLong = Long.parseLong(conceptIdString);
-				final long conceptStorageKey = concept.getStorageKey();
-				final boolean active = concept.isActive(); 
-				final boolean released = concept.isReleased();
-				final boolean primitive = concept.isPrimitive();
-				final boolean exhaustive = concept.isExhaustive();
-				final long moduleId = Long.parseLong(concept.getModuleId());
-				
-				final Collection<String> refSetIds = ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class).getContainerRefSetIds(branchPath, conceptIdString);
-				final Collection<String> updatedRefSetIds = getCurrentRefSetMemberships(refSetIds, refSetMemberChanges.get(conceptIdString));
-				
-				final Collection<String> mappingRefSetIds = ApplicationContext.getInstance().getService(SnomedRefSetBrowser.class).getContainerMappingRefSetIds(branchPath, conceptIdString);
-				final Collection<String> updatedMappingRefSetIds = getCurrentRefSetMemberships(mappingRefSetIds, mappingRefSetMemberChanges.get(conceptIdString));
+		
+		Collection<SnomedConceptIndexEntry> concepts = ApplicationContext.getServiceForClass(SnomedTerminologyBrowser.class).getConcepts(branchPath, unvisitedConcepts);
+		
+		for (SnomedConceptIndexEntry concept : concepts) {
+			
+			String conceptIdString = concept.getId();
 
-				
-				final Document doc = createConceptDocument(
-						conceptIdToPredicateMap, 
-						conceptIdLong, 
-						conceptStorageKey, 
-						active, 
-						released, 
-						primitive, 
-						exhaustive, 
-						moduleId, 
-						updatedRefSetIds,
-						updatedMappingRefSetIds,
-						concept.getEffectiveTimeAsLong());
-				
-				snomedIndexService.index(branchPath, doc, conceptStorageKey);
-			}
+			List<DocumentUpdater<SnomedDocumentBuilder>> updaters = newArrayList();
+			
+			Set<RefSetMemberChange> allRefsetMemberChanges = newHashSet();
+			
+			allRefsetMemberChanges.addAll(refSetMemberChanges.get(conceptIdString));
+			allRefsetMemberChanges.addAll(mappingRefSetMemberChanges.get(conceptIdString));
+			
+			updaters.add(new ReferenceSetMembershipUpdater(conceptIdString, allRefsetMemberChanges));
+			updaters.add(new ComponentConstraintUpdater(conceptIdString, conceptIdToPredicateMap.get(Long.valueOf(conceptIdString))));
+			updaters.add(new RefSetParentageUpdater(inferredTaxonomyBuilder, conceptIdString, identifierConceptIdsForNewRefSets));
+			updaters.add(new RefSetParentageUpdater(statedTaxonomyBuilder, conceptIdString, identifierConceptIdsForNewRefSets, Concepts.STATED_RELATIONSHIP));
+			updaters.add(new ComponentCompareFieldsUpdater<SnomedDocumentBuilder>(conceptIdString, concept.getStorageKey()));
+			
+			snomedIndexService.upsert(branchPath, SnomedMappings.newQuery().id(conceptIdString).matchAll(), new DocumentCompositeUpdater<>(updaters), new SnomedDocumentBuilder.Factory());
+			
 		}
+		
 	}
 	
 	private void indexUnvisitedDescriptions(final Set<String> unvisitedDescriptions) {
