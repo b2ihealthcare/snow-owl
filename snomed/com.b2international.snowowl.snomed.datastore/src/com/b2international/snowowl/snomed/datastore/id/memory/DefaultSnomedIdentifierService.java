@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.id.memory;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Sets.newLinkedHashSet;
 
 import java.io.IOException;
 import java.util.Map;
@@ -236,21 +237,21 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 
 	private Set<String> generateIds(final String namespace, final ComponentCategory category, final int quantity) {
-		final ImmutableSet.Builder<String> componentIds = ImmutableSet.builder();
+		final Set<String> componentIds = newLinkedHashSet(); // important to keep order of generated ids
 		final int maxAttempts = getConfig().getMaxIdGenerationAttempts();
 
 		for (int i = 0; i < quantity; i++) {
-			final String componentId = generateId(namespace, category, maxAttempts);
+			final String componentId = generateId(namespace, category, maxAttempts, componentIds);
 			componentIds.add(componentId);
 		}
 
-		return componentIds.build();
+		return ImmutableSet.<String>copyOf(componentIds);
 	}
 
-	private String generateId(final String namespace, final ComponentCategory category, final int maxAttempts) {
+	private String generateId(final String namespace, final ComponentCategory category, final int maxAttempts, Set<String> componentIds) {
 		for (int attempt = 0; attempt < maxAttempts; attempt++) {
 			final String componentId = generateId(namespace, category);
-			if (!isGeneratedIdDisallowed(componentId)) {
+			if (!isGeneratedIdDisallowed(componentId, componentIds)) {
 				return componentId;
 			}
 		}
@@ -281,7 +282,12 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		return builder.toString();
 	}
 
-	private boolean isGeneratedIdDisallowed(String componentId) {
+	private boolean isGeneratedIdDisallowed(String componentId, Set<String> componentIds) {
+		
+		if (componentIds.contains(componentId)) {
+			return true;
+		}
+		
 		if (getReservationService().isReserved(componentId)) {
 			return true;
 		}
