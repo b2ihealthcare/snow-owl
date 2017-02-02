@@ -104,7 +104,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		checkNotNull(category, "Component category must not be null.");
 		checkCategory(category);
 
-		//LOGGER.debug("Generating component ID for category {}.", category.getDisplayName());
+		LOGGER.debug("Generating component ID for category {}.", category.getDisplayName());
 
 		final String componentId = generateId(namespace, category);
 		final SctId sctId = buildSctId(componentId, IdentifierStatus.ASSIGNED);
