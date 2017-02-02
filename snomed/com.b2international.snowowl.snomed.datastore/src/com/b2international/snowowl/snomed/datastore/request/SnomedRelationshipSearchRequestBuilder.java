@@ -63,11 +63,15 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 		return addOption(OptionKey.CHARACTERISTIC_TYPE, characteristicType);
 	}
 	
-	public SnomedRelationshipSearchRequestBuilder filterByGroup(int group) {
+	public SnomedRelationshipSearchRequestBuilder filterByGroup(Integer group) {
 		return filterByGroup(group, group);
 	}
 	
-	public SnomedRelationshipSearchRequestBuilder filterByGroup(int groupMin, int groupMax) {
+	public SnomedRelationshipSearchRequestBuilder filterByUnionGroup(Integer unionGroup) {
+		return addOption(OptionKey.UNION_GROUP, unionGroup);
+	}
+	
+	public SnomedRelationshipSearchRequestBuilder filterByGroup(Integer groupMin, Integer groupMax) {
 		return addOption(OptionKey.GROUP_MIN, groupMin).addOption(OptionKey.GROUP_MAX, groupMax);
 	}
 	
