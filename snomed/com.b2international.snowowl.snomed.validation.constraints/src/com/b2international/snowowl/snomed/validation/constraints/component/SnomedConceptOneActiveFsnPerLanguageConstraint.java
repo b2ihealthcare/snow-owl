@@ -58,7 +58,7 @@ public class SnomedConceptOneActiveFsnPerLanguageConstraint extends ComponentVal
 		final SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
 			.filterByActive(true)
 			.filterByType(Concepts.FULLY_SPECIFIED_NAME)
-			.filterByConceptId(concept.getId())
+			.filterByConcept(concept.getId())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(getBus())
 			.getSync();

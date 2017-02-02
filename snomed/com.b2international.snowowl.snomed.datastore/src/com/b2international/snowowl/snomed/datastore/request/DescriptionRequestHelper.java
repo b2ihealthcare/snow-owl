@@ -167,7 +167,7 @@ public abstract class DescriptionRequestHelper {
 		return SnomedRequests.prepareSearchDescription()
 				.one()
 				.filterByActive(true)
-				.filterByConceptId(conceptId)
+				.filterByConcept(conceptId)
 				.filterByType(Concepts.FULLY_SPECIFIED_NAME);
 	}
 	
@@ -185,7 +185,7 @@ public abstract class DescriptionRequestHelper {
 		return SnomedRequests.prepareSearchDescription()
 				.one()
 				.filterByActive(true)
-				.filterByConceptId(conceptId)
+				.filterByConcept(conceptId)
 				.filterByType("<<" + Concepts.SYNONYM)
 				.filterByAcceptability(Acceptability.PREFERRED)
 				.filterByExtendedLocales(locales);

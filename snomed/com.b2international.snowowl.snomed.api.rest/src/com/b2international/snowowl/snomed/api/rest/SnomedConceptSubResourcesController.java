@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.http.AcceptHeader;
@@ -43,10 +42,10 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedInboundRelations
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedOutboundRelationships;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
@@ -92,7 +91,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 				SnomedRequests
 					.prepareSearchDescription()
 					.all()
-					.filterByConceptId(conceptId)
+					.filterByConcept(conceptId)
 					.setExpand(expand)
 					.build(repositoryId, branchPath)
 					.execute(bus)
