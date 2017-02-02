@@ -44,6 +44,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
@@ -101,7 +102,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		result.setSubclassDefinitionStatus(toSubclassDefinitionStatus(input.isExhaustive()));
 		result.setScore(input.getScore());
 		
-		if (expand().containsKey(SnomedConcept.EXPAND_REFSET)) {
+		if (expand().containsKey(SnomedConcept.EXPAND_REFSET) && input.getRefSetStorageKey() != CDOUtils.NO_STORAGE_KEY) {
 			result.setReferenceSet(referenceSetConverter.toResource(input));
 		}
 		
@@ -149,7 +150,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		expandRelationships(results, conceptIds);
 		expandDescendants(results, conceptIds);
 		expandAncestors(results, conceptIds);
-		referenceSetConverter.expand(results.stream().map(SnomedConcept::getReferenceSet).collect(Collectors.toList()));
+		referenceSetConverter.expand(results.stream().filter(c -> c.getReferenceSet() != null).map(SnomedConcept::getReferenceSet).collect(Collectors.toList()));
 	}
 
 	private void expandInactivationProperties(List<SnomedConcept> results, Set<String> conceptIds) {
