@@ -46,6 +46,8 @@ import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
 import org.eclipse.emf.cdo.server.IStoreAccessor;
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
@@ -104,7 +106,6 @@ import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedRelationshipIndexQueryAdapter;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedDocumentBuilder;
@@ -752,14 +753,28 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 					taxonomyBuilder.removeNode(createDeletedNode(concept));
 				}
 				for (final Concept dirtyConcept : dirtyConcepts) {
-					if (!dirtyConcept.isActive()) { //we do not need this concept. either it was deactivated now or sometime earlier.
-						//nothing can be dirty and new at the same time
-						taxonomyBuilder.removeNode(createNode(getTerminologyBrowser().getConcept(branchPath, dirtyConcept.getId())));
-					} else { //consider reverting inactivation
-						if (!taxonomyBuilder.containsNode(dirtyConcept.getId())) {
-							taxonomyBuilder.addNode(createNode(dirtyConcept));
+					
+					final CDORevisionDelta revisionDelta = commitChangeSet.getRevisionDeltas().get(dirtyConcept.cdoID());
+					if (revisionDelta == null) {
+						continue;
+					}
+					final CDOFeatureDelta changeStatusDelta = revisionDelta.getFeatureDelta(SnomedPackage.Literals.COMPONENT__ACTIVE);
+					if (changeStatusDelta instanceof CDOSetFeatureDelta) {
+						CDOSetFeatureDelta delta = (CDOSetFeatureDelta) changeStatusDelta;
+						final Boolean oldValue = (Boolean) delta.getOldValue();
+						final Boolean newValue = (Boolean) delta.getValue();
+						if (Boolean.TRUE == oldValue && Boolean.FALSE == newValue) {
+							//nothing can be dirty and new at the same time
+							//we do not need this concept. either it was deactivated now or sometime earlier.
+							taxonomyBuilder.removeNode(createNode(dirtyConcept.getId(), true));
+						} else if (Boolean.FALSE == oldValue && Boolean.TRUE == newValue) {
+							//consider reverting inactivation
+							if (!taxonomyBuilder.containsNode(dirtyConcept.getId())) {
+								taxonomyBuilder.addNode(createNode(dirtyConcept));
+							}
 						}
 					}
+					
 				}
 				LOGGER.info("Rebuilding taxonomic information based on the changes.");
 				taxonomyBuilder.build();
@@ -824,15 +839,15 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 				}
 			};
 		}
-
+		
 		/*creates and returns with a new taxonomy node instance based on the given SNOMED CT concept*/
-		private TaxonomyBuilderNode createNode(final SnomedConceptIndexEntry concept) {
+		private TaxonomyBuilderNode createNode(final String id, final boolean active) {
 			return new TaxonomyBuilderNode() {
 				@Override public boolean isCurrent() {
-					return concept.isActive();
+					return active;
 				}
 				@Override public String getId() {
-					return concept.getId();
+					return id;
 				}
 			};
 		}
