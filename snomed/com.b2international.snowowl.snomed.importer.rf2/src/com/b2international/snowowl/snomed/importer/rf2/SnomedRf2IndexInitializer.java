@@ -134,6 +134,7 @@ import bak.pcj.set.LongSet;
  */
 public class SnomedRf2IndexInitializer extends Job {
 
+	private static final Collection<String> AVAILABLE_ICON_IDS = SnomedIconProvider.getInstance().getAvailableIconIds();
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedRf2IndexInitializer.class);
 	private static final CsvSettings CSV_SETTINGS = new CsvSettings('\0', '\t', EOL.LF, true);
 	private static final String ACTIVE_STATUS = "1";
@@ -824,11 +825,6 @@ public class SnomedRf2IndexInitializer extends Job {
 		
 		getSnomedIndexService().index(branchPath, doc, CDOIDUtil.getLong(member.cdoID()));
 	}
-	
-	protected void updateIconId(String conceptId, boolean active, SnomedDocumentBuilder doc, boolean withDocValues) {
-		final Collection<String> availableImages = SnomedIconProvider.getInstance().getAvailableIconIds();
-		new RefSetIconIdUpdater(inferredTaxonomyBuilder, statedTaxonomyBuilder, conceptId, active, availableImages, identifierConceptIdsForNewRefSets).update(doc);		
-	}
 
 	private void indexDescriptions(final String absolutePath) {
 		
@@ -918,6 +914,7 @@ public class SnomedRf2IndexInitializer extends Job {
 			allRefsetMemberChanges.addAll(refSetMemberChanges.get(conceptIdString));
 			allRefsetMemberChanges.addAll(mappingRefSetMemberChanges.get(conceptIdString));
 			
+			updaters.add(new RefSetIconIdUpdater(inferredTaxonomyBuilder, statedTaxonomyBuilder, conceptIdString, concept.isActive(), AVAILABLE_ICON_IDS, identifierConceptIdsForNewRefSets));
 			updaters.add(new ReferenceSetMembershipUpdater(conceptIdString, allRefsetMemberChanges));
 			updaters.add(new ComponentConstraintUpdater(conceptIdString, conceptIdToPredicateMap.get(Long.valueOf(conceptIdString))));
 			updaters.add(new RefSetParentageUpdater(inferredTaxonomyBuilder, conceptIdString, identifierConceptIdsForNewRefSets));
@@ -1033,7 +1030,7 @@ public class SnomedRf2IndexInitializer extends Job {
 				.module(moduleId)
 				.with(new ComponentCompareFieldsUpdater<SnomedDocumentBuilder>(conceptIdString, conceptStorageKey));
 
-		updateIconId(conceptIdString, active, docBuilder, true);
+		new RefSetIconIdUpdater(inferredTaxonomyBuilder, statedTaxonomyBuilder, conceptIdString, active, AVAILABLE_ICON_IDS, identifierConceptIdsForNewRefSets).update(docBuilder);
 
 		if (conceptIdToPredicateMap.containsKey(conceptId)) {
 			final Collection<String> predicateKeys = conceptIdToPredicateMap.get(conceptId);
