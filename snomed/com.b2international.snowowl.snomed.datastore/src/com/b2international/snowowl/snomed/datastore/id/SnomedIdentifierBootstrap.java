@@ -30,6 +30,8 @@ import com.b2international.snowowl.datastore.store.MemStore;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
+import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration.IdGenerationService;
+import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration.IdGenerationSource;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.cis.CisSnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
@@ -78,40 +80,62 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 
 	private void checkIdGenerationSource(final SnowOwlConfiguration configuration) {
 		final SnomedIdentifierConfiguration conf = configuration.getModuleConfig(SnomedIdentifierConfiguration.class);
-		final IdGenerationStrategy idGenerationSource = conf.getStrategy();
+		final IdGenerationStrategy idGenerationSource = conf.getIdGenerationStrategy();
 
 		if (null == idGenerationSource) {
 			throw new IllegalStateException("ID generation source is not configured.");
 		}
 	}
 
-	private void registerSnomedIdentifierService(final SnomedIdentifierConfiguration conf, final Environment env, final ISnomedIdentiferReservationService reservationService) {
+	private void registerSnomedIdentifierService(final SnomedIdentifierConfiguration conf, final Environment env,
+			final ISnomedIdentiferReservationService reservationService) {
 		
 		ISnomedIdentifierService identifierService = null;
-
 		final ObjectMapper mapper = new ObjectMapper();
+		
+		if (conf.getIdGenerationService() == IdGenerationService.EMBEDDED) {
+	
+			if (conf.getIdGenerationSource() == IdGenerationSource.INDEX) {
+				final IndexStore<SctId> indexStore = getIndexStore(env, mapper);
+				
+				switch (conf.getIdGenerationStrategy()) {
+					case RANDOM:
+						identifierService = new DefaultSnomedIdentifierService(indexStore, ItemIdGenerationStrategy.RANDOM, reservationService, conf);
+						LOGGER.info("Snow Owl is configured to use index based identifier service with RANDOM id allocation.");
+						break;
+	
+					case SEQUENTIAL:
+						final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(indexStore, reservationService);
+						identifierService = new DefaultSnomedIdentifierService(indexStore, generationStrategy, reservationService, conf);
+						LOGGER.info("Snow Owl is configured to use index-based identifier service with SEQUENTIAL id allocation.");
+						break;
+				}
+			
+			} else if (conf.getIdGenerationSource() == IdGenerationSource.MEMORY) {
+				final MemStore<SctId> memStore = new MemStore<SctId>();
 
-		switch (conf.getStrategy()) {
-		case MEMORY:
-			LOGGER.info("Snow Owl is configured to use memory based identifier service.");
-			final MemStore<SctId> memStore = new MemStore<SctId>();
-			identifierService = new DefaultSnomedIdentifierService(memStore, ItemIdGenerationStrategy.RANDOM, reservationService, conf);
-			break;
-		case INDEX:
-			LOGGER.info("Snow Owl is configured to use index based identifier service.");
-			final IndexStore<SctId> indexStore = getIndexStore(env, mapper);
-			final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(indexStore, reservationService);
-			identifierService = new DefaultSnomedIdentifierService(indexStore, generationStrategy, reservationService, conf);
-			break;
-		case CIS:
-			LOGGER.info("Snow Owl is configured to use CIS based identifier service.");
+				switch (conf.getIdGenerationStrategy()) {
+					case RANDOM:
+						identifierService = new DefaultSnomedIdentifierService(memStore, ItemIdGenerationStrategy.RANDOM, reservationService, conf);
+						LOGGER.info("Snow Owl is configured to use memory-based identifier service with RANDOM id allocation.");
+						break;
+					case SEQUENTIAL:
+						final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(memStore, reservationService);
+						identifierService = new DefaultSnomedIdentifierService(memStore, generationStrategy, reservationService, conf);
+						LOGGER.info("Snow Owl is configured to use memory-based identifier service with SEQUENTIAL id allocation.");
+						break;
+					}
+			}
+
+		} else if (conf.getIdGenerationService() == IdGenerationService.CIS) {
 			identifierService = new CisSnomedIdentifierService(conf, reservationService, mapper);
-			break;
-		default:
-			throw new IllegalStateException(String.format("Unknown ID generation source configured: %s. ", conf.getStrategy()));
+			LOGGER.info("Snow Owl is configured to use CIS based identifier service.");
+		} else {
+			throw new IllegalStateException(String.format("Unknown ID generation source configured: %s. ", conf.getIdGenerationStrategy()));
 		}
-
+		
 		env.services().registerService(ISnomedIdentifierService.class, identifierService);
+
 	}
 
 	private IndexStore<SctId> getIndexStore(final Environment env, ObjectMapper mapper) {
