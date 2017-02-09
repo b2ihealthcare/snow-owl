@@ -79,6 +79,12 @@
 				<module>com.b2international.snowowl.server.deploy</module>
 			</modules>
 		</profile>
+		<profile>
+      		<id>dependencies</id>
+      		<modules>
+      			<module>system.bundle.package.exporter</module>
+      		</modules>
+    	</profile>
 	</profiles>
 	
 </project>
