@@ -21,8 +21,11 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
+import com.b2international.snowowl.datastore.cdo.ICDORepository;
+import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.core.lang.StaticLanguageSetting;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 
 /**
@@ -40,6 +43,10 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
+		final SnomedCoreConfiguration snomedConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
+		final ICDORepository repository = env.service(ICDORepositoryManager.class).getByUuid(SnomedDatastoreActivator.REPOSITORY_UUID);
+		repository.setReaderPoolCapacity(snomedConfig.getReaderPoolCapacity());
+		repository.setWriterPoolCapacity(snomedConfig.getWriterPoolCapacity());
 	}
-
+	
 }
