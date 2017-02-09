@@ -745,6 +745,14 @@ authentication:
 |revisionCache
 |`true`
 |Enable CDO revision cache to keep data returned from the database.
+
+|readerPoolCapacity
+|`7`
+|The capacity of the reader pool associated with the SNOMED CT store.
+
+|writerPoolCapacity
+|`3`
+|The capacity of the writer pool associated with the SNOMED CT store.
 |===
 
 --------------------------
@@ -914,6 +922,14 @@ Configuration of SNOMED CT terminology services.
 |Name
 |Default
 |Description
+
+|readerPoolCapacity
+|`7`
+|The capacity of the reader pool associated with the SNOMED CT store.
+
+|writerPoolCapacity
+|`3`
+|The capacity of the writer pool associated with the SNOMED CT store.
 
 |language
 |`en-gb`

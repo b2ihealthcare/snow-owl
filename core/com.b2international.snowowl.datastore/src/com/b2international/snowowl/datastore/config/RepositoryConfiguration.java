@@ -34,7 +34,7 @@ import com.google.common.net.HostAndPort;
  * 
  * @since 3.4
  */
-public class RepositoryConfiguration {
+public class RepositoryConfiguration extends ConnectionPoolConfiguration {
 	
 	private boolean compressed = false;
 
