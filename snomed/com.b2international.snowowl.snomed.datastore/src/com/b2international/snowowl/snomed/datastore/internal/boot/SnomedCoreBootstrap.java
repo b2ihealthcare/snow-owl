@@ -61,10 +61,12 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
-		final SnomedCoreConfiguration snomedConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
-		final ICDORepository repository = env.service(ICDORepositoryManager.class).getByUuid(SnomedDatastoreActivator.REPOSITORY_UUID);
-		repository.setReaderPoolCapacity(snomedConfig.getReaderPoolCapacity());
-		repository.setWriterPoolCapacity(snomedConfig.getWriterPoolCapacity());
+		if (env.isServer() || env.isEmbedded()) {
+			final SnomedCoreConfiguration snomedConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
+			final ICDORepository repository = env.service(ICDORepositoryManager.class).getByUuid(SnomedDatastoreActivator.REPOSITORY_UUID);
+			repository.setReaderPoolCapacity(snomedConfig.getReaderPoolCapacity());
+			repository.setWriterPoolCapacity(snomedConfig.getWriterPoolCapacity());
+		}
 		
 		final Reservation intMetadataReservation = Reservations.range(
 				SnomedIdentifiers.MIN_INT_METADATA_ITEMID, // 900000000000000
