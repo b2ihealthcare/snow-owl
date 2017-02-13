@@ -34,6 +34,13 @@ public interface IConcreteDomainService {
 	boolean isVaccine(final String conceptId);
 	
 	/**
+	 * Returns {@code true} if the concept given with its unique ID can be tagged with vaccine. Otherwise {@code false}.
+	 * @param conceptId the concept ID. 
+	 * @return {@code true} if the boolean concrete domain 'canBeTaggedWithVaccine' is set.
+	 */
+	boolean canBeTaggedWithVaccine(final String conceptId);
+	
+	/**
 	 * Returns {@code true} if the concept given with its unique ID is a vitamin. Otherwise {@code false}.
 	 * @param conceptId the concept ID. 
 	 * @return {@code true} if vitamin.

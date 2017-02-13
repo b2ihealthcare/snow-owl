@@ -42,6 +42,7 @@ import com.google.common.collect.Multimap;
 
 /**
  * Concrete domain service implementation.
+ * TODO: BB: This needs to be replaced to a generic interface.
  *
  */
 public class ConcreteDomainService implements IConcreteDomainService {
@@ -49,6 +50,7 @@ public class ConcreteDomainService implements IConcreteDomainService {
 	private static final String IS_MANUFACTURED = "isManufactured";
 	private static final String IS_VACCINE = "isVaccine";
 	private static final String IS_VITAMIN = "isVitamin";
+	private static final String CAN_BE_TAGGED_WITH_VACCINE = "canBeTaggedWithVaccine";
 
 	@Override
 	public Collection<SnomedRefSetMemberIndexEntry> getAllDataTypesForConcept(final String conceptId) {
@@ -73,6 +75,16 @@ public class ConcreteDomainService implements IConcreteDomainService {
 			}
 		}).size();
 	}
+	
+	@Override
+	public boolean canBeTaggedWithVaccine(final String conceptId) {
+		return 0 < Collections2.filter(getAllDataTypesForConcept(conceptId), new Predicate<SnomedRefSetMemberIndexEntry>() {
+			@Override public boolean apply(final SnomedRefSetMemberIndexEntry dataType) {
+				return CAN_BE_TAGGED_WITH_VACCINE.equals(dataType.getAttributeLabel()) && Boolean.parseBoolean(String.valueOf(dataType.getValue()));
+			}
+		}).size();
+	}
+	
 
 	@Override
 	public boolean isVitamin(final String conceptId) {
