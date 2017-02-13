@@ -15,22 +15,39 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
-import java.util.Collections;
-import java.util.List;
-
-import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.core.domain.BaseComponent;
 
 /**
- * @since 4.7
+ * @since 5.7
  */
-public final class SnomedConstraints extends PageableCollectionResource<SnomedConstraint> {
+public abstract class SnomedConstraint extends BaseComponent {
 
-	public SnomedConstraints(int offset, int limit, int total) {
-		super(Collections.emptyList(), offset, limit, total);
+	private String domain;
+	private int minCardinality;
+	private int maxCardinality;
+	
+	public final String getDomain() {
+		return domain;
 	}
 	
-	public SnomedConstraints(List<SnomedConstraint> items, int offset, int limit, int total) {
-		super(items, offset, limit, total);
+	public final int getMinCardinality() {
+		return minCardinality;
 	}
-
+	
+	public final int getMaxCardinality() {
+		return maxCardinality;
+	}
+	
+	public final void setDomain(String domain) {
+		this.domain = domain;
+	}
+	
+	public final void setMinCardinality(int minCardinality) {
+		this.minCardinality = minCardinality;
+	}
+	
+	public final void setMaxCardinality(int maxCardinality) {
+		this.maxCardinality = maxCardinality;
+	}
+	
 }

@@ -25,7 +25,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
-import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.request.Branching;
 import com.b2international.snowowl.datastore.request.DeleteRequestBuilder;
@@ -39,11 +38,11 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
@@ -221,7 +220,7 @@ public abstract class SnomedRequests {
 	 * @param refSetIds - optional reference set identifiers to match
 	 * @return
 	 */
-	public static Promise<Collection<SnomedConstraintDocument>> prepareGetApplicablePredicates(final String branch, final Set<String> selfIds, final Set<String> ruleParentIds, final Set<String> refSetIds) {
+	public static Promise<Collection<SnomedConstraint>> prepareGetApplicablePredicates(final String branch, final Set<String> selfIds, final Set<String> ruleParentIds, final Set<String> refSetIds) {
 		// query constraint domains three times, on for each concept domain set
 		final IEventBus bus = ApplicationContext.getInstance().getService(IEventBus.class);
 		return SnomedRequests.prepareSearchConcept()
@@ -241,9 +240,9 @@ public abstract class SnomedRequests {
 					return descendantDomainIds;
 				}
 			})
-			.then(new Function<Set<String>, Collection<SnomedConstraintDocument>>() {
+			.then(new Function<Set<String>, Collection<SnomedConstraint>>() {
 				@Override
-				public Collection<SnomedConstraintDocument> apply(Set<String> descendantDomainIds) {
+				public Collection<SnomedConstraint> apply(Set<String> descendantDomainIds) {
 					final BulkRequestBuilder<BranchContext> constraintBulkRequestBuilder = BulkRequest.<BranchContext>create();
 
 					if (!CompareUtils.isEmpty(selfIds)) {
@@ -262,12 +261,7 @@ public abstract class SnomedRequests {
 						.setBody(constraintBulkRequestBuilder)
 						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 						.execute(bus)
-						.then(new Function<BulkResponse, Collection<SnomedConstraintDocument>>() {
-							@Override
-							public Collection<SnomedConstraintDocument> apply(BulkResponse input) {
-								return ImmutableSet.copyOf(Iterables.concat(input.getResponses(SnomedConstraints.class)));
-							}
-						})
+						.then(input -> ImmutableSet.copyOf(Iterables.concat(input.getResponses(SnomedConstraints.class))))
 						.getSync();
 				}
 			});

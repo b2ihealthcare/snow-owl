@@ -15,22 +15,19 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
-import java.util.Collections;
-import java.util.List;
-
-import com.b2international.snowowl.core.domain.PageableCollectionResource;
-
 /**
- * @since 4.7
+ * @since 5.7
  */
-public final class SnomedConstraints extends PageableCollectionResource<SnomedConstraint> {
+public final class SnomedDescriptionConstraint extends SnomedConstraint {
 
-	public SnomedConstraints(int offset, int limit, int total) {
-		super(Collections.emptyList(), offset, limit, total);
+	private String typeId;
+	
+	public void setTypeId(String typeId) {
+		this.typeId = typeId;
 	}
 	
-	public SnomedConstraints(List<SnomedConstraint> items, int offset, int limit, int total) {
-		super(items, offset, limit, total);
+	public String getTypeId() {
+		return typeId;
 	}
-
+	
 }

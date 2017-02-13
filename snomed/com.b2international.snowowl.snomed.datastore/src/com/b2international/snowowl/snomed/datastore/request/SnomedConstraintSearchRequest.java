@@ -30,6 +30,7 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
+import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
 
@@ -93,7 +94,7 @@ public class SnomedConstraintSearchRequest extends RevisionSearchRequest<SnomedC
 				.build();
 		
 		final Hits<SnomedConstraintDocument> hits = searcher.search(query);
-		return new SnomedConstraints(hits.getHits(), offset(), limit(), hits.getTotal());
+		return SnomedConverters.newConstraintConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), hits.getTotal());
 	}
 	
 	@Override
