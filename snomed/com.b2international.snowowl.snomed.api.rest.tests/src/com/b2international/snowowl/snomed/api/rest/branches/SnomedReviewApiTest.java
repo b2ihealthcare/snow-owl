@@ -471,7 +471,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void setReviewStale() {
+	public void setReviewStale() throws Exception {
 		givenBranchWithPath(testBranchPath);
 
 		final String reviewId = andCreatedReview("MAIN", testBranchPath.getPath());
@@ -480,6 +480,9 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		final Map<?, ?> conceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
 		final String id = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, conceptRequestBody);
 		assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, id);
+		
+		// wait 1s before checking review state 
+		Thread.sleep(1000);
 		
 		whenRetrievingReviewWithId(reviewId)
 		.then()
