@@ -10,7 +10,6 @@
    <extension-point id="nameProviderFactory" name="nameProviderFactory" schema="schema/nameProviderFactory.exsd"/>
    <extension-point id="terminologyComponentUriResolver" name="terminologyComponentUriResolver" schema="schema/terminologyComponentUriResolver.exsd"/>
    <extension-point id="expressionUriEvaluator" name="Expression URI Evaluator" schema="schema/expressionUriEvaluator.exsd"/>
-   <extension-point id="quickSearchProvider" name="quickSearchProvider" schema="schema/quickSearchProvider.exsd"/>
    <extension-point id="componentValidationConstraint" name="Component Validation Constraint" schema="schema/componentValidationConstraint.exsd"/>
    <extension-point id="globalValidationConstraints" name="Global Validation Constraint" schema="schema/globalValidationConstraint.exsd"/>
    <extension-point id="componentIconIdProvider" name="componentIconIdProvider" schema="schema/componentIconIdProvider.exsd"/>
