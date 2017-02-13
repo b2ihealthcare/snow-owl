@@ -21,8 +21,11 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConcreteDomainConstraint;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedDescriptionConstraint;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipConstraint;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 
 /**
@@ -36,12 +39,44 @@ final class SnomedConstraintConverter extends BaseResourceConverter<SnomedConstr
 
 	@Override
 	protected SnomedConstraints createCollectionResource(List<SnomedConstraint> results, int offset, int limit, int total) {
-		return null;
+		return new SnomedConstraints(results, offset, limit, total);
 	}
 
 	@Override
 	protected SnomedConstraint toResource(SnomedConstraintDocument entry) {
-		return null;
+		final SnomedConstraint constraint;
+		switch (entry.getType()) {
+		case DATATYPE:
+			final SnomedConcreteDomainConstraint cConstraint = new SnomedConcreteDomainConstraint();
+			cConstraint.setCharacteristicTypeExpresion(entry.getCharacteristicTypeExpression());
+			cConstraint.setTypeExpression(entry.getDataTypeName());
+			cConstraint.setValueType(entry.getDataType());
+			constraint = cConstraint;
+			break;
+		case DESCRIPTION:
+			SnomedDescriptionConstraint dConstraint = new SnomedDescriptionConstraint();
+			dConstraint.setTypeId(entry.getDescriptionTypeId());
+			constraint = dConstraint;
+			break;
+		case RELATIONSHIP:
+			SnomedRelationshipConstraint rConstraint = new SnomedRelationshipConstraint();
+			rConstraint.setCharacteristicTypeExpression(entry.getCharacteristicTypeExpression());
+			rConstraint.setTypeExpression(entry.getRelationshipTypeExpression());
+			rConstraint.setDestinationExpression(entry.getRelationshipValueExpression());
+			rConstraint.setGroupRule(entry.getGroupRule());
+			constraint = rConstraint;
+			break;
+		default: throw new UnsupportedOperationException("Unsupported MRCM constraint: " + entry.getType());
+		}
+		constraint.setId(entry.getId());
+		constraint.setStorageKey(entry.getStorageKey());
+		constraint.setDomain(entry.getDomain());
+		constraint.setMinCardinality(entry.getMinCardinality());
+		constraint.setMaxCardinality(entry.getMaxCardinality());
+		constraint.setRefSetIds(entry.getRefSetIds());
+		constraint.setSelfIds(entry.getSelfIds());
+		constraint.setDescendantIds(entry.getDescendantIds());
+		return constraint;
 	}
 
 }

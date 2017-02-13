@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import java.util.Collections;
+import java.util.Set;
+
 import com.b2international.snowowl.core.domain.BaseComponent;
 
 /**
@@ -25,6 +28,9 @@ public abstract class SnomedConstraint extends BaseComponent {
 	private String domain;
 	private int minCardinality;
 	private int maxCardinality;
+	private Set<String> selfIds = Collections.emptySet();
+	private Set<String> descendantIds = Collections.emptySet();
+	private Set<String> refSetIds = Collections.emptySet();
 	
 	public final String getDomain() {
 		return domain;
@@ -38,6 +44,18 @@ public abstract class SnomedConstraint extends BaseComponent {
 		return maxCardinality;
 	}
 	
+	public Set<String> getSelfIds() {
+		return selfIds;
+	}
+	
+	public Set<String> getDescendantIds() {
+		return descendantIds;
+	}
+	
+	public Set<String> getRefSetIds() {
+		return refSetIds;
+	}
+	
 	public final void setDomain(String domain) {
 		this.domain = domain;
 	}
@@ -48,6 +66,18 @@ public abstract class SnomedConstraint extends BaseComponent {
 	
 	public final void setMaxCardinality(int maxCardinality) {
 		this.maxCardinality = maxCardinality;
+	}
+	
+	public void setSelfIds(Set<String> selfIds) {
+		this.selfIds = selfIds;
+	}
+	
+	public void setDescendantIds(Set<String> descendantIds) {
+		this.descendantIds = descendantIds;
+	}
+	
+	public void setRefSetIds(Set<String> refSetIds) {
+		this.refSetIds = refSetIds;
 	}
 	
 }
