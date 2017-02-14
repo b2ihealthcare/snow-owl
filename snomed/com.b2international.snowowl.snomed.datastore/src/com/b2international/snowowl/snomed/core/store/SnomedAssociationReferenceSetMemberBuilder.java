@@ -22,7 +22,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 /**
  * @since 4.5
  */
-public class SnomedAssociationReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedAssociationReferenceSetMemberBuilder, SnomedAssociationRefSetMember> {
+public final class SnomedAssociationReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedAssociationReferenceSetMemberBuilder, SnomedAssociationRefSetMember> {
 
 	private String targetComponentId;
 	

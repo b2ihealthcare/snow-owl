@@ -121,4 +121,40 @@ public class SnomedComponents {
 		return new SnomedConcreteDomainReferenceSetMemberBuilder();
 	}
 
+	/**
+	 * Creates and returns a new {@link SnomedDescriptionTypeReferenceSetMemberBuilder SNOMED CT Description Format Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedDescriptionTypeReferenceSetMemberBuilder newDescriptionTypeMember() {
+		return new SnomedDescriptionTypeReferenceSetMemberBuilder();
+	}
+
+	/**
+	 * Creates and returns a new {@link SnomedModuleDependencyReferenceSetMemberBuilder SNOMED CT Module Dependency Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedModuleDependencyReferenceSetMemberBuilder newModuleDependencyMember() {
+		return new SnomedModuleDependencyReferenceSetMemberBuilder();
+	}
+	
+	/**
+	 * Creates and returns a new {@link SnomedSimpleMapReferenceSetMemberBuilder SNOMED CT Simple Map Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedSimpleMapReferenceSetMemberBuilder newSimpleMapMember() {
+		return new SnomedSimpleMapReferenceSetMemberBuilder();
+	}
+
+	/**
+	 * Creates and returns a new {@link SnomedComplexMapReferenceSetMemberBuilder SNOMED CT Complex Map Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedComplexMapReferenceSetMemberBuilder newComplexMapMember() {
+		return new SnomedComplexMapReferenceSetMemberBuilder();
+	}
+
 }
