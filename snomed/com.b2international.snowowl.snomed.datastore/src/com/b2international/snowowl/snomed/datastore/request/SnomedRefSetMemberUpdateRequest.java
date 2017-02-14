@@ -23,16 +23,14 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.base.Strings;
 
 /**
  * @since 4.5
@@ -47,115 +45,122 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 
 	@NotNull
 	private final Boolean force;
-
+	
 	SnomedRefSetMemberUpdateRequest(String memberId, Map<String, Object> properties, Boolean force) {
 		this.memberId = memberId;
 		this.properties = properties;
 		this.force = force;
 	}
+	
+	String getMemberId() {
+		return memberId;
+	}
+	
+	boolean hasProperty(String key) {
+		return properties.containsKey(key);
+	}
+	
+	String getProperty(String key) {
+		return getProperty(key, String.class);
+	}
+	
+	<T> T getProperty(String key, Class<T> valueType) {
+		return ClassUtils.checkAndCast(properties.get(key), valueType);
+	}
 
 	@Override
 	public Boolean execute(TransactionContext context) {
-		final SnomedRefSetMember member = context.lookup(memberId, SnomedRefSetMember.class);
-		final SnomedRefSetType type = member.getRefSet().getType();
-		RefSetSupport.check(type);
+		SnomedRefSetMember member = context.lookup(memberId, SnomedRefSetMember.class);
+		SnomedRefSetType type = member.getRefSet().getType();
 
 		boolean changed = false;
 		
-		changed |= updateActivityStatus(member);
+		changed |= updateStatus(member);
 		changed |= updateModule(member);
 		changed |= updateEffectiveTime(member);
 		
-		switch (type) {
-		case SIMPLE:
-			// XXX only activity flag and module ID are supported
-			break;
-		case QUERY:
-			changed |= updateQuery((SnomedQueryRefSetMember) member);
-			break;
-		case LANGUAGE:
-			changed |= updateAcceptability((SnomedLanguageRefSetMember) member);
-			break;
-		default: throw new UnsupportedOperationException("Not implemented update of " + type + " member"); 
-		}
+		SnomedRefSetMemberUpdateDelegate delegate = getDelegate(type);
+		changed |= delegate.execute(member, context);
 		
 		if (changed && !isEffectiveTimeUpdate()) {
 			member.unsetEffectiveTime();
 		}
+		
 		return changed;
 	}
 	
-	private boolean updateAcceptability(SnomedLanguageRefSetMember member) {
-		final Object value = properties.get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
-		if (value instanceof String) {
-			final String newAcceptability = (String) value;
-			if (!Objects.equals(newAcceptability, member.getAcceptabilityId())) {
-				member.setAcceptabilityId(newAcceptability);
-				return true;
-			}
+	private SnomedRefSetMemberUpdateDelegate getDelegate(SnomedRefSetType referenceSetType) {
+		switch (referenceSetType) {
+			case ASSOCIATION:
+				return new SnomedAssociationMemberUpdateDelegate(this);
+			case ATTRIBUTE_VALUE:
+				return new SnomedAttributeValueMemberUpdateDelegate(this);
+			case COMPLEX_MAP:
+				return new SnomedComplexMapMemberUpdateDelegate(this);
+			case CONCRETE_DATA_TYPE:
+				return new SnomedConcreteDomainMemberUpdateDelegate(this);
+			case DESCRIPTION_TYPE:
+				return new SnomedDescriptionTypeMemberUpdateDelegate(this);
+			case EXTENDED_MAP:
+				return new SnomedExtendedMapMemberUpdateDelegate(this);
+			case LANGUAGE:
+				return new SnomedQueryMemberUpdateDelegate(this);
+			case MODULE_DEPENDENCY:
+				return new SnomedModuleDependencyMemberUpdateDelegate(this);
+			case QUERY:
+				return new SnomedLanguageMemberUpdateDelegate(this);
+			case SIMPLE: 
+				return new SnomedSimpleMemberUpdateDelegate(this);
+			case SIMPLE_MAP:
+				return new SnomedSimpleMapMemberUpdateDelegate(this);
+			default: 
+				throw new IllegalStateException("Unexpected reference set type '" + referenceSetType + "'.");
 		}
-		return false;
-	}
-
-
-	private boolean isEffectiveTimeUpdate() {
-		return force && !Strings.isNullOrEmpty((String) properties.get(SnomedRf2Headers.FIELD_EFFECTIVE_TIME));
-	}
-
-	private boolean updateActivityStatus(SnomedRefSetMember member) {
-		final Object activeValue = properties.get(SnomedRf2Headers.FIELD_ACTIVE);
-		if (activeValue instanceof Boolean) {
-			final Boolean newStatus = (Boolean) activeValue;
-			if (!Objects.equals(member.isActive(), newStatus)) {
-				member.setActive(newStatus);
-				return true;
-			}
-		}
-		return false;
 	}
 	
+	private boolean updateStatus(SnomedRefSetMember member) {
+		Boolean newStatus = getProperty(SnomedRf2Headers.FIELD_ACTIVE, Boolean.class);
+		if (newStatus != null && !newStatus.equals(member.isActive())) {
+			member.setActive(newStatus);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	private boolean updateModule(SnomedRefSetMember member) {
-		final Object value = properties.get(SnomedRf2Headers.FIELD_MODULE_ID);
-		if (value instanceof String) {
-			final String newModuleId = (String) value;
-			if (!Objects.equals(member.getModuleId(), newModuleId)) {
-				member.setModuleId(newModuleId);
-				return true;
-			}
+		String newModuleId = getProperty(SnomedRf2Headers.FIELD_MODULE_ID);
+		if (newModuleId != null && !newModuleId.equals(member.getModuleId())) {
+			member.setModuleId(newModuleId);
+			return true;
+		} else {
+			return false;
 		}
-		return false;
 	}
-	
+
 	private boolean updateEffectiveTime(SnomedRefSetMember member) {
-		if (force) {
-			final String effectiveTime = (String) properties.get(SnomedRf2Headers.FIELD_EFFECTIVE_TIME);
-			if (!Strings.isNullOrEmpty(effectiveTime)) {
-				final Date effectiveTimeDate = EffectiveTimes.parse(effectiveTime, DateFormats.SHORT);
-				if (!effectiveTimeDate.equals(member.getEffectiveTime())) {
-					// if not null set the effective time to the given value and set released to true
-					member.setEffectiveTime(effectiveTimeDate);
-					member.setReleased(true);
-					return true;
-				}
-			} else {
+		if (!isEffectiveTimeUpdate()) {
+			return false;
+		}
+		
+		Date newEffectiveTime = EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_EFFECTIVE_TIME), DateFormats.SHORT);
+		if (!Objects.equals(newEffectiveTime, member.getEffectiveTime())) {
+			if (newEffectiveTime == null) {
 				// if effective time is null, then unset the effective time but don't change the released flag
 				member.unsetEffectiveTime();
-				return true;
+			} else {
+				// otherwise set the value and toggle the "relased" flag
+				member.setEffectiveTime(newEffectiveTime);
+				member.setReleased(true);
 			}
+			return true;
+		} else {
+			return false;
 		}
-		return false;
 	}
-	
-	private boolean updateQuery(SnomedQueryRefSetMember member) {
-		final Object value = properties.get("query");
-		if (value instanceof String) {
-			final String newQuery = (String) value;
-			if (!Objects.equals(member.getQuery(), newQuery)) {
-				member.setQuery(newQuery);
-				return true;
-			}
-		}
-		return false;
+
+	private boolean isEffectiveTimeUpdate() {
+		return force && hasProperty(SnomedRf2Headers.FIELD_EFFECTIVE_TIME);
 	}
 
 	@Override
