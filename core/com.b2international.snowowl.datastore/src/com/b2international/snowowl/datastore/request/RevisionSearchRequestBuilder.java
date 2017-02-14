@@ -50,15 +50,28 @@ public abstract class RevisionSearchRequestBuilder<B extends RevisionSearchReque
 		return getSelf();
 	}
 	
+	/**
+	 * Sets the component IDs for the artefacts to be returned.
+	 * @param componentIds
+	 * @return RevisionSearchRequestBuilder
+	 */
 	public final B setComponentIds(Collection<String> componentIds) {
 		this.componentIds = componentIds;
 		return getSelf();
 	}
 	
+	/**
+	 * Sets the request to return the entire results set as a single 'page'.
+	 * @return RevisionSearchRequestBuilder
+	 */
 	public final B all() {
 		return setOffset(0).setLimit(MAX_LIMIT);
 	}
 	
+	/**
+	 * Returns a single hit from the result set.
+	 * @return RevisionSearchRequestBuilder
+	 */
 	public final B one() {
 		return setOffset(0).setLimit(1);
 	}

@@ -42,6 +42,12 @@ public abstract class BaseRevisionResourceRequestBuilder<B extends BaseRevisionR
 		return getSelf();
 	}
 	
+	/**
+	 * Instructs the request to expand the result set returned to include certain fields.
+	 * @param expand fields to be included in the returned components
+	 * @return BaseRevisionResourceRequestBuilder
+	 * @see SnomedConceptConverter
+	 */
 	public final B setExpand(String expand) {
 		if (!CompareUtils.isEmpty(expand)) {
 			this.expand = ExpandParser.parse(expand);
@@ -49,6 +55,12 @@ public abstract class BaseRevisionResourceRequestBuilder<B extends BaseRevisionR
 		return getSelf();
 	}
 	
+	/**
+	 * Instructs the request to expand the result set returned to include certain optional fields.
+	 * @param expand fields to be included in the returned components
+	 * @return BaseRevisionResourceRequestBuilder
+	 * @see SnomedConceptConverter
+	 */
 	public final B setExpand(Options expand) {
 		if (!CompareUtils.isEmpty(expand)) {
 			this.expand = expand;

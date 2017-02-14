@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedComponentSearchRequest.OptionKey;
 
 /**
@@ -27,13 +28,15 @@ public abstract class SnomedComponentSearchRequestBuilder<B extends SnomedCompon
 	}
 	
 	/**
-	 * Filter matches to have their ID from the specified namespace.
+	 * Filter the matches components to check whether the component ID from the specified namespace.
 	 * 
 	 * @param namespaceId
-	 *            - the namespace identifier
-	 * @return
+	 *            - the namespace identifier as a string
+	 * @return SnomedComponentSearchRequestBuilder
+	 * @see Concepts
 	 */
 	public final B filterByNamespace(String namespaceId) {
+		
 		return addOption(OptionKey.NAMESPACE, namespaceId);
 	}
 

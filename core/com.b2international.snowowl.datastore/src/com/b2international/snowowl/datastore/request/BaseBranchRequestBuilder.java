@@ -21,12 +21,21 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 
 /**
  * @since 4.5
  */
 public abstract class BaseBranchRequestBuilder<B extends BaseBranchRequestBuilder<B, R>, R> extends BaseRequestBuilder<B, BranchContext, R> {
 
+	/**
+	 * Builds the request.
+	 * @param repositoryId the repository id to execute the request against.
+	 * @param branch the branch to execute the request on
+	 * @return
+	 * @see BranchPathUtils
+	 * @see SnomedDatastoreActivator.REPOSITORY_UUID
+	 */
 	public final AsyncRequest<R> build(final String repositoryId, final String branch) {
 		return toAsync("/"+repositoryId, 
 				new RepositoryRequest<>(repositoryId, 

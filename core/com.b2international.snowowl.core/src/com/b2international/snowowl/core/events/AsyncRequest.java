@@ -33,6 +33,11 @@ public final class AsyncRequest<R> {
 		this.request = request;
 	}
 	
+	/**
+	 * Executes the asynchronous request using the event bus passed in.
+	 * @param bus
+	 * @return {@link Promise}
+	 */
 	public Promise<R> execute(IEventBus bus) {
 		final Promise<R> promise = new Promise<>();
 		final Class<R> responseType = ((BaseRequest<?, R>) request).getReturnType(); 

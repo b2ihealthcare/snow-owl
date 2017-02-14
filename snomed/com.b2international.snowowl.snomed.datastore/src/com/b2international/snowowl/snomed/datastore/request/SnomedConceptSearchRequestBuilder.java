@@ -19,13 +19,21 @@ import java.util.Collection;
 import java.util.Set;
 
 import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.*;
 
 /**
+ * <i>Builder</i> class to build requests responsible for searching SNOMED CT concepts.
+ * This class should be instantiated from the corresponding static method on the central {@link SnomedRequests} class.
+ * Filter methods restrict the results set returned from the search requests; what passes the filters will be returned as part of the resultset.
+ * 
  * @since 4.5
  */
 public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSearchRequestBuilder<SnomedConceptSearchRequestBuilder, SnomedConcepts> {
 
+	/**
+	 * Protected constructor.
+	 * This class should be instantiated using the central {@link SnomedRequests} class.
+	 */
 	SnomedConceptSearchRequestBuilder() {
 	}
 
@@ -49,14 +57,22 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 		return addOption(SnomedConceptSearchRequest.OptionKey.TERM, term);
 	}
 
+	/**
+	 * Filters the concepts based on the type of its descriptions where the description type is specified by concept ID 
+	 * representing the type. E.g.: "900000000000003001" for <i>Fully Specified Name</i>.
+	 * @param description type represented by its concept ID
+	 * @return SnomedConceptSearchRequestBuilder
+	 * 
+	 * @see SnomedConcepts
+	 */
 	public final SnomedConceptSearchRequestBuilder filterByDescriptionType(String type) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.DESCRIPTION_TYPE, type);
 	}
 
 	/**
 	 * Filter matches by the specified ESCG expression.
-	 * @param expression
-	 * @return
+	 * @param ESCG expression
+	 * @return SnomedConceptSearchRequestBuilder
 	 * @deprecated - as of 5.4, use {@link #filterByEcl(String)}
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByEscg(String expression) {
@@ -64,31 +80,36 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	}
 
 	/**
-	 * Filter matches by the specified ECL expression. The currently supported ECL version is v1.1. See <a href="http://snomed.org/ecl">ECL
-	 * Specification and Guide</a>.
+	 * Filter matches by the specified Expression Constraint Language (ECL) expression. 
+	 * The currently supported ECL version is v1.1. See <a href="http://snomed.org/ecl">ECL Specification and Guide</a> or
+	 * <a href="http://www.snomed.org/news-articles/expression-constraint-language">About ECL</a> for more information.
 	 * 
-	 * @param expression
-	 * @return
+	 * @param expression ECL expression
+	 * @return SnomedConceptSearchRequestBuilder
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByEcl(String expression) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.ECL, expression);
 	}
 
 	/**
-	 * Filter matches to have the specified parent identifier amongst the direct inferred super types.
+	 * Filter that matches the specified parent identifier amongst the <b>direct</b> inferred super types.
+	 * E.g.: a filter that returns the direct <i>inferred</i> children of the specified parent.
 	 * 
-	 * @param parentId
-	 * @return
+	 * @param parentId the SNOMED CT concept ID of the parent concept
+	 * @return SnomedConceptSearchRequestBuilder
+	 * @see CharacteristicType
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByParent(String parentId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.PARENT, parentId);
 	}
 
 	/**
-	 * Filter matches to have any of the specified parent identifier amongst the direct inferred super types.
+	 * Filter matches to have any of the specified parent identifiers amongst the direct inferred super types.
+	 * E.g.:a filter that returns the direct <i>inferred</i> children of the specified parents.
 	 * 
-	 * @param parentId
-	 * @return
+	 * @param parentIds set of parent ids
+ 	 * @return SnomedConceptSearchRequestBuilder
+ 	 * @see CharacteristicType
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByParents(Set<String> parentIds) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.PARENT, parentIds);
@@ -96,9 +117,11 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 
 	/**
 	 * Filter matches to have the specified parent identifier amongst the direct stated super types.
+	 * E.g.: a filter that returns the direct <i>stated</i> children of the specified parent.
 	 * 
 	 * @param parentId
-	 * @return
+	 * @return SnomedConceptSearchRequestBuilder
+	 * @see CharacteristicType
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByStatedParent(String parentId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_PARENT, parentId);
@@ -106,9 +129,11 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 
 	/**
 	 * Filter matches to have the specified parent identifier amongst the direct stated super types.
+	 * E.g.:a filter that returns the direct <i>stated</i> children of the specified parents.
 	 * 
-	 * @param parentId
-	 * @return
+	 * @param parentIds set of parent ids
+	 * @return SnomedConceptSearchRequestBuilder
+	 * @see CharacteristicType
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByStatedParents(Set<String> parentIds) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_PARENT, parentIds);
@@ -116,9 +141,11 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 
 	/**
 	 * Filter matches to have the specified ancestor identifier amongst the inferred super types (including direct as well).
+	 * E.g.:a filter that returns all of the <i>inferred</i> (direct and non-direct) children of the specified parent.
 	 * 
 	 * @param ancestorId
-	 * @return
+	 * @return SnomedConceptSearchRequestBuilder
+	 * @see CharacteristicType
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByAncestor(String ancestorId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.ANCESTOR, ancestorId);
@@ -126,9 +153,11 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 
 	/**
 	 * Filter matches to have any of the specified ancestor identifier amongst the inferred super types (including direct as well).
+	 * E.g.:a filter that returns all of the <i>inferred</i> (direct and non-direct) children of the specified parents
 	 * 
-	 * @param ancestorIds
-	 * @return
+	 * @param ancestorIds collection of ancestor IDs
+	 * @return SnomedConceptSearchRequestBuilder
+	 * @see CharacteristicType
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByAncestors(Collection<String> ancestorIds) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.ANCESTOR, ancestorIds);
@@ -136,9 +165,11 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 
 	/**
 	 * Filter matches to have the specified ancestor identifier amongst the stated super types (including direct as well).
+	 * E.g.:a filter that returns all of the <i>stated</i> (direct and non-direct) children of the specified parent.
 	 * 
 	 * @param ancestorId
-	 * @return
+	 * @return SnomedConceptSearchRequestBuilder
+	 * @see CharacteristicType
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByStatedAncestor(String ancestorId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_ANCESTOR, ancestorId);
@@ -146,27 +177,33 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 
 	/**
 	 * Filter matches to have any of the specified ancestor identifier amongst the stated super types (including direct as well).
+	 * E.g.:a filter that returns all of the <i>stated</i> (direct and non-direct) children of the specified parents.
 	 * 
 	 * @param ancestorId
-	 * @return
+	 * @return SnomedConceptSearchRequestBuilder
+	 * @see CharacteristicType
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByStatedAncestors(Set<String> ancestorIds) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_ANCESTOR, ancestorIds);
 	}
 
 	/**
-	 * Filter matches to have the specified definition status set.
+	 * Filter matches to have the specified definition status.
 	 * 
-	 * @param definitionStatusId
-	 * @return
+	 * @param definitionStatusId id of the definition status {@link DefinitionStatus}
+	 * @return SnomedConceptSearchRequestBuilder
+	 * @see DefinitionStatus
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByDefinitionStatus(String definitionStatusId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.DEFINITION_STATUS, definitionStatusId);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.b2international.snowowl.datastore.request.RevisionSearchRequestBuilder#createSearch()
+	 */
 	@Override
 	protected RevisionSearchRequest<SnomedConcepts> createSearch() {
 		return new SnomedConceptSearchRequest();
 	}
-
 }

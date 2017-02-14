@@ -23,6 +23,7 @@ import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstrain
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
 
 /**
+ * 
  * @since 4.7
  */
 public final class SnomedConstraintSearchRequestBuilder extends RevisionSearchRequestBuilder<SnomedConstraintSearchRequestBuilder, SnomedConstraints> {

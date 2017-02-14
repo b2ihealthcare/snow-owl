@@ -49,6 +49,19 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 /**
+ * The central class of the SNOMED CT Java API provided by Snow Owl Terminology Server and Authoring Environment Runtime.
+ * This class cannot be instantiated or subclassed by clients, all the functionality is accesible
+ * via static methods.  In general, this class provides access to the API via a set of RequestBuilder
+ * classes that follow the <i>Builder</i> pattern focusing on features such as:
+ * <ul>
+ * <li>searching for SNOMED CT artefacts such as concepts, relationships, descriptions and reference sets</li>
+ * <li>creating new SNOMED CT artefacts</li>
+ * <li>deleting SNOMED CT artefacts</li>
+ * <li>updating SNOMED CT artefacts</li>
+ * <li>access to Snow Owl's revision control features</li>
+ * </ul>
+ * <p>
+ *  
  * @since 4.5
  */
 public abstract class SnomedRequests {
