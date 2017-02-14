@@ -152,7 +152,9 @@ final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseRequest<Tran
 				.newLanguageMember()
 				.withAcceptability(languageMemberEntry.getValue())
 				.withRefSet(languageMemberEntry.getKey())
-				.addTo(context, description);
+				.withModule(description.getModule().getId())
+				.withReferencedComponent(description.getId())
+				.addTo(context);
 		}
 	}
 	
