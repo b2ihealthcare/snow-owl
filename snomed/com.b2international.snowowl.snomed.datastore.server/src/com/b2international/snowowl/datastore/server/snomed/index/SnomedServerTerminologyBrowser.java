@@ -39,6 +39,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.TopDocs;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.net4j.util.StringUtil;
 
 import bak.pcj.LongCollection;
 import bak.pcj.map.LongKeyLongMap;
@@ -47,6 +48,7 @@ import bak.pcj.set.LongOpenHashSet;
 import bak.pcj.set.LongSet;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.StringUtils;
 import com.b2international.commons.graph.GraphUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -136,7 +138,10 @@ public class SnomedServerTerminologyBrowser extends AbstractIndexTerminologyBrow
 	
 	@Override
 	protected Query createFilterTerminologyBrowserQuery(final String expression) {
-		throw new UnsupportedOperationException();
+		if (StringUtils.isEmpty(expression)) {
+			return SnomedMappings.newQuery().type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).matchAny();
+		}
+		return SnomedMappings.newQuery().type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).descriptionTerm(expression).matchAll();
 	}
 	
 	@Override
