@@ -61,7 +61,7 @@ final class SnomedConstraintConverter extends BaseResourceConverter<SnomedConstr
 		case RELATIONSHIP:
 			SnomedRelationshipConstraint rConstraint = new SnomedRelationshipConstraint();
 			rConstraint.setCharacteristicTypeExpression(entry.getCharacteristicTypeExpression());
-			rConstraint.setTypeExpression(entry.getRelationshipTypeExpression());
+			rConstraint.setType(entry.getRelationshipTypeExpression());
 			rConstraint.setDestinationExpression(entry.getRelationshipValueExpression());
 			rConstraint.setGroupRule(entry.getGroupRule());
 			constraint = rConstraint;

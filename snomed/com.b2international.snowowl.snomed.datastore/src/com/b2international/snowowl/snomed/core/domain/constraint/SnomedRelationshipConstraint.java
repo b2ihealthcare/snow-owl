@@ -22,7 +22,7 @@ import com.b2international.snowowl.snomed.mrcm.GroupRule;
  */
 public final class SnomedRelationshipConstraint extends SnomedConstraint {
 
-	private String typeExpression;
+	private String type;
 	private String destinationExpression;
 	private String characteristicTypeExpression;
 	private GroupRule groupRule;
@@ -35,8 +35,8 @@ public final class SnomedRelationshipConstraint extends SnomedConstraint {
 		return destinationExpression;
 	}
 	
-	public String getTypeExpression() {
-		return typeExpression;
+	public String getType() {
+		return type;
 	}
 	
 	public GroupRule getGroupRule() {
@@ -51,8 +51,8 @@ public final class SnomedRelationshipConstraint extends SnomedConstraint {
 		this.destinationExpression = destinationExpression;
 	}
 	
-	public void setTypeExpression(String typeExpression) {
-		this.typeExpression = typeExpression;
+	public void setType(String type) {
+		this.type = type;
 	}
 	
 	public void setGroupRule(GroupRule groupRule) {
