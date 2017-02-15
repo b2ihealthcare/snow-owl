@@ -110,7 +110,11 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 					componentIdParentComponentIdMap.putAll(componentId, parentIds);
 				}
 				
-				addTopLevels(branchPath, null, getRootIds(branchPath), topLevelDepth);
+				//fetch the labels in one query
+				Collection<String> rootIds = getRootIds(branchPath);
+				Map<String, String> childrenIdToLabelMap = fetchLabels(branchPath, Sets.newHashSet(rootIds));
+				
+				addTopLevels(branchPath, null, rootIds, topLevelDepth, childrenIdToLabelMap);
 				
 				//fetch the labels in one query
 				Map<String, String> idToLabelMap = fetchLabels(branchPath, componentIdDocMap.keySet());
@@ -280,7 +284,7 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 		}
 	}
 
-	private void addTopLevels(final IBranchPath branchPath, final String parentId, final Collection<String> childrenIds, int level) {
+	private void addTopLevels(final IBranchPath branchPath, final String parentId, final Collection<String> childrenIds, int level, Map<String, String> childrenIdtoLabelMap) {
 		
 		// Works from top to bottom
 		if (level < 1) {
@@ -290,6 +294,10 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 		for (final String childId : childrenIds) {
 			
 			final E childConcept = getConcept(branchPath, childId);
+			
+			//explicitely set the label
+			childConcept.setLabel(childrenIdtoLabelMap.get(childId));
+			
 			componentMap.put(childId, childConcept);
 			subTypeMap.put(parentId, childId);
 			
@@ -298,7 +306,7 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 			}
 			
 			Collection<String> nextChildrenIds = getSubTypeIds(branchPath, childId);
-			addTopLevels(branchPath, childId, nextChildrenIds, level - 1);
+			addTopLevels(branchPath, childId, nextChildrenIds, level - 1, childrenIdtoLabelMap);
 		}
 	}
 
