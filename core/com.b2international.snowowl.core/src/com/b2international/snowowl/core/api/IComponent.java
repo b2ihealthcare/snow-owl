@@ -32,5 +32,5 @@ import com.b2international.snowowl.core.api.component.LabelProvider;
  * @param <K> type of the identifier.
  */
 public interface IComponent<K> extends LabelProvider, IdProvider<K>, Serializable {
-
+	
 }

@@ -41,7 +41,7 @@ public abstract class AbstractIndexEntry implements IIndexEntry, IconIdProvider<
 	private static final long serialVersionUID = -4158003369170743548L;
 
 	protected final String id;
-	protected final String label;
+	protected String label;
 	protected final float score;
 	protected final long storageKey;
 	protected final String iconId;
@@ -63,6 +63,11 @@ public abstract class AbstractIndexEntry implements IIndexEntry, IconIdProvider<
 	@Override
 	public String getLabel() {
 		return label;
+	}
+	
+	@Override
+	public void setLabel(String label) {
+		this.label = label;
 	}
 
 	@Override

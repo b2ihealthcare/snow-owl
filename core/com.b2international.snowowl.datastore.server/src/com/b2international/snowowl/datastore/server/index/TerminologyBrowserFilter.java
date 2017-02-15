@@ -42,6 +42,7 @@ import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.google.common.base.Function;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
@@ -111,13 +112,33 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 				
 				addTopLevels(branchPath, null, getRootIds(branchPath), topLevelDepth);
 				
+				//fetch the labels in one query
+				Map<String, String> idToLabelMap = fetchLabels(branchPath, componentIdDocMap.keySet());
+				
 				for (final String componentId : componentIdDocMap.keySet()) {
-					processComponentForTree(branchPath, componentId);
+					processComponentForTree(branchPath, componentId, idToLabelMap);
 				}
 
 				trimTopLevels(null, topLevelDepth);
 				
 				return new FilteredTerminologyBrowser<E, String>(componentMap, subTypeMap, superTypeMap, FilterTerminologyBrowserType.HIERARCHICAL, filteredComponents);
+			}
+		});
+	}
+
+	/**
+	 * Default implementation returns the ids for the labels as well.
+	 * @param branchPath
+	 * @param keySet
+	 * @return
+	 */
+	protected Map<String, String> fetchLabels(IBranchPath branchPath, Set<String> idSet) {
+		
+		return Maps.asMap(idSet, new Function<String, String>() {
+
+			@Override
+			public String apply(String id) {
+				return id;
 			}
 		});
 	}
@@ -191,7 +212,7 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 		return null;
 	}
 	
-	private void processComponentForTree(final IBranchPath branchPath, final String componentId) {
+	private void processComponentForTree(final IBranchPath branchPath, final String componentId, final Map<String, String> idToLabelMap) {
 
 		//check for already processed concepts
 		if (componentMap.containsKey(componentId)) {
@@ -199,7 +220,12 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 		}
 		
 		final Document doc = componentIdDocMap.get(componentId);
-		componentMap.put(componentId, createResultObject(branchPath, doc));
+		String label = idToLabelMap.get(componentId);
+		E resultObject = createResultObject(branchPath, doc);
+		
+		//set the label from outside
+		resultObject.setLabel(label);
+		componentMap.put(componentId, resultObject);
 		
 		Collection<String> superTypeIds = componentIdParentComponentIdMap.get(componentId);
 		if (!componentIdParentComponentIdMap.containsKey(componentId)) {
@@ -207,10 +233,10 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 			componentIdParentComponentIdMap.putAll(componentId, superTypeIds);
 		}
 		
-		processConceptSuperTypes(branchPath, componentId, superTypeIds);
+		processConceptSuperTypes(branchPath, componentId, superTypeIds, idToLabelMap);
 	}
 
-	private void processConceptSuperTypes(final IBranchPath branchPath, final String componentId, final Collection<String> superTypeIds) {
+	private void processConceptSuperTypes(final IBranchPath branchPath, final String componentId, final Collection<String> superTypeIds, final Map<String, String> idToLabelMap) {
 
 		if (superTypeIds.isEmpty()) {
 			return;
@@ -232,7 +258,7 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 			 * as their parent, if any exist.
 			 */
 			if (filteredComponents.contains(parentId)) {
-				processComponentForTree(branchPath, parentId);
+				processComponentForTree(branchPath, parentId, idToLabelMap);
 			} else if (hasResultParent) {
 				continue;
 			}
@@ -250,7 +276,7 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 				componentIdParentComponentIdMap.putAll(parentId, parentSuperTypeIds);
 			}
 			
-			processConceptSuperTypes(branchPath, componentId, parentSuperTypeIds);
+			processConceptSuperTypes(branchPath, componentId, parentSuperTypeIds, idToLabelMap);
 		}
 	}
 

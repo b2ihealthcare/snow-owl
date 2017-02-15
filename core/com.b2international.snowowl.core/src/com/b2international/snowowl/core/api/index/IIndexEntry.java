@@ -35,4 +35,12 @@ public interface IIndexEntry extends IComponent<String>, Serializable {
 	 * @return the storage key with which the original object can be retrieved from the persistent store
 	 */
 	long getStorageKey();
+	
+	/**
+	 * Sets the label for this component.
+	 * If possible, avoid this method.
+	 * @param label
+	 * @deprecated
+	 */
+	void setLabel(String label);
 }

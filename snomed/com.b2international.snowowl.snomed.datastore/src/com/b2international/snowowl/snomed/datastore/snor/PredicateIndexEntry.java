@@ -336,6 +336,11 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable, ITerminol
 	public String getLabel() {
 		return toString();
 	}
+	
+	@Override
+	public void setLabel(String label) {
+		throw new UnsupportedOperationException();
+	}
 
 	@Override
 	public float getScore() {
