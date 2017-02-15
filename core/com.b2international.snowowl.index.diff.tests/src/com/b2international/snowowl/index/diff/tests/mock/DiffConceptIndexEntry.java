@@ -31,7 +31,7 @@ public class DiffConceptIndexEntry implements IIndexEntry {
 	private static final long serialVersionUID = 8495046782045849702L;
 
 	private final String id;
-	private final String label;
+	private String label;
 	private final float score;
 	private final long storageKey;
 
@@ -52,6 +52,11 @@ public class DiffConceptIndexEntry implements IIndexEntry {
 	@Override
 	public String getLabel() {
 		return label;
+	}
+	
+	@Override
+	public void setLabel(String label) {
+		this.label = label;
 	}
 
 	@Override
