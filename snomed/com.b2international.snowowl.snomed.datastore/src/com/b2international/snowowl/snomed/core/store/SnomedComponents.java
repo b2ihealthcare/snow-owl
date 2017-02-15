@@ -59,6 +59,33 @@ public class SnomedComponents {
 	}
 
 	/**
+	 * Creates and returns a new {@link SnomedMappingReferenceSetBuilder SNOMED CT Mapping Reference set builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedMappingReferenceSetBuilder newMappingReferenceSet() {
+		return new SnomedMappingReferenceSetBuilder();
+	}
+
+	/**
+	 * Creates and returns a new {@link SnomedStructuralReferenceSetBuilder SNOMED CT Structural Reference set builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedStructuralReferenceSetBuilder newStructuralReferenceSet() {
+		return new SnomedStructuralReferenceSetBuilder();
+	}
+
+	/**
+	 * Creates and returns a new {@link SnomedConcreteDomainReferenceSetBuilder SNOMED CT Concrete Domain Reference set builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedConcreteDomainReferenceSetBuilder newConcreteDomainReferenceSet() {
+		return new SnomedConcreteDomainReferenceSetBuilder();
+	}
+
+	/**
 	 * Creates and returns a new {@link SnomedLanguageReferenceSetMemberBuilder SNOMED CT Language Reference set member builder}.
 	 * 
 	 * @return
@@ -101,15 +128,6 @@ public class SnomedComponents {
 	 */
 	public static SnomedAttributeValueReferenceSetMemberBuilder newAttributeValueMember() {
 		return new SnomedAttributeValueReferenceSetMemberBuilder();
-	}
-	
-	/**
-	 * Creates and returns a new {@link SnomedConcreteDomainReferenceSetBuilder SNOMED CT Concrete Domain Reference set builder}.
-	 * 
-	 * @return
-	 */
-	public static SnomedConcreteDomainReferenceSetBuilder newConcreteDomainReferenceSet() {
-		return new SnomedConcreteDomainReferenceSetBuilder();
 	}
 	
 	/**
