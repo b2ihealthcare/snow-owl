@@ -27,6 +27,7 @@ public final class SnomedRefSetCreateRequestBuilder extends BaseSnomedTransactio
 
 	private SnomedRefSetType type;
 	private String referencedComponentType = CoreTerminologyBroker.UNSPECIFIED;
+	private String mapTargetComponentType = CoreTerminologyBroker.UNSPECIFIED;
 	private String identifierId;
 	
 	SnomedRefSetCreateRequestBuilder() {
@@ -43,6 +44,11 @@ public final class SnomedRefSetCreateRequestBuilder extends BaseSnomedTransactio
 		return getSelf();
 	}
 	
+	public SnomedRefSetCreateRequestBuilder setMapTargetComponentType(String mapTargetComponentType) {
+		this.mapTargetComponentType = mapTargetComponentType;
+		return getSelf();
+	}
+	
 	public SnomedRefSetCreateRequestBuilder setIdentifierId(String identifierId) {
 		this.identifierId = identifierId;
 		return getSelf();
@@ -52,6 +58,7 @@ public final class SnomedRefSetCreateRequestBuilder extends BaseSnomedTransactio
 	public Request<TransactionContext, String> doBuild() {
 		final SnomedRefSetCreateRequest createRequest = new SnomedRefSetCreateRequest(type, referencedComponentType);
 		createRequest.setIdentifierId(identifierId);
+		createRequest.setMapTargetComponentType(mapTargetComponentType);
 		return createRequest;
 	}
 	
