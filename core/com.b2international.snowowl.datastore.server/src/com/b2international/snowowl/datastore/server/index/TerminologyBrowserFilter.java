@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.index;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -102,7 +103,7 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 				while (itr.next()) {
 					final int docId = itr.getDocID();
 					final Document doc = index.doc(docId);
-					final Collection<String> parentIds = Mappings.parent().getValues(doc);
+					final Collection<String> parentIds = getParent(doc);
 					final String componentId = Mappings.id().getValue(doc);
 					
 					filteredComponents.add(componentId);
@@ -130,6 +131,10 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 		});
 	}
 
+	protected List<String> getParent(final Document doc) {
+		return Mappings.parent().getValues(doc);
+	}
+	
 	/**
 	 * Default implementation returns the ids for the labels as well.
 	 * @param branchPath
