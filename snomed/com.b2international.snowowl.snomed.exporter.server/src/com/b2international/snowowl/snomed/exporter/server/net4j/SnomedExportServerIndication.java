@@ -121,6 +121,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 	private Set<String> modulesToExport;
 	private Date startEffectiveTime;
 	private Date endEffectiveTime;
+	private String namespace;
 
 	private List<SnomedReferenceSet> referenceSetsToExport;
 	private Set<SnomedMapSetSetting> settings;
@@ -196,7 +197,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			modulesToExport.add(in.readUTF());
 		}
 		
-		String namespace = in.readUTF();
+		namespace = in.readUTF();
 		
 		tempDir = Files.createTempDirectory("export");
 		
@@ -206,6 +207,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 				unsetEffectiveTimeLabel,
 				startEffectiveTime, 
 				endEffectiveTime,
+				namespace,
 				modulesToExport,
 				new Id2Rf1PropertyMapper(),
 				getReleaseRootPath(tempDir, namespace));

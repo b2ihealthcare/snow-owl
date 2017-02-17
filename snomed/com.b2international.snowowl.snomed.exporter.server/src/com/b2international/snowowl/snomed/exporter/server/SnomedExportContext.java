@@ -91,6 +91,12 @@ public interface SnomedExportContext {
 	Id2Rf1PropertyMapper getId2Rf1PropertyMapper();
 
 	/**
+	 * Returns INT or the country-code and namespace identifier. This is used in the directory name and filenames of the exported files.
+	 * @return namespace for directory and file names.
+	 */
+	String getNamespaceId();
+	
+	/**
 	 * Returns the path to '&lt;path_to_export_temp_dir&gt;\SnomedCT_Release_&lt;namespace&gt;'
 	 */
 	Path getReleaseRootPath();
