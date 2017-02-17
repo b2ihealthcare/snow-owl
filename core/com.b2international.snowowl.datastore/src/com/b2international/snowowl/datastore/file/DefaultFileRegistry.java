@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import com.google.common.io.Files;
 /**
  * The default implementation of the {@link FileRegistry} interface. Manages files in a local directory defined via the constructor parameter.
  * 
- * @since 5.8
+ * @since 5.7
  */
 public final class DefaultFileRegistry implements FileRegistry {
 
