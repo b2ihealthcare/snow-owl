@@ -38,6 +38,7 @@ import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IHistoryInfoDetails;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.history.HistoryInfoDetails;
+import com.b2international.snowowl.datastore.history.StorageKeyCache;
 import com.b2international.snowowl.datastore.server.history.AbstractHistoryInfoDetailsBuilder;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -122,8 +123,16 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		return "";
 	}
 	
-	private Concept getConcept(String id, CDOView view) {
-		return idToConceptCache.getUnchecked(Pair.of(id, view));
+	private Concept getConcept(String idString, CDOView view) {
+		long id = Long.parseLong(idString);
+		StorageKeyCache storageKeyCache = getConfig().getStorageKeyCache();
+		if (storageKeyCache.containsId(id)) {
+			// we can avoid index querying for storage key if there is a cache match
+			long storageKey = storageKeyCache.getStorageKey(id);
+			return (Concept) CDOUtils.getObjectIfExists(view, storageKey);
+		} else {
+			return idToConceptCache.getUnchecked(Pair.of(idString, view));
+		}
 	}
 	
 	private Description getDescription(String id, CDOView view) {

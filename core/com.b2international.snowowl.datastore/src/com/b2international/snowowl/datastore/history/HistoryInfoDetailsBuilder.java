@@ -38,9 +38,10 @@ public interface HistoryInfoDetailsBuilder extends TerminologyComponentIdProvide
 	 * @param currentView for dirty and new objects.
 	 * @param beforeView for detached objects. 
 	 * @param commitInfo the passed in CDO commit information.
+	 * @param configuration 
 	 * @return the detailed history informations.
 	 */
-	Collection<IHistoryInfoDetails> buildDetails(final CDOView currentView, final CDOView beforeView, final CDOCommitInfo commitInfo);
+	Collection<IHistoryInfoDetails> buildDetails(final CDOView currentView, final CDOView beforeView, final CDOCommitInfo commitInfo, HistoryInfoConfiguration configuration);
 	
 	/**
 	 * No-operation instance. Does nothing.
@@ -49,7 +50,7 @@ public interface HistoryInfoDetailsBuilder extends TerminologyComponentIdProvide
 		
 		@Override
 		public Collection<IHistoryInfoDetails> buildDetails(final CDOView currentView, 
-				final CDOView beforeView, final CDOCommitInfo commitInfo) {
+				final CDOView beforeView, final CDOCommitInfo commitInfo, HistoryInfoConfiguration configuration) {
 			
 			return emptyList();
 		};
