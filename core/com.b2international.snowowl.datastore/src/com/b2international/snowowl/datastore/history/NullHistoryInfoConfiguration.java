@@ -52,6 +52,11 @@ public enum NullHistoryInfoConfiguration implements HistoryInfoConfiguration {
 		return NullBranchPath.INSTANCE;
 	}
 	
+	@Override
+	public StorageKeyCache getStorageKeyCache() {
+		return StorageKeyCache.NOOP;
+	}
+	
 	/**
 	 * Returns with {@code true} if the configuration argument is either {@code null} or
 	 * a {@link NullHistoryInfoConfiguration}. Otherwise returns with {@code false}.

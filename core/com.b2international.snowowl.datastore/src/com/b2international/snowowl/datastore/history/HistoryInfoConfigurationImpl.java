@@ -36,6 +36,8 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.tasks.TaskManager;
 
+import bak.pcj.map.LongKeyLongMap;
+
 /**
  * {@link HistoryInfoConfiguration} implementation. 
  */
@@ -47,7 +49,8 @@ public class HistoryInfoConfigurationImpl implements HistoryInfoConfiguration, S
 	private final String terminologyComponentId;
 	private final IBranchPath branchPath;
 	private final String componentId;
-
+	private final StorageKeyCache storageKeyCache;
+	
 	public static HistoryInfoConfiguration create(final long storageKey) {
 		return create(storageKey, getActiveBranchPath(storageKey));
 	}
@@ -71,14 +74,23 @@ public class HistoryInfoConfigurationImpl implements HistoryInfoConfiguration, S
 		}
 	}
 
-	public HistoryInfoConfigurationImpl(final long storageKey, final String componentId, final String terminologyComponentId, final IBranchPath branchPath) {
+	private HistoryInfoConfigurationImpl(final long storageKey, final String componentId, final String terminologyComponentId, final IBranchPath branchPath, final StorageKeyCache cache) {
 		checkArgument(checkId(storageKey), "Invalid storage key of: " + storageKey);
 		this.storageKey = storageKey;
 		this.componentId = checkNotNull(componentId, "componentId");
 		this.terminologyComponentId = checkNotNull(terminologyComponentId, "terminologyComponentId");
 		this.branchPath = checkNotNull(branchPath, "branchPath");
+		this.storageKeyCache = cache;
 	}
 	
+	public HistoryInfoConfigurationImpl(final long storageKey, final String componentId, final String terminologyComponentId, final IBranchPath branchPath) {
+		this(storageKey, componentId, terminologyComponentId, branchPath, StorageKeyCache.NOOP);
+	}
+	
+	public HistoryInfoConfigurationImpl(final long storageKey, final String componentId, final String terminologyComponentId, final IBranchPath branchPath, LongKeyLongMap conceptIdToStorageKeyMap) {
+		this(storageKey, componentId, terminologyComponentId, branchPath, new StorageKeyCacheImp(conceptIdToStorageKeyMap));
+	}
+
 	@Override
 	public long getStorageKey() {
 		return storageKey;
@@ -118,5 +130,10 @@ public class HistoryInfoConfigurationImpl implements HistoryInfoConfiguration, S
 	
 	private static String getComponentId(final CDOObject object) {
 		return String.valueOf(CoreTerminologyBroker.getInstance().adapt(object).getId());
+	}
+
+	@Override
+	public StorageKeyCache getStorageKeyCache() {
+		return storageKeyCache;
 	}
 }
