@@ -20,12 +20,18 @@ import static com.google.common.collect.Maps.newHashMap;
 import java.util.Map;
 
 import com.b2international.snowowl.core.internal.exceptions.ApiErrorImpl;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * Represents a common error object create because of a failed API call, and can be derived mostly from {@link ApiException} subclasses.
  * 
  * @since 4.1
  */
+@JsonDeserialize(builder = ApiError.Builder.class)
 public interface ApiError {
 
 	/**
@@ -62,6 +68,7 @@ public interface ApiError {
 	 * 
 	 * @since 4.1
 	 */
+	@JsonPOJOBuilder(buildMethodName="build", withPrefix = "")
 	static class Builder {
 
 		private String message;
@@ -69,7 +76,8 @@ public interface ApiError {
 		private int code;
 		private Map<String, Object> additionalInformation = newHashMap();
 
-		public Builder(String message) {
+		@JsonCreator
+		public Builder(@JsonProperty("message") String message) {
 			this.message = message;
 		}
 		
@@ -83,6 +91,7 @@ public interface ApiError {
 			return this;
 		}
 		
+		@JsonAnySetter
 		public Builder addInfo(String property, Object value) {
 			this.additionalInformation.put(property, value);
 			return this;
