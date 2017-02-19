@@ -15,237 +15,167 @@
  */
 package com.b2international.snowowl.snomed.api.rest.browser;
 
-import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.whenDeletingBranchWithPath;
-import static com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiAssert.assertComponentCreatedWithStatus;
-import static com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiAssert.assertComponentNotCreated;
-import static com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiAssert.assertComponentUpdatedWithStatus;
-import static com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiAssert.createDescriptions;
-import static com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiAssert.createIsaRelationship;
-import static com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiAssert.generateComponentId;
-import static com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiAssert.givenConceptRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.deleteBranch;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBrowserRestRequests.createBrowserConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBrowserRestRequests.updateBrowserConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.domain.browser.SnomedBrowserDescriptionType;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
+import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.jayway.restassured.response.ValidatableResponse;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 4.5
  */
 public class SnomedBrowserApiTest extends AbstractSnomedApiTest {
 
-	@Test
-	public void createConceptNonExistentBranch() {
-		final Date creationDate = new Date();
-		final String fsn = "New FSN at " + creationDate;
-		final ImmutableList<?> descriptions = createDescriptions(fsn, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, creationDate);
-		final ImmutableList<?> relationships = createIsaRelationship(ROOT_CONCEPT, MODULE_SCT_CORE, creationDate);
-		final Map<?, ?> requestBody = givenConceptRequestBody(null, true, fsn, MODULE_SCT_CORE, descriptions, relationships, creationDate);
-		assertComponentCreatedWithStatus(createPath("MAIN/1998-01-31"), requestBody, 404).and().body("status", equalTo(404));
+	private static Map<String, Object> createBrowserConceptRequest() {
+		ImmutableMap.Builder<String, Object> conceptBuilder = ImmutableMap.<String, Object>builder()
+				.put("fsn", "FSN of new concept")
+				.put("preferredSynonym", "PT of new concept")
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("definitionStatus", DefinitionStatus.PRIMITIVE)
+				.put("descriptions", createDefaultDescriptions())
+				.put("relationships", createIsaRelationship());
+
+		return conceptBuilder.build();
 	}
 
-	@Test
-	public void createConceptWithoutParent() {
-		final Date creationDate = new Date();
-		final String fsn = "New FSN at " + creationDate;
-		final ImmutableList<?> descriptions = createDescriptions(fsn, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, creationDate);
-		final Map<?, ?> requestBody = givenConceptRequestBody(null, true, fsn, MODULE_SCT_CORE, descriptions, null, creationDate);
-		assertComponentCreatedWithStatus(createMainPath(), requestBody, 400).and().body("message",
-				equalTo("1 validation error"));
+	private static List<?> createDefaultDescriptions() {
+		Map<?, ?> fsnDescription = ImmutableMap.<String, Object>builder()
+				.put("active", true)
+				.put("term", "FSN of new concept")
+				.put("type", SnomedBrowserDescriptionType.FSN)
+				.put("lang", "en")
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE)
+				.put("acceptabilityMap", SnomedApiTestConstants.UK_PREFERRED_MAP)
+				.build();
+
+		Map<?, ?> ptDescription = ImmutableMap.<String, Object>builder()
+				.put("active", true)
+				.put("term", "PT of new concept")
+				.put("type", SnomedBrowserDescriptionType.SYNONYM)
+				.put("lang", "en")
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE)
+				.put("acceptabilityMap", SnomedApiTestConstants.UK_PREFERRED_MAP)
+				.build();
+
+		return ImmutableList.of(fsnDescription, ptDescription);
 	}
 
-	@Test
-	public void createConceptWithNonexistentParent() {
-		final Date creationDate = new Date();
-		final String fsn = "New FSN at " + creationDate;
-		final ImmutableList<?> descriptions = createDescriptions(fsn, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, creationDate);
-		final ImmutableList<?> relationships = createIsaRelationship(null, MODULE_SCT_CORE, creationDate);
-		final Map<?, ?> requestBody = givenConceptRequestBody(null, true, fsn, MODULE_SCT_CORE, descriptions, relationships, creationDate);
-		assertComponentNotCreated(createMainPath(), requestBody);
+	private static List<?> createIsaRelationship() {
+		return createIsaRelationship(Concepts.ROOT_CONCEPT);
 	}
 
-	@Test
-	public void createConcept() {
-		final Date creationDate = new Date();
-		final String fsn = "New FSN at " + creationDate;
-		final ImmutableList<?> descriptions = createDescriptions(fsn, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, creationDate);
-		final ImmutableList<?> relationships = createIsaRelationship(ROOT_CONCEPT, MODULE_SCT_CORE, creationDate);
-		final Map<?, ?> requestBody = givenConceptRequestBody(null, true, fsn, MODULE_SCT_CORE, descriptions, relationships, creationDate);
-		assertComponentCreatedWithStatus(createMainPath(), requestBody, 200);
+	private static List<?> createIsaRelationship(String parentId) {
+		Map<?, ?> type = ImmutableMap.<String, Object>builder()
+				.put("conceptId", Concepts.IS_A)
+				.put("fsn", "Is a (attribute)")
+				.build();
+
+		Map<?, ?> target = ImmutableMap.<String, Object>builder()
+				.put("active", true)
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("conceptId", parentId)
+				.put("fsn", "Parent of new concept")
+				.put("definitionStatus", DefinitionStatus.PRIMITIVE)
+				.build();
+
+		Map<?, ?> isaRelationship = ImmutableMap.<String, Object>builder()
+				.put("modifier", RelationshipModifier.EXISTENTIAL)
+				.put("groupId", "0")
+				.put("characteristicType", CharacteristicType.STATED_RELATIONSHIP)
+				.put("active", true)
+				.put("type", type)
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("target", target)
+				.build();
+
+		return ImmutableList.of(isaRelationship);
 	}
 
-	@Test
-	public void createConceptWithGeneratedId() {
-		final String conceptId = generateComponentId(null, ComponentCategory.CONCEPT);
-
-		final Date creationDate = new Date();
-		final String fsn = "New FSN at " + creationDate;
-		final ImmutableList<?> descriptions = createDescriptions(fsn, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, creationDate);
-		final ImmutableList<?> relationships = createIsaRelationship(ROOT_CONCEPT, MODULE_SCT_CORE, creationDate);
-		final Map<?, ?> requestBody = givenConceptRequestBody(conceptId, true, fsn, MODULE_SCT_CORE, descriptions, relationships,
-				creationDate);
-		assertComponentCreatedWithStatus(createMainPath(), requestBody, 200);
-	}
-
-	@Test
-	public void createConceptOnBranch() {
-		final Date creationDate = new Date();
-		final String fsn = "New FSN at " + creationDate;
-		final ImmutableList<?> descriptions = createDescriptions(fsn, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, creationDate);
-		final ImmutableList<?> relationships = createIsaRelationship(ROOT_CONCEPT, MODULE_SCT_CORE, creationDate);
-		final Map<?, ?> requestBody = givenConceptRequestBody(null, true, fsn, MODULE_SCT_CORE, descriptions, relationships, creationDate);
-		assertComponentCreatedWithStatus(createMainPath(), requestBody, 200);
-	}
-
-	@Test
-	public void createConceptOnDeletedBranch() {
-		givenBranchWithPath(testBranchPath);
-		whenDeletingBranchWithPath(testBranchPath);
-
-		final Date creationDate = new Date();
-		final String fsn = "New FSN at " + creationDate;
-		final ImmutableList<?> descriptions = createDescriptions(fsn, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, creationDate);
-		final ImmutableList<?> relationships = createIsaRelationship(ROOT_CONCEPT, MODULE_SCT_CORE, creationDate);
-		final Map<?, ?> requestBody = givenConceptRequestBody(null, true, fsn, MODULE_SCT_CORE, descriptions, relationships, creationDate);
-		assertComponentCreatedWithStatus(testBranchPath, requestBody, 400);
-	}
-
-	@Test
-	public void inactivateConcept() throws Exception {
-		final Date creationDate = new Date();
-		final String fsn = "New FSN at " + creationDate;
-		final ImmutableList<?> descriptions = createDescriptions(fsn, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, creationDate);
-		final ImmutableList<?> relationships = createIsaRelationship(ROOT_CONCEPT, MODULE_SCT_CORE, creationDate);
-		final Map<String, Object> createRequestBody = givenConceptRequestBody(null, true, fsn, MODULE_SCT_CORE, descriptions, relationships,
-				creationDate);
-		final ValidatableResponse response = assertComponentCreatedWithStatus(createMainPath(), createRequestBody, 200);
-
-		@SuppressWarnings("unchecked")
-		final Map<String, Object> concept = response.and().extract().as(Map.class);
-		concept.put("active", false);
-
-		assertComponentUpdatedWithStatus(createMainPath(), concept.get("conceptId").toString(), concept, 200);
-	}
-
-	@Test
-	public void removeAllRelationshipsFromConcept() throws Exception {
-		final Date creationDate = new Date();
-		final String fsn = "New FSN at " + creationDate;
-		final ImmutableList<?> descriptions = createDescriptions(fsn, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, creationDate);
-		final ImmutableList<?> relationships = createIsaRelationship(ROOT_CONCEPT, MODULE_SCT_CORE, creationDate);
-		final Map<String, Object> createRequestBody = givenConceptRequestBody(null, true, fsn, MODULE_SCT_CORE, descriptions, relationships,
-				creationDate);
-		final ValidatableResponse response = assertComponentCreatedWithStatus(createMainPath(), createRequestBody, 200);
-
-		@SuppressWarnings("unchecked")
-		final Map<String, Object> concept = response.and().extract().as(Map.class);
-		concept.remove("relationships");
-
-		// when deleting all relationships of a concept, the concept should not be deleted
-		assertComponentUpdatedWithStatus(createMainPath(), concept.get("conceptId").toString(), concept, 200);
-	}
-
-	@Test
-	public void updateConceptWithNewComponents() {
-		final Date creationDate = new Date();
-		final String fsn = "New FSN at " + creationDate;
-		final ImmutableList<?> descriptions = createDescriptions(fsn, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, creationDate);
-		final ImmutableList<?> relationships = createIsaRelationship(ROOT_CONCEPT, MODULE_SCT_CORE, creationDate);
-		final Map<String, Object> createRequestBody = givenConceptRequestBody(null, true, fsn, MODULE_SCT_CORE, descriptions, relationships,
-				creationDate);
-		final ValidatableResponse response = assertComponentCreatedWithStatus(createMainPath(), createRequestBody, 200);
-		
-		@SuppressWarnings("unchecked")
-		Map<String, Object> concept = response.and().extract().as(Map.class);
-		
-		String conceptId = concept.get("conceptId").toString();
-		
-		List<Object> descriptionsList = getListElement(concept, "descriptions");
-		descriptionsList.addAll(createNewDescriptions(5));
-		
-		List<Object> relationshipsList = getListElement(concept, "relationships");
-		relationshipsList.addAll(createNewRelationships(5, conceptId));
-		
-		ValidatableResponse updateResponse = assertComponentUpdatedWithStatus(createMainPath(), conceptId, concept, 200);
-		
-		@SuppressWarnings("unchecked")
-		Map<String, Object> updatedConcept = updateResponse.and().extract().as(Map.class);
-		
-		List<Object> updatedDescriptions = getListElement(updatedConcept, "descriptions");
-		assertEquals(7, updatedDescriptions.size());
-		
-		List<Object> updatedRelationships = getListElement(updatedConcept, "relationships");
-		assertEquals(6, updatedRelationships.size());
+	private static String reserveComponentId(String namespace, ComponentCategory category) {
+		ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getService(ISnomedIdentifierService.class);
+		return Iterables.getOnlyElement(identifierService.reserve(namespace, category, 1));
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<Object> getListElement(Map<String, Object> concept, String elementName) {
+	private static List<Object> getListElement(Map<String, Object> concept, String elementName) {
 		Object listElement = concept.get(elementName);
+
 		if (listElement instanceof List<?>) {
 			return (List<Object>) listElement;
+		} else {
+			return null;
 		}
-		return null;
 	}
 
-	private List<?> createNewDescriptions(int quantity) {
+	private static List<?> createNewDescriptions(int quantity) {
 		List<Map<String, Object>> results = newArrayList();
+
 		for (int i = 0; i < quantity; i++) {
-			final Map<String, Object> description = ImmutableMap.<String, Object>builder()
-					.put("conceptId", "")
+
+			Map<String, Object> description = ImmutableMap.<String, Object>builder()
 					.put("active", true)
 					.put("term", String.format("New extra Synonym %s", i))
 					.put("type", SnomedBrowserDescriptionType.SYNONYM)
 					.put("lang", "en")
 					.put("moduleId", MODULE_SCT_CORE)
 					.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE)
-					.put("acceptabilityMap", ACCEPTABLE_ACCEPTABILITY_MAP)
+					.put("acceptabilityMap", SnomedApiTestConstants.UK_ACCEPTABLE_MAP)
 					.build();
+
 			results.add(description);
 		}
+
 		return results;
 	}
-	
-	private List<?> createNewRelationships(int quantity, String sourceId) {
+
+	private static List<?> createNewRelationships(int quantity, String sourceId) {
 		List<Map<String, Object>> results = newArrayList();
-		
+
 		for (int i = 0; i < quantity; i++) {
-			
-			final Map<?, ?> type = ImmutableMap.<String, Object>builder()
-					.put("conceptId", TEMPORAL_CONTEXT)
-					.put("fsn", "Temporal context value (qualifier value)")
+
+			Map<?, ?> type = ImmutableMap.<String, Object>builder()
+					.put("conceptId", Concepts.PART_OF)
+					.put("fsn", "Part of (attribute)")
 					.build();
-			
-			final Map<?, ?> target = ImmutableMap.<String, Object>builder()
+
+			Map<?, ?> target = ImmutableMap.<String, Object>builder()
 					.put("active", true)
 					.put("moduleId", MODULE_SCT_CORE)
-					.put("conceptId", DISEASE)
-					.put("fsn", "Disease (disorder)")
+					.put("conceptId", Concepts.NAMESPACE_ROOT)
+					.put("fsn", "Destination of new relationship")
 					.put("definitionStatus", DefinitionStatus.PRIMITIVE)
 					.build();
-			
-			final Map<String, Object> relationship = ImmutableMap.<String, Object>builder()
+
+			Map<String, Object> relationship = ImmutableMap.<String, Object>builder()
 					.put("sourceId", sourceId)
 					.put("modifier", RelationshipModifier.EXISTENTIAL)
 					.put("groupId", "0")
@@ -258,8 +188,105 @@ public class SnomedBrowserApiTest extends AbstractSnomedApiTest {
 
 			results.add(relationship);
 		}
-		
+
 		return results;
 	}
-	
+
+	@Test
+	public void createConceptNonExistentBranch() {
+		createBrowserConcept(BranchPathUtils.createPath("MAIN/x/y/z"), createBrowserConceptRequest()).statusCode(404);
+	}
+
+	@Test
+	public void createConceptWithoutParent() {
+		Map<?, ?> conceptRequest = newHashMap(createBrowserConceptRequest());
+		conceptRequest.remove("relationships");
+
+		createBrowserConcept(branchPath, conceptRequest).statusCode(400)
+		.body("message", equalTo("1 validation error"));
+	}
+
+	@Test
+	public void createConceptWithNonexistentParent() {
+		String conceptId = createNewConcept(branchPath);
+
+		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
+
+		Map<String, Object> conceptRequest = newHashMap(createBrowserConceptRequest());
+		conceptRequest.put("relationships", createIsaRelationship(conceptId));
+
+		createBrowserConcept(branchPath, conceptRequest).statusCode(400);
+	}
+
+	@Test
+	public void createRegularConcept() {
+		createBrowserConcept(branchPath, createBrowserConceptRequest()).statusCode(200);
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void createConceptWithReservedId() {
+		String expectedConceptId = reserveComponentId(null, ComponentCategory.CONCEPT);
+
+		Map<String, Object> conceptRequest = newHashMap(createBrowserConceptRequest());
+		conceptRequest.put("conceptId", expectedConceptId);
+
+		Map<String, Object> conceptResponse = createBrowserConcept(branchPath, conceptRequest).statusCode(200)
+				.extract().as(Map.class);
+
+		String actualConceptId = (String) conceptResponse.get("conceptId");
+		assertEquals(expectedConceptId, actualConceptId);
+	}
+
+	@Test
+	public void createConceptOnDeletedBranch() {
+		deleteBranch(branchPath).statusCode(204);
+		createBrowserConcept(branchPath, createBrowserConceptRequest()).statusCode(400);
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void inactivateConcept() throws Exception {
+		Map<String, Object> conceptRequest = createBrowserConcept(branchPath, createBrowserConceptRequest()).statusCode(200)
+				.extract().as(Map.class);
+
+		String conceptId = (String) conceptRequest.get("conceptId");
+		conceptRequest.put("active", false);
+		updateBrowserConcept(branchPath, conceptId, conceptRequest).statusCode(200);
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void removeAllRelationshipsFromConcept() throws Exception {
+		Map<String, Object> conceptRequest = createBrowserConcept(branchPath, createBrowserConceptRequest()).statusCode(200)
+				.extract().as(Map.class);
+
+		String conceptId = (String) conceptRequest.get("conceptId");
+		conceptRequest.remove("relationships");
+		updateBrowserConcept(branchPath, conceptId, conceptRequest).statusCode(200);
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void updateConceptWithNewComponents() {
+		Map<String, Object> conceptRequest = createBrowserConcept(branchPath, createBrowserConceptRequest()).statusCode(200)
+				.extract().as(Map.class);
+
+		String conceptId = (String) conceptRequest.get("conceptId");
+
+		List<Object> descriptionsList = getListElement(conceptRequest, "descriptions");
+		descriptionsList.addAll(createNewDescriptions(5));
+
+		List<Object> relationshipsList = getListElement(conceptRequest, "relationships");
+		relationshipsList.addAll(createNewRelationships(5, conceptId));
+
+		Map<String, Object> updatedConcept = updateBrowserConcept(branchPath, conceptId, conceptRequest).statusCode(200)
+				.extract().as(Map.class);
+
+		List<Object> updatedDescriptions = getListElement(updatedConcept, "descriptions");
+		assertEquals(7, updatedDescriptions.size());
+
+		List<Object> updatedRelationships = getListElement(updatedConcept, "relationships");
+		assertEquals(6, updatedRelationships.size());
+	}
 }
