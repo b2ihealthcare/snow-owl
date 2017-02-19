@@ -18,12 +18,12 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -65,7 +65,7 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 	}
 	
 	<T> T getProperty(String key, Class<T> valueType) {
-		return ClassUtils.checkAndCast(properties.get(key), valueType);
+		return Optional.ofNullable(properties.get(key)).map(valueType::cast).orElse(null);
 	}
 
 	@Override
