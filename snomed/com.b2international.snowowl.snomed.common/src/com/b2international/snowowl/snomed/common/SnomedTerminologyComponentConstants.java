@@ -58,8 +58,9 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String DATA_TYPE_DATE = "com.b2international.snowowl.terminology.snomed.datatype.date";
 	public static final short DATA_TYPE_DATE_NUMBER = 109;
 	
-	public static final String SNOMED_INT_SHORT_NAME = "SNOMEDCT";
-	public static final String SNOMED_INT_NAME = "Systematized Nomenclature of Medicine Clinical Terms International Version";
+	public static final String SNOMED_SHORT_NAME = "SNOMEDCT";
+	public static final String SNOMED_NAME = "Systematized Nomenclature of Medicine Clinical Terms";
+	
 	public static final String SNOMED_INT_OID = "2.16.840.1.113883.6.96";
 	public static final String SNOMED_INT_LANGUAGE = "ENG";
 	public static final String SNOMED_INT_LINK = "http://www.ihtsdo.org";

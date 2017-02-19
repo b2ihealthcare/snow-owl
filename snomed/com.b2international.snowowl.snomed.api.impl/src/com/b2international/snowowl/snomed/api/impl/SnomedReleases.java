@@ -19,9 +19,9 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_ICON_PATH;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_LANGUAGE;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_LINK;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_NAME;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_NAME;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_OID;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
 import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 
@@ -33,18 +33,42 @@ import com.b2international.snowowl.core.api.IBranchPath;
  */
 public class SnomedReleases {
 
-	public static CodeSystem newSnomedInternationalRelease() {
+	private static final CodeSystem INT_CODESYSTEM = CodeSystem.builder()
+			.name(SNOMED_NAME)
+			.shortName(SNOMED_SHORT_NAME)
+			.oid(SNOMED_INT_OID)
+			.primaryLanguage(SNOMED_INT_LANGUAGE)
+			.organizationLink(SNOMED_INT_LINK)
+			.citation(SNOMED_INT_CITATION)
+			.branchPath(IBranchPath.MAIN_BRANCH)
+			.iconPath(SNOMED_INT_ICON_PATH)
+			.repositoryUuid(REPOSITORY_UUID)
+			.terminologyId(TERMINOLOGY_ID)
+			.build();
+
+	/**
+	 * @return the code system representing SNOMED CT's International release
+	 */
+	public static CodeSystem internationalRelease() {
+		return INT_CODESYSTEM;
+	}
+
+	/**
+	 * @return the code system representing the B2i extension of SNOMED CT
+	 */
+	public static CodeSystem b2iExtension(String extensionPath) {
 		return CodeSystem.builder()
-				.name(SNOMED_INT_NAME)
-				.shortName(SNOMED_INT_SHORT_NAME)
-				.oid(SNOMED_INT_OID)
+				.name("Systematized Nomenclature of Medicine Clinical Terms, B2i extension")
+				.shortName(SNOMED_SHORT_NAME + "-B2I")
+				.oid(SNOMED_INT_OID + ".1000154")
 				.primaryLanguage(SNOMED_INT_LANGUAGE)
-				.organizationLink(SNOMED_INT_LINK)
+				.organizationLink("https://b2i.sg/")
 				.citation(SNOMED_INT_CITATION)
-				.branchPath(IBranchPath.MAIN_BRANCH)
+				.branchPath(extensionPath)
 				.iconPath(SNOMED_INT_ICON_PATH)
 				.repositoryUuid(REPOSITORY_UUID)
 				.terminologyId(TERMINOLOGY_ID)
+				.extensionOf(SNOMED_SHORT_NAME)
 				.build();
 	}
 

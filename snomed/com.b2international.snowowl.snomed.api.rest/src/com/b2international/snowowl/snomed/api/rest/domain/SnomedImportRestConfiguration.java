@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedImportConfiguration;
@@ -30,7 +30,7 @@ public class SnomedImportRestConfiguration {
 	private Rf2ReleaseType type;
 	private String branchPath;
 	private Boolean createVersions = Boolean.FALSE;
-	private String codeSystemShortName = SNOMED_INT_SHORT_NAME;
+	private String codeSystemShortName = SNOMED_SHORT_NAME;
 
 	public String getBranchPath() {
 		return branchPath;
@@ -70,7 +70,7 @@ public class SnomedImportRestConfiguration {
 				getBranchPath(),
 				getCreateVersions(),
 				StringUtils.isEmpty(getCodeSystemShortName()) 
-					? SNOMED_INT_SHORT_NAME : getCodeSystemShortName());
+					? SNOMED_SHORT_NAME : getCodeSystemShortName());
 	}
 
 	@Override
