@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.api.rest;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -29,24 +30,38 @@ import com.google.common.collect.ImmutableMap;
 public abstract class SnomedApiTestConstants {
 
 	/**
+	 * The context-relative base URL for the administrative controller. 
+	 */
+	public static final String ADMIN_API = "/admin";
+
+	/**
 	 * The context-relative base URL for SNOMED CT-related controllers.
 	 */
-	public static String SCT_API = "/snomed-ct/v2";
+	public static final String SCT_API = "/snomed-ct/v2";
 
 	/**
 	 * An acceptability map which specifies that the corresponding description is acceptable in the UK language reference set.
 	 */
-	public static final Map<String, Acceptability> ACCEPTABLE_ACCEPTABILITY_MAP = ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE);
+	public static final Map<String, Acceptability> UK_ACCEPTABLE_MAP = ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE);
 
 	/**
 	 * An acceptability map which specifies that the corresponding description is preferred in the UK language reference set.
 	 */
-	public static final Map<?, ?> PREFERRED_ACCEPTABILITY_MAP = ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED);
+	public static final Map<String, Acceptability> UK_PREFERRED_MAP = ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED);
 
 	/**
 	 * An acceptability map with an invalid language reference set identifier.
 	 */
-	public static final Map<?, ?> INVALID_ACCEPTABILITY_MAP = ImmutableMap.of("1", Acceptability.PREFERRED);
+	public static final Map<?, ?> INVALID_PREFERRED_MAP = ImmutableMap.of("1", Acceptability.PREFERRED);
+
+	public static final long POLL_INTERVAL = TimeUnit.MILLISECONDS.toMillis(200L);
+
+	public static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(30L);
+
+	public static final String DISEASE = "64572001";
+	public static final String BLEEDING = "50960005";
+	public static final String TEMPORAL_CONTEXT = "410510008";
+	public static final String FINDING_CONTEXT = "408729009";
 
 	private SnomedApiTestConstants() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");

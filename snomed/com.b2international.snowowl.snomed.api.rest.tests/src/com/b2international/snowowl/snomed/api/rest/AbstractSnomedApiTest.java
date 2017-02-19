@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,68 +15,80 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
+import java.util.Optional;
 
-import java.util.UUID;
-
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.google.common.base.Joiner;
 
 /**
  * @since 2.0
  */
+@BranchBase(Branch.MAIN_PATH)
 public abstract class AbstractSnomedApiTest {
 
-	/**
-	 * The context-relative base URL for the administrative controller. 
-	 */
-	protected static String ADMIN_API = "/admin";
-	
-	protected static final String DISEASE = "64572001";
-	protected static final String BLEEDING = "50960005";
-	protected static final String TEMPORAL_CONTEXT = "410510008";
-	protected static final String FINDING_CONTEXT = "408729009";
-	
-	protected IBranchPath testBranchPath;
+	private static final Joiner PATH_JOINER = Joiner.on('/');
 
-	@Rule
-	public TestWatcher watcher = new TestWatcher() {
-		
+	private final class CustomTestWatcher extends TestWatcher {
 		@Override
 		protected void starting(Description description) {
 			System.out.println("===== Start of " + description + " =====");
+
+			Class<?> testClass = description.getTestClass();
+			BranchBase branchBaseAnnotation = getBranchBaseAnnotation(testClass);
+
+			String testBasePath = getTestBasePath(branchBaseAnnotation);
+			String testClassName = testClass.getSimpleName();
+			String testMethodName = description.getMethodName()
+					.replace("[", "_") // Remove special characters from parameterized test names
+					.replace("]", "");
+			
+			branchPath = BranchPathUtils.createPath(PATH_JOINER.join(testBasePath, testClassName, testMethodName));
+			SnomedBranchingRestRequests.createBranchRecursively(branchPath);
 		}
-		
+
 		@Override
 		protected void finished(Description description) {
 			System.out.println("===== End of " + description + " =====");
 		}
-		
-	};
-	
-	@Before
-	public void setup() {
-		testBranchPath = createRandomBranchPath();
-	}
 
-	protected IBranchPath createRandomBranchPath() {
-		return BranchPathUtils.createPath(BranchPathUtils.createMainPath(), UUID.randomUUID().toString());
-	}
+		private BranchBase getBranchBaseAnnotation(Class<?> type) {
+			if (type.isAnnotationPresent(BranchBase.class)) {
+				return type.getAnnotation(BranchBase.class);
+			} else {
+				if (type.getSuperclass() != null) {
+					BranchBase doc = getBranchBaseAnnotation(type.getSuperclass());
+					if (doc != null) {
+						return doc;
+					}
+				}
 
-	protected IBranchPath createNestedBranch(IBranchPath parent, final String... segments) {
-		IBranchPath currentBranchPath = parent;
-		
-		for (final String segment : segments) {
-			currentBranchPath = BranchPathUtils.createPath(currentBranchPath, segment);
-			givenBranchWithPath(currentBranchPath);
+				for (Class<?> iface : type.getInterfaces()) {
+					BranchBase doc = getBranchBaseAnnotation(iface);
+					if (doc != null) {
+						return doc;
+					}
+				}
+
+				return null;
+			}
 		}
 
-		return currentBranchPath;
+		private String getTestBasePath(BranchBase branchBaseAnnotation) {
+			return Optional.ofNullable(branchBaseAnnotation)
+					.map(a -> a.value())
+					.orElse(Branch.MAIN_PATH);
+		}
 	}
-	
+
+	protected IBranchPath branchPath;
+
+	@Rule 
+	public final TestWatcher watcher = new CustomTestWatcher();
+
 }

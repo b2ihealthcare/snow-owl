@@ -37,10 +37,13 @@ import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetBulkAp
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetMemberApiTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRelationshipApiTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedReleasedConceptApiTest;
+import com.b2international.snowowl.snomed.api.rest.ext.SnomedExtensionDowngradeTest;
+import com.b2international.snowowl.snomed.api.rest.ext.SnomedExtensionUpgradeTest;
+import com.b2international.snowowl.snomed.api.rest.ext.SnomedExtensionVersioningTest;
 import com.b2international.snowowl.snomed.api.rest.id.SnomedIdentifierApiTest;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedExportApiTest;
-import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiExamplesTest;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiTest;
+import com.b2international.snowowl.snomed.api.rest.perf.SnomedConceptCreatePerformanceTest;
 import com.b2international.snowowl.snomed.api.rest.versioning.SnomedVersioningApiTest;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.test.commons.BundleStartRule;
@@ -54,33 +57,41 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @RunWith(Suite.class)
 @SuiteClasses({ 
 	// RESTful API test cases
-	SnomedBranchingApiTest.class,
-	SnomedMergeApiTest.class,
-	SnomedMergeConflictTest.class,
-	SnomedReviewApiTest.class,
-	SnomedVersioningApiTest.class,
-	SnomedImportApiTest.class,
-	SnomedImportApiExamplesTest.class,
-	SnomedIdentifierApiTest.class,
-	SnomedConceptApiTest.class,
-	SnomedReleasedConceptApiTest.class,
-	SnomedDescriptionApiTest.class,
-	SnomedRelationshipApiTest.class,
-	SnomedRefSetApiTest.class,
-	SnomedRefSetMemberApiTest.class,
-	SnomedRefSetBulkApiTest.class,
-	SnomedBrowserApiTest.class,
-	SnomedClassificationApiTest.class,
+//	SnomedBranchingApiTest.class,
+//	SnomedMergeApiTest.class,
+//	SnomedMergeConflictTest.class,
+//	SnomedReviewApiTest.class,
+//	SnomedVersioningApiTest.class,
+//	SnomedImportApiTest.class,
+//	SnomedIdentifierApiTest.class,
+//	SnomedConceptApiTest.class,
+//	SnomedConceptCreatePerformanceTest.class,
+//	SnomedReleasedConceptApiTest.class,
+//	SnomedDescriptionApiTest.class,
+//	SnomedRelationshipApiTest.class,
+//	SnomedRefSetApiTest.class,
+//	SnomedRefSetMemberApiTest.class,
+//	SnomedRefSetBulkApiTest.class,
+//	SnomedBrowserApiTest.class,
+//	SnomedClassificationApiTest.class,
 	SnomedExportApiTest.class,
+	// Extension test cases
+//	SnomedExtensionUpgradeTest.class,
+//	SnomedExtensionDowngradeTest.class,
+//	SnomedExtensionVersioningTest.class,
 	// Java API test cases
-	SnomedBranchRequestTest.class
+//	SnomedBranchRequestTest.class
 })
 public class AllSnomedApiTests {
-	
+
+	public static final String EXTENSION_PATH = "MAIN/2016-07-31/SNOMEDCT-B2I";
+
 	@ClassRule
 	public static final RuleChain appRule = RuleChain
 			.outerRule(SnowOwlAppRule.snowOwl().clearResources(true).config(PlatformUtil.toAbsolutePath(AllSnomedApiTests.class, "snomed-api-test-config.yml")))
 			.around(new BundleStartRule("com.b2international.snowowl.api.rest"))
 			.around(new BundleStartRule("com.b2international.snowowl.snomed.api.rest"))
-			.around(new SnomedContentRule(SnomedReleases.newSnomedInternationalRelease(), Resources.Snomed.MINI_RF2_INT, ContentSubType.FULL));
+			.around(new SnomedContentRule(SnomedReleases.internationalRelease(), Resources.Snomed.MINI_RF2_INT, ContentSubType.FULL))
+			.around(new SnomedContentRule(EXTENSION_PATH, SnomedReleases.b2iExtension(EXTENSION_PATH), Resources.Snomed.MINI_RF2_EXT, ContentSubType.DELTA));
+
 }
