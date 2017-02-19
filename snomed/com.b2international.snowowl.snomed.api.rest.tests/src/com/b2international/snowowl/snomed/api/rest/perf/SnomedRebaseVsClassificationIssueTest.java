@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,18 @@
  */
 package com.b2international.snowowl.snomed.api.rest.perf;
 
+import static com.b2international.snowowl.snomed.api.rest.SnomedClassificationRestRequests.beginClassification;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.merge;
 import static org.junit.Assert.fail;
 
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
-import com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * use config rebase-issue.yml
@@ -38,10 +35,10 @@ import com.google.common.collect.ImmutableMap;
 public class SnomedRebaseVsClassificationIssueTest {
 
 	// rebase config
-	private static final String BRANCH = "MAIN/DRGPHMAINT/DRGPHMAINT-3";
-	
+	private static final IBranchPath TASK_BRANCH = BranchPathUtils.createPath("MAIN/DRGPHMAINT/DRGPHMAINT-3");
+
 	// classify config
-	private static final String CLASSIFY_BRANCH = "MAIN";
+	private static final IBranchPath CLASSIFY_BRANCH = BranchPathUtils.createMainPath();
 	private static final int NUMBER_OF_CLASSIFICATIONS = 5;
 
 	@Test
@@ -50,7 +47,7 @@ public class SnomedRebaseVsClassificationIssueTest {
 		Promise.wrap(new Callable<Object>() {
 			@Override
 			public Object call() throws Exception {
-				SnomedBranchingApiAssert.assertBranchCanBeRebased(BranchPathUtils.createPath(BRANCH), "Rebased " + BRANCH);
+				merge(TASK_BRANCH.getParent(), TASK_BRANCH, "Rebased task branch " + TASK_BRANCH.getPath() + " on project");
 				return null;
 			}
 		}).fail(new Function<Throwable, Object>() {
@@ -60,17 +57,15 @@ public class SnomedRebaseVsClassificationIssueTest {
 				return null;
 			}
 		});
-		
+
 		// execute N classify operation on the same branch
-		final Map<String, Object> classifyReq = ImmutableMap.<String, Object>of("reasonerId", SnomedCoreConfiguration.ELK_REASONER_ID); 
 		for (int i = 0; i < NUMBER_OF_CLASSIFICATIONS; i++) {
-			RestExtensions.postJson(SnomedApiTestConstants.SCT_API, classifyReq, CLASSIFY_BRANCH, "classifications").then().statusCode(201);
+			beginClassification(CLASSIFY_BRANCH).statusCode(201);
 		}
 
 		// then wait until all the processes finish
 		// TODO refactor wait time, when we have async rebase operations, so we can use Promise.all then and fail combined with a countdownlatch
 		System.in.read();
-		
 	}
-	
+
 }

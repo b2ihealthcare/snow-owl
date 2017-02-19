@@ -15,26 +15,19 @@
  */
 package com.b2international.snowowl.snomed.api.rest.perf;
 
-import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
-
-import java.util.Map;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
 
 import org.databene.contiperf.PerfTest;
 import org.databene.contiperf.junit.ContiPerfRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 
 /**
  * @since 4.7
  */
-public class SnomedConceptCreatePerformanceTest {
+public class SnomedConceptCreatePerformanceTest extends AbstractSnomedApiTest {
 
 	@Rule
 	public ContiPerfRule rule = new ContiPerfRule();
@@ -42,8 +35,7 @@ public class SnomedConceptCreatePerformanceTest {
 	@Test
 	@PerfTest(invocations = 10)
 	public void createConcept() throws Exception {
-		final Map<?, ?> requestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		assertComponentCreated(createMainPath(), SnomedComponentType.CONCEPT, requestBody);
+		createNewConcept(branchPath);
 	}
 	
 }
