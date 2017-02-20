@@ -43,14 +43,14 @@ public class CodeSystemVersionRestRequests {
 				.put("description", version)
 				.put("effectiveDate", effectiveDate)
 				.build();
-		
+
 		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
 				.post("/codesystems/{shortNameOrOid}/versions", shortName)
 				.then();
 	}
-	
+
 	public static ValidatableResponse createVersion(String shortName, String version, String description, String effectiveDate) {
 		Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("version", version)
@@ -93,16 +93,23 @@ public class CodeSystemVersionRestRequests {
 	public static Date getNextAvailableEffectiveDate(String shortName) {
 		SortedSet<String> effectiveDates = getEffectiveDates(shortName);
 		Calendar calendar = Calendar.getInstance();
-		
+
 		if (!effectiveDates.isEmpty()) {
 			Date latestEffectiveDate = Dates.parse(effectiveDates.last(), DateFormats.SHORT);
 			calendar.setTime(latestEffectiveDate);
 		}
 
 		calendar.add(Calendar.DATE, 1);
+
+		calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		
 		return calendar.getTime();
 	}
-	
+
 	public static String getNextAvailableEffectiveDateAsString(String shortName) {
 		return Dates.formatByGmt(getNextAvailableEffectiveDate(shortName), DateFormats.SHORT);
 	}
