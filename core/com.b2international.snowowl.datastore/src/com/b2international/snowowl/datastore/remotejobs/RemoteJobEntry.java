@@ -22,6 +22,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import com.b2international.commons.beans.BeanPropertyChangeSupporter;
+import com.b2international.index.Doc;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.google.common.base.Objects;
@@ -29,6 +30,7 @@ import com.google.common.base.Preconditions;
 
 /**
  */
+@Doc(type = "job")
 public class RemoteJobEntry extends BeanPropertyChangeSupporter implements Serializable {
 
 	public static final String PROP_DESCRIPTION = "description";
@@ -171,6 +173,17 @@ public class RemoteJobEntry extends BeanPropertyChangeSupporter implements Seria
 		return null == oldStartDate && null != newStartDate;
 	}
 
+	public boolean isDone() {
+		return getState().oneOf(RemoteJobState.FINISHED, RemoteJobState.FAILED);
+	}
+	
+	/**
+	 * Cancels this job entry by setting its state to CANCEL_REQUESTED and its finish date to now.
+	 */
+	public void cancel() {
+		setState(RemoteJobState.CANCEL_REQUESTED);
+		setFinishDate(new Date());
+	}
 
 	@Override
 	public int hashCode() {
@@ -209,4 +222,5 @@ public class RemoteJobEntry extends BeanPropertyChangeSupporter implements Seria
 				.add("userCommandId", userCommandId)
 				.toString();
 	}
+
 }

@@ -31,18 +31,12 @@ public abstract class RemoteJobUtils {
 
 	private RemoteJobUtils() { }
 	
-	private static final QualifiedName IS_REMOTE_KEY = new QualifiedName(DatastoreActivator.PLUGIN_ID, "isRemote");
 	private static final QualifiedName REMOTE_JOB_ID_KEY = new QualifiedName(DatastoreActivator.PLUGIN_ID, "remoteJobId");
 	private static final QualifiedName REQUESTING_USER_ID_KEY = new QualifiedName(DatastoreActivator.PLUGIN_ID, "requestingUserId");
 	private static final QualifiedName CUSTOM_COMMAND_ID_KEY = new QualifiedName(DatastoreActivator.PLUGIN_ID, "customCommandId");
 	
 	public static String getJobSpecificAddress(final String addressTemplate, final UUID id) {
 		return new TokenReplacer().register("uuid", id.toString()).substitute(addressTemplate);
-	}
-	
-	public static boolean isJobRemote(final Job job) {
-		final Object isRemoteValue = job.getProperty(IS_REMOTE_KEY);
-		return Boolean.TRUE.equals(isRemoteValue);
 	}
 	
 	public static UUID getRemoteJobId(final Job job) {
@@ -63,7 +57,6 @@ public abstract class RemoteJobUtils {
 	
 	public static Job configureProperties(final Job job, final String requestingUserId, @Nullable final String customCommandId, @Nullable final UUID remoteJobId) {
 		job.setSystem(true);
-		job.setProperty(IS_REMOTE_KEY, true);
 		job.setProperty(REMOTE_JOB_ID_KEY, getOrCreateId(remoteJobId));
 		job.setProperty(REQUESTING_USER_ID_KEY, requestingUserId);
 		job.setProperty(CUSTOM_COMMAND_ID_KEY, customCommandId);

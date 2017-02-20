@@ -44,6 +44,7 @@ import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobNotFoundException;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobRemovedEvent;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
+import com.b2international.snowowl.datastore.remotejobs.SingleRemoteJobFamily;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -68,7 +69,7 @@ public class RemoteJobManager implements IRemoteJobManager, IDisposableService {
 	private final class DonePredicate implements Predicate<RemoteJobEntry> {
 		@Override
 		public boolean apply(final RemoteJobEntry input) {
-			return isDone(input);
+			return input.isDone();
 		}
 	}
 	
@@ -153,14 +154,14 @@ public class RemoteJobManager implements IRemoteJobManager, IDisposableService {
 		if (null == existingEntry) {
 			return;
 		} else {
-			if (isDone(existingEntry)) {
+			if (existingEntry.isDone()) {
 				remove(id);
 			} else {
 				canceling(id);
 			}
 		}
 		
-		Job.getJobManager().cancel(SingleRemoteJobFamily.create(id));
+		Job.getJobManager().cancel(SingleRemoteJobFamily.create(id.toString()));
 	}
 
 	@Override
@@ -257,10 +258,6 @@ public class RemoteJobManager implements IRemoteJobManager, IDisposableService {
 		fireDone(id, cancelRequested);
 	}
 	
-	private boolean isDone(final RemoteJobEntry entry) {
-		return entry.getState().oneOf(RemoteJobState.FINISHED, RemoteJobState.FAILED);
-	}
-
 	/**
 	 * (non-API)
 	 */
