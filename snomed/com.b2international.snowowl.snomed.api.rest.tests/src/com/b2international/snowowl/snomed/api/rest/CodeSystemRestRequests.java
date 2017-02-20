@@ -58,7 +58,7 @@ public abstract class CodeSystemRestRequests {
 				.then();
 	}
 
-	public static ValidatableResponse whenUpdatingCodeSystem(String id, Map<?, ?> requestBody) {
+	public static ValidatableResponse updateCodeSystem(String id, Map<?, ?> requestBody) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
