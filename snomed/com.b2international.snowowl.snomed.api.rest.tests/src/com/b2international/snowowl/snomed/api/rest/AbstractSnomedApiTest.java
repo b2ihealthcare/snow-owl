@@ -24,15 +24,12 @@ import org.junit.runner.Description;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.google.common.base.Joiner;
 
 /**
  * @since 2.0
  */
 @BranchBase(Branch.MAIN_PATH)
 public abstract class AbstractSnomedApiTest {
-
-	private static final Joiner PATH_JOINER = Joiner.on('/');
 
 	private final class CustomTestWatcher extends TestWatcher {
 		@Override
@@ -41,14 +38,19 @@ public abstract class AbstractSnomedApiTest {
 
 			Class<?> testClass = description.getTestClass();
 			BranchBase branchBaseAnnotation = getBranchBaseAnnotation(testClass);
-
 			String testBasePath = getTestBasePath(branchBaseAnnotation);
-			String testClassName = testClass.getSimpleName();
-			String testMethodName = description.getMethodName()
-					.replace("[", "_") // Remove special characters from parameterized test names
-					.replace("]", "");
-			
-			branchPath = BranchPathUtils.createPath(PATH_JOINER.join(testBasePath, testClassName, testMethodName));
+
+			if (branchBaseAnnotation.isolateTests()) {
+				String testClassName = testClass.getSimpleName();
+				String testMethodName = description.getMethodName()
+						.replace("[", "_") // Remove special characters from parameterized test names
+						.replace("]", "");
+
+				branchPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(testBasePath, testClassName, testMethodName));
+			} else {
+				branchPath = BranchPathUtils.createPath(testBasePath);
+			}
+
 			SnomedBranchingRestRequests.createBranchRecursively(branchPath);
 		}
 

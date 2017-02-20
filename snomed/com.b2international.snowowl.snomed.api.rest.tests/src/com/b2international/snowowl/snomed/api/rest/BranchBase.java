@@ -29,4 +29,5 @@ import com.b2international.snowowl.core.branch.Branch;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BranchBase {
 	String value() default Branch.MAIN_PATH;
+	boolean isolateTests() default true;
 }
