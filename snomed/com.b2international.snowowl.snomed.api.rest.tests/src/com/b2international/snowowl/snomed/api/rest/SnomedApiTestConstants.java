@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -59,6 +60,8 @@ public abstract class SnomedApiTestConstants {
 	public static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(30L);
 
 	public static final String EXTENSION_PATH = "MAIN/2016-07-31/SNOMEDCT-B2I";
+	
+	public static final Joiner PATH_JOINER = Joiner.on('/');
 
 	private SnomedApiTestConstants() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
