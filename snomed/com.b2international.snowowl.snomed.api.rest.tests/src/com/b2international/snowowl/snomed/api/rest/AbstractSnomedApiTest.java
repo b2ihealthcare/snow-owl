@@ -40,7 +40,7 @@ public abstract class AbstractSnomedApiTest {
 			BranchBase branchBaseAnnotation = getBranchBaseAnnotation(testClass);
 			String testBasePath = getTestBasePath(branchBaseAnnotation);
 
-			if (branchBaseAnnotation.isolateTests()) {
+			if (isolateTests(branchBaseAnnotation)) {
 				String testClassName = testClass.getSimpleName();
 				String testMethodName = description.getMethodName()
 						.replace("[", "_") // Remove special characters from parameterized test names
@@ -85,6 +85,12 @@ public abstract class AbstractSnomedApiTest {
 			return Optional.ofNullable(branchBaseAnnotation)
 					.map(a -> a.value())
 					.orElse(Branch.MAIN_PATH);
+		}
+
+		private boolean isolateTests(BranchBase branchBaseAnnotation) {
+			return Optional.ofNullable(branchBaseAnnotation)
+					.map(a -> a.isolateTests())
+					.orElse(true);
 		}
 	}
 
