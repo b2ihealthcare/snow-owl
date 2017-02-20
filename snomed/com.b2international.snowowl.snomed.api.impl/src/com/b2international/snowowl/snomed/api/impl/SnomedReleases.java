@@ -15,14 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.impl;
 
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_CITATION;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_ICON_PATH;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_LANGUAGE;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_LINK;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_NAME;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_OID;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.*;
 import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
@@ -59,8 +52,8 @@ public class SnomedReleases {
 	public static CodeSystem b2iExtension(String extensionPath) {
 		return CodeSystem.builder()
 				.name("Systematized Nomenclature of Medicine Clinical Terms, B2i extension")
-				.shortName(SNOMED_SHORT_NAME + "-B2I")
-				.oid(SNOMED_INT_OID + ".1000154")
+				.shortName(SNOMED_B2I_SHORT_NAME)
+				.oid(SNOMED_B2I_OID)
 				.primaryLanguage(SNOMED_INT_LANGUAGE)
 				.organizationLink("https://b2i.sg/")
 				.citation(SNOMED_INT_CITATION)

@@ -71,6 +71,9 @@ public abstract class SnomedTerminologyComponentConstants {
 			"Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, " +
 			"leading to improvements in the quality of care.";
 	
+	public static final String SNOMED_B2I_SHORT_NAME = SNOMED_SHORT_NAME + "-B2I";
+	public static final String SNOMED_B2I_OID = SNOMED_INT_OID + ".1000154";
+
 	/**
 	 * Fake terminology component type ID for predicates.
 	 * <br>ID: {@value}. 
