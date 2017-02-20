@@ -750,7 +750,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 			otherNonIsAFragments.put(directSuperTypeId, getCachedNonIsAFragments(directSuperTypeId));
 		}
 
-		final Collection<StatementFragment> ownStatedNonIsaFragments = reasonerTaxonomyBuilder.getNonIsAFragments(conceptId);
+		final Collection<StatementFragment> ownStatedNonIsaFragments = reasonerTaxonomyBuilder.getStatedNonIsAFragments(conceptId);
 		final Collection<StatementFragment> ownInferredFragments = reasonerTaxonomyBuilder.getInferredStatementFragments(conceptId);
 		final Collection<StatementFragment> ownInferredNonIsaFragments = Collections2.filter(ownInferredFragments, new Predicate<StatementFragment>() {
 			@Override

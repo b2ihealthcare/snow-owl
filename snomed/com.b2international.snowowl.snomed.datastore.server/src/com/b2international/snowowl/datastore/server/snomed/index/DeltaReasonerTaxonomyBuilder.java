@@ -151,12 +151,12 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 
 		removeConcreteDomainFragment(conceptFragments, storageKey);
 		if (conceptFragments.isEmpty()) {
-			conceptIdToConcreteDomain.remove(conceptId);
+			conceptIdToStatedConcreteDomains.remove(conceptId);
 		}
 	}
 
 	private void removeStatementConcreteDomainMember(final long conceptId, final long storageKey) {
-		final Collection<StatementFragment> statementFragments = getStatementFragments(conceptId);
+		final Collection<StatementFragment> statementFragments = getStatedStatementFragments(conceptId);
 		
 		for (final StatementFragment fragment : statementFragments) {
 			
@@ -181,11 +181,11 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 	}
 
 	private void removeSourceRelationship(final long conceptId, final long storageKey) {
-		final Collection<StatementFragment> statementFragments = getStatementFragments(conceptId);
+		final Collection<StatementFragment> statementFragments = getStatedStatementFragments(conceptId);
 		
 		removeStatement(statementFragments, storageKey);
 		if (statementFragments.isEmpty()) {
-			conceptIdToStatements.remove(conceptId);
+			conceptIdToStatedStatements.remove(conceptId);
 		}
 	}
 
@@ -205,8 +205,8 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 		fullyDefinedConceptIds.remove(conceptId);
 		
 		if (detached) {
-			conceptIdToStatements.remove(conceptId);
-			conceptIdToConcreteDomain.remove(conceptId);
+			conceptIdToStatedStatements.remove(conceptId);
+			conceptIdToStatedConcreteDomains.remove(conceptId);
 
 			// Leave an empty spot instead of renumbering everything
 			final int internalId = getInternalId(conceptId);
@@ -280,7 +280,7 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 
 		final long conceptId = Long.valueOf(member.getReferencedComponentId());
 		final ConcreteDomainFragment fragment = createFragment(member);
-		addToMultimap(conceptIdToConcreteDomain, conceptId, fragment);
+		addToMultimap(conceptIdToStatedConcreteDomains, conceptId, fragment);
 	}
 
 	private ConcreteDomainFragment createFragment(final SnomedConcreteDataTypeRefSetMember member) {
@@ -329,7 +329,7 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 				storageKey
 		);
 
-		addToMultimap(conceptIdToStatements, sourceId, fragment);
+		addToMultimap(conceptIdToStatedStatements, sourceId, fragment);
 	}
 
 	private void addConcept(final Concept concept) {
@@ -386,7 +386,7 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 				continue;
 			}
 			
-			final Collection<StatementFragment> fragments = getStatementFragments(sourceId);
+			final Collection<StatementFragment> fragments = getStatedStatementFragments(sourceId);
 			for (final StatementFragment fragment : fragments) {
 				
 				final long typeId = fragment.getTypeId();
@@ -422,7 +422,7 @@ public final class DeltaReasonerTaxonomyBuilder extends AbstractReasonerTaxonomy
 				continue;
 			}
 			
-			final Collection<StatementFragment> fragments = getStatementFragments(sourceId);
+			final Collection<StatementFragment> fragments = getStatedStatementFragments(sourceId);
 			for (final StatementFragment fragment : fragments) {
 				
 				final long typeId = fragment.getTypeId();

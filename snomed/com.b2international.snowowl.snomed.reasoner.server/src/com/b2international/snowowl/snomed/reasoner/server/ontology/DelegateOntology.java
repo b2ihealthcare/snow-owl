@@ -344,7 +344,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 		}
 
 		final ConceptDefinition definition = new ConceptDefinition(conceptDomainDefinitions, conceptId, primitive, null);
-		final Collection<StatementFragment> statementFragments = getReasonerTaxonomyBuilder().getStatementFragments(conceptId);
+		final Collection<StatementFragment> statementFragments = getReasonerTaxonomyBuilder().getStatedStatementFragments(conceptId);
 
 		for (final StatementFragment statementFragment : statementFragments) {
 			final long statementId = statementFragment.getStatementId();
@@ -873,7 +873,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 			}
 
 			// No non-ISA relationships can be present on the subtype
-			if (getReasonerTaxonomyBuilder().getNonIsAFragments(subTypeId).size() > 0) {
+			if (getReasonerTaxonomyBuilder().getStatedNonIsAFragments(subTypeId).size() > 0) {
 				continue;
 			}
 
@@ -945,7 +945,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 			}
 
 			// No non-ISA relationships can be present on the subtype
-			if (getReasonerTaxonomyBuilder().getNonIsAFragments(subTypeId).size() > 0) {
+			if (getReasonerTaxonomyBuilder().getStatedNonIsAFragments(subTypeId).size() > 0) {
 				continue;
 			}
 

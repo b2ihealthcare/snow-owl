@@ -136,7 +136,7 @@ public class SnomedReasonerChangeProcessor implements ICDOChangeProcessor {
 			}
 		}
 
-		for (final StatementFragment statementFragment : oldReasonerTaxonomy.getNonIsAFragments(conceptId)) {
+		for (final StatementFragment statementFragment : oldReasonerTaxonomy.getStatedNonIsAFragments(conceptId)) {
 
 			final Collection<ConcreteDomainFragment> relationshipDomainFragments = oldReasonerTaxonomy.getStatementConcreteDomainFragments(statementFragment.getStatementId());
 			final Set<ConcreteDomainDefinition> relationshipDomainDefinitions = convertConcreteDomainFragments(relationshipDomainFragments);
@@ -184,7 +184,7 @@ public class SnomedReasonerChangeProcessor implements ICDOChangeProcessor {
 			}
 		}
 
-		for (final StatementFragment statementFragment : newReasonerTaxonomy.getNonIsAFragments(conceptId)) {
+		for (final StatementFragment statementFragment : newReasonerTaxonomy.getStatedNonIsAFragments(conceptId)) {
 
 			final Collection<ConcreteDomainFragment> relationshipDomainFragments = newReasonerTaxonomy.getStatementConcreteDomainFragments(statementFragment.getStatementId());
 			final Set<ConcreteDomainDefinition> relationshipDomainDefinitions = convertConcreteDomainFragments(relationshipDomainFragments);

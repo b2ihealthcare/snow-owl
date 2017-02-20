@@ -301,13 +301,13 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		@Override
 		public void run() {
 			
-			conceptIdToStatements = getStatements(getAllowedCharacteristicTypes());
-			final LongKeyLongMap statementIdToConceptIds = new LongKeyLongOpenHashMap(conceptIdToStatements.size());
+			conceptIdToStatedStatements = getStatements(getAllowedCharacteristicTypes());
+			final LongKeyLongMap statementIdToConceptIds = new LongKeyLongOpenHashMap(conceptIdToStatedStatements.size());
 
-			for (final LongIterator itr = conceptIdToStatements.keySet().iterator(); itr.hasNext(); /* nothing */) {
+			for (final LongIterator itr = conceptIdToStatedStatements.keySet().iterator(); itr.hasNext(); /* nothing */) {
 
 				final long sourceConceptId = itr.next();
-				final Collection<StatementFragment> fragments = getStatementFragments(sourceConceptId);
+				final Collection<StatementFragment> fragments = getStatedStatementFragments(sourceConceptId);
 
 				for (final StatementFragment fragment : fragments) {
 					final long statementStorageKey = fragment.getStorageKey();
@@ -322,8 +322,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			}
 
 			statementIdToConceptIdReference.set(statementIdToConceptIds);
-			
-			inferredStatementMap = getStatements(Collections.singleton(Concepts.INFERRED_RELATIONSHIP));
+			conceptIdToInferredStatements = getStatements(Collections.singleton(Concepts.INFERRED_RELATIONSHIP));
 			checkpoint(taskName, "mapping statements for classification", stopwatch);
 		}
 
@@ -381,9 +380,6 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	private final IBranchPath branchPath;
 	private final Stopwatch stopwatch;
 	
-	private LongKeyMap inferredStatementMap;
-	private LongKeyMap inferredConcreteDomainMap;
-
 	/**
 	 * Creates a taxonomy builder instance.
 	 *
@@ -469,11 +465,11 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 		exhaustiveConceptIds = exhaustiveConceptIdsReference.get();
 		fullyDefinedConceptIds = fullyDefinedConceptIdsReference.get();
-		conceptIdToConcreteDomain = conceptConcreteDomainReference.get();
-		inferredConcreteDomainMap = inferredConceptConcreteDomainReference.get();
+		conceptIdToStatedConcreteDomains = conceptConcreteDomainReference.get();
+		conceptIdToInferredConcreteDomains = inferredConceptConcreteDomainReference.get();
 		statementIdToConcreteDomain = relationshipConcreteDomainReference.get();
 
-		for (final LongIterator itr = conceptIdToConcreteDomain.keySet().iterator(); itr.hasNext(); /* empty */) {
+		for (final LongIterator itr = conceptIdToStatedConcreteDomains.keySet().iterator(); itr.hasNext(); /* empty */) {
 			final long conceptId = itr.next();
 			final Collection<ConcreteDomainFragment> fragments = getConceptConcreteDomainFragments(conceptId);
 
@@ -499,18 +495,6 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		leaving(taskName, stopwatch);
 	}
 	
-	@SuppressWarnings("unchecked")
-	public Collection<StatementFragment> getInferredStatementFragments(final long conceptId) {
-		final Object statements = inferredStatementMap.get(conceptId);
-		return (Collection<StatementFragment>) (null == statements ? Collections.emptySet() : statements);
-	}
-	
-	@SuppressWarnings("unchecked")
-	public Collection<ConcreteDomainFragment> getInferredConceptConcreteDomainFragments(final long conceptId) {
-		final Object concreteDomains = inferredConcreteDomainMap.get(conceptId);
-		return (Collection<ConcreteDomainFragment>) (null == concreteDomains ? Collections.emptySet() : concreteDomains);
-	}
-
 	private Collection<String> getAllowedCharacteristicTypes() {
 		final Collection<String> result = newHashSet();
 		result.add(Concepts.STATED_RELATIONSHIP);

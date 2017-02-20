@@ -74,10 +74,13 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	protected LongSet fullyDefinedConceptIds;
 
 	/** Mapping between concept IDs and the associated active outbound relationships. */
-	protected LongKeyMap conceptIdToStatements;
+	protected LongKeyMap conceptIdToStatedStatements;
 
 	/** Mapping between concept IDs and the associated concrete domain members. */
-	protected LongKeyMap conceptIdToConcreteDomain;
+	protected LongKeyMap conceptIdToStatedConcreteDomains;
+	
+	protected LongKeyMap conceptIdToInferredStatements;
+	protected LongKeyMap conceptIdToInferredConcreteDomains;
 
 	/** Mapping between statement IDs and the associated concrete domain members. */
 	protected LongKeyMap statementIdToConcreteDomain;
@@ -116,8 +119,10 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 		
 		this.exhaustiveConceptIds = (LongOpenHashSet) ((LongOpenHashSet) source.exhaustiveConceptIds).clone();
 		this.fullyDefinedConceptIds = (LongOpenHashSet) ((LongOpenHashSet) source.fullyDefinedConceptIds).clone();
-		this.conceptIdToStatements = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToStatements).clone();
-		this.conceptIdToConcreteDomain = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToConcreteDomain).clone();
+		this.conceptIdToStatedStatements = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToStatedStatements).clone();
+		this.conceptIdToStatedConcreteDomains = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToStatedConcreteDomains).clone();
+		this.conceptIdToInferredStatements = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToInferredConcreteDomains).clone();
+		this.conceptIdToInferredConcreteDomains = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToInferredConcreteDomains).clone();
 		this.statementIdToConcreteDomain = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.statementIdToConcreteDomain).clone();
 		this.internalIdToconceptId = (LongArrayList) ((LongArrayList) source.internalIdToconceptId).clone();
 		this.conceptIdToInternalId = (LongKeyIntOpenHashMap) ((LongKeyIntOpenHashMap) source.conceptIdToInternalId).clone();
@@ -135,18 +140,43 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	 * @return the active source relationships.
 	 */
 	@SuppressWarnings("unchecked")
-	public Collection<StatementFragment> getStatementFragments(final long conceptId) {
-		final Object statements = conceptIdToStatements.get(conceptId);
+	public Collection<StatementFragment> getStatedStatementFragments(final long conceptId) {
+		final Object statements = conceptIdToStatedStatements.get(conceptId);
 		return (Collection<StatementFragment>) (null == statements ? Collections.emptySet() : statements);
 	}
 
+	@SuppressWarnings("unchecked")
+	public Collection<StatementFragment> getInferredStatementFragments(final long conceptId) {
+		final Object statements = conceptIdToInferredStatements.get(conceptId);
+		return (Collection<StatementFragment>) (null == statements ? Collections.emptySet() : statements);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public Collection<ConcreteDomainFragment> getInferredConceptConcreteDomainFragments(final long conceptId) {
+		final Object concreteDomains = conceptIdToInferredConcreteDomains.get(conceptId);
+		return (Collection<ConcreteDomainFragment>) (null == concreteDomains ? Collections.emptySet() : concreteDomains);
+	}
+	
 	/**
-	 * Returns with all *NON* IS_A active source relationships of a concept given by its unique ID.
+	 * Returns with all *NON* IS_A stated active source relationships of a concept given by its unique ID.
 	 * @param conceptId the ID of the SNOMED&nbsp;CT concept.
 	 * @return the active *NON* IS_A source relationships.
 	 */
-	public Collection<StatementFragment> getNonIsAFragments(final long conceptId) {
-		return Collections2.filter(getStatementFragments(conceptId), new Predicate<StatementFragment>() {
+	public Collection<StatementFragment> getStatedNonIsAFragments(final long conceptId) {
+		return Collections2.filter(getStatedStatementFragments(conceptId), new Predicate<StatementFragment>() {
+			@Override public boolean apply(final StatementFragment statementFragment) {
+				return IS_A_ID != statementFragment.getTypeId();
+			}
+		});
+	}
+	
+	/**
+	 * Returns with all *NON* IS_A inferred active source relationships of a concept given by its unique ID.
+	 * @param conceptId the ID of the SNOMED&nbsp;CT concept.
+	 * @return the active *NON* IS_A source relationships.
+	 */
+	public Collection<StatementFragment> getInferredNonIsAFragments(final long conceptId) {
+		return Collections2.filter(getInferredStatementFragments(conceptId), new Predicate<StatementFragment>() {
 			@Override public boolean apply(final StatementFragment statementFragment) {
 				return IS_A_ID != statementFragment.getTypeId();
 			}
@@ -190,7 +220,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	 */
 	@SuppressWarnings("unchecked")
 	public Collection<ConcreteDomainFragment> getConceptConcreteDomainFragments(final long conceptId) {
-		final Object concreteDomains = conceptIdToConcreteDomain.get(conceptId);
+		final Object concreteDomains = conceptIdToStatedConcreteDomains.get(conceptId);
 		return (Collection<ConcreteDomainFragment>) (null == concreteDomains ? Collections.emptySet() : concreteDomains);
 	}
 
