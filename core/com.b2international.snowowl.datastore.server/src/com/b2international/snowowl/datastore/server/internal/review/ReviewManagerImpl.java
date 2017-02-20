@@ -119,34 +119,36 @@ public class ReviewManagerImpl implements ReviewManager {
 		@Override
 		public void handle(final IMessage message) {
 			final RepositoryEvent changeEvent = message.body(RepositoryEvent.class);
-			if (changeEvent instanceof BranchChangedEvent) {
-				final String path = ((BranchChangedEvent) changeEvent).getBranch();
-				
-				store.write(new IndexWrite<Void>() {
-					@Override
-					public Void execute(Writer index) throws IOException {
-						final Hits<ReviewImpl> affectedReviews = index.searcher().search(
-								Query.select(ReviewImpl.class)
-								.where(Expressions.builder()
-										.must(Expressions.nestedMatch("source", Expressions.exactMatch("path", path)))
-										.must(Expressions.nestedMatch("target", Expressions.exactMatch("path", path)))
-										.build()
-										)
-								.limit(Integer.MAX_VALUE)
-								.build());
-						
-						if (affectedReviews.getTotal() > 0) {
-							for (final ReviewImpl affectedReview : affectedReviews) {
-								ReviewImpl newReview = updateStatus(affectedReview, ReviewStatus.STALE);
-								if (newReview != null) {
-									index.put(newReview.id(), newReview);
+			if (repositoryId.equals(changeEvent.getRepositoryId())) {
+				if (changeEvent instanceof BranchChangedEvent) {
+					final String path = ((BranchChangedEvent) changeEvent).getBranch();
+					
+					store.write(new IndexWrite<Void>() {
+						@Override
+						public Void execute(Writer index) throws IOException {
+							final Hits<ReviewImpl> affectedReviews = index.searcher().search(
+									Query.select(ReviewImpl.class)
+									.where(Expressions.builder()
+											.must(Expressions.nestedMatch("source", Expressions.exactMatch("path", path)))
+											.must(Expressions.nestedMatch("target", Expressions.exactMatch("path", path)))
+											.build()
+											)
+									.limit(Integer.MAX_VALUE)
+									.build());
+							
+							if (affectedReviews.getTotal() > 0) {
+								for (final ReviewImpl affectedReview : affectedReviews) {
+									ReviewImpl newReview = updateStatus(affectedReview, ReviewStatus.STALE);
+									if (newReview != null) {
+										index.put(newReview.id(), newReview);
+									}
 								}
+								index.commit();
 							}
-							index.commit();
+							return null;
 						}
-						return null;
-					}
-				});
+					});
+				}
 			}
 		}
 	}
@@ -202,6 +204,7 @@ public class ReviewManagerImpl implements ReviewManager {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ReviewManagerImpl.class);
 
+	private final String repositoryId;
 	private final Index store;
 	private final RevisionIndex revisionIndex;
 	private final IJobChangeListener jobChangeListener = new ReviewJobChangeListener();
@@ -222,6 +225,7 @@ public class ReviewManagerImpl implements ReviewManager {
 	}
 
 	public ReviewManagerImpl(final InternalRepository repository, final ReviewConfiguration config) {
+		this.repositoryId = repository.id();
 		this.store = repository.getIndex();
 		this.revisionIndex = repository.getRevisionIndex();
 

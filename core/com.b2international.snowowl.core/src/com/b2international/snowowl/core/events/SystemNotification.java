@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server;
-
-import com.b2international.snowowl.core.ClassLoaderProvider;
+package com.b2international.snowowl.core.events;
 
 /**
- * @since 4.5
+ * @since 5.7
  */
-public interface RepositoryClassLoaderProviderRegistry {
-	
-	ClassLoaderProvider get(String repositoryId);
-	
-	ClassLoader getClassLoader();
+public abstract class SystemNotification extends BaseEvent {
 
+	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * Notification address where subclasses of this {@link SystemNotification} will be sent.
+	 */
+	public static final String ADDRESS = "/notifications";
+
+	@Override
+	protected final String getAddress() {
+		return ADDRESS;
+	}
+	
 }

@@ -22,11 +22,15 @@ import org.eclipse.net4j.util.container.IManagedContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.domain.RepositoryContextProvider;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.util.ApiRequestHandler;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
@@ -37,19 +41,23 @@ import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManagerImpl;
+import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryContextProvider;
 import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryManager;
 import com.b2international.snowowl.datastore.server.internal.ExtensionBasedEditingContextFactoryProvider;
 import com.b2international.snowowl.datastore.server.internal.ExtensionBasedRepositoryClassLoaderProviderRegistry;
+import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.server.session.LogListener;
 import com.b2international.snowowl.datastore.server.session.VersionProcessor;
 import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJobManager;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.eventbus.Pipe;
 import com.b2international.snowowl.eventbus.net4j.EventBusNet4jUtil;
 import com.b2international.snowowl.rpc.RpcConfiguration;
 import com.b2international.snowowl.rpc.RpcProtocol;
 import com.b2international.snowowl.rpc.RpcUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 
 /**
@@ -69,6 +77,10 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		LOG.debug("Preparing EventBus communication");
 		EventBusNet4jUtil.prepareContainer(container);
 		env.services().registerService(IEventBus.class, EventBusNet4jUtil.getBus(container));
+		LOG.debug("Preparing JSON support");
+		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
+		mapper.registerModule(new PrimitiveCollectionModule());
+		env.services().registerService(ObjectMapper.class, mapper);
 	}
 
 	@Override
@@ -121,7 +133,24 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		
 		if (env.isEmbedded() || env.isServer()) {
 			initializeRepositories(configuration, env);
+			initializeRequestSupport(env, configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers());
 		}
+	}
+	
+	private void initializeRequestSupport(Environment env, int numberOfWorkers) {
+		final IEventBus events = env.service(IEventBus.class);
+		final Handlers handlers = new Handlers(numberOfWorkers);
+		final ClassLoader classLoader = env.service(RepositoryClassLoaderProviderRegistry.class).getClassLoader();
+		for (int i = 0; i < numberOfWorkers; i++) {
+			handlers.registerHandler(Request.ADDRESS, new ApiRequestHandler(env, classLoader));
+		}
+		
+		// register number of cores event bridge/pipe between events and handlers
+		for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
+			events.registerHandler(Request.ADDRESS, new Pipe(handlers, Request.ADDRESS));
+		}
+		env.services().registerService(Handlers.class, handlers);
+		env.services().registerService(RepositoryContextProvider.class, new DefaultRepositoryContextProvider(env.service(RepositoryManager.class)));
 	}
 
 	private void initializeRepositories(SnowOwlConfiguration configuration, Environment env) {
@@ -136,7 +165,6 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		for (String repositoryId : cdoRepositoryManager.uuidKeySet()) {
 			repositories
 				.prepareCreate(repositoryId, cdoRepositoryManager.getByUuid(repositoryId).getSnowOwlTerminologyComponentId())
-				.setNumberOfWorkers(repositoryConfig.getNumberOfWorkers())
 				.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
 				.build(env);
 		}

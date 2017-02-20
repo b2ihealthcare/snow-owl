@@ -79,7 +79,7 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 
 	@Override
 	protected void applyChanges() {
-		new AsyncRequest<>("/"+repository.id(),	new RepositoryRequest<>(repository.id(), new SyncRebaseRequest(merge, commitComment, reviewId)))
+		new AsyncRequest<>(new RepositoryRequest<>(repository.id(), new SyncRebaseRequest(merge, commitComment, reviewId)))
 			.execute(repository.events())
 			.getSync();
 	}

@@ -41,8 +41,8 @@ public abstract class BaseRequestBuilder<B extends BaseRequestBuilder<B, C, R>, 
 	 * 
 	 * @return
 	 */
-	protected final AsyncRequest<R> toAsync(String address, Request<ServiceProvider, R> request) {
-		return new AsyncRequest<>(address, request);
+	protected final AsyncRequest<R> toAsync(Request<ServiceProvider, R> request) {
+		return new AsyncRequest<>(request);
 	}
 	
 	protected abstract Request<C, R> doBuild();

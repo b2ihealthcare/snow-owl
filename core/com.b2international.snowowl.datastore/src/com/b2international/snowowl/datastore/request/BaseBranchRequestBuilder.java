@@ -37,9 +37,13 @@ public abstract class BaseBranchRequestBuilder<B extends BaseBranchRequestBuilde
 	 * @see SnomedDatastoreActivator.REPOSITORY_UUID
 	 */
 	public final AsyncRequest<R> build(final String repositoryId, final String branch) {
-		return toAsync("/"+repositoryId, 
-				new RepositoryRequest<>(repositoryId, 
-						new BranchRequest<>(branch, extend(build()))));
+		return toAsync(
+			new RepositoryRequest<>(repositoryId, 
+				new BranchRequest<>(branch, 
+					extend(build())
+				)
+			)
+		);
 	}
 	
 	/**

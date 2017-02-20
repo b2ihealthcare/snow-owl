@@ -25,11 +25,9 @@ import com.b2international.snowowl.eventbus.IMessage;
  */
 public final class AsyncRequest<R> {
 
-	private final String address;
 	private final Request<?, R> request;
 
-	public AsyncRequest(String address, Request<?, R> request) {
-		this.address = address;
+	public AsyncRequest(Request<?, R> request) {
 		this.request = request;
 	}
 	
@@ -41,7 +39,7 @@ public final class AsyncRequest<R> {
 	public Promise<R> execute(IEventBus bus) {
 		final Promise<R> promise = new Promise<>();
 		final Class<R> responseType = ((BaseRequest<?, R>) request).getReturnType(); 
-		bus.send(address, request, new IHandler<IMessage>() {
+		bus.send(BaseRequest.ADDRESS, request, new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				try {

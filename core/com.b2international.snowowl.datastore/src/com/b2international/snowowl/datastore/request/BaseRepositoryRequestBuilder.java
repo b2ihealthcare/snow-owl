@@ -30,7 +30,11 @@ import com.b2international.snowowl.core.events.Request;
 public abstract class BaseRepositoryRequestBuilder<B extends BaseRepositoryRequestBuilder<B, R>, R> extends BaseRequestBuilder<B, RepositoryContext, R> {
 
 	public final AsyncRequest<R> build(String repositoryId) {
-		return toAsync("/"+repositoryId, new RepositoryRequest<>(repositoryId, extend(build())));
+		return toAsync(
+			new RepositoryRequest<>(repositoryId, 
+				extend(build())
+			)
+		);
 	}
 	
 	@OverridingMethodsMustInvokeSuper

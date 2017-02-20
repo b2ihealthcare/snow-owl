@@ -15,13 +15,11 @@
  */
 package com.b2international.snowowl.core.domain;
 
-import com.b2international.snowowl.core.ServiceProvider;
-
 /**
  * @since 4.5
  */
 public interface RepositoryContextProvider {
 
-	RepositoryContext get(ServiceProvider context, String repositoryId);
+	RepositoryContext get(String repositoryId);
 	
 }

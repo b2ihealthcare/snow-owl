@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.core;
 import java.io.Closeable;
 
 import com.b2international.snowowl.core.events.RepositoryEvent;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
@@ -32,13 +31,6 @@ public interface Repository extends ServiceProvider, Closeable {
 	 * @return
 	 */
 	String id();
-
-	/**
-	 * Returns the {@link Repository}s own event bus. It can be used to execute {@link Request}s targeting this {@link Repository}.
-	 * 
-	 * @return
-	 */
-	IEventBus handlers();
 
 	/**
 	 * Returns the global singleton {@link IEventBus} to send events to it.
