@@ -20,7 +20,7 @@ import com.google.common.collect.Lists;
 /**
  */
 public enum RemoteJobState {
-	SCHEDULED, RUNNING, CANCEL_REQUESTED, FINISHED, FAILED;
+	SCHEDULED, RUNNING, CANCEL_REQUESTED, FINISHED, FAILED, CANCELLED;
 
 	public boolean oneOf(RemoteJobState firstState, RemoteJobState... restStates) {
 		return Lists.asList(firstState, restStates).contains(this);

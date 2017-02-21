@@ -19,16 +19,15 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobChanged;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobStore;
 import com.b2international.snowowl.datastore.remotejobs.SingleRemoteJobFamily;
-import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * @since 5.7
  */
-class CancelJobRequest extends BaseRequest<ServiceProvider, Void> {
+final class CancelJobRequest extends BaseRequest<ServiceProvider, Void> {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -42,15 +41,9 @@ class CancelJobRequest extends BaseRequest<ServiceProvider, Void> {
 	public Void execute(ServiceProvider context) {
 		final RemoteJobStore store = context.service(RemoteJobStore.class);
 		final RemoteJobEntry job = store.get(id);
-		if (job != null) {
-			if (job.isDone()) {
-				store.delete(id);
-			} else {
-				job.cancel();
-				Job.getJobManager().cancel(SingleRemoteJobFamily.create(id));
-				store.put(id, job);
-				new RemoteJobChanged(id).publish(context.service(IEventBus.class));
-			}
+		if (job != null && !job.isCancelled()) {
+			store.update(id, current -> RemoteJobEntry.from(current).state(RemoteJobState.CANCEL_REQUESTED).build());
+			Job.getJobManager().cancel(SingleRemoteJobFamily.create(id));
 		}
 		return null;
 	}

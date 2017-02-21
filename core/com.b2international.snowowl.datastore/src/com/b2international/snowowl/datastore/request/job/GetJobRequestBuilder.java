@@ -15,34 +15,25 @@
  */
 package com.b2international.snowowl.datastore.request.job;
 
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobStore;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 
 /**
  * @since 5.7
  */
-final class SearchJobRequest extends BaseRequest<ServiceProvider, RemoteJobs> {
+public final class GetJobRequestBuilder extends BaseRequestBuilder<GetJobRequestBuilder, ServiceProvider, RemoteJobEntry> {
 
-	// TODO add filters, paging, expand options
-	
-	SearchJobRequest() {
+	private final String jobId;
+
+	GetJobRequestBuilder(String jobId) {
+		this.jobId = jobId;
 	}
 	
 	@Override
-	public RemoteJobs execute(ServiceProvider context) {
-		final Expression query = Expressions.matchAll();
-		final int offset = 0;
-		final int limit = Integer.MAX_VALUE;
-		return context.service(RemoteJobStore.class).search(query, offset, limit);
-	}
-
-	@Override
-	protected Class<RemoteJobs> getReturnType() {
-		return RemoteJobs.class;
+	protected Request<ServiceProvider, RemoteJobEntry> doBuild() {
+		return new GetJobRequest(jobId);
 	}
 
 }

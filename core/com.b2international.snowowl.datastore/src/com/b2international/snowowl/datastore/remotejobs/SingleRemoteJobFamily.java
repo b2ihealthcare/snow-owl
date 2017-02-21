@@ -22,11 +22,11 @@ import com.google.common.base.Predicates;
 /**
  *
  */
-public class SingleRemoteJobFamily implements Predicate<RemoteJob<?>> {
+public class SingleRemoteJobFamily implements Predicate<RemoteJob> {
 
 	private final String id;
 
-	public static Predicate<RemoteJob<?>> create(String id) {
+	public static Predicate<RemoteJob> create(String id) {
 		return Predicates.and(RemoteJobFamily.INSTANCE, new SingleRemoteJobFamily(id));
 	}
 	
@@ -40,7 +40,7 @@ public class SingleRemoteJobFamily implements Predicate<RemoteJob<?>> {
 	}
 
 	@Override
-	public boolean apply(RemoteJob<?> input) {
+	public boolean apply(RemoteJob input) {
 		return id.equals(input.getId());
 	}
 
