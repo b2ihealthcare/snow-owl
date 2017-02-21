@@ -121,7 +121,7 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 		this.fullyDefinedConceptIds = (LongOpenHashSet) ((LongOpenHashSet) source.fullyDefinedConceptIds).clone();
 		this.conceptIdToStatedStatements = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToStatedStatements).clone();
 		this.conceptIdToStatedConcreteDomains = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToStatedConcreteDomains).clone();
-		this.conceptIdToInferredStatements = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToInferredConcreteDomains).clone();
+		this.conceptIdToInferredStatements = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToInferredStatements).clone();
 		this.conceptIdToInferredConcreteDomains = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToInferredConcreteDomains).clone();
 		this.statementIdToConcreteDomain = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.statementIdToConcreteDomain).clone();
 		this.internalIdToconceptId = (LongArrayList) ((LongArrayList) source.internalIdToconceptId).clone();
