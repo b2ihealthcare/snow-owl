@@ -40,7 +40,7 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	private SnomedRefSetType type;
 	private SnomedCoreComponent referencedComponent;
 	private String referenceSetId;
-	private Map<String, Object> properties;
+	private Map<String, Object> properties = newHashMap();
 
 	/**
 	 * @return the containing reference set's type
@@ -96,9 +96,6 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	
 	@JsonAnySetter
 	public void setProperties(String key, Object value) {
-		if (this.properties == null) {
-			this.properties = newHashMap();
-		}
 		this.properties.put(key, value);
 	}
 	
