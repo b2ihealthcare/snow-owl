@@ -15,561 +15,523 @@
  */
 package com.b2international.snowowl.snomed.api.rest.components;
 
-import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentActive;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeDeleted;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCanBeUpdated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreatedWithStatus;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentExists;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentNotCreated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertDescriptionExists;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertDescriptionNotExists;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertPreferredTermEquals;
+import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createVersion;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranchRecursively;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.updateComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.bulkUpdateMembers;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createDescriptionRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewDescription;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.inactivateDescription;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertNotNull;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
-import com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
-import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.*;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.ValidatableResponse;
 
 /**
  * @since 2.0
  */
 public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
-	private static final String DISEASE = "64572001";
-	
-	private static final String INACTIVE_DISEASE_DESCRIPTION = "187915017";
-	private static final String INACTIVE_DISEASE_DESCRIPTION_EFFECTIVE_TIME = "20020131";
-	private static final String INACTIVE_DISEASE_DESCRIPTION_MEMBER_ID = "b6da3189-3c2f-5b36-865e-bac13d08aeae";
-
-	private Builder<Object, Object> createRequestBuilder(final String conceptId, 
-			final String term, 
-			final String moduleId,
-			final String typeId, 
-			final String comment) {
-		return createRequestBuilder(conceptId, term, moduleId, typeId, comment, SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
-	}
-
-	private Builder<Object, Object> createRequestBuilder(final String conceptId, final String term, final String moduleId, final String typeId,
-			final String comment, Map<?, ?> acceptabilityMap) {
-		return ImmutableMap.builder()
-				.put("conceptId", conceptId)
-				.put("moduleId", moduleId)
-				.put("typeId", typeId)
-				.put("term", term)
-				.put("languageCode", "en")
-				.put("acceptability", acceptabilityMap)
-				.put("commitComment", comment);
-	}
-
-	private Map<?, ?> createRequestBody(final String conceptId, 
-			final String term, 
-			final String moduleId, 
-			final String typeId, 
-			final String comment) {
-
-		return createRequestBuilder(conceptId, term, moduleId, typeId, comment)
-				.build();
-	}
-
-	private Map<?, ?> createRequestBody(final String conceptId, 
-			final String term, 
-			final String moduleId, 
-			final String typeId, 
-			final CaseSignificance caseSignificance, 
-			final String comment) {
-
-		return createRequestBuilder(conceptId, term, moduleId, typeId, comment)
-				.put("caseSignificance", caseSignificance.name())
-				.build();
-	}
-
 	@Test
 	public void createDescriptionNonExistentBranch() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on a non-existent branch");
-		assertComponentCreatedWithStatus(createPath("MAIN/1998-01-31"), SnomedComponentType.DESCRIPTION, requestBody, 404)
-		.and().body("status", equalTo(404));
+		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT)
+				.put("commitComment", "Created new description on non-existent branch")
+				.build();
+
+		createComponent(BranchPathUtils.createPath("MAIN/x/y/z"), SnomedComponentType.DESCRIPTION, requestBody).statusCode(404);
 	}
 
 	@Test
-	public void createDescriptionWithNonExistentConcept() {
-		final Map<?, ?> requestBody = createRequestBody("1", "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description with a non-existent concept ID");		
-		assertComponentNotCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
+	public void createDescriptionInvalidConcept() {
+		Map<?, ?> requestBody = createDescriptionRequestBody("11110000")
+				.put("commitComment", "Created new description with invalid conceptId")
+				.build();
+
+		createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(400);
 	}
 
 	@Test
-	public void createDescriptionWithNonexistentType() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, "2", "New description with a non-existent type ID");		
-		assertComponentNotCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
+	public void createDescriptionInvalidType() {
+		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT, "11110000")
+				.put("commitComment", "Created new description with invalid typeId")
+				.build();
+
+		createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(400);
 	}
 
 	@Test
-	public void createDescriptionWithNonexistentModule() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", "3", Concepts.SYNONYM, "New description with a non-existent module ID");
-		assertComponentNotCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
+	public void createDescriptionInvalidModule() {
+		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT, Concepts.SYNONYM, "11110000")
+				.put("commitComment", "Created new description with invalid moduleId")
+				.build();
+
+		createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(400);
 	}
 
 	@Test
 	public void createDescriptionWithoutCommitComment() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "");
-		assertComponentNotCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
-	}
-
-	private void assertCaseSignificance(final IBranchPath branchPath, final String descriptionId, final CaseSignificance caseSignificance) {
-		assertComponentHasProperty(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "caseSignificance", caseSignificance.toString());
-	}
-
-	private void assertActive(final IBranchPath branchPath, final String descriptionId, final boolean active) {
-		assertComponentActive(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, active);
+		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT).build();
+		createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(400);
 	}
 
 	@Test
 	public void createDescription() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
-		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
-		assertCaseSignificance(createMainPath(), descriptionId, CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE);
-	}
-	
-	@Test
-	public void createDescriptionWithPredefinedId() {
-		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
-		final String descriptionId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.DESCRIPTION, 1));
-		Map<Object, Object> requestBody = createRequestBuilder(DISEASE, "Description with predefined id", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM,
-				"New description with predefined id")
-				.put("id", descriptionId)
+		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT)
+				.put("commitComment", "Created new description")
 				.build();
-		String createdId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
-		assertEquals(descriptionId, createdId);
+
+		createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(201);
 	}
-	
+
+	@Test
+	public void createDescriptionWithReservedId() {
+		ISnomedIdentifierService identifierService = getServiceForClass(ISnomedIdentifierService.class);
+		String descriptionId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.DESCRIPTION, 1));
+
+		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT)
+				.put("id", descriptionId)
+				.put("commitComment", "Created new description with reserved identifier")
+				.build();
+
+		createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(201)
+		.header("Location", endsWith("/" + descriptionId));
+	}
+
 	@Test
 	public void createDuplicateDescription() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
-		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
-		
-		final Map<Object, Object> dupRequestBody = Maps.<Object, Object>newHashMap(requestBody);
-		dupRequestBody.put("id", descriptionId);
-		dupRequestBody.put("commitComment", "New duplicate description on MAIN");
-		assertComponentCreatedWithStatus(createMainPath(), SnomedComponentType.DESCRIPTION, dupRequestBody, 409);
+		String descriptionId = createNewDescription(branchPath);
+		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT)
+				.put("id", descriptionId)
+				.put("commitComment", "Created new description with duplicate identifier")
+				.build();
+
+		createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(409);
 	}
 
 	@Test
 	public void createDescriptionCaseInsensitive() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, CaseSignificance.CASE_INSENSITIVE, "New description on MAIN");
-		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
-		assertCaseSignificance(createMainPath(), descriptionId, CaseSignificance.CASE_INSENSITIVE);
+		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT, Concepts.SYNONYM, Concepts.MODULE_SCT_CORE, 
+				SnomedApiTestConstants.UK_ACCEPTABLE_MAP, 
+				CaseSignificance.CASE_INSENSITIVE)
+				.put("commitComment", "Created new description with case insensitive significance")
+				.build();
+
+		String descriptionId = lastPathSegment(createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200)
+		.body("caseSignificance", equalTo(CaseSignificance.CASE_INSENSITIVE.name()));
 	}
 
 	@Test
 	public void deleteDescription() {
-		final Map<?, ?> requestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
-		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, requestBody);
-
-		assertDescriptionCanBeDeleted(createMainPath(), descriptionId);
-		assertDescriptionNotExists(createMainPath(), descriptionId);
-	}
-
-	private void assertDescriptionCanBeDeleted(final IBranchPath branchPath, final String descriptionId) {
-		assertComponentCanBeDeleted(branchPath, SnomedComponentType.DESCRIPTION, descriptionId);
-	}
-
-	private void assertDescriptionCanBeUpdated(final IBranchPath branchPath, final String descriptionId, final Map<?, ?> requestBody) {
-		assertComponentCanBeUpdated(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody);
+		String descriptionId = createNewDescription(branchPath);
+		deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, false).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(404);
 	}
 
 	@Test
-	public void inactivateDescription() {
-		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
-		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, createRequestBody);
-		assertActive(createMainPath(), descriptionId, true);
-
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+	public void testDescriptionInactivation() {
+		String descriptionId = createNewDescription(branchPath);
+		Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("active", false)
 				.put("commitComment", "Inactivated description")
 				.build();
 
-		assertDescriptionCanBeUpdated(createMainPath(), descriptionId, updateRequestBody);
-		assertActive(createMainPath(), descriptionId, false);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200)
+		.body("active", equalTo(false));
 	}
 
 	@Test
-	public void inactivateDescriptionWithIndicator() {
-		final IBranchPath branch = BranchPathUtils.createMainPath();
-		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease 2", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description Rare disease 2");
-		final String descriptionId = assertComponentCreated(branch, SnomedComponentType.DESCRIPTION, createRequestBody);
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("active", false)
-				.put("inactivationIndicator", DescriptionInactivationIndicator.DUPLICATE)
-				.put("commitComment", "Inactivated description")
-				.build();
+	public void testDescriptionReactivation() throws Exception {
+		String descriptionId = createNewDescription(branchPath);
+		inactivateDescription(branchPath, descriptionId);
 
-		assertDescriptionCanBeUpdated(branch, descriptionId, updateRequestBody);
-		assertComponentExists(branch, SnomedComponentType.DESCRIPTION, descriptionId, "inactivationProperties()")
-			.and()
-			.body("active", equalTo(false))
-			.and()
-			.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.toString()));
-	}
+		String shortName = "SNOMEDCT-DSC-1";
+		createCodeSystem(branchPath, shortName).statusCode(201);
+		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		createVersion(shortName, "v1", effectiveDate).statusCode(201);
 
-	@Test
-	public void updateInactivationIndicatorAfterInactivation() {
-		final IBranchPath branch = BranchPathUtils.createMainPath();
-		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease 3", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description Rare disease 3");
-		final String descriptionId = assertComponentCreated(branch, SnomedComponentType.DESCRIPTION, createRequestBody);
-		Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("active", false)
-				.put("inactivationIndicator", DescriptionInactivationIndicator.DUPLICATE)
-				.put("commitComment", "Inactivated description")
-				.build();
-
-		assertDescriptionCanBeUpdated(branch, descriptionId, updateRequestBody);
-		assertComponentExists(branch, SnomedComponentType.DESCRIPTION, descriptionId, "inactivationProperties()")
-			.and()
-			.body("active", equalTo(false))
-			.and()
-			.body("inactivationIndicator", equalTo(DescriptionInactivationIndicator.DUPLICATE.toString()));
-
-		updateRequestBody = ImmutableMap.builder()
-				.put("active", false)
-				.put("inactivationIndicator", DescriptionInactivationIndicator.OUTDATED)
-				.put("commitComment", "Changed inactivation indicator to " + DescriptionInactivationIndicator.OUTDATED)
-				.build();
-		assertDescriptionCanBeUpdated(branch, descriptionId, updateRequestBody);
-		assertComponentExists(branch, SnomedComponentType.DESCRIPTION, descriptionId, "inactivationProperties()")
-			.and()
-			.body("active", equalTo(false))
-			.and()
-			.body("inactivationIndicator", equalTo(DescriptionInactivationIndicator.OUTDATED.toString()));
-	}
-	
-	@Test
-	public void inactivateDescriptionWithIndicatorAndAssociationTarget() {
-		final IBranchPath branch = BranchPathUtils.createMainPath();
-		final Map<?, ?> createRequestBody1 = createRequestBody(DISEASE, "Rare disease 4", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description Rare disease 4");
-		final Map<?, ?> createRequestBody2 = createRequestBody(DISEASE, "Rare disease 4", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description Rare disease 4");
-		
-		final String descriptionId = assertComponentCreated(branch, SnomedComponentType.DESCRIPTION, createRequestBody1);
-		final String sameAsDescriptionId = assertComponentCreated(branch, SnomedComponentType.DESCRIPTION, createRequestBody2);
-		
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("active", false)
-				.put("inactivationIndicator", DescriptionInactivationIndicator.DUPLICATE)
-				.put("associationTargets", ImmutableMap.builder()
-						.put(AssociationType.POSSIBLY_EQUIVALENT_TO.name(), newArrayList(sameAsDescriptionId))
-						.build())
-				.put("commitComment", "Inactivated description with DUPLICATE indicator and SAME_AS association target")
-				.build();
-
-		assertDescriptionCanBeUpdated(branch, descriptionId, updateRequestBody);
-		assertComponentExists(branch, SnomedComponentType.DESCRIPTION, descriptionId, "inactivationProperties()")
-			.and()
-			.body("active", equalTo(false))
-			.and()
-			.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.toString()))
-			.and()
-			.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), hasItem(sameAsDescriptionId));
-	}
-
-	@Test
-	public void updateCaseSignificance() {
-		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
-		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, createRequestBody);
-		assertCaseSignificance(createMainPath(), descriptionId, CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE);
-
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE.name())
-				.put("commitComment", "Changed description case significance")
-				.build();
-
-		assertDescriptionCanBeUpdated(createMainPath(), descriptionId, updateRequestBody);
-		assertCaseSignificance(createMainPath(), descriptionId, CaseSignificance.CASE_INSENSITIVE);
-	}
-
-	@Test
-	public void updateAcceptability() {
-		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
-		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, createRequestBody);
-		final Collection<Map<String, Object>> members = assertDescriptionExists(createMainPath(), descriptionId, "members()").extract().body().path("members.items");
-		final Map<String, Object> member = Iterables.getOnlyElement(members);
-		
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("acceptability", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP)
-				.put("commitComment", "Changed description acceptability")
-				.build();
-
-		assertDescriptionCanBeUpdated(createMainPath(), descriptionId, updateRequestBody);
-		final Collection<Map<String, Object>> updatedMembers = assertDescriptionExists(createMainPath(), descriptionId, "members()").extract().body().path("members.items");
-		final Map<String, Object> updatedMember = Iterables.getOnlyElement(updatedMembers);
-		// changing acceptability should change the acceptabilityId of the same member and not create a new one
-		assertEquals(member.get("id"), updatedMember.get("id"));
-		assertEquals(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED, updatedMember.get("acceptabilityId"));
-		
-		assertPreferredTermEquals(createMainPath(), DISEASE, descriptionId);
-	}
-	
-	@Test
-	public void updateAcceptabilityAndInactivate() {
-		final SnomedConcept disease = assertComponentExists(createMainPath(), SnomedComponentType.CONCEPT, DISEASE, "pt()").extract().as(SnomedConcept.class);
-		
-
-		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease 2", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
-		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, createRequestBody);
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("acceptability", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP)
-				.put("active", false)
-				.put("commitComment", "Changed description acceptability and inactivated it at the same time")
-				.build();
-		
-		assertDescriptionCanBeUpdated(createMainPath(), descriptionId, updateRequestBody);
-		assertPreferredTermEquals(createMainPath(), DISEASE, disease.getPt().getId());
-	}
-
-	@Test
-	public void createDescriptionOnNestedBranch() {
-		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
-		final IBranchPath nestedBranchPath = createNestedBranch(testBranchPath, "a", "b");
-		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
-		final String descriptionId = assertComponentCreated(nestedBranchPath, SnomedComponentType.DESCRIPTION, createRequestBody);		
-
-		assertDescriptionExists(nestedBranchPath, descriptionId);
-		assertDescriptionNotExists(nestedBranchPath.getParent(), descriptionId);
-		assertDescriptionNotExists(nestedBranchPath.getParent().getParent(), descriptionId);
-		assertDescriptionNotExists(nestedBranchPath.getParent().getParent().getParent(), descriptionId);
-	}
-
-	@Test
-	public void deleteDescriptionOnNestedBranch() {
-		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
-		
-		List<String> descriptionIds = newArrayList();
-		Map<?, ?> requestBody;
-		
-		for (int i = 0; i < 10; i++) {
-			requestBody = createRequestBody(DISEASE, "Rare disease " + i, Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on " + testBranchPath.getPath());
-			final String descriptionId = assertComponentCreated(testBranchPath, SnomedComponentType.DESCRIPTION, requestBody);
-			descriptionIds.add(descriptionId);
-		}
-		
-		// New description on nested branch resets the concept's version to 1 again
-		final IBranchPath nestedBranchPath = createNestedBranch(testBranchPath, "a", "b");
-		requestBody = createRequestBody(DISEASE, "Rare disease 9000", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on " + nestedBranchPath.getPath());
-		assertComponentCreated(nestedBranchPath, SnomedComponentType.DESCRIPTION, requestBody);
-
-		// Deleting a description from the middle
-		final String descriptionId = descriptionIds.remove(4);
-		
-		assertDescriptionCanBeDeleted(testBranchPath, descriptionId);
-		assertDescriptionNotExists(testBranchPath, descriptionId);
-		
-		assertDescriptionCanBeDeleted(nestedBranchPath, descriptionId);
-		assertDescriptionNotExists(nestedBranchPath, descriptionId);
-		
-		for (String remainingId : descriptionIds) {
-			assertDescriptionExists(testBranchPath, remainingId);
-			assertDescriptionExists(nestedBranchPath, remainingId);
-		}
-	}
-	
-	@Test
-	public void addNewLanguageReferenceSetMemberToDescription() throws Exception {
-		final Map<?, ?> createRequestBody = createRequestBody(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN");
-		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, createRequestBody);
-		
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("acceptability", ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED))
-				.put("commitComment", "Add new preferred acceptability to description")
-				.build();
-
-		assertDescriptionCanBeUpdated(createMainPath(), descriptionId, updateRequestBody);
-		
-		final Collection<String> memberIds = assertDescriptionExists(createMainPath(), descriptionId, "members()").and().extract().body().path("members.items.id");
-		assertEquals(2, memberIds.size());
-		final Collection<String> memberReferenceSetIds = assertDescriptionExists(createMainPath(), descriptionId, "members()").and().extract().body().path("members.items.referenceSetId");
-		assertThat(memberReferenceSetIds, CoreMatchers.hasItems(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US));
-		
-		assertPreferredTermEquals(createMainPath(), DISEASE, descriptionId, "en-US");
-	}
-	
-	@Test
-	public void reactivateDescription() throws Exception {
-		givenBranchWithPath(testBranchPath);
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+		Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("active", true)
 				.put("acceptability", ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE))
 				.put("commitComment", "Reactivate released description")
 				.build();
-		assertDescriptionCanBeUpdated(testBranchPath, INACTIVE_DISEASE_DESCRIPTION, updateRequestBody);
-		
-		final ValidatableResponse getDescriptionResponse = assertDescriptionExists(testBranchPath, INACTIVE_DISEASE_DESCRIPTION, "members()");
-		final Collection<String> memberIds = getDescriptionResponse.and().extract().body().path("members.items.id");
-		assertEquals(1, memberIds.size());
-		assertThat(memberIds, CoreMatchers.hasItem(INACTIVE_DISEASE_DESCRIPTION_MEMBER_ID));
-		final Collection<Boolean> statuses = getDescriptionResponse.and().extract().body().path("members.items.active");
-		assertThat(statuses, CoreMatchers.hasItem(true));
-		final Collection<String> effectiveTimes = getDescriptionResponse.and().extract().body().path("members.items.effectiveTime");
-		assertNull(Iterables.getOnlyElement(effectiveTimes));
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()")
+		.body("active", equalTo(true))
+		.body("released", equalTo(true))
+		.body("effectiveTime", nullValue())
+		.body("members.items.active", not(hasItem(false)))
+		.body("members.items.effectiveTime", not(hasItem(not(nullValue()))));
 	}
-	
+
 	@Test
-	public void inactivateReactivatedDescription() throws Exception {
-		reactivateDescription();
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+	public void testReactivateThenInactivateDescription() throws Exception {
+		String descriptionId = createNewDescription(branchPath);
+		inactivateDescription(branchPath, descriptionId);
+
+		String shortName = "SNOMEDCT-DSC-2";
+		createCodeSystem(branchPath, shortName).statusCode(201);
+		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		createVersion(shortName, "v1", effectiveDate).statusCode(201);
+
+		Map<?, ?> reactivateRequestBody = ImmutableMap.builder()
+				.put("active", true)
+				.put("acceptability", ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE))
+				.put("commitComment", "Reactivate released description")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, reactivateRequestBody).statusCode(204);
+
+		Map<?, ?> inactivateRequestBody = ImmutableMap.builder()
 				.put("active", false)
 				.put("acceptability", ImmutableMap.of())
-				.put("commitComment", "Inactivate reactivated released description")
+				.put("commitComment", "Inactivate reactivated released description again")
 				.build();
-		assertDescriptionCanBeUpdated(testBranchPath, INACTIVE_DISEASE_DESCRIPTION, updateRequestBody);
-		
-		final ValidatableResponse getDescriptionResponse = assertDescriptionExists(testBranchPath, INACTIVE_DISEASE_DESCRIPTION, "members()");
-		final Collection<String> memberIds = getDescriptionResponse.and().extract().body().path("members.items.id");
-		assertEquals(1, memberIds.size());
-		assertThat(memberIds, CoreMatchers.hasItem(INACTIVE_DISEASE_DESCRIPTION_MEMBER_ID));
-		final Collection<Boolean> statuses = getDescriptionResponse.and().extract().body().path("members.items.active");
-		assertThat(statuses, CoreMatchers.hasItem(false));
-		final Collection<String> effectiveTimes = getDescriptionResponse.and().extract().body().path("members.items.effectiveTime");
-		assertThat(effectiveTimes, CoreMatchers.hasItem(INACTIVE_DISEASE_DESCRIPTION_EFFECTIVE_TIME));
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, inactivateRequestBody).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()")
+		.body("active", equalTo(false))
+		.body("released", equalTo(true))
+		.body("effectiveTime", equalTo(effectiveDate))
+		.body("members.items.active", not(hasItem(true)))
+		.body("members.items.effectiveTime", not(hasItem(not(equalTo(effectiveDate)))));
 	}
-	
+
 	@Test
-	public void deleteLanguageMemberFromDescription() throws Exception {
-		final Map<?, ?> createRequestBody = createRequestBuilder(DISEASE,
-				"Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN", ImmutableMap
-						.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED))
-								.build();
-		final String descriptionId = assertComponentCreated(createMainPath(), SnomedComponentType.DESCRIPTION, createRequestBody);
-		
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+	public void inactivateWithIndicator() {
+		String descriptionId = createNewDescription(branchPath);
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("inactivationIndicator", DescriptionInactivationIndicator.DUPLICATE)
+				.put("commitComment", "Inactivated description with indicator")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "inactivationProperties()").statusCode(200)
+		.body("active", equalTo(false))
+		.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.name()));
+	}
+
+	@Test
+	public void inactivateWithIndicatorAndAssociationTarget() {
+		String description1Id = createNewDescription(branchPath);
+		String description2Id = createNewDescription(branchPath);
+
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("inactivationIndicator", DescriptionInactivationIndicator.DUPLICATE)
+				.put("associationTargets", ImmutableMap.of(AssociationType.POSSIBLY_EQUIVALENT_TO.name(), ImmutableList.of(description1Id)))
+				.put("commitComment", "Inactivated description with indicator and association target")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id, requestBody).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id, "inactivationProperties()").statusCode(200)
+		.body("active", equalTo(false))
+		.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.name()))
+		.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), hasItem(description1Id));
+	}
+
+	@Test
+	public void updateIndicatorAfterInactivation() {
+		String descriptionId = createNewDescription(branchPath);
+		Map<?, ?> inactivationRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("inactivationIndicator", DescriptionInactivationIndicator.DUPLICATE)
+				.put("commitComment", "Inactivated description with indicator")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, inactivationRequestBody).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "inactivationProperties()").statusCode(200)
+		.body("active", equalTo(false))
+		.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.name()));
+
+		Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("inactivationIndicator", DescriptionInactivationIndicator.OUTDATED)
+				.put("commitComment", "Updated inactivation indicator on description")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, updateRequestBody).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "inactivationProperties()").statusCode(200)
+		.body("active", equalTo(false))
+		.body("inactivationIndicator", equalTo(InactivationIndicator.OUTDATED.name()));
+	}
+
+	@Test
+	public void updateCaseSignificance() {
+		String descriptionId = createNewDescription(branchPath);
+		Map<?, ?> inactivationRequestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE)
+				.put("commitComment", "Updated description case significance")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, inactivationRequestBody).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200)
+		.body("caseSignificance", equalTo(CaseSignificance.CASE_INSENSITIVE.name()));
+	}
+
+	@Test
+	public void updateAcceptability() {
+		String descriptionId = createNewDescription(branchPath);
+		SnomedReferenceSetMembers beforeMembers = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()")
+				.statusCode(200)
+				.extract().as(SnomedDescription.class)
+				.getMembers();
+
+		assertEquals(1, beforeMembers.getTotal());
+		SnomedReferenceSetMember beforeMember = Iterables.getOnlyElement(beforeMembers);
+
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("acceptability", SnomedApiTestConstants.UK_PREFERRED_MAP)
+				.put("commitComment", "Updated description acceptability")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
+		SnomedReferenceSetMembers afterMembers = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()")
+				.statusCode(200)
+				.extract().as(SnomedDescription.class)
+				.getMembers();
+
+		assertEquals(1, afterMembers.getTotal());
+		SnomedReferenceSetMember afterMember = Iterables.getOnlyElement(afterMembers);
+
+		assertEquals(beforeMember.getId(), afterMember.getId());
+		assertEquals(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED, afterMember.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID));
+		assertEquals(Concepts.REFSET_LANGUAGE_TYPE_UK, afterMember.getReferenceSetId());
+	}
+
+	@Test
+	public void updateAcceptabilityAndInactivate() {
+		String conceptId = createNewConcept(branchPath);
+		String ptDescriptionId = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "pt()")
+				.statusCode(200)
+				.extract().path("pt.id");
+
+		String descriptionId = createNewDescription(branchPath, conceptId);
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("acceptability", SnomedApiTestConstants.US_PREFERRED_MAP)
+				.put("active", false)
+				.put("commitComment", "Updated description acceptability and inactivated it at the same time")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "pt()")
+		.statusCode(200)
+		.body("pt.id", equalTo(ptDescriptionId));
+	}
+
+	@Test
+	public void updateAcceptabilityWithAddition() throws Exception {
+		String descriptionId = createNewDescription(branchPath, Concepts.ROOT_CONCEPT, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
+
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("acceptability", ImmutableMap.of(
+						Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, 
+						Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED))
+				.put("commitComment", "Changed UK, added US acceptability to description")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
+		SnomedReferenceSetMembers members = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200)
+				.body("members.items.referenceSetId", hasItems(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
+				.extract().as(SnomedDescription.class)
+				.getMembers();
+
+		assertEquals(2, members.getTotal());
+
+		getComponent(branchPath, SnomedComponentType.CONCEPT, Concepts.ROOT_CONCEPT, "pt()")
+		.statusCode(200)
+		.body("pt.id", equalTo(descriptionId));
+	}
+
+	@Test
+	public void updateAcceptabilityWithRemove() throws Exception {
+		String descriptionId = createNewDescription(branchPath, Concepts.ROOT_CONCEPT, Concepts.SYNONYM, ImmutableMap.<String, Acceptability>of(
+				Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, 
+				Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED));
+
+		Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("acceptability", ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE))
-				.put("commitComment", "Remove preferred acceptability from description")
+				.put("commitComment", "Removed US preferred acceptability from description")
 				.build();
-		
-		assertDescriptionCanBeUpdated(createMainPath(), descriptionId, updateRequestBody);
-		
-		final Collection<String> memberIds = assertDescriptionExists(createMainPath(), descriptionId, "members()").and().extract().body().path("members.items.id");
-		assertEquals(1, memberIds.size());
-		final Collection<String> memberReferenceSetIds = assertDescriptionExists(createMainPath(), descriptionId, "members()").and().extract().body().path("members.items.referenceSetId");
-		assertThat(memberReferenceSetIds, CoreMatchers.hasItems(Concepts.REFSET_LANGUAGE_TYPE_UK));
-		final Collection<String> acceptabilityIds = assertDescriptionExists(createMainPath(), descriptionId, "members()").and().extract().body().path("members.items.acceptabilityId");
-		assertThat(acceptabilityIds, CoreMatchers.hasItems(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE));
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
+		SnomedReferenceSetMembers members = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200)
+				.extract().as(SnomedDescription.class)
+				.getMembers();
+
+		assertEquals(1, members.getTotal());
+		SnomedReferenceSetMember member = Iterables.getOnlyElement(members);
+
+		assertEquals(Concepts.REFSET_LANGUAGE_TYPE_UK, member.getReferenceSetId());
+		assertEquals(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE, member.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID));
 	}
-	
+
 	@Test
-	public void issue_fixingDuplicateLanguageMemberInRefSetClearsAcceptabilityMapOnDescription() throws Exception {
-		givenBranchWithPath(testBranchPath);
-		// create description
-		final Map<?, ?> createRequestBody = createRequestBuilder(DISEASE, "Rare disease", Concepts.MODULE_SCT_CORE, Concepts.SYNONYM, "New description on MAIN", SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP).build();
-		final String descriptionId = assertComponentCreated(testBranchPath, SnomedComponentType.DESCRIPTION, createRequestBody);
-		// inject duplicate inactive language member with different acceptability (API won't allow it) 
-		final String memberToUpdate = UUID.randomUUID().toString();
-		try (final SnomedEditingContext context = new SnomedEditingContext(testBranchPath)) {
-			final SnomedLanguageRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedLanguageRefSetMember();
-			member.setUuid(memberToUpdate);
+	public void createDescriptionOnNestedBranch() {
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		IBranchPath b = BranchPathUtils.createPath(a, "b");
+		createBranchRecursively(b);
+
+		String descriptionId = createNewDescription(b);
+
+		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200);
+		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(404);
+	}
+
+	@Test
+	public void deleteDescriptionOnNestedBranch() {
+		String conceptId = createNewConcept(branchPath);
+
+		List<String> descriptionIds = newArrayList();
+		for (int i = 0; i < 10; i++) {
+			String descriptionId = createNewDescription(branchPath, conceptId);
+			descriptionIds.add(descriptionId);
+		}
+
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		IBranchPath b = BranchPathUtils.createPath(a, "b");
+		createBranchRecursively(b);
+
+		// New description on nested branch resets the concept's version to 1 again
+		createNewDescription(b, conceptId);
+
+		// Deleting a description from the middle should work
+		String descriptionToDeleteId = descriptionIds.remove(4);
+		deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionToDeleteId, false).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionToDeleteId).statusCode(404);
+
+		deleteComponent(b, SnomedComponentType.DESCRIPTION, descriptionToDeleteId, false).statusCode(204);
+		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionToDeleteId).statusCode(404);
+
+		// All the remaining descriptions should be visible
+		for (String descriptionId : descriptionIds) {
+			getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200);
+			getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200);
+		}
+	}
+
+	@Test
+	public void testDuplicateMemberCleanupEmptiesAcceptabilityMap() throws Exception {
+		String descriptionId = createNewDescription(branchPath);
+
+		// Inject inactive language member with different acceptability (API won't allow it) 
+		String memberIdToUpdate = UUID.randomUUID().toString();
+		try (SnomedEditingContext context = new SnomedEditingContext(branchPath)) {
+			SnomedLanguageRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedLanguageRefSetMember();
+			member.setUuid(memberIdToUpdate);
 			member.setActive(false);
 			member.setModuleId(Concepts.MODULE_SCT_CORE);
 			member.setRefSet(context.lookup(Concepts.REFSET_LANGUAGE_TYPE_UK, SnomedRefSet.class));
 			member.setReferencedComponentId(descriptionId);
-			member.setAcceptabilityId(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE);
-			final Description description = context.lookup(descriptionId, Description.class);
+			member.setAcceptabilityId(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
+
+			Description description = context.lookup(descriptionId, Description.class);
 			description.getLanguageRefSetMembers().add(member);
-			context.commit("Add fake member to " + descriptionId);
+			context.commit("Added duplicate language reference set member to " + descriptionId);
 		}
-		// check the acceptability map after the member injection, it should be preferred in UK lang refset
-		final Map<String, Acceptability> acceptability = assertDescriptionExists(testBranchPath, descriptionId).extract().as(SnomedDescription.class).getAcceptabilityMap();
-		assertEquals(ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED), acceptability);
-		final Collection<Map<String, Object>> members = getDescriptionMembers(testBranchPath, descriptionId);
-		// but there should be two members, one is inactive ACCEPTABLE and one is active PREFERRED
-		assertEquals(2, members.size());
-		String memberToDelete = null;
-		for (Map<String, Object> member : members) {
-			if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(member.get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID))) {
-				memberToDelete = (String) member.get(SnomedRf2Headers.FIELD_ID);
+
+		// Check the acceptability map; the description should be acceptable in the UK reference set
+		SnomedDescription description = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200)
+				.extract().as(SnomedDescription.class);
+
+		assertEquals(Acceptability.ACCEPTABLE, description.getAcceptabilityMap().get(Concepts.REFSET_LANGUAGE_TYPE_UK));
+		assertEquals(2, description.getMembers().getTotal());
+
+		String memberIdToDelete = null;
+		for (SnomedReferenceSetMember member : description.getMembers()) {
+			if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE.equals(member.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID))) {
+				memberIdToDelete = member.getId();
 				break;
 			}
 		}
-		
-		// using bulk update, remove the currently active member and reactive the inactive one with new acceptability
-		final Collection<Map<String, Object>> bulkRequests = newArrayList();
-		bulkRequests.add(ImmutableMap.<String, Object>of("action", "update", "memberId", memberToUpdate, "active", true, "acceptabilityId", Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED));
-		bulkRequests.add(ImmutableMap.<String, Object>of("action", "delete", "memberId", memberToDelete));
-		final Map<String, Object> bulk = ImmutableMap.<String, Object>of("requests", bulkRequests, "commitComment", "Delete and update members");
-		
-		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-			.accept(ContentType.JSON)
-			.contentType(ContentType.JSON)
-			.body(bulk)
-			.put("/{path}/refsets/{id}/members", testBranchPath.getPath(), Concepts.REFSET_LANGUAGE_TYPE_UK)
-			.then()
-			.log().ifValidationFails()
-			.statusCode(204);
-		
-		// assert that description acceptability is still preferred, but there is only one member available
-		final Map<String, Acceptability> newAcceptabilityMap = assertDescriptionExists(testBranchPath, descriptionId).extract().as(SnomedDescription.class).getAcceptabilityMap();
-		assertEquals(ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED), newAcceptabilityMap);
-		final Collection<Map<String, Object>> updatedMembers = getDescriptionMembers(testBranchPath, descriptionId);
-		assertEquals(1, updatedMembers.size());
-		final Map<String, Object> updatedMember = Iterables.getOnlyElement(updatedMembers);
-		assertEquals(true, updatedMember.get(SnomedRf2Headers.FIELD_ACTIVE));
-		assertEquals(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED, updatedMember.get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID));
+
+		assertNotNull(memberIdToDelete);
+
+		// Using bulk update, remove the currently active member and activate the inactive one, also changing its acceptability
+		Map<?, ?> deleteMember = ImmutableMap.<String, Object>builder()
+				.put("action", "delete")
+				.put("memberId", memberIdToDelete)
+				.build();
+
+		Map<?, ?> activateMember = ImmutableMap.<String, Object>builder()
+				.put("action", "update")
+				.put("memberId", memberIdToUpdate)
+				.put("active", true)
+				.put("acceptabilityId", Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE)
+				.build();
+
+		Map<?, ?> bulkRequest = ImmutableMap.<String, Object>builder()
+				.put("requests", ImmutableList.of(deleteMember, activateMember))
+				.put("commitComment", "Consolidated language reference set members")
+				.build();
+
+		bulkUpdateMembers(branchPath, Concepts.REFSET_LANGUAGE_TYPE_UK, bulkRequest).statusCode(204);
+
+		// Verify that description acceptability is still acceptable, but only one member remains
+		SnomedDescription newDescription = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200)
+				.extract().as(SnomedDescription.class);
+
+		assertEquals(Acceptability.ACCEPTABLE, newDescription.getAcceptabilityMap().get(Concepts.REFSET_LANGUAGE_TYPE_UK));
+		assertEquals(1, newDescription.getMembers().getTotal());
+
+		SnomedReferenceSetMember languageMember = Iterables.getOnlyElement(newDescription.getMembers());
+		assertEquals(memberIdToUpdate, languageMember.getId());
+		assertEquals(true, languageMember.isActive());
 	}
-	
+
 	@Test
 	public void issue_SO_2158_termFilter_throws_NPE() throws Exception {
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-			.accept(ContentType.JSON)
-			.queryParam("term", "<<")
-			.get("/{path}/descriptions", Branch.MAIN_PATH)
-			.then().log().ifValidationFails().assertThat()
-			.statusCode(200);
+		.accept(ContentType.JSON)
+		.queryParam("term", "<<")
+		.get("/{path}/descriptions", branchPath)
+		.then()
+		.statusCode(200);
 	}
-	
-	private Collection<Map<String, Object>> getDescriptionMembers(IBranchPath branchPath, String descriptionId) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-			.when().get("/{path}/{componentType}?referencedComponentId={componentId}", branchPath.getPath(), SnomedComponentType.MEMBER.toLowerCasePlural(), descriptionId)
-			.then().log().ifValidationFails().extract().body().path("items");
-	}
+
 }
