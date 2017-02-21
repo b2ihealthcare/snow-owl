@@ -169,6 +169,31 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
+	public void deleteReleasedDescription() {
+		String descriptionId = createNewDescription(branchPath);
+
+		String shortName = "SNOMEDCT-DSC-3";
+		createCodeSystem(branchPath, shortName).statusCode(201);
+		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		createVersion(shortName, "v1", effectiveDate).statusCode(201);
+
+		deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, false).statusCode(409);
+	}
+
+	@Test
+	public void forceDeleteDescription() {
+		String descriptionId = createNewDescription(branchPath);
+
+		String shortName = "SNOMEDCT-DSC-4";
+		createCodeSystem(branchPath, shortName).statusCode(201);
+		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		createVersion(shortName, "v1", effectiveDate).statusCode(201);
+
+		deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, true).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(404);
+	}
+
+	@Test
 	public void testDescriptionInactivation() {
 		String descriptionId = createNewDescription(branchPath);
 		Map<?, ?> requestBody = ImmutableMap.builder()

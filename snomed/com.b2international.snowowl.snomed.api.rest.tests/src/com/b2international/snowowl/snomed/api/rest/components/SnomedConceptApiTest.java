@@ -222,7 +222,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	public void restoreEffectiveTimeOnReleasedConcept() throws Exception {
 		String conceptId = createNewConcept(branchPath);
 
-		String shortName = "SNOMEDCT-CON";
+		String shortName = "SNOMEDCT-CON-1";
 		createCodeSystem(branchPath, shortName).statusCode(201);
 		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
 		createVersion(shortName, "v1", effectiveDate).statusCode(201);
@@ -372,6 +372,31 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		// Should still exist on the nested branch, and be possible to remove
 		deleteComponent(b, SnomedComponentType.CONCEPT, parentId, false).statusCode(204);
 		getComponent(b, SnomedComponentType.CONCEPT, parentId).statusCode(404);
+	}
+
+	@Test
+	public void deleteReleasedConcept() {
+		String conceptId = createNewConcept(branchPath);
+
+		String shortName = "SNOMEDCT-CON-2";
+		createCodeSystem(branchPath, shortName).statusCode(201);
+		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		createVersion(shortName, "v1", effectiveDate).statusCode(201);
+
+		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(409);
+	}
+
+	@Test
+	public void forceDeleteConcept() {
+		String conceptId = createNewConcept(branchPath);
+
+		String shortName = "SNOMEDCT-CON-3";
+		createCodeSystem(branchPath, shortName).statusCode(201);
+		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		createVersion(shortName, "v1", effectiveDate).statusCode(201);
+
+		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, true).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
 	}
 
 	@Test

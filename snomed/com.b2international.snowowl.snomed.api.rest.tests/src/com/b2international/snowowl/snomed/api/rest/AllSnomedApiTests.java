@@ -36,7 +36,6 @@ import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetApiTes
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetBulkApiTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetMemberApiTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRelationshipApiTest;
-import com.b2international.snowowl.snomed.api.rest.components.SnomedReleasedConceptApiTest;
 import com.b2international.snowowl.snomed.api.rest.ext.SnomedExtensionDowngradeTest;
 import com.b2international.snowowl.snomed.api.rest.ext.SnomedExtensionUpgradeTest;
 import com.b2international.snowowl.snomed.api.rest.ext.SnomedExtensionVersioningTest;
@@ -64,17 +63,17 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 //	SnomedVersioningApiTest.class,
 //	SnomedImportApiTest.class,
 //	SnomedIdentifierApiTest.class,
-//	SnomedConceptApiTest.class,
+	SnomedConceptApiTest.class,
 //	SnomedConceptCreatePerformanceTest.class,
 //	SnomedReleasedConceptApiTest.class,
-//	SnomedDescriptionApiTest.class,
-//	SnomedRelationshipApiTest.class,
+	SnomedDescriptionApiTest.class,
+	SnomedRelationshipApiTest.class,
 //	SnomedRefSetApiTest.class,
 //	SnomedRefSetMemberApiTest.class,
 //	SnomedRefSetBulkApiTest.class,
 //	SnomedBrowserApiTest.class,
 //	SnomedClassificationApiTest.class,
-	SnomedExportApiTest.class,
+//	SnomedExportApiTest.class,
 	// Extension test cases
 //	SnomedExtensionUpgradeTest.class,
 //	SnomedExtensionDowngradeTest.class,
