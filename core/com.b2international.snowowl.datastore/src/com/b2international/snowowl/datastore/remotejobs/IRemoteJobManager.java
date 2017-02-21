@@ -55,14 +55,6 @@ public interface IRemoteJobManager {
 	void cancelRemoteJob(UUID id);
 
 	/**
-	 * A blocking method which connects to the running remote job and receives status updates in real time.
-	 * 
-	 * @param id the remote job identifier (may not be {@code null})
-	 * @param monitor the monitor which receives status updates from the remote end (may not be {@code null})
-	 */
-	void trackProgressBlocking(UUID id, IProgressMonitor monitor) throws RemoteJobNotFoundException;
-
-	/**
 	 * Removes entries for all remote jobs which are in {@link RemoteJobState#FINISHED} state (not requiring further
 	 * interactions with the requesting user).
 	 */

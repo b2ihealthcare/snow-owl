@@ -30,7 +30,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
 
@@ -41,7 +40,6 @@ import com.b2international.snowowl.datastore.remotejobs.IRemoteJobManager;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobAddedEvent;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobChangedEvent;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobNotFoundException;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobRemovedEvent;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
 import com.b2international.snowowl.datastore.remotejobs.SingleRemoteJobFamily;
@@ -162,31 +160,6 @@ public class RemoteJobManager implements IRemoteJobManager, IDisposableService {
 		}
 		
 		Job.getJobManager().cancel(SingleRemoteJobFamily.create(id.toString()));
-	}
-
-	@Override
-	public void trackProgressBlocking(final UUID id, final IProgressMonitor monitor) throws RemoteJobNotFoundException {
-		Preconditions.checkNotNull(id, "Remote job identifier may not be null.");
-		final ListenableProgressMonitor parentMonitor = monitors.get(id);
-		
-		if (null == parentMonitor) {
-			throw new RemoteJobNotFoundException(MessageFormat.format("Entry with identifier {0} was not found.", id));
-		} else {
-			final TrackingProgressMonitor wrapper = new TrackingProgressMonitor(monitor);
-			parentMonitor.addListener(wrapper);
-			
-			try {
-				while (!wrapper.isDoneTracking()) {
-					try {
-						Thread.sleep(500L);
-					} catch (final InterruptedException e) {
-						break;
-					}
-				}
-			} finally {
-				parentMonitor.removeListener(wrapper);
-			}
-		}
 	}
 
 	@Override
