@@ -21,6 +21,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedBrowserRestReque
 import static com.b2international.snowowl.snomed.api.rest.SnomedBrowserRestRequests.updateBrowserConcept;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.reserveComponentId;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -31,7 +32,6 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -43,10 +43,8 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 
 /**
  * @since 4.5
@@ -118,11 +116,6 @@ public class SnomedBrowserApiTest extends AbstractSnomedApiTest {
 				.build();
 
 		return ImmutableList.of(isaRelationship);
-	}
-
-	private static String reserveComponentId(String namespace, ComponentCategory category) {
-		ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getService(ISnomedIdentifierService.class);
-		return Iterables.getOnlyElement(identifierService.reserve(namespace, category, 1));
 	}
 
 	@SuppressWarnings("unchecked")
