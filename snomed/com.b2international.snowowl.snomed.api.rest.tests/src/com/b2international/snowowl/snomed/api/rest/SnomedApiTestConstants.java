@@ -51,16 +51,26 @@ public abstract class SnomedApiTestConstants {
 	public static final Map<String, Acceptability> UK_PREFERRED_MAP = ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED);
 
 	/**
+	 * An acceptability map which specifies that the corresponding description is acceptable in the US language reference set.
+	 */
+	public static final Map<String, Acceptability> US_ACCEPTABLE_MAP = ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE);
+
+	/**
+	 * An acceptability map which specifies that the corresponding description is preferred in the US language reference set.
+	 */
+	public static final Map<String, Acceptability> US_PREFERRED_MAP = ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED);
+
+	/**
 	 * An acceptability map with an invalid language reference set identifier.
 	 */
-	public static final Map<?, ?> INVALID_PREFERRED_MAP = ImmutableMap.of("1", Acceptability.PREFERRED);
+	public static final Map<String, Acceptability> INVALID_PREFERRED_MAP = ImmutableMap.of("11110000", Acceptability.PREFERRED);
 
 	public static final long POLL_INTERVAL = TimeUnit.MILLISECONDS.toMillis(200L);
 
 	public static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(30L);
 
 	public static final String EXTENSION_PATH = "MAIN/2016-07-31/SNOMEDCT-B2I";
-	
+
 	public static final Joiner PATH_JOINER = Joiner.on('/');
 
 	private SnomedApiTestConstants() {
