@@ -46,6 +46,14 @@ public class SnomedRefSetRestRequests {
 				.then();
 	}
 
+	public static ValidatableResponse bulkUpdateMembers(IBranchPath branchPath, String refSetId, Map<?, ?> bulkRequest) {
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+				.contentType(ContentType.JSON)
+				.body(bulkRequest)
+				.put("/{path}/refsets/{id}/members", branchPath.getPath(), refSetId)
+				.then();
+	}
+
 	public static void updateRefSetMemberEffectiveTime(IBranchPath memberPath, String memberId, Date effectiveTime) {
 		String effectiveTimeAsString = EffectiveTimes.format(effectiveTime, DateFormats.SHORT);
 
