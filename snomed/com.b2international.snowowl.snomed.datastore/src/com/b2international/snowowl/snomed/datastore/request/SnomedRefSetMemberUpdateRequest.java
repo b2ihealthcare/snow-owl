@@ -104,11 +104,11 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 			case EXTENDED_MAP:
 				return new SnomedExtendedMapMemberUpdateDelegate(this);
 			case LANGUAGE:
-				return new SnomedQueryMemberUpdateDelegate(this);
+				return new SnomedLanguageMemberUpdateDelegate(this);
 			case MODULE_DEPENDENCY:
 				return new SnomedModuleDependencyMemberUpdateDelegate(this);
 			case QUERY:
-				return new SnomedLanguageMemberUpdateDelegate(this);
+				return new SnomedQueryMemberUpdateDelegate(this);
 			case SIMPLE: 
 				return new SnomedSimpleMemberUpdateDelegate(this);
 			case SIMPLE_MAP:
