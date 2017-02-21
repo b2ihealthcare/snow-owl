@@ -34,6 +34,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.Pair;
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IHistoryInfoDetails;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
@@ -106,9 +107,6 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		return objectToLabelCache.getUnchecked(Pair.of(concept, concept.cdoView()));
 	}
 	
-	private String getDescriptionLabel(Description description) {
-		return objectToLabelCache.getUnchecked(Pair.of(description, description.cdoView()));
-	}
 	
 	private String getRelationshipLabel(Relationship relationship) {
 		return objectToLabelCache.getUnchecked(Pair.of(relationship, relationship.cdoView()));
@@ -136,13 +134,6 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		}
 	}
 	
-	private Description getDescription(String id, CDOView view) {
-		return idToDescriptionCache.getUnchecked(Pair.of(id, view));
-	}
-	
-	private Relationship getRelationship(String id, CDOView view) {
-		return idToRelationshipCache.getUnchecked(Pair.of(id, view));
-	}
 	
 	@Override
 	protected Collection<? extends IHistoryInfoDetails> processNewObjects(final List<CDOIDAndVersion> newObjects, final CDOView beforeView, final CDOView currentView) {
@@ -292,52 +283,40 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 			}
 		} else if (changedObject instanceof SnomedComplexMapRefSetMember) {
 			if (CORRELATION_ID_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), 
-						getReferencedComponentLabel((SnomedComplexMapRefSetMember) changedObject)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue),  null).toString();
 			} else if (STATUS_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue), 
-						getReferencedComponentLabel((SnomedComplexMapRefSetMember) changedObject)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue),  null).toString();
 			} else if (EFFECTIVE_TIME_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						DateFormat.getDateInstance().format(featureValue),
-						getReferencedComponentLabel((SnomedComplexMapRefSetMember) changedObject)).toString();
+						DateFormat.getDateInstance().format(featureValue), null).toString();
 			} else if (MAP_GROUP_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), 
-						getReferencedComponentLabel((SnomedComplexMapRefSetMember) changedObject)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), null).toString();
 			}
 		} else if (changedObject instanceof SnomedRefSetMember) {
 			if (DESCRIPTION_LENGTH_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), 
-						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), null).toString();
 			} else if (DESCRIPTION_FORMAT_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						getConceptLabel(getConcept(String.valueOf(featureValue), changedObject.cdoView())), 
-						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
+						getConceptLabel(getConcept(String.valueOf(featureValue), changedObject.cdoView())), null).toString();
 			} else if (STATUS_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue), 
-						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue), null).toString();
 			} else if (EFFECTIVE_TIME_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						DateFormat.getDateInstance().format(featureValue),
-						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
+						DateFormat.getDateInstance().format(featureValue), null).toString();
 			} else if (RELEASED_FEATURE_NAME.equals(featureName)) {
-				return getPublishedChange(featureName, builder, getReferencedComponentLabel((SnomedRefSetMember) changedObject), featureValue);
+				return getPublishedChange(featureName, builder, null, featureValue);
 			} else if (VALUE_ID_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						getConceptLabel(getConcept(String.valueOf(featureValue), changedObject.cdoView())), 
-						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
+						getConceptLabel(getConcept(String.valueOf(featureValue), changedObject.cdoView())),  null).toString();
 			} else if (MODULE_ID_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						getConceptLabel(getConcept(String.valueOf(featureValue), changedObject.cdoView())), 
-						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
+						getConceptLabel(getConcept(String.valueOf(featureValue), changedObject.cdoView())),  null).toString();
 			} else if (SOURCE_EFFECTIVE_TIME_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						DateFormat.getDateInstance().format(featureValue),
-						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
+						DateFormat.getDateInstance().format(featureValue), null).toString();
 			} else if (TARGET_EFFECTIVE_TIME_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						DateFormat.getDateInstance().format(featureValue),
-						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
+						DateFormat.getDateInstance().format(featureValue), null).toString();
 
 			} else if (ACCEPTABILITY_ID_FEATURE_NAME.equals(featureName)) {
 				// IHTSDO is changing the acceptability of existing language members in case of PT changes on a concept. 
@@ -393,16 +372,10 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 	
 	private String getRefSetChangeDescription(final SnomedRefSetMember member, final CDOView beforeView, final CDOView currentView, final String change) {
 		
-		String referencedComponentLabel = getReferencedComponentLabel(member);
-		
-		if (isEmpty(referencedComponentLabel)) {
-			referencedComponentLabel = member.getReferencedComponentId();
-		}
-		
 		if (member instanceof SnomedSimpleMapRefSetMember) {
-			return referencedComponentLabel + " " + change + getIdentifierConceptLabel(member) + "."; 
+			return change + getIdentifierConceptLabel(member) + "."; 
 		} else if (member instanceof SnomedDescriptionTypeRefSetMember) {
-			return referencedComponentLabel + " " + change + getIdentifierConceptLabel(member) + ".";
+			return change + getIdentifierConceptLabel(member) + ".";
 		} else if (member instanceof SnomedLanguageRefSetMember) {
 			
 			if (isPtLanguageMember(member)) {
@@ -430,11 +403,11 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 			//intentionally null. we will ignore everything but the PT language changes
 			return null;
 		} else if (member instanceof SnomedAttributeValueRefSetMember) {	
-			return referencedComponentLabel + " " + change + getIdentifierConceptLabel(member) + ".";
+			return change + getIdentifierConceptLabel(member) + ".";
 		} else if (member instanceof SnomedConcreteDataTypeRefSetMember) {
 			throw new UnsupportedOperationException("Concrete domain members are not supported"); //XXX
 		} else {
-			return referencedComponentLabel + " " + change + getIdentifierConceptLabel(member) + ".";
+			return change + getIdentifierConceptLabel(member) + ".";
 		}
 	}
 	
@@ -499,8 +472,10 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		builder.append(attributeName);
 		builder.append("' changed to ");
 		builder.append(newValue);
-		builder.append(" on ");
-		builder.append(changedOn);
+		if (!StringUtils.isEmpty(changedOn)) {
+			builder.append(" on ");
+			builder.append(changedOn);
+		}
 		builder.append(".");
 		return builder;
 	}
@@ -556,20 +531,6 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		return Collections.unmodifiableMap(map);
 	}
 	
-	private String getReferencedComponentLabel(final SnomedRefSetMember member) {
-		switch (member.getReferencedComponentType()) {
-			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: //$FALL-THROUGH$
-			case SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER:
-				return getConceptLabel(getConcept(member.getReferencedComponentId(), member.cdoView()));
-			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
-				return getDescriptionLabel(getDescription(member.getReferencedComponentId(), member.cdoView()));
-			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
-				return getRelationshipLabel(getRelationship(member.getReferencedComponentId(), member.cdoView()));
-			default:
-				throw new IllegalArgumentException("Unexpected or unknown terminology component type: " + member.getReferencedComponentType());
-		}
-	}
-
 	private String getIdentifierConceptLabel(final SnomedRefSetMember member) {
 		final String refSetIdentifierId = member.getRefSetIdentifierId();
 		final String label = getConceptLabel(getConcept(refSetIdentifierId, member.cdoView()));
