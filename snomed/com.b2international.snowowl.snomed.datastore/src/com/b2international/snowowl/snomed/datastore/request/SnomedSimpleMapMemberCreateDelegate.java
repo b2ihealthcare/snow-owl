@@ -35,8 +35,12 @@ final class SnomedSimpleMapMemberCreateDelegate extends SnomedRefSetMemberCreate
 	@Override
 	public String execute(SnomedRefSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.SIMPLE_MAP);
-		checkReferencedComponentId(refSet);
+		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MAP_TARGET);
+
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
+		// FIXME: check map target if it's also in SNOMED CT?
 
 		SnomedSimpleMapRefSetMember member = SnomedComponents.newSimpleMapMember()
 				.withActive(isActive())

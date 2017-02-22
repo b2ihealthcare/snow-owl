@@ -35,10 +35,16 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 	@Override
 	public String execute(SnomedRefSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.CONCRETE_DATA_TYPE);
-		checkReferencedComponentId(refSet);
+		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_ATTRIBUTE_NAME);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_VALUE);
+
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_OPERATOR_ID);
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_UNIT_ID);
 
 		SnomedConcreteDataTypeRefSetMember member = SnomedComponents.newConcreteDomainReferenceSetMember()
 				.withActive(isActive())

@@ -36,9 +36,12 @@ final class SnomedModuleDependencyMemberCreateDelegate extends SnomedRefSetMembe
 	@Override
 	public String execute(SnomedRefSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.MODULE_DEPENDENCY);
-		checkReferencedComponentId(refSet);
+		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
+
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
 
 		SnomedModuleDependencyRefSetMember member = SnomedComponents.newModuleDependencyMember()
 				.withActive(isActive())

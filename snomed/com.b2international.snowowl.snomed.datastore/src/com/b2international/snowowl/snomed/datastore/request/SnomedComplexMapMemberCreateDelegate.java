@@ -21,6 +21,7 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.primitives.Bytes;
 
 /**
  * @since 5.0
@@ -34,7 +35,7 @@ final class SnomedComplexMapMemberCreateDelegate extends SnomedRefSetMemberCreat
 	@Override
 	public String execute(SnomedRefSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.COMPLEX_MAP);
-		checkReferencedComponentId(refSet);
+		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MAP_TARGET);
 		checkHasProperty(refSet, SnomedRf2Headers.FIELD_MAP_GROUP);
 		checkHasProperty(refSet, SnomedRf2Headers.FIELD_MAP_PRIORITY);
@@ -42,14 +43,20 @@ final class SnomedComplexMapMemberCreateDelegate extends SnomedRefSetMemberCreat
 		checkHasProperty(refSet, SnomedRf2Headers.FIELD_MAP_ADVICE);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_CORRELATION_ID);
 
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
+		// FIXME: check map target if it's also in SNOMED CT?
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_CORRELATION_ID);
+
+		// FIXME: narrowing conversion from integer to byte for group and priority
 		SnomedComplexMapRefSetMember member = SnomedComponents.newComplexMapMember()
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModule(getModuleId())
 				.withRefSet(getReferenceSetId())
 				.withMapTargetId(getProperty(SnomedRf2Headers.FIELD_MAP_TARGET))
-				.withGroup(getProperty(SnomedRf2Headers.FIELD_MAP_GROUP, Byte.class))
-				.withPriority(getProperty(SnomedRf2Headers.FIELD_MAP_PRIORITY, Byte.class))
+				.withGroup(getProperty(SnomedRf2Headers.FIELD_MAP_GROUP, Integer.class).byteValue())
+				.withPriority(getProperty(SnomedRf2Headers.FIELD_MAP_PRIORITY, Integer.class).byteValue())
 				.withMapRule(getProperty(SnomedRf2Headers.FIELD_MAP_RULE))
 				.withMapAdvice(getProperty(SnomedRf2Headers.FIELD_MAP_ADVICE))
 				.withCorrelationId(getProperty(SnomedRf2Headers.FIELD_CORRELATION_ID))

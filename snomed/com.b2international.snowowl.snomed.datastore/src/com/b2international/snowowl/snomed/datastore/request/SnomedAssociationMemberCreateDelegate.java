@@ -34,8 +34,12 @@ final class SnomedAssociationMemberCreateDelegate extends SnomedRefSetMemberCrea
 	@Override
 	public String execute(SnomedRefSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.ASSOCIATION);
-		checkReferencedComponentId(refSet);
+		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_TARGET_COMPONENT);
+
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_TARGET_COMPONENT);
 
 		SnomedAssociationRefSetMember member = SnomedComponents.newAssociationMember()
 				.withActive(isActive())

@@ -34,8 +34,12 @@ final class SnomedAttributeValueMemberCreateDelegate extends SnomedRefSetMemberC
 	@Override
 	public String execute(SnomedRefSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.ATTRIBUTE_VALUE);
-		checkReferencedComponentId(refSet);
+		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_VALUE_ID);
+
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_VALUE_ID);
 
 		SnomedAttributeValueRefSetMember member = SnomedComponents.newAttributeValueMember()
 				.withActive(isActive())

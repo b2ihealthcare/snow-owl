@@ -34,9 +34,13 @@ final class SnomedDescriptionTypeMemberCreateDelegate extends SnomedRefSetMember
 	@Override
 	public String execute(SnomedRefSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.DESCRIPTION_TYPE);
-		checkReferencedComponentId(refSet);
+		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH);
+
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT);
 
 		SnomedDescriptionTypeRefSetMember member = SnomedComponents.newDescriptionTypeMember()
 				.withActive(isActive())

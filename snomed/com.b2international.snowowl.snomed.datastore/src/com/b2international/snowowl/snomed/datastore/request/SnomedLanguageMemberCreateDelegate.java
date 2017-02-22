@@ -35,17 +35,21 @@ final class SnomedLanguageMemberCreateDelegate extends SnomedRefSetMemberCreateD
 	@Override
 	public String execute(SnomedRefSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.LANGUAGE);
-		checkReferencedComponentId(refSet);
+		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
-		
+
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
+
 		SnomedLanguageRefSetMember member = SnomedComponents.newLanguageMember()
-			.withActive(isActive())
-			.withReferencedComponent(getReferencedComponentId())
-			.withModule(getModuleId())
-			.withRefSet(getReferenceSetId())
-			.withAcceptability(Acceptability.getByConceptId(getProperty(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID)))
-			.addTo(context);
-		
+				.withActive(isActive())
+				.withReferencedComponent(getReferencedComponentId())
+				.withModule(getModuleId())
+				.withRefSet(getReferenceSetId())
+				.withAcceptability(Acceptability.getByConceptId(getProperty(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID)))
+				.addTo(context);
+
 		return member.getUuid();
 	}
 

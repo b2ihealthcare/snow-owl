@@ -51,6 +51,7 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 
 	private String createWithNewRefSet(SnomedRefSet refSet, TransactionContext context) {
 		checkNonEmptyProperty(refSet, REFERENCED_COMPONENT);
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 
 		// create new simple type reference set
 		final SnomedConcept referencedComponent = getProperty(REFERENCED_COMPONENT, SnomedConcept.class);
@@ -68,11 +69,11 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 
 		for (SnomedConcept queryResult : queryResults) {
 			SnomedComponents.newSimpleMember()
-					.withActive(isActive())
-					.withReferencedComponent(queryResult.getId())
-					.withModule(getModuleId())
-					.withRefSet(referencedComponentId)
-					.addTo(context);
+			.withActive(isActive())
+			.withReferencedComponent(queryResult.getId())
+			.withModule(getModuleId())
+			.withRefSet(referencedComponentId)
+			.addTo(context);
 		}
 
 
@@ -80,7 +81,10 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 	}
 
 	private String createWithExistingRefSet(SnomedRefSet refSet, TransactionContext context) {
-		checkReferencedComponentId(refSet);
+		checkReferencedComponent(refSet);
+
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
 
 		SnomedQueryRefSetMember member = SnomedComponents.newQueryMember()
 				.withActive(isActive())
