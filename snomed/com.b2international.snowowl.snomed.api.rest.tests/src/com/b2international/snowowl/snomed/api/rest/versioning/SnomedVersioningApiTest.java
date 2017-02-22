@@ -41,13 +41,13 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createVersionWithNonLatestEffectiveDate() {
-		createVersion(SNOMED_SHORT_NAME, "v1", "20020101").statusCode(400);
+		createVersion(SNOMED_SHORT_NAME, "not-latest-effective-time", "20020101").statusCode(400);
 	}
 
 	@Test
 	public void createRegularVersion() {
-		createVersion(SNOMED_SHORT_NAME, "v2", getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME)).statusCode(201);
-		getVersion(SNOMED_SHORT_NAME, "v2").statusCode(200);
+		createVersion(SNOMED_SHORT_NAME, "regular-version", getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME)).statusCode(201);
+		getVersion(SNOMED_SHORT_NAME, "regular-version").statusCode(200);
 	}
 
 	@Test
