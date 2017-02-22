@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -71,22 +72,33 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 	@Override
 	public Boolean execute(TransactionContext context) {
 		SnomedRefSetMember member = context.lookup(memberId, SnomedRefSetMember.class);
-		SnomedRefSetType type = member.getRefSet().getType();
 
-		boolean changed = false;
-		
-		changed |= updateStatus(member);
-		changed |= updateModule(member);
-		changed |= updateEffectiveTime(member);
-		
-		SnomedRefSetMemberUpdateDelegate delegate = getDelegate(type);
-		changed |= delegate.execute(member, context);
-		
-		if (changed && !isEffectiveTimeUpdate()) {
-			member.unsetEffectiveTime();
+		/* 
+		 * TODO: Generalize the logic below: any attempts of retrieving a missing component during component update
+		 * (with the exception of the component that is being updated) should return a 400 response instead of a 404. 
+		 */
+		try {
+
+			SnomedRefSetType type = member.getRefSet().getType();
+
+			boolean changed = false;
+
+			changed |= updateStatus(member);
+			changed |= updateModule(member);
+			changed |= updateEffectiveTime(member);
+
+			SnomedRefSetMemberUpdateDelegate delegate = getDelegate(type);
+			changed |= delegate.execute(member, context);
+
+			if (changed && !isEffectiveTimeUpdate()) {
+				member.unsetEffectiveTime();
+			}
+
+			return changed;
+
+		} catch (ComponentNotFoundException e) {
+			throw e.toBadRequestException();
 		}
-		
-		return changed;
 	}
 	
 	private SnomedRefSetMemberUpdateDelegate getDelegate(SnomedRefSetType referenceSetType) {

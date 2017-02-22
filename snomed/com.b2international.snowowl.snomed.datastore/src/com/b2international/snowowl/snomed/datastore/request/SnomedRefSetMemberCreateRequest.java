@@ -104,20 +104,19 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 		return String.class;
 	}
 	
-	private SnomedRefSet getRefSetIfExists(TransactionContext context) {
-		// TODO convert this 404 -> 400 logic into an interceptor one level higher (like all create requests should work the same way)
+	@Override
+	public String execute(TransactionContext context) {
+		/* 
+		 * TODO: Generalize the logic below: any attempts of retrieving a missing component during component creation
+		 * should return a 400 response instead of a 404. 
+		 */
 		try {
-			return context.lookup(referenceSetId, SnomedRefSet.class);
+			SnomedRefSet refSet = context.lookup(referenceSetId, SnomedRefSet.class);
+			SnomedRefSetMemberCreateDelegate delegate = getDelegate(refSet.getType());
+			return delegate.execute(refSet, context);
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
-	}
-	
-	@Override
-	public String execute(TransactionContext context) {
-		SnomedRefSet refSet = getRefSetIfExists(context);
-		SnomedRefSetMemberCreateDelegate delegate = getDelegate(refSet.getType());
-		return delegate.execute(refSet, context);
 	}
 
 	private SnomedRefSetMemberCreateDelegate getDelegate(SnomedRefSetType referenceSetType) {
