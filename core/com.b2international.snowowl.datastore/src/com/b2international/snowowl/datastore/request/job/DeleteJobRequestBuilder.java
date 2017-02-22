@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.request.job;
 
+import java.util.Collections;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -32,7 +34,7 @@ public final class DeleteJobRequestBuilder extends BaseRequestBuilder<DeleteJobR
 
 	@Override
 	protected Request<ServiceProvider, Void> doBuild() {
-		return new DeleteJobRequest(jobId);
+		return new DeleteJobRequest(Collections.singleton(jobId));
 	}
 
 }

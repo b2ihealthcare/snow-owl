@@ -15,9 +15,13 @@
  */
 package com.b2international.snowowl.datastore.remotejobs;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -31,8 +35,12 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.IDisposableService;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 
 /**
  * @since 5.7
@@ -42,9 +50,11 @@ public final class RemoteJobTracker implements IDisposableService {
 	private final AtomicBoolean disposed = new AtomicBoolean(false);
 	private final Index index;
 	private final RemoteJobChangeAdapter listener;
+	private final IEventBus events;
 
-	public RemoteJobTracker(Index index) {
+	public RemoteJobTracker(Index index, IEventBus events) {
 		this.index = index;
+		this.events = events;
 		this.index.admin().create();
 		this.listener = new RemoteJobChangeAdapter();
 		Job.getJobManager().addJobChangeListener(listener);
@@ -79,19 +89,31 @@ public final class RemoteJobTracker implements IDisposableService {
 		}
 	}
 	
-	public void requestDelete(String jobId) {
-		final RemoteJobEntry jobEntry = get(jobId);
-		if (jobEntry != null && !jobEntry.isDeleted()) {
-			Job[] jobs = Job.getJobManager().find(SingleRemoteJobFamily.create(jobId));
-			if (jobs.length > 0) {
-				// if the job still running or scheduled, then mark it deleted and the done handler will delete it
-				Job.getJobManager().cancel(SingleRemoteJobFamily.create(jobId));
-				update(jobId, current -> RemoteJobEntry.from(current).deleted(true).build());
-			} else {
-				// if no running jobs found, then just delete it
-				delete(jobId);
+	public void requestDeletes(Collection<String> jobIds) {
+		final RemoteJobs jobEntries = search(Expressions.matchAny(DocumentMapping._ID, jobIds), 0, jobIds.size());
+		final Set<String> existingEntries = FluentIterable.from(jobEntries).transform(RemoteJobEntry::getId).toSet();
+		Job[] existingJobs = Job.getJobManager().find(SingleRemoteJobFamily.create(existingEntries));
+		// mark existing jobs as deleted and cancel them
+		final Set<String> remoteJobsToCancel = Sets.newHashSet();
+		for (Job existingJob : existingJobs) {
+			// cancel remote job
+			if (existingJob instanceof RemoteJob) {
+				RemoteJob remoteJob = (RemoteJob) existingJob;
+				remoteJobsToCancel.add(remoteJob.getId());
 			}
 		}
+		// delete all other jobs, that dont need to be cancelled
+		final Set<String> remoteJobsToDelete = Sets.difference(Sets.newHashSet(jobIds), remoteJobsToCancel);
+		index.write(writer -> {
+			// if the job still running or scheduled, then mark it deleted and the done handler will delete it
+			writer.removeAll(ImmutableMap.of(RemoteJobEntry.class, remoteJobsToDelete));
+			final Function<RemoteJobEntry, RemoteJobEntry> setDeletedToTrue = current -> RemoteJobEntry.from(current).deleted(true).build();
+			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, Expressions.matchAny(DocumentMapping._ID, remoteJobsToCancel), RemoteJobEntry::getId, setDeletedToTrue));
+			writer.commit();
+			return null;
+		});
+		// finally cancel all jobs that need to be cancelled
+		Job.getJobManager().cancel(SingleRemoteJobFamily.create(remoteJobsToCancel));
 	}
 	
 	private void put(String id, RemoteJobEntry job) {
@@ -131,6 +153,10 @@ public final class RemoteJobTracker implements IDisposableService {
 	@Override
 	public boolean isDisposed() {
 		return disposed.get();
+	}
+	
+	IProgressMonitor createMonitor(IProgressMonitor monitor) {
+		return monitor;
 	}
 	
 	private class RemoteJobChangeAdapter extends JobChangeAdapter {

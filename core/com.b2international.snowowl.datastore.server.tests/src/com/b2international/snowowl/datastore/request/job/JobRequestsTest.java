@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
@@ -36,6 +37,7 @@ import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -47,12 +49,14 @@ public class JobRequestsTest {
 	private static final String RESULT = "result";
 	private ServiceProvider context;
 	private RemoteJobTracker tracker;
+	private IEventBus bus;
 
 	@Before
 	public void setup() {
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 		final Index index = Indexes.createIndex("jobs", mapper, new Mappings(RemoteJobEntry.class));
-		tracker = new RemoteJobTracker(index);
+		this.bus = Mockito.mock(IEventBus.class);
+		this.tracker = new RemoteJobTracker(index, bus);
 		this.context = DelegatingServiceProvider
 				.basedOn(ServiceProvider.EMPTY)
 				.bind(RemoteJobTracker.class, tracker)

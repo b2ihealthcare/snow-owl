@@ -17,6 +17,10 @@ package com.b2international.snowowl.datastore.request.job;
 
 import java.util.UUID;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -29,8 +33,13 @@ final class ScheduleJobRequest extends BaseRequest<ServiceProvider, String> {
 
 	private static final long serialVersionUID = 1L;
 	
+	@NotEmpty
 	private final String user;
+	
+	@NotEmpty
 	private final String description;
+	
+	@NotNull
 	private final Request<ServiceProvider, ?> request;
 
 	ScheduleJobRequest(String user, Request<ServiceProvider, ?> request, String description) {

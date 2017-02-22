@@ -15,38 +15,39 @@
  */
 package com.b2international.snowowl.datastore.remotejobs;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
+
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
-/**
- *
- */
 public class SingleRemoteJobFamily implements Predicate<RemoteJob> {
 
-	private final String id;
+	private final Collection<String> ids;
 
 	public static Predicate<RemoteJob> create(String id) {
-		return Predicates.and(RemoteJobFamily.INSTANCE, new SingleRemoteJobFamily(id));
+		return create(Collections.singleton(id));
 	}
 	
-	private SingleRemoteJobFamily(String id) {
-		Preconditions.checkNotNull(id, "Unique identifier may not be null.");
-		this.id = id;
+	public static Predicate<RemoteJob> create(Collection<String> ids) {
+		return Predicates.and(RemoteJobFamily.INSTANCE, new SingleRemoteJobFamily(ids));
 	}
 	
-	public String getId() {
-		return id;
+	private SingleRemoteJobFamily(Collection<String> ids) {
+		Preconditions.checkNotNull(ids, "Unique identifier set may not be null.");
+		this.ids = ids;
 	}
-
+	
 	@Override
 	public boolean apply(RemoteJob input) {
-		return id.equals(input.getId());
+		return ids.contains(input.getId());
 	}
 
 	@Override
 	public int hashCode() {
-		return 31 + id.hashCode();
+		return Objects.hash(ids);
 	}
 
 	@Override
@@ -61,15 +62,16 @@ public class SingleRemoteJobFamily implements Predicate<RemoteJob> {
 			return false;
 		}
 		SingleRemoteJobFamily other = (SingleRemoteJobFamily) obj;
-		return id.equals(other.id);
+		return ids.equals(other.ids);
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("SingleRemoteJobFamily [id=");
-		builder.append(id);
+		builder.append("SingleRemoteJobFamily [ids=");
+		builder.append(ids);
 		builder.append("]");
 		return builder.toString();
 	}
+
 }

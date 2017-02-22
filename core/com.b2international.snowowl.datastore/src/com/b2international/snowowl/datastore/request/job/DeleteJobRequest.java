@@ -15,30 +15,26 @@
  */
 package com.b2international.snowowl.datastore.request.job;
 
-import org.eclipse.core.runtime.jobs.Job;
+import java.util.Collection;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
-import com.b2international.snowowl.datastore.remotejobs.SingleRemoteJobFamily;
 
 /**
  * @since 5.7
  */
 final class DeleteJobRequest extends BaseRequest<ServiceProvider, Void> {
 
-	private final String jobId;
+	private final Collection<String> jobIds;
 
-	DeleteJobRequest(String jobId) {
-		this.jobId = jobId;
+	DeleteJobRequest(Collection<String> jobIds) {
+		this.jobIds = jobIds;
 	}
 	
 	@Override
 	public Void execute(ServiceProvider context) {
-		// cancel the job and remove the entry from the store
-		System.err.println("deleting " + jobId);
-		Job.getJobManager().cancel(SingleRemoteJobFamily.create(jobId));
-		context.service(RemoteJobTracker.class).requestDelete(jobId);
+		context.service(RemoteJobTracker.class).requestDeletes(jobIds);
 		return null;
 	}
 
