@@ -35,8 +35,10 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.request.RefSetSupport;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -65,15 +67,15 @@ public abstract class SnomedRestFixtures {
 				.extract().header("Location"));
 	}
 
-	public static ImmutableMap.Builder<String, Object> createConceptRequestBody(String parentConceptId) {
+	public static Builder<String, Object> createConceptRequestBody(String parentConceptId) {
 		return createConceptRequestBody(parentConceptId, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.UK_PREFERRED_MAP, null);
 	}
 
-	public static ImmutableMap.Builder<String, Object> createConceptRequestBody(String parentConceptId, String moduleId, Map<String, Acceptability> acceptabilityMap) {
+	public static Builder<String, Object> createConceptRequestBody(String parentConceptId, String moduleId, Map<String, Acceptability> acceptabilityMap) {
 		return createConceptRequestBody(parentConceptId, moduleId, acceptabilityMap, null);
 	}
 
-	public static ImmutableMap.Builder<String, Object> createConceptRequestBody(String parentConceptId, String moduleId, Map<String, Acceptability> acceptabilityMap, String conceptId) {
+	public static Builder<String, Object> createConceptRequestBody(String parentConceptId, String moduleId, Map<String, Acceptability> acceptabilityMap, String conceptId) {
 		Map<?, ?> relationshipRequestBody = ImmutableMap.builder()
 				.put("moduleId", moduleId)
 				.put("typeId", Concepts.IS_A)
@@ -96,7 +98,7 @@ public abstract class SnomedRestFixtures {
 				.put("acceptability", acceptabilityMap)
 				.build();
 
-		ImmutableMap.Builder<String, Object> conceptRequestBody = ImmutableMap.<String, Object>builder()
+		Builder<String, Object> conceptRequestBody = ImmutableMap.<String, Object>builder()
 				.put("moduleId", moduleId)
 				.put("descriptions", ImmutableList.of(fsnRequestBody, ptRequestBody))
 				.put("relationships", ImmutableList.of(relationshipRequestBody));
@@ -144,23 +146,23 @@ public abstract class SnomedRestFixtures {
 				.extract().header("Location"));
 	}
 
-	public static ImmutableMap.Builder<String, Object> createDescriptionRequestBody(String conceptId) {
+	public static Builder<String, Object> createDescriptionRequestBody(String conceptId) {
 		return createDescriptionRequestBody(conceptId, Concepts.SYNONYM, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.UK_ACCEPTABLE_MAP);
 	}
 
-	public static ImmutableMap.Builder<String, Object> createDescriptionRequestBody(String conceptId, String typeId) {
+	public static Builder<String, Object> createDescriptionRequestBody(String conceptId, String typeId) {
 		return createDescriptionRequestBody(conceptId, typeId, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.UK_ACCEPTABLE_MAP);
 	}
 
-	public static ImmutableMap.Builder<String, Object> createDescriptionRequestBody(String conceptId, String typeId, String moduleId) {
+	public static Builder<String, Object> createDescriptionRequestBody(String conceptId, String typeId, String moduleId) {
 		return createDescriptionRequestBody(conceptId, typeId, moduleId, SnomedApiTestConstants.UK_ACCEPTABLE_MAP);
 	}
 
-	public static ImmutableMap.Builder<String, Object> createDescriptionRequestBody(String conceptId, String typeId, String moduleId, Map<String, Acceptability> acceptabilityMap) {
+	public static Builder<String, Object> createDescriptionRequestBody(String conceptId, String typeId, String moduleId, Map<String, Acceptability> acceptabilityMap) {
 		return createDescriptionRequestBody(conceptId, typeId, moduleId, acceptabilityMap, CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE);
 	}
 
-	public static ImmutableMap.Builder<String, Object> createDescriptionRequestBody(String conceptId, String typeId, String moduleId, 
+	public static Builder<String, Object> createDescriptionRequestBody(String conceptId, String typeId, String moduleId, 
 			Map<String, Acceptability> acceptabilityMap,
 			CaseSignificance caseSignificance) {
 
@@ -220,9 +222,15 @@ public abstract class SnomedRestFixtures {
 	}
 
 	public static String createNewRefSet(IBranchPath refSetPath) {
-		Map<?, ?> refSetRequestBody = createConceptRequestBody(Concepts.REFSET_SIMPLE_TYPE)
-				.put("type", SnomedRefSetType.SIMPLE)
-				.put("referencedComponentType", SnomedTerminologyComponentConstants.CONCEPT)
+		return createNewRefSet(refSetPath, SnomedRefSetType.SIMPLE);
+	}
+
+	public static String createNewRefSet(IBranchPath refSetPath, SnomedRefSetType type) {
+		String parentConceptId = SnomedRefSetUtil.getConceptId(type);
+		String referencedComponentType = getFirstAllowedReferencedComponentType(type);
+		Map<?, ?> refSetRequestBody = createConceptRequestBody(parentConceptId)
+				.put("type", type)
+				.put("referencedComponentType", referencedComponentType)
 				.put("commitComment", "Created new reference set")
 				.build();
 
@@ -239,10 +247,7 @@ public abstract class SnomedRestFixtures {
 	public static String createNewRefSetMember(IBranchPath memberPath, String referencedConceptId) {
 		String refSetId = createNewRefSet(memberPath);
 
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("moduleId", Concepts.MODULE_SCT_CORE)
-				.put("referenceSetId", refSetId)
-				.put("referencedComponentId", referencedConceptId)
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, referencedConceptId)
 				.put("commitComment", "Created new reference set member")
 				.build();
 
@@ -252,11 +257,8 @@ public abstract class SnomedRestFixtures {
 				.extract().header("Location"));
 	}
 
-	public static String createNewLanguageRefSetMember(IBranchPath memberPath, String referencedConceptId, String refSetId, String acceptabilityId) {
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("moduleId", Concepts.MODULE_SCT_CORE)
-				.put("referenceSetId", refSetId)
-				.put("referencedComponentId", referencedConceptId)
+	public static String createNewLanguageRefSetMember(IBranchPath memberPath, String referencedDescriptionId, String refSetId, String acceptabilityId) {
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, referencedDescriptionId)
 				.put("acceptabilityId", acceptabilityId)
 				.put("commitComment", "Created new language reference set member")
 				.build();
@@ -265,6 +267,13 @@ public abstract class SnomedRestFixtures {
 				.statusCode(201)
 				.body(equalTo(""))
 				.extract().header("Location"));
+	}
+
+	public static Builder<String, Object> createRefSetMemberRequestBody(String refSetId, String referencedComponentId) {
+		return ImmutableMap.<String, Object>builder()
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("referenceSetId", refSetId)
+				.put("referencedComponentId", referencedComponentId);
 	}
 
 	public static ValidatableResponse merge(IBranchPath sourcePath, IBranchPath targetPath, String commitComment) {
@@ -363,6 +372,43 @@ public abstract class SnomedRestFixtures {
 	public static String reserveComponentId(String namespace, ComponentCategory category) {
 		ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getService(ISnomedIdentifierService.class);
 		return Iterables.getOnlyElement(identifierService.reserve(namespace, category, 1));
+	}
+
+	public static String createReferencedComponent(IBranchPath branchPath, SnomedRefSetType refSetType) {
+		String referencedComponentType = getFirstAllowedReferencedComponentType(refSetType);
+		return createNewComponent(branchPath, referencedComponentType);
+	}
+
+	public static String createNewComponent(IBranchPath branchPath, String referencedComponentType) {
+		switch (referencedComponentType) {
+		case SnomedTerminologyComponentConstants.CONCEPT:
+			return createNewConcept(branchPath);
+		case SnomedTerminologyComponentConstants.DESCRIPTION:
+			return createNewDescription(branchPath);
+		case SnomedTerminologyComponentConstants.RELATIONSHIP:
+			return createNewRelationship(branchPath);
+		default:
+			throw new IllegalStateException("Can't create a referenced component of type '" + referencedComponentType + "'.");
+		}
+	}
+
+	public static String getFirstAllowedReferencedComponentType(SnomedRefSetType refSetType) {
+		return Iterables.getFirst(RefSetSupport.getSupportedReferencedComponentTypes(refSetType), null);
+	}
+
+	public static ComponentCategory getFirstAllowedReferencedComponentCategory(SnomedRefSetType refSetType) {
+		String referencedComponentType = getFirstAllowedReferencedComponentType(refSetType);
+
+		switch (referencedComponentType) {
+		case SnomedTerminologyComponentConstants.CONCEPT:
+			return ComponentCategory.CONCEPT;
+		case SnomedTerminologyComponentConstants.DESCRIPTION:
+			return ComponentCategory.DESCRIPTION;
+		case SnomedTerminologyComponentConstants.RELATIONSHIP:
+			return ComponentCategory.RELATIONSHIP;
+		default:
+			throw new IllegalStateException("Can't convert referenced component type '" + referencedComponentType + "' to a category.");
+		}
 	}
 
 	private SnomedRestFixtures() {
