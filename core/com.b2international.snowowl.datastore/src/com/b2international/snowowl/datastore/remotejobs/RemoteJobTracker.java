@@ -31,6 +31,7 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.IDisposableService;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 
 /**
@@ -65,7 +66,8 @@ public final class RemoteJobTracker implements IDisposableService {
 		});
 	}
 	
-	private RemoteJobEntry get(String jobId) {
+	@VisibleForTesting
+	public RemoteJobEntry get(String jobId) {
 		return index.read(searcher -> searcher.get(RemoteJobEntry.class, jobId));
 	}
 	

@@ -17,9 +17,11 @@ package com.b2international.snowowl.datastore.request.job;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,15 +46,22 @@ public class JobRequestsTest {
 	private static final String USER = "test@b2i.sg";
 	private static final String RESULT = "result";
 	private ServiceProvider context;
+	private RemoteJobTracker tracker;
 
 	@Before
 	public void setup() {
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 		final Index index = Indexes.createIndex("jobs", mapper, new Mappings(RemoteJobEntry.class));
+		tracker = new RemoteJobTracker(index);
 		this.context = DelegatingServiceProvider
 				.basedOn(ServiceProvider.EMPTY)
-				.bind(RemoteJobTracker.class, new RemoteJobTracker(index))
+				.bind(RemoteJobTracker.class, tracker)
 				.build();
+	}
+	
+	@After
+	public void after() {
+		this.tracker.dispose();
 	}
 	
 	@Test
@@ -84,7 +93,7 @@ public class JobRequestsTest {
 		assertNull(entry.getResult());
 	}
 	
-	@Test(expected = NotFoundException.class)
+	@Test
 	public void scheduleAndDelete() throws Exception {
 		final String jobId = schedule("scheduleAndDelete", context -> {
 			// wait 100 ms, then return the result, so the main thread have time to actually initiate the delete request
@@ -95,9 +104,20 @@ public class JobRequestsTest {
 			}
 			return RESULT;
 		});
+		// delete should immediately mark the object deleted, but wait until the job actually completes then delete the entry
 		delete(jobId);
-		RemoteJobEntry job = get(jobId);
-		System.err.println(job);
+		// get throws NotFoundException
+		try {
+			get(jobId);
+			fail("Expected " + NotFoundException.class.getName() + " to be thrown after deleting job");
+		} catch (NotFoundException e) {
+			// expected exception
+		}
+		// assert that the tracker will eventually delete the job entry
+		RemoteJobEntry entry = null;
+		do {
+			entry = tracker.get(jobId);
+		} while (entry != null);
 	}
 
 	private RemoteJobEntry waitDone(final String jobId) {
