@@ -21,6 +21,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -29,11 +30,7 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
+import com.b2international.snowowl.snomed.snomedrefset.*;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
@@ -53,7 +50,7 @@ final class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, St
 	@NotEmpty
 	private final String referencedComponentType;
 	
-	private String mapTargetComponentType;
+	private String mapTargetComponentType = CoreTerminologyBroker.UNSPECIFIED;
 	
 	private String identifierId;
 	
