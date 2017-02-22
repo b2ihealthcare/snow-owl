@@ -19,6 +19,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 
 /**
@@ -52,11 +53,9 @@ public final class SnomedLanguageReferenceSetMemberBuilder extends SnomedMemberB
 	}
 	
 	@Override
-	public SnomedLanguageRefSetMember addTo(TransactionContext context) {
-		SnomedLanguageRefSetMember member = build(context);
-		Description description = context.lookup(member.getReferencedComponentId(), Description.class);
-		description.getLanguageRefSetMembers().add(member);
-		return member;
+	protected void addToList(TransactionContext context, SnomedRefSet refSet, SnomedLanguageRefSetMember component) {
+		Description description = context.lookup(component.getReferencedComponentId(), Description.class);
+		description.getLanguageRefSetMembers().add(component);
 	}
 
 }

@@ -16,13 +16,14 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.snomed.Annotatable;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 
 /**
@@ -77,18 +78,19 @@ public final class SnomedConcreteDomainReferenceSetMemberBuilder extends SnomedM
 	}
 
 	@Override
-	public SnomedConcreteDataTypeRefSetMember addTo(TransactionContext context) {
-		SnomedConcreteDataTypeRefSetMember member = build(context);
-		Annotatable annotatable = getAnnotatable(context, member.getReferencedComponentId());
-		annotatable.getConcreteDomainRefSetMembers().add(member);
-		return member;
+	protected void addToList(TransactionContext context, SnomedRefSet refSet, SnomedConcreteDataTypeRefSetMember component) {
+		Annotatable annotatable = getAnnotatable(context, component.getReferencedComponentId(), component.getReferencedComponentType());
+		annotatable.getConcreteDomainRefSetMembers().add(component);
 	}
 
-	private Annotatable getAnnotatable(TransactionContext context, String referencedComponentId) {
-		try {
+	private Annotatable getAnnotatable(TransactionContext context, String referencedComponentId, short referencedComponentType) {
+		switch (referencedComponentType) {
+		case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
 			return context.lookup(referencedComponentId, Concept.class);
-		} catch (NotFoundException e) {
+		case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
 			return context.lookup(referencedComponentId, Relationship.class);
+		default:
+			throw new IllegalStateException("Unexpected referenced component type '" + referencedComponentType + "'.");
 		}
 	}
 	
