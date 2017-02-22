@@ -15,8 +15,17 @@
  */
 package com.b2international.snowowl.datastore.request.job;
 
-import com.b2international.index.query.Expression;
+import static com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry.Expressions.ids;
+import static com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry.Expressions.user;
+import static com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry.Fields.ID;
+import static com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry.Fields.USER;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
+import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
@@ -27,22 +36,48 @@ import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
  */
 final class SearchJobRequest extends BaseRequest<ServiceProvider, RemoteJobs> {
 
-	// TODO add filters, paging, expand options
+	@Min(0)
+	private int offset;
+
+	@Min(0)
+	private int limit;
+
+	@NotNull
+	private Options options;
 	
 	SearchJobRequest() {
 	}
 	
 	@Override
 	public RemoteJobs execute(ServiceProvider context) {
-		final Expression query = Expressions.matchAll();
-		final int offset = 0;
-		final int limit = Integer.MAX_VALUE;
-		return context.service(RemoteJobTracker.class).search(query, offset, limit);
+		final ExpressionBuilder queryBuilder = Expressions.builder();
+		
+		if (options.containsKey(ID)) {
+			queryBuilder.must(ids(options.getCollection(ID, String.class)));
+		}
+		
+		if (options.containsKey(USER)) {
+			queryBuilder.must(user(options.getString(USER)));
+		}
+		
+		return context.service(RemoteJobTracker.class).search(queryBuilder.build(), offset, limit);
 	}
 
 	@Override
 	protected Class<RemoteJobs> getReturnType() {
 		return RemoteJobs.class;
+	}
+
+	void setOffset(int offset) {
+		this.offset = offset;
+	}
+	
+	void setLimit(int limit) {
+		this.limit = limit;
+	}
+	
+	void setOptions(Options options) {
+		this.options = options;
 	}
 
 }

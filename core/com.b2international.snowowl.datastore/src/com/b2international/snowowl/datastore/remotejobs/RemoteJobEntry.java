@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.remotejobs;
 
 import static com.b2international.index.query.Expressions.*;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 
 import com.b2international.commons.ClassUtils;
@@ -42,7 +43,9 @@ public final class RemoteJobEntry implements Serializable {
 	public static final int MAX_COMPLETION_LEVEL = 100;
 
 	public static class Fields {
+		public static final String ID = "id";
 		public static final String DELETED = "deleted";
+		public static final String USER = "user";
 	}
 	
 	public static class Expressions {
@@ -50,9 +53,18 @@ public final class RemoteJobEntry implements Serializable {
 			return DocumentMapping.matchId(id);
 		}
 
+		public static Expression ids(Collection<String> ids) {
+			return matchAny(DocumentMapping._ID, ids);
+		}
+		
 		public static Expression deleted(boolean deleted) {
 			return match(Fields.DELETED, deleted);
 		}
+		
+		public static Expression user(String user) {
+			return exactMatch(Fields.USER, user);
+		}
+		
 	}
 	
 	public static RemoteJobEntry.Builder from(RemoteJobEntry from) {
