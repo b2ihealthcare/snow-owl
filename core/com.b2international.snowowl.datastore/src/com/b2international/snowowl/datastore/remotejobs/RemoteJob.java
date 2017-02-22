@@ -57,7 +57,11 @@ public class RemoteJob extends Job {
 	protected final IStatus run(IProgressMonitor monitor) {
 		try {
 			// seed the monitor instance into the current context, so the request can use it for progress reporting
-			final DelegatingServiceProvider context = DelegatingServiceProvider.basedOn(this.context).bind(IProgressMonitor.class, monitor).build();
+			final IProgressMonitor trackerMonitor = this.context.service(RemoteJobTracker.class).createMonitor(monitor);
+			final DelegatingServiceProvider context = DelegatingServiceProvider
+					.basedOn(this.context)
+					.bind(IProgressMonitor.class, trackerMonitor)
+					.build();
 			this.response = request.execute(context);
 			return Statuses.ok();
 		} catch (OperationCanceledException e) {
@@ -65,14 +69,6 @@ public class RemoteJob extends Job {
 		} catch (Throwable e) {
 			return Statuses.error(CoreActivator.PLUGIN_ID, "Failed to execute long running request", e);
 		}
-//		final ListenableProgressMonitor listenableMonitor = new ListenableProgressMonitor();
-//		final RemoteJobManager remoteJobManager = (RemoteJobManager) getRemoteJobManager();
-//		
-//		listenableMonitor.addListener(monitor);
-//		listenableMonitor.addListener(new RemoteJobProgressMonitor(remoteJobManager, jobId));
-//		remoteJobManager.addMonitor(jobId, listenableMonitor);
-
-//		return runWithListenableMonitor(listenableMonitor);
 	}
 
 	@Override
