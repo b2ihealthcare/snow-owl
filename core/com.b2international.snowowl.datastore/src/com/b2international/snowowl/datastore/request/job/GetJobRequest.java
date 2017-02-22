@@ -19,7 +19,8 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobStore;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 5.7
@@ -34,7 +35,7 @@ final class GetJobRequest extends BaseRequest<ServiceProvider, RemoteJobEntry> {
 	
 	@Override
 	public RemoteJobEntry execute(ServiceProvider context) {
-		RemoteJobEntry entry = context.service(RemoteJobStore.class).get(id);
+		RemoteJobEntry entry = Iterables.getOnlyElement(context.service(RemoteJobTracker.class).search(RemoteJobEntry.Expressions.id(id), 0, 2), null);
 		if (entry == null) {
 			throw new NotFoundException("job", id);
 		} else {

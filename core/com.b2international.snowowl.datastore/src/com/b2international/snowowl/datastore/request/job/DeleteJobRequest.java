@@ -19,7 +19,7 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobStore;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.remotejobs.SingleRemoteJobFamily;
 
 /**
@@ -38,7 +38,7 @@ final class DeleteJobRequest extends BaseRequest<ServiceProvider, Void> {
 		// cancel the job and remove the entry from the store
 		System.err.println("deleting " + jobId);
 		Job.getJobManager().cancel(SingleRemoteJobFamily.create(jobId));
-		context.service(RemoteJobStore.class).delete(jobId);
+		context.service(RemoteJobTracker.class).requestDelete(jobId);
 		return null;
 	}
 

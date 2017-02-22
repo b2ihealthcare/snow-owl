@@ -32,7 +32,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobStore;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -51,7 +51,7 @@ public class JobRequestsTest {
 		final Index index = Indexes.createIndex("jobs", mapper, new Mappings(RemoteJobEntry.class));
 		this.context = DelegatingServiceProvider
 				.basedOn(ServiceProvider.EMPTY)
-				.bind(RemoteJobStore.class, new RemoteJobStore(index))
+				.bind(RemoteJobTracker.class, new RemoteJobTracker(index))
 				.build();
 	}
 	
@@ -89,7 +89,7 @@ public class JobRequestsTest {
 		final String jobId = schedule("scheduleAndDelete", context -> {
 			// wait 100 ms, then return the result, so the main thread have time to actually initiate the delete request
 			try {
-				Thread.sleep(50);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}

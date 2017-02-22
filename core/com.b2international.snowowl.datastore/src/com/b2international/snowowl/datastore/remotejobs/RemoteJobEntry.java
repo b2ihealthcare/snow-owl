@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.remotejobs;
 
+import static com.b2international.index.query.Expressions.*;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -40,9 +41,17 @@ public final class RemoteJobEntry implements Serializable {
 	public static final int MIN_COMPLETION_LEVEL = 0;
 	public static final int MAX_COMPLETION_LEVEL = 100;
 
+	public static class Fields {
+		public static final String DELETED = "deleted";
+	}
+	
 	public static class Expressions {
 		public static Expression id(String id) {
 			return DocumentMapping.matchId(id);
+		}
+
+		public static Expression deleted(boolean deleted) {
+			return match(Fields.DELETED, deleted);
 		}
 	}
 	
@@ -74,6 +83,7 @@ public final class RemoteJobEntry implements Serializable {
 		private Date finishDate;
 		private RemoteJobState state = RemoteJobState.SCHEDULED;
 		private int completionLevel = MIN_COMPLETION_LEVEL;
+		private boolean deleted;
 		private Object result;
 		
 		@JsonCreator
@@ -119,6 +129,11 @@ public final class RemoteJobEntry implements Serializable {
 			this.completionLevel = completionLevel;
 			return this;
 		}
+
+		public Builder deleted(boolean deleted) {
+			this.deleted = deleted;
+			return this;
+		}
 		
 		public Builder result(Object result) {
 			this.result = result;
@@ -126,7 +141,7 @@ public final class RemoteJobEntry implements Serializable {
 		}
 		
 		public RemoteJobEntry build() {
-			return new RemoteJobEntry(id, description, user, scheduleDate, startDate, finishDate, state, completionLevel, result);
+			return new RemoteJobEntry(id, description, user, scheduleDate, startDate, finishDate, state, completionLevel, deleted, result);
 		}
 		
 	}
@@ -141,6 +156,7 @@ public final class RemoteJobEntry implements Serializable {
 	private final RemoteJobState state;
 	private final int completionLevel;
 	private final Object result;
+	private final boolean deleted;
 
 	private RemoteJobEntry(
 			final String id, 
@@ -151,6 +167,7 @@ public final class RemoteJobEntry implements Serializable {
 			final Date finishDate, 
 			final RemoteJobState state, 
 			final int completionLevel,
+			final boolean deleted,
 			final Object result) {
 		
 		Preconditions.checkNotNull(id, "Remote job identifier may not be null.");
@@ -167,6 +184,7 @@ public final class RemoteJobEntry implements Serializable {
 		this.finishDate = finishDate;
 		this.state = state;
 		this.completionLevel = completionLevel;
+		this.deleted = deleted;
 		this.result = result;
 	}
 
@@ -200,6 +218,10 @@ public final class RemoteJobEntry implements Serializable {
 	
 	public int getCompletionLevel() {
 		return completionLevel;
+	}
+
+	public boolean isDeleted() {
+		return deleted;
 	}
 	
 	public Object getResult() {
@@ -306,6 +328,7 @@ public final class RemoteJobEntry implements Serializable {
 				.add("startDate", startDate)
 				.add("finishDate", finishDate)
 				.add("state", state)
+				.add("deleted", deleted)
 				.add("completionLevel", completionLevel)
 				.toString();
 	}

@@ -43,7 +43,7 @@ import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobStore;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManagerImpl;
 import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryContextProvider;
@@ -145,7 +145,7 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 	
 	private void initializeJobSupport(Environment env, SnowOwlConfiguration configuration) {
 		final Index index = Indexes.createIndex("jobs", env.service(ObjectMapper.class), new Mappings(RemoteJobEntry.class));
-		env.services().registerService(RemoteJobStore.class, new RemoteJobStore(index));
+		env.services().registerService(RemoteJobTracker.class, new RemoteJobTracker(index));
 	}
 
 	private void initializeRequestSupport(Environment env, int numberOfWorkers) {

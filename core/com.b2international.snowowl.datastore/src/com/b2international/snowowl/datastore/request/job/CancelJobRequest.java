@@ -15,14 +15,9 @@
  */
 package com.b2international.snowowl.datastore.request.job;
 
-import org.eclipse.core.runtime.jobs.Job;
-
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobStore;
-import com.b2international.snowowl.datastore.remotejobs.SingleRemoteJobFamily;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 
 /**
  * @since 5.7
@@ -39,12 +34,7 @@ final class CancelJobRequest extends BaseRequest<ServiceProvider, Void> {
 
 	@Override
 	public Void execute(ServiceProvider context) {
-		final RemoteJobStore store = context.service(RemoteJobStore.class);
-		final RemoteJobEntry job = store.get(id);
-		if (job != null && !job.isCancelled()) {
-			store.update(id, current -> RemoteJobEntry.from(current).state(RemoteJobState.CANCEL_REQUESTED).build());
-			Job.getJobManager().cancel(SingleRemoteJobFamily.create(id));
-		}
+		context.service(RemoteJobTracker.class).requestCancel(id);
 		return null;
 	}
 

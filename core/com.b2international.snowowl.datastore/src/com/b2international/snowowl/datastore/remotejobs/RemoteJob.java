@@ -38,14 +38,17 @@ public class RemoteJob extends Job {
 	private final Request<ServiceProvider, ?> request;
 	
 	private Object response;
+	private String user;
 
 	public RemoteJob(
 			final String id, 
-			final String name, 
+			final String description, 
+			final String user, 
 			final ServiceProvider context, 
 			final Request<ServiceProvider, ?> request) {
-		super(name);
+		super(description);
 		this.id = id;
+		this.user = user;
 		this.context = context;
 		this.request = request;
 	}
@@ -84,6 +87,14 @@ public class RemoteJob extends Job {
 	
 	public String getId() {
 		return id;
+	}
+	
+	public String getDescription() {
+		return getName();
+	}
+	
+	public String getUser() {
+		return user;
 	}
 	
 	public Object getResponse() {

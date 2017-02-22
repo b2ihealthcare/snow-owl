@@ -19,7 +19,7 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequest;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobStore;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
 
 /**
@@ -37,7 +37,7 @@ final class SearchJobRequest extends BaseRequest<ServiceProvider, RemoteJobs> {
 		final Expression query = Expressions.matchAll();
 		final int offset = 0;
 		final int limit = Integer.MAX_VALUE;
-		return context.service(RemoteJobStore.class).search(query, offset, limit);
+		return context.service(RemoteJobTracker.class).search(query, offset, limit);
 	}
 
 	@Override
