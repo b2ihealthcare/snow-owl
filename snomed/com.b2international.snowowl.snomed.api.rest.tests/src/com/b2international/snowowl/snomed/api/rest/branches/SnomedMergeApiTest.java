@@ -719,7 +719,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
 		.body("released", equalTo(true))
-		.body("effectiveTime", equalTo(EffectiveTimes.format(calendar.getTimeInMillis(), DateFormats.SHORT)))
+		.body("effectiveTime", equalTo(EffectiveTimes.format(calendar.getTime(), DateFormats.SHORT)))
 		.body("active", equalTo(true));
 
 		getComponent(a, SnomedComponentType.MEMBER, memberId).statusCode(200)
