@@ -30,12 +30,7 @@ import com.b2international.snowowl.snomed.api.rest.branches.SnomedMergeConflictT
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedReviewApiTest;
 import com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiTest;
 import com.b2international.snowowl.snomed.api.rest.classification.SnomedClassificationApiTest;
-import com.b2international.snowowl.snomed.api.rest.components.SnomedConceptApiTest;
-import com.b2international.snowowl.snomed.api.rest.components.SnomedDescriptionApiTest;
-import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetApiTest;
-import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetBulkApiTest;
-import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetMemberApiTest;
-import com.b2international.snowowl.snomed.api.rest.components.SnomedRelationshipApiTest;
+import com.b2international.snowowl.snomed.api.rest.components.*;
 import com.b2international.snowowl.snomed.api.rest.ext.SnomedExtensionDowngradeTest;
 import com.b2international.snowowl.snomed.api.rest.ext.SnomedExtensionUpgradeTest;
 import com.b2international.snowowl.snomed.api.rest.ext.SnomedExtensionVersioningTest;
@@ -56,30 +51,31 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @RunWith(Suite.class)
 @SuiteClasses({ 
 	// RESTful API test cases
-//	SnomedBranchingApiTest.class,
-//	SnomedMergeApiTest.class,
-//	SnomedMergeConflictTest.class,
-//	SnomedReviewApiTest.class,
-//	SnomedVersioningApiTest.class,
-//	SnomedImportApiTest.class,
-//	SnomedIdentifierApiTest.class,
+	SnomedBranchingApiTest.class,
+	SnomedMergeApiTest.class,
+	SnomedMergeConflictTest.class,
+	SnomedReviewApiTest.class,
+	SnomedVersioningApiTest.class,
+	SnomedImportApiTest.class,
+	SnomedIdentifierApiTest.class,
 	SnomedConceptApiTest.class,
-//	SnomedConceptCreatePerformanceTest.class,
-//	SnomedReleasedConceptApiTest.class,
+	SnomedConceptCreatePerformanceTest.class,
 	SnomedDescriptionApiTest.class,
 	SnomedRelationshipApiTest.class,
-//	SnomedRefSetApiTest.class,
+	SnomedRefSetApiTest.class,
+	SnomedRefSetParameterizedTest.class,
+	SnomedRefSetMemberParameterizedTest.class,
 //	SnomedRefSetMemberApiTest.class,
 //	SnomedRefSetBulkApiTest.class,
-//	SnomedBrowserApiTest.class,
-//	SnomedClassificationApiTest.class,
-//	SnomedExportApiTest.class,
+	SnomedBrowserApiTest.class,
+	SnomedClassificationApiTest.class,
+	SnomedExportApiTest.class,
 	// Extension test cases
-//	SnomedExtensionUpgradeTest.class,
-//	SnomedExtensionDowngradeTest.class,
-//	SnomedExtensionVersioningTest.class,
+	SnomedExtensionUpgradeTest.class,
+	SnomedExtensionDowngradeTest.class,
+	SnomedExtensionVersioningTest.class,
 	// Java API test cases
-//	SnomedBranchRequestTest.class
+	SnomedBranchRequestTest.class
 })
 public class AllSnomedApiTests {
 
