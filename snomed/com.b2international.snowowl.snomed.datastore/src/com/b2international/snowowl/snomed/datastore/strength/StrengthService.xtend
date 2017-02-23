@@ -75,18 +75,16 @@ class StrengthService implements IStrengthService {
 	}
 	
 	def private isSimpleType(Collection<SnomedRefSetMemberIndexEntry> entries) {
-		val result = entries.forall[attributeLabel.endsWith(CD_NUMERATOR_VALUE)]
-		
-		if (!result) {
-			return false
-		}
+ 		val result = entries.forall[attributeLabel.endsWith(CD_NUMERATOR_VALUE)]
+ 		
+ 		if (entries.size > 1 && result) {
+ 			println ("found invalid concrete domain:")
+ 			entries.forEach[entry | println ("characteristicType:" + entry.characteristicTypeId + "; referencedComponent: " + entry.referencedComponentId + " UUID: " + entry.id)]
+ 		}
+ 		
+ 		return result;
+ 	}
 
-		if (entries.size > 1) {
-			entries.forEach[LOG.info("Found multiple simple type strength for {}: {}", it.referencedComponentId, it)]
-		}
-	
-		return result;
-	}
 	
 	def private isSimpleRangeType(Collection<SnomedRefSetMemberIndexEntry> entries) {
 		Range.closed(1,2).contains(entries.size) && 
