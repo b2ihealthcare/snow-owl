@@ -49,7 +49,7 @@ public abstract class RefSetSupport {
 			.put(SnomedRefSetType.EXTENDED_MAP, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.LANGUAGE, SnomedTerminologyComponentConstants.DESCRIPTION)
 			.put(SnomedRefSetType.MODULE_DEPENDENCY, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.QUERY, SnomedTerminologyComponentConstants.REFSET)
+			.put(SnomedRefSetType.QUERY, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.DESCRIPTION)
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.RELATIONSHIP)
