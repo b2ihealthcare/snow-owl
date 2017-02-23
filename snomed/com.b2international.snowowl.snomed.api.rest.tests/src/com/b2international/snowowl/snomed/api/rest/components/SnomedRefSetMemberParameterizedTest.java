@@ -206,6 +206,18 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
+	public void deleteRefSetWithMember() throws Exception {
+		String memberId = createRefSetMember();
+		String refSetId = getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
+				.extract().path("referenceSetId");
+		
+		deleteComponent(branchPath, SnomedComponentType.REFSET, refSetId, false).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.REFSET, refSetId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, refSetId).statusCode(200);
+	}
+	
+	@Test
 	public void deleteReleasedMember() throws Exception {
 		String memberId = createRefSetMember();
 		Date effectiveTime = getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
