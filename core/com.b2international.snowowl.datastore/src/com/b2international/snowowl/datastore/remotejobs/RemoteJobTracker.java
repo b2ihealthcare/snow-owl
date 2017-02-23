@@ -16,7 +16,9 @@
 package com.b2international.snowowl.datastore.remotejobs;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -37,6 +39,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -86,10 +89,12 @@ public final class RemoteJobTracker implements IDisposableService {
 	private final RemoteJobChangeAdapter listener;
 	private final CleanUpTask cleanUp;
 	private final IEventBus events;
+	private final ObjectMapper mapper;
 
-	public RemoteJobTracker(Index index, IEventBus events, final long remoteJobCleanUpInterval) {
+	public RemoteJobTracker(Index index, IEventBus events, ObjectMapper mapper, final long remoteJobCleanUpInterval) {
 		this.index = index;
 		this.events = events;
+		this.mapper = mapper;
 		this.index.admin().create();
 		this.listener = new RemoteJobChangeAdapter();
 		Job.getJobManager().addJobChangeListener(listener);
@@ -213,10 +218,18 @@ public final class RemoteJobTracker implements IDisposableService {
 				final RemoteJob job = (RemoteJob) event.getJob();
 				final String jobId = job.getId();
 				System.err.println("scheduled " + jobId);
+				// try to convert the request to a param object
+				Map<String, Object> parameters;
+				try {
+					parameters = mapper.convertValue(job.getRequest(), Map.class);
+				} catch (Exception e) {
+					parameters = Collections.emptyMap();
+				}
 				put(jobId, RemoteJobEntry.builder()
 						.id(jobId)
 						.description(job.getDescription())
 						.user(job.getUser())
+						.parameters(parameters)
 						.scheduleDate(new Date())
 						.build());
 			}

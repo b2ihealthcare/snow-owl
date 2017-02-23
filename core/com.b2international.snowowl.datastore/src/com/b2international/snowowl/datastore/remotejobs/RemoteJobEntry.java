@@ -22,6 +22,7 @@ import static com.b2international.index.query.Expressions.matchAny;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -87,6 +88,7 @@ public final class RemoteJobEntry implements Serializable {
 				.finishDate(from.getFinishDate())
 				.state(from.getState())
 				.completionLevel(from.getCompletionLevel())
+				.parameters(from.getParameters())
 				.result(from.getResult())
 				.deleted(from.isDeleted());
 	}
@@ -107,6 +109,7 @@ public final class RemoteJobEntry implements Serializable {
 		private RemoteJobState state = RemoteJobState.SCHEDULED;
 		private int completionLevel = MIN_COMPLETION_LEVEL;
 		private boolean deleted;
+		private Map<String, Object> parameters;
 		private Object result;
 		
 		@JsonCreator
@@ -163,8 +166,13 @@ public final class RemoteJobEntry implements Serializable {
 			return this;
 		}
 		
+		public Builder parameters(Map<String, Object> parameters) {
+			this.parameters = parameters;
+			return this;
+		}
+		
 		public RemoteJobEntry build() {
-			return new RemoteJobEntry(id, description, user, scheduleDate, startDate, finishDate, state, completionLevel, deleted, result);
+			return new RemoteJobEntry(id, description, user, scheduleDate, startDate, finishDate, state, completionLevel, deleted, result, parameters);
 		}
 		
 	}
@@ -180,6 +188,7 @@ public final class RemoteJobEntry implements Serializable {
 	private final int completionLevel;
 	private final Object result;
 	private final boolean deleted;
+	private final Map<String, Object> parameters;
 
 	private RemoteJobEntry(
 			final String id, 
@@ -191,7 +200,8 @@ public final class RemoteJobEntry implements Serializable {
 			final RemoteJobState state, 
 			final int completionLevel,
 			final boolean deleted,
-			final Object result) {
+			final Object result,
+			final Map<String, Object> parameters) {
 		
 		Preconditions.checkNotNull(id, "Remote job identifier may not be null.");
 		Preconditions.checkNotNull(description, "Description may not be null.");
@@ -209,6 +219,7 @@ public final class RemoteJobEntry implements Serializable {
 		this.completionLevel = completionLevel;
 		this.deleted = deleted;
 		this.result = result;
+		this.parameters = parameters;
 	}
 
 	public String getId() {
@@ -247,8 +258,16 @@ public final class RemoteJobEntry implements Serializable {
 		return deleted;
 	}
 	
+	public Map<String, Object> getParameters() {
+		return parameters;
+	}
+	
 	public Object getResult() {
 		return result;
+	}
+	
+	public <T> T getResultAs(Class<T> type) {
+		return ClassUtils.checkAndCast(result, type);
 	}
 	
 	// Frequently used domain specific methods
@@ -261,10 +280,6 @@ public final class RemoteJobEntry implements Serializable {
 	@JsonIgnore
 	public boolean isCancelled() {
 		return getState().oneOf(RemoteJobState.CANCELLED, RemoteJobState.CANCEL_REQUESTED);
-	}
-	
-	public <T> T getResultAs(Class<T> type) {
-		return ClassUtils.checkAndCast(result, type);
 	}
 	
 //	public String getFormattedScheduleDate() {
@@ -353,6 +368,8 @@ public final class RemoteJobEntry implements Serializable {
 				.add("state", state)
 				.add("deleted", deleted)
 				.add("completionLevel", completionLevel)
+				.add("result", result)
+				.add("parameters", parameters)
 				.toString();
 	}
 

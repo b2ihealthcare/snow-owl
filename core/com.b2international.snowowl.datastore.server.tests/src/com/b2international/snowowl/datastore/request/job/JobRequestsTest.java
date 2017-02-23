@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.request.job;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Collection;
@@ -63,9 +64,10 @@ public class JobRequestsTest {
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 		final Index index = Indexes.createIndex("jobs", mapper, new Mappings(RemoteJobEntry.class));
 		this.bus = EventBusUtil.getBus();
-		this.tracker = new RemoteJobTracker(index, bus, 200);
+		this.tracker = new RemoteJobTracker(index, bus, mapper, 200);
 		this.context = DelegatingServiceProvider
 				.basedOn(ServiceProvider.EMPTY)
+				.bind(ObjectMapper.class, mapper)
 				.bind(RemoteJobTracker.class, tracker)
 				.build();
 		this.bus.registerHandler(SystemNotification.ADDRESS, message -> {
@@ -83,7 +85,8 @@ public class JobRequestsTest {
 		final String jobId = schedule("scheduleAndWaitDone", context -> RESULT);
 		final RemoteJobEntry entry = waitDone(jobId);
 		assertEquals(RemoteJobState.FINISHED, entry.getState());
-		assertEquals(RESULT, entry.getResultAs(String.class));
+		assertEquals(RESULT, entry.getResult());
+		assertTrue(entry.getParameters().isEmpty());
 		// verify job events
 		// 1 added
 		// 1 changed - RUNNING

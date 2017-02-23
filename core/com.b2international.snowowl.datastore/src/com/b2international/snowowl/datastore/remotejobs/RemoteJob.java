@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.remotejobs;
 
+import java.util.Map;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -25,7 +27,9 @@ import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
 import com.b2international.snowowl.core.events.Request;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicate;
+import com.google.common.primitives.Primitives;
 
 /**
  * @since 5.7
@@ -55,6 +59,7 @@ public final class RemoteJob extends Job {
 	
 	@Override
 	protected final IStatus run(IProgressMonitor monitor) {
+		final ObjectMapper mapper = this.context.service(ObjectMapper.class);
 		final IProgressMonitor trackerMonitor = this.context.service(RemoteJobTracker.class).createMonitor(id, monitor);
 		try {
 			// seed the monitor instance into the current context, so the request can use it for progress reporting
@@ -63,7 +68,15 @@ public final class RemoteJob extends Job {
 					.bind(IProgressMonitor.class, trackerMonitor)
 					.bind(RemoteJob.class, this)
 					.build();
-			this.response = request.execute(context);
+			final Object response = request.execute(context);
+			if (response != null) {
+				final Class<? extends Object> responseType = response.getClass();
+				if (Primitives.isWrapperType(responseType) || String.class.isAssignableFrom(responseType)) {
+					this.response = response;
+				} else {
+					this.response = mapper.convertValue(response, Map.class);
+				}
+			}
 			return Statuses.ok();
 		} catch (OperationCanceledException e) {
 			return Statuses.cancel();
@@ -86,16 +99,20 @@ public final class RemoteJob extends Job {
 		return id;
 	}
 	
-	public String getDescription() {
+	String getDescription() {
 		return getName();
 	}
 	
-	public String getUser() {
+	String getUser() {
 		return user;
 	}
 	
-	public Object getResponse() {
+	Object getResponse() {
 		return response;
+	}
+
+	Request<ServiceProvider, ?> getRequest() {
+		return request;
 	}
 	
 }

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server;
 
+import java.util.concurrent.TimeUnit;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.net4j.jvm.IJVMConnector;
 import org.eclipse.net4j.jvm.JVMUtil;
@@ -145,7 +147,16 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 	
 	private void initializeJobSupport(Environment env, SnowOwlConfiguration configuration) {
 		final Index index = Indexes.createIndex("jobs", env.service(ObjectMapper.class), new Mappings(RemoteJobEntry.class));
-		env.services().registerService(RemoteJobTracker.class, new RemoteJobTracker(index));
+		// TODO make this configurable
+		final long defaultJobCleanUpInterval = TimeUnit.MINUTES.toMillis(1);
+		env.services()
+			.registerService(RemoteJobTracker.class, 
+				new RemoteJobTracker(
+					index, 
+					env.service(IEventBus.class), 
+					env.service(ObjectMapper.class), 
+					defaultJobCleanUpInterval)
+			);
 	}
 
 	private void initializeRequestSupport(Environment env, int numberOfWorkers) {
