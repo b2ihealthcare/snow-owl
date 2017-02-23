@@ -15,37 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.history;
 
-import static com.b2international.commons.Pair.IdenticalPair.identicalPairOf;
 import static com.b2international.commons.StringUtils.isEmpty;
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.ACCEPTABILITY_ID_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.CASE_SIGNIFICANCE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.CHARACTERISTIC_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.CORRELATION_ID_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DEFINITION_STATUS_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DESCRIPTION_FORMAT_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DESCRIPTION_LENGTH_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DESCRIPTION_TERM_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DESCRIPTION_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.EFFECTIVE_TIME_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.EXHAUSTIVE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.GROUP_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MAP_GROUP_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MAP_TARGET_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MODIFIER_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MODULE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MODULE_ID_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.OPERATOR_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.RELATIONSHIP_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.RELEASED_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.SOURCE_EFFECTIVE_TIME_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.STATUS_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.TARGET_EFFECTIVE_TIME_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.UNION_GROUP_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.UNIT_TYPE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.VALUE_FEATURE_NAME;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.VALUE_ID_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.*;
 
 import java.text.DateFormat;
 import java.util.Collection;
@@ -55,44 +26,35 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
-import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.spi.cdo.CDOStore;
 
 import com.b2international.commons.ChangeKind;
 import com.b2international.commons.Pair;
-import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IHistoryInfoDetails;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.history.HistoryInfoDetails;
+import com.b2international.snowowl.datastore.history.StorageKeyCache;
 import com.b2international.snowowl.datastore.server.history.AbstractHistoryInfoDetailsBuilder;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -104,16 +66,75 @@ import com.google.common.cache.LoadingCache;
  */
 public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoDetailsBuilder {
 
-	private final LoadingCache<Pair<IBranchPath, String>, String> idLabelCache = CacheBuilder.newBuilder().build(new CacheLoader<Pair<IBranchPath, String>, String>() {
-		public String load(final Pair<IBranchPath, String> pair) throws Exception {
-			final String id = pair.getB();
-			final String label = getPreferredTerm(pair.getA(), id);
-			return isEmpty(label) ? id : label; 
+	private final LoadingCache<Pair<? extends CDOObject, CDOView>, String> objectToLabelCache = CacheBuilder.newBuilder().build(new CacheLoader<Pair<? extends CDOObject, CDOView>, String>() {
+		@Override
+		public String load(final Pair<? extends CDOObject, CDOView> pair) throws Exception {
+			if (pair.getA() instanceof Concept) {
+				return SnomedHistoryUtils.getLabelForConcept((Concept) pair.getA());
+			} else if (pair.getA() instanceof Description) {
+				return SnomedHistoryUtils.getLabelForDescription((Description) pair.getA());
+			} else if (pair.getA() instanceof Relationship) {
+				return SnomedHistoryUtils.getLabelForRelationship((Relationship) pair.getA());
+			}
+			throw new IllegalArgumentException("Unknown object type: " + pair.getA().getClass());
+		}
+	});
+	
+	private final LoadingCache<Pair<String, CDOView>, Concept> idToConceptCache = CacheBuilder.newBuilder().build(new CacheLoader<Pair<String, CDOView>, Concept>() {
+		@Override
+		public Concept load(Pair<String, CDOView> pair) throws Exception {
+			return SnomedHistoryUtils.getConcept(pair.getA(), pair.getB());
+		}
+	});
+	
+	private final LoadingCache<Pair<String, CDOView>, Description> idToDescriptionCache = CacheBuilder.newBuilder().build(new CacheLoader<Pair<String, CDOView>, Description>() {
+		@Override
+		public Description load(Pair<String, CDOView> pair) throws Exception {
+			return SnomedHistoryUtils.getDescription(pair.getA(), pair.getB());
+		}
+	});
+	
+	private final LoadingCache<Pair<String, CDOView>, Relationship> idToRelationshipCache = CacheBuilder.newBuilder().build(new CacheLoader<Pair<String, CDOView>, Relationship>() {
+		@Override
+		public Relationship load(Pair<String, CDOView> pair) throws Exception {
+			return SnomedHistoryUtils.getRelationship(pair.getA(), pair.getB());
 		}
 	});
 	
 	private static HashMap<String, String> map;
 
+	private String getConceptLabel(Concept concept) {
+		return objectToLabelCache.getUnchecked(Pair.of(concept, concept.cdoView()));
+	}
+	
+	
+	private String getRelationshipLabel(Relationship relationship) {
+		return objectToLabelCache.getUnchecked(Pair.of(relationship, relationship.cdoView()));
+	}
+	
+	private String getNewConceptLabel(Object value, CDOView view) {
+		if (value instanceof CDOID) {
+			CDOObject object = CDOUtils.getObjectIfExists(view, (CDOID) value);
+			if (object != null && object instanceof Concept) {
+				return getConceptLabel((Concept) object);
+			}
+		}
+		return "";
+	}
+	
+	private Concept getConcept(String idString, CDOView view) {
+		long id = Long.parseLong(idString);
+		StorageKeyCache storageKeyCache = getConfig().getStorageKeyCache();
+		if (storageKeyCache.containsId(id)) {
+			// we can avoid index querying for storage key if there is a cache match
+			long storageKey = storageKeyCache.getStorageKey(id);
+			return (Concept) CDOUtils.getObjectIfExists(view, storageKey);
+		} else {
+			return idToConceptCache.getUnchecked(Pair.of(idString, view));
+		}
+	}
+	
+	
 	@Override
 	protected Collection<? extends IHistoryInfoDetails> processNewObjects(final List<CDOIDAndVersion> newObjects, final CDOView beforeView, final CDOView currentView) {
 		return processNewObjects(newObjects, beforeView, currentView, true);
@@ -150,21 +171,30 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		return new HistoryInfoDetails(getComponent(cdoObject), description, ChangeKind.UPDATED);
 	}
 
+	@Override
 	public String getDescription(final CDOObject cdoObject, final CDOView beforeView, final CDOView currentView, final String change, final String refsetChange) {
 		if (cdoObject instanceof Concept) {
-			return change + "concept: \"" + getPreferredTerm(((Concept) cdoObject)) + "\".";
+			Concept concept = (Concept) cdoObject;
+			return change + "concept: \"" + getConceptLabel(concept) + "\".";
 		} else if (cdoObject instanceof Description) {
-			return change + getPreferredTerm(((Description) cdoObject).getType()) + ": \"" + ((Description) cdoObject).getTerm() + "\".";
+			Description description = (Description) cdoObject;
+			return change + getConceptLabel(description.getType()) + ": \"" + description.getTerm() + "\".";
 		} else if (cdoObject instanceof Relationship) {
 			final Relationship relationship = (Relationship) cdoObject;
+			
+			
+			if (SnomedConstants.Concepts.STATED_RELATIONSHIP.equals(relationship.getCharacteristicType().getId()))
+				return null;
+			
 			if (null != relationship.getSource() && null != relationship.getType() && null != relationship.getDestination())
-				return change + getPreferredTerm(relationship.getCharacteristicType()).toLowerCase() + ": " + getLabel(relationship) + ".";
+				return change + getConceptLabel(relationship.getCharacteristicType()).toLowerCase() + ": " + getRelationshipLabel(relationship) + ".";
 		} else if (cdoObject instanceof SnomedConcreteDataTypeRefSetMember) {
 			return change + "concrete domain element: \"" + getConcreteDataTypeItem((SnomedConcreteDataTypeRefSetMember) cdoObject) + "\".";
 		} else if (cdoObject instanceof SnomedRefSetMember) {
 			return getRefSetChangeDescription((SnomedRefSetMember) cdoObject, beforeView, currentView, refsetChange);
 		} else if (cdoObject instanceof SnomedRefSet) {
-			return change + "reference set: \"" + getLabel((SnomedRefSet) cdoObject) + "\".";
+			SnomedRefSet snomedRefset = (SnomedRefSet) cdoObject;
+			return change + "reference set: \"" + getConceptLabel(getConcept(snomedRefset.getIdentifierId(), snomedRefset.cdoView())) + "\".";
 		} 
 		return null;
 	}
@@ -184,90 +214,68 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		if (changedObject instanceof Concept) {
 			final Concept concept = (Concept) changedObject;
 			if (SnomedHistoryInfoConstants.STATUS_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue),
-						getPreferredTerm(concept)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue), getConceptLabel(concept)).toString();
 			} else if (SnomedHistoryInfoConstants.DEFINITION_STATUS_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), SnomedHistoryUtils.getNewFeatureValue(featureValue), 
-						getPreferredTerm(concept)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), getNewConceptLabel(featureValue, currentView), getConceptLabel(concept)).toString();
 			} else if (SnomedHistoryInfoConstants.EXHAUSTIVE_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue, "mutually disjoint", "non-disjoint"), 
-						getPreferredTerm(concept)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue, "mutually disjoint", "non-disjoint"), getConceptLabel(concept)).toString();
 			} else if (SnomedHistoryInfoConstants.EFFECTIVE_TIME_FEATURE_NAME.equals(featureName))  {
-				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						DateFormat.getDateInstance().format(featureValue),
-						getPreferredTerm(concept)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), DateFormat.getDateInstance().format(featureValue), getConceptLabel(concept)).toString();
 			} else if (MODULE_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						SnomedHistoryUtils.getNewFeatureValue(featureValue), 
-						getPreferredTerm(concept)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), getNewConceptLabel(featureValue, currentView), getConceptLabel(concept)).toString();
 			} else if (RELEASED_FEATURE_NAME.equals(featureName)) {
-				final String label = getPreferredTerm(concept);
-				return getPublishedChange(featureName, builder, label, featureValue);
+				return getPublishedChange(featureName, builder, getConceptLabel(concept), featureValue);
 			}
 		} else if (changedObject instanceof Description) {
 			final Description description = (Description) changedObject;
 			if (STATUS_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue), 
-						"\"" + description.getTerm() + "\"").toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue), "\"" + description.getTerm() + "\"").toString();
 			} else if (CASE_SIGNIFICANCE_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), SnomedHistoryUtils.getNewFeatureValue(featureValue), 
-						"\"" + description.getTerm() + "\"").toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), getNewConceptLabel(featureValue, currentView), "\"" + description.getTerm() + "\"").toString();
 			} else if (MODULE_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), SnomedHistoryUtils.getNewFeatureValue(featureValue), 
-						"\"" + description.getTerm() + "\"").toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), getNewConceptLabel(featureValue, currentView),  "\"" + description.getTerm() + "\"").toString();
 			} else if (DESCRIPTION_TYPE_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), SnomedHistoryUtils.getNewFeatureValue(featureValue), 
-						"\"" + description.getTerm() + "\"").toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), getNewConceptLabel(featureValue, currentView),  "\"" + description.getTerm() + "\"").toString();
 			} else if (EFFECTIVE_TIME_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						DateFormat.getDateInstance().format(featureValue),
-						description.getTerm()).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), DateFormat.getDateInstance().format(featureValue), description.getTerm()).toString();
 			} else if (DESCRIPTION_TERM_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						String.valueOf(featureValue),
-						description.getTerm()).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName),	String.valueOf(featureValue), description.getTerm()).toString();
 			} else if (RELEASED_FEATURE_NAME.equals(featureName)) {
 				return getPublishedChange(featureName, builder, description.getTerm(), featureValue);
 			}
 		} else if (changedObject instanceof Relationship) {
 			final Relationship relationship = (Relationship) changedObject;
+			
+			if (SnomedConstants.Concepts.STATED_RELATIONSHIP.equals(relationship.getCharacteristicType().getId()))
+				return null;
+			
 			if (STATUS_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue), 
-						getLabel(relationship)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue), getRelationshipLabel(relationship)).toString();
 			} else if (MODULE_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), SnomedHistoryUtils.getNewFeatureValue(featureValue), 
-						getLabel(relationship)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), getNewConceptLabel(featureValue, currentView), getRelationshipLabel(relationship)).toString();
 			} else if (EFFECTIVE_TIME_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						DateFormat.getDateInstance().format(featureValue),
-						getLabel(relationship)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), DateFormat.getDateInstance().format(featureValue), getRelationshipLabel(relationship)).toString();
 			} else if (GROUP_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), 
-						getLabel(relationship)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), getRelationshipLabel(relationship)).toString();
 			} else if (UNION_GROUP_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), 
-						getLabel(relationship)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), getRelationshipLabel(relationship)).toString();
 			} else if (CHARACTERISTIC_TYPE_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), SnomedHistoryUtils.getNewFeatureValue(featureValue), 
-						getLabel(relationship)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), getNewConceptLabel(featureValue, currentView), getRelationshipLabel(relationship)).toString();
 			} else if (MODIFIER_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), SnomedHistoryUtils.getNewFeatureValue(featureValue), 
-						getLabel(relationship)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), getNewConceptLabel(featureValue, currentView), getRelationshipLabel(relationship)).toString();
 			} else if (RELEASED_FEATURE_NAME.equals(featureName)) {
-				return getPublishedChange(featureName, builder, getLabel(relationship), featureValue);
+				return getPublishedChange(featureName, builder, getRelationshipLabel(relationship), featureValue);
 			} else if (RELATIONSHIP_TYPE_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, "relationship type" /*;( quite ugly but there is a collision with the description type feature name*/
-						, SnomedHistoryUtils.getNewFeatureValue(featureValue), 
-						getLabel(relationship)).toString();
+						, getNewConceptLabel(featureValue, currentView), 
+						getRelationshipLabel(relationship)).toString();
 			}
 		} else if (changedObject instanceof SnomedConcreteDataTypeRefSetMember) {
 			if (STATUS_FEATURE_NAME.equals(featureName)) {
 				final String status = getBooleanValue(featureValue);
 				if ("active".equals(status)) {
-					//does it ever happen?
 					return getDescription(changedObject, beforeView, currentView, "New ", "added to ");
-				} else if ("inactive".equals(status)) {
-					//akitta: we agreed to indicate incativation as deletion. 
+				} else if ("inactive".equals(status)) { //akitta: we agreed to indicate incativation as deletion. 
 					return getDescription(changedObject, beforeView, currentView, "Detached ", "detached from ");
 				} else {
 					return "Unknown change on status feature for '" + changedObject + "'.";
@@ -275,52 +283,40 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 			}
 		} else if (changedObject instanceof SnomedComplexMapRefSetMember) {
 			if (CORRELATION_ID_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), 
-						getReferencedComponentLabel((SnomedComplexMapRefSetMember) changedObject)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue),  null).toString();
 			} else if (STATUS_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue), 
-						getReferencedComponentLabel((SnomedComplexMapRefSetMember) changedObject)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue),  null).toString();
 			} else if (EFFECTIVE_TIME_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						DateFormat.getDateInstance().format(featureValue),
-						getReferencedComponentLabel((SnomedComplexMapRefSetMember) changedObject)).toString();
+						DateFormat.getDateInstance().format(featureValue), null).toString();
 			} else if (MAP_GROUP_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), 
-						getReferencedComponentLabel((SnomedComplexMapRefSetMember) changedObject)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), null).toString();
 			}
 		} else if (changedObject instanceof SnomedRefSetMember) {
 			if (DESCRIPTION_LENGTH_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), 
-						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), String.valueOf(featureValue), null).toString();
 			} else if (DESCRIPTION_FORMAT_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(changedObject.cdoView()), String.valueOf(featureValue)), 
-						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
+						getConceptLabel(getConcept(String.valueOf(featureValue), changedObject.cdoView())), null).toString();
 			} else if (STATUS_FEATURE_NAME.equals(featureName)) {
-				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue), 
-						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
+				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue), null).toString();
 			} else if (EFFECTIVE_TIME_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						DateFormat.getDateInstance().format(featureValue),
-						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
+						DateFormat.getDateInstance().format(featureValue), null).toString();
 			} else if (RELEASED_FEATURE_NAME.equals(featureName)) {
-				return getPublishedChange(featureName, builder, getReferencedComponentLabel((SnomedRefSetMember) changedObject), featureValue);
+				return getPublishedChange(featureName, builder, null, featureValue);
 			} else if (VALUE_ID_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(changedObject.cdoView()), String.valueOf(featureValue)), 
-						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
+						getConceptLabel(getConcept(String.valueOf(featureValue), changedObject.cdoView())),  null).toString();
 			} else if (MODULE_ID_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(changedObject.cdoView()), String.valueOf(featureValue)), 
-						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
+						getConceptLabel(getConcept(String.valueOf(featureValue), changedObject.cdoView())),  null).toString();
 			} else if (SOURCE_EFFECTIVE_TIME_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						DateFormat.getDateInstance().format(featureValue),
-						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
+						DateFormat.getDateInstance().format(featureValue), null).toString();
 			} else if (TARGET_EFFECTIVE_TIME_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), 
-						DateFormat.getDateInstance().format(featureValue),
-						getReferencedComponentLabel((SnomedRefSetMember) changedObject)).toString();
+						DateFormat.getDateInstance().format(featureValue), null).toString();
 
 			} else if (ACCEPTABILITY_ID_FEATURE_NAME.equals(featureName)) {
 				// IHTSDO is changing the acceptability of existing language members in case of PT changes on a concept. 
@@ -334,12 +330,12 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 			
 		} else if (changedObject instanceof SnomedMappingRefSet) {
 			if (MAP_TARGET_TYPE_FEATURE_NAME.equals(featureName)) {
-				final String label = getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(changedObject.cdoView()), ((SnomedMappingRefSet) changedObject).getIdentifierId());
+				final String label = getConceptLabel(getConcept(((SnomedMappingRefSet) changedObject).getIdentifierId(), changedObject.cdoView()));
 				return appendDescription(builder, getFeatureMapping().get(featureName), getTerminologyComponentName(featureValue), label).toString();
 			}
 		} else if (changedObject instanceof SnomedRefSet) {
 			if (RELEASED_FEATURE_NAME.equals(featureName)) {
-				final String label = getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(changedObject.cdoView()), ((SnomedRefSet) changedObject).getIdentifierId());
+				final String label = getConceptLabel(getConcept(((SnomedRefSet) changedObject).getIdentifierId(), changedObject.cdoView()));
 				return getPublishedChange(featureName, builder, label, featureValue);
 			}
 		}
@@ -374,54 +370,45 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		return !Concepts.FULLY_SPECIFIED_NAME.equals(typeId) && !Concepts.TEXT_DEFINITION.equals(typeId);
 	}
 	
-	private String getRefSetChangeDescription(final SnomedRefSetMember cdoObject, final CDOView beforeView, final CDOView currentView, final String change) {
-		if (cdoObject instanceof SnomedRefSetMember) {
-			final SnomedRefSetMember member = (SnomedRefSetMember) cdoObject;
-			String label = getReferencedComponentLabel(member);
+	private String getRefSetChangeDescription(final SnomedRefSetMember member, final CDOView beforeView, final CDOView currentView, final String change) {
+		
+		if (member instanceof SnomedSimpleMapRefSetMember) {
+			return change + getIdentifierConceptLabel(member) + "."; 
+		} else if (member instanceof SnomedDescriptionTypeRefSetMember) {
+			return change + getIdentifierConceptLabel(member) + ".";
+		} else if (member instanceof SnomedLanguageRefSetMember) {
 			
-			if (isEmpty(label)) {
-				label = member.getReferencedComponentId();
-			}
-			
-			if (member instanceof SnomedSimpleMapRefSetMember) {
-				return label + " " + change + getIdentifierConceptLabel(member) + "."; 
-			} else if (member instanceof SnomedDescriptionTypeRefSetMember) {
-				return label + " " + change + getIdentifierConceptLabel(member) + ".";
-			} else if (member instanceof SnomedLanguageRefSetMember) {
+			if (isPtLanguageMember(member)) {
 				
-				if (isPtLanguageMember(member)) {
-					
-					//ignore deletion
-					if ("detached from ".equals(change)) {
-						return null;
-					}
-					
-					final SnomedLanguageRefSetMember languageMember = (SnomedLanguageRefSetMember) member;
-					final Description description = (Description) languageMember.eContainer();
-					final Concept concept = description.getConcept();
-					final String refSetId = languageMember.getRefSetIdentifierId();
-					final CDOObject beforeConcept = CDOUtils.getObjectIfExists(beforeView, concept.cdoID());
-					final String previousPt = tryFindPreviousPtForLanguage(beforeConcept, refSetId);
-					final String languageRefSetPt = getPreferredTerm(createPath(cdoObject), refSetId);
-
-					if (null == previousPt) {
-						return "New " + languageRefSetPt + " preferred term \"" + description.getTerm() + "\".";
-					} else {
-						return languageRefSetPt + " preferred term changed to \"" + description.getTerm() + "\" from \"" + previousPt + "\".";
-					}
+				//ignore deletion
+				if ("detached from ".equals(change)) {
+					return null;
 				}
 				
-				//intentionally null. we will ignore everything but the PT language changes
-				return null;
-			} else if (member instanceof SnomedAttributeValueRefSetMember) {	
-				return label + " " + change + getIdentifierConceptLabel(member) + ".";
-			}else if (member instanceof SnomedRefSetMember || member instanceof SnomedQueryRefSetMember) {
-				return label + " " + change + getIdentifierConceptLabel(member) + ".";
-			} else if (member instanceof SnomedConcreteDataTypeRefSetMember) {
-				
+				final SnomedLanguageRefSetMember languageMember = (SnomedLanguageRefSetMember) member;
+				final Description description = (Description) languageMember.eContainer();
+				final Concept concept = description.getConcept();
+				final String refSetId = languageMember.getRefSetIdentifierId();
+				final CDOObject beforeConcept = CDOUtils.getObjectIfExists(beforeView, concept.cdoID());
+				final String previousPt = tryFindPreviousPtForLanguage(beforeConcept, refSetId);
+				final String languageRefSetPt = getConceptLabel(getConcept(refSetId, member.cdoView()));
+
+				if (null == previousPt) {
+					return "New " + languageRefSetPt + " preferred term \"" + description.getTerm() + "\".";
+				} else {
+					return languageRefSetPt + " preferred term changed to \"" + description.getTerm() + "\" from \"" + previousPt + "\".";
+				}
 			}
+			
+			//intentionally null. we will ignore everything but the PT language changes
+			return null;
+		} else if (member instanceof SnomedAttributeValueRefSetMember) {	
+			return change + getIdentifierConceptLabel(member) + ".";
+		} else if (member instanceof SnomedConcreteDataTypeRefSetMember) {
+			throw new UnsupportedOperationException("Concrete domain members are not supported"); //XXX
+		} else {
+			return change + getIdentifierConceptLabel(member) + ".";
 		}
-		throw new IllegalArgumentException("Unsupported reference set member: " + cdoObject.getClass());
 	}
 	
 	private String tryFindPreviousPtForLanguage(final CDOObject concept, final String refSetId) {
@@ -448,20 +435,14 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 	}
 
 	private String getConcreteDataTypeItem(final SnomedConcreteDataTypeRefSetMember cdtMember) {
-		final StringBuilder builder = new StringBuilder();
-		builder.append(cdtMember.getLabel());
-		builder.append(" " + String.valueOf(cdtMember.getSerializedValue()));
-		final String uomComponentId = cdtMember.getUomComponentId();
-		if (null != uomComponentId) {
-			builder.append(" " + getConceptNameProvider().getComponentLabel(BranchPathUtils.createPath(cdtMember.cdoView()), uomComponentId));
-		}
-		return builder.toString();
+		return new StringBuilder()
+			.append(cdtMember.getLabel())
+			.append(" ")
+			.append(String.valueOf(cdtMember.getSerializedValue()))
+			.append(cdtMember.getUomComponentId() != null ? getConceptLabel(getConcept(cdtMember.getUomComponentId(), cdtMember.cdoView())) : "")
+			.toString();
 	}
 	
-	private ISnomedConceptNameProvider getConceptNameProvider() {
-		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class);
-	}
-
 	private String getComponent(final CDOObject cdoObject) {
 		if (isPtLanguageMember(cdoObject)) { //act as a concept change if the PT changed
 			return CoreTerminologyBroker.getInstance().getComponentInformation(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).getName();
@@ -478,10 +459,6 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		return CoreTerminologyBroker.getInstance().getComponentInformation(terminologyComponentId).getName();
 	}
 
-	private String getAttributeValueSeparator(final Relationship relationship) {
-		return relationship.isDestinationNegated() ? " NOT " : " ";
-	}
-
 	private String getBooleanValue(final Object featureValue) {
 		return getBooleanValue(featureValue, "active", "inactive");
 	}
@@ -495,8 +472,10 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		builder.append(attributeName);
 		builder.append("' changed to ");
 		builder.append(newValue);
-		builder.append(" on ");
-		builder.append(changedOn);
+		if (!StringUtils.isEmpty(changedOn)) {
+			builder.append(" on ");
+			builder.append(changedOn);
+		}
 		builder.append(".");
 		return builder;
 	}
@@ -552,77 +531,13 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		return Collections.unmodifiableMap(map);
 	}
 	
-	private String getPreferredTerm(final Concept concept) {
-		final String label = getPreferredTerm(createPath(concept), concept.getId());
-		return isEmpty(label) ? concept.getFullySpecifiedName() : label; 
-	}
-
-	private String getPreferredTerm(final IBranchPath branchPath, final String id) {
-		return getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, id);
-	}
-	
-	private String getReferencedComponentLabel(final SnomedRefSetMember member) {
-
-		final IEventBus eventBus = getEventBus();
-		final InternalCDORevision revision = (InternalCDORevision) member.cdoRevision();
-		final IBranchPath branchPath = createPath(member);
-		final String id = String.valueOf(revision.get(SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_ReferencedComponentId(), CDOStore.NO_INDEX));
-		final short referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(id);
-		final List<ExtendedLocale> locales = getLocales();
-		
-		switch (referencedComponentType) {
-			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: //$FALL-THROUGH$
-			case SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER:
-				return getPreferredTerm(branchPath, id);
-			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: //$FALL-THROUGH$
-				return SnomedRequests.prepareGetDescription()
-						.setLocales(locales)
-						.setComponentId(id)
-						.build(branchPath.getPath())
-						.executeSync(eventBus).getTerm();
-			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
-				final ISnomedRelationship relationship = SnomedRequests.prepareGetRelationship()
-						.setLocales(locales)
-						.setComponentId(id)
-						.setExpand("source(expand(pt())),type(expand(pt())),destination(expand(pt()))")
-						.build(branchPath.getPath())
-						.executeSync(eventBus);
-				return String.format("%s %s %s", relationship.getSourceConcept().getPt().getTerm(),
-						relationship.getTypeConcept().getPt().getTerm(), relationship.getDestinationConcept().getPt().getTerm());
-			default:
-				throw new IllegalArgumentException("Unexpected or unknown terminology component type: " + referencedComponentType);
-		}
-	}
-
-	private IEventBus getEventBus() {
-		return ApplicationContext.getInstance().getService(IEventBus.class);
-	}
-
-	private List<ExtendedLocale> getLocales() {
-		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
-	}
-
-	private String getLabel(final SnomedRefSet refSet) {
-		return getPreferredTerm(createPath(refSet), refSet.getIdentifierId());
-	}
-	
 	private String getIdentifierConceptLabel(final SnomedRefSetMember member) {
-		final IBranchPath branchPath = createPath(member.cdoView());
 		final String refSetIdentifierId = member.getRefSetIdentifierId();
-		final Pair<IBranchPath, String> pair = identicalPairOf(branchPath, refSetIdentifierId);
-		final String label = idLabelCache.getUnchecked(pair);
+		final String label = getConceptLabel(getConcept(refSetIdentifierId, member.cdoView()));
 		if (refSetIdentifierId.equals(label)) {
 			return "deleted reference set " + label;
 		}
 		return label;
 	}
 	
-	private String getLabel(final Relationship relationship) {
-		
-		return getPreferredTerm(relationship.getSource()) 
-				+ " " 
-				+ getPreferredTerm(relationship.getType()) 
-				+ getAttributeValueSeparator(relationship) 
-				+ getPreferredTerm(relationship.getDestination());
-	}
 }

@@ -30,6 +30,7 @@ import com.b2international.commons.collections.CloseableMap;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.history.HistoryInfoConfiguration;
+import com.b2international.snowowl.datastore.history.StorageKeyCache;
 
 /**
  * Low-level historical information configuration implementation.
@@ -151,6 +152,11 @@ public class InternalHistoryInfoConfigurationImpl implements InternalHistoryInfo
 
 	private static long getBaseBranchTimestamp(final CDOView view) {
 		return check(view).getBranch().getBase().getTimeStamp();
+	}
+
+	@Override
+	public StorageKeyCache getStorageKeyCache() {
+		return configuration.getStorageKeyCache();
 	}
 
 }

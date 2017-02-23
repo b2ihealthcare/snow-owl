@@ -62,6 +62,7 @@ import com.b2international.snowowl.datastore.delta.IComponentDeltaBuilder;
 import com.b2international.snowowl.datastore.delta.IComponentDeltaProvider;
 import com.b2international.snowowl.datastore.history.HistoryInfoAdapter;
 import com.b2international.snowowl.datastore.history.HistoryInfoDetailsBuilder;
+import com.b2international.snowowl.datastore.history.NullHistoryInfoConfiguration;
 import com.b2international.snowowl.datastore.server.history.HistoryInfoDetailsBuilderProvider;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -207,7 +208,7 @@ public abstract class ComponentDeltaProvider<C extends ComponentDelta> implement
 				final CoreTerminologyBroker terminologyBroker = CoreTerminologyBroker.getInstance();
 				final String terminologyComponentId = terminologyBroker.getTerminologyComponentId(object);
 				final HistoryInfoDetailsBuilder detailsBuilder = HistoryInfoDetailsBuilderProvider.INSTANCE.getBuilder(terminologyComponentId);
-				final Collection<IHistoryInfoDetails> details = detailsBuilder.buildDetails(currentView, baseView, filteredCommitInfo);
+				final Collection<IHistoryInfoDetails> details = detailsBuilder.buildDetails(currentView, baseView, filteredCommitInfo, NullHistoryInfoConfiguration.INSTANCE);
 				
 				return Collections.singleton(createHistoryInfo(details));
 				

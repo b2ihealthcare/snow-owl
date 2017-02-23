@@ -21,7 +21,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
  * Encapsulates all information required for getting the history of a terminology independent component.
  */
 public interface HistoryInfoConfiguration {
-
+	
 	/**
 	 * Returns the storage key of a terminology independent component.
 	 */
@@ -41,4 +41,9 @@ public interface HistoryInfoConfiguration {
 	 * Returns the active branch path from where history should be computed.
 	 */
 	IBranchPath getBranchPath();
+	
+	/**
+	 * Returns a Cache mapping between conceptId and  storageKey.
+	 */
+	StorageKeyCache getStorageKeyCache();
 }

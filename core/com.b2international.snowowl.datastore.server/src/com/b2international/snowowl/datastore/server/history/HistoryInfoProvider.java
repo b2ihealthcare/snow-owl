@@ -289,7 +289,7 @@ public enum HistoryInfoProvider {
 				
 				final HistoryInfoDetailsBuilder builder = // 
 						HistoryInfoDetailsBuilderProvider.INSTANCE.getBuilder(configuration.getTerminologyComponentId());
-				details.addAll(builder.buildDetails(currentView, beforeView, commitInfo)); 
+				details.addAll(builder.buildDetails(currentView, beforeView, commitInfo, configuration)); 
 			}
 			
 		} finally {

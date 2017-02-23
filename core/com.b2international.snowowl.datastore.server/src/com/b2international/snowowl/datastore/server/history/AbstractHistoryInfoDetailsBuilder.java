@@ -38,6 +38,7 @@ import com.b2international.snowowl.core.api.IHistoryInfoDetails;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.history.HistoryInfoConfiguration;
 import com.b2international.snowowl.datastore.history.HistoryInfoDetailsBuilder;
 
 /**
@@ -45,12 +46,15 @@ import com.b2international.snowowl.datastore.history.HistoryInfoDetailsBuilder;
  */
 public abstract class AbstractHistoryInfoDetailsBuilder implements HistoryInfoDetailsBuilder {
 
+	private HistoryInfoConfiguration config;
+
 	/*
 	 * (non-Javadoc)
 	 * @see com.b2international.snowowl.datastore.history.IHistoryInfoDetailsBuilder#buildDetails(org.eclipse.emf.cdo.view.CDOView, org.eclipse.emf.cdo.view.CDOView, org.eclipse.emf.cdo.common.commit.CDOCommitInfo)
 	 */
 	@Override
-	public Collection<IHistoryInfoDetails> buildDetails(final CDOView currentView, final CDOView beforeView, final CDOCommitInfo commitInfo) {
+	public Collection<IHistoryInfoDetails> buildDetails(final CDOView currentView, final CDOView beforeView, final CDOCommitInfo commitInfo, HistoryInfoConfiguration config) {
+		this.config = config;
 		final List<IHistoryInfoDetails> details = new ArrayList<IHistoryInfoDetails>();
 		
 		details.addAll(processNewObjects(commitInfo.getNewObjects(), beforeView, currentView));
@@ -172,4 +176,8 @@ public abstract class AbstractHistoryInfoDetailsBuilder implements HistoryInfoDe
 	}
 
 	public abstract String getDescription(final CDOObject cdoObject, CDOView beforeView, CDOView currentView, final String change, final String refsetChange);
+	
+	public HistoryInfoConfiguration getConfig() {
+		return config;
+	}
 }
