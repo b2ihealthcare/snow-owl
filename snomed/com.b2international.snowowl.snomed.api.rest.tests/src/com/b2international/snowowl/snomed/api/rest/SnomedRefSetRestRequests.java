@@ -54,6 +54,14 @@ public class SnomedRefSetRestRequests {
 				.then();
 	}
 
+	public static ValidatableResponse executeMemberAction(IBranchPath branchPath, String memberId, Map<?, ?> actionRequest) {
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+				.contentType(ContentType.JSON)
+				.body(actionRequest)
+				.post("/{path}/members/{id}/actions", branchPath.getPath(), memberId)
+				.then();
+	}
+
 	public static void updateRefSetMemberEffectiveTime(IBranchPath memberPath, String memberId, Date effectiveTime) {
 		String effectiveTimeAsString = EffectiveTimes.format(effectiveTime, DateFormats.SHORT);
 
