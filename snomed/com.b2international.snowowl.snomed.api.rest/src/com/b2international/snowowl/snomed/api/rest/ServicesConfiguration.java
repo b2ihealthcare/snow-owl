@@ -53,11 +53,7 @@ import com.b2international.snowowl.datastore.review.ConceptChangesMixin;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponent;
-import com.b2international.snowowl.snomed.api.rest.domain.BranchMixin;
-import com.b2international.snowowl.snomed.api.rest.domain.BranchStateMixin;
-import com.b2international.snowowl.snomed.api.rest.domain.CollectionResourceMixin;
-import com.b2international.snowowl.snomed.api.rest.domain.ISnomedComponentMixin;
-import com.b2international.snowowl.snomed.api.rest.domain.ReviewMixin;
+import com.b2international.snowowl.snomed.api.rest.domain.*;
 import com.b2international.snowowl.snomed.api.rest.util.CsvMessageConverter;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -67,7 +63,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.module.scala.DefaultScalaModule;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
@@ -174,7 +169,6 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 	@Bean
 	public ObjectMapper objectMapper() {
 		final ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new DefaultScalaModule());
 		objectMapper.registerModule(new GuavaModule());
 		objectMapper.setSerializationInclusion(Include.NON_EMPTY);
 		final ISO8601DateFormat df = new ISO8601DateFormat();
