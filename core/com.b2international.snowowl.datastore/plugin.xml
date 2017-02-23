@@ -30,11 +30,6 @@
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob
-            class="com.b2international.snowowl.datastore.remotejobs.RemoteJobClientServiceConfigJob"
-            id="com.b2international.snowowl.datastore.remotejobs.RemoteJobClientServiceConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.datastore.version.VersionCompareServiceClientConfigJob"
             id="com.b2international.snowowl.datastore.version.VersionCompareServiceClientConfigJob"
             terminologyId="UNSPECIFIED">
