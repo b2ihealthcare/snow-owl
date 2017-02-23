@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.request.job;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 
@@ -44,6 +45,10 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	public ScheduleJobRequestBuilder setDescription(String description) {
 		this.description = description;
 		return getSelf();
+	}
+	
+	public ScheduleJobRequestBuilder setRequest(AsyncRequest<?> request) {
+		return setRequest(request.getRequest());
 	}
 	
 	public ScheduleJobRequestBuilder setRequest(Request<ServiceProvider, ?> request) {

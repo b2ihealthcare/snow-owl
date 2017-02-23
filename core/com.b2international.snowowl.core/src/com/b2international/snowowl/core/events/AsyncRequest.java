@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.events;
 
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
@@ -25,9 +26,9 @@ import com.b2international.snowowl.eventbus.IMessage;
  */
 public final class AsyncRequest<R> {
 
-	private final Request<?, R> request;
+	private final Request<ServiceProvider, R> request;
 
-	public AsyncRequest(Request<?, R> request) {
+	public AsyncRequest(Request<ServiceProvider, R> request) {
 		this.request = request;
 	}
 	
@@ -54,6 +55,10 @@ public final class AsyncRequest<R> {
 			}
 		});
 		return promise;
+	}
+	
+	public Request<ServiceProvider, R> getRequest() {
+		return request;
 	}
 
 }
