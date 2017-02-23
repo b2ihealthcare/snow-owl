@@ -78,8 +78,7 @@ class StrengthService implements IStrengthService {
  		val result = entries.forall[attributeLabel.endsWith(CD_NUMERATOR_VALUE)]
  		
  		if (entries.size > 1 && result) {
- 			println ("found invalid concrete domain:")
- 			entries.forEach[entry | println ("characteristicType:" + entry.characteristicTypeId + "; referencedComponent: " + entry.referencedComponentId + " UUID: " + entry.id)]
+ 			entries.forEach[LOG.info("Found multiple simple type strength for {}: {}", it.referencedComponentId, it)]
  		}
  		
  		return result;
