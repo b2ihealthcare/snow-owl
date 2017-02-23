@@ -23,6 +23,7 @@ import java.util.Map;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
@@ -37,7 +38,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
@@ -207,6 +207,10 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 		switch (entry.getReferenceSetType()) {
 			case ASSOCIATION:
 				props.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, convertToResource(entry.getTargetComponent()));
+				break;
+			case MODULE_DEPENDENCY:
+				props.put(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, EffectiveTimes.format(entry.getSourceEffectiveTime(), DateFormats.SHORT));
+				props.put(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, EffectiveTimes.format(entry.getTargetEffectiveTime(), DateFormats.SHORT));
 				break;
 			default:
 				break;
