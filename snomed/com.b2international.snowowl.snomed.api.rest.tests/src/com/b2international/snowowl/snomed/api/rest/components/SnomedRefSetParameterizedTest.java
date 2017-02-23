@@ -17,8 +17,10 @@ package com.b2international.snowowl.snomed.api.rest.components;
 
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranch;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createConceptRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSet;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.getFirstAllowedReferencedComponentType;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION;
@@ -116,6 +118,22 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 		}
 	}
 
+	@Test
+	public void deleteRefSet() {
+		String refSetId = createNewRefSet(branchPath, refSetType);
+		deleteComponent(branchPath, SnomedComponentType.REFSET, refSetId, false).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.REFSET, refSetId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, refSetId).statusCode(200);
+	}
+
+	@Test
+	public void deleteIdentifierConcept() {
+		String refSetId = createNewRefSet(branchPath, refSetType);
+		deleteComponent(branchPath, SnomedComponentType.CONCEPT, refSetId, false).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.REFSET, refSetId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, refSetId).statusCode(404);
+	}
+
 	private ValidatableResponse createRefSet(IBranchPath refSetPath, String parentConceptId, String referencedComponentType) {
 		Map<?, ?> refSetRequestBody = createConceptRequestBody(parentConceptId)
 				.put("type", refSetType)
@@ -126,6 +144,4 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 		return createComponent(refSetPath, SnomedComponentType.REFSET, refSetRequestBody);
 	}
 
-	// TODO: delete refset!
-	
 }
