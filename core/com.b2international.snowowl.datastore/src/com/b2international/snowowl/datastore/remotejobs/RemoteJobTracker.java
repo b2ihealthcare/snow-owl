@@ -18,6 +18,8 @@ package com.b2international.snowowl.datastore.remotejobs;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -46,17 +48,53 @@ import com.google.common.collect.Sets;
  */
 public final class RemoteJobTracker implements IDisposableService {
 
+	private static class Holder {
+		private static final Timer CLEANUP_TIMER = new Timer("RemoteJob cleanup", true);
+	}
+	
+	private final class CleanUpTask extends TimerTask {
+		@Override
+		public void run() {
+			try {
+				index.write(writer -> {
+					final Hits<RemoteJobEntry> hits = writer.searcher().search(Query.select(RemoteJobEntry.class)
+							.where(
+								Expressions.builder()
+									.must(RemoteJobEntry.Expressions.deleted(true))
+									.must(RemoteJobEntry.Expressions.done())
+									.build()
+							)
+							.offset(0)
+							.limit(Integer.MAX_VALUE)
+							.build());
+					if (hits.getTotal() > 0) {
+						final Set<String> ids = FluentIterable.from(hits).transform(RemoteJobEntry::getId).toSet();
+						System.err.println("purging " + ids);
+						writer.removeAll(ImmutableMap.of(RemoteJobEntry.class, ids));
+						writer.commit();
+					}
+					return null;
+				});
+			} catch (IllegalStateException e) {
+				cancel();
+			}
+		}
+	}
+	
 	private final AtomicBoolean disposed = new AtomicBoolean(false);
 	private final Index index;
 	private final RemoteJobChangeAdapter listener;
+	private final CleanUpTask cleanUp;
 	private final IEventBus events;
 
-	public RemoteJobTracker(Index index, IEventBus events) {
+	public RemoteJobTracker(Index index, IEventBus events, final long remoteJobCleanUpInterval) {
 		this.index = index;
 		this.events = events;
 		this.index.admin().create();
 		this.listener = new RemoteJobChangeAdapter();
 		Job.getJobManager().addJobChangeListener(listener);
+		this.cleanUp = new CleanUpTask();
+		Holder.CLEANUP_TIMER.schedule(cleanUp, remoteJobCleanUpInterval, remoteJobCleanUpInterval);
 	}
 	
 	public RemoteJobs search(Expression query, int offset, int limit) {
@@ -83,6 +121,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	public void requestCancel(String jobId) {
 		final RemoteJobEntry job = get(jobId);
 		if (job != null && !job.isCancelled()) {
+			System.err.println("cancelling " + jobId);
 			update(jobId, current -> RemoteJobEntry.from(current).state(RemoteJobState.CANCEL_REQUESTED).build());
 			Job.getJobManager().cancel(SingleRemoteJobFamily.create(jobId));
 		}
@@ -105,8 +144,10 @@ public final class RemoteJobTracker implements IDisposableService {
 		final Set<String> remoteJobsToDelete = Sets.difference(Sets.newHashSet(jobIds), remoteJobsToCancel);
 		index.write(writer -> {
 			// if the job still running or scheduled, then mark it deleted and the done handler will delete it
+			System.err.println("deleting " + remoteJobsToDelete);
 			writer.removeAll(ImmutableMap.of(RemoteJobEntry.class, remoteJobsToDelete));
 			final Function<RemoteJobEntry, RemoteJobEntry> setDeletedToTrue = current -> RemoteJobEntry.from(current).deleted(true).build();
+			System.err.println("marking for deletion " + remoteJobsToCancel);
 			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, Expressions.matchAny(DocumentMapping._ID, remoteJobsToCancel), RemoteJobEntry::getId, setDeletedToTrue));
 			writer.commit();
 			return null;
@@ -123,17 +164,7 @@ public final class RemoteJobTracker implements IDisposableService {
 		});
 	}
 	
-	private void delete(String id) {
-		System.err.println("deleting job " + id);
-		index.write(writer -> {
-			writer.remove(RemoteJobEntry.class, id);
-			writer.commit();
-			return null;
-		});
-	}
-	
 	private void update(String id, Function<RemoteJobEntry, RemoteJobEntry> mutator) {
-		System.err.println("updating job " + id);
 		index.write(writer -> {
 			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, DocumentMapping.matchId(id), RemoteJobEntry::getId, mutator));
 			writer.commit();
@@ -144,6 +175,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	@Override
 	public void dispose() {
 		if (disposed.compareAndSet(false, true)) {
+			this.cleanUp.cancel();
 			Job.getJobManager().removeJobChangeListener(listener);
 			this.index.admin().close();
 		}
@@ -154,8 +186,8 @@ public final class RemoteJobTracker implements IDisposableService {
 		return disposed.get();
 	}
 	
-	IProgressMonitor createMonitor(IProgressMonitor monitor) {
-		return monitor;
+	IProgressMonitor createMonitor(String jobId, IProgressMonitor monitor) {
+		return new RemoteJobProgressMonitor(monitor, percentComplete -> update(jobId, current -> RemoteJobEntry.from(current).completionLevel(percentComplete).build()));
 	}
 	
 	private class RemoteJobChangeAdapter extends JobChangeAdapter {
@@ -179,12 +211,14 @@ public final class RemoteJobTracker implements IDisposableService {
 			if (event.getJob() instanceof RemoteJob) {
 				final RemoteJob job = (RemoteJob) event.getJob();
 				final String id = job.getId();
-				System.err.println("running " + id);
 				final Date startDate = new Date();
-				update(id, current -> RemoteJobEntry.from(current)
-						.state(RemoteJobState.RUNNING)
-						.startDate(startDate)
-						.build());
+				System.err.println("running " + id);
+				update(id, current -> {
+					return RemoteJobEntry.from(current)
+							.state(RemoteJobState.RUNNING)
+							.startDate(startDate)
+							.build();
+				});
 			}
 		}
 		
@@ -198,28 +232,24 @@ public final class RemoteJobTracker implements IDisposableService {
 				if (jobEntry == null) {
 					return;
 				}
-				if (jobEntry.isDeleted()) {
-					delete(id);
+				final IStatus result = job.getResult();
+				final Object response = job.getResponse();
+				final Date finishDate = new Date();
+				final RemoteJobState newState;
+				if (result.isOK()) {
+					newState = RemoteJobState.FINISHED;
+				} else if (result.matches(IStatus.CANCEL)) {
+					newState = RemoteJobState.CANCELLED;
 				} else {
-					final IStatus result = job.getResult();
-					final Object response = job.getResponse();
-					final Date finishDate = new Date();
-					final RemoteJobState newState;
-					if (result.isOK()) {
-						newState = RemoteJobState.FINISHED;
-					} else if (result.matches(IStatus.CANCEL)) {
-						newState = RemoteJobState.CANCELLED;
-					} else {
-						newState = RemoteJobState.FAILED;
-					}
-					update(id, current -> {
-						return RemoteJobEntry.from(current)
-								.result(response)
-								.finishDate(finishDate)
-								.state(newState)
-								.build();
-					});
+					newState = RemoteJobState.FAILED;
 				}
+				update(id, current -> {
+					return RemoteJobEntry.from(current)
+							.result(response)
+							.finishDate(finishDate)
+							.state(newState)
+							.build();
+				});
 			}
 		}
 		

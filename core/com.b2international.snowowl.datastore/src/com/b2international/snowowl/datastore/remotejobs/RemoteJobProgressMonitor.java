@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.remotejobs;
+package com.b2international.snowowl.datastore.remotejobs;
 
-import java.util.UUID;
+import java.util.function.Consumer;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
-
-import com.google.common.base.Preconditions;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.ProgressMonitorWrapper;
 
 /**
+ * @since 5.7
  */
-public class RemoteJobProgressMonitor extends NullProgressMonitor {
+public final class RemoteJobProgressMonitor extends ProgressMonitorWrapper {
 
-	private final RemoteJobManager remoteJobManager;
-
-	private final UUID remoteJobId;
+	private final Consumer<Integer> onProgressUpdate;
 
 	private int totalWork;
-	
 	private double unitsWorked;
 	
-	public RemoteJobProgressMonitor(RemoteJobManager remoteJobManager, UUID remoteJobId) {
-		Preconditions.checkNotNull(remoteJobManager, "Remote job management service reference may not be null.");
-		Preconditions.checkNotNull(remoteJobId, "Remote job identifier may not be null.");
-		this.remoteJobManager = remoteJobManager;
-		this.remoteJobId = remoteJobId;
+	public RemoteJobProgressMonitor(IProgressMonitor monitor, Consumer<Integer> onProgressUpdate) {
+		super(monitor);
+		this.onProgressUpdate = onProgressUpdate;
 	}
 	
 	@Override
@@ -78,7 +73,7 @@ public class RemoteJobProgressMonitor extends NullProgressMonitor {
 		int oldProgress = getProgress(oldUnits);
 		int newProgress = getProgress(newUnits);
 		if (newProgress > oldProgress) {
-			remoteJobManager.updateUnits(remoteJobId, newProgress);
+			onProgressUpdate.accept(newProgress);
 		}
 	}
 

@@ -15,10 +15,15 @@
  */
 package com.b2international.snowowl.datastore.remotejobs;
 
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.match;
+import static com.b2international.index.query.Expressions.matchAny;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.index.Doc;
@@ -30,14 +35,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
-/**
- */
 @Doc(type = "job")
 @JsonDeserialize(builder=RemoteJobEntry.Builder.class)
 public final class RemoteJobEntry implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	private static final Set<RemoteJobState> DONE_STATES = ImmutableSet.of(RemoteJobState.FINISHED, RemoteJobState.FAILED, RemoteJobState.CANCELLED);
 
 	public static final int MIN_COMPLETION_LEVEL = 0;
 	public static final int MAX_COMPLETION_LEVEL = 100;
@@ -46,6 +51,7 @@ public final class RemoteJobEntry implements Serializable {
 		public static final String ID = "id";
 		public static final String DELETED = "deleted";
 		public static final String USER = "user";
+		public static final String STATE = "state";
 	}
 	
 	public static class Expressions {
@@ -64,6 +70,10 @@ public final class RemoteJobEntry implements Serializable {
 		public static Expression user(String user) {
 			return exactMatch(Fields.USER, user);
 		}
+
+		public static Expression done() {
+			return matchAny(Fields.STATE, DONE_STATES.stream().map(Enum::name).collect(Collectors.toSet()));
+		}
 		
 	}
 	
@@ -77,7 +87,8 @@ public final class RemoteJobEntry implements Serializable {
 				.finishDate(from.getFinishDate())
 				.state(from.getState())
 				.completionLevel(from.getCompletionLevel())
-				.result(from.getResult());
+				.result(from.getResult())
+				.deleted(from.isDeleted());
 	}
 	
 	public static RemoteJobEntry.Builder builder() {
@@ -244,7 +255,7 @@ public final class RemoteJobEntry implements Serializable {
 
 	@JsonIgnore
 	public boolean isDone() {
-		return getState().oneOf(RemoteJobState.FINISHED, RemoteJobState.FAILED, RemoteJobState.CANCELLED);
+		return DONE_STATES.contains(getState());
 	}
 	
 	@JsonIgnore

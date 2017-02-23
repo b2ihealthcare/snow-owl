@@ -31,7 +31,7 @@ import com.google.common.base.Predicate;
  * @since 5.7
  * @param <R>
  */
-public class RemoteJob extends Job {
+public final class RemoteJob extends Job {
 
 	private final String id;
 	private final ServiceProvider context;
@@ -55,12 +55,13 @@ public class RemoteJob extends Job {
 	
 	@Override
 	protected final IStatus run(IProgressMonitor monitor) {
+		final IProgressMonitor trackerMonitor = this.context.service(RemoteJobTracker.class).createMonitor(id, monitor);
 		try {
 			// seed the monitor instance into the current context, so the request can use it for progress reporting
-			final IProgressMonitor trackerMonitor = this.context.service(RemoteJobTracker.class).createMonitor(monitor);
 			final DelegatingServiceProvider context = DelegatingServiceProvider
 					.basedOn(this.context)
 					.bind(IProgressMonitor.class, trackerMonitor)
+					.bind(RemoteJob.class, this)
 					.build();
 			this.response = request.execute(context);
 			return Statuses.ok();

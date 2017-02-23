@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
@@ -56,7 +57,7 @@ public class JobRequestsTest {
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 		final Index index = Indexes.createIndex("jobs", mapper, new Mappings(RemoteJobEntry.class));
 		this.bus = Mockito.mock(IEventBus.class);
-		this.tracker = new RemoteJobTracker(index, bus);
+		this.tracker = new RemoteJobTracker(index, bus, 200);
 		this.context = DelegatingServiceProvider
 				.basedOn(ServiceProvider.EMPTY)
 				.bind(RemoteJobTracker.class, tracker)
@@ -119,9 +120,31 @@ public class JobRequestsTest {
 		}
 		// assert that the tracker will eventually delete the job entry
 		RemoteJobEntry entry = null;
+		int numberOfTries = 10; 
 		do {
 			entry = tracker.get(jobId);
-		} while (entry != null);
+			Thread.sleep(50);
+		} while (entry != null && --numberOfTries > 0);
+		assertNull("Entry couldn't be removed by tracker after marked for deletion", entry);
+	}
+	
+	@Test
+	public void scheduleAndMonitor() throws Exception {
+		final String jobId = schedule("scheduleAndMonitor", context -> {
+			final IProgressMonitor monitor = context.service(IProgressMonitor.class);
+			final int totalWork = 10;
+			monitor.beginTask("Reticulating splines...", totalWork);
+			final RemoteJob job = context.service(RemoteJob.class);
+			for (int i = 0; i < totalWork; i++) {
+				RemoteJobEntry inProgress = get(job.getId());
+				assertEquals(i * totalWork, inProgress.getCompletionLevel());
+				monitor.worked(1);
+			}
+			return RESULT;
+		});
+		
+		final RemoteJobEntry job = waitDone(jobId);
+		assertEquals(100, job.getCompletionLevel());
 	}
 
 	private RemoteJobEntry waitDone(final String jobId) {
