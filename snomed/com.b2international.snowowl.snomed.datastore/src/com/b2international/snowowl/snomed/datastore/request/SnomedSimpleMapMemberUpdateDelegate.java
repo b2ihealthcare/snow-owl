@@ -32,7 +32,7 @@ final class SnomedSimpleMapMemberUpdateDelegate extends SnomedRefSetMemberUpdate
 	@Override
 	boolean execute(SnomedRefSetMember member, TransactionContext context) {
 		SnomedSimpleMapRefSetMember mapMember = (SnomedSimpleMapRefSetMember) member;
-		String newMapTargetId = getProperty(SnomedRf2Headers.FIELD_MAP_TARGET);
+		String newMapTargetId = getComponentId(SnomedRf2Headers.FIELD_MAP_TARGET);
 		String newMapTargetDescription = getProperty(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION);
 
 		boolean changed = false;

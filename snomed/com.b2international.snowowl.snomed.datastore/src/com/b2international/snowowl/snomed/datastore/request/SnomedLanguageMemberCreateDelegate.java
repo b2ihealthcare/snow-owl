@@ -47,7 +47,7 @@ final class SnomedLanguageMemberCreateDelegate extends SnomedRefSetMemberCreateD
 				.withReferencedComponent(getReferencedComponentId())
 				.withModule(getModuleId())
 				.withRefSet(getReferenceSetId())
-				.withAcceptability(Acceptability.getByConceptId(getProperty(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID)))
+				.withAcceptability(Acceptability.getByConceptId(getComponentId(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID)))
 				.addTo(context);
 
 		return member.getUuid();

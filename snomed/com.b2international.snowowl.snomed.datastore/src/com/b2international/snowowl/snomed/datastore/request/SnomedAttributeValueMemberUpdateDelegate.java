@@ -32,7 +32,7 @@ final class SnomedAttributeValueMemberUpdateDelegate extends SnomedRefSetMemberU
 	@Override
 	boolean execute(SnomedRefSetMember member, TransactionContext context) {
 		SnomedAttributeValueRefSetMember attributeValueMember = (SnomedAttributeValueRefSetMember) member;
-		String newValueId = getProperty(SnomedRf2Headers.FIELD_VALUE_ID);
+		String newValueId = getComponentId(SnomedRf2Headers.FIELD_VALUE_ID);
 
 		if (newValueId != null && !newValueId.equals(attributeValueMember.getValueId())) {
 			attributeValueMember.setValueId(newValueId);

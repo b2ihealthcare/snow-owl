@@ -32,7 +32,7 @@ final class SnomedAssociationMemberUpdateDelegate extends SnomedRefSetMemberUpda
 	@Override
 	boolean execute(SnomedRefSetMember member, TransactionContext context) {
 		SnomedAssociationRefSetMember associationMember = (SnomedAssociationRefSetMember) member;
-		String newTargetComponentId = getProperty(SnomedRf2Headers.FIELD_TARGET_COMPONENT);
+		String newTargetComponentId = getComponentId(SnomedRf2Headers.FIELD_TARGET_COMPONENT);
 
 		if (newTargetComponentId != null && !newTargetComponentId.equals(associationMember.getTargetComponentId())) {
 			associationMember.setTargetComponentId(newTargetComponentId);

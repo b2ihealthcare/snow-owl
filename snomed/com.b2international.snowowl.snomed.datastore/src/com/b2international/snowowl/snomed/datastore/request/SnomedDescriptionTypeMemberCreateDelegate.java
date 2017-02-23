@@ -47,7 +47,7 @@ final class SnomedDescriptionTypeMemberCreateDelegate extends SnomedRefSetMember
 				.withReferencedComponent(getReferencedComponentId())
 				.withModule(getModuleId())
 				.withRefSet(getReferenceSetId())
-				.withDescriptionFormatId(getProperty(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT))
+				.withDescriptionFormatId(getComponentId(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT))
 				.withDescriptionLength(getProperty(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, Integer.class))
 				.addTo(context);
 

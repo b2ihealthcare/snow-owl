@@ -27,6 +27,7 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
@@ -71,12 +72,28 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 		return properties.containsKey(key);
 	}
 	
+	String getComponentId(String key) {
+		Object value = properties.get(key);
+		if (value == null) {
+			return null;
+		} else if (value instanceof Map) {
+			return ClassUtils.checkAndCast(((Map<?, ?>) value).get(SnomedRf2Headers.FIELD_ID), String.class);
+		} else {
+			return ClassUtils.checkAndCast(value, String.class);
+		}
+	}
+	
 	String getProperty(String key) {
 		return getProperty(key, String.class);
 	}
 	
 	<T> T getProperty(String key, Class<T> valueType) {
-		return ClassUtils.checkAndCast(properties.get(key), valueType);
+		Object value = properties.get(key);
+		if (value == null) {
+			return null;
+		} else {
+			return ClassUtils.checkAndCast(value, valueType);
+		}
 	}
 	
 	void setReferencedComponentId(String referencedComponentId) {

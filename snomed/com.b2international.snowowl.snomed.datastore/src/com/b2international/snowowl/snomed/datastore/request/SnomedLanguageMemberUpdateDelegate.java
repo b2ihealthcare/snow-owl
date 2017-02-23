@@ -32,7 +32,7 @@ final class SnomedLanguageMemberUpdateDelegate extends SnomedRefSetMemberUpdateD
 	@Override
 	boolean execute(SnomedRefSetMember member, TransactionContext context) {
 		SnomedLanguageRefSetMember languageMember = (SnomedLanguageRefSetMember) member;
-		String newAcceptabilityId = getProperty(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
+		String newAcceptabilityId = getComponentId(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
 
 		if (newAcceptabilityId != null && !newAcceptabilityId.equals(languageMember.getAcceptabilityId())) {
 			languageMember.setAcceptabilityId(newAcceptabilityId);

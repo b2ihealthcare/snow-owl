@@ -55,13 +55,13 @@ final class SnomedExtendedMapMemberCreateDelegate extends SnomedRefSetMemberCrea
 				.withReferencedComponent(getReferencedComponentId())
 				.withModule(getModuleId())
 				.withRefSet(getReferenceSetId())
-				.withMapTargetId(getProperty(SnomedRf2Headers.FIELD_MAP_TARGET))
+				.withMapTargetId(getComponentId(SnomedRf2Headers.FIELD_MAP_TARGET))
 				.withGroup(getProperty(SnomedRf2Headers.FIELD_MAP_GROUP, Integer.class).byteValue())
 				.withPriority(getProperty(SnomedRf2Headers.FIELD_MAP_PRIORITY, Integer.class).byteValue())
 				.withMapRule(getProperty(SnomedRf2Headers.FIELD_MAP_RULE))
 				.withMapAdvice(getProperty(SnomedRf2Headers.FIELD_MAP_ADVICE))
-				.withCorrelationId(getProperty(SnomedRf2Headers.FIELD_CORRELATION_ID))
-				.withMapCategoryId(getProperty(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID))
+				.withCorrelationId(getComponentId(SnomedRf2Headers.FIELD_CORRELATION_ID))
+				.withMapCategoryId(getComponentId(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID))
 				.addTo(context);
 
 		return member.getUuid();

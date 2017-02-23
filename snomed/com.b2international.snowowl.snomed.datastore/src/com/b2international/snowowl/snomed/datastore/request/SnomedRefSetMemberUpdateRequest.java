@@ -18,12 +18,12 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -61,12 +61,28 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 		return properties.containsKey(key);
 	}
 	
+	String getComponentId(String key) {
+		Object value = properties.get(key);
+		if (value == null) {
+			return null;
+		} else if (value instanceof Map) {
+			return ClassUtils.checkAndCast(((Map<?, ?>) value).get(SnomedRf2Headers.FIELD_ID), String.class);
+		} else {
+			return ClassUtils.checkAndCast(value, String.class);
+		}
+	}
+	
 	String getProperty(String key) {
 		return getProperty(key, String.class);
 	}
 	
 	<T> T getProperty(String key, Class<T> valueType) {
-		return Optional.ofNullable(properties.get(key)).map(valueType::cast).orElse(null);
+		Object value = properties.get(key);
+		if (value == null) {
+			return null;
+		} else {
+			return ClassUtils.checkAndCast(value, valueType);
+		}
 	}
 
 	@Override
@@ -141,7 +157,7 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 	}
 
 	private boolean updateModule(SnomedRefSetMember member) {
-		String newModuleId = getProperty(SnomedRf2Headers.FIELD_MODULE_ID);
+		String newModuleId = getComponentId(SnomedRf2Headers.FIELD_MODULE_ID);
 		if (newModuleId != null && !newModuleId.equals(member.getModuleId())) {
 			member.setModuleId(newModuleId);
 			return true;

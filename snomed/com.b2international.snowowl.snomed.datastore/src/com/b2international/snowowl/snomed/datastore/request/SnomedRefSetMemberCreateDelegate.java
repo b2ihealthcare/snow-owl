@@ -64,6 +64,10 @@ abstract class SnomedRefSetMemberCreateDelegate {
 	String getProperty(String key) {
 		return request.getProperty(key);
 	}
+	
+	String getComponentId(String key) {
+		return request.getComponentId(key);
+	}
 
 	<T> T getProperty(String key, Class<T> valueType) {
 		return request.getProperty(key, valueType);
@@ -103,9 +107,7 @@ abstract class SnomedRefSetMemberCreateDelegate {
 	}
 
 	protected final void checkComponentExists(SnomedRefSet refSet, TransactionContext context, String key) {
-		if (hasProperty(key)) {
-			checkComponentExists(refSet, context, key, getProperty(key));
-		}
+		checkComponentExists(refSet, context, key, getComponentId(key));
 	}
 
 	protected final void checkComponentExists(SnomedRefSet refSet, TransactionContext context, String key, String componentId) {

@@ -32,13 +32,13 @@ final class SnomedExtendedMapMemberUpdateDelegate extends SnomedRefSetMemberUpda
 	@Override
 	boolean execute(SnomedRefSetMember member, TransactionContext context) {
 		SnomedComplexMapRefSetMember concreteDomainMember = (SnomedComplexMapRefSetMember) member;
-		String newMapTargetId = getProperty(SnomedRf2Headers.FIELD_MAP_TARGET);
+		String newMapTargetId = getComponentId(SnomedRf2Headers.FIELD_MAP_TARGET);
 		Byte newGroup = getProperty(SnomedRf2Headers.FIELD_MAP_GROUP, Byte.class);
 		Byte newPriority = getProperty(SnomedRf2Headers.FIELD_MAP_PRIORITY, Byte.class);
 		String newMapRule = getProperty(SnomedRf2Headers.FIELD_MAP_RULE);
 		String newMapAdvice = getProperty(SnomedRf2Headers.FIELD_MAP_ADVICE);
-		String newCorrelationId = getProperty(SnomedRf2Headers.FIELD_CORRELATION_ID);
-		String newMapCategoryId = getProperty(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID);
+		String newCorrelationId = getComponentId(SnomedRf2Headers.FIELD_CORRELATION_ID);
+		String newMapCategoryId = getComponentId(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID);
 
 		boolean changed = false;
 

@@ -32,11 +32,11 @@ final class SnomedConcreteDomainMemberUpdateDelegate extends SnomedRefSetMemberU
 	@Override
 	boolean execute(SnomedRefSetMember member, TransactionContext context) {
 		SnomedConcreteDataTypeRefSetMember concreteDomainMember = (SnomedConcreteDataTypeRefSetMember) member;
-		String newAttributeName = getProperty(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME);
-		String newCharacteristicTypeId = getProperty(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
+		String newAttributeName = getComponentId(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME);
+		String newCharacteristicTypeId = getComponentId(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 		String newValue = getProperty(SnomedRf2Headers.FIELD_VALUE);
-		String newOperatorId = getProperty(SnomedRf2Headers.FIELD_OPERATOR_ID);
-		String newUnitId = getProperty(SnomedRf2Headers.FIELD_UNIT_ID);
+		String newOperatorId = getComponentId(SnomedRf2Headers.FIELD_OPERATOR_ID);
+		String newUnitId = getComponentId(SnomedRf2Headers.FIELD_UNIT_ID);
 
 		boolean changed = false;
 

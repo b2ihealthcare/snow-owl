@@ -32,7 +32,7 @@ final class SnomedDescriptionTypeMemberUpdateDelegate extends SnomedRefSetMember
 	@Override
 	boolean execute(SnomedRefSetMember member, TransactionContext context) {
 		SnomedDescriptionTypeRefSetMember descriptionTypeMember = (SnomedDescriptionTypeRefSetMember) member;
-		String newDescriptionFormat = getProperty(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT);
+		String newDescriptionFormat = getComponentId(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT);
 		Integer newDescriptionLength = getProperty(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, Integer.class);
 
 		boolean changed = false;

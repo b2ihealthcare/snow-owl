@@ -37,6 +37,10 @@ abstract class SnomedRefSetMemberUpdateDelegate {
 		return request.hasProperty(key);
 	}
 
+	String getComponentId(String key) {
+		return request.getComponentId(key);
+	}
+
 	String getProperty(String key) {
 		return request.getProperty(key);
 	}
