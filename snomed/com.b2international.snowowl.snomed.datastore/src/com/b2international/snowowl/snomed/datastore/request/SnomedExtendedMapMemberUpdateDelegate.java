@@ -33,8 +33,8 @@ final class SnomedExtendedMapMemberUpdateDelegate extends SnomedRefSetMemberUpda
 	boolean execute(SnomedRefSetMember member, TransactionContext context) {
 		SnomedComplexMapRefSetMember concreteDomainMember = (SnomedComplexMapRefSetMember) member;
 		String newMapTargetId = getComponentId(SnomedRf2Headers.FIELD_MAP_TARGET);
-		Byte newGroup = getProperty(SnomedRf2Headers.FIELD_MAP_GROUP, Byte.class);
-		Byte newPriority = getProperty(SnomedRf2Headers.FIELD_MAP_PRIORITY, Byte.class);
+		Integer newGroup = getProperty(SnomedRf2Headers.FIELD_MAP_GROUP, Integer.class);
+		Integer newPriority = getProperty(SnomedRf2Headers.FIELD_MAP_PRIORITY, Integer.class);
 		String newMapRule = getProperty(SnomedRf2Headers.FIELD_MAP_RULE);
 		String newMapAdvice = getProperty(SnomedRf2Headers.FIELD_MAP_ADVICE);
 		String newCorrelationId = getComponentId(SnomedRf2Headers.FIELD_CORRELATION_ID);
@@ -47,13 +47,13 @@ final class SnomedExtendedMapMemberUpdateDelegate extends SnomedRefSetMemberUpda
 			changed |= true;
 		}
 
-		if (newGroup != null && !newGroup.equals(concreteDomainMember.getMapGroup())) {
-			concreteDomainMember.setMapGroup(newGroup);
+		if (newGroup != null && newGroup.byteValue() != concreteDomainMember.getMapGroup()) {
+			concreteDomainMember.setMapGroup(newGroup.byteValue());
 			changed |= true;
 		}
 
-		if (newPriority != null && !newPriority.equals(concreteDomainMember.getMapPriority())) {
-			concreteDomainMember.setMapPriority(newPriority);
+		if (newPriority != null && newPriority.byteValue() != concreteDomainMember.getMapPriority()) {
+			concreteDomainMember.setMapPriority(newPriority.byteValue());
 			changed |= true;
 		}
 
