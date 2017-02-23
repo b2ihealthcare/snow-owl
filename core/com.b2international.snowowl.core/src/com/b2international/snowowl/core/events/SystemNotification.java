@@ -26,10 +26,16 @@ public abstract class SystemNotification extends BaseEvent {
 	 * Notification address where subclasses of this {@link SystemNotification} will be sent.
 	 */
 	public static final String ADDRESS = "/notifications";
-
+	
+	private final long timestamp = System.currentTimeMillis();
+	
 	@Override
 	protected final String getAddress() {
 		return ADDRESS;
+	}
+	
+	public final long getTimestamp() {
+		return timestamp;
 	}
 	
 }

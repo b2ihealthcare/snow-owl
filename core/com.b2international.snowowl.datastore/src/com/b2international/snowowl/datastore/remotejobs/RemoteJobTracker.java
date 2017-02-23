@@ -129,8 +129,8 @@ public final class RemoteJobTracker implements IDisposableService {
 	
 	public void requestDeletes(Collection<String> jobIds) {
 		final RemoteJobs jobEntries = search(Expressions.matchAny(DocumentMapping._ID, jobIds), 0, jobIds.size());
-		final Set<String> existingEntries = FluentIterable.from(jobEntries).transform(RemoteJobEntry::getId).toSet();
-		Job[] existingJobs = Job.getJobManager().find(SingleRemoteJobFamily.create(existingEntries));
+		final Set<String> existingJobIds = FluentIterable.from(jobEntries).transform(RemoteJobEntry::getId).toSet();
+		Job[] existingJobs = Job.getJobManager().find(SingleRemoteJobFamily.create(existingJobIds));
 		// mark existing jobs as deleted and cancel them
 		final Set<String> remoteJobsToCancel = Sets.newHashSet();
 		for (Job existingJob : existingJobs) {
@@ -154,22 +154,25 @@ public final class RemoteJobTracker implements IDisposableService {
 		});
 		// finally cancel all jobs that need to be cancelled
 		Job.getJobManager().cancel(SingleRemoteJobFamily.create(remoteJobsToCancel));
+		notifyRemoved(existingJobIds);
 	}
 	
-	private void put(String id, RemoteJobEntry job) {
+	private void put(String jobId, RemoteJobEntry job) {
 		index.write(writer -> {
-			writer.put(id, job);
+			writer.put(jobId, job);
 			writer.commit();
 			return null;
 		});
+		notifyAdded(jobId);
 	}
 	
-	private void update(String id, Function<RemoteJobEntry, RemoteJobEntry> mutator) {
+	private void update(String jobId, Function<RemoteJobEntry, RemoteJobEntry> mutator) {
 		index.write(writer -> {
-			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, DocumentMapping.matchId(id), RemoteJobEntry::getId, mutator));
+			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, DocumentMapping.matchId(jobId), RemoteJobEntry::getId, mutator));
 			writer.commit();
 			return null;
 		});
+		notifyChanged(jobId);
 	}
 
 	@Override
@@ -186,6 +189,18 @@ public final class RemoteJobTracker implements IDisposableService {
 		return disposed.get();
 	}
 	
+	private void notifyAdded(String jobId) {
+		RemoteJobNotification.added(jobId).publish(events);
+	}
+	
+	private void notifyChanged(String jobId) {
+		RemoteJobNotification.changed(jobId).publish(events);
+	}
+	
+	private void notifyRemoved(Set<String> jobIds) {
+		RemoteJobNotification.removed(jobIds).publish(events);
+	}
+	
 	IProgressMonitor createMonitor(String jobId, IProgressMonitor monitor) {
 		return new RemoteJobProgressMonitor(monitor, percentComplete -> update(jobId, current -> RemoteJobEntry.from(current).completionLevel(percentComplete).build()));
 	}
@@ -196,9 +211,10 @@ public final class RemoteJobTracker implements IDisposableService {
 		public void scheduled(IJobChangeEvent event) {
 			if (event.getJob() instanceof RemoteJob) {
 				final RemoteJob job = (RemoteJob) event.getJob();
-				System.err.println("scheduled " + job.getId());
-				put(job.getId(), RemoteJobEntry.builder()
-						.id(job.getId())
+				final String jobId = job.getId();
+				System.err.println("scheduled " + jobId);
+				put(jobId, RemoteJobEntry.builder()
+						.id(jobId)
 						.description(job.getDescription())
 						.user(job.getUser())
 						.scheduleDate(new Date())
@@ -210,10 +226,10 @@ public final class RemoteJobTracker implements IDisposableService {
 		public void running(IJobChangeEvent event) {
 			if (event.getJob() instanceof RemoteJob) {
 				final RemoteJob job = (RemoteJob) event.getJob();
-				final String id = job.getId();
+				final String jobId = job.getId();
 				final Date startDate = new Date();
-				System.err.println("running " + id);
-				update(id, current -> {
+				System.err.println("running " + jobId);
+				update(jobId, current -> {
 					return RemoteJobEntry.from(current)
 							.state(RemoteJobState.RUNNING)
 							.startDate(startDate)
@@ -226,9 +242,9 @@ public final class RemoteJobTracker implements IDisposableService {
 		public void done(IJobChangeEvent event) {
 			if (event.getJob() instanceof RemoteJob) {
 				final RemoteJob job = (RemoteJob) event.getJob();
-				final String id = job.getId();
-				System.err.println("done " + id);
-				final RemoteJobEntry jobEntry = get(id);
+				final String jobId = job.getId();
+				System.err.println("done " + jobId);
+				final RemoteJobEntry jobEntry = get(jobId);
 				if (jobEntry == null) {
 					return;
 				}
@@ -243,7 +259,7 @@ public final class RemoteJobTracker implements IDisposableService {
 				} else {
 					newState = RemoteJobState.FAILED;
 				}
-				update(id, current -> {
+				update(jobId, current -> {
 					return RemoteJobEntry.from(current)
 							.result(response)
 							.finishDate(finishDate)

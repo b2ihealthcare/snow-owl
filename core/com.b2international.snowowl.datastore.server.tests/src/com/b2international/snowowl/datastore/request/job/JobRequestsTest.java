@@ -15,16 +15,18 @@
  */
 package com.b2international.snowowl.datastore.request.job;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+
+import java.util.Collection;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
@@ -32,12 +34,15 @@ import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.SystemNotification;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobNotification;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
+import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -51,17 +56,21 @@ public class JobRequestsTest {
 	private ServiceProvider context;
 	private RemoteJobTracker tracker;
 	private IEventBus bus;
+	private final Collection<RemoteJobNotification> notifications = newArrayList();
 
 	@Before
 	public void setup() {
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 		final Index index = Indexes.createIndex("jobs", mapper, new Mappings(RemoteJobEntry.class));
-		this.bus = Mockito.mock(IEventBus.class);
+		this.bus = EventBusUtil.getBus();
 		this.tracker = new RemoteJobTracker(index, bus, 200);
 		this.context = DelegatingServiceProvider
 				.basedOn(ServiceProvider.EMPTY)
 				.bind(RemoteJobTracker.class, tracker)
 				.build();
+		this.bus.registerHandler(SystemNotification.ADDRESS, message -> {
+			notifications.add(message.body(RemoteJobNotification.class));
+		});
 	}
 	
 	@After
@@ -75,6 +84,11 @@ public class JobRequestsTest {
 		final RemoteJobEntry entry = waitDone(jobId);
 		assertEquals(RemoteJobState.FINISHED, entry.getState());
 		assertEquals(RESULT, entry.getResultAs(String.class));
+		// verify job events
+		// 1 added
+		// 1 changed - RUNNING
+		// 1 changed - FINISHED
+		verifyJobEvents(jobId, 1, 2, 0);
 	}
 	
 	@Test
@@ -96,6 +110,12 @@ public class JobRequestsTest {
 		final RemoteJobEntry entry = waitDone(jobId);
 		assertEquals(RemoteJobState.CANCELLED, entry.getState());
 		assertNull(entry.getResult());
+		// verify job events
+		// 1 added
+		// 1 changed - RUNNING
+		// 1 changed - CANCEL_REQUESTED
+		// 1 changed - CANCELLED
+		verifyJobEvents(jobId, 1, 3, 0);
 	}
 	
 	@Test
@@ -126,6 +146,12 @@ public class JobRequestsTest {
 			Thread.sleep(50);
 		} while (entry != null && --numberOfTries > 0);
 		assertNull("Entry couldn't be removed by tracker after marked for deletion", entry);
+		// verify job events
+		// 1 added
+		// 1 changed - RUNNING
+		// 1 changed - FINISHED
+		// 1 removed
+		verifyJobEvents(jobId, 1, 2, 1);
 	}
 	
 	@Test
@@ -145,6 +171,22 @@ public class JobRequestsTest {
 		
 		final RemoteJobEntry job = waitDone(jobId);
 		assertEquals(100, job.getCompletionLevel());
+		// verify job events
+		// 1 added
+		// 1 changed - RUNNING
+		// 10 changed - PROGRESS updates
+		// 1 changed - FINISHED
+		verifyJobEvents(jobId, 1, 12, 0);
+	}
+
+	private void verifyJobEvents(String jobId, int expectedAdded, int expectedChanged, int expectedRemoved) {
+		long actualAdded = notifications.stream().filter(RemoteJobNotification::isAdded).count();
+		long actualChanged = notifications.stream().filter(RemoteJobNotification::isChanged).count();
+		long actualRemoved = notifications.stream().filter(RemoteJobNotification::isRemoved).count();
+		
+		assertEquals(expectedAdded, actualAdded);
+		assertEquals(expectedChanged, actualChanged);
+		assertEquals(expectedRemoved, actualRemoved);
 	}
 
 	private RemoteJobEntry waitDone(final String jobId) {
