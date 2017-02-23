@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.remotejobs;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -205,7 +204,14 @@ public final class RemoteJobTracker implements IDisposableService {
 					final IStatus result = job.getResult();
 					final Object response = job.getResponse();
 					final Date finishDate = new Date();
-					final RemoteJobState newState = result.isOK() ? RemoteJobState.FINISHED : result.matches(IStatus.CANCEL) ? RemoteJobState.CANCELLED : RemoteJobState.FAILED;
+					final RemoteJobState newState;
+					if (result.isOK()) {
+						newState = RemoteJobState.FINISHED;
+					} else if (result.matches(IStatus.CANCEL)) {
+						newState = RemoteJobState.CANCELLED;
+					} else {
+						newState = RemoteJobState.FAILED;
+					}
 					update(id, current -> {
 						return RemoteJobEntry.from(current)
 								.result(response)
