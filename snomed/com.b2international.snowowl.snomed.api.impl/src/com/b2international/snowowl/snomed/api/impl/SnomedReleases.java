@@ -51,11 +51,11 @@ public class SnomedReleases {
 	 */
 	public static CodeSystem b2iExtension(String extensionPath) {
 		return CodeSystem.builder()
-				.name("Systematized Nomenclature of Medicine Clinical Terms, B2i extension")
+				.name(SNOMED_B2I_NAME)
 				.shortName(SNOMED_B2I_SHORT_NAME)
 				.oid(SNOMED_B2I_OID)
 				.primaryLanguage(SNOMED_INT_LANGUAGE)
-				.organizationLink("https://b2i.sg/")
+				.organizationLink(SNOMED_B2I_LINK)
 				.citation(SNOMED_INT_CITATION)
 				.branchPath(extensionPath)
 				.iconPath(SNOMED_INT_ICON_PATH)
