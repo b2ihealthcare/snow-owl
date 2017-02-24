@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.history;
 
+import java.io.Serializable;
+
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 
 import bak.pcj.map.LongKeyLongMap;
@@ -23,7 +25,7 @@ import bak.pcj.map.LongKeyLongOpenHashMap;
 /**
  * @since 4.6.7
  */
-public interface StorageKeyCache {
+public interface StorageKeyCache extends Serializable {
 	
 	LongKeyLongMap getCache();
 	
