@@ -197,6 +197,7 @@ public class EquivalentConceptMerger {
 			for (final Relationship replacementOutboundRelationship : conceptToKeep.getOutboundRelationships()) {
 				if (relationshipToRemove.getType().equals(replacementOutboundRelationship.getType())
 						&& relationshipToRemove.getDestination().equals(replacementOutboundRelationship.getDestination())
+						&& relationshipToRemove.getCharacteristicType().equals(replacementOutboundRelationship.getCharacteristicType())
 						&& relationshipToRemove.getModifier().equals(replacementOutboundRelationship.getModifier())) {
 					found = true;
 					break;
@@ -230,6 +231,7 @@ public class EquivalentConceptMerger {
 			for (final Relationship replacementInboundRelationship : Sets.newHashSet(inboundRelationshipMap.get(conceptToKeep.getId()))) {
 				if (relationshipToRemove.getType().equals(replacementInboundRelationship.getType())
 						&& relationshipToRemove.getSource().equals(replacementInboundRelationship.getSource())
+						&& relationshipToRemove.getCharacteristicType().equals(replacementInboundRelationship.getCharacteristicType())
 						&& relationshipToRemove.getModifier().equals(replacementInboundRelationship.getModifier())) {
 					found = true;
 					break;
