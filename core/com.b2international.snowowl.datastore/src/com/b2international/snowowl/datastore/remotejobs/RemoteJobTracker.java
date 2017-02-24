@@ -222,7 +222,7 @@ public final class RemoteJobTracker implements IDisposableService {
 				Map<String, Object> parameters;
 				try {
 					parameters = mapper.convertValue(job.getRequest(), Map.class);
-				} catch (Exception e) {
+				} catch (Throwable e) {
 					parameters = Collections.emptyMap();
 				}
 				put(jobId, RemoteJobEntry.builder()
