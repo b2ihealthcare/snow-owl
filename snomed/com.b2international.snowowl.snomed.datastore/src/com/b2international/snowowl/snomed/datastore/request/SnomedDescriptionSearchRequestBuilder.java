@@ -21,7 +21,6 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.datastore.request.SearchRequest;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequest.OptionKey;
 
 /**
@@ -50,7 +49,6 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedSearchReq
 	}
 	
 	public SnomedDescriptionSearchRequestBuilder filterByConceptId(String conceptIdFilter) {
-		SnomedIdentifiers.validate(conceptIdFilter);
 		return filterByConceptId(Long.valueOf(conceptIdFilter));
 	}
 	
