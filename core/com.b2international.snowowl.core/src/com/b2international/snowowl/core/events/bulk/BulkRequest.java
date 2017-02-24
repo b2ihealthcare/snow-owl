@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,13 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 4.5
  * @see BulkRequestBuilder
  */
-public final class BulkRequest<C extends ServiceProvider> extends BaseRequest<C, BulkResponse> {
+public final class BulkRequest<C extends ServiceProvider> implements Request<C, BulkResponse> {
 
 	private List<Request<C, ?>> requests;
 
@@ -45,11 +44,6 @@ public final class BulkRequest<C extends ServiceProvider> extends BaseRequest<C,
 		}
 		
 		return new BulkResponse(responses);
-	}
-
-	@Override
-	protected Class<BulkResponse> getReturnType() {
-		return BulkResponse.class;
 	}
 
 	/**

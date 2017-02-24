@@ -18,6 +18,11 @@ package com.b2international.snowowl.core.events;
 import java.io.Serializable;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import net.jodah.typetools.TypeResolver;
 
 /**
  * A {@link Request} represents an executable form of user intent. They can be executed in a specific context usually within a {@link ServiceProvider}
@@ -34,10 +39,11 @@ import com.b2international.snowowl.core.ServiceProvider;
  * @param <R>
  *            - the type of response
  */
+@FunctionalInterface
 public interface Request<C extends ServiceProvider, R> extends Serializable {
 
 	/**
-	 * Address where implementations of the {@link Request} interface will be sent.
+	 * Address where implementations of the {@link Request} interface will be sent over the {@link IEventBus}.
 	 */
 	String ADDRESS = "/requests";
 
@@ -49,5 +55,25 @@ public interface Request<C extends ServiceProvider, R> extends Serializable {
 	 * @return - the result of the {@link Request}, never <code>null</code>.
 	 */
 	R execute(C context);
+	
+	/**
+	 * @return the type of the request for serialization in log messages
+	 */
+	@JsonProperty
+	default String getType() {
+		return getClass().getSimpleName();
+	}
+	
+	/**
+	 * Returns the class of the actual return type.
+	 * 
+	 * @return
+	 */
+	@JsonIgnore
+	@SuppressWarnings("unchecked")
+	default Class<R> getReturnType() {
+		final Class<?>[] types = TypeResolver.resolveRawArguments(Request.class, getClass());
+		return (Class<R>) types[1];
+	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,8 @@ public final class AsyncRequest<R> {
 	 */
 	public Promise<R> execute(IEventBus bus) {
 		final Promise<R> promise = new Promise<>();
-		final Class<R> responseType = ((BaseRequest<?, R>) request).getReturnType(); 
-		bus.send(BaseRequest.ADDRESS, request, new IHandler<IMessage>() {
+		final Class<R> responseType = request.getReturnType(); 
+		bus.send(Request.ADDRESS, request, new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				try {

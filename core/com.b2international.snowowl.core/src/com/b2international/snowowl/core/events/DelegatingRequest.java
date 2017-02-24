@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.events;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -36,8 +35,10 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
  * @param <R>
  *            - the type of the result
  */
-public abstract class DelegatingRequest<C extends ServiceProvider, T extends ServiceProvider, R> extends BaseRequest<C, R> {
+public abstract class DelegatingRequest<C extends ServiceProvider, T extends ServiceProvider, R> implements Request<C, R> {
 
+	private static final long serialVersionUID = 1L;
+	
 	private final Request<T, R> next;
 
 	protected DelegatingRequest(Request<T, R> next) {
@@ -58,7 +59,7 @@ public abstract class DelegatingRequest<C extends ServiceProvider, T extends Ser
 	@Override
 	@JsonIgnore
 	public String getType() {
-		return super.getType();
+		return getClass().getSimpleName();
 	}
 	
 	@JsonProperty
@@ -68,9 +69,8 @@ public abstract class DelegatingRequest<C extends ServiceProvider, T extends Ser
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	protected final Class<R> getReturnType() {
-		return ClassUtils.checkAndCast(next, BaseRequest.class).getReturnType();
+	public final Class<R> getReturnType() {
+		return next.getReturnType();
 	}
 
 }
