@@ -26,7 +26,7 @@ import com.jayway.restassured.response.ValidatableResponse;
 /**
  * @since 4.5
  */
-public class SnomedBrowserRestRequests {
+public abstract class SnomedBrowserRestRequests {
 
 	public static ValidatableResponse createBrowserConcept(final IBranchPath conceptPath, final Map<?, ?> requestBody) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
@@ -51,4 +51,7 @@ public class SnomedBrowserRestRequests {
 				.then();
 	}
 
+	private SnomedBrowserRestRequests() {
+		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
+	}
 }

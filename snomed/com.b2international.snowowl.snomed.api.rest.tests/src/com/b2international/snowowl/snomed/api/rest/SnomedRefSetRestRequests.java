@@ -33,7 +33,7 @@ import com.jayway.restassured.response.ValidatableResponse;
 /**
  * @since 5.0
  */
-public class SnomedRefSetRestRequests {
+public abstract class SnomedRefSetRestRequests {
 
 	public static ValidatableResponse updateRefSetComponent(IBranchPath branchPath, SnomedComponentType type, String id, Map<?, ?> requestBody, boolean force) {
 		assertThat(type, anyOf(equalTo(SnomedComponentType.REFSET), equalTo(SnomedComponentType.MEMBER)));

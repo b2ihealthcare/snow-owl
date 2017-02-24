@@ -29,7 +29,7 @@ import com.jayway.restassured.response.ValidatableResponse;
 /**
  * @since 4.7
  */
-public class CodeSystemVersionRestRequests {
+public abstract class CodeSystemVersionRestRequests {
 
 	public static ValidatableResponse getVersion(String shortName, String version) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
