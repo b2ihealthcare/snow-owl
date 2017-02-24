@@ -16,7 +16,7 @@
 package com.b2international.snowowl.datastore.request.job;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
@@ -25,7 +25,7 @@ import com.google.common.collect.Iterables;
 /**
  * @since 5.7
  */
-final class GetJobRequest extends BaseRequest<ServiceProvider, RemoteJobEntry> {
+final class GetJobRequest implements Request<ServiceProvider, RemoteJobEntry> {
 
 	private final String id;
 
@@ -41,11 +41,6 @@ final class GetJobRequest extends BaseRequest<ServiceProvider, RemoteJobEntry> {
 		} else {
 			return entry;
 		}
-	}
-
-	@Override
-	protected Class<RemoteJobEntry> getReturnType() {
-		return RemoteJobEntry.class;
 	}
 
 }

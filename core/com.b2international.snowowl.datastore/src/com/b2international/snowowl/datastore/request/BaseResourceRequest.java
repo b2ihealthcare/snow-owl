@@ -24,13 +24,13 @@ import javax.validation.constraints.NotNull;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.6
  */
-public abstract class BaseResourceRequest<C extends ServiceProvider, B> extends BaseRequest<C, B> {
+public abstract class BaseResourceRequest<C extends ServiceProvider, B> implements Request<C, B> {
 
 	@NotNull
 	private List<ExtendedLocale> locales;

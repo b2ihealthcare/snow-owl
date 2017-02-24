@@ -39,11 +39,6 @@ final class SnomedRefSetMemberGetRequest extends RevisionGetRequest<SnomedRefere
 	}
 	
 	@Override
-	protected Class<SnomedReferenceSetMember> getReturnType() {
-		return SnomedReferenceSetMember.class;
-	}
-
-	@Override
 	protected Class<? extends RevisionDocument> getRevisionType() {
 		return SnomedRefSetMemberIndexEntry.class;
 	}

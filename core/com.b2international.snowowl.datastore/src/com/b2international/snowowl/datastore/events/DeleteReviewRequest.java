@@ -35,9 +35,4 @@ public final class DeleteReviewRequest extends ReviewRequest<Review> {
 		return context.service(ReviewManager.class).getReview(getReviewId()).delete();
 	}
 	
-	@Override
-	protected Class<Review> getReturnType() {
-		return Review.class;
-	}
-	
 }

@@ -88,8 +88,4 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 		return new SnomedReferenceSets(offset, limit, 0);
 	}
 	
-	@Override
-	protected Class<SnomedReferenceSets> getReturnType() {
-		return SnomedReferenceSets.class;
-	}
 }

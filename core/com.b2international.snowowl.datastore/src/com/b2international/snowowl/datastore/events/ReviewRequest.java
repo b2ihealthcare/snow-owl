@@ -18,14 +18,14 @@ package com.b2international.snowowl.datastore.events;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 
 /**
  * An abstract superclass for terminology review events which include the affected review's identifier.
  * 
  * @since 4.2
  */
-public abstract class ReviewRequest<B> extends BaseRequest<RepositoryContext, B> {
+public abstract class ReviewRequest<B> implements Request<RepositoryContext, B> {
 
 	private final String reviewId;
 

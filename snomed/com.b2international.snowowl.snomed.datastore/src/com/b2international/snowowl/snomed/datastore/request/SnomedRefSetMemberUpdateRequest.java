@@ -26,7 +26,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
@@ -37,7 +37,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.5
  */
-final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionContext, Boolean> {
+final class SnomedRefSetMemberUpdateRequest implements Request<TransactionContext, Boolean> {
 
 	@NotEmpty
 	private final String memberId;
@@ -156,11 +156,6 @@ final class SnomedRefSetMemberUpdateRequest extends BaseRequest<TransactionConte
 			}
 		}
 		return false;
-	}
-
-	@Override
-	protected Class<Boolean> getReturnType() {
-		return Boolean.class;
 	}
 
 }

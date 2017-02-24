@@ -17,7 +17,7 @@ package com.b2international.snowowl.terminologyregistry.core.request;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
@@ -25,7 +25,7 @@ import com.b2international.snowowl.terminologymetadata.CodeSystem;
 /**
  * @since 4.7
  */
-final class CodeSystemUpdateRequest extends BaseRequest<TransactionContext, Void> {
+final class CodeSystemUpdateRequest implements Request<TransactionContext, Void> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -148,11 +148,6 @@ final class CodeSystemUpdateRequest extends BaseRequest<TransactionContext, Void
 		if (!codeSystem.getIconPath().equals(iconPath)) {
 			codeSystem.setIconPath(iconPath);
 		}
-	}
-
-	@Override
-	protected Class<Void> getReturnType() {
-		return Void.class;
 	}
 
 }

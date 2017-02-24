@@ -44,9 +44,4 @@ final class SnomedDescriptionGetRequest extends RevisionGetRequest<SnomedDescrip
 		return SnomedDescriptionIndexEntry.class;
 	}
 	
-	@Override
-	protected Class<SnomedDescription> getReturnType() {
-		return SnomedDescription.class;
-	}
-
 }

@@ -70,8 +70,4 @@ public final class CreateBranchRequest extends BranchRequest<Branch> {
 		}
 	}
 	
-	@Override
-	protected Class<Branch> getReturnType() {
-		return Branch.class;
-	}
 }

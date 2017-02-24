@@ -16,13 +16,13 @@
 package com.b2international.snowowl.datastore.request.job;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 
 /**
  * @since 5.7
  */
-final class CancelJobRequest extends BaseRequest<ServiceProvider, Void> {
+final class CancelJobRequest implements Request<ServiceProvider, Void> {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -38,9 +38,4 @@ final class CancelJobRequest extends BaseRequest<ServiceProvider, Void> {
 		return null;
 	}
 
-	@Override
-	protected Class<Void> getReturnType() {
-		return Void.class;
-	}
-	
 }

@@ -44,9 +44,4 @@ final class SnomedRelationshipGetRequest extends RevisionGetRequest<SnomedRelati
 		return SnomedRelationshipIndexEntry.class;
 	}
 	
-	@Override
-	protected Class<SnomedRelationship> getReturnType() {
-		return SnomedRelationship.class;
-	}
-
 }

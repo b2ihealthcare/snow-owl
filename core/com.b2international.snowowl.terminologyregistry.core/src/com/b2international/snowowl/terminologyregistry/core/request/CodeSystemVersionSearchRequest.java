@@ -78,9 +78,4 @@ final class CodeSystemVersionSearchRequest extends RevisionSearchRequest<CodeSys
 		return new CodeSystemVersions(Collections.emptyList(), offset, limit, 0);
 	}
 
-	@Override
-	protected Class<CodeSystemVersions> getReturnType() {
-		return CodeSystemVersions.class;
-	}
-
 }

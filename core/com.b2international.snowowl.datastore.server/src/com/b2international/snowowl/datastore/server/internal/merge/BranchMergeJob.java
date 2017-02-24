@@ -36,7 +36,7 @@ public class BranchMergeJob extends AbstractBranchChangeRemoteJob {
 	private static class SyncMergeRequest extends AbstractBranchChangeRequest<Branch> {
 
 		SyncMergeRequest(final Merge merge, final String commitMessage, String reviewId) {
-			super(Branch.class, merge.getSource(), merge.getTarget(), commitMessage, reviewId);
+			super(merge.getSource(), merge.getTarget(), commitMessage, reviewId);
 		}
 
 		@Override

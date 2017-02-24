@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.namespace;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.defining;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
@@ -45,8 +44,8 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator2;
 import com.b2international.snowowl.snomed.datastore.escg.EscgParseFailedException;
@@ -336,8 +335,4 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		return conceptMap;
 	}
 
-	@Override
-	protected Class<SnomedConcepts> getReturnType() {
-		return SnomedConcepts.class;
-	}
 }

@@ -27,14 +27,14 @@ import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
 
 /**
  * @since 5.7
  */
-final class SearchJobRequest extends BaseRequest<ServiceProvider, RemoteJobs> {
+final class SearchJobRequest implements Request<ServiceProvider, RemoteJobs> {
 
 	@Min(0)
 	private int offset;
@@ -61,11 +61,6 @@ final class SearchJobRequest extends BaseRequest<ServiceProvider, RemoteJobs> {
 		}
 		
 		return context.service(RemoteJobTracker.class).search(queryBuilder.build(), offset, limit);
-	}
-
-	@Override
-	protected Class<RemoteJobs> getReturnType() {
-		return RemoteJobs.class;
 	}
 
 	void setOffset(int offset) {

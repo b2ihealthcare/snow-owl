@@ -69,9 +69,4 @@ final class CodeSystemGetRequest extends BaseResourceRequest<BranchContext, Code
 		
 	}
 
-	@Override
-	protected Class<CodeSystemEntry> getReturnType() {
-		return CodeSystemEntry.class;
-	}
-
 }

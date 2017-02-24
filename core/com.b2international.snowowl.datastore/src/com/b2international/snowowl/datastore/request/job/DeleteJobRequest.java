@@ -18,13 +18,13 @@ package com.b2international.snowowl.datastore.request.job;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 
 /**
  * @since 5.7
  */
-final class DeleteJobRequest extends BaseRequest<ServiceProvider, Void> {
+final class DeleteJobRequest implements Request<ServiceProvider, Void> {
 
 	private final Collection<String> jobIds;
 
@@ -36,11 +36,6 @@ final class DeleteJobRequest extends BaseRequest<ServiceProvider, Void> {
 	public Void execute(ServiceProvider context) {
 		context.service(RemoteJobTracker.class).requestDeletes(jobIds);
 		return null;
-	}
-
-	@Override
-	protected Class<Void> getReturnType() {
-		return Void.class;
 	}
 
 }

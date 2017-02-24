@@ -18,7 +18,7 @@ package com.b2international.snowowl.terminologyregistry.core.request;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
@@ -30,7 +30,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.7
  */
-final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, String> {
+final class CodeSystemCreateRequest implements Request<TransactionContext, String> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -153,11 +153,6 @@ final class CodeSystemCreateRequest extends BaseRequest<TransactionContext, Stri
 				.withTerminologyComponentId(terminologyId)
 				.withExtensionOf(Strings.isNullOrEmpty(extensionOf) ? null : context.lookup(extensionOf, CodeSystem.class))
 				.build();
-	}
-
-	@Override
-	protected Class<String> getReturnType() {
-		return String.class;
 	}
 
 }

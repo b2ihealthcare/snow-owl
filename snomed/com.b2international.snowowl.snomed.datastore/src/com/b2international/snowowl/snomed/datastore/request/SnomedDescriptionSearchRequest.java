@@ -215,10 +215,5 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 			}
 		}
 	}
-
-	@Override
-	protected Class<SnomedDescriptions> getReturnType() {
-		return SnomedDescriptions.class;
-	}
 	
 }

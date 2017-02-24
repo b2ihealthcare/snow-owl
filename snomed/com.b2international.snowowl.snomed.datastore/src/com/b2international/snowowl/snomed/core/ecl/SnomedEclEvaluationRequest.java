@@ -43,7 +43,7 @@ import com.b2international.index.query.StringPredicate;
 import com.b2international.index.query.StringSetPredicate;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -68,7 +68,6 @@ import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
 import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
-import com.google.common.reflect.TypeToken;
 
 /**
  * Evaluates the given ECL expression {@link String} or parsed {@link ExpressionConstraint} to an executable {@link Expression query expression}.
@@ -79,7 +78,7 @@ import com.google.common.reflect.TypeToken;
  * 
  * @since 5.4
  */
-final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promise<Expression>> {
+final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise<Expression>> {
 
 	private static final long serialVersionUID = 5891665196136989183L;
 	
@@ -93,13 +92,6 @@ final class SnomedEclEvaluationRequest extends BaseRequest<BranchContext, Promis
 
 	void setExpression(String expression) {
 		this.expression = expression;
-	}
-
-	@Override
-	protected Class<Promise<Expression>> getReturnType() {
-		TypeToken<Promise<Expression>> exp = new TypeToken<Promise<Expression>>(){};
-		Class<Promise<Expression>> rawType = (Class<Promise<Expression>>) exp.getRawType();
-		return rawType;
 	}
 
 	@Override

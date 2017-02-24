@@ -19,7 +19,7 @@ import java.util.List;
 
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeCollection;
 import com.b2international.snowowl.core.merge.MergeService;
@@ -30,7 +30,7 @@ import com.google.common.collect.Lists;
 /**
  * @since 4.6
  */
-public class SearchMergeRequest extends BaseRequest<RepositoryContext, MergeCollection> {
+public class SearchMergeRequest implements Request<RepositoryContext, MergeCollection> {
 
 	public static class SourcePredicate implements Predicate<Merge> {
 		
@@ -92,8 +92,4 @@ public class SearchMergeRequest extends BaseRequest<RepositoryContext, MergeColl
 		return context.service(MergeService.class).search(Predicates.and(predicates));
 	}
 
-	@Override
-	protected Class<MergeCollection> getReturnType() {
-		return MergeCollection.class;
-	}
 }

@@ -48,9 +48,4 @@ public class CommitInfoGetRequest extends GetRequest<CommitInfo, CommitInfoDocum
 		return new CommitInfoConverter(context, expand(), locales()).convert(doc);
 	}
 
-	@Override
-	protected Class<CommitInfo> getReturnType() {
-		return CommitInfo.class;
-	}
-
 }

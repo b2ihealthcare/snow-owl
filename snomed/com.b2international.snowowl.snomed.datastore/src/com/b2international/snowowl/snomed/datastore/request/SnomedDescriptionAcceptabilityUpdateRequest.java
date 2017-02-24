@@ -31,7 +31,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -55,7 +55,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 4.5
  */
-final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseRequest<TransactionContext, Void> {
+final class SnomedDescriptionAcceptabilityUpdateRequest implements Request<TransactionContext, Void> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedDescriptionAcceptabilityUpdateRequest.class);
 	
@@ -88,11 +88,6 @@ final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseRequest<Tran
 		}
 	}
 
-	@Override
-	protected Class<Void> getReturnType() {
-		return Void.class;
-	}
-	
 	public void setDescriptionId(String descriptionId) {
 		this.descriptionId = descriptionId;
 	}

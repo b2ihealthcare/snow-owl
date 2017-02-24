@@ -44,9 +44,4 @@ final class SnomedConceptGetRequest extends RevisionGetRequest<SnomedConcept> {
 		return SnomedConceptDocument.class;
 	}
 	
-	@Override
-	protected Class<SnomedConcept> getReturnType() {
-		return SnomedConcept.class;
-	}
-
 }

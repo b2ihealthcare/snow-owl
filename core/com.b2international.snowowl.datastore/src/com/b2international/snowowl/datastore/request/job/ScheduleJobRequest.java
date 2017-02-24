@@ -22,14 +22,13 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 
 /**
  * @since 5.7
  */
-final class ScheduleJobRequest extends BaseRequest<ServiceProvider, String> {
+final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -57,9 +56,4 @@ final class ScheduleJobRequest extends BaseRequest<ServiceProvider, String> {
 		return id;
 	}
 
-	@Override
-	protected Class<String> getReturnType() {
-		return String.class;
-	}
-	
 }

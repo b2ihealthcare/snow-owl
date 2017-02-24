@@ -102,9 +102,4 @@ public class SnomedConstraintSearchRequest extends RevisionSearchRequest<SnomedC
 		return new SnomedConstraints(offset, limit, 0);
 	}
 
-	@Override
-	protected Class<SnomedConstraints> getReturnType() {
-		return SnomedConstraints.class;
-	}
-
 }

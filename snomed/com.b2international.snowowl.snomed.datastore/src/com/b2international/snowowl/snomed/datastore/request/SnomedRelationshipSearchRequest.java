@@ -94,9 +94,4 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 	protected SnomedRelationships createEmptyResult(int offset, int limit) {
 		return new SnomedRelationships(offset, limit, 0);
 	}
-
-	@Override
-	protected Class<SnomedRelationships> getReturnType() {
-		return SnomedRelationships.class;
-	}
 }

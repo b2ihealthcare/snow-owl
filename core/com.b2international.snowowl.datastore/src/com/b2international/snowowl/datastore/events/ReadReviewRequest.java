@@ -35,9 +35,4 @@ public final class ReadReviewRequest extends ReviewRequest<Review> {
 		return context.service(ReviewManager.class).getReview(getReviewId());
 	}
 	
-	@Override
-	protected Class<Review> getReturnType() {
-		return Review.class;
-	}
-	
 }

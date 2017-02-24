@@ -66,11 +66,6 @@ public final class EvaluateQueryRefSetRequest extends BaseResourceRequest<Branch
 				.toList());
 	}
 	
-	@Override
-	protected Class<QueryRefSetMemberEvaluations> getReturnType() {
-		return QueryRefSetMemberEvaluations.class;
-	}
-	
 	private Collection<SnomedReferenceSetMember> getQueryMembers(BranchContext context, SnomedReferenceSet referenceSet) {
 		if (!SnomedRefSetType.QUERY.equals(referenceSet.getType())) {
 			throw new BadRequestException("Cannot evaluate non-query type reference set '%s'", referenceSet.getId());

@@ -26,7 +26,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -45,7 +45,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.5
  */
-final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionContext, String> {
+final class SnomedRefSetMemberCreateRequest implements Request<TransactionContext, String> {
 
 	private static final String REFSET_DESCRIPTION = "refSetDescription";
 
@@ -128,11 +128,6 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 		return member.getUuid();
 	}
 
-	@Override
-	protected Class<String> getReturnType() {
-		return String.class;
-	}
-	
 	private String getQuery() {
 		return ClassUtils.checkAndCast(properties.get(SnomedRf2Headers.FIELD_QUERY), String.class);
 	}

@@ -22,7 +22,6 @@ import static com.b2international.snowowl.datastore.commitinfo.CommitInfoDocumen
 import static com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument.Expressions.userId;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 import com.b2international.index.Hits;
@@ -117,11 +116,6 @@ final class CommitInfoSearchRequest extends SearchRequest<CommitInfos> {
 			final Long timeStamp = get(OptionKey.TIME_STAMP, Long.class);
 			builder.must(timeStamp(timeStamp));
 		}
-	}
-
-	@Override
-	protected Class<CommitInfos> getReturnType() {
-		return CommitInfos.class;
 	}
 
 }

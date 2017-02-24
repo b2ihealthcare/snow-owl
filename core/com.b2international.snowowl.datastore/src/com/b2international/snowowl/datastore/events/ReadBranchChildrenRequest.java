@@ -36,9 +36,4 @@ public final class ReadBranchChildrenRequest extends BranchRequest<Branches> {
 		return new Branches(ImmutableList.copyOf(branch.children()));
 	}
 
-	@Override
-	protected Class<Branches> getReturnType() {
-		return Branches.class;
-	}
-	
 }

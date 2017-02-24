@@ -20,7 +20,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -33,7 +33,7 @@ import com.google.common.base.Strings;
 /**
  * @since 4.5
  */
-final class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, String> {
+final class SnomedRefSetCreateRequest implements Request<TransactionContext, String> {
 
 	@NotNull
 	private final SnomedRefSetType type;
@@ -95,9 +95,4 @@ final class SnomedRefSetCreateRequest extends BaseRequest<TransactionContext, St
 		return identifierId;
 	}
 
-	@Override
-	protected Class<String> getReturnType() {
-		return String.class;
-	}
-	
 }

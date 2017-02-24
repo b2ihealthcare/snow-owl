@@ -20,8 +20,6 @@ import java.util.Collection;
 import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
@@ -29,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.0
  */
-public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<TransactionContext, String> implements SnomedComponentCreateRequest {
+public abstract class BaseSnomedComponentCreateRequest implements SnomedComponentCreateRequest {
 
 	@Nonnull
 	private Boolean active = Boolean.TRUE;
@@ -65,11 +63,6 @@ public abstract class BaseSnomedComponentCreateRequest extends BaseRequest<Trans
 	
 	final void setActive(Boolean active) {
 		this.active = active;
-	}
-	
-	@Override
-	protected final Class<String> getReturnType() {
-		return String.class;
 	}
 	
 	@JsonIgnore

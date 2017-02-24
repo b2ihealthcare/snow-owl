@@ -42,7 +42,7 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 		private static final Logger LOG = LoggerFactory.getLogger(SyncRebaseRequest.class);
 		
 		SyncRebaseRequest(final Merge merge, final String commitMessage, String reviewId) {
-			super(Branch.class, merge.getSource(), merge.getTarget(), commitMessage, reviewId);
+			super(merge.getSource(), merge.getTarget(), commitMessage, reviewId);
 		}
 
 		@Override

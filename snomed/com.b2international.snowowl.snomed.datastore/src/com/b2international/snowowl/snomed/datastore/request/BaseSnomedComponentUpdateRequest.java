@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.List;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.snomed.Component;
@@ -28,7 +28,7 @@ import com.b2international.snowowl.snomed.Concept;
  * @since 4.5
  * @param <B>
  */
-public abstract class BaseSnomedComponentUpdateRequest extends BaseRequest<TransactionContext, Boolean> {
+public abstract class BaseSnomedComponentUpdateRequest implements Request<TransactionContext, Boolean> {
 
 	private final String componentId;
 	
@@ -61,11 +61,6 @@ public abstract class BaseSnomedComponentUpdateRequest extends BaseRequest<Trans
 	
 	protected String getComponentId() {
 		return componentId;
-	}
-	
-	@Override
-	protected final Class<Boolean> getReturnType() {
-		return Boolean.class;
 	}
 	
 	protected String getLatestReleaseBranch(TransactionContext context) {

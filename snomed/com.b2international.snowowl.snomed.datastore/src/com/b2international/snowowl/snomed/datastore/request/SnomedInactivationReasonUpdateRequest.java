@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -80,7 +80,7 @@ import com.google.common.collect.ImmutableList;
  * @param <C> the type of the component to update (must implement {@link Inactivatable} and {@link Component})
  * @since 4.5
  */
-final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Component> extends BaseRequest<TransactionContext, Void> {
+final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Component> implements Request<TransactionContext, Void> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedInactivationReasonUpdateRequest.class);
 
@@ -111,11 +111,6 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 
 	void setInactivationValueId(final String inactivationValueId) {
 		this.inactivationValueId = inactivationValueId;
-	}
-
-	@Override
-	protected Class<Void> getReturnType() {
-		return Void.class;
 	}
 
 	@Override
