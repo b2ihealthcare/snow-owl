@@ -13,27 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request.job;
+package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
-import com.b2international.snowowl.datastore.request.BaseSystemRequestBuilder;
+import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 
 /**
  * @since 5.7
+ * @param <B>
+ * @param <R>
  */
-public final class GetJobRequestBuilder extends BaseSystemRequestBuilder<GetJobRequestBuilder, RemoteJobEntry> {
+public abstract class BaseSystemRequestBuilder<B extends BaseSystemRequestBuilder<B, R>, R> extends BaseRequestBuilder<B, ServiceProvider, R> {
 
-	private final String jobId;
-
-	GetJobRequestBuilder(String jobId) {
-		this.jobId = jobId;
+	public final AsyncRequest<R> buildAsync() {
+		return toAsync(build());
 	}
 	
-	@Override
-	protected Request<ServiceProvider, RemoteJobEntry> doBuild() {
-		return new GetJobRequest(jobId);
-	}
-
 }
