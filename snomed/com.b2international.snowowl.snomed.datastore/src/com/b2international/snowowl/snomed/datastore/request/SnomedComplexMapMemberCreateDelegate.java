@@ -47,15 +47,14 @@ final class SnomedComplexMapMemberCreateDelegate extends SnomedRefSetMemberCreat
 		// FIXME: check map target if it's also in SNOMED CT?
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_CORRELATION_ID);
 
-		// FIXME: narrowing conversion from integer to byte for group and priority
 		SnomedComplexMapRefSetMember member = SnomedComponents.newComplexMapMember()
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModule(getModuleId())
 				.withRefSet(getReferenceSetId())
 				.withMapTargetId(getComponentId(SnomedRf2Headers.FIELD_MAP_TARGET))
-				.withGroup(getProperty(SnomedRf2Headers.FIELD_MAP_GROUP, Integer.class).byteValue())
-				.withPriority(getProperty(SnomedRf2Headers.FIELD_MAP_PRIORITY, Integer.class).byteValue())
+				.withGroup(getProperty(SnomedRf2Headers.FIELD_MAP_GROUP, Integer.class))
+				.withPriority(getProperty(SnomedRf2Headers.FIELD_MAP_PRIORITY, Integer.class))
 				.withMapRule(getProperty(SnomedRf2Headers.FIELD_MAP_RULE))
 				.withMapAdvice(getProperty(SnomedRf2Headers.FIELD_MAP_ADVICE))
 				.withCorrelationId(getComponentId(SnomedRf2Headers.FIELD_CORRELATION_ID))

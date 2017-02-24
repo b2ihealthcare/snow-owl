@@ -46,13 +46,13 @@ final class SnomedComplexMapMemberUpdateDelegate extends SnomedRefSetMemberUpdat
 			changed |= true;
 		}
 
-		if (newGroup != null && newGroup.byteValue() != concreteDomainMember.getMapGroup()) {
-			concreteDomainMember.setMapGroup(newGroup.byteValue());
+		if (newGroup != null && newGroup.intValue() != concreteDomainMember.getMapGroup()) {
+			concreteDomainMember.setMapGroup(newGroup);
 			changed |= true;
 		}
 
-		if (newPriority != null && newPriority.byteValue() != concreteDomainMember.getMapPriority()) {
-			concreteDomainMember.setMapPriority(newPriority.byteValue());
+		if (newPriority != null && newPriority.intValue() != concreteDomainMember.getMapPriority()) {
+			concreteDomainMember.setMapPriority(newPriority);
 			changed |= true;
 		}
 

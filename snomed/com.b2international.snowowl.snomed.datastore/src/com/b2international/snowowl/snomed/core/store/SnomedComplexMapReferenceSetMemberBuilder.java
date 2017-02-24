@@ -28,8 +28,8 @@ public final class SnomedComplexMapReferenceSetMemberBuilder extends SnomedMembe
 	private String mapTargetDescription;
 	private String mapRule;
 	private String mapAdvice;
-	private byte group = 1;
-	private byte priority = 1;
+	private int group = 1;
+	private int priority = 1;
 	private String correlationId;
 	private String mapCategoryId;
 
@@ -53,12 +53,12 @@ public final class SnomedComplexMapReferenceSetMemberBuilder extends SnomedMembe
 		return getSelf();
 	}
 
-	public SnomedComplexMapReferenceSetMemberBuilder withGroup(byte group) {
+	public SnomedComplexMapReferenceSetMemberBuilder withGroup(int group) {
 		this.group = group;
 		return getSelf();
 	}
 
-	public SnomedComplexMapReferenceSetMemberBuilder withPriority(byte priority) {
+	public SnomedComplexMapReferenceSetMemberBuilder withPriority(int priority) {
 		this.priority = priority;
 		return getSelf();
 	}
