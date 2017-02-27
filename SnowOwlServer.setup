@@ -60,9 +60,8 @@
   <setupTask
       xsi:type="setup:EclipseIniTask"
       option="-Doomph.redirection.snow.owl.git"
-      value="=https://raw.githubusercontent.com/b2ihealthcare/snow-owl.git/develop/SnowOwlServer.setup->${git.clone.snow.owl.git.location|uri}/SnowOwlServer.setup"
-      vm="true">
-  </setupTask>
+      value="=https://raw.githubusercontent.com/b2ihealthcare/snow-owl.git/develop/SnowOwlServer.setup->${git.clone.location|uri}/SnowOwlServer.setup"
+      vm="true"/>
   <setupTask
       xsi:type="setup:VariableTask"
       name="eclipse.target.platform"
@@ -98,6 +97,7 @@
   </setupTask>
   <setupTask
       xsi:type="git:GitCloneTask"
+      id="git.clone"
       remoteURI="b2ihealthcare/snow-owl.git">
     <annotation
         source="http://www.eclipse.org/oomph/setup/InducedChoices">
