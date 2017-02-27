@@ -124,7 +124,8 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		ISnomedIdentifierService identifierService = getServiceForClass(ISnomedIdentifierService.class);
 		String conceptId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.CONCEPT, 1));
 
-		Map<?, ?> requestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.UK_PREFERRED_MAP, conceptId)
+		Map<?, ?> requestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
+				.put("id", conceptId)
 				.put("commitComment", "Created new concept with reserved identifier")
 				.build();
 
