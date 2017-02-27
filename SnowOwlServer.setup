@@ -59,8 +59,8 @@
       vm="true"/>
   <setupTask
       xsi:type="setup:EclipseIniTask"
-      option="-Doomph.redirection.snow.owl.git"
-      value="=https://raw.githubusercontent.com/b2ihealthcare/snow-owl.git/develop/SnowOwlServer.setup->${git.clone.location|uri}/SnowOwlServer.setup"
+      option="-Doomph.redirection.snow.owl"
+      value="=https://raw.githubusercontent.com/b2ihealthcare/snow-owl/develop/SnowOwlServer.setup->${git.clone.location|uri}/SnowOwlServer.setup"
       vm="true"/>
   <setupTask
       xsi:type="setup:VariableTask"
