@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -36,9 +38,10 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.request.RefSetSupport;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -68,14 +71,10 @@ public abstract class SnomedRestFixtures {
 	}
 
 	public static Builder<String, Object> createConceptRequestBody(String parentConceptId) {
-		return createConceptRequestBody(parentConceptId, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.UK_PREFERRED_MAP, null);
+		return createConceptRequestBody(parentConceptId, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.UK_PREFERRED_MAP);
 	}
 
 	public static Builder<String, Object> createConceptRequestBody(String parentConceptId, String moduleId, Map<String, Acceptability> acceptabilityMap) {
-		return createConceptRequestBody(parentConceptId, moduleId, acceptabilityMap, null);
-	}
-
-	public static Builder<String, Object> createConceptRequestBody(String parentConceptId, String moduleId, Map<String, Acceptability> acceptabilityMap, String conceptId) {
 		Map<?, ?> relationshipRequestBody = ImmutableMap.builder()
 				.put("moduleId", moduleId)
 				.put("typeId", Concepts.IS_A)
@@ -102,12 +101,6 @@ public abstract class SnomedRestFixtures {
 				.put("moduleId", moduleId)
 				.put("descriptions", ImmutableList.of(fsnRequestBody, ptRequestBody))
 				.put("relationships", ImmutableList.of(relationshipRequestBody));
-
-		if (conceptId != null) {
-			conceptRequestBody.put("id", conceptId);
-		} else {
-			conceptRequestBody.put("namespaceId", SnomedIdentifiers.INT_NAMESPACE);
-		}
 
 		return conceptRequestBody;
 	}
@@ -409,6 +402,39 @@ public abstract class SnomedRestFixtures {
 		default:
 			throw new IllegalStateException("Can't convert referenced component type '" + referencedComponentType + "' to a category.");
 		}
+	}
+
+	public static void createConcreteDomainParentConcept(IBranchPath conceptPath) {
+		SnomedCoreConfiguration snomedConfiguration = getSnomedCoreConfiguration();
+
+		Map<?, ?> parentConceptRequestBody = createConceptRequestBody(Concepts.REFSET_ROOT_CONCEPT)
+				.put("id", snomedConfiguration.getConcreteDomainTypeRefsetIdentifier())
+				.put("commitComment", "Created concrete domain reference set parent concept")
+				.build();
+
+		createComponent(conceptPath, SnomedComponentType.CONCEPT, parentConceptRequestBody).statusCode(201);
+		getComponent(conceptPath, SnomedComponentType.CONCEPT, Concepts.REFSET_CONCRETE_DOMAIN_TYPE).statusCode(200);
+	}
+
+	public static String createConcreteDomainRefSet(IBranchPath refSetPath, DataType dataType) {
+		String refSetId = SnomedRefSetUtil.getRefSetId(dataType);
+
+		Map<?, ?> refSetRequestBody = createConceptRequestBody(Concepts.REFSET_CONCRETE_DOMAIN_TYPE)
+				.put("id", refSetId)
+				.put("type", SnomedRefSetType.CONCRETE_DATA_TYPE)
+				.put("referencedComponentType", CoreTerminologyBroker.UNSPECIFIED)
+				.put("commitComment", "Created new concrete domain reference set")
+				.build();
+
+		createComponent(refSetPath, SnomedComponentType.REFSET, refSetRequestBody).statusCode(201);
+		getComponent(refSetPath, SnomedComponentType.CONCEPT, refSetId).statusCode(200);
+		getComponent(refSetPath, SnomedComponentType.REFSET, refSetId).statusCode(200);
+
+		return refSetId;
+	}
+
+	private static SnomedCoreConfiguration getSnomedCoreConfiguration() {
+		return SnowOwlApplication.INSTANCE.getConfiguration().getModuleConfig(SnomedCoreConfiguration.class);
 	}
 
 	private SnomedRestFixtures() {
