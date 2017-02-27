@@ -16,12 +16,12 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.snomedrefset.*;
 
 /**
  * @since 5.0
@@ -40,13 +40,24 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_VALUE);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_OPERATOR_ID);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_UNIT_ID);
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_OPERATOR_ID);
-		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_UNIT_ID);
+
+		DataType dataType = ((SnomedConcreteDataTypeRefSet) refSet).getDataType();
+		String value = getProperty(SnomedRf2Headers.FIELD_VALUE);
+
+		try {
+			SnomedRefSetUtil.deserializeValue(dataType, value);
+		} catch (IllegalArgumentException e) {
+			throw new BadRequestException("Couldn't deserialize value '%s' for data type '%s'.", value, dataType);
+		}
+
+		if (hasProperty(SnomedRf2Headers.FIELD_UNIT_ID)) {
+			checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_UNIT_ID);
+		}
 
 		SnomedConcreteDataTypeRefSetMember member = SnomedComponents.newConcreteDomainReferenceSetMember()
 				.withActive(isActive())
