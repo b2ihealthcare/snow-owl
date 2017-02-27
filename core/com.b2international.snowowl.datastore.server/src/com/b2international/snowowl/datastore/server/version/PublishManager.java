@@ -30,7 +30,6 @@ import static org.eclipse.emf.cdo.common.revision.CDORevisionUtil.createDelta;
 import static org.eclipse.emf.ecore.InternalEObject.EStore.NO_INDEX;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
@@ -67,7 +66,6 @@ import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemVe
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 
@@ -266,14 +264,6 @@ public abstract class PublishManager implements IPublishManager {
 	
 	private IBranchPath getParentBranchPath() {
 		return null == getConfiguration() ? getMainPath() : BranchPathUtils.createPath(getConfiguration().getParentBranchPath());
-	}
-
-	private Collection<ICodeSystemVersion> getAllVersions(final IBranchPath branchPath) {
-		return ImmutableList.<ICodeSystemVersion>copyOf(CodeSystemRequests.prepareSearchCodeSystemVersion()
-				.all()
-				.build(getRepositoryUuid(), branchPath.getPath())
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.getSync());
 	}
 
 	private void publishTerminologyMetadataChanges(final IPublishOperationConfiguration configuration) throws SnowowlServiceException {
