@@ -18,11 +18,11 @@ package com.b2international.snowowl.snomed.api.rest.components;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.executeMemberAction;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSet;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Lists.newArrayList;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -38,6 +38,7 @@ import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableMap;
 
@@ -55,6 +56,85 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void getMemberNonExistingIdentifier() throws Exception {
 		getComponent(branchPath, SnomedComponentType.MEMBER, "00001111-0000-0000-0000-000000000000").statusCode(404);
+	}
+
+	@Test
+	public void createConcreteDomainMemberInvalidValue() {
+		createConcreteDomainParentConcept(branchPath);
+
+		String refSetId = createConcreteDomainRefSet(branchPath, DataType.INTEGER);
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, "numberOfWidgets")
+				.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.STATED_RELATIONSHIP)
+				.put(SnomedRf2Headers.FIELD_VALUE, "five") // bad
+				.put(SnomedRf2Headers.FIELD_OPERATOR_ID, Concepts.REFSET_ATTRIBUTE)
+				.put("commitComment", "Created new reference set member")
+				.build();
+
+		createComponent(branchPath, SnomedComponentType.MEMBER, requestBody).statusCode(400);
+	}
+
+	@Test
+	public void createConcreteDomainMember() {
+		createConcreteDomainParentConcept(branchPath);
+
+		String refSetId = createConcreteDomainRefSet(branchPath, DataType.DECIMAL);
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, "pi")
+				.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.STATED_RELATIONSHIP)
+				.put(SnomedRf2Headers.FIELD_VALUE, "3.1415927")
+				.put(SnomedRf2Headers.FIELD_OPERATOR_ID, Concepts.REFSET_ATTRIBUTE) // Using "Reference set attribute" root as operator
+				.put("commitComment", "Created new reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
+		.body(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, equalTo("pi"))
+		.body(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, equalTo(Concepts.STATED_RELATIONSHIP))
+		.body(SnomedRf2Headers.FIELD_VALUE, equalTo("3.1415927"))
+		.body(SnomedRf2Headers.FIELD_OPERATOR_ID, equalTo(Concepts.REFSET_ATTRIBUTE));
+	}
+
+	@Test
+	public void updateConcreteDomainMember() {
+		createConcreteDomainParentConcept(branchPath);
+
+		String refSetId = createConcreteDomainRefSet(branchPath, DataType.DECIMAL);
+		Map<?, ?> createRequest = createRefSetMemberRequestBody(refSetId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, "pi")
+				.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.STATED_RELATIONSHIP)
+				.put(SnomedRf2Headers.FIELD_VALUE, "3.1415927")
+				.put(SnomedRf2Headers.FIELD_OPERATOR_ID, Concepts.REFSET_ATTRIBUTE) // Using "Reference set attribute" root as operator
+				.put("commitComment", "Created new concrete domain reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, createRequest)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		@SuppressWarnings("unchecked")
+		Map<String, Object> member = getComponent(branchPath, SnomedComponentType.MEMBER, memberId)
+		.statusCode(200)
+		.body(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, equalTo("pi"))
+		.body(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, equalTo(Concepts.STATED_RELATIONSHIP))
+		.body(SnomedRf2Headers.FIELD_VALUE, equalTo("3.1415927"))
+		.body(SnomedRf2Headers.FIELD_OPERATOR_ID, equalTo(Concepts.REFSET_ATTRIBUTE))
+		.extract().as(Map.class);
+
+		member.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, "e");
+		member.put(SnomedRf2Headers.FIELD_VALUE, "2.7182818");
+		member.put("commitComment", "Updated existing concrete domain reference set member");
+
+		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, member, false).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId)
+		.statusCode(200)
+		.body(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, equalTo("e"))
+		.body(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, equalTo(Concepts.STATED_RELATIONSHIP))
+		.body(SnomedRf2Headers.FIELD_VALUE, equalTo("2.7182818"))
+		.body(SnomedRf2Headers.FIELD_OPERATOR_ID, equalTo(Concepts.REFSET_ATTRIBUTE));
 	}
 
 	@Test

@@ -16,6 +16,8 @@
 package com.b2international.snowowl.snomed.api.rest.components;
 
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createConcreteDomainParentConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createConcreteDomainRefSet;
 
 import org.junit.Test;
 
@@ -23,6 +25,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 
 /**
  * @since 4.5
@@ -37,6 +40,16 @@ public class SnomedRefSetApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void getRefSetNonExistingIdentifier() throws Exception {
 		getComponent(branchPath, SnomedComponentType.REFSET, "11110000").statusCode(404);
+	}
+
+	@Test
+	public void createConcreteDomainReferenceSets() {
+		createConcreteDomainParentConcept(branchPath);
+
+		for (DataType dataType : DataType.values()) {
+			System.out.println("Datatype: " + dataType);
+			createConcreteDomainRefSet(branchPath, dataType);
+		}
 	}
 
 }
