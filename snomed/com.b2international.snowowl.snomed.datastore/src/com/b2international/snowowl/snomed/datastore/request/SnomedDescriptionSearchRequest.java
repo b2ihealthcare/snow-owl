@@ -123,7 +123,6 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		addModuleClause(queryBuilder);
 		addNamespaceFilter(queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
-		addActiveMemberOfClause(queryBuilder);
 		addLocaleFilter(context, queryBuilder, languageRefSetId);
 		addLanguageFilter(queryBuilder);
 		addActiveMemberOfClause(queryBuilder);
