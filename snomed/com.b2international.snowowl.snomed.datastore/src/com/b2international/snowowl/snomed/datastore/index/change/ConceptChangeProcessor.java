@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.delta.CDOAddFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOClearFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOContainerFeatureDelta;
@@ -45,15 +46,20 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.Pair;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
+import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -64,6 +70,7 @@ import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMem
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
@@ -140,6 +147,9 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		
 		final Set<String> dirtyConceptIds = collectDirtyConceptIds(searcher, commitChangeSet);
 		
+		// remaining new and dirty reference sets should be connected to a non-new concept, so add them here
+		dirtyConceptIds.addAll(newAndDirtyRefSetsById.keySet());
+		
 		if (!dirtyConceptIds.isEmpty()) {
 			// fetch all dirty concept documents by their ID
 			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
@@ -155,12 +165,13 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				if (currentDoc == null) {
 					throw new IllegalStateException("Current concept revision should not be null for: " + id);
 				}
-				// current doc should exists at this point in time
 				final Builder doc = SnomedConceptDocument.builder(currentDoc);
 				update(doc, concept, currentDoc);
 				SnomedRefSet refSet = newAndDirtyRefSetsById.remove(id);
 				if (refSet != null) {
 					doc.refSet(refSet);
+				} else {
+					doc.clearRefSet();
 				}
 				if (concept != null) {
 					indexChangedRevision(concept.cdoID(), doc.build());				
@@ -169,21 +180,6 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				}
 			}
 		}
-		
-		final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
-				.where(SnomedConceptDocument.Expressions.ids(newAndDirtyRefSetsById.keySet()))
-				.limit(newAndDirtyRefSetsById.keySet().size())
-				.build();
-		final Hits<SnomedConceptDocument> newAndDirtyIdentifierConcepts = searcher.search(query);
-		for (final SnomedConceptDocument currentDoc : newAndDirtyIdentifierConcepts) {
-			final Builder doc = SnomedConceptDocument.builder(currentDoc);
-			final SnomedRefSet refSet = newAndDirtyRefSetsById.remove(currentDoc.getId());
-			if (refSet != null) {
-				doc.refSet(refSet);
-				indexChangedRevision(currentDoc.getStorageKey(), doc.build());
-			}
-		}
-		// TODO process deleted reference sets
 	}
 	
 	/*
@@ -263,7 +259,25 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		// collect stated taxonomy changes
 		dirtyConceptIds.addAll(registerConceptAndDescendants(statedTaxonomy.getDifference().getA(), statedTaxonomy.getNewTaxonomy()));
 		dirtyConceptIds.addAll(registerConceptAndDescendants(statedTaxonomy.getDifference().getB(), statedTaxonomy.getOldTaxonomy()));
-		// make sure we remove all new concept IDs
+
+		// collect detached reference sets where the concept itself hasn't been detached
+		Collection<CDOID> detachedRefSets = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET);
+		Set<Long> detachedRefSetStorageKeys = ImmutableSet.copyOf(CDOIDUtils.createCdoIdToLong(detachedRefSets));
+		Collection<CDOID> detachedConcepts = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT);
+		Set<Long> detachedConceptStorageKeys = ImmutableSet.copyOf(CDOIDUtils.createCdoIdToLong(detachedConcepts));
+		
+		final Query<SnomedConceptDocument> query = Query.selectPartial(SnomedConceptDocument.class, RevisionDocument.Fields.ID)
+				.where(Expressions.builder()
+						.must(SnomedConceptDocument.Expressions.refSetStorageKeys(detachedRefSetStorageKeys))
+						.mustNot(Expressions.matchAnyLong(Revision.STORAGE_KEY, detachedConceptStorageKeys))
+						.build())
+				.limit(detachedRefSets.size())
+				.build();
+
+		final Hits<SnomedConceptDocument> hits = searcher.search(query);
+		FluentIterable.from(hits).transform(SnomedComponentDocument::getId).copyInto(dirtyConceptIds);
+
+		// remove all new concept IDs
 		dirtyConceptIds.removeAll(FluentIterable.from(commitChangeSet.getNewComponents(Concept.class)).transform(GET_CONCEPT_ID).toSet());
 		
 		return dirtyConceptIds;

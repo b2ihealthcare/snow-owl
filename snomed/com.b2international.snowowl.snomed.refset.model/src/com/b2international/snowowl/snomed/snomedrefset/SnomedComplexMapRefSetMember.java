@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,15 +47,17 @@ public interface SnomedComplexMapRefSetMember extends SnomedSimpleMapRefSetMembe
 	 * @model required="true"
 	 * @generated
 	 */
-	byte getMapGroup();
+	int getMapGroup();
 
 	/**
-	 * Counterpart of {@link #getMapGroup()}.
-	 * @param value the new map group value.
+	 * Sets the value of the '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember#getMapGroup <em>Map Group</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Map Group</em>' attribute.
 	 * @see #getMapGroup()
 	 * @generated
 	 */
-	void setMapGroup(byte value);
+	void setMapGroup(int value);
 
 	/**
 	 * &quotWithin a group, the mapPriority specifies the order in which complex map records should be checked. 
@@ -68,15 +70,17 @@ public interface SnomedComplexMapRefSetMember extends SnomedSimpleMapRefSetMembe
 	 * @model required="true"
 	 * @generated
 	 */
-	byte getMapPriority();
+	int getMapPriority();
 
 	/**
-	 * Counterpart of {@link #getMapPriority()}.
-	 * @param value the new value of the map priority.
+	 * Sets the value of the '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember#getMapPriority <em>Map Priority</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Map Priority</em>' attribute.
 	 * @see #getMapPriority()
 	 * @generated
 	 */
-	void setMapPriority(byte value);
+	void setMapPriority(int value);
 
 	/**
 	 * &quotA machine-readable rule, (evaluating to either 'true' or 'false' at run-time) that indicates whether 

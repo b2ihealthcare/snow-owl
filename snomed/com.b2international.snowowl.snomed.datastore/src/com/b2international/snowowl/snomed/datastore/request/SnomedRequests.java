@@ -43,6 +43,7 @@ import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstrain
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
@@ -125,6 +126,10 @@ public abstract class SnomedRequests {
 		return prepareDelete().setType(Relationship.class);
 	}
 	
+	public static DeleteRequestBuilder prepareDeleteReferenceSet() {
+		return prepareDelete().setType(SnomedRefSet.class);
+	}
+
 	public static SnomedRefSetMemberCreateRequestBuilder prepareNewMember() {
 		return new SnomedRefSetMemberCreateRequestBuilder();
 	}

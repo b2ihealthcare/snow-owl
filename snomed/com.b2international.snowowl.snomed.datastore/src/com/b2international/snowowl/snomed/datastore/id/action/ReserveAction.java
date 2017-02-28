@@ -33,7 +33,7 @@ public class ReserveAction extends AbstractCountedIdAction {
 	
 	@Override
 	protected AbstractSnomedIdentifierCountedRequestBuilder<?> createRequestBuilder() {
-		return SnomedRequests.identifiers().prepareGenerate();
+		return SnomedRequests.identifiers().prepareReserve();
 	}
 	
 	@Override

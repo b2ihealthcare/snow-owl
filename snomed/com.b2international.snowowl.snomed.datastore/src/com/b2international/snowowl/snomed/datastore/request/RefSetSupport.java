@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
@@ -37,13 +38,22 @@ public abstract class RefSetSupport {
 	}
 
 	private static final Multimap<SnomedRefSetType, String> SUPPORTED_REFERENCED_COMPONENTS = ImmutableMultimap.<SnomedRefSetType, String> builder()
+			.put(SnomedRefSetType.ASSOCIATION, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.ASSOCIATION, SnomedTerminologyComponentConstants.DESCRIPTION)
+			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedTerminologyComponentConstants.DESCRIPTION)
+			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedTerminologyComponentConstants.RELATIONSHIP)
+			.put(SnomedRefSetType.CONCRETE_DATA_TYPE, CoreTerminologyBroker.UNSPECIFIED)
+			.put(SnomedRefSetType.COMPLEX_MAP, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.DESCRIPTION_TYPE, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.EXTENDED_MAP, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.LANGUAGE, SnomedTerminologyComponentConstants.DESCRIPTION)
+			.put(SnomedRefSetType.MODULE_DEPENDENCY, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.QUERY, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.DESCRIPTION)
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.RELATIONSHIP)
-			.put(SnomedRefSetType.LANGUAGE, SnomedTerminologyComponentConstants.DESCRIPTION)
-			.put(SnomedRefSetType.QUERY, SnomedTerminologyComponentConstants.REFSET)
-			.put(SnomedRefSetType.CONCRETE_DATA_TYPE, SnomedTerminologyComponentConstants.CONCEPT)
-//			.put(SnomedRefSetType.CONCRETE_DATA_TYPE, SnomedTerminologyComponentConstants.RELATIONSHIP)
+			.put(SnomedRefSetType.SIMPLE_MAP, SnomedTerminologyComponentConstants.CONCEPT)
 			.build();
 
 	public static boolean isSupported(SnomedRefSetType type) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.internal.merge;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
@@ -27,6 +29,7 @@ import com.b2international.snowowl.core.exceptions.ApiError;
 import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.core.merge.MergeImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.remotejobs.BranchExclusiveRule;
 
@@ -46,7 +49,7 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 		}
 	}
 
-	protected MergeImpl merge;
+	private final AtomicReference<Merge> merge = new AtomicReference<>();
 	
 	protected Repository repository;
 	protected String commitComment;
@@ -56,9 +59,10 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 		super(commitComment);
 		
 		this.repository = repository;
-		this.merge = new MergeImpl(sourcePath, targetPath);
 		this.commitComment = commitComment;
 		this.reviewId = reviewId;
+		
+		merge.set(MergeImpl.builder(sourcePath, targetPath).build());
 		
 		setSystem(true);
 		
@@ -69,17 +73,17 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 	
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
+		merge.getAndUpdate(m -> m.start());
 		
-		merge.start();
 		try {
 			applyChanges();
-			merge.completed();
+			merge.getAndUpdate(m -> m.completed());
 		} catch (MergeConflictException e) {
-			merge.failedWithConflicts(e.getConflicts(), e.toApiError());
+			merge.getAndUpdate(m -> m.failedWithConflicts(e.getConflicts(), e.toApiError()));
 		} catch (ApiException e) {
-			merge.failed(e.toApiError());
+			merge.getAndUpdate(m -> m.failed(e.toApiError()));
 		} catch (RuntimeException e) {
-			merge.failed(ApiError.Builder.of(e.getMessage()).build());
+			merge.getAndUpdate(m -> m.failed(ApiError.Builder.of(e.getMessage()).build()));
 		}
 		
 		return Statuses.ok();
@@ -89,11 +93,11 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 
 	@Override
 	protected void canceling() {
-		merge.cancelRequested();
+		merge.getAndUpdate(m -> m.cancelRequested());
 		super.canceling();
 	}
 
 	public Merge getMerge() {
-		return merge;
+		return merge.get();
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.b2international.snowowl.datastore;
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.nullToEmpty;
+
+import java.util.Objects;
 
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
@@ -243,32 +245,20 @@ public class CodeSystemVersionEntry implements ICodeSystemVersion {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((repositoryUuid == null) ? 0 : repositoryUuid.hashCode());
-		result = prime * result + ((versionId == null) ? 0 : versionId.hashCode());
-		return result;
+		return Objects.hash(repositoryUuid, codeSystemShortName, versionId);
 	}
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (!(obj instanceof CodeSystemVersionEntry))
-			return false;
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		if (!(obj instanceof CodeSystemVersionEntry)) { return false; }
+		
 		final CodeSystemVersionEntry other = (CodeSystemVersionEntry) obj;
-		if (repositoryUuid == null) {
-			if (other.repositoryUuid != null)
-				return false;
-		} else if (!repositoryUuid.equals(other.repositoryUuid))
-			return false;
-		if (versionId == null) {
-			if (other.versionId != null)
-				return false;
-		} else if (!versionId.equals(other.versionId))
-			return false;
+		
+		if (!Objects.equals(repositoryUuid, other.repositoryUuid)) { return false; }
+		if (!Objects.equals(codeSystemShortName, other.codeSystemShortName)) { return false; }
+		if (!Objects.equals(versionId, other.versionId)) { return false; }
 		return true;
 	}
 
@@ -277,5 +267,4 @@ public class CodeSystemVersionEntry implements ICodeSystemVersion {
 		return new StringBuilder(versionId).append(patched ? "*" : "").toString();
 	}
 	
-
 }

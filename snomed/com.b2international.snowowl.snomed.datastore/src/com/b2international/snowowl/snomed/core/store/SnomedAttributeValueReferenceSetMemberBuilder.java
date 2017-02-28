@@ -16,8 +16,14 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.Inactivatable;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 
 /**
  * @since 4.5
@@ -40,6 +46,27 @@ public final class SnomedAttributeValueReferenceSetMemberBuilder extends SnomedM
 	protected void init(SnomedAttributeValueRefSetMember component, TransactionContext context) {
 		super.init(component, context);
 		component.setValueId(valueId);
+	}
+	
+	@Override
+	protected void addToList(TransactionContext context, SnomedRefSet refSet, SnomedAttributeValueRefSetMember component) {
+		if (refSet instanceof SnomedStructuralRefSet) {
+			Inactivatable inactivatable = getInactivatable(context, component.getReferencedComponentId(), component.getReferencedComponentType());
+			inactivatable.getInactivationIndicatorRefSetMembers().add(component);
+		} else {
+			super.addToList(context, refSet, component);
+		}
+	}
+
+	private Inactivatable getInactivatable(TransactionContext context, String referencedComponentId, short referencedComponentType) {
+		switch (referencedComponentType) {
+		case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
+			return context.lookup(referencedComponentId, Concept.class);
+		case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+			return context.lookup(referencedComponentId, Description.class);
+		default:
+			throw new IllegalStateException("Unexpected referenced component type '" + referencedComponentType + "'.");
+		}
 	}
 
 }
