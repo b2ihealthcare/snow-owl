@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
+import com.b2international.snowowl.datastore.request.version.CodeSystemVersionCreateRequestBuilder;
+
 /**
  * @since 4.7
  */
@@ -40,6 +42,10 @@ public class CodeSystemRequests {
 
 	public static CodeSystemVersionSearchRequestBuilder prepareSearchCodeSystemVersion() {
 		return new CodeSystemVersionSearchRequestBuilder();
+	}
+	
+	public static CodeSystemVersionCreateRequestBuilder prepareNewCodeSystemVersion() {
+		return new CodeSystemVersionCreateRequestBuilder();
 	}
 	
 }

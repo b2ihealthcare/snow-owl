@@ -35,7 +35,7 @@ public interface IPublishManager {
 	 * @throws SnowowlServiceException if the publication failed.
 	 */
 	void publish(final ICDOTransactionAggregator aggregator, final String toolingId, 
-			final IPublishOperationConfiguration configuration, final IProgressMonitor monitor) 
+			final PublishOperationConfiguration configuration, final IProgressMonitor monitor) 
 		throws SnowowlServiceException;
 	
 	/**

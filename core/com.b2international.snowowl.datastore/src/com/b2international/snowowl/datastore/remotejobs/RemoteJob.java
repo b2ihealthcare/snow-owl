@@ -103,7 +103,7 @@ public final class RemoteJob extends Job {
 		return getName();
 	}
 	
-	String getUser() {
+	public String getUser() {
 		return user;
 	}
 	
