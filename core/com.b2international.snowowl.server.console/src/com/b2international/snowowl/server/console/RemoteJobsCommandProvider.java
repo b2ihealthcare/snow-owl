@@ -28,8 +28,9 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.datastore.remotejobs.IRemoteJobManager;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
+import com.b2international.snowowl.datastore.request.job.JobRequests;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -80,7 +81,7 @@ public class RemoteJobsCommandProvider implements CommandProvider {
 	public synchronized void listJobs(final CommandInterpreter interpreter) {
 
 		lastRetrievedEntries.clear();
-		lastRetrievedEntries.addAll(getRemoteJobManager().getAllRemoteJobs());
+		lastRetrievedEntries.addAll(JobRequests.prepareSearch().all().buildAsync().execute(getBus()).getSync().getItems());
 		
 		if (CompareUtils.isEmpty(lastRetrievedEntries)) {
 			interpreter.println("No remote jobs are currently scheduled or running on the server.");
@@ -117,7 +118,7 @@ public class RemoteJobsCommandProvider implements CommandProvider {
 		interpreter.println(String.format(COLUMN_FORMAT, 
 				i,
 				StringUtils.truncate(entry.getDescription(), 50),
-				StringUtils.truncate(entry.getRequestingUserId(), 16),
+				StringUtils.truncate(entry.getUser(), 16),
 				entry.getScheduleDate() != null ? Dates.formatByHostTimeZone(entry.getScheduleDate(), DateFormats.MEDIUM) : "Unknown",
 				entry.getStartDate() != null ? Dates.formatByHostTimeZone(entry.getStartDate(), DateFormats.MEDIUM) : "",
 				StringUtils.truncate(StringUtils.capitalizeFirstLetter(entry.getState().toString().toLowerCase()), 16)));
@@ -155,14 +156,14 @@ public class RemoteJobsCommandProvider implements CommandProvider {
 		}
 		
 		final RemoteJobEntry jobToCancel = lastRetrievedEntries.get(parsedJobId);
-		getRemoteJobManager().cancelRemoteJob(jobToCancel.getId());
+		JobRequests.prepareCancel(jobToCancel.getId()).buildAsync().execute(getBus()).getSync();
 		lastRetrievedEntries.clear();
 		
 		interpreter.println(MessageFormat.format("Requesting job {0} to cancel.", parsedJobId));
 	}
 
-	private IRemoteJobManager getRemoteJobManager() {
-		return getApplicationContext().getService(IRemoteJobManager.class);
+	private IEventBus getBus() {
+		return getApplicationContext().getService(IEventBus.class);
 	}
 
 	private ApplicationContext getApplicationContext() {
