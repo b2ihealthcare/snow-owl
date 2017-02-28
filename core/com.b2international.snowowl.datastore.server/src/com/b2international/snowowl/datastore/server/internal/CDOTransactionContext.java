@@ -30,8 +30,8 @@ import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.CycleDetectedException;
 import com.b2international.snowowl.core.exceptions.LockedException;
 import com.b2international.snowowl.datastore.CDOEditingContext;
+import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
-import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 
 /**
  * @since 4.5

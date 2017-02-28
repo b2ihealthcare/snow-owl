@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server;
+package com.b2international.snowowl.datastore.cdo;
 
 import org.eclipse.emf.cdo.server.IStoreAccessor.CommitContext;
 import org.eclipse.emf.cdo.server.ITransaction;
@@ -30,7 +30,6 @@ import com.google.common.base.Preconditions;
  * @see WriteAccessHandler
  * @see ICDOChangeManager
  * @see ObjectWriteAccessHandler
- * @see CDOServerUtils
  */
 @SuppressWarnings("restriction")
 public class WriteAccessHandlerFilteringRepository extends org.eclipse.emf.cdo.internal.server.DelegatingRepository {

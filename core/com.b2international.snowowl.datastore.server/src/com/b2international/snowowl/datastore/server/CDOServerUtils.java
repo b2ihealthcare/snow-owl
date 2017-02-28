@@ -15,19 +15,14 @@
  */
 package com.b2international.snowowl.datastore.server;
 
-import static com.b2international.commons.CompareUtils.isEmpty;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Collections.emptyList;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +45,7 @@ import org.eclipse.emf.cdo.eresource.EresourcePackage;
 import org.eclipse.emf.cdo.internal.server.Repository;
 import org.eclipse.emf.cdo.net4j.CDONet4jSession;
 import org.eclipse.emf.cdo.server.IRepository;
+import org.eclipse.emf.cdo.server.IRepository.WriteAccessHandler;
 import org.eclipse.emf.cdo.server.IStore;
 import org.eclipse.emf.cdo.server.IStoreAccessor;
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
@@ -57,11 +53,9 @@ import org.eclipse.emf.cdo.server.db.IDBStore;
 import org.eclipse.emf.cdo.server.db.IDBStoreAccessor;
 import org.eclipse.emf.cdo.spi.common.commit.CDORevisionAvailabilityInfo;
 import org.eclipse.emf.cdo.spi.common.commit.InternalCDOCommitInfoManager.CommitInfoLoader;
-import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionManager;
 import org.eclipse.emf.cdo.spi.server.InternalCommitContext;
 import org.eclipse.emf.cdo.spi.server.InternalRepository;
 import org.eclipse.emf.cdo.spi.server.InternalSession;
-import org.eclipse.emf.cdo.spi.server.InternalSessionManager;
 import org.eclipse.emf.cdo.spi.server.InternalStore;
 import org.eclipse.emf.cdo.spi.server.InternalTransaction;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -81,19 +75,19 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.CDOEditingContext;
-import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
+import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionAggregator;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
+import com.b2international.snowowl.datastore.cdo.CustomTransactionCommitContext;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
-import com.b2international.snowowl.datastore.server.internal.ImpersonatingSessionProtocol;
+import com.b2international.snowowl.datastore.cdo.IErrorLoggingStrategy;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 /**
@@ -106,7 +100,6 @@ import com.google.common.collect.Lists;
 public abstract class CDOServerUtils {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CDOServerUtils.class);
-	private static final int MAX_REVISION_LIMIT = 1_000_000;
 
 	/**
 	 * Commits the specified {@link CDOEditingContext}'s transaction with someone else user ID to the backend.
@@ -227,9 +220,9 @@ public abstract class CDOServerUtils {
 
 				final ICDOConnection connection = getConnectionManager().get(commitInfo.getBranch());
 				final String repositoryUuid = connection.getUuid();
-				final InternalRepository repository = getRepositoryByUuid(repositoryUuid);
+				final InternalRepository repository = CDOUtils.getRepositoryByUuid(repositoryUuid);
 				
-				session = openSession(commitInfo.getUserID(), repositoryUuid);
+				session = CDOUtils.openSession(commitInfo.getUserID(), repositoryUuid);
 				
 //				final CDOCommitInfo delegateCommitInfo = CDOCommitInfoUtils.removeUuidFromComment(commitInfo);
 				repository.sendCommitNotification(session, commitInfo);
@@ -252,51 +245,7 @@ public abstract class CDOServerUtils {
 	 * @return a list of CDO revisions.
 	 */
 	public static List<CDORevision> getRevisions(final CDOBranchPoint branchPoint, final CDOID... ids) {
-		return getRevisions(branchPoint, Arrays.asList(ids));
-	}
-
-	/**
-	 * Returns with the revisions for the given CDO IDs on a specified {@link CDOBranchPoint branch point}.
-	 * @param branchPoint the branch point to get the revisions.
-	 * @param ids the CDO IDs.
-	 * @return a list of CDO revisions.
-	 */
-	public static List<CDORevision> getRevisions(final CDOBranchPoint branchPoint, final Collection<CDOID> ids) {
-		
-		if (isEmpty(ids)) {
-			return emptyList();
-		}
-		
-		try {
-
-			final CDOID cdoId = Iterables.get(ids, 0);
-			StoreThreadLocal.setAccessor(getAccessor(cdoId));
-			
-			final List<CDORevision> revisions = newArrayList();
-			final Iterator<List<CDOID>> itr = Iterators.partition(ids.iterator(), MAX_REVISION_LIMIT);
-			final InternalCDORevisionManager revisionManager = getRevisionManager(cdoId);
-			
-			while (itr.hasNext()) {
-				//get revisions at once but at most 1,000,000
-				revisions.addAll(revisionManager.getRevisions(
-						newArrayList(itr.next()), 
-						branchPoint, 
-						CDORevision.UNCHUNKED,
-						CDORevision.DEPTH_NONE,
-						true,
-						null));
-				
-			}
-			
-			return revisions;
-			
-		} finally {
-			
-			//release resources
-			StoreThreadLocal.release();
-			
-		}
-		
+		return CDOUtils.getRevisions(branchPoint, Arrays.asList(ids));
 	}
 
 	/**
@@ -313,7 +262,7 @@ public abstract class CDOServerUtils {
 			StoreThreadLocal.setAccessor(getAccessor(id));
 			
 			//get revisions at once
-			return getRevisionManager(id).getRevisionByVersion(
+			return CDOUtils.getRevisionManager(id).getRevisionByVersion(
 					id, 
 					branchVersion, 
 					CDORevision.UNCHUNKED,
@@ -513,7 +462,7 @@ public abstract class CDOServerUtils {
 			
 			//sets the accessor on the store thread local
 			StoreThreadLocal.setAccessor(getAccessorByUuid(uuid));
-			final Set<CDOID> ids = getRepositoryByUuid(uuid).getMergeData(targetInfo, sourceInfo, null, null, nsUris, monitor);
+			final Set<CDOID> ids = CDOUtils.getRepositoryByUuid(uuid).getMergeData(targetInfo, sourceInfo, null, null, nsUris, monitor);
 	
 			return CDORevisionUtil.createChangeSetData(ids, sourceInfo, targetInfo);
 			
@@ -641,16 +590,6 @@ public abstract class CDOServerUtils {
 		return checkNotNull(getDbStore(cdoId).getWriter(null), "Store accessor was null. CDO ID: " + cdoId);
 	}
 
-	/**Opens and returns with a new session with the given user ID for a repository.*/
-	public static InternalSession openSession(final String userID, final String uuid) {
-		return getSessionManager(uuid).openSession(new ImpersonatingSessionProtocol(userID));
-	}
-
-	/**Returns with the repository identified by its unique ID.*/
-	public static InternalRepository getRepositoryByUuid(final String uuid) {
-		return (InternalRepository) getRepositoryManager().getByUuid(uuid).getRepository();
-	}
-
 	/**Creates and initialize a {@link IRepository repository} instance with the given name, backing store, configuration and error logging strategy,*/
 	public static IRepository createRepository(final String name, final IStore store, final Map<String, String> properties, final IErrorLoggingStrategy strategy) {
     
@@ -692,37 +631,17 @@ public abstract class CDOServerUtils {
 
 	/*returns with the DB accessor*/
 	private static IDBStoreAccessor getAccessor(final CDOID cdoId) {
-		return getDbStore(cdoId).getWriter(null);
-	}
-	
-	/*returns with the DB store*/
-	private static IDBStore getDbStore(final CDOID cdoId) {
-		return (IDBStore) getRepository(cdoId).getStore();
+		return CDOUtils.getAccessor(cdoId);
 	}
 	
 	/*returns with the DB store*/
 	private static IDBStore getDbStore(final long cdoId) {
-		return (IDBStore) getRepository(cdoId).getStore();
+		return (IDBStore) CDOUtils.getRepository(cdoId).getStore();
 	}
 	
-	/*returns with the repository*/
-	private static IRepository getRepository(final CDOID cdoId) {
-		return getRepositoryManager().get(cdoId).getRepository();
-	}
-	
-	/*returns with the repository*/
-	private static IRepository getRepository(final long cdoId) {
-		return getRepositoryManager().get(cdoId).getRepository();
-	}
-
 	/*returns with the DB store*/
 	private static IDBStore getDbStoreByUuid(final String uuid) {
-		return (IDBStore) getRepositoryByUuid(uuid).getStore();
-	}
-	
-	/*returns with the revision manager sticked with the underlying repository instance*/
-	private static InternalCDORevisionManager getRevisionManager(final CDOID cdoId) {
-		return (InternalCDORevisionManager) getRepository(cdoId).getRevisionManager();
+		return (IDBStore) CDOUtils.getRepositoryByUuid(uuid).getStore();
 	}
 	
 	/*returns true if the given list of revisions is null, empty or the only element is null. otherwise, false*/
@@ -730,16 +649,6 @@ public abstract class CDOServerUtils {
 		return CompareUtils.isEmpty(revisions) || null == Iterables.getOnlyElement(revisions, null);
 	}
 	
-	/*returns with the session manager*/
-	private static InternalSessionManager getSessionManager(final String uuid) {
-		return getRepositoryByUuid(uuid).getSessionManager();
-	}
-
-	/*returns with the repository manager service*/
-	private static ICDORepositoryManager getRepositoryManager() {
-		return ApplicationContext.getInstance().getService(ICDORepositoryManager.class);
-	}
-
 	private CDOServerUtils() {
 		//suppress instantiation
 	}

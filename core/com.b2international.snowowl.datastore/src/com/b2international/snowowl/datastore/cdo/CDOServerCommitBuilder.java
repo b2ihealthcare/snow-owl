@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server;
+package com.b2international.snowowl.datastore.cdo;
 
 import static com.b2international.commons.exceptions.Exceptions.extractCause;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -94,12 +94,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
-import com.b2international.snowowl.datastore.cdo.CDOTransactionAggregator;
-import com.b2international.snowowl.datastore.cdo.CDOTransactionAggregatorUtils;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils.CDOObjectToCDOIDAdjuster;
-import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.google.common.base.Preconditions;
@@ -158,7 +153,7 @@ public class CDOServerCommitBuilder {
 	 * <p>
 	 * This class is non-static to allow direct access to fields in the containing builder class.
 	 */
-	/*package*/ class ServerTransactionCommitContext extends CustomTransactionCommitContext {
+	public final class ServerTransactionCommitContext extends CustomTransactionCommitContext {
 
 		private ServerTransactionCommitContext(final InternalTransaction transaction, final IErrorLoggingStrategy strategy) {
 			super(transaction, strategy);
@@ -314,7 +309,7 @@ public class CDOServerCommitBuilder {
 			for (final CDOTransaction transaction : transactions) {
 
 				final String repositoryId = getRepositoryId(transaction);
-				final InternalSession impersonatingSession = CDOServerUtils.openSession(userId, repositoryId);
+				final InternalSession impersonatingSession = CDOUtils.openSession(userId, repositoryId);
 				impersonatingSessions.put(transaction, impersonatingSession);
 			}
 		}
@@ -785,7 +780,7 @@ public class CDOServerCommitBuilder {
 
 			final CDOBranch branch = result.getBranch();
 			final CDOBranchPoint branchPoint = branch.getPoint(result.getPreviousTimeStamp());
-			final List<CDORevision> revisions = CDOServerUtils.getRevisions(branchPoint, deltaIdsOnly);
+			final List<CDORevision> revisions = CDOUtils.getRevisions(branchPoint, deltaIdsOnly);
 
 			for (final CDORevision revision : revisions) {
 				final InternalCDORevision internalRevision  = (InternalCDORevision) revision;
@@ -855,7 +850,7 @@ public class CDOServerCommitBuilder {
 		}
 
 		private void logError(final Throwable t) {
-			final RepositoryLockException repositoryLockException = extractCause(t, CDOServerUtils.class.getClassLoader(), RepositoryLockException.class);
+			final RepositoryLockException repositoryLockException = extractCause(t, getClass().getClassLoader(), RepositoryLockException.class);
 
 			if (null != repositoryLockException) {
 				LOGGER.info(repositoryLockException.getMessage());
