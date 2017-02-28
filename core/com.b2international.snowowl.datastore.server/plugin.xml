@@ -63,11 +63,6 @@
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob
-            class="com.b2international.snowowl.datastore.server.version.GlobalPublishConfigJob"
-            id="com.b2international.snowowl.datastore.server.version.GlobalPublishConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.datastore.server.serviceconfig.HistoryServiceConfigJob"
             id="com.b2international.snowowl.datastore.server.serviceconfig.HistoryServiceConfigJob"
             terminologyId="UNSPECIFIED">
