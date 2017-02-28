@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,9 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
@@ -67,7 +69,7 @@ public class SnomedExtendedMapTypeRefSetValidator extends SnomedRefSetValidator 
 		final String uuid = row.get(0);
 		final String effectiveTime = row.get(1);
 		final String mapCategory = row.get(12);
-		if (!isComponentExists(mapCategory, ReleaseComponentType.CONCEPT)) {
+		if (getComponentCategory(mapCategory) == ComponentCategory.CONCEPT && !isComponentExists(mapCategory, ReleaseComponentType.CONCEPT)) {
 			mapCategoryConceptNotExist.add(getMissingComponentMessage(uuid, effectiveTime, "map category", mapCategory));
 		}
 	}
@@ -81,5 +83,11 @@ public class SnomedExtendedMapTypeRefSetValidator extends SnomedRefSetValidator 
 		}
 	}
 
-	
+	private ComponentCategory getComponentCategory(String id) {
+		try {
+			return SnomedIdentifiers.getComponentCategory(id);
+		} catch (final IllegalArgumentException e) {
+			return null;
+		}
+	}
 }

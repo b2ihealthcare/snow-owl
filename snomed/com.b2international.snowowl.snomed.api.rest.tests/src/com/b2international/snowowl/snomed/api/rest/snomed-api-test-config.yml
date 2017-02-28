@@ -1,11 +1,11 @@
 #
-# Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+# Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
 #
 
 # Redirects configuration directory to a random directory under OSGI installation directory
 configurationDirectory: testing/rest/configuration
 
-# Redirectes resources directory to have a clean H2 content
+# Redirects resources directory to have a clean H2 content
 resourceDirectory: testing/rest/resources
 
 # necessary to connect one user to the system otherwise Snow Owl startup fails
@@ -15,7 +15,9 @@ auth:
   type: PROP_FILE
   
 snomed:
-  concreteDomainSupport: true
+  # Disable concrete domains, we are going to import the required concepts to an extension
+  concreteDomainSupport: false
+  maxReasonerCount: 1
   ids:
     strategy : EMBEDDED
   

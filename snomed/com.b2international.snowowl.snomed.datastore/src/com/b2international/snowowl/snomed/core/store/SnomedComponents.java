@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,6 +59,33 @@ public class SnomedComponents {
 	}
 
 	/**
+	 * Creates and returns a new {@link SnomedMappingReferenceSetBuilder SNOMED CT Mapping Reference set builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedMappingReferenceSetBuilder newMappingReferenceSet() {
+		return new SnomedMappingReferenceSetBuilder();
+	}
+
+	/**
+	 * Creates and returns a new {@link SnomedStructuralReferenceSetBuilder SNOMED CT Structural Reference set builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedStructuralReferenceSetBuilder newStructuralReferenceSet() {
+		return new SnomedStructuralReferenceSetBuilder();
+	}
+
+	/**
+	 * Creates and returns a new {@link SnomedConcreteDomainReferenceSetBuilder SNOMED CT Concrete Domain Reference set builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedConcreteDomainReferenceSetBuilder newConcreteDomainReferenceSet() {
+		return new SnomedConcreteDomainReferenceSetBuilder();
+	}
+
+	/**
 	 * Creates and returns a new {@link SnomedLanguageReferenceSetMemberBuilder SNOMED CT Language Reference set member builder}.
 	 * 
 	 * @return
@@ -104,21 +131,48 @@ public class SnomedComponents {
 	}
 	
 	/**
-	 * Creates and returns a new {@link SnomedConcreteDomainReferenceSetBuilder SNOMED CT Concrete Domain Reference set builder}.
-	 * 
-	 * @return
-	 */
-	public static SnomedConcreteDomainReferenceSetBuilder newConcreteDomainReferenceSet() {
-		return new SnomedConcreteDomainReferenceSetBuilder();
-	}
-	
-	/**
 	 * Creates and returns a new {@link SnomedConcreteDomainReferenceSetMemberBuilder SNOMED CT Concrete Domain Reference set member builder}.
 	 * 
 	 * @return
 	 */
 	public static SnomedConcreteDomainReferenceSetMemberBuilder newConcreteDomainReferenceSetMember() {
 		return new SnomedConcreteDomainReferenceSetMemberBuilder();
+	}
+
+	/**
+	 * Creates and returns a new {@link SnomedDescriptionTypeReferenceSetMemberBuilder SNOMED CT Description Format Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedDescriptionTypeReferenceSetMemberBuilder newDescriptionTypeMember() {
+		return new SnomedDescriptionTypeReferenceSetMemberBuilder();
+	}
+
+	/**
+	 * Creates and returns a new {@link SnomedModuleDependencyReferenceSetMemberBuilder SNOMED CT Module Dependency Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedModuleDependencyReferenceSetMemberBuilder newModuleDependencyMember() {
+		return new SnomedModuleDependencyReferenceSetMemberBuilder();
+	}
+	
+	/**
+	 * Creates and returns a new {@link SnomedSimpleMapReferenceSetMemberBuilder SNOMED CT Simple Map Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedSimpleMapReferenceSetMemberBuilder newSimpleMapMember() {
+		return new SnomedSimpleMapReferenceSetMemberBuilder();
+	}
+
+	/**
+	 * Creates and returns a new {@link SnomedComplexMapReferenceSetMemberBuilder SNOMED CT Complex Map Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedComplexMapReferenceSetMemberBuilder newComplexMapMember() {
+		return new SnomedComplexMapReferenceSetMemberBuilder();
 	}
 
 }

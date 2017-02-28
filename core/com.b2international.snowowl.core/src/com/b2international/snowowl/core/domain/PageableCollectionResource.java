@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.domain;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 
 /**
@@ -85,7 +87,12 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 	 * @param total
 	 * @return
 	 */
-	public static <T> PageableCollectionResource<T> of(List<T> items, int offset, int limit, int total) {
+	@JsonCreator
+	public static <T> PageableCollectionResource<T> of(@JsonProperty("items") List<T> items, 
+			@JsonProperty("offset") int offset, 
+			@JsonProperty("limit") int limit, 
+			@JsonProperty("total") int total) {
+		
 		return new PageableCollectionResource<T>(items, offset, limit, total);
 	}
 

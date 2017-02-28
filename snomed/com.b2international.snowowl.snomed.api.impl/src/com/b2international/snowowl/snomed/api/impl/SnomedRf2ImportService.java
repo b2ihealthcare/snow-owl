@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -146,7 +146,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		
 		final String codeSystemShortName = configuration.getCodeSystemShortName();
 		final CodeSystemEntry codeSystemEntry = getCodeSystem(codeSystemShortName);
-		if (codeSystemEntry == null && !SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME.equals(codeSystemShortName)) {
+		if (codeSystemEntry == null && !SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME.equals(codeSystemShortName)) {
 			throw new BadRequestException("Importing a release of SNOMED CT from an archive is prohibited "
 					+ "when SNOMED CT extension with short name %s does not exist. Please create it before "
 					+ "importing content with this configuration, or use SNOMEDCT for importing the "
@@ -158,7 +158,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		
 		final CodeSystem codeSystem;
 		if (codeSystemEntry == null) {
-			codeSystem = SnomedReleases.newSnomedInternationalRelease();
+			codeSystem = SnomedReleases.internationalRelease();
 		} else {
 			codeSystem = CodeSystem.builder()
 					.name(codeSystemEntry.getName())

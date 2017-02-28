@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedComplexMapRefSetMemberImpl#getMapGroup <em>Map Group</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedComplexMapRefSetMemberImpl#getMapPriority <em>Map Priority</em>}</li>
@@ -34,7 +35,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedComplexMapRefSetMemberImpl#getCorrelationId <em>Correlation Id</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedComplexMapRefSetMemberImpl#getMapCategoryId <em>Map Category Id</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -63,8 +63,8 @@ public class SnomedComplexMapRefSetMemberImpl extends SnomedSimpleMapRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public byte getMapGroup() {
-		return (Byte)eGet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__MAP_GROUP, true);
+	public int getMapGroup() {
+		return (Integer)eGet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__MAP_GROUP, true);
 	}
 
 	/**
@@ -72,7 +72,7 @@ public class SnomedComplexMapRefSetMemberImpl extends SnomedSimpleMapRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public void setMapGroup(byte newMapGroup) {
+	public void setMapGroup(int newMapGroup) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__MAP_GROUP, newMapGroup);
 	}
 
@@ -81,8 +81,8 @@ public class SnomedComplexMapRefSetMemberImpl extends SnomedSimpleMapRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public byte getMapPriority() {
-		return (Byte)eGet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__MAP_PRIORITY, true);
+	public int getMapPriority() {
+		return (Integer)eGet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__MAP_PRIORITY, true);
 	}
 
 	/**
@@ -90,7 +90,7 @@ public class SnomedComplexMapRefSetMemberImpl extends SnomedSimpleMapRefSetMembe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public void setMapPriority(byte newMapPriority) {
+	public void setMapPriority(int newMapPriority) {
 		eSet(SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER__MAP_PRIORITY, newMapPriority);
 	}
 

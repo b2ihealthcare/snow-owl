@@ -261,6 +261,39 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.getSync();
 	}
 	
+	@ApiOperation(
+			value="Delete Reference Set",
+			notes="Removes the reference set from the terminology store.")
+	@ApiResponses({
+		@ApiResponse(code = 204, message = "OK", response = Void.class),
+		@ApiResponse(code = 404, message = "Branch or Reference set not found", response = RestApiError.class)
+	})
+	@RequestMapping(value="/{path:**}/refsets/{id}", method=RequestMethod.DELETE)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void delete(
+			@ApiParam(value="The branch path")
+			@PathVariable(value="path")
+			final String branchPath,
+
+			@ApiParam(value="The Reference set identifier")
+			@PathVariable(value="id")
+			final String referenceSetId,
+			
+			@ApiParam(value="Force deletion flag")
+			@RequestParam(defaultValue="false", required=false)
+			final Boolean force,
+
+			final Principal principal) {
+		
+		SnomedRequests
+				.prepareDeleteReferenceSet()
+				.setComponentId(referenceSetId)
+				.force(force)
+				.build(repositoryId, branchPath, principal.getName(), String.format("Deleted Reference Set '%s' from store.", referenceSetId))
+				.execute(bus)
+				.getSync();
+	}
+	
 	private URI getRefSetLocationURI(String branchPath, String refSetId) {
 		return linkTo(SnomedReferenceSetRestService.class).slash(branchPath).slash("refsets").slash(refSetId).toUri();
 	}
