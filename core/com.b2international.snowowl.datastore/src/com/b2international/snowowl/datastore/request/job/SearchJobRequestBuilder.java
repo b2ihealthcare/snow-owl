@@ -36,6 +36,14 @@ public final class SearchJobRequestBuilder extends BaseSystemRequestBuilder<Sear
 	
 	SearchJobRequestBuilder() {
 	}
+
+	public SearchJobRequestBuilder one() {
+		return setLimit(1);
+	}
+	
+	public SearchJobRequestBuilder all() {
+		return setLimit(Integer.MAX_VALUE);
+	}
 	
 	public SearchJobRequestBuilder setLimit(int limit) {
 		this.limit = limit;

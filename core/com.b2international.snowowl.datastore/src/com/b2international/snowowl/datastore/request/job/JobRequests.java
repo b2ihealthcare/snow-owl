@@ -26,6 +26,10 @@ public final class JobRequests {
 		return new ScheduleJobRequestBuilder();
 	}
 
+	public static SearchJobRequestBuilder prepareSearch() {
+		return new SearchJobRequestBuilder();
+	}
+	
 	public static GetJobRequestBuilder prepareGet(String jobId) {
 		return new GetJobRequestBuilder(jobId);
 	}
