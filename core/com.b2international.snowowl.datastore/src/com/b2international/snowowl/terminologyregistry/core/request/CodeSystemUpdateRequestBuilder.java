@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,13 @@
 package com.b2international.snowowl.terminologyregistry.core.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.BaseTransactionalRequestBuilder;
-import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
 
 /**
  * @since 4.7
  */
-public final class CodeSystemUpdateRequestBuilder extends BaseTransactionalRequestBuilder<CodeSystemUpdateRequestBuilder, Void> {
+public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<CodeSystemUpdateRequestBuilder, TransactionContext, Void> {
 
 	private final String uniqueId;
 
@@ -35,7 +34,7 @@ public final class CodeSystemUpdateRequestBuilder extends BaseTransactionalReque
 	private String iconPath;
 
 	CodeSystemUpdateRequestBuilder(final String uniqueId) {
-		super(new RepositoryCommitRequestBuilder());
+		super();
 		this.uniqueId = uniqueId;
 	}
 
@@ -72,14 +71,12 @@ public final class CodeSystemUpdateRequestBuilder extends BaseTransactionalReque
 	@Override
 	protected Request<TransactionContext, Void> doBuild() {
 		final CodeSystemUpdateRequest req = new CodeSystemUpdateRequest(uniqueId);
-
 		req.setName(name);
 		req.setLink(link);
 		req.setLanguage(language);
 		req.setCitation(citation);
 		req.setBranchPath(branchPath);
 		req.setIconPath(iconPath);
-
 		return req;
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,15 @@ import com.b2international.index.Searcher;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
 
 /**
  * @since 4.7
  */
-final class CodeSystemVersionSearchRequest extends RevisionSearchRequest<CodeSystemVersions> {
+final class CodeSystemVersionSearchRequest extends SearchResourceRequest<RepositoryContext, CodeSystemVersions> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -51,7 +51,7 @@ final class CodeSystemVersionSearchRequest extends RevisionSearchRequest<CodeSys
 	}
 
 	@Override
-	protected CodeSystemVersions doExecute(final BranchContext context) throws IOException {
+	protected CodeSystemVersions doExecute(final RepositoryContext context) throws IOException {
 		final ExpressionBuilder query = Expressions.builder();
 
 		if (!StringUtils.isEmpty(codeSystemShortName)) {

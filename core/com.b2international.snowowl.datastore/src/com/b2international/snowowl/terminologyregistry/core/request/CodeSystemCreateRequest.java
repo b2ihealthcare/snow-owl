@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package com.b2international.snowowl.terminologyregistry.core.request;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
@@ -129,12 +129,8 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	
 	private CodeSystemEntry getCodeSystem(final String uniqeId, final TransactionContext context) {
 		try {
-			return CodeSystemRequests
-					.prepareGetCodeSystem()
-					.setUniqueId(uniqeId)
-					.build()
-					.execute(context);
-		} catch (CodeSystemNotFoundException e) {
+			return CodeSystemRequests.prepareGetCodeSystem(uniqeId).build().execute(context);
+		} catch (NotFoundException e) {
 			 return null;
 		}
 	}

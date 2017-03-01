@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,39 +15,26 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequestBuilder;
+import com.b2international.snowowl.datastore.request.IndexRequestBuilder;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
+import com.b2international.snowowl.datastore.request.SearchResourceRequestBuilder;
 
 /**
  * @since 4.7
  */
-public final class CodeSystemSearchRequestBuilder extends RevisionSearchRequestBuilder<CodeSystemSearchRequestBuilder, CodeSystems> {
-
-	private String shortName;
-	private String oid;
+public final class CodeSystemSearchRequestBuilder 
+		extends SearchResourceRequestBuilder<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystems>
+		implements IndexRequestBuilder<CodeSystems> {
 
 	CodeSystemSearchRequestBuilder() {
 		super();
 	}
 
-	public CodeSystemSearchRequestBuilder filterByShortName(final String shortName) {
-		this.shortName = shortName;
-		return this.getSelf();
-	}
-
-	public CodeSystemSearchRequestBuilder filterByOid(final String oid) {
-		this.oid = oid;
-		return this.getSelf();
-	}
-
 	@Override
-	protected RevisionSearchRequest<CodeSystems> createSearch() {
-		final CodeSystemSearchRequest req = new CodeSystemSearchRequest();
-		req.setShortName(shortName);
-		req.setOid(oid);
-
-		return req;
+	protected SearchResourceRequest<RepositoryContext, CodeSystems> createSearch() {
+		return new CodeSystemSearchRequest();
 	}
 
 }

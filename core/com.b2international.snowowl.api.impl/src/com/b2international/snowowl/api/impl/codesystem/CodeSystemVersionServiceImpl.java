@@ -29,7 +29,6 @@ import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersion;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersionProperties;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystemVersion;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
@@ -119,7 +118,7 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 				.prepareSearchCodeSystemVersion()
 				.filterByCodeSystemShortName(shortName)
 				.filterByVersionId(versionId)
-				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH)
+				.build(codeSystem.getRepositoryUuid())
 				.execute(getEventBus())
 				.getSync();
 		
@@ -204,7 +203,7 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 		result.addAll(CodeSystemRequests
 				.prepareSearchCodeSystemVersion()
 				.filterByCodeSystemShortName(shortName)
-				.build(repositoryId, IBranchPath.MAIN_BRANCH)
+				.build(repositoryId)
 				.execute(getEventBus())
 				.getSync()
 				.getItems());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,54 +18,41 @@ package com.b2international.snowowl.terminologyregistry.core.request;
 import java.io.IOException;
 import java.util.Collections;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
 
 /**
  * @since 4.7
  */
-final class CodeSystemSearchRequest extends RevisionSearchRequest<CodeSystems> {
+final class CodeSystemSearchRequest extends SearchResourceRequest<RepositoryContext, CodeSystems> {
 
 	private static final long serialVersionUID = 1L;
 
-	private String shortName;
-	private String oid;
-	
 	CodeSystemSearchRequest() {
 	}
 
-	void setShortName(String shortName) {
-		this.shortName = shortName;
-	}
-
-	void setOid(String oid) {
-		this.oid = oid;
-	}
-
 	@Override
-	protected CodeSystems doExecute(final BranchContext context) throws IOException {
-		final ExpressionBuilder query = Expressions.builder();
+	protected CodeSystems doExecute(final RepositoryContext context) throws IOException {
+		final ExpressionBuilder queryBuilder = Expressions.builder();
 
-		if (!StringUtils.isEmpty(shortName)) {
-			query.must(CodeSystemEntry.Expressions.shortName(shortName));
-		}
-
-		if (!StringUtils.isEmpty(oid)) {
-			query.must(CodeSystemEntry.Expressions.oid(oid));
-		}
+		addIdFilter(queryBuilder, ids -> 
+			Expressions.builder()
+				.should(CodeSystemEntry.Expressions.shortNames(ids))
+				.should(CodeSystemEntry.Expressions.oids(ids))
+			.build()
+		);
 		
 		final Searcher searcher = context.service(Searcher.class);
 
 		final Hits<CodeSystemEntry> hits = searcher.search(Query.select(CodeSystemEntry.class)
-				.where(query.build())
+				.where(queryBuilder.build())
 				.offset(offset())
 				.limit(limit())
 				.build());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,13 @@
 package com.b2international.snowowl.terminologyregistry.core.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.BaseTransactionalRequestBuilder;
-import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
 
 /**
  * @since 4.7
  */
-public final class CodeSystemCreateRequestBuilder extends BaseTransactionalRequestBuilder<CodeSystemCreateRequestBuilder, String> {
+public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<CodeSystemCreateRequestBuilder, TransactionContext, String> {
 
 	private String branchPath;
 	private String citation;
@@ -37,9 +36,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseTransactionalReque
 	private String terminologyId;
 	private String extensionOf;
 
-	CodeSystemCreateRequestBuilder() {
-		super(new RepositoryCommitRequestBuilder());
-	}
+	CodeSystemCreateRequestBuilder() {}
 
 	public CodeSystemCreateRequestBuilder setBranchPath(final String branchPath) {
 		this.branchPath = branchPath;
@@ -110,7 +107,6 @@ public final class CodeSystemCreateRequestBuilder extends BaseTransactionalReque
 		req.setShortName(shortName);
 		req.setTerminologyId(terminologyId);
 		req.setExtensionOf(extensionOf);
-
 		return req;
 	}
 

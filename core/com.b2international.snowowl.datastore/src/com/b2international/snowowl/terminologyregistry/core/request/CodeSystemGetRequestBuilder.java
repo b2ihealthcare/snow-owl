@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,20 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
-import com.b2international.snowowl.datastore.request.BaseResourceRequest;
-import com.b2international.snowowl.datastore.request.BaseRevisionResourceRequestBuilder;
+import com.b2international.snowowl.datastore.request.GetResourceRequestBuilder;
+import com.b2international.snowowl.datastore.request.IndexRequestBuilder;
 
 /**
  * @since 4.7
  */
-public final class CodeSystemGetRequestBuilder extends BaseRevisionResourceRequestBuilder<CodeSystemGetRequestBuilder, CodeSystemEntry> {
+public final class CodeSystemGetRequestBuilder 
+		extends GetResourceRequestBuilder<CodeSystemGetRequestBuilder, CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystemEntry>
+		implements IndexRequestBuilder<CodeSystemEntry> {
 
-	private String uniqueId;
-
-	CodeSystemGetRequestBuilder() {
-		super();
+	CodeSystemGetRequestBuilder(String uniqueId) {
+		super("Code System", uniqueId, CodeSystemSearchRequestBuilder::new);
 	}
 	
-	public CodeSystemGetRequestBuilder setUniqueId(String uniqueId) {
-		this.uniqueId = uniqueId;
-		return getSelf();
-	}
-
-	@Override
-	protected BaseResourceRequest<BranchContext, CodeSystemEntry> create() {
-		final CodeSystemGetRequest req = new CodeSystemGetRequest();
-		req.setUniqueId(uniqueId);
-
-		return req;
-	}
-
 }

@@ -41,7 +41,6 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -118,7 +117,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, V
 		try ( final ICDOTransactionAggregator aggregator = CDOTransactionAggregator.create(Lists.<CDOTransaction>newArrayList()); ) {
 			final IProgressMonitor subMonitor = convert(monitor, TASK_WORK_STEP * size(toolingIds) + 1);
 			
-			final Map<String, Collection<ICodeSystemVersion>> existingVersions = getExistingVersions();
+			final Map<String, Collection<ICodeSystemVersion>> existingVersions = getExistingVersions(context);
 			final Map<String, Boolean> performTagPerToolingFeatures = getTagPreferences(existingVersions);
 			
 			subMonitor.worked(1);
@@ -293,7 +292,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, V
 				.build();
 	}
 	
-	private Map<String, Collection<ICodeSystemVersion>> getExistingVersions() {
+	private Map<String, Collection<ICodeSystemVersion>> getExistingVersions(ServiceProvider context) {
 		final Map<String, Collection<ICodeSystemVersion>> existingVersions = Maps.newHashMap();
 		
 		for (final String toolingId : toolingIds) {
@@ -306,7 +305,11 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, V
 			}
 			
 			final Set<ICodeSystemVersion> versions = newHashSet();
-			versions.addAll(requestBuilder.build(repositoryId, IBranchPath.MAIN_BRANCH).execute(getEventBus()).getSync().getItems());
+			versions.addAll(requestBuilder
+					.build(repositoryId)
+					.execute(context.service(IEventBus.class))
+					.getSync()
+					.getItems());
 			
 			existingVersions.put(toolingId, versions);
 		}
@@ -328,10 +331,6 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, V
 		return shouldPerformTagPerToolingFeature;
 	}
 	
-	private IEventBus getEventBus() {
-		return ApplicationContext.getInstance().getService(IEventBus.class);
-	}
-
 	private String getToolingName(final String toolingId) {
 		return CoreTerminologyBroker.getInstance().getTerminologyName(toolingId);
 	}
