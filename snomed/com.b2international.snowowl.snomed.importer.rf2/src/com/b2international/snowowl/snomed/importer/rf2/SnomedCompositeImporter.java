@@ -42,6 +42,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
@@ -144,7 +145,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		existingVersions = FluentIterable.from(CodeSystemRequests
 			.prepareSearchCodeSystemVersion()
 			.filterByCodeSystemShortName(releaseEntry.getShortName())
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, IBranchPath.MAIN_BRANCH)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 			.execute(getEventBus())
 			.getSync()
 			.getItems()).transform(new Function<ICodeSystemVersion, String>() {
@@ -157,18 +158,15 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	private CodeSystemEntry getCodeSystemEntry(String shortName, String oid) {
 		CodeSystemEntry entry;
 		try {
-			entry = CodeSystemRequests
-				.prepareGetCodeSystem()
-				.setUniqueId(oid)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, IBranchPath.MAIN_BRANCH)
+			entry = CodeSystemRequests.prepareGetCodeSystem(oid)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(getEventBus())
 				.getSync();
-		} catch (CodeSystemNotFoundException e) {
+		} catch (NotFoundException e) {
 			try {
 				entry = CodeSystemRequests
-					.prepareGetCodeSystem()
-					.setUniqueId(shortName)
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID, IBranchPath.MAIN_BRANCH)
+					.prepareGetCodeSystem(shortName)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 					.execute(getEventBus())
 					.getSync();
 			} catch (CodeSystemNotFoundException e2) {

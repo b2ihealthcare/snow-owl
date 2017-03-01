@@ -205,8 +205,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 		return DeferredResults.wrap(
 				SnomedRequests
-					.prepareGetConcept()
-					.setComponentId(conceptId)
+					.prepareGetConcept(conceptId)
 					.setExpand(expand)
 					.setLocales(extendedLocales)
 					.build(repositoryId, branchPath)

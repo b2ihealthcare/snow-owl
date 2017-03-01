@@ -36,7 +36,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 /**
@@ -101,7 +100,7 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 								.all()
 								.filterByActive(true)
 								.filterByAncestor(snomedConceptId)
-								.setComponentIds(Lists.newArrayList(destinationId))
+								.filterById(destinationId)
 								.setLocales(context.getService(LanguageSetting.class).getLanguagePreference())
 								.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
 								.execute(context.getService(IEventBus.class))
@@ -124,9 +123,8 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 	}
 	
 	private String getLabel(final String id, final IBranchPath branchPath) {
-		return SnomedRequests.prepareGetConcept()
+		return SnomedRequests.prepareGetConcept(id)
 				.setLocales(getLocales())
-				.setComponentId(id)
 				.setExpand("pt()")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getEventBus())

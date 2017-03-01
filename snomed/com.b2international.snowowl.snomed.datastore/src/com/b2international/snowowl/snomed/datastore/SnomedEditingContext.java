@@ -29,9 +29,9 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMIT
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFIER_VALUE_TOPLEVEL_CONCEPT;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFYING_RELATIONSHIP;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_COMPLEX_MAP_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_TYPE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_TYPE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_SIMPLE_TYPE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.STATED_RELATIONSHIP;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
@@ -522,7 +522,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		final boolean isSubTypeOfQualifierValue = SnomedRequests.prepareSearchConcept()
 				.setLimit(0)
 				.filterByAncestor(QUALIFIER_VALUE_TOPLEVEL_CONCEPT)
-				.setComponentIds(Collections.singleton(destinationConceptid))
+				.filterById(destinationConceptid)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync().getTotal() > 0;
@@ -1664,7 +1664,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(bus)
 				.getSync()
-				.getOnlyItem();
+				.getOnlyItem()
+				.get();
 		newComponentIds.add(generatedId);
 		return generatedId;
 	}

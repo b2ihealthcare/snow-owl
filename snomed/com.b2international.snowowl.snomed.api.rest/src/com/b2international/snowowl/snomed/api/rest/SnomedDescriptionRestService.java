@@ -212,9 +212,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			final String expand) {
 		
 		return DeferredResults.wrap(
-				SnomedRequests
-					.prepareGetDescription()
-					.setComponentId(descriptionId)
+				SnomedRequests.prepareGetDescription(descriptionId)
 					.setExpand(expand)
 					.build(repositoryId, branchPath)
 					.execute(bus));

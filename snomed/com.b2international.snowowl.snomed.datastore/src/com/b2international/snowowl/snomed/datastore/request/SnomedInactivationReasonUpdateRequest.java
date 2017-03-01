@@ -221,8 +221,7 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 
 		if (existingMember.isReleased()) {
 
-			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember()
-					.setComponentId(existingMember.getUuid())
+			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember(existingMember.getUuid())
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, referenceBranch)
 					.execute(context.service(IEventBus.class))
 					.getSync();

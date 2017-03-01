@@ -29,7 +29,7 @@ public class SnomedDescriptionNameProvider implements ISnomedDescriptionNameProv
 
 	@Override
 	public String getComponentLabel(IBranchPath branchPath, String componentId) {
-		return SnomedRequests.prepareGetDescription().setComponentId(componentId).build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+		return SnomedRequests.prepareGetDescription(componentId).build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class)).getSync().getTerm();
 	}
 

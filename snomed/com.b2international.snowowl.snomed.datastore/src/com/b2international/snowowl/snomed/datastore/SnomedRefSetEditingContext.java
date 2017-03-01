@@ -554,7 +554,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		// Try to retrieve from the lightweight store first
 		final SnomedRelationship relationshipMini = Iterables.getOnlyElement(SnomedRequests.prepareSearchRelationship()
 				.setLimit(1)
-				.setComponentIds(Collections.singleton(relationshipId))
+				.filterById(relationshipId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync(), null);

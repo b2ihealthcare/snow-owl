@@ -42,7 +42,6 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -182,9 +181,8 @@ final class SnomedDescriptionAcceptabilityUpdateRequest implements Request<Trans
 		
 		if (existingMember.isReleased()) {
 			
-			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember()
-					.setComponentId(existingMember.getUuid())
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID, referenceBranch)
+			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember(existingMember.getUuid())
+					.build(context.id(), referenceBranch)
 					.execute(context.service(IEventBus.class))
 					.getSync();
 

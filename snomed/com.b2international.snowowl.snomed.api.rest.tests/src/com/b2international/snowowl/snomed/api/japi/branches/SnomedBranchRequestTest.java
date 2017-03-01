@@ -254,8 +254,7 @@ public class SnomedBranchRequestTest {
 		.getSync();
 		
 		// Check that the concept is visible on parent
-		SnomedRequests.prepareGetConcept()
-				.setComponentId(conceptId)
+		SnomedRequests.prepareGetConcept(conceptId)
 				.build(REPOSITORY_ID, first.parentPath())
 				.execute(bus)
 				.getSync();

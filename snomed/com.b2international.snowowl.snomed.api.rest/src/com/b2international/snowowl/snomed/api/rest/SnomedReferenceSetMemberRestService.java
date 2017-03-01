@@ -202,8 +202,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		}
 		
 		return DeferredResults.wrap(SnomedRequests
-				.prepareGetMember()
-				.setComponentId(memberId)
+				.prepareGetMember(memberId)
 				.setExpand(expand)
 				.setLocales(extendedLocales)
 				.build(repositoryId, branchPath)

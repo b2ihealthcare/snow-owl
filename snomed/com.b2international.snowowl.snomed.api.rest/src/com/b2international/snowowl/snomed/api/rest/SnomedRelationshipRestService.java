@@ -226,9 +226,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			final String relationshipId) {
 
 		return DeferredResults.wrap(
-				SnomedRequests
-					.prepareGetRelationship()
-					.setComponentId(relationshipId)
+				SnomedRequests.prepareGetRelationship(relationshipId)
 					.build(repositoryId, branchPath)
 					.execute(bus));
 	}

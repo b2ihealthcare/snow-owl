@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.importer.rf2.command;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.util.Collections;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 
@@ -55,7 +54,7 @@ public class ImportRefSetCommand extends AbstractRf2ImporterCommand {
 		// TODO should make this command branch path aware as well
 		boolean isTerminologyAvailable = SnomedRequests.prepareSearchConcept()
 				.setLimit(0)
-				.setComponentIds(Collections.singleton(Concepts.ROOT_CONCEPT))
+				.filterById(Concepts.ROOT_CONCEPT)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync().getTotal() > 0;

@@ -251,9 +251,8 @@ public class SnomedNodeTransformer extends NodeTransformerImpl {
 	}
 	
 	private ImmutableList<String> getRefSetMemberLabels(final String refSetId, final IBranchPath branchPath) {
-		final SnomedReferenceSet refSet = SnomedRequests.prepareGetReferenceSet()
+		final SnomedReferenceSet refSet = SnomedRequests.prepareGetReferenceSet(refSetId)
 				.setLocales(getLocales())
-				.setComponentId(refSetId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getBus())
 				.getSync();

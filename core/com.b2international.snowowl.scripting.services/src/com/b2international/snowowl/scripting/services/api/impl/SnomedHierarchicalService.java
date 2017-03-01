@@ -16,7 +16,6 @@
 package com.b2international.snowowl.scripting.services.api.impl;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -26,8 +25,8 @@ import com.b2international.snowowl.scripting.services.api.IHierarchicalService;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -83,7 +82,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	public SnomedConceptDocument getConcept(final long conceptId) {
 		return Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept()
 				.setLimit(1)
-				.setComponentIds(Collections.singleton(toString(conceptId)))
+				.filterById(toString(conceptId))
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(SnomedConcepts.TO_DOCS)
@@ -149,8 +148,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	 */
 	@Override
 	public Collection<SnomedConceptDocument> getSupertypes(final long conceptId) {
-		return SnomedRequests.prepareGetConcept()
-				.setComponentId(toString(conceptId))
+		return SnomedRequests.prepareGetConcept(toString(conceptId))
 				.setExpand("ancestors(limit:"+Integer.MAX_VALUE+",direct:true,form:\"inferred\")")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
@@ -169,8 +167,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	 */
 	@Override
 	public Collection<SnomedConceptDocument> getAllSupertypes(final long conceptId) {
-		return SnomedRequests.prepareGetConcept()
-				.setComponentId(toString(conceptId))
+		return SnomedRequests.prepareGetConcept(toString(conceptId))
 				.setExpand("ancestors(limit:"+Integer.MAX_VALUE+",direct:false,form:\"inferred\")")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
@@ -189,8 +186,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	 */
 	@Override
 	public long getDirectSupertypeCount(final long conceptId) {
-		return SnomedRequests.prepareGetConcept()
-				.setComponentId(toString(conceptId))
+		return SnomedRequests.prepareGetConcept(toString(conceptId))
 				.setExpand("ancestors(limit:"+0+",direct:true,form:\"inferred\")")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
@@ -208,8 +204,7 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	 */
 	@Override
 	public long getAllSupertypeCount(final long conceptId) {
-		return SnomedRequests.prepareGetConcept()
-				.setComponentId(toString(conceptId))
+		return SnomedRequests.prepareGetConcept(toString(conceptId))
 				.setExpand("ancestors(limit:"+0+",direct:false,form:\"inferred\")")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
@@ -237,8 +232,8 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	public boolean isAncestor(final long parentConceptId, final long childConceptId) {
 		return SnomedRequests.prepareSearchConcept()
 				.setLimit(0)
+				.filterById(toString(childConceptId))
 				.filterByAncestor(toString(parentConceptId))
-				.setComponentIds(Collections.singleton(toString(childConceptId)))
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.getSync().getTotal() > 0;
@@ -331,15 +326,10 @@ public class SnomedHierarchicalService implements IHierarchicalService {
 	public SnomedConceptDocument getConcept(final String conceptId) {
 		return Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept()
 				.setLimit(1)
-				.setComponentIds(Collections.singleton(conceptId))
+				.filterById(conceptId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
-				.then(new Function<SnomedConcepts, Collection<SnomedConceptDocument>>() {
-					@Override
-					public Collection<SnomedConceptDocument> apply(SnomedConcepts input) {
-						return SnomedConceptDocument.fromConcepts(input);
-					}
-				})
+				.then(SnomedConceptDocument::fromConcepts)
 				.getSync(), null);
 	}
 

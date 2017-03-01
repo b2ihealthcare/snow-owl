@@ -241,7 +241,7 @@ public abstract class PublishManager implements IPublishManager {
 				.setLimit(0)
 				.filterByCodeSystemShortName(configuration.getCodeSystemShortName())
 				.filterByVersionId(configuration.getVersionId())
-				.build(getRepositoryUuid(), IBranchPath.MAIN_BRANCH)
+				.build(getRepositoryUuid())
 				.execute(getEventBus())
 				.getSync().getTotal() == 0;
 	}
@@ -272,7 +272,7 @@ public abstract class PublishManager implements IPublishManager {
 				.setLimit(2)
 				.filterByCodeSystemShortName(configuration.getCodeSystemShortName())
 				.filterByVersionId(configuration.getVersionId())
-				.build(getRepositoryUuid(), IBranchPath.MAIN_BRANCH)
+				.build(getRepositoryUuid())
 				.execute(getEventBus())
 				.getSync();
 		

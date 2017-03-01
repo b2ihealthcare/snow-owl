@@ -62,7 +62,7 @@ public class SnomedIdentifierRestService extends AbstractRestService {
 					.setNamespace(request.getNamespace())
 					.build(repositoryId)
 					.execute(bus)
-					.then(result -> new SnomedIdentifierResponse(result.getOnlyItem())));
+					.then(result -> new SnomedIdentifierResponse(result.getOnlyItem().get())));
 	}
 	
 }

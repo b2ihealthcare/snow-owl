@@ -31,7 +31,7 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequestBuilder;
+import com.b2international.snowowl.datastore.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -110,9 +110,9 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 
 	private CollectionResource<? extends SnomedCoreComponent> getComponents(ComponentCategory category, Collection<String> componentIds, Options expand) {
 		switch (category) {
-		case CONCEPT: return SnomedRequests.prepareSearchConcept().setLimit(componentIds.size()).setComponentIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
-		case DESCRIPTION: return SnomedRequests.prepareSearchDescription().setLimit(componentIds.size()).setComponentIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
-		case RELATIONSHIP: return SnomedRequests.prepareSearchRelationship().setLimit(componentIds.size()).setComponentIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
+		case CONCEPT: return SnomedRequests.prepareSearchConcept().setLimit(componentIds.size()).filterByIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
+		case DESCRIPTION: return SnomedRequests.prepareSearchDescription().setLimit(componentIds.size()).filterByIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
+		case RELATIONSHIP: return SnomedRequests.prepareSearchRelationship().setLimit(componentIds.size()).filterByIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
 		default: throw new NotImplementedException("Not implemented non core target component expansion", category);
 		}
 	}
@@ -136,7 +136,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 			ComponentCategory category) {
 		
 		final Collection<String> componentIds = componentCategoryToIdMap.get(category);
-		final RevisionSearchRequestBuilder<?, ? extends CollectionResource<? extends SnomedCoreComponent>> search;
+		final SearchResourceRequestBuilder<?, BranchContext, ? extends CollectionResource<? extends SnomedCoreComponent>> search;
 		
 		switch (category) {
 			case CONCEPT:
@@ -153,7 +153,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 		}
 
 		search
-			.setComponentIds(componentIds)
+			.filterByIds(componentIds)
 			.setLimit(componentIds.size())
 			.setLocales(locales())
 			.setExpand(expandOptions.get("expand", Options.class));

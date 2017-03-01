@@ -137,8 +137,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		}
 		
 		return DeferredResults.wrap(SnomedRequests
-				.prepareGetReferenceSet()
-				.setComponentId(referenceSetId)
+				.prepareGetReferenceSet(referenceSetId)
 				.setExpand(expand)
 				.setLocales(extendedLocales)
 				.build(repositoryId, branchPath)

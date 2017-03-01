@@ -226,8 +226,7 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 	 * Collects the component IDs from the reference set.
 	 */
 	private Collection<String> collectComponentIds(final IBranchPath branchPath, final String refSetId) {
-		return SnomedRequests.prepareGetReferenceSet()
-			.setComponentId(refSetId)
+		return SnomedRequests.prepareGetReferenceSet(refSetId)
 			.setExpand("members(limit:"+Integer.MAX_VALUE+",active:true)")
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))

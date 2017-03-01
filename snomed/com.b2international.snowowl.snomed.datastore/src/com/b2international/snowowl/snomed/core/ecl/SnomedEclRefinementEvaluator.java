@@ -38,7 +38,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -441,63 +441,63 @@ final class SnomedEclRefinementEvaluator {
 	private Promise<Collection<Property>> evalMembers(BranchContext context, final Collection<String> focusConceptIds, Collection<String> attributeNames, DataTypeComparison comparison) {
 		final Object value;
 		final DataType type;
-		final RevisionSearchRequest.Operator operator;
+		final SearchResourceRequest.Operator operator;
 		if (comparison instanceof StringValueEquals) {
 			value = ((StringValueEquals) comparison).getValue();
 			type = DataType.STRING;
-			operator = RevisionSearchRequest.Operator.EQUALS;
+			operator = SearchResourceRequest.Operator.EQUALS;
 		} else if (comparison instanceof StringValueNotEquals) {
 			value = ((StringValueNotEquals) comparison).getValue();
 			type = DataType.STRING;
-			operator = RevisionSearchRequest.Operator.NOT_EQUALS;
+			operator = SearchResourceRequest.Operator.NOT_EQUALS;
 		} else if (comparison instanceof IntegerValueEquals) {
 			value = ((IntegerValueEquals) comparison).getValue();
 			type = DataType.INTEGER;
-			operator = RevisionSearchRequest.Operator.EQUALS;
+			operator = SearchResourceRequest.Operator.EQUALS;
 		} else if (comparison instanceof IntegerValueNotEquals) {
 			value = ((IntegerValueNotEquals) comparison).getValue();
 			type = DataType.INTEGER;
-			operator = RevisionSearchRequest.Operator.NOT_EQUALS;
+			operator = SearchResourceRequest.Operator.NOT_EQUALS;
 		} else if (comparison instanceof DecimalValueEquals) {
 			value = ((DecimalValueEquals) comparison).getValue();
 			type = DataType.DECIMAL;
-			operator = RevisionSearchRequest.Operator.EQUALS;
+			operator = SearchResourceRequest.Operator.EQUALS;
 		} else if (comparison instanceof DecimalValueNotEquals) {
 			value = ((DecimalValueNotEquals) comparison).getValue();
 			type = DataType.DECIMAL;
-			operator = RevisionSearchRequest.Operator.NOT_EQUALS;
+			operator = SearchResourceRequest.Operator.NOT_EQUALS;
 		} else if (comparison instanceof IntegerValueLessThan) {
 			value = ((IntegerValueLessThan) comparison).getValue();
 			type = DataType.INTEGER;
-			operator = RevisionSearchRequest.Operator.LESS_THAN;
+			operator = SearchResourceRequest.Operator.LESS_THAN;
 		} else if (comparison instanceof DecimalValueLessThan) {
 			value = ((DecimalValueLessThan) comparison).getValue();
 			type = DataType.DECIMAL;
-			operator = RevisionSearchRequest.Operator.LESS_THAN;
+			operator = SearchResourceRequest.Operator.LESS_THAN;
 		} else if (comparison instanceof IntegerValueLessThanEquals) {
 			value = ((IntegerValueLessThanEquals) comparison).getValue();
 			type = DataType.INTEGER;
-			operator = RevisionSearchRequest.Operator.LESS_THAN_EQUALS;
+			operator = SearchResourceRequest.Operator.LESS_THAN_EQUALS;
 		} else if (comparison instanceof DecimalValueLessThanEquals) {
 			value = ((DecimalValueLessThanEquals) comparison).getValue();
 			type = DataType.DECIMAL;
-			operator = RevisionSearchRequest.Operator.LESS_THAN_EQUALS;
+			operator = SearchResourceRequest.Operator.LESS_THAN_EQUALS;
 		} else if (comparison instanceof IntegerValueGreaterThan) {
 			value = ((IntegerValueGreaterThan) comparison).getValue();
 			type = DataType.INTEGER;
-			operator = RevisionSearchRequest.Operator.GREATER_THAN;
+			operator = SearchResourceRequest.Operator.GREATER_THAN;
 		} else if (comparison instanceof DecimalValueGreaterThan) {
 			value = ((DecimalValueGreaterThan) comparison).getValue();
 			type = DataType.DECIMAL;
-			operator = RevisionSearchRequest.Operator.GREATER_THAN;
+			operator = SearchResourceRequest.Operator.GREATER_THAN;
 		} else if (comparison instanceof IntegerValueGreaterThanEquals) {
 			value = ((IntegerValueGreaterThanEquals) comparison).getValue();
 			type = DataType.INTEGER;
-			operator = RevisionSearchRequest.Operator.GREATER_THAN_EQUALS;
+			operator = SearchResourceRequest.Operator.GREATER_THAN_EQUALS;
 		} else if (comparison instanceof DecimalValueGreaterThanEquals) {
 			value = ((DecimalValueGreaterThanEquals) comparison).getValue();
 			type = DataType.DECIMAL;
-			operator = RevisionSearchRequest.Operator.GREATER_THAN_EQUALS;
+			operator = SearchResourceRequest.Operator.GREATER_THAN_EQUALS;
 		} else {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
 		}
@@ -520,13 +520,13 @@ final class SnomedEclRefinementEvaluator {
 	}
 
 	private Promise<SnomedReferenceSetMembers> evalMembers(final BranchContext context, final Collection<String> referencedComponents, 
-			final Collection<String> attributeNames, final DataType type, final Object value, RevisionSearchRequest.Operator operator) {
+			final Collection<String> attributeNames, final DataType type, final Object value, SearchResourceRequest.Operator operator) {
 		final Options propFilter = Options.builder()
 				.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, ALLOWED_CHARACTERISTIC_TYPES)
 				.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, attributeNames)
 				.put(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, type)
 				.put(SnomedRf2Headers.FIELD_VALUE, value)
-				.put(RevisionSearchRequest.operator(SnomedRf2Headers.FIELD_VALUE), operator)
+				.put(SearchResourceRequest.operator(SnomedRf2Headers.FIELD_VALUE), operator)
 				.build();
 		return SnomedRequests.prepareSearchMember()
 			.all()

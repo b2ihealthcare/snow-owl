@@ -237,8 +237,7 @@ final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Compo
 		if (existingMember.isReleased()) {
 			
 			// The most recently versioned representation should always exist if the member has already been released once
-			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember()
-					.setComponentId(existingMember.getUuid())
+			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember(existingMember.getUuid())
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, referenceBranch)
 					.execute(context.service(IEventBus.class))
 					.getSync();
