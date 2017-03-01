@@ -19,6 +19,11 @@ import com.b2international.snowowl.datastore.request.SearchRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 
 /**
+ * <i>Builder</i> class to build requests responsible for searching SNOMED CT concepts.
+ * This class should be instantiated from the corresponding static method on the central {@link SnomedRequests} class.
+ * Filter methods restrict the results set returned from the search requests; 
+ * what passes the filters will be returned as part of the pageable resultset.
+ * 
  * @since 4.5
  */
 public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedConceptSearchRequestBuilder, SnomedConcepts> {
@@ -47,10 +52,23 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 		return addOption(SnomedConceptSearchRequest.OptionKey.TERM, term);
 	}
 
+	/**
+	 * Filters the concepts based on the type of its descriptions where the description type is specified by concept ID 
+	 * representing the type. E.g.: "900000000000003001" for <i>Fully Specified Name</i>.
+	 * @param description type represented by its concept ID
+	 * @return SnomedConceptSearchRequestBuilder
+	 * 
+	 * @see SnomedConcepts
+	 */
 	public final SnomedConceptSearchRequestBuilder filterByDescriptionType(String type) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.DESCRIPTION_TYPE, type);
 	}
 
+	/**
+	 * Filter matches by the specified ESCG expression.
+	 * @param ESCG expression
+	 * @return SnomedConceptSearchRequestBuilder
+	 */
 	public final SnomedConceptSearchRequestBuilder filterByEscg(String expression) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.ESCG, expression);
 	}
@@ -116,6 +134,10 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 		return addOption(SnomedConceptSearchRequest.OptionKey.NAMESPACE, namespaceId);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.b2international.snowowl.datastore.request.SearchRequestBuilder#createSearch()
+	 */
 	@Override
 	protected SearchRequest<SnomedConcepts> createSearch() {
 		return new SnomedConceptSearchRequest();

@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.google.common.base.Strings;
 
 /**
+ * Abstract superclass for building search requests that can return a page-able result set.
  * @since 4.5
  */
 public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>, R> extends BaseResourceRequestBuilder<B, R> {
@@ -40,11 +41,21 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		super(repositoryId);
 	}
 	
+	/**
+	 * Sets the offset for the paging of the result set. 
+	 * @param offset for paging the result set returned
+	 * @return SearchRequestBuilder
+	 */
 	public final B setOffset(int offset) {
 		this.offset = offset;
 		return getSelf();
 	}
 	
+	/**
+	 * Sets the limit of the result set returned
+	 * @param limit of the result set
+	 * @return SearchRequestBuilder
+	 */
 	public final B setLimit(int limit) {
 		this.limit = limit;
 		return getSelf();
@@ -55,10 +66,19 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		return getSelf();
 	}
 	
+	/**
+	 * Sets the request to return the entire results set as a single 'page'.
+	 * All results are returned.
+	 * @return RevisionSearchRequestBuilder
+	 */
 	public final B all() {
 		return setOffset(0).setLimit(MAX_LIMIT);
 	}
 	
+	/**
+	 * Returns a single hit from the result set.
+	 * @return RevisionSearchRequestBuilder
+	 */
 	public final B one() {
 		return setOffset(0).setLimit(1);
 	}

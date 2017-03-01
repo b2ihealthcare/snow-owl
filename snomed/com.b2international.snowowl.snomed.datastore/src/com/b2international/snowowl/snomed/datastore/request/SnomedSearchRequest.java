@@ -25,6 +25,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBuilder;
 
 /**
+ * Abstract class for SNOMED CT search requests.
  * @since 4.5
  */
 public abstract class SnomedSearchRequest<R> extends SearchRequest<R> {

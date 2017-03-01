@@ -20,6 +20,9 @@ import com.b2international.snowowl.datastore.request.GetRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 
 /**
+ * <i>Builder</i> class to build requests responsible for fetching a single SNOMED CT reference set member.
+ * This class should be instantiated from the corresponding static method on the central {@link SnomedRequests} class.
+ * 
  * @since 4.5
  */
 public final class SnomedRefSetMemberGetRequestBuilder extends GetRequestBuilder<SnomedRefSetMemberGetRequestBuilder, SnomedReferenceSetMember> {

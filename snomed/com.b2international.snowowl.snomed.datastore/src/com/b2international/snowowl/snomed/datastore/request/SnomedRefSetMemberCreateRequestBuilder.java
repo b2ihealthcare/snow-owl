@@ -23,6 +23,9 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.Requests;
 
 /**
+ * <i>Builder</i> class to build requests responsible for creating SNOMED CT reference set members.
+ * This class should be instantiated from the corresponding static method on the central {@link SnomedRequests} class.
+ * 
  * @since 4.5
  */
 public final class SnomedRefSetMemberCreateRequestBuilder extends BaseSnomedTransactionalRequestBuilder<SnomedRefSetMemberCreateRequestBuilder, String> {

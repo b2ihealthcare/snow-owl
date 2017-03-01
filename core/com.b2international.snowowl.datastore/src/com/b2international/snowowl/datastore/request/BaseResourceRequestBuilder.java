@@ -37,6 +37,11 @@ public abstract class BaseResourceRequestBuilder<B extends BaseResourceRequestBu
 		super(repositoryId);
 	}
 	
+	/**
+	 * Sets the request to return the preferred locale for the returned display labels.
+	 * @param locales for the labels returns by the request
+	 * @return BaseResourceRequestBuilder   
+	 */
 	public final B setLocales(List<ExtendedLocale> locales) {
 		if (!CompareUtils.isEmpty(locales)) {
 			this.locales = locales;

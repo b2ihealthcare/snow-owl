@@ -53,7 +53,7 @@ public interface Request<C extends ServiceProvider, R> extends Event {
 	Promise<R> execute(IEventBus bus);
 
 	/**
-	 * Sends this {@link Request} to existing handlers and waits for the response synchronously until it arrives. Basically converts this async
+	 * Sends this {@link Request} to existing handlers and waits for the response synchronously until it returns. Basically converts this async
 	 * operation to a sync one.
 	 * 
 	 * @param bus

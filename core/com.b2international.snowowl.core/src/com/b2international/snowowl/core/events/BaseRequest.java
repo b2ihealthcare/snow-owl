@@ -24,10 +24,15 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Joiner;
 
 /**
- * @since 4.5
+ * Base request class for all Snow Owl synchronous and asynchronous requests issued on the system's
+ * event bus ({@link IEventBus}.
  *
- * @param <C>
- * @param <B>
+ * @param <C> service provider
+ * @param <B> request type
+ * @see IEventBus
+ * @see Request
+ * 
+ * @since 4.5
  */
 public abstract class BaseRequest<C extends ServiceProvider, B> extends BaseEvent implements Request<C, B> {
 

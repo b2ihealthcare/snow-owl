@@ -64,6 +64,11 @@ import com.google.common.collect.ImmutableList;
 import bak.pcj.LongCollection;
 
 /**
+ * Request responsible for searching SNOMED CT concepts. Requests can be executed both in
+ * synchronous and asynchronous fashion.
+ * <p>
+ * This class should be instantiated via the corresponding builder class.
+ * 
  * @since 4.5
  */
 final class SnomedConceptSearchRequest extends SnomedSearchRequest<SnomedConcepts> {
