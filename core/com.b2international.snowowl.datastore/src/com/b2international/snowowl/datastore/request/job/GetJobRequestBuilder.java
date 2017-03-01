@@ -16,14 +16,15 @@
 package com.b2international.snowowl.datastore.request.job;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
-import com.b2international.snowowl.datastore.request.BaseSystemRequestBuilder;
+import com.b2international.snowowl.datastore.request.SystemRequestBuilder;
 
 /**
  * @since 5.7
  */
-public final class GetJobRequestBuilder extends BaseSystemRequestBuilder<GetJobRequestBuilder, RemoteJobEntry> {
+public final class GetJobRequestBuilder extends BaseRequestBuilder<GetJobRequestBuilder, ServiceProvider, RemoteJobEntry> implements SystemRequestBuilder<RemoteJobEntry> {
 
 	private final String jobId;
 

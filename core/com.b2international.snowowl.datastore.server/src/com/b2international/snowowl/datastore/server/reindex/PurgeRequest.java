@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.events.Request;
 /**
  * @since 5.0
  */
-public class PurgeRequest implements Request<RepositoryContext, Boolean> {
+public final class PurgeRequest implements Request<RepositoryContext, Boolean> {
 
 	private String branchPath;
 	private Purge purge;

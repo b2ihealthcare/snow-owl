@@ -17,13 +17,14 @@ package com.b2international.snowowl.datastore.request.job;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.BaseSystemRequestBuilder;
+import com.b2international.snowowl.datastore.request.SystemRequestBuilder;
 
 /**
  * @since 5.7
  */
-public final class ScheduleJobRequestBuilder extends BaseSystemRequestBuilder<ScheduleJobRequestBuilder, String> {
+public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<ScheduleJobRequestBuilder, ServiceProvider, String> implements SystemRequestBuilder<String> {
 
 	private String user;
 	private String description;

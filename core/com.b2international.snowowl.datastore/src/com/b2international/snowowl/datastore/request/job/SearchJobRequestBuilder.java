@@ -20,15 +20,16 @@ import java.util.Collection;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
-import com.b2international.snowowl.datastore.request.BaseSystemRequestBuilder;
+import com.b2international.snowowl.datastore.request.SystemRequestBuilder;
 
 /**
  * @since 5.7
  */
-public final class SearchJobRequestBuilder extends BaseSystemRequestBuilder<SearchJobRequestBuilder, RemoteJobs> {
+public final class SearchJobRequestBuilder extends BaseRequestBuilder<SearchJobRequestBuilder, ServiceProvider, RemoteJobs> implements SystemRequestBuilder<RemoteJobs> {
 
 	private int offset = 0;
 	private int limit = 50;

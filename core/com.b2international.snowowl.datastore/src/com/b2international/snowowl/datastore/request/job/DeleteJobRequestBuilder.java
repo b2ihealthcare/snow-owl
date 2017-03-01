@@ -18,13 +18,14 @@ package com.b2international.snowowl.datastore.request.job;
 import java.util.Collections;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.BaseSystemRequestBuilder;
+import com.b2international.snowowl.datastore.request.SystemRequestBuilder;
 
 /**
  * @since 5.7
  */
-public final class DeleteJobRequestBuilder extends BaseSystemRequestBuilder<DeleteJobRequestBuilder, Void> {
+public final class DeleteJobRequestBuilder extends BaseRequestBuilder<DeleteJobRequestBuilder, ServiceProvider, Void> implements SystemRequestBuilder<Void> {
 
 	private final String jobId;
 	
