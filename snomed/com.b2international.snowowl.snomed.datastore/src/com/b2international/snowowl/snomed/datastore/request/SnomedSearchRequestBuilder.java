@@ -25,17 +25,21 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequestBuilder;
+import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
+import com.b2international.snowowl.datastore.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
 import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequest.OptionKey;
 
 /**
- * Abstract class for SNOMED CT search request builders. It collects functionality common to SNOMED CT artefacts.
+ * Abstract class for SNOMED CT search request builders. It collects functionality common to SNOMED CT components.
  * @since 4.5
  */
-public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBuilder<B, R>, R> extends RevisionSearchRequestBuilder<B, R> {
+public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBuilder<B, R>, R> 
+		extends SearchResourceRequestBuilder<B, BranchContext, R>
+		implements RevisionIndexRequestBuilder<R> {
 
 	/**
 	 * Filter to return components with the specified module id.
@@ -70,7 +74,7 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	 * Filter to return components with the specified effective time represented as a string in yyyy-MM-dd format
 	 * @param effectiveTime in yyyy-MM-dd format
 	 * @return SnomedSearchRequestBuilder
-	 * @see DateFormats#DEFAULT
+	 * @see DateFormats#SHORT
 	 */
 	public final B filterByEffectiveTime(String effectiveTime) {
 		if (CompareUtils.isEmpty(effectiveTime)) {

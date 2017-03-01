@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.defining;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
@@ -43,6 +42,7 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -145,7 +145,7 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		ExpressionBuilder queryBuilder = Expressions.builder();
 		
 		addActiveClause(queryBuilder);
-		addComponentIdFilter(queryBuilder);
+		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
 		addModuleClause(queryBuilder);
 		addNamespaceFilter(queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
@@ -194,7 +194,7 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 			} catch (EscgParseFailedException e) {
 				final RValue expression = context.service(EscgRewriter.class).parseRewrite(escg);
 				final LongCollection matchingConceptIds = new ConceptIdQueryEvaluator2(searcher).evaluate(expression);
-				queryBuilder.must(ids(LongSets.toStringSet(matchingConceptIds)));
+				queryBuilder.must(RevisionDocument.Expressions.ids(LongSets.toStringSet(matchingConceptIds)));
 			}
 		}
 		
@@ -235,7 +235,7 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 				return new SnomedConcepts(offset(), limit(), 0);
 			}
 			
-			queryBuilder.must(ids(conceptScoreMap.keySet()));
+			queryBuilder.must(RevisionDocument.Expressions.ids(conceptScoreMap.keySet()));
 			
 			final ScoreFunction func = new DualScoreFunction<String, Float>("ConceptScoreMap", Fields.ID, Fields.DOI) {
 				@Override
@@ -304,7 +304,7 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 			.filterByActive(true)
 			.filterByTerm(term)
 			.filterByLanguageRefSetIds(languageRefSetIds())
-			.filterByConceptId(componentIds());
+			.filterByConceptId(ids());
 		
 		if (containsKey(OptionKey.DESCRIPTION_TYPE)) {
 			final String type = getString(OptionKey.DESCRIPTION_TYPE);

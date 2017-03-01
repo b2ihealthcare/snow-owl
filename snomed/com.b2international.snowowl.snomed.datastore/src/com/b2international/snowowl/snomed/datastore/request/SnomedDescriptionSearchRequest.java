@@ -39,6 +39,7 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -119,7 +120,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		// Add (presumably) most selective filters first
 		addActiveClause(queryBuilder);
-		addComponentIdFilter(queryBuilder);
+		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
 		addModuleClause(queryBuilder);
 		addNamespaceFilter(queryBuilder);
 		addEffectiveTimeClause(queryBuilder);

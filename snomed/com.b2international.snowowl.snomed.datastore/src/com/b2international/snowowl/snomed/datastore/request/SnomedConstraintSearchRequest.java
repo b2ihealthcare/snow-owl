@@ -28,7 +28,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
@@ -37,7 +37,7 @@ import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocumen
 /**
  * @since 4.7
  */
-public class SnomedConstraintSearchRequest extends RevisionSearchRequest<SnomedConstraints> {
+final class SnomedConstraintSearchRequest extends SearchResourceRequest<BranchContext, SnomedConstraints> {
 
 	public enum OptionKey {
 		
@@ -68,7 +68,7 @@ public class SnomedConstraintSearchRequest extends RevisionSearchRequest<SnomedC
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		
-		addComponentIdFilter(queryBuilder);
+		addIdFilter(queryBuilder, SnomedConstraintDocument.Expressions::ids);
 		
 		if (containsKey(OptionKey.SELF)) {
 			queryBuilder.must(selfIds(getCollection(OptionKey.SELF, String.class)));

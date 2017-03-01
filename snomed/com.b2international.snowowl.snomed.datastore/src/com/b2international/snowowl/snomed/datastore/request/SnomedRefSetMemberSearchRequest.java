@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,8 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
@@ -114,7 +115,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		
 		addActiveClause(queryBuilder);
 		addModuleClause(queryBuilder);
-		addComponentIdFilter(queryBuilder);
+		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
 		addEffectiveTimeClause(queryBuilder);
 		
 		if (!referenceSetIds.isEmpty()) {
@@ -181,12 +182,12 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 					throw new BadRequestException("DataType filter must be specified if filtering by value");
 				}
 				final DataType dataType = Iterables.getOnlyElement(dataTypes);
-				final String operatorKey = RevisionSearchRequest.operator(SnomedRf2Headers.FIELD_VALUE);
-				RevisionSearchRequest.Operator op;
+				final String operatorKey = SearchResourceRequest.operator(SnomedRf2Headers.FIELD_VALUE);
+				SearchResourceRequest.Operator op;
 				if (propKeys.remove(operatorKey)) {
 					op = propsFilter.get(operatorKey, Operator.class);
 				} else {
-					op = RevisionSearchRequest.Operator.EQUALS;
+					op = SearchResourceRequest.Operator.EQUALS;
 				}
 				final Collection<Object> attributeValues = propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE, Object.class);
 				switch (op) {

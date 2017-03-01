@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@ import java.util.Collection;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Strings;
@@ -32,7 +33,7 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 	SnomedRefSetSearchRequestBuilder() {}
 
 	@Override
-	protected RevisionSearchRequest<SnomedReferenceSets> createSearch() {
+	protected SearchResourceRequest<BranchContext, SnomedReferenceSets> createSearch() {
 		return new SnomedRefSetSearchRequest();
 	}
 	

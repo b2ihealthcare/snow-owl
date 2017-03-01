@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,20 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.datastore.request.RevisionGetRequest;
-import com.b2international.snowowl.datastore.request.RevisionGetRequestBuilder;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.request.GetResourceRequestBuilder;
+import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 
 /**
  * @since 4.5
  */
-public final class SnomedRefSetMemberGetRequestBuilder extends RevisionGetRequestBuilder<SnomedRefSetMemberGetRequestBuilder, SnomedReferenceSetMember> {
+public final class SnomedRefSetMemberGetRequestBuilder 
+		extends GetResourceRequestBuilder<SnomedRefSetMemberGetRequestBuilder, SnomedRefSetMemberSearchRequestBuilder, BranchContext, SnomedReferenceSetMember> 
+		implements RevisionIndexRequestBuilder<SnomedReferenceSetMember> {
 
-	SnomedRefSetMemberGetRequestBuilder() {
-		super();
-	}
-	
-	@Override
-	protected RevisionGetRequest<SnomedReferenceSetMember> createGet() {
-		return new SnomedRefSetMemberGetRequest();
+	SnomedRefSetMemberGetRequestBuilder(String memberId) {
+		super("Reference Set Member", memberId, SnomedRefSetMemberSearchRequestBuilder::new);
 	}
 	
 }
