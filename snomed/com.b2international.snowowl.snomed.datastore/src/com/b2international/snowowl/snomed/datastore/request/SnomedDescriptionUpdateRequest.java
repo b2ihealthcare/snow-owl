@@ -39,7 +39,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 4.5
  */
-public final class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpdateRequest {
+public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateRequest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedDescriptionUpdateRequest.class);
 
@@ -89,8 +89,7 @@ public final class SnomedDescriptionUpdateRequest extends BaseSnomedComponentUpd
 					final String branchPath = getLatestReleaseBranch(context);
 					final IEventBus bus = context.service(IEventBus.class);
 					final SnomedDescription releasedDescription = SnomedRequests
-						.prepareGetDescription()
-						.setComponentId(getComponentId())
+						.prepareGetDescription(getComponentId())
 						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 						.execute(bus)
 						.getSync();

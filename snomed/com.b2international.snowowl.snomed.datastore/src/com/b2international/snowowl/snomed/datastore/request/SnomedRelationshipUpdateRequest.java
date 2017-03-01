@@ -28,13 +28,13 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 
 /**
  * @since 4.5
  */
-public final class SnomedRelationshipUpdateRequest extends BaseSnomedComponentUpdateRequest {
+public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdateRequest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedRelationshipUpdateRequest.class);
 
@@ -88,8 +88,7 @@ public final class SnomedRelationshipUpdateRequest extends BaseSnomedComponentUp
 				if (relationship.isReleased()) {
 					long start = new Date().getTime();
 					final String branchPath = getLatestReleaseBranch(context);
-					final SnomedRelationship releasedRelationship = SnomedRequests.prepareGetRelationship()
-							.setComponentId(getComponentId())
+					final SnomedRelationship releasedRelationship = SnomedRequests.prepareGetRelationship(getComponentId())
 							.build(context.id(), branchPath)
 							.execute(context.service(IEventBus.class))
 							.getSync();

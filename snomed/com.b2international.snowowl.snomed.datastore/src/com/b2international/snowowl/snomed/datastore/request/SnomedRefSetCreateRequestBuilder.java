@@ -17,13 +17,14 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * @since 4.5
  */
-public final class SnomedRefSetCreateRequestBuilder extends BaseSnomedTransactionalRequestBuilder<SnomedRefSetCreateRequestBuilder, String> {
+public final class SnomedRefSetCreateRequestBuilder extends BaseRequestBuilder<SnomedRefSetCreateRequestBuilder, TransactionContext, String> {
 
 	private SnomedRefSetType type;
 	private String referencedComponentType = CoreTerminologyBroker.UNSPECIFIED;

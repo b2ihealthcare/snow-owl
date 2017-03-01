@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.request.Branching;
 import com.b2international.snowowl.datastore.request.DeleteRequestBuilder;
 import com.b2international.snowowl.datastore.request.Merging;
+import com.b2international.snowowl.datastore.request.RepositoryBulkReadRequestBuilder;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.Reviews;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -94,16 +95,16 @@ public abstract class SnomedRequests {
 		return new SnomedRelationshipSearchRequestBuilder();
 	}
 	
-	public static SnomedConceptGetRequestBuilder prepareGetConcept() {
-		return new SnomedConceptGetRequestBuilder();
+	public static SnomedConceptGetRequestBuilder prepareGetConcept(String conceptId) {
+		return new SnomedConceptGetRequestBuilder(conceptId);
 	}
 	
-	public static SnomedDescriptionGetRequestBuilder prepareGetDescription() {
-		return new SnomedDescriptionGetRequestBuilder();
+	public static SnomedDescriptionGetRequestBuilder prepareGetDescription(String descriptionId) {
+		return new SnomedDescriptionGetRequestBuilder(descriptionId);
 	}
 	
-	public static SnomedRelationshipGetRequestBuilder prepareGetRelationship() {
-		return new SnomedRelationshipGetRequestBuilder();
+	public static SnomedRelationshipGetRequestBuilder prepareGetRelationship(String relationshipId) {
+		return new SnomedRelationshipGetRequestBuilder(relationshipId);
 	}
 
 	private static DeleteRequestBuilder prepareDelete() {
@@ -150,8 +151,8 @@ public abstract class SnomedRequests {
 		return new SnomedRelationshipCreateRequestBuilder();
 	}
 	
-	public static SnomedRefSetGetRequestBuilder prepareGetReferenceSet() {
-		return new SnomedRefSetGetRequestBuilder();
+	public static SnomedRefSetGetRequestBuilder prepareGetReferenceSet(String referenceSetId) {
+		return new SnomedRefSetGetRequestBuilder(referenceSetId);
 	}
 	
 	public static SnomedEclEvaluationRequestBuilder prepareEclEvaluation(String expression) {
@@ -210,16 +211,16 @@ public abstract class SnomedRequests {
 		return new SnomedRelationshipUpdateRequestBuilder(componentId);
 	}
 
-	public static SnomedRefSetMemberGetRequestBuilder prepareGetMember() {
-		return new SnomedRefSetMemberGetRequestBuilder();
+	public static SnomedRefSetMemberGetRequestBuilder prepareGetMember(String memberId) {
+		return new SnomedRefSetMemberGetRequestBuilder(memberId);
 	}
 
 	public static SnomedRepositoryCommitRequestBuilder prepareCommit() {
 		return new SnomedRepositoryCommitRequestBuilder();
 	}
 
-	public static SnomedRepositoryBulkReadRequestBuilder prepareBulkRead() {
-		return new SnomedRepositoryBulkReadRequestBuilder();
+	public static RepositoryBulkReadRequestBuilder prepareBulkRead() {
+		return new RepositoryBulkReadRequestBuilder();
 	}
 
 	/**
@@ -243,7 +244,7 @@ public abstract class SnomedRequests {
 		final IEventBus bus = ApplicationContext.getInstance().getService(IEventBus.class);
 		return SnomedRequests.prepareSearchConcept()
 			.all()
-			.setComponentIds(ruleParentIds)
+			.filterByIds(ruleParentIds)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 			.execute(bus)
 			.then(new Function<SnomedConcepts, Set<String>>() {

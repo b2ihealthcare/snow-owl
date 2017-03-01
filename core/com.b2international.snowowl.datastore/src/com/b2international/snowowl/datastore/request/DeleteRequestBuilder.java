@@ -18,12 +18,13 @@ package com.b2international.snowowl.datastore.request;
 import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 4.5
  */
-public final class DeleteRequestBuilder extends BaseTransactionalRequestBuilder<DeleteRequestBuilder, Void> {
+public final class DeleteRequestBuilder extends BaseRequestBuilder<DeleteRequestBuilder, TransactionContext, Void> {
 
 	private String componentId;
 	private Class<? extends EObject> type;

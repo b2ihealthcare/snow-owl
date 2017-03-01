@@ -430,8 +430,8 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 			@Override
 			public Promise<SnomedConcepts> apply(Set<String> ids) {
 				return SnomedRequests.prepareSearchConcept()
+						.filterByIds(ids)
 						.setLimit(ids.size())
-						.setComponentIds(ids)
 						.build(context.id(), context.branch().path())
 						.execute(context.service(IEventBus.class));
 			}

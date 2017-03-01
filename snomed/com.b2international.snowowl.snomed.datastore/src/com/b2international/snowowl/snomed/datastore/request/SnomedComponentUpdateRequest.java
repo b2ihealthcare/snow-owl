@@ -28,14 +28,14 @@ import com.b2international.snowowl.snomed.Concept;
  * @since 4.5
  * @param <B>
  */
-public abstract class BaseSnomedComponentUpdateRequest implements Request<TransactionContext, Boolean> {
+public abstract class SnomedComponentUpdateRequest implements Request<TransactionContext, Boolean> {
 
 	private final String componentId;
 	
 	private String moduleId;
 	private Boolean active;
 	
-	protected BaseSnomedComponentUpdateRequest(String componentId) {
+	protected SnomedComponentUpdateRequest(String componentId) {
 		this.componentId = componentId;
 	}
 	

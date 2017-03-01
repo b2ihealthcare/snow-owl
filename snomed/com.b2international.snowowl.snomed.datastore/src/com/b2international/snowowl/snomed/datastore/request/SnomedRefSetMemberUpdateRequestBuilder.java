@@ -18,12 +18,13 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Map;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 4.5
  */
-public final class SnomedRefSetMemberUpdateRequestBuilder extends BaseSnomedTransactionalRequestBuilder<SnomedRefSetMemberUpdateRequestBuilder, Boolean> {
+public final class SnomedRefSetMemberUpdateRequestBuilder extends BaseRequestBuilder<SnomedRefSetMemberUpdateRequestBuilder, TransactionContext, Boolean> {
 
 	private String memberId;
 	private Map<String, Object> source;
