@@ -23,44 +23,33 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.options.OptionsBuilder;
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 
 /**
- * @since 4.6
+ * @since 5.2
  */
-public abstract class BaseRevisionResourceRequestBuilder<B extends BaseRevisionResourceRequestBuilder<B, R>, R> extends BaseRevisionIndexReadRequestBuilder<B, R> {
+public abstract class ResourceRequestBuilder<B extends ResourceRequestBuilder<B, C, R>, C extends ServiceProvider, R> extends BaseRequestBuilder<B, C, R> {
 
 	private Options expand = OptionsBuilder.newBuilder().build();
 	private List<ExtendedLocale> locales = Collections.emptyList();
 	private Set<String> fields = Collections.emptySet();
-	
+
 	public final B setLocales(List<ExtendedLocale> locales) {
 		if (!CompareUtils.isEmpty(locales)) {
 			this.locales = locales;
 		}
 		return getSelf();
 	}
-	
-	/**
-	 * Instructs the request to expand the result set returned to include certain fields.
-	 * @param expand fields to be included in the returned components
-	 * @return BaseRevisionResourceRequestBuilder
-	 * @see SnomedConceptConverter
-	 */
+
 	public final B setExpand(String expand) {
 		if (!CompareUtils.isEmpty(expand)) {
 			this.expand = ExpandParser.parse(expand);
 		}
 		return getSelf();
 	}
-	
-	/**
-	 * Instructs the request to expand the result set returned to include certain optional fields.
-	 * @param expand fields to be included in the returned components
-	 * @return BaseRevisionResourceRequestBuilder
-	 * @see SnomedConceptConverter
-	 */
+
 	public final B setExpand(Options expand) {
 		if (!CompareUtils.isEmpty(expand)) {
 			this.expand = expand;
@@ -74,16 +63,16 @@ public abstract class BaseRevisionResourceRequestBuilder<B extends BaseRevisionR
 		}
 		return getSelf();
 	}
-	
+
 	@Override
-	protected final Request<BranchContext, R> doBuild() {
-		final BaseResourceRequest<BranchContext, R> req = create();
+	protected final Request<C, R> doBuild() {
+		final ResourceRequest<C, R> req = create();
 		req.setLocales(locales);
 		req.setExpand(expand);
 		req.setFields(fields);
 		return req;
 	}
 
-	protected abstract BaseResourceRequest<BranchContext, R> create();
-	
+	protected abstract ResourceRequest<C, R> create();
+
 }

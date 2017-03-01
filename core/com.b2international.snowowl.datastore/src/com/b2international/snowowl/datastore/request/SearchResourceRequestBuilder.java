@@ -20,25 +20,24 @@ import java.util.Collections;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.options.OptionsBuilder;
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.google.common.base.Strings;
 
 /**
  * @since 5.2
  */
-public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>, R> extends BaseResourceRequestBuilder<B, R> {
+public abstract class SearchResourceRequestBuilder<B extends SearchResourceRequestBuilder<B, C, R>, C extends ServiceProvider, R> extends ResourceRequestBuilder<B, C, R> {
 	
 	private static final int MAX_LIMIT = Integer.MAX_VALUE - 1;
 	
 	private int offset = 0;
 	private int limit = 50;
 	
-	private Collection<String> docIds = Collections.emptyList();
-	
+	private Collection<String> ids = Collections.emptyList();
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
-	protected SearchRequestBuilder() {
+	protected SearchResourceRequestBuilder() {
 		super();
 	}
 	
@@ -52,19 +51,37 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 		return getSelf();
 	}
 	
-	public final B setDocIds(Collection<String> docIds) {
-		this.docIds = docIds;
+	/**
+	 * Filter by resource identifiers.
+	 * @param componentIds
+	 * @return RevisionSearchRequestBuilder
+	 */
+	public final B filterById(String id) {
+		return filterByIds(Collections.singleton(id));
+	}
+	
+	public final B filterByIds(Collection<String> ids) {
+		this.ids = ids;
 		return getSelf();
 	}
 	
+	/**
+	 * Sets the request to return the entire results set as a single 'page'.
+	 * @return {@link SearchResourceRequestBuilder}
+	 */
 	public final B all() {
 		return setOffset(0).setLimit(MAX_LIMIT);
 	}
 	
+	/**
+	 * Returns a single hit from the result set.
+	 * @return {@link SearchResourceRequestBuilder}
+	 */
 	public final B one() {
 		return setOffset(0).setLimit(1);
 	}
 	
+	// XXX: Does not allow empty-ish values
 	protected final B addOption(String key, Object value) {
 		if (!CompareUtils.isEmpty(value)) {
 			optionsBuilder.put(key, value);
@@ -77,23 +94,23 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	}
 	
 	@Override
-	protected BaseResourceRequest<RepositoryContext, R> create() {
-		final SearchRequest<R> req = createSearch();
+	protected ResourceRequest<C, R> create() {
+		final SearchResourceRequest<C, R> req = createSearch();
 		req.setOffset(offset);
 		req.setLimit(Math.min(limit,  MAX_LIMIT - offset));
 		
-		for (final String docId : docIds) {
-			if (Strings.isNullOrEmpty(docId)) {
-				throw new BadRequestException("Doc ID filter cannot contain empty values");
+		for (final String id : ids) {
+			if (Strings.isNullOrEmpty(id)) {
+				throw new BadRequestException("ID filter cannot contain empty values");
 			}
 		}
 		
-		req.setDocIds(docIds);
+		req.setIds(ids);
 		req.setOptions(optionsBuilder.build());
 		
 		return req;
 	}
 	
-	protected abstract SearchRequest<R> createSearch();
+	protected abstract SearchResourceRequest<C, R> createSearch();
 
 }
