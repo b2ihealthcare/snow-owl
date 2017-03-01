@@ -44,7 +44,13 @@ public abstract class SnomedSearchRequest<R> extends SearchRequest<R> {
 		/**
 		 * Concept module ID to match
 		 */
-		MODULE
+		MODULE,
+		
+		/**
+		 * Filter components by effective time
+		 */
+		EFFECTIVE_TIME
+		
 	}
 	
 	protected SnomedSearchRequest() {}
@@ -67,6 +73,13 @@ public abstract class SnomedSearchRequest<R> extends SearchRequest<R> {
 	protected final void addActiveClause(SnomedQueryBuilder queryBuilder) {
 		if (containsKey(OptionKey.ACTIVE)) {
 			queryBuilder.active(getBoolean(OptionKey.ACTIVE));
+		}
+	}
+	
+	protected final void addEffectiveTimeClause(SnomedQueryBuilder queryBuilder) {
+		if (containsKey(OptionKey.EFFECTIVE_TIME)) {
+			final long effectiveTime = containsKey(OptionKey.EFFECTIVE_TIME) ? get(OptionKey.EFFECTIVE_TIME, Long.class) : 0;
+			queryBuilder.effectiveTime(effectiveTime);
 		}
 	}
 }
