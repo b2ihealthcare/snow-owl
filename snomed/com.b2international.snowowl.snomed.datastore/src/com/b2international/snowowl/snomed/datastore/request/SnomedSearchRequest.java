@@ -42,6 +42,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 /**
+ * Abstract class for SNOMED CT search requests.
  * @since 4.5
  */
 public abstract class SnomedSearchRequest<R> extends RevisionSearchRequest<R> {

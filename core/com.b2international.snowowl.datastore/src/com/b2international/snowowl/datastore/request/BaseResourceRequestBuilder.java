@@ -35,6 +35,11 @@ public abstract class BaseResourceRequestBuilder<B extends BaseResourceRequestBu
 	private List<ExtendedLocale> locales = Collections.emptyList();
 	private Set<String> fields = Collections.emptySet();
 
+	/**
+	 * Sets the request to return the preferred locale for the returned display labels.
+	 * @param locales for the labels returns by the request
+	 * @return BaseResourceRequestBuilder   
+	 */
 	public final B setLocales(List<ExtendedLocale> locales) {
 		if (!CompareUtils.isEmpty(locales)) {
 			this.locales = locales;

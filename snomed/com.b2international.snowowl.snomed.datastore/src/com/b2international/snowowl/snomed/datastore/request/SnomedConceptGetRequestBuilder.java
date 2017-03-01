@@ -20,6 +20,9 @@ import com.b2international.snowowl.datastore.request.RevisionGetRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 
 /**
+ * <i>Builder</i> class to build requests responsible for fetching a single SNOMED CT concept.
+ * This class should be instantiated from the corresponding static method on the central {@link SnomedRequests} class.
+ * 
  * @since 4.5
  */
 public final class SnomedConceptGetRequestBuilder extends RevisionGetRequestBuilder<SnomedConceptGetRequestBuilder, SnomedConcept> {

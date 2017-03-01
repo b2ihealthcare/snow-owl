@@ -24,7 +24,8 @@ import com.b2international.snowowl.snomed.core.domain.*;
 /**
  * <i>Builder</i> class to build requests responsible for searching SNOMED CT concepts.
  * This class should be instantiated from the corresponding static method on the central {@link SnomedRequests} class.
- * Filter methods restrict the results set returned from the search requests; what passes the filters will be returned as part of the resultset.
+ * Filter methods restrict the results set returned from the search requests; 
+ * what passes the filters will be returned as part of the pageable resultset.
  * 
  * @since 4.5
  */

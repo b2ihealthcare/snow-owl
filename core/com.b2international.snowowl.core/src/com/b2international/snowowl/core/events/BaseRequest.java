@@ -20,8 +20,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 4.5
+ * Base request class for all Snow Owl synchronous and asynchronous requests issued on the system's
+ * event bus ({@link IEventBus}.
+ *
+ * @param <C> service provider
+ * @param <R> service request type
+ * @see IEventBus
  * @see Request
+ * @since 4.5
  */
 public abstract class BaseRequest<C extends ServiceProvider, R> implements Request<C, R> {
 

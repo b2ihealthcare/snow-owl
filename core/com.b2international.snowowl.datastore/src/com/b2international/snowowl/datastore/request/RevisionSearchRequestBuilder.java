@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.google.common.base.Strings;
 
 /**
+ * Abstract superclass for building search requests that can return a page-able result set.
  * @since 4.5
  */
 public abstract class RevisionSearchRequestBuilder<B extends RevisionSearchRequestBuilder<B, R>, R> extends BaseRevisionResourceRequestBuilder<B, R> {
@@ -40,11 +41,21 @@ public abstract class RevisionSearchRequestBuilder<B extends RevisionSearchReque
 		super();
 	}
 	
+	/**
+	 * Sets the offset for the paging of the result set. 
+	 * @param offset for paging the result set returned
+	 * @return SearchRequestBuilder
+	 */
 	public final B setOffset(int offset) {
 		this.offset = offset;
 		return getSelf();
 	}
 	
+	/**
+	 * Sets the limit of the result set returned
+	 * @param limit of the result set
+	 * @return SearchRequestBuilder
+	 */
 	public final B setLimit(int limit) {
 		this.limit = limit;
 		return getSelf();

@@ -51,7 +51,7 @@ import com.google.common.collect.Iterables;
 
 /**
  * The central class of the SNOMED CT Java API provided by Snow Owl Terminology Server and Authoring Environment Runtime.
- * This class cannot be instantiated or subclassed by clients, all the functionality is accesible
+ * This class cannot be instantiated or subclassed by clients, all the functionality is accessible
  * via static methods.  In general, this class provides access to the API via a set of RequestBuilder
  * classes that follow the <i>Builder</i> pattern focusing on features such as:
  * <ul>
@@ -62,6 +62,29 @@ import com.google.common.collect.Iterables;
  * <li>access to Snow Owl's revision control features</li>
  * </ul>
  * <p>
+ * 
+ * In general the following steps are required to issue a request to the Snow Owl server:
+ * <ol>
+ * <li>invoke the proper <i>prepare</i> method to obtain a request builder</li>
+ * <li>specify the filter conditions, settings, parameters for the request</li>
+ * <li>invoke the <i>build</i> method with the <i>branchpath</i> parameter that specifies the target branch for the request</li>
+ * <li>call <i>execute</i> for async or <i>executeSync</i> for synchronous execution</li>
+ * </ol>
+ * 
+ * A representative example for a service accessible by this class:
+ * <pre><code>
+ * //define the branch to operate on
+ * IBranchPath branchPath = BranchPathUtils.createMainPath()
+ * 
+ * //Obtain the eventbus required to execution of the request
+ * IEventBus eventBus = ApplicationContext.getInstance().getService(IEventBus.class)
+ * 
+ * //Return the children of 'Clinical finding'
+ * SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
+ *  .filterByEscg('<<404684003') //
+ *  .all()
+ *  .build(branchPath.getPath()).executeSync(eventBus);
+ * </code></pre>
  *  
  * @since 4.5
  */
