@@ -15,19 +15,21 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
+import com.b2international.snowowl.core.events.RequestBuilder;
 
 /**
  * @since 5.7
- * @param <B>
- * @param <R>
  */
-public abstract class BaseSystemRequestBuilder<B extends BaseSystemRequestBuilder<B, R>, R> extends BaseRequestBuilder<B, ServiceProvider, R> {
+public interface IndexRequestBuilder<R> extends RequestBuilder<RepositoryContext, R> {
 
-	public final AsyncRequest<R> buildAsync() {
-		return toAsync(build());
+	default AsyncRequest<R> build(String repositoryId) {
+		return new AsyncRequest<>(
+			new RepositoryRequest<>(repositoryId,
+				new IndexReadRequest<>(build())
+			)
+		);
 	}
 	
 }

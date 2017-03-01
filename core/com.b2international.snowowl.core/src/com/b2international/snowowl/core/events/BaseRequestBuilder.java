@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,15 +34,6 @@ public abstract class BaseRequestBuilder<B extends BaseRequestBuilder<B, C, R>, 
 	@Override
 	public final Request<C, R> build() {
 		return ApiValidation.checkInput(doBuild());
-	}
-	
-	/**
-	 * Build an async request that can be sent to an executor or remote node for asynchronous processing.
-	 * 
-	 * @return
-	 */
-	protected final AsyncRequest<R> toAsync(Request<ServiceProvider, R> request) {
-		return new AsyncRequest<>(request);
 	}
 	
 	protected abstract Request<C, R> doBuild();

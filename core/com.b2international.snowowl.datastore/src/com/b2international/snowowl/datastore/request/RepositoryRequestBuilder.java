@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,31 +15,24 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
-import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.RequestBuilder;
 
 /**
- * @since 4.7
- * @param <B> - the builder type
- * @param <R> - the response type
+ * @since 5.7
  */
-public abstract class BaseRepositoryRequestBuilder<B extends BaseRepositoryRequestBuilder<B, R>, R> extends BaseRequestBuilder<B, RepositoryContext, R> {
+public interface RepositoryRequestBuilder<R> extends RequestBuilder<RepositoryContext, R> {
 
-	public final AsyncRequest<R> build(String repositoryId) {
-		return toAsync(
-			new RepositoryRequest<>(repositoryId, 
-				extend(build())
-			)
+	/**
+	 * Builds a locally or remotely executable {@link AsyncRequest asynchronous request}.
+	 * @param repositoryId
+	 * @return
+	 */
+	default AsyncRequest<R> build(String repositoryId) {
+		return new AsyncRequest<>(
+			new RepositoryRequest<>(repositoryId, build())
 		);
-	}
-	
-	@OverridingMethodsMustInvokeSuper
-	protected Request<RepositoryContext, R> extend(Request<RepositoryContext, R> req) {
-		return req;
 	}
 	
 }

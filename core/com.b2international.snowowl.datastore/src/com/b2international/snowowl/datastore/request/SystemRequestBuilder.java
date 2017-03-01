@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,18 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.events.RequestBuilder;
 
 /**
- * @since 5.2
+ * @since 5.7
+ * @param <R> - the return type
  */
-public abstract class BaseIndexReadRequestBuilder<B extends BaseIndexReadRequestBuilder<B, R>, R>
-		extends BaseRepositoryRequestBuilder<B, R> {
+public interface SystemRequestBuilder<R> extends RequestBuilder<ServiceProvider, R> {
 
-	@Override
-	protected Request<RepositoryContext, R> extend(final Request<RepositoryContext, R> req) {
-		return new IndexReadRequest<>(super.extend(req));
+	default AsyncRequest<R> buildAsync() {
+		return new AsyncRequest<R>(build());
 	}
-
+	
 }

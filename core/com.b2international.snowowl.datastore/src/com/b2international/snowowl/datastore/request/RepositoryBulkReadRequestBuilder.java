@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkResponse;
@@ -23,7 +24,7 @@ import com.b2international.snowowl.core.events.bulk.BulkResponse;
 /**
  * @since 4.5
  */
-public class RepositoryBulkReadRequestBuilder extends BaseRevisionIndexReadRequestBuilder<RepositoryBulkReadRequestBuilder, BulkResponse> {
+public final class RepositoryBulkReadRequestBuilder extends BaseRequestBuilder<RepositoryBulkReadRequestBuilder, BranchContext, BulkResponse> {
 	
 	private Request<BranchContext, BulkResponse> body;
 
