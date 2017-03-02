@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 4.6
  */
-public abstract class ResourceRequest<C extends ServiceProvider, B> implements Request<C, B> {
+public abstract class ResourceRequest<C extends ServiceProvider, R> implements Request<C, R> {
 
 	@NotNull
 	private List<ExtendedLocale> locales;
