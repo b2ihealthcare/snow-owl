@@ -1139,8 +1139,9 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			delete((SnomedRefSet) object, force);
 		} else if (object instanceof SnomedRefSetMember) {
 			delete((SnomedRefSetMember) object, force);
+		} else {
+			super.delete(object, force);
 		}
-		super.delete(object, force);
 	}
 	
 	private void delete(Concept concept, boolean force) {
@@ -1167,8 +1168,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		delete(deletionPlan);
 	}
 
-	private void delete(SnomedRefSet member, boolean force) {
-		SnomedDeletionPlan deletionPlan = canDelete(member, null, force);
+	private void delete(SnomedRefSet refSet, boolean force) {
+		SnomedDeletionPlan deletionPlan = canDelete(refSet, null, force);
 		if (deletionPlan.isRejected()) {
 			throw new ConflictException(deletionPlan.getRejectionReasons().toString());
 		}
