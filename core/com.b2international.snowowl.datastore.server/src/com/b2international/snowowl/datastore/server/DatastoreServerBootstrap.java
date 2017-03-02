@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
+import com.b2international.snowowl.core.events.Notifications;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.ApiRequestHandler;
 import com.b2international.snowowl.core.setup.Environment;
@@ -132,6 +133,8 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 				throw new SnowowlRuntimeException(e);
 			}
 		}
+		final ClassLoader classLoader = env.service(RepositoryClassLoaderProviderRegistry.class).getClassLoader();
+		env.services().registerService(Notifications.class, new Notifications(env.service(IEventBus.class), classLoader));
 	}
 	
 	@Override
