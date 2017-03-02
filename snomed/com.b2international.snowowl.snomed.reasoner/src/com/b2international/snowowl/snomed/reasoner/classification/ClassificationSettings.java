@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,42 +16,39 @@
 package com.b2international.snowowl.snomed.reasoner.classification;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.snomed.reasoner.model.ConceptDefinition;
 import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 
 /**
+ * Carries all parameters required for starting a classification for a branch.
  */
-public class ClassificationRequest implements Serializable {
+public class ClassificationSettings implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
-	private final UUID classificationId = UUID.randomUUID();
-	private final String lockUserId;
+	private final String userId;
 	private final IBranchPath snomedBranchPath;
+	private final List<ConceptDefinition> additionalDefinitions = newArrayList();
 	
-	private final List<ConceptDefinition> additionalDefinitions = Lists.newArrayList();
 	private String parentContextDescription = DatastoreLockContextDescriptions.CLASSIFY_WITH_REVIEW;
 	private String reasonerId;
 	
-	public ClassificationRequest(final String lockUserId, final IBranchPath snomedBranchPath) {
-		checkNotNull(lockUserId, "Lock user identifier may not be null.");
+	public ClassificationSettings(String userId, IBranchPath snomedBranchPath) {
+		checkNotNull(userId, "User identifier may not be null.");
 		checkNotNull(snomedBranchPath, "SNOMED CT branch path may not be null.");
 		
-		this.lockUserId = lockUserId;
+		this.userId = userId;
 		this.snomedBranchPath = snomedBranchPath;
 	}
 	
-	public ClassificationRequest withAdditionalDefinitions(final List<ConceptDefinition> additionalDefinitions) {
+	public ClassificationSettings withAdditionalDefinitions(List<ConceptDefinition> additionalDefinitions) {
 		checkNotNull(additionalDefinitions, "Additional concept definition list may not be null.");
 		
 		this.additionalDefinitions.clear();
@@ -59,14 +56,14 @@ public class ClassificationRequest implements Serializable {
 		return this;
 	}
 
-	public ClassificationRequest withParentContextDescription(final String parentContextDescription) {
+	public ClassificationSettings withParentContextDescription(String parentContextDescription) {
 		checkNotNull(parentContextDescription, "Parent context description may not be null.");
 		
 		this.parentContextDescription = parentContextDescription;
 		return this;
 	}
 
-	public ClassificationRequest withReasonerId(final @Nullable String reasonerId) {
+	public ClassificationSettings withReasonerId(String reasonerId) {
 		this.reasonerId = reasonerId;
 		return this;
 	}
@@ -79,12 +76,8 @@ public class ClassificationRequest implements Serializable {
 		return parentContextDescription;
 	}
 
-	public UUID getClassificationId() {
-		return classificationId;
-	}
-
-	public String getLockUserId() {
-		return lockUserId;
+	public String getUserId() {
+		return userId;
 	}
 
 	public IBranchPath getSnomedBranchPath() {
@@ -98,8 +91,7 @@ public class ClassificationRequest implements Serializable {
 	@Override
 	public String toString() {
 		return Objects.toStringHelper(this)
-				.add("classificationId", classificationId)
-				.add("lockUserId", lockUserId)
+				.add("userId", userId)
 				.add("snomedBranchPath", snomedBranchPath)
 				.add("additionalDefinitions", additionalDefinitions)
 				.add("parentContextDescription", parentContextDescription)
