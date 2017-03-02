@@ -490,14 +490,14 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 
 	private PersistChangesResponse doPersistChanges(String classificationId, ReasonerTaxonomy taxonomy, String userId) throws OperationLockException, InterruptedException {
 		
-		SnomedReasonerRequests.preparePersistChanges()
-		.setTaxonomy(taxonomy)
-		.setUserId(userId)
-		.buildAsync()
-		.execute(getEventBus())
-		.getSync();
-		
-		return new PersistChangesResponse(Type.SUCCESS);
+		String persistJobId = SnomedReasonerRequests.preparePersistChanges()
+				.setTaxonomy(taxonomy)
+				.setUserId(userId)
+				.buildAsync()
+				.execute(getEventBus())
+				.getSync();
+
+		return new PersistChangesResponse(Type.SUCCESS, persistJobId);
 	}
 
 	@Override
