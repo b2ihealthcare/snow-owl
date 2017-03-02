@@ -368,8 +368,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		if (changeConceptCache.containsKey(id)) {
 			return changeConceptCache.get(id); 
 		} else {
-			ChangeConcept concept = SnomedRequests.prepareGetConcept()
-					.setComponentId(Long.toString(id))
+			ChangeConcept concept = SnomedRequests.prepareGetConcept(Long.toString(id))
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.then(new Function<SnomedConcept, ChangeConcept>() {
@@ -440,8 +439,8 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	private List<SnomedConcept> convertIdsToIndexEntries(IBranchPath branchPath, LongSet conceptIds) { 
 		Set<String> conceptIdFilter = LongSets.toStringSet(conceptIds);
 		SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
+				.filterByIds(conceptIdFilter)
 				.setLimit(conceptIds.size())
-				.setComponentIds(conceptIdFilter)
 				.setExpand("pt()")
 				.setLocales(ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())

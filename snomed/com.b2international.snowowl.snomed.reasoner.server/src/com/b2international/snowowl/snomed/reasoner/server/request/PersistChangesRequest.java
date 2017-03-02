@@ -194,8 +194,7 @@ public class PersistChangesRequest implements Request<ServiceProvider, IStatus> 
 
 	private boolean isSubTypeOfSMP(IBranchPath branchPath, String subTypeId) {
 		if (statedDescendantsOfSmp == null) {
-			statedDescendantsOfSmp = SnomedRequests.prepareGetConcept()
-					.setComponentId(Concepts.GENERATED_SINGAPORE_MEDICINAL_PRODUCT)
+			statedDescendantsOfSmp = SnomedRequests.prepareGetConcept(Concepts.GENERATED_SINGAPORE_MEDICINAL_PRODUCT)
 					.setExpand("descendants(limit:"+Integer.MAX_VALUE+",direct:false,form:\"stated\")")
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
