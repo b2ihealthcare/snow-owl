@@ -23,6 +23,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
@@ -36,17 +37,22 @@ public final class GetResourceRequest<B extends SearchResourceRequestBuilder<B, 
 	@NotNull
 	private final Supplier<B> searchRequestFactory;
 	
-	@NotEmpty
-	private final String type;
+	@NotNull
+	private final Class<R> type;
 	
 	@NotEmpty
 	@JsonProperty
 	private final String id;
 	
-	GetResourceRequest(final String type, final String id, final Supplier<B> searchRequestFactory) {
+	GetResourceRequest(final Class<R> type, final String id, final Supplier<B> searchRequestFactory) {
 		this.type = checkNotNull(type, "type");
 		this.id = id;
 		this.searchRequestFactory = searchRequestFactory;
+	}
+	
+	@Override
+	public Class<R> getReturnType() {
+		return type;
 	}
 
 	@Override
@@ -60,7 +66,7 @@ public final class GetResourceRequest<B extends SearchResourceRequestBuilder<B, 
 			.build()
 			.execute(context)
 			.getOnlyItem()
-			.orElseThrow(() -> new NotFoundException(type, id));
+			.orElseThrow(() -> new NotFoundException(StringUtils.splitCamelCaseAndCapitalize(type.getSimpleName()), id));
 	}
 
 }

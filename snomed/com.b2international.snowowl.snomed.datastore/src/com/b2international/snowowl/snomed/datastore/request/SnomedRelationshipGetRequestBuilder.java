@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.request.GetResourceRequestBuilder;
 import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -29,7 +28,7 @@ public final class SnomedRelationshipGetRequestBuilder
 		implements RevisionIndexRequestBuilder<SnomedRelationship> {
 
 	SnomedRelationshipGetRequestBuilder(String relationshipId) {
-		super(ComponentCategory.RELATIONSHIP.getDisplayName(), relationshipId, SnomedRelationshipSearchRequestBuilder::new);
+		super(SnomedRelationship.class, relationshipId, SnomedRelationshipSearchRequestBuilder::new);
 	}
 	
 }

@@ -28,7 +28,7 @@ public final class CodeSystemGetRequestBuilder
 		implements IndexRequestBuilder<CodeSystemEntry> {
 
 	CodeSystemGetRequestBuilder(String uniqueId) {
-		super("Code System", uniqueId, CodeSystemSearchRequestBuilder::new);
+		super(CodeSystemEntry.class, uniqueId, CodeSystemSearchRequestBuilder::new);
 	}
 	
 }

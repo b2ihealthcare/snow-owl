@@ -30,10 +30,10 @@ public abstract class GetResourceRequestBuilder<
 	R> extends ResourceRequestBuilder<B, C, R> {
 	
 	private final String id;
-	private final String type;
+	private final Class<R> type;
 	private final Supplier<SB> searchRequestFactory;
 	
-	protected GetResourceRequestBuilder(final String type, final String id, Supplier<SB> searchRequestFactory) {
+	protected GetResourceRequestBuilder(final Class<R> type, final String id, Supplier<SB> searchRequestFactory) {
 		super();
 		this.type = type;
 		this.id = id;

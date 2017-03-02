@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.request.GetResourceRequestBuilder;
 import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -29,7 +28,7 @@ public final class SnomedDescriptionGetRequestBuilder
 		implements RevisionIndexRequestBuilder<SnomedDescription> {
 
 	SnomedDescriptionGetRequestBuilder(String descriptionId) {
-		super(ComponentCategory.DESCRIPTION.getDisplayName(), descriptionId, SnomedDescriptionSearchRequestBuilder::new);
+		super(SnomedDescription.class, descriptionId, SnomedDescriptionSearchRequestBuilder::new);
 	}
 
 }

@@ -28,7 +28,7 @@ public final class SnomedRefSetGetRequestBuilder
 	implements RevisionIndexRequestBuilder<SnomedReferenceSet> {
 
 	SnomedRefSetGetRequestBuilder(String refSetId) {
-		super("Reference Set", refSetId, SnomedRefSetSearchRequestBuilder::new);
+		super(SnomedReferenceSet.class, refSetId, SnomedRefSetSearchRequestBuilder::new);
 	}
 
 }
