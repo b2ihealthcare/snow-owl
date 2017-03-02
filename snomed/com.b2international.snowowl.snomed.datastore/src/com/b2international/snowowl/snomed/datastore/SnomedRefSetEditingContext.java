@@ -46,6 +46,7 @@ import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CdoViewComponentTextProvider;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
@@ -846,7 +847,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 
 	private SnomedReferenceSetMembers getAllReferringMembersStorageKey(String id, EnumSet<SnomedRefSetType> types) {
 		// construct bulk requests with many sub queries to search for any member that references the given ID in any RF2 member component field
-		return SnomedRequests.prepareBulkRead()
+		return RepositoryRequests.prepareBulkRead()
 				.setBody(BulkRequest.<BranchContext>create()
 						.add(getReferringMembers(id, types))
 						.add(getReferringMembersByProps(id, types, Fields.ACCEPTABILITY_ID))

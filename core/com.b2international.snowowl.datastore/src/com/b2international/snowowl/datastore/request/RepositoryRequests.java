@@ -37,5 +37,9 @@ public final class RepositoryRequests {
 	public static CommitInfoRequests commitInfos() {
 		return new CommitInfoRequests();
 	}
+	
+	public static RepositoryBulkReadRequestBuilder prepareBulkRead() {
+		return new RepositoryBulkReadRequestBuilder();
+	}
 
 }

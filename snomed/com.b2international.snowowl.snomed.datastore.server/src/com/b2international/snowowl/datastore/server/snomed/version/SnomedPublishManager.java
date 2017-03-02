@@ -43,6 +43,7 @@ import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.snomed.SnomedModuleDependencyCollectorService;
 import com.b2international.snowowl.datastore.server.version.PublishManager;
@@ -77,7 +78,7 @@ public class SnomedPublishManager extends PublishManager {
 	
 	@Override
 	protected LongSet getUnversionedComponentStorageKeys(final String branch) {
-		return SnomedRequests.prepareBulkRead()
+		return RepositoryRequests.prepareBulkRead()
 				.setBody(BulkRequest.<BranchContext>create()
 						.add(SnomedRequests.prepareSearchConcept().all().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 						.add(SnomedRequests.prepareSearchDescription().all().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))

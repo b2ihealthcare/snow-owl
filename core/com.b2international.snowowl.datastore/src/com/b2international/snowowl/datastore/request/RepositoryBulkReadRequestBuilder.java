@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,12 @@ import com.b2international.snowowl.core.events.bulk.BulkResponse;
 /**
  * @since 4.5
  */
-public final class RepositoryBulkReadRequestBuilder extends BaseRequestBuilder<RepositoryBulkReadRequestBuilder, BranchContext, BulkResponse> {
+public final class RepositoryBulkReadRequestBuilder extends BaseRequestBuilder<RepositoryBulkReadRequestBuilder, BranchContext, BulkResponse> implements RevisionIndexRequestBuilder<BulkResponse> {
 	
 	private Request<BranchContext, BulkResponse> body;
 
+	RepositoryBulkReadRequestBuilder() {}
+	
 	public final RepositoryBulkReadRequestBuilder setBody(BulkRequestBuilder<BranchContext> req) {
 		body = req.build();
 		return getSelf();
