@@ -65,7 +65,7 @@ public final class GetResourceRequest<B extends SearchResourceRequestBuilder<B, 
 			.filterById(id)
 			.build()
 			.execute(context)
-			.getOnlyItem()
+			.first()
 			.orElseThrow(() -> new NotFoundException(StringUtils.splitCamelCaseAndCapitalize(type.getSimpleName()), id));
 	}
 

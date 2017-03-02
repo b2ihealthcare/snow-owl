@@ -1664,7 +1664,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(bus)
 				.getSync()
-				.getOnlyItem()
+				.first()
 				.get();
 		newComponentIds.add(generatedId);
 		return generatedId;

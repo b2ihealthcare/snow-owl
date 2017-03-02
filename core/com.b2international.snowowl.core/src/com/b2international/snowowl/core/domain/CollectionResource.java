@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -86,7 +87,8 @@ public class CollectionResource<T> implements Serializable, Iterable<T> {
 	/**
 	 * @return an {@link Optional} item in this collection resource
 	 */
-	public Optional<T> getOnlyItem() {
+	@JsonIgnore
+	public Optional<T> first() {
 		return Optional.ofNullable(Iterables.getFirst(getItems(), null));
 	}
 
