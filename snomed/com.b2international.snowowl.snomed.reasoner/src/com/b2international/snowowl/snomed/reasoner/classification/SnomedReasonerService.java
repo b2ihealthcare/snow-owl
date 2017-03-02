@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,38 +15,30 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification;
 
-import java.util.List;
-import java.util.UUID;
-
-import com.b2international.snowowl.core.api.IBranchPath;
-
 /**
  * Represents the RPC interface for the SNOMED&nbsp;CT reasoner service.
  * <p>
  * Supported operations are:
  * <ul>
- * <li>{@link #beginClassification(UUID, IBranchPath) starting classification of a branch}
- * <li>{@link #beginClassification(UUID, IBranchPath, List) starting classification of a branch with additional definitions}
- * <li>{@link #getResult(UUID) retrieving classification results for review}
- * <li>{@link #getEquivalentConcepts(UUID) returning equivalence sets}
- * <li>{@link #persistChanges(UUID, String) persisting changes from a classification run}
+ * <li>{@link #beginClassification(ClassificationSettings) starting classification of a branch}
+ * <li>{@link #getResult(String) retrieving a classification result for review}
+ * <li>{@link #getEquivalentConcepts(String) returning equivalence sets}
+ * <li>{@link #persistChanges(String, String) persisting changes from a classification run}
  * <li>{@link #canStartImmediately() checking reasoner availability}
+ * <li>{@link #removeResult(String) removing a classification result}
  * </ul>
- * 
  */
 public interface SnomedReasonerService {
 
-	String USER_COMMAND_ID = "com.b2international.snowowl.reviewResults";
-	String CHANGES_PERSISTED_ADDRESS = "Classification_{uuid}_persisted";
-
 	/**
-	 * Triggers a classification run for the specified branch of SNOMED CT. Current ontology content is extended with
+	 * Performs a classification run for the specified branch of SNOMED CT. Current ontology content is extended with
 	 * the given concept definitions; if a definition describes a concept which already exists, the incoming definition
 	 * takes precedence.
 	 * 
-	 * @param classificationRequest the request object describing parameters
+	 * @param settings the object describing parameters for the classification run
+	 * @return the identifier for the classification run
 	 */
-	void beginClassification(ClassificationRequest classificationRequest);
+	String beginClassification(ClassificationSettings settings);
 
 	/**
 	 * Returns the results of the classification for review. This method blocks until a result becomes available.
@@ -54,7 +46,7 @@ public interface SnomedReasonerService {
 	 * @param classificationId the unique identifier of the classification run
 	 * @return a {@link GetResultResponse} instance
 	 */
-	GetResultResponse getResult(UUID classificationId);
+	GetResultResponse getResult(String classificationId);
 
 	/**
 	 * Returns equivalent sets computed from the classification. This method blocks until a result becomes available.
@@ -62,17 +54,16 @@ public interface SnomedReasonerService {
 	 * @param classificationId the unique identifier of the classification run
 	 * @return a {@link GetEquivalentConceptsResponse} instance
 	 */
-	GetEquivalentConceptsResponse getEquivalentConcepts(UUID classificationId);
+	GetEquivalentConceptsResponse getEquivalentConcepts(String classificationId);
 
 	/**
-	 * Instructs the reasoner to persist the results of the classification with the give identifier. This method blocks
-	 * until the results are persisted.
+	 * Instructs the reasoner to persist the results of the classification with the given identifier.
 	 * 
 	 * @param classificationId the unique identifier of the classification run
 	 * @param userId the requesting user's identifier
 	 * @return a {@link PersistChangesResponse} instance
 	 */
-	PersistChangesResponse persistChanges(UUID classificationId, String userId);
+	PersistChangesResponse persistChanges(String classificationId, String userId);
 
 	/**
 	 * Checks if any free reasoner instances are available.
@@ -80,4 +71,12 @@ public interface SnomedReasonerService {
 	 * @return {@code true} if a request for classification is likely to start in a short time, {@code false} otherwise
 	 */
 	boolean canStartImmediately();
+
+	/**
+	 * Removes the result of the classification with the given identifier from memory, it it exists.
+	 * 
+	 * @param classificationId the unique identifier of the classification run
+	 */
+	void removeResult(String classificationId);
+
 }
