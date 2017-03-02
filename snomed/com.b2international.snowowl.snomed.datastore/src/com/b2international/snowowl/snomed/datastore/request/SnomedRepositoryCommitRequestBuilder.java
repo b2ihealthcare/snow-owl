@@ -38,7 +38,7 @@ public final class SnomedRepositoryCommitRequestBuilder extends RepositoryCommit
 				new BranchRequest<>(branch,
 					new RevisionIndexReadRequest<>(
 						new IdRequest<>(
-							createTransactionalRequest()
+							build()
 						)
 					)
 				)

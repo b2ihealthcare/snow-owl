@@ -75,7 +75,7 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 
 	@Override
 	protected final Request<BranchContext, CommitResult> doBuild() {
-		return createTransactionalRequest();
+		return new TransactionalRequest(userId, commitComment, body, preparationTime, parentContextDescription);
 	}
 	
 	public AsyncRequest<CommitResult> build(String repositoryId, String branch) {
@@ -83,15 +83,11 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 			new RepositoryRequest<>(repositoryId,
 				new BranchRequest<>(branch,
 					new RevisionIndexReadRequest<CommitResult>(
-						createTransactionalRequest()
+						build()
 					)
 				)
 			)
 		);
-	}
-
-	protected final TransactionalRequest createTransactionalRequest() {
-		return new TransactionalRequest(userId, commitComment, body, preparationTime, parentContextDescription);
 	}
 	
 }
