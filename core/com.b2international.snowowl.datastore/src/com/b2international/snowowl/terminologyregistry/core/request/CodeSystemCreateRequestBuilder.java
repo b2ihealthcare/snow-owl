@@ -18,11 +18,12 @@ package com.b2international.snowowl.terminologyregistry.core.request;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.request.TransactionalRequestBuilder;
 
 /**
  * @since 4.7
  */
-public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<CodeSystemCreateRequestBuilder, TransactionContext, String> {
+public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<CodeSystemCreateRequestBuilder, TransactionContext, String> implements TransactionalRequestBuilder<String> {
 
 	private String branchPath;
 	private String citation;

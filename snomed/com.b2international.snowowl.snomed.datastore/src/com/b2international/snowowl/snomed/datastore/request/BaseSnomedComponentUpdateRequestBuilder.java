@@ -20,11 +20,14 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.request.TransactionalRequestBuilder;
 
 /**
  * @since 4.5
  */
-public abstract class BaseSnomedComponentUpdateRequestBuilder<B extends BaseSnomedComponentUpdateRequestBuilder<B, R>, R extends SnomedComponentUpdateRequest> extends BaseRequestBuilder<B, TransactionContext, Boolean> {
+public abstract class BaseSnomedComponentUpdateRequestBuilder<B extends BaseSnomedComponentUpdateRequestBuilder<B, R>, R extends SnomedComponentUpdateRequest> 
+		extends BaseRequestBuilder<B, TransactionContext, Boolean>
+		implements TransactionalRequestBuilder<Boolean> {
 
 	private final String componentId;
 	

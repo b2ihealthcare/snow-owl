@@ -20,6 +20,8 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Collection;
 import java.util.Set;
 
+import org.eclipse.emf.ecore.EObject;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -29,7 +31,6 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.request.Branching;
 import com.b2international.snowowl.datastore.request.DeleteRequestBuilder;
 import com.b2international.snowowl.datastore.request.Merging;
-import com.b2international.snowowl.datastore.request.RepositoryBulkReadRequestBuilder;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.Reviews;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -107,28 +108,28 @@ public abstract class SnomedRequests {
 		return new SnomedRelationshipGetRequestBuilder(relationshipId);
 	}
 
-	private static DeleteRequestBuilder prepareDelete() {
-		return new DeleteRequestBuilder(new SnomedRepositoryCommitRequestBuilder());
+	private static DeleteRequestBuilder prepareDelete(String componentId, Class<? extends EObject> type) {
+		return new DeleteRequestBuilder(componentId, type);
 	}
 	
-	public static DeleteRequestBuilder prepareDeleteMember() {
-		return prepareDelete().setType(SnomedRefSetMember.class);
+	public static DeleteRequestBuilder prepareDeleteMember(String memberId) {
+		return prepareDelete(memberId, SnomedRefSetMember.class);
 	}
 
-	public static DeleteRequestBuilder prepareDeleteConcept() {
-		return prepareDelete().setType(Concept.class);
+	public static DeleteRequestBuilder prepareDeleteConcept(String conceptId) {
+		return prepareDelete(conceptId, Concept.class);
 	}
 	
-	public static DeleteRequestBuilder prepareDeleteDescription() {
-		return prepareDelete().setType(Description.class);
+	public static DeleteRequestBuilder prepareDeleteDescription(String descriptionId) {
+		return prepareDelete(descriptionId, Description.class);
 	}
 	
-	public static DeleteRequestBuilder prepareDeleteRelationship() {
-		return prepareDelete().setType(Relationship.class);
+	public static DeleteRequestBuilder prepareDeleteRelationship(String relationshipId) {
+		return prepareDelete(relationshipId, Relationship.class);
 	}
 	
-	public static DeleteRequestBuilder prepareDeleteReferenceSet() {
-		return prepareDelete().setType(SnomedRefSet.class);
+	public static DeleteRequestBuilder prepareDeleteReferenceSet(String refSetId) {
+		return prepareDelete(refSetId, SnomedRefSet.class);
 	}
 
 	public static SnomedRefSetMemberCreateRequestBuilder prepareNewMember() {
@@ -219,10 +220,6 @@ public abstract class SnomedRequests {
 		return new SnomedRepositoryCommitRequestBuilder();
 	}
 
-	public static RepositoryBulkReadRequestBuilder prepareBulkRead() {
-		return new RepositoryBulkReadRequestBuilder();
-	}
-
 	/**
 	 * Returns all SYNONYM concept ids including all subtypes of {@value Concepts#SYNONYM}.
 	 * @return
@@ -276,7 +273,7 @@ public abstract class SnomedRequests {
 						constraintBulkRequestBuilder.add(SnomedRequests.prepareSearchConstraint().all().filterByRefSetIds(refSetIds));
 					}
 					
-					return SnomedRequests.prepareBulkRead()
+					return RepositoryRequests.prepareBulkRead()
 						.setBody(constraintBulkRequestBuilder)
 						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 						.execute(bus)

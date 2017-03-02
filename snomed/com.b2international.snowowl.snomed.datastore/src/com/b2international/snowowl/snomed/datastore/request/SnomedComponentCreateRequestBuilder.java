@@ -20,6 +20,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.request.TransactionalRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.core.domain.NamespaceIdStrategy;
@@ -27,7 +28,9 @@ import com.b2international.snowowl.snomed.core.domain.NamespaceIdStrategy;
 /**
  * @since 4.5
  */
-public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedComponentCreateRequestBuilder<B>> extends BaseRequestBuilder<B, TransactionContext, String> {
+public abstract class SnomedComponentCreateRequestBuilder<B extends SnomedComponentCreateRequestBuilder<B>> 
+		extends BaseRequestBuilder<B, TransactionContext, String>
+		implements TransactionalRequestBuilder<String> {
 	
 	private String moduleId;
 	private Boolean active = Boolean.TRUE;

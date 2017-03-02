@@ -305,9 +305,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			
 			final Principal principal) {
 
-		SnomedRequests
-			.prepareDeleteRelationship()
-			.setComponentId(relationshipId)
+		SnomedRequests.prepareDeleteRelationship(relationshipId)
 			.force(force)
 			.build(repositoryId, branchPath, principal.getName(), String.format("Deleted Relationship '%s' from store.", relationshipId))
 			.execute(bus)

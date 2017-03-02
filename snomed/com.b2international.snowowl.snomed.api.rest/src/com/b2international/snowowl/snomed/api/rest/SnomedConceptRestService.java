@@ -327,8 +327,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 
 			final Principal principal) {
 		SnomedRequests
-			.prepareDeleteConcept()
-			.setComponentId(conceptId)
+			.prepareDeleteConcept(conceptId)
 			.force(force)
 			.build(repositoryId, branchPath, principal.getName(), String.format("Deleted Concept '%s' from store.", conceptId))
 			.execute(bus)

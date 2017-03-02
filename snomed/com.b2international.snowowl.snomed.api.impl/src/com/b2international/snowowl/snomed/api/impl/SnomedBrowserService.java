@@ -227,7 +227,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			commitReq.add(descriptionReq);
 		}
 		for (String descriptionDeletionId : descriptionDeletionIds) {
-			commitReq.add(SnomedRequests.prepareDeleteDescription().setComponentId(descriptionDeletionId).build());
+			commitReq.add(SnomedRequests.prepareDeleteDescription(descriptionDeletionId).build());
 		}
 
 		for (String relationshipId : relationshipUpdates.keySet()) {
@@ -237,7 +237,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			commitReq.add(relationshipReq);
 		}
 		for (String relationshipDeletionId : relationshipDeletionIds) {
-			commitReq.add(SnomedRequests.prepareDeleteRelationship().setComponentId(relationshipDeletionId).build());
+			commitReq.add(SnomedRequests.prepareDeleteRelationship(relationshipDeletionId).build());
 		}
 
 		// Inactivate concept last

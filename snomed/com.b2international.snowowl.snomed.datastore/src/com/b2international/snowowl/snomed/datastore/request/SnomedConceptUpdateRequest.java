@@ -128,19 +128,19 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		if (descriptions != null) {
 			changed |= updateComponents(context, concept, 
 					getComponentIds(concept.getDescriptions()), descriptions, 
-					id -> SnomedRequests.prepareDeleteDescription().setComponentId(id).build());
+					id -> SnomedRequests.prepareDeleteDescription(id).build());
 		}
 		
 		if (relationships != null) {
 			changed |= updateComponents(context, concept, 
 					getComponentIds(concept.getOutboundRelationships()), relationships, 
-					id -> SnomedRequests.prepareDeleteRelationship().setComponentId(id).build());
+					id -> SnomedRequests.prepareDeleteRelationship(id).build());
 		}
 		
 		if (members != null) {
 			changed |= updateComponents(context, concept, 
 					getPreviousMemberIds(concept, context), members, 
-					id -> SnomedRequests.prepareDeleteMember().setComponentId(id).build());
+					id -> SnomedRequests.prepareDeleteMember(id).build());
 		}
 		
 		changed |= processInactivation(context, concept);

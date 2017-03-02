@@ -18,11 +18,12 @@ package com.b2international.snowowl.terminologyregistry.core.request;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.request.TransactionalRequestBuilder;
 
 /**
  * @since 4.7
  */
-public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<CodeSystemUpdateRequestBuilder, TransactionContext, Void> {
+public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<CodeSystemUpdateRequestBuilder, TransactionContext, Void> implements TransactionalRequestBuilder<Void> {
 
 	private final String uniqueId;
 

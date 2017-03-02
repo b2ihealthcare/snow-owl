@@ -291,9 +291,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 
 			final Principal principal) {
 		
-		SnomedRequests
-			.prepareDeleteDescription()
-			.setComponentId(descriptionId)
+		SnomedRequests.prepareDeleteDescription(descriptionId)
 			.force(force)
 			.build(repositoryId, branchPath, principal.getName(), String.format("Deleted Description '%s' from store.", descriptionId))
 			.execute(bus)

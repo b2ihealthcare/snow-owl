@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
@@ -74,6 +75,22 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 
 	@Override
 	protected final Request<BranchContext, CommitResult> doBuild() {
+		return createTransactionalRequest();
+	}
+	
+	public AsyncRequest<CommitResult> build(String repositoryId, String branch) {
+		return new AsyncRequest<>(
+			new RepositoryRequest<>(repositoryId,
+				new BranchRequest<>(branch,
+					new RevisionIndexReadRequest<CommitResult>(
+						createTransactionalRequest()
+					)
+				)
+			)
+		);
+	}
+
+	protected final TransactionalRequest createTransactionalRequest() {
 		return new TransactionalRequest(userId, commitComment, body, preparationTime, parentContextDescription);
 	}
 	

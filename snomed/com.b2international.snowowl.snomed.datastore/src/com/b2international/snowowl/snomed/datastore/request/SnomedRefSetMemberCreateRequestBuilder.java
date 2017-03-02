@@ -22,11 +22,14 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.Requests;
+import com.b2international.snowowl.datastore.request.TransactionalRequestBuilder;
 
 /**
  * @since 4.5
  */
-public final class SnomedRefSetMemberCreateRequestBuilder extends BaseRequestBuilder<SnomedRefSetMemberCreateRequestBuilder, TransactionContext, String> {
+public final class SnomedRefSetMemberCreateRequestBuilder 
+		extends BaseRequestBuilder<SnomedRefSetMemberCreateRequestBuilder, TransactionContext, String>
+		implements TransactionalRequestBuilder<String> {
 
 	private Boolean active = Boolean.TRUE;
 	private String moduleId;
