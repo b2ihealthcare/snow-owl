@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.events;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.Serializable;
 
 import com.b2international.snowowl.core.ServiceProvider;
@@ -73,6 +75,7 @@ public interface Request<C extends ServiceProvider, R> extends Serializable {
 	@SuppressWarnings("unchecked")
 	default Class<R> getReturnType() {
 		final Class<?>[] types = TypeResolver.resolveRawArguments(Request.class, getClass());
+		checkState(TypeResolver.Unknown.class != types[1], "Couldn't resolve return type parameter for class %s", getClass().getSimpleName());
 		return (Class<R>) types[1];
 	}
 
