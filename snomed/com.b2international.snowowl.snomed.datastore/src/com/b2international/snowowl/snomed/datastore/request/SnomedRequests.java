@@ -109,7 +109,7 @@ public abstract class SnomedRequests {
 	}
 
 	private static DeleteRequestBuilder prepareDelete(String componentId, Class<? extends EObject> type) {
-		return new DeleteRequestBuilder(componentId, type);
+		return new SnomedDeleteRequestBuilder(componentId, type);
 	}
 	
 	public static DeleteRequestBuilder prepareDeleteMember(String memberId) {

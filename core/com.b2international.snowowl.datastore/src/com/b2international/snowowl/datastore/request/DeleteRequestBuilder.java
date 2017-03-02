@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.events.Request;
 /**
  * @since 4.5
  */
-public final class DeleteRequestBuilder extends BaseRequestBuilder<DeleteRequestBuilder, TransactionContext, Void> implements TransactionalRequestBuilder<Void> {
+public class DeleteRequestBuilder extends BaseRequestBuilder<DeleteRequestBuilder, TransactionContext, Void> implements TransactionalRequestBuilder<Void> {
 
 	private final String componentId;
 	private final Class<? extends EObject> type;
