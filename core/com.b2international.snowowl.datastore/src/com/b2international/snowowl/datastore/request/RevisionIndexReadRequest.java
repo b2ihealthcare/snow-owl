@@ -40,7 +40,7 @@ import com.b2international.snowowl.core.exceptions.IllegalQueryParameterExceptio
  */
 public final class RevisionIndexReadRequest<B> extends DelegatingRequest<BranchContext, BranchContext, B> {
 
-	RevisionIndexReadRequest(Request<BranchContext, B> next) {
+	public RevisionIndexReadRequest(Request<BranchContext, B> next) {
 		super(next);
 	}
 	
