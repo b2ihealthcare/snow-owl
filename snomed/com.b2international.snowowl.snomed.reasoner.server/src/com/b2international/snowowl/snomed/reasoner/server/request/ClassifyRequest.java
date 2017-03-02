@@ -34,6 +34,7 @@ import com.b2international.snowowl.snomed.reasoner.server.classification.Collect
 import com.b2international.snowowl.snomed.reasoner.server.classification.Reasoner;
 import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.reasoner.server.classification.SnomedReasonerServerService;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.7
@@ -44,6 +45,11 @@ public class ClassifyRequest implements Request<ServiceProvider, IStatus> {
 
 	public ClassifyRequest(ClassificationSettings settings) {
 		this.settings = settings;
+	}
+	
+	@JsonProperty
+	public ClassificationSettings getSettings() {
+		return settings;
 	}
 
 	@Override

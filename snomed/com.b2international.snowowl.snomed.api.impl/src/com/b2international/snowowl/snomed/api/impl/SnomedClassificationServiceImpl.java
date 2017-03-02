@@ -32,11 +32,11 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
+import org.eclipse.core.runtime.IStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.commons.status.SerializableStatus;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -81,10 +81,12 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 	
 	private final class PersistenceCompletionHandler implements IHandler<IMessage> {
 
+		private final String classificationJobId;
 		private final String persistenceJobId;
 
-		private PersistenceCompletionHandler(final String uuid) {
-			this.persistenceJobId = uuid;
+		private PersistenceCompletionHandler(final String classificationJobId, final String persistenceJobId) {
+			this.classificationJobId = classificationJobId;
+			this.persistenceJobId = persistenceJobId;
 		}
 
 		@Override
@@ -114,11 +116,13 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 						}
 
 						try {
-							final SerializableStatus result = remoteJob.getResultAs(SerializableStatus.class);
-							if (result.isOK()) {
-								indexService.updateClassificationRunStatus(persistenceJobId, ClassificationStatus.SAVED);
+							// FIXME
+							final Map<String, Object> result = remoteJob.getResultAs(Map.class);
+							
+							if ((int) result.get("severity") == IStatus.OK) {
+								indexService.updateClassificationRunStatus(classificationJobId, ClassificationStatus.SAVED);
 							} else {
-								indexService.updateClassificationRunStatus(persistenceJobId, ClassificationStatus.SAVE_FAILED);
+								indexService.updateClassificationRunStatus(classificationJobId, ClassificationStatus.SAVE_FAILED);
 							}
 						} catch (final IOException e) {
 							LOG.error("Caught IOException while updating classification status after save.", e);
@@ -157,7 +161,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 				for (RemoteJobEntry remoteJob : remoteJobs) {
 				
 					// FIXME
-					if (!remoteJob.getParameters().containsKey("settings")) { 
+					if (!"ClassifyRequest".equals(remoteJob.getParameters().get("type"))) { 
 						continue;
 					}
 					
@@ -458,7 +462,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 
 		if (Type.SUCCESS.equals(persistChanges.getType())) {
 			// Subscribe to change notifications
-			final PersistenceCompletionHandler handler = new PersistenceCompletionHandler(persistChanges.getJobId());
+			final PersistenceCompletionHandler handler = new PersistenceCompletionHandler(classificationId, persistChanges.getJobId());
 			getEventBus().registerHandler(SystemNotification.ADDRESS, handler);
 
 			// Start things with an artifical change notification
