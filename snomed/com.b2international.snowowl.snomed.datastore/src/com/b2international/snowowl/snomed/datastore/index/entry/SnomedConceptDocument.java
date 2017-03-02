@@ -285,6 +285,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			referencedComponentType = 0;
 			mapTargetComponentType = 0;
 			refSetStorageKey = CDOUtils.NO_STORAGE_KEY;
+			refSetType = null;
 			structural = false;
 			return getSelf();
 		}
