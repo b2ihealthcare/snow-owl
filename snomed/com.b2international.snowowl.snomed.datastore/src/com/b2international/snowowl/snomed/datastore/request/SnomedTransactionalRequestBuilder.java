@@ -13,28 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
-import com.b2international.snowowl.core.events.RequestBuilder;
+import com.b2international.snowowl.datastore.request.CommitResult;
+import com.b2international.snowowl.datastore.request.TransactionalRequestBuilder;
 
 /**
- * @since 5.7
- * @param <R>
+ * @since
  */
-public interface TransactionalRequestBuilder<R> extends RequestBuilder<TransactionContext, R> {
+public interface SnomedTransactionalRequestBuilder<R> extends TransactionalRequestBuilder<R> {
 
+	@Override
 	default AsyncRequest<CommitResult> build(String repositoryId, 
 			String branch, 
 			String userId,
 			String commitComment) {
 		
-		return new RepositoryCommitRequestBuilder()
+		return new SnomedRepositoryCommitRequestBuilder()
 				.setUserId(userId)
 				.setCommitComment(commitComment)
 				.setBody(build())
 				.build(repositoryId, branch);
 	}
-	
+
 }
