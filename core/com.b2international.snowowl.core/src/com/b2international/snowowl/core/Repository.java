@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core;
 
-import java.io.Closeable;
-
 import com.b2international.snowowl.core.events.Notifications;
 import com.b2international.snowowl.core.events.RepositoryEvent;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -26,7 +24,7 @@ import rx.Observable;
 /**
  * @since 4.5
  */
-public interface Repository extends ServiceProvider, Closeable {
+public interface Repository extends ServiceProvider, IDisposableService {
 
 	/**
 	 * Returns the ID of the repository.

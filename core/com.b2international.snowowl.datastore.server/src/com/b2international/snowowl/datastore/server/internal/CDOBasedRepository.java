@@ -280,7 +280,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void doDispose() {
 		getCdoRepository().getRepository().removeCommitInfoHandler(this);
 		getIndex().admin().close();
 	}
