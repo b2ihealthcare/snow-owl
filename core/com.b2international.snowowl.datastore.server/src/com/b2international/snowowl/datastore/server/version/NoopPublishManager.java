@@ -20,7 +20,6 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 
 import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.version.INoopPublishManager;
 
 /**
@@ -31,7 +30,7 @@ import com.b2international.snowowl.datastore.version.INoopPublishManager;
 public abstract class NoopPublishManager extends PublishManager implements INoopPublishManager {
 
 	@Override
-	protected LongSet getUnversionedComponentStorageKeys(IBranchPath branchPath) {
+	protected LongSet getUnversionedComponentStorageKeys(String branchPath) {
 		return LongCollections.emptySet();
 	}
 	
@@ -44,21 +43,5 @@ public abstract class NoopPublishManager extends PublishManager implements INoop
 	protected EStructuralFeature getReleasedFeature(EClass eClass) {
 		throw new UnsupportedOperationException();
 	}
-	
-	@Override
-	protected final void adjustComponents(final LongSet storageKeys) {
-		//intentionally ignored
-	}
-	
-	@Override
-	protected final void preProcess(final LongSet storageKeys) {
-		//intentionally ignored
-	}
-	
-	@Override
-	protected final void postProcess() {
-		//intentionally ignored
-	}
-	
 	
 }

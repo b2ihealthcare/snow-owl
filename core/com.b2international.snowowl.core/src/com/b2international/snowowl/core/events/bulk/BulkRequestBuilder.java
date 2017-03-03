@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableList.Builder;
 /**
  * @since 4.5
  */
-public class BulkRequestBuilder<C extends ServiceProvider> implements RequestBuilder<C, BulkResponse> {
+public final class BulkRequestBuilder<C extends ServiceProvider> implements RequestBuilder<C, BulkResponse> {
 	
 	private Builder<Request<C, ?>> requests = ImmutableList.builder();
 	

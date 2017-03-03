@@ -30,11 +30,6 @@
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob
-            class="com.b2international.snowowl.datastore.remotejobs.RemoteJobClientServiceConfigJob"
-            id="com.b2international.snowowl.datastore.remotejobs.RemoteJobClientServiceConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.datastore.version.VersionCompareServiceClientConfigJob"
             id="com.b2international.snowowl.datastore.version.VersionCompareServiceClientConfigJob"
             terminologyId="UNSPECIFIED">
@@ -52,11 +47,6 @@
       <serviceConfigJob
             class="com.b2international.snowowl.datastore.version.VersionCompareExporterServiceClientConfigJob"
             id="com.b2international.snowowl.datastore.version.VersionCompareExporterServiceClientConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.datastore.version.GlobalPublishClientConfigJob"
-            id="com.b2international.snowowl.datastore.version.GlobalPublishClientConfigJob"
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob
@@ -108,4 +98,11 @@
                class="com.b2international.snowowl.datastore.connection.RepositoryConnectionBootstrap">
          </bootstrapFragment>
       </extension>
+
+	<extension point="org.eclipse.emf.ecore.generated_package">
+      <package
+            uri="urn:com:b2international:snowowl:terminologymetadata:model"
+            class="com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage"
+            genModel="model/terminologymetadata.genmodel"/>
+	</extension>
 </plugin>

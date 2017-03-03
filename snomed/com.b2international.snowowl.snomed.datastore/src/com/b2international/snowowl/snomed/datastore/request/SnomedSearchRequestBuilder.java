@@ -25,25 +25,27 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequestBuilder;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
+import com.b2international.snowowl.datastore.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
 import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequest.OptionKey;
 
 /**
- * Abstract class for SNOMED CT search request builders. It collects functionality common to SNOMED CT artefacts.
+ * Abstract class for SNOMED CT search request builders. It collects functionality common to SNOMED CT components.
  * @since 4.5
  */
-public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBuilder<B, R>, R> extends RevisionSearchRequestBuilder<B, R> {
+public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBuilder<B, R>, R> 
+		extends SearchResourceRequestBuilder<B, BranchContext, R>
+		implements RevisionIndexRequestBuilder<R> {
 
 	/**
 	 * Filter to return components with the specified module id. 
 	 * Commonly used module IDs are listed in the {@link com.b2international.snowowl.snomed.Concepts} class.
 	 * 
 	 * @param moduleId
-	 * @return SnomedSearchRequestBuilder
-	 * @see Concepts
+	 * @return this builder
 	 */
 	public final B filterByModule(String moduleId) {
 		return addOption(OptionKey.MODULE, moduleId);
@@ -52,7 +54,7 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	/**
 	 * Filter to return components with the specified state (active/inactive)
 	 * @param active
-	 * @return SnomedSearchRequestBuilder
+	 * @return this builder
 	 */
 	public final B filterByActive(Boolean active) {
 		return addOption(OptionKey.ACTIVE, active);
@@ -64,7 +66,7 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	 * or {@link SnomedDescriptionSearchRequestBuilder#filterByTerm(String)} filters.
 	 * 
 	 * @param list of language refSet ids
-	 * @return SnomedSearchRequestBuilder
+	 * @return this builder
 	 * @see #filterByExtendedLocales(List)
 	 */
 	public final B filterByLanguageRefSetIds(List<String> languageRefSetIds) {
@@ -74,8 +76,8 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	/**
 	 * Filter to return components with the specified effective time represented as a string in yyyy-MM-dd format
 	 * @param effectiveTime in yyyy-MM-dd format.
-	 * @return SnomedSearchRequestBuilder
-	 * @see DateFormats#DEFAULT
+	 * @return this builder
+	 * @see DateFormats#SHORT
 	 * @see EffectiveTimes
 	 */
 	public final B filterByEffectiveTime(String effectiveTime) {
@@ -89,7 +91,7 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	/**
 	 * Filter to return components with the specified effective time represented as a long (ms since epoch) format.
 	 * @param effectiveTime in long (ms since epoch) format
-	 * @return SnomedSearchRequestBuilder
+	 * @return this builder
 	 * @see DateFormats#DEFAULT
 	 * @see EffectiveTimes
 	 * @see Date#Date(long)
@@ -104,7 +106,7 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	 * represented as longs (ms since epoch).
 	 * @param effectiveTime starting effective time in long (ms since epoch) format
 	 * @param effectiveTime ending effective time in long (ms since epoch) format
-	 * @return SnomedSearchRequestBuilder
+	 * @return this builder
 	 * @see DateFormats#DEFAULT
 	 * @see EffectiveTimes
 	 * @see Date#Date(long)
@@ -121,7 +123,7 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	 * or {@link SnomedDescriptionSearchRequestBuilder#filterByTerm(String)} filters.
 	 * 
 	 * @param languageRefSetIds
-	 * @return SnomedSearchRequestBuilder
+	 * @return this builder
 	 * @see #filterByLanguageRefSetIds(List)
 	 */
 	public final B filterByExtendedLocales(List<ExtendedLocale> locales) {

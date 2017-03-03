@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.server.internal;
 
 import java.util.Collection;
 
+import com.b2international.commons.CompositeClassLoader;
 import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.ClassLoaderProvider;
 import com.b2international.snowowl.datastore.server.RepositoryClassLoaderProvider;
@@ -41,6 +42,13 @@ public class ExtensionBasedRepositoryClassLoaderProviderRegistry implements Repo
 			}
 		}
 		throw new UnsupportedOperationException("No repository based class loader provider has been registered for repository: " + repositoryId); 
+	}
+	
+	@Override
+	public ClassLoader getClassLoader() {
+		final CompositeClassLoader classLoader = new CompositeClassLoader();
+		extensions.stream().map(RepositoryClassLoaderProvider::getClassLoader).forEach(classLoader::add);
+		return classLoader;
 	}
 
 }

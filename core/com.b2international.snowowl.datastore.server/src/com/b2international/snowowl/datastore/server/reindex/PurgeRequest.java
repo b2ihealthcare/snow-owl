@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ package com.b2international.snowowl.datastore.server.reindex;
 import com.b2international.index.revision.Purge;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 5.0
  */
-public class PurgeRequest extends BaseRequest<RepositoryContext, Boolean> {
+public final class PurgeRequest implements Request<RepositoryContext, Boolean> {
 
 	private String branchPath;
 	private Purge purge;
@@ -42,11 +42,6 @@ public class PurgeRequest extends BaseRequest<RepositoryContext, Boolean> {
 	public Boolean execute(RepositoryContext context) {
 		context.service(RevisionIndex.class).purge(branchPath, purge);
 		return Boolean.TRUE;
-	}
-
-	@Override
-	protected Class<Boolean> getReturnType() {
-		return Boolean.class;
 	}
 
 	public static PurgeRequestBuilder builder() {

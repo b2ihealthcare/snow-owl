@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.Requests;
 
@@ -28,7 +29,9 @@ import com.b2international.snowowl.core.events.Requests;
  * 
  * @since 4.5
  */
-public final class SnomedRefSetMemberCreateRequestBuilder extends BaseSnomedTransactionalRequestBuilder<SnomedRefSetMemberCreateRequestBuilder, String> {
+public final class SnomedRefSetMemberCreateRequestBuilder 
+		extends BaseRequestBuilder<SnomedRefSetMemberCreateRequestBuilder, TransactionContext, String>
+		implements SnomedTransactionalRequestBuilder<String> {
 
 	private Boolean active = Boolean.TRUE;
 	private String moduleId;

@@ -27,10 +27,10 @@ import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 
 /**
@@ -68,7 +68,7 @@ public class SnomedContentRule extends ExternalResource {
 			final IBranchPath parentBranchPath = BranchPathUtils.createPath(branchPath.substring(0, branchPath.lastIndexOf('/')));
 			final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
 			
-			SnomedRequests.branching().prepareCreate()
+			RepositoryRequests.branching().prepareCreate()
 				.setParent(parentBranchPath.getPath())
 				.setName(codeSystem.getShortName())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)

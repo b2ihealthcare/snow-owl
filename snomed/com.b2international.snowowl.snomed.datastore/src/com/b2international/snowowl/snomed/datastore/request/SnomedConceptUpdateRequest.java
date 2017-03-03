@@ -35,7 +35,15 @@ import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.*;
+import com.b2international.snowowl.snomed.core.domain.AssociationType;
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -43,12 +51,17 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.InactivationReason;
 import com.google.common.base.Strings;
-import com.google.common.collect.*;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 /**
  * @since 4.5
  */
-public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateRequest {
+public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateRequest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedConceptUpdateRequest.class);
 
@@ -115,19 +128,19 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 		if (descriptions != null) {
 			changed |= updateComponents(context, concept, 
 					getComponentIds(concept.getDescriptions()), descriptions, 
-					id -> SnomedRequests.prepareDeleteDescription().setComponentId(id).build());
+					id -> SnomedRequests.prepareDeleteDescription(id).build());
 		}
 		
 		if (relationships != null) {
 			changed |= updateComponents(context, concept, 
 					getComponentIds(concept.getOutboundRelationships()), relationships, 
-					id -> SnomedRequests.prepareDeleteRelationship().setComponentId(id).build());
+					id -> SnomedRequests.prepareDeleteRelationship(id).build());
 		}
 		
 		if (members != null) {
 			changed |= updateComponents(context, concept, 
 					getPreviousMemberIds(concept, context), members, 
-					id -> SnomedRequests.prepareDeleteMember().setComponentId(id).build());
+					id -> SnomedRequests.prepareDeleteMember(id).build());
 		}
 		
 		changed |= processInactivation(context, concept);
@@ -139,8 +152,7 @@ public final class SnomedConceptUpdateRequest extends BaseSnomedComponentUpdateR
 				if (concept.isReleased()) {
 					long start = new Date().getTime();
 					final String branchPath = getLatestReleaseBranch(context);
-					final SnomedConcept releasedConcept = SnomedRequests.prepareGetConcept()
-							.setComponentId(getComponentId())
+					final SnomedConcept releasedConcept = SnomedRequests.prepareGetConcept(getComponentId())
 							.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 							.execute(context.service(IEventBus.class))
 							.getSync();

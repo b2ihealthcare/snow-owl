@@ -17,6 +17,8 @@ package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.events.metrics.Metrics;
@@ -27,7 +29,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
  * 
  * @since 4.5
  */
-public class RepositoryCommitRequestBuilder extends BaseBranchRequestBuilder<RepositoryCommitRequestBuilder, CommitResult> {
+public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<RepositoryCommitRequestBuilder, BranchContext, CommitResult> {
 
 	private String userId;
 	private String commitComment = "";
@@ -76,9 +78,16 @@ public class RepositoryCommitRequestBuilder extends BaseBranchRequestBuilder<Rep
 		return new TransactionalRequest(userId, commitComment, body, preparationTime, parentContextDescription);
 	}
 	
-	@Override
-	protected Request<BranchContext, CommitResult> extend(Request<BranchContext, CommitResult> req) {
-		return super.extend(new RevisionIndexReadRequest<>(req));
+	public AsyncRequest<CommitResult> build(String repositoryId, String branch) {
+		return new AsyncRequest<>(
+			new RepositoryRequest<>(repositoryId,
+				new BranchRequest<>(branch,
+					new RevisionIndexReadRequest<CommitResult>(
+						build()
+					)
+				)
+			)
+		);
 	}
-
+	
 }

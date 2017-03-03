@@ -318,7 +318,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 					final SnomedConcepts descendants = SnomedRequests.prepareSearchConcept()
 							.all()
 							.filterByActive(true)
-							.setComponentIds(componentIds)
+							.filterByIds(componentIds)
 							.setLocales(locales())
 							.setExpand(expandOptions.get("expand", Options.class))
 							.build().execute(context());
@@ -398,7 +398,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 				final SnomedConcepts ancestors = SnomedRequests.prepareSearchConcept()
 						.all()
 						.filterByActive(true)
-						.setComponentIds(componentIds)
+						.filterByIds(componentIds)
 						.setLocales(locales())
 						.setExpand(expandOptions.get("expand", Options.class))
 						.build().execute(context());

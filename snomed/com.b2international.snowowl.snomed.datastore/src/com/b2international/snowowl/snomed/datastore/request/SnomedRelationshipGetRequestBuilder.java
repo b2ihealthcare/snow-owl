@@ -15,8 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.datastore.request.RevisionGetRequest;
-import com.b2international.snowowl.datastore.request.RevisionGetRequestBuilder;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.request.GetResourceRequestBuilder;
+import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 
 /**
@@ -25,15 +26,12 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
  * 
  * @since 4.5
  */
-public final class SnomedRelationshipGetRequestBuilder extends RevisionGetRequestBuilder<SnomedRelationshipGetRequestBuilder, SnomedRelationship> {
+public final class SnomedRelationshipGetRequestBuilder 
+		extends GetResourceRequestBuilder<SnomedRelationshipGetRequestBuilder, SnomedRelationshipSearchRequestBuilder, BranchContext, SnomedRelationship>
+		implements RevisionIndexRequestBuilder<SnomedRelationship> {
 
-	SnomedRelationshipGetRequestBuilder() {
-		super();
-	}
-	
-	@Override
-	protected RevisionGetRequest<SnomedRelationship> createGet() {
-		return new SnomedRelationshipGetRequest();
+	SnomedRelationshipGetRequestBuilder(String relationshipId) {
+		super(SnomedRelationship.class, relationshipId, SnomedRelationshipSearchRequestBuilder::new);
 	}
 	
 }

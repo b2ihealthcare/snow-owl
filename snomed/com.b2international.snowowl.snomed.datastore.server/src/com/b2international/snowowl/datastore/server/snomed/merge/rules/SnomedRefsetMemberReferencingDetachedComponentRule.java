@@ -108,7 +108,7 @@ public class SnomedRefsetMemberReferencingDetachedComponentRule extends Abstract
 
 			conceptIds.addAll(FluentIterable
 					.from(SnomedRequests.prepareSearchConcept()
-							.setComponentIds(referencedComponentIds)
+							.filterByIds(referencedComponentIds)
 							.setLimit(referencedComponentIds.size())
 							.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 							.execute(getEventBus())
@@ -116,7 +116,7 @@ public class SnomedRefsetMemberReferencingDetachedComponentRule extends Abstract
 
 			descriptionIds.addAll(FluentIterable
 					.from(SnomedRequests.prepareSearchDescription()
-							.setComponentIds(referencedComponentIds)
+							.filterByIds(referencedComponentIds)
 							.setLimit(referencedComponentIds.size())
 							.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 							.execute(getEventBus())
@@ -124,7 +124,7 @@ public class SnomedRefsetMemberReferencingDetachedComponentRule extends Abstract
 
 			relationshipIds.addAll(FluentIterable
 					.from(SnomedRequests.prepareSearchRelationship()
-							.setComponentIds(referencedComponentIds)
+							.filterByIds(referencedComponentIds)
 							.setLimit(referencedComponentIds.size())
 							.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 							.execute(getEventBus())

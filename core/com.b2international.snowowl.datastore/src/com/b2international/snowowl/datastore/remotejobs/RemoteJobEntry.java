@@ -15,79 +15,214 @@
  */
 package com.b2international.snowowl.datastore.remotejobs;
 
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.match;
+import static com.b2international.index.query.Expressions.matchAny;
+
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
-import java.util.UUID;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
-import com.b2international.commons.beans.BeanPropertyChangeSupporter;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.Dates;
+import com.b2international.commons.ClassUtils;
+import com.b2international.index.Doc;
+import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.query.Expression;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
-/**
- */
-public class RemoteJobEntry extends BeanPropertyChangeSupporter implements Serializable {
-
-	public static final String PROP_DESCRIPTION = "description";
-	public static final String PROP_COMPLETION_LEVEL = "completionLevel";
-	public static final String PROP_START_DATE = "startDate";
-	public static final String PROP_STATE = "state";
+@Doc(type = "job")
+@JsonDeserialize(builder=RemoteJobEntry.Builder.class)
+public final class RemoteJobEntry implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	private static final Set<RemoteJobState> DONE_STATES = ImmutableSet.of(RemoteJobState.FINISHED, RemoteJobState.FAILED, RemoteJobState.CANCELED);
 
 	public static final int MIN_COMPLETION_LEVEL = 0;
 	public static final int MAX_COMPLETION_LEVEL = 100;
 
-	private final UUID id;
+	public static class Fields {
+		public static final String ID = "id";
+		public static final String DELETED = "deleted";
+		public static final String USER = "user";
+		public static final String STATE = "state";
+	}
 	
-	private String description;
-	private String requestingUserId;
-	private Date scheduleDate;
-	private @Nullable Date startDate;
-	private @Nullable Date finishDate;
-	private RemoteJobState state;
-	private int completionLevel;
-	private @Nullable String userCommandId;
+	public static class Expressions {
+		public static Expression id(String id) {
+			return DocumentMapping.matchId(id);
+		}
 
-	public RemoteJobEntry(final UUID id, final String description, final String requestingUserId) {
-		this(id, description, requestingUserId, null);
+		public static Expression ids(Collection<String> ids) {
+			return matchAny(DocumentMapping._ID, ids);
+		}
+		
+		public static Expression deleted(boolean deleted) {
+			return match(Fields.DELETED, deleted);
+		}
+		
+		public static Expression user(String user) {
+			return exactMatch(Fields.USER, user);
+		}
+
+		public static Expression done() {
+			return matchAny(Fields.STATE, DONE_STATES.stream().map(Enum::name).collect(Collectors.toSet()));
+		}
+		
 	}
 	
-	public RemoteJobEntry(final UUID id, final String description, final String requestingUserId, final String userCommandId) {
-		this(id, description, requestingUserId, new Date(), null, RemoteJobState.SCHEDULED, 0, userCommandId);
+	public static RemoteJobEntry.Builder from(RemoteJobEntry from) {
+		return builder()
+				.id(from.getId())
+				.description(from.getDescription())
+				.user(from.getUser())
+				.scheduleDate(from.getScheduleDate())
+				.startDate(from.getStartDate())
+				.finishDate(from.getFinishDate())
+				.state(from.getState())
+				.completionLevel(from.getCompletionLevel())
+				.parameters(from.getParameters())
+				.result(from.getResult())
+				.deleted(from.isDeleted());
 	}
 	
-	private RemoteJobEntry(final UUID id, final String description, final String requestingUserId, 
+	public static RemoteJobEntry.Builder builder() {
+		return new Builder();
+	}
+
+	@JsonPOJOBuilder(withPrefix="")
+	public static class Builder {
+
+		private String id;
+		private String description;
+		private String user;
+		private Date scheduleDate;
+		private Date startDate;
+		private Date finishDate;
+		private RemoteJobState state = RemoteJobState.SCHEDULED;
+		private int completionLevel = MIN_COMPLETION_LEVEL;
+		private boolean deleted;
+		private Map<String, Object> parameters;
+		private Object result;
+		
+		@JsonCreator
+		private Builder() {
+		}
+		
+		public Builder id(String id) {
+			this.id = id;
+			return this;
+		}
+		
+		public Builder description(String description) {
+			this.description = description;
+			return this;
+		}
+		
+		public Builder user(String user) {
+			this.user = user;
+			return this;
+		}
+		
+		public Builder scheduleDate(Date scheduleDate) {
+			this.scheduleDate = scheduleDate;
+			return this; 
+		}
+		
+		public Builder startDate(Date startDate) {
+			this.startDate = startDate;
+			return this;
+		}
+		
+		public Builder finishDate(Date finishDate) {
+			this.finishDate = finishDate;
+			return this;
+		}
+		
+		public Builder state(RemoteJobState state) {
+			this.state = state;
+			return this;
+		}
+		
+		public Builder completionLevel(int completionLevel) {
+			this.completionLevel = completionLevel;
+			return this;
+		}
+
+		public Builder deleted(boolean deleted) {
+			this.deleted = deleted;
+			return this;
+		}
+		
+		public Builder result(Object result) {
+			this.result = result;
+			return this;
+		}
+		
+		public Builder parameters(Map<String, Object> parameters) {
+			this.parameters = parameters;
+			return this;
+		}
+		
+		public RemoteJobEntry build() {
+			return new RemoteJobEntry(id, description, user, scheduleDate, startDate, finishDate, state, completionLevel, deleted, result, parameters);
+		}
+		
+	}
+	
+
+	private final String id;
+	private final String description;
+	private final String user;
+	private final Date scheduleDate;
+	private final Date startDate;
+	private final Date finishDate;
+	private final RemoteJobState state;
+	private final int completionLevel;
+	private final Object result;
+	private final boolean deleted;
+	private final Map<String, Object> parameters;
+
+	private RemoteJobEntry(
+			final String id, 
+			final String description, 
+			final String user, 
 			final Date scheduleDate, 
-			final @Nullable Date startDate, 
+			final Date startDate,
+			final Date finishDate, 
 			final RemoteJobState state, 
-			final int completionLevel, 
-			final @Nullable String userCommandId) {
+			final int completionLevel,
+			final boolean deleted,
+			final Object result,
+			final Map<String, Object> parameters) {
 		
 		Preconditions.checkNotNull(id, "Remote job identifier may not be null.");
 		Preconditions.checkNotNull(description, "Description may not be null.");
-		Preconditions.checkNotNull(requestingUserId, "Requesting user identifier not be null.");
+		Preconditions.checkNotNull(user, "Requesting user identifier not be null.");
 		Preconditions.checkNotNull(scheduleDate, "Scheduling date may not be null.");
 		Preconditions.checkNotNull(state, "Remote job state may not be null.");
 		
 		this.id = id;
 		this.description = description;
-		this.requestingUserId = requestingUserId;
+		this.user = user;
 		this.scheduleDate = scheduleDate;
 		this.startDate = startDate;
+		this.finishDate = finishDate;
 		this.state = state;
-		this.completionLevel = limitLevel(completionLevel);
-		this.userCommandId = userCommandId;
+		this.completionLevel = completionLevel;
+		this.deleted = deleted;
+		this.result = result;
+		this.parameters = parameters;
 	}
 
-	private int limitLevel(final int completionLevel) {
-		return Math.max(MIN_COMPLETION_LEVEL, Math.min(MAX_COMPLETION_LEVEL, completionLevel));
-	}
-	
-	public UUID getId() {
+	public String getId() {
 		return id;
 	}
 
@@ -95,82 +230,108 @@ public class RemoteJobEntry extends BeanPropertyChangeSupporter implements Seria
 		return description;
 	}
 	
-	public String getRequestingUserId() {
-		return requestingUserId;
+	public String getUser() {
+		return user;
 	}
 
 	public Date getScheduleDate() {
 		return scheduleDate;
 	}
 	
-	public String getFormattedScheduleDate() {
-		return getScheduleDate() == null ? "Unknown" : Dates.formatByHostTimeZone(getScheduleDate(), DateFormats.MEDIUM);
-	}
-	
-	public @Nullable Date getStartDate() {
+	public Date getStartDate() {
 		return startDate;
 	}
 	
-	public String getFormattedStartDate() {
-		return getStartDate() == null ? "" : Dates.formatByHostTimeZone(getStartDate(), DateFormats.MEDIUM);
-	}
-	
-	public @Nullable Date getFinishDate() {
+	public Date getFinishDate() {
 		return finishDate;
-	}
-	
-	public String getFormattedFinishDate() {
-		return getFinishDate() == null ? "N/A" : Dates.formatByHostTimeZone(getFinishDate(), DateFormats.MEDIUM);
 	}
 	
 	public RemoteJobState getState() {
 		return state;
 	}
 	
-	public int getCompletionPercent() {
+	public int getCompletionLevel() {
 		return completionLevel;
 	}
 
-	public String getUserCommandId() {
-		return userCommandId;
-	}
-
-	public void setCompletionLevel(final int newCompletionLevel) {
-		final int oldCompletionLevel = completionLevel;
-		final int limitedNewCompletionLevel = limitLevel(newCompletionLevel);
-		if (limitedNewCompletionLevel > completionLevel) {
-			completionLevel = limitedNewCompletionLevel;
-			firePropertyChange(PROP_COMPLETION_LEVEL, oldCompletionLevel, limitedNewCompletionLevel);
-		}
+	public boolean isDeleted() {
+		return deleted;
 	}
 	
-	public void setStartDate(final Date newStartDate) {
-		if (dateSetFirst(startDate, newStartDate)) {
-			final Date oldStartDate = startDate;
-			startDate = newStartDate;
-			firePropertyChange(PROP_START_DATE, oldStartDate, newStartDate);
-		}
+	public Map<String, Object> getParameters() {
+		return parameters;
 	}
+	
+	public Object getResult() {
+		return result;
+	}
+	
+	public <T> T getResultAs(Class<T> type) {
+		return ClassUtils.checkAndCast(result, type);
+	}
+	
+	// Frequently used domain specific methods
 
-	public void setState(final RemoteJobState newState) {
-		if (newState.compareTo(state) > 0) {
-			final RemoteJobState oldState = state;
-			state = newState;
-			firePropertyChange(PROP_STATE, oldState, newState);
-		}
+	@JsonIgnore
+	public boolean isDone() {
+		return DONE_STATES.contains(getState());
 	}
+	
+	@JsonIgnore
+	public boolean isCancelled() {
+		return getState().oneOf(RemoteJobState.CANCELED, RemoteJobState.CANCEL_REQUESTED);
+	}
+	
+//	public String getFormattedScheduleDate() {
+//		return getScheduleDate() == null ? "Unknown" : Dates.formatByHostTimeZone(getScheduleDate(), DateFormats.MEDIUM);
+//	}
+	
+//	public String getFormattedStartDate() {
+//		return getStartDate() == null ? "" : Dates.formatByHostTimeZone(getStartDate(), DateFormats.MEDIUM);
+//	}
+	
+//	public String getFormattedFinishDate() {
+//		return getFinishDate() == null ? "N/A" : Dates.formatByHostTimeZone(getFinishDate(), DateFormats.MEDIUM);
+//	}
+
+//	@JsonIgnore
+//	public void setCompletionPercent(final int newCompletionPercent) {
+//		final int limitedNewCompletionLevel = limitLevel(newCompletionPercent);
+//		if (limitedNewCompletionLevel > completionLevel) {
+//			completionLevel = limitedNewCompletionLevel;
+//		}
+//	}
+	
+//	public void setStartDate(final Date newStartDate) {
+//		this.startDate = newStartDate;
+//	}
+
+//	public void setState(final RemoteJobState newState) {
+//		this.state = newState;
+//	}
 	
 	// XXX (apeteri): this setter does not broadcast notifications
-	public void setFinishDate(final Date newFinishDate) {
-		if (dateSetFirst(finishDate, newFinishDate)) {
-			finishDate = newFinishDate;
-		}
-	}
+//	public void setFinishDate(final Date newFinishDate) {
+//		if (dateSetFirst(finishDate, newFinishDate)) {
+//			finishDate = newFinishDate;
+//		}
+//	}
 
-	private boolean dateSetFirst(final Date oldStartDate, final Date newStartDate) {
-		return null == oldStartDate && null != newStartDate;
-	}
-
+//	private boolean dateSetFirst(final Date oldStartDate, final Date newStartDate) {
+//		return null == oldStartDate && null != newStartDate;
+//	}
+	
+	/**
+	 * Cancels this job entry by setting its state to CANCEL_REQUESTED and its finish date to now.
+	 */
+//	public void cancel() {
+//		setState(RemoteJobState.CANCEL_REQUESTED);
+//		setFinishDate(new Date());
+//	}
+	
+//	private int limitLevel(final int completionLevel) {
+//		return Math.max(MIN_COMPLETION_LEVEL, Math.min(MAX_COMPLETION_LEVEL, completionLevel));
+//	}
 
 	@Override
 	public int hashCode() {
@@ -200,13 +361,16 @@ public class RemoteJobEntry extends BeanPropertyChangeSupporter implements Seria
 		return Objects.toStringHelper(this)
 				.add("id", id)
 				.add("description", description)
-				.add("requestingUserId", requestingUserId)
+				.add("user", user)
 				.add("scheduleDate", scheduleDate)
 				.add("startDate", startDate)
 				.add("finishDate", finishDate)
 				.add("state", state)
+				.add("deleted", deleted)
 				.add("completionLevel", completionLevel)
-				.add("userCommandId", userCommandId)
+				.add("result", result)
+				.add("parameters", parameters)
 				.toString();
 	}
+
 }

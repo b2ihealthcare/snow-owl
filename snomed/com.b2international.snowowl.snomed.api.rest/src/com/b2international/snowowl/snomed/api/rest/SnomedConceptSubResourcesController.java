@@ -273,8 +273,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			@RequestParam(value="form", defaultValue="inferred", required=false)
 			final String form) {
 	
-		return DeferredResults.wrap(SnomedRequests.prepareGetConcept()
-				.setComponentId(conceptId)
+		return DeferredResults.wrap(SnomedRequests.prepareGetConcept(conceptId)
 				.setExpand(String.format("descendants(form:\"%s\",direct:%s,offset:%d,limit:%d)", form, direct, offset, limit))
 				.build(repositoryId, branchPath)
 				.execute(bus)
@@ -322,8 +321,7 @@ public class SnomedConceptSubResourcesController extends AbstractSnomedRestServi
 			@RequestParam(value="form", defaultValue="inferred", required=false)
 			final String form) {
 
-		return DeferredResults.wrap(SnomedRequests.prepareGetConcept()
-				.setComponentId(conceptId)
+		return DeferredResults.wrap(SnomedRequests.prepareGetConcept(conceptId)
 				.setExpand(String.format("ancestors(form:\"%s\",direct:%s,offset:%d,limit:%d)", form, direct, offset, limit))
 				.build(repositoryId, branchPath)
 				.execute(bus)

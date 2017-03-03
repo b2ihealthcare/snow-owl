@@ -34,12 +34,12 @@ import org.springframework.web.context.request.async.DeferredResult;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeCollection;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.MergeRestRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -70,7 +70,7 @@ public class SnomedBranchMergingController extends AbstractRestService {
 	public ResponseEntity<Void> createMerge(@RequestBody MergeRestRequest restRequest) {
 		ApiValidation.checkInput(restRequest);
 		
-		final Merge merge = SnomedRequests.merging()
+		final Merge merge = RepositoryRequests.merging()
 			.prepareCreate()
 			.setSource(restRequest.getSource())
 			.setTarget(restRequest.getTarget())
@@ -94,7 +94,7 @@ public class SnomedBranchMergingController extends AbstractRestService {
 		})
 	@RequestMapping(method = RequestMethod.GET, value="/{id}")
 	public DeferredResult<Merge> getMerge(@PathVariable("id") UUID id) {
-		return DeferredResults.wrap(SnomedRequests.merging().prepareGet(id).build(repositoryId).execute(bus));
+		return DeferredResults.wrap(RepositoryRequests.merging().prepareGet(id).build(repositoryId).execute(bus));
 	}
 	
 	@ApiOperation(
@@ -118,7 +118,7 @@ public class SnomedBranchMergingController extends AbstractRestService {
 			@RequestParam(value="status", required = false) 
 			final Merge.Status status) {
 		
-		 return DeferredResults.wrap(SnomedRequests.merging()
+		 return DeferredResults.wrap(RepositoryRequests.merging()
 				.prepareSearch()
 				.withSource(source)
 				.withTarget(target)
@@ -137,7 +137,7 @@ public class SnomedBranchMergingController extends AbstractRestService {
 	@RequestMapping(method=RequestMethod.DELETE, value="/{id}")
 	public DeferredResult<ResponseEntity<Void>> deleteMerge(@PathVariable("id") UUID id) {
 		return DeferredResults.wrap(
-				SnomedRequests.merging()
+				RepositoryRequests.merging()
 					.prepareDelete(id)
 					.build(repositoryId)
 					.execute(bus),

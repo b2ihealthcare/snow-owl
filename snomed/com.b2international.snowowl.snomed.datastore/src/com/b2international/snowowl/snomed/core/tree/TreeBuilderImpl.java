@@ -157,7 +157,7 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 		}
 		return SnomedRequests.prepareSearchConcept()
 				.all()
-				.setComponentIds(ImmutableSet.copyOf(componentIds))
+				.filterByIds(ImmutableSet.copyOf(componentIds))
 				.setLocales(getLocales())
 				.setExpand("pt(),parentIds(),ancestorIds()")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
@@ -167,8 +167,7 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 	}
 
 	private List<SnomedConceptDocument> getDefaultTopLevelConcepts(final String branch) {
-		final SnomedConcept root = SnomedRequests.prepareGetConcept()
-				.setComponentId(Concepts.ROOT_CONCEPT)
+		final SnomedConcept root = SnomedRequests.prepareGetConcept(Concepts.ROOT_CONCEPT)
 				.setExpand(String.format("pt(),descendants(form:\"%s\",direct:true,expand(pt()))", getForm()))
 				.setLocales(getLocales())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)

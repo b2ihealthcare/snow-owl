@@ -35,9 +35,4 @@ public final class ReadConceptChangesRequest extends ReviewRequest<ConceptChange
 		return context.service(ReviewManager.class).getConceptChanges(getReviewId());
 	}
 
-	@Override
-	protected Class<ConceptChanges> getReturnType() {
-		return ConceptChanges.class;
-	}
-	
 }

@@ -15,8 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.datastore.request.RevisionGetRequest;
-import com.b2international.snowowl.datastore.request.RevisionGetRequestBuilder;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.request.GetResourceRequestBuilder;
+import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 
 /**
@@ -25,15 +26,12 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
  * 
  * @since 4.5
  */
-public final class SnomedConceptGetRequestBuilder extends RevisionGetRequestBuilder<SnomedConceptGetRequestBuilder, SnomedConcept> {
+public final class SnomedConceptGetRequestBuilder 
+		extends GetResourceRequestBuilder<SnomedConceptGetRequestBuilder, SnomedConceptSearchRequestBuilder, BranchContext, SnomedConcept>
+		implements RevisionIndexRequestBuilder<SnomedConcept> {
 
-	SnomedConceptGetRequestBuilder() {
-		super();
+	SnomedConceptGetRequestBuilder(String conceptId) {
+		super(SnomedConcept.class, conceptId, SnomedConceptSearchRequestBuilder::new);
 	}
 
-	@Override
-	protected RevisionGetRequest<SnomedConcept> createGet() {
-		return new SnomedConceptGetRequest();
-	}
-	
 }

@@ -55,7 +55,7 @@ public final class TestBranchContext extends DelegatingServiceProvider implement
 	}
 	
 	@Override
-	public RepositoryContext get(ServiceProvider context, String repositoryId) {
+	public RepositoryContext get(String repositoryId) {
 		return this;
 	}
 	

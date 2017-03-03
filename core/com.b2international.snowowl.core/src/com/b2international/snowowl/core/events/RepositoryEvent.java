@@ -20,15 +20,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * @since 4.5
  */
-public abstract class RepositoryEvent extends BaseEvent {
+public abstract class RepositoryEvent extends SystemNotification {
 
 	private static final long serialVersionUID = 1L;
 	
-	/**
-	 * Notification address where subclasses of this {@link RepositoryEvent} will be sent. Use the unique repository identifier to complete this
-	 * template.
-	 */
-	public static final String ADDRESS_TEMPLATE = "/%s/notifications";
 	private final String repositoryId;
 
 	protected RepositoryEvent(final String repositoryId) {
@@ -37,11 +32,6 @@ public abstract class RepositoryEvent extends BaseEvent {
 
 	public final String getRepositoryId() {
 		return repositoryId;
-	}
-
-	@Override
-	protected final String getAddress() {
-		return String.format(ADDRESS_TEMPLATE, repositoryId);
 	}
 
 }

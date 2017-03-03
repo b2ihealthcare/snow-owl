@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.emf.cdo.CDOObject;
@@ -111,7 +110,7 @@ public class SnomedRefSetMemberLookupService extends AbstractLookupService<Strin
 	public SnomedRefSetMemberIndexEntry getComponent(final IBranchPath branchPath, final String uuid) {
 		return SnomedRequests.prepareSearchMember()
 				.setLimit(2)
-				.setComponentIds(Collections.singleton(uuid))
+				.filterById(uuid)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedReferenceSetMembers, SnomedRefSetMemberIndexEntry>() {

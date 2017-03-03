@@ -18,14 +18,14 @@ package com.b2international.snowowl.snomed.datastore.request;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 
 /**
  * @since 4.5
  */
-public final class QueryRefSetUpdateRequest extends BaseRequest<TransactionContext, Void> {
+public final class QueryRefSetUpdateRequest implements Request<TransactionContext, Void> {
 
 	@NotEmpty
 	private final String referenceSetId;
@@ -48,11 +48,6 @@ public final class QueryRefSetUpdateRequest extends BaseRequest<TransactionConte
 			SnomedRequests.prepareUpdateQueryRefSetMember().setMemberId(member.getId()).setModuleId(moduleId).build().execute(context);
 		}
 		return null;
-	}
-
-	@Override
-	protected Class<Void> getReturnType() {
-		return Void.class;
 	}
 
 }

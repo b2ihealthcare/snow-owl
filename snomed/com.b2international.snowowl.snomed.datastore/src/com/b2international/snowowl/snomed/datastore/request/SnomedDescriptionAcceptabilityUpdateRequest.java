@@ -31,7 +31,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -42,7 +42,6 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -55,7 +54,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 4.5
  */
-final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseRequest<TransactionContext, Void> {
+final class SnomedDescriptionAcceptabilityUpdateRequest implements Request<TransactionContext, Void> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedDescriptionAcceptabilityUpdateRequest.class);
 	
@@ -88,11 +87,6 @@ final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseRequest<Tran
 		}
 	}
 
-	@Override
-	protected Class<Void> getReturnType() {
-		return Void.class;
-	}
-	
 	public void setDescriptionId(String descriptionId) {
 		this.descriptionId = descriptionId;
 	}
@@ -187,9 +181,8 @@ final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseRequest<Tran
 		
 		if (existingMember.isReleased()) {
 			
-			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember()
-					.setComponentId(existingMember.getUuid())
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID, referenceBranch)
+			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember(existingMember.getUuid())
+					.build(context.id(), referenceBranch)
 					.execute(context.service(IEventBus.class))
 					.getSync();
 

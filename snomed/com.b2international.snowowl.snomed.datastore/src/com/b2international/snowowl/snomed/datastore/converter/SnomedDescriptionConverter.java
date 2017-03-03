@@ -31,9 +31,8 @@ import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -130,8 +129,8 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 	private Map<String, SnomedConcept> getConceptMap(final Options expandOptions, final Set<String> conceptIds) {
 		final SnomedConcepts types = SnomedRequests
 			.prepareSearchConcept()
+			.filterByIds(conceptIds)
 			.setLimit(conceptIds.size())
-			.setComponentIds(conceptIds)
 			.setLocales(locales())
 			.setExpand(expandOptions.get("expand", Options.class))
 			.build()

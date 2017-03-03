@@ -108,7 +108,7 @@ public class BranchManagerTest {
 		when(repositoryContext.service(ReviewManager.class)).thenReturn(reviewManager);
 		when(repositoryContext.service(BranchManager.class)).thenReturn(manager);
 		
-		when(repositoryContextProvider.get(context, "")).thenReturn(repositoryContext);
+		when(repositoryContextProvider.get("")).thenReturn(repositoryContext);
 		when(context.service(RepositoryContextProvider.class)).thenReturn(repositoryContextProvider);
 	}
 	

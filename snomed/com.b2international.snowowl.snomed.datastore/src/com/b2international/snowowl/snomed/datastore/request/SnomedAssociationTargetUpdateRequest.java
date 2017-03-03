@@ -26,7 +26,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -85,7 +85,7 @@ import com.google.common.collect.Multimap;
  * @param <C> the type of the component to update (must implement {@link Inactivatable} and {@link Component})
  * @since 4.5
  */
-final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Component> extends BaseRequest<TransactionContext, Void> {
+final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Component> implements Request<TransactionContext, Void> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedAssociationTargetUpdateRequest.class);
 
@@ -112,11 +112,6 @@ final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Compo
 
 	void setNewAssociationTargets(final Multimap<AssociationType, String> newAssociationTargets) {
 		this.newAssociationTargets = newAssociationTargets;
-	}
-
-	@Override
-	protected Class<Void> getReturnType() {
-		return Void.class;
 	}
 
 	@Override
@@ -242,8 +237,7 @@ final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Compo
 		if (existingMember.isReleased()) {
 			
 			// The most recently versioned representation should always exist if the member has already been released once
-			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember()
-					.setComponentId(existingMember.getUuid())
+			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember(existingMember.getUuid())
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, referenceBranch)
 					.execute(context.service(IEventBus.class))
 					.getSync();

@@ -18,22 +18,17 @@ package com.b2international.snowowl.datastore.events;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.1
  */
-public final class SearchBranchRequest extends BaseRequest<RepositoryContext, Branches> {
+public final class SearchBranchRequest implements Request<RepositoryContext, Branches> {
 
 	@Override
 	public Branches execute(RepositoryContext context) {
 		return new Branches(ImmutableList.copyOf(context.service(BranchManager.class).getBranches()));
 	}
 
-	@Override
-	protected Class<Branches> getReturnType() {
-		return Branches.class;
-	}
-	
 }

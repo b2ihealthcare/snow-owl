@@ -10,7 +10,7 @@ import java.util.Set;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponentWithId;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConceptUpdate;
-import com.b2international.snowowl.snomed.datastore.request.BaseSnomedComponentUpdateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedComponentUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedComponentCreateRequest;
 import com.google.common.collect.Sets;
 
@@ -40,11 +40,11 @@ public class InputFactory {
 		return inputs;
 	}
 
-	public <U extends BaseSnomedComponentUpdateRequest> U createComponentUpdate(ISnomedBrowserConcept existingVersion, ISnomedBrowserConceptUpdate newVersion, Class<U> updateType) {
+	public <U extends SnomedComponentUpdateRequest> U createComponentUpdate(ISnomedBrowserConcept existingVersion, ISnomedBrowserConceptUpdate newVersion, Class<U> updateType) {
 		return updateType.cast(getUpdateDelegate(updateType).createUpdate(existingVersion, newVersion));
 	}
 
-	public <U extends BaseSnomedComponentUpdateRequest> Map<String, U> createComponentUpdates(
+	public <U extends SnomedComponentUpdateRequest> Map<String, U> createComponentUpdates(
 			List<? extends ISnomedBrowserComponentWithId> existingVersions,
 			List<? extends ISnomedBrowserComponentWithId> newVersions, Class<U> updateType) {
 
@@ -75,7 +75,7 @@ public class InputFactory {
 		return ids;
 	}
 
-	private <I extends SnomedComponentCreateRequest> ComponentInputCreator<I, BaseSnomedComponentUpdateRequest, ISnomedBrowserComponentWithId> getInputDelegate(Class<I> inputType) {
+	private <I extends SnomedComponentCreateRequest> ComponentInputCreator<I, SnomedComponentUpdateRequest, ISnomedBrowserComponentWithId> getInputDelegate(Class<I> inputType) {
 		for (ComponentInputCreator creator : creators) {
 			if (creator.canCreateInput(inputType)) {
 				return creator;
@@ -84,7 +84,7 @@ public class InputFactory {
 		throw new RuntimeException("No ComponentInputCreator found for input type " + inputType);
 	}
 
-	private <U extends BaseSnomedComponentUpdateRequest> ComponentInputCreator getUpdateDelegate(Class<U> updateType) {
+	private <U extends SnomedComponentUpdateRequest> ComponentInputCreator getUpdateDelegate(Class<U> updateType) {
 		for (ComponentInputCreator creator : creators) {
 			if (creator.canCreateUpdate(updateType)) {
 				return creator;

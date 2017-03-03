@@ -202,8 +202,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		}
 		
 		return DeferredResults.wrap(SnomedRequests
-				.prepareGetMember()
-				.setComponentId(memberId)
+				.prepareGetMember(memberId)
 				.setExpand(expand)
 				.setLocales(extendedLocales)
 				.build(repositoryId, branchPath)
@@ -268,9 +267,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			final Boolean force,
 			
 			final Principal principal) {
-		SnomedRequests
-			.prepareDeleteMember()
-			.setComponentId(memberId)
+		SnomedRequests.prepareDeleteMember(memberId)
 			.force(force)
 			.build(repositoryId, branchPath, principal.getName(), String.format("Deleted reference set member '%s' from store.", memberId))
 			.execute(bus)

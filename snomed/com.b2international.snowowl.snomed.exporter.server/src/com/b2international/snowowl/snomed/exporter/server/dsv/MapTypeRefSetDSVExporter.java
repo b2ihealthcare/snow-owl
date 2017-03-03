@@ -99,8 +99,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		final LanguageSetting languageSetting = applicationContext.getService(LanguageSetting.class);
 		final IEventBus bus = applicationContext.getService(IEventBus.class);
 		
-		final SnomedReferenceSet refSet = SnomedRequests.prepareGetReferenceSet()
-				.setComponentId(exportSetting.getRefSetId())
+		final SnomedReferenceSet refSet = SnomedRequests.prepareGetReferenceSet(exportSetting.getRefSetId())
 				.setExpand("members(limit:" + Integer.MAX_VALUE + ", expand(referencedComponent(expand(pt()))))")
 				.setLocales(languageSetting.getLanguagePreference())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(bus).getSync();
@@ -144,7 +143,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			
 			Collection<SnomedConceptDocument> modelComponents = SnomedRequests
 					.prepareSearchConcept()
-					.setComponentIds(ImmutableSet.of(
+					.filterByIds(ImmutableSet.of(
 							Concepts.MODULE_ROOT,
 							Concepts.REFSET_ATTRIBUTE))
 					.setExpand("pt(),descendants(limit:100,form:\"inferred\",direct:false,expand(pt(),parentIds(),ancestorIds()))")

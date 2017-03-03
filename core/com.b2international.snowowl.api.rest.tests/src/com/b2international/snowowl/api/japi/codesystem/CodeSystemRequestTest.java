@@ -108,8 +108,8 @@ public class CodeSystemRequestTest {
 	@Test
 	public void searchCodeSystem() {
 		final CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
-			.filterByShortName(SNOMEDCT)
-			.build(REPOSITORY_ID, BRANCH)
+			.filterById(SNOMEDCT)
+			.build(REPOSITORY_ID)
 			.execute(bus)
 			.getSync();
 		
@@ -135,9 +135,8 @@ public class CodeSystemRequestTest {
 	}
 	
 	private ICodeSystem getCodeSystem(final String shortName) {
-		return CodeSystemRequests.prepareGetCodeSystem()
-				.setUniqueId(shortName)
-				.build(REPOSITORY_ID, BRANCH)
+		return CodeSystemRequests.prepareGetCodeSystem(shortName)
+				.build(REPOSITORY_ID)
 				.execute(bus)
 				.getSync();
 	}

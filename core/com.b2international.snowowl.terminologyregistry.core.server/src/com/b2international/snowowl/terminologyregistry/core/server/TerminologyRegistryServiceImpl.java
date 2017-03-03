@@ -30,7 +30,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
@@ -64,7 +63,7 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 	public Collection<ICodeSystem> getCodeSystems(final IBranchPathMap branchPathMap) {
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
 		for (String repositoryId : getRepositoryIds()) {
-			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().build(repositoryId, BranchPathUtils.createMainPath().getPath()).execute(getBus()));
+			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().build(repositoryId).execute(getBus()));
 		}
 		return Promise.all(getAllCodeSystems)
 				.then(new Function<List<Object>, Collection<ICodeSystem>>() {
@@ -85,7 +84,7 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 		final List<Promise<CodeSystemVersions>> getAllCodeSystemVersions = newArrayList();
 		for (String repositoryId : getRepositoryIds()) {
 			getAllCodeSystemVersions.add(CodeSystemRequests.prepareSearchCodeSystemVersion().all()
-					.build(repositoryId, BranchPathUtils.createMainPath().getPath()).execute(getBus()));
+					.build(repositoryId).execute(getBus()));
 		}
 		return Promise.all(getAllCodeSystemVersions)
 				.then(new Function<List<Object>, Collection<ICodeSystemVersion>>() {
@@ -105,8 +104,8 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 	public ICodeSystem getCodeSystemByShortName(final IBranchPathMap branchPathMap, final String codeSystemShortName) {
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
 		for (String repositoryId : getRepositoryIds()) {
-			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().filterByShortName(codeSystemShortName)
-					.build(repositoryId, BranchPathUtils.createMainPath().getPath()).execute(getBus()));
+			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().filterById(codeSystemShortName)
+					.build(repositoryId).execute(getBus()));
 		}
 		return Promise.all(getAllCodeSystems)
 				.then(new Function<List<Object>, ICodeSystem>() {
@@ -127,8 +126,8 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 	public ICodeSystem getCodeSystemByOid(final IBranchPathMap branchPathMap, final String codeSystemOid) {
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
 		for (String repositoryId : getRepositoryIds()) {
-			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().filterByOid(codeSystemOid)
-					.build(repositoryId, BranchPathUtils.createMainPath().getPath()).execute(getBus()));
+			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().filterById(codeSystemOid)
+					.build(repositoryId).execute(getBus()));
 		}
 		return Promise.all(getAllCodeSystems)
 				.then(new Function<List<Object>, ICodeSystem>() {
@@ -175,7 +174,7 @@ public enum TerminologyRegistryServiceImpl implements TerminologyRegistryService
 		final List<Promise<CodeSystemVersions>> getAllVersions = newArrayList();
 		final List<String> repositoryIds = getRepositoryIds();
 		for (String repositoryId : repositoryIds) {
-			getAllVersions.add(CodeSystemRequests.prepareSearchCodeSystemVersion().all().build(repositoryId, BranchPathUtils.createMainPath().getPath()).execute(getBus()));
+			getAllVersions.add(CodeSystemRequests.prepareSearchCodeSystemVersion().all().build(repositoryId).execute(getBus()));
 		}
 		
 		return Promise.all(getAllVersions)

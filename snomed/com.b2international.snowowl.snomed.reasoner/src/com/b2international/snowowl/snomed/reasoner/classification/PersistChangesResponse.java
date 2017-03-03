@@ -20,17 +20,27 @@ import java.util.UUID;
 
 /**
  * The return type of {@link SnomedReasonerService#persistChanges(UUID, String)} requests.
- * 
  */
 public class PersistChangesResponse extends AbstractResponse implements Serializable {
 
 	private static final long serialVersionUID = -2422999450075484898L;
 
+	private final String jobId;
+	
 	/**
 	 * Creates a new response with the specified type.
 	 * @param type the response type
 	 */
 	public PersistChangesResponse(final Type type) {
+		this(type, null);
+	}
+	
+	public PersistChangesResponse(final Type type, final String jobId) {
 		super(type);
+		this.jobId = jobId;
+	}
+	
+	public String getJobId() {
+		return jobId;
 	}
 }

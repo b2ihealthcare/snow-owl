@@ -25,7 +25,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -34,7 +34,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 /**
  * @since 4.5
  */
-final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionContext, String> {
+final class SnomedRefSetMemberCreateRequest implements Request<TransactionContext, String> {
 
 	@Nonnull
 	private Boolean active = Boolean.TRUE;
@@ -116,11 +116,6 @@ final class SnomedRefSetMemberCreateRequest extends BaseRequest<TransactionConte
 		this.properties.putAll(properties);
 	}
 
-	@Override
-	protected Class<String> getReturnType() {
-		return String.class;
-	}
-	
 	@Override
 	public String execute(TransactionContext context) {
 		/* 

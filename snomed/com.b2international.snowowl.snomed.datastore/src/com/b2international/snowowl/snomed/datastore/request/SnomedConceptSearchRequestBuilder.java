@@ -18,8 +18,11 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Collection;
 import java.util.Set;
 
-import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
-import com.b2international.snowowl.snomed.core.domain.*;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 
 /**
  * <i>Builder</i> class to build requests responsible for searching SNOMED CT concepts.
@@ -204,7 +207,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @see com.b2international.snowowl.datastore.request.RevisionSearchRequestBuilder#createSearch()
 	 */
 	@Override
-	protected RevisionSearchRequest<SnomedConcepts> createSearch() {
+	protected SearchResourceRequest<BranchContext, SnomedConcepts> createSearch() {
 		return new SnomedConceptSearchRequest();
 	}
 }

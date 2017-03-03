@@ -84,7 +84,9 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		createNewRelationship(branchPath, parentConceptId, Concepts.MORPHOLOGY, targetConceptId);
 
 		String classificationId = getClassificationJobId(beginClassification(branchPath));
-		waitForClassificationJob(branchPath, classificationId).body("status", equalTo(ClassificationStatus.COMPLETED.name()));
+		waitForClassificationJob(branchPath, classificationId)
+		.statusCode(200)
+		.body("status", equalTo(ClassificationStatus.COMPLETED.name()));
 
 		PageableCollectionResource<IRelationshipChange> changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
 				.extract()
@@ -124,7 +126,9 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		}
 
 		beginClassificationSave(branchPath, classificationId);
-		waitForClassificationSaveJob(branchPath, classificationId);
+		waitForClassificationSaveJob(branchPath, classificationId)
+		.statusCode(200)
+		.body("status", equalTo(ClassificationStatus.SAVED.name()));
 
 		assertEquals(2, getPersistedInferredRelationshipCount(branchPath, parentConceptId));
 		assertEquals(2, getPersistedInferredRelationshipCount(branchPath, childConceptId));
@@ -143,7 +147,9 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		createNewRelationship(branchPath, childConceptId, Concepts.IS_A, Concepts.ROOT_CONCEPT, CharacteristicType.INFERRED_RELATIONSHIP);
 
 		String classificationId = getClassificationJobId(beginClassification(branchPath));
-		waitForClassificationJob(branchPath, classificationId).body("status", equalTo(ClassificationStatus.COMPLETED.name()));
+		waitForClassificationJob(branchPath, classificationId)
+		.statusCode(200)
+		.body("status", equalTo(ClassificationStatus.COMPLETED.name()));
 
 		PageableCollectionResource<IRelationshipChange> changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
 				.extract()
@@ -157,7 +163,9 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.ROOT_CONCEPT, relationshipChange.getDestinationId());
 
 		beginClassificationSave(branchPath, classificationId);
-		waitForClassificationSaveJob(branchPath, classificationId);
+		waitForClassificationSaveJob(branchPath, classificationId)
+		.statusCode(200)
+		.body("status", equalTo(ClassificationStatus.SAVED.name()));
 
 		assertEquals(1, getPersistedInferredRelationshipCount(branchPath, parentConceptId));
 		assertEquals(1, getPersistedInferredRelationshipCount(branchPath, childConceptId));
@@ -175,7 +183,9 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		createNewRelationship(branchPath, conceptId, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.INFERRED_RELATIONSHIP, 5);
 
 		String classificationId = getClassificationJobId(beginClassification(branchPath));
-		waitForClassificationJob(branchPath, classificationId).body("status", equalTo(ClassificationStatus.COMPLETED.name()));
+		waitForClassificationJob(branchPath, classificationId)
+		.statusCode(200)
+		.body("status", equalTo(ClassificationStatus.COMPLETED.name()));
 
 		/* 
 		 * Expecting lots of changes; all concepts receive the "Part of" relationship because it was added to the root concept, however, the original inferred relationship 

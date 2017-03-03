@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@ import com.b2international.snowowl.core.exceptions.IllegalQueryParameterExceptio
 /**
  * A subclass of {@link DelegatingRequest} that:
  * <ul>
- * <li>opens an index read transaction using {@link IndexTransactionProvider};
- * <li>executes the delegate with a {@link BranchContext} that allows access to an {@link IndexSearcher} from the read
+ * <li>opens an index read transaction using {@link RevisionIndex};
+ * <li>executes the delegate with a {@link BranchContext} that allows access to {@link Searcher} and {@link RevisionSearcher} from the read
  * transaction.
  * </ul>
  * 
@@ -40,7 +40,7 @@ import com.b2international.snowowl.core.exceptions.IllegalQueryParameterExceptio
  */
 public final class RevisionIndexReadRequest<B> extends DelegatingRequest<BranchContext, BranchContext, B> {
 
-	RevisionIndexReadRequest(Request<BranchContext, B> next) {
+	public RevisionIndexReadRequest(Request<BranchContext, B> next) {
 		super(next);
 	}
 	

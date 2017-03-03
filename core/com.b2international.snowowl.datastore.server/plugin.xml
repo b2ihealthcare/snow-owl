@@ -43,11 +43,6 @@
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob
-            class="com.b2international.snowowl.datastore.server.serviceconfig.RemoteJobManagerServiceConfigJob"
-            id="com.b2international.snowowl.datastore.server.serviceconfig.RemoteJobManagerServiceConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.datastore.server.version.VersionCompareServiceConfigJob"
             id="com.b2international.snowowl.datastore.server.version.VersionCompareServiceConfigJob"
             terminologyId="UNSPECIFIED">
@@ -65,11 +60,6 @@
       <serviceConfigJob
             class="com.b2international.snowowl.datastore.server.version.VersionCompareExporterServiceConfigJob"
             id="com.b2international.snowowl.datastore.server.version.VersionCompareExporterServiceConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.datastore.server.version.GlobalPublishConfigJob"
-            id="com.b2international.snowowl.datastore.server.version.GlobalPublishConfigJob"
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob

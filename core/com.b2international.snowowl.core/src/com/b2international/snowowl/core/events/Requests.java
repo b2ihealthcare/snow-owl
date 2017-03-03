@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,20 +20,14 @@ import com.b2international.snowowl.core.ServiceProvider;
 /**
  * @since 4.5
  */
-@SuppressWarnings("rawtypes")
 public class Requests {
 
-	private static final Request NOOP = new BaseRequest() {
+	private static final Request<ServiceProvider, Object> NOOP = new Request<ServiceProvider, Object>() {
 		private static final long serialVersionUID = -7606836203771540944L;
 
 		@Override
 		public Object execute(ServiceProvider context) {
 			return null;
-		}
-		
-		@Override
-		protected Class getReturnType() {
-			return Object.class;
 		}
 	};
 	
@@ -45,16 +39,13 @@ public class Requests {
 	}
 	
 	public static <C extends ServiceProvider> Request<C, Void> noContent(final Request<C, ?> req) {
-		return new BaseRequest<C, Void>() {
+		return new Request<C, Void>() {
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public Void execute(C context) {
 				req.execute(context);
 				return null;
-			}
-
-			@Override
-			protected Class<Void> getReturnType() {
-				return Void.class;
 			}
 		};
 	}

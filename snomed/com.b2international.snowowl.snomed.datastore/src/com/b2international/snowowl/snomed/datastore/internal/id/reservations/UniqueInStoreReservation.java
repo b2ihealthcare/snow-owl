@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.internal.id.reservations;
 
-import java.util.Collections;
-
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -63,7 +61,7 @@ public class UniqueInStoreReservation implements Reservation {
 		
 		final PageableCollectionResource<?> results = searchRequest
 				.setLimit(0)
-				.setComponentIds(Collections.singleton(identifier.toString()))
+				.filterById(identifier.toString())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, BranchPathUtils.createMainPath().getPath())
 				.execute(bus.get())
 				.getSync();

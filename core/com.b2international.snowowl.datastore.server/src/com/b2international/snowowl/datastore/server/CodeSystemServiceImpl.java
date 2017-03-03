@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.server;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.ICodeSystemVersion.PATCHED_PREDICATE;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Collections2.filter;
@@ -170,7 +169,7 @@ public class CodeSystemServiceImpl implements CodeSystemService {
 	private Collection<ICodeSystemVersion> getAllTags(final String repositoryId, final boolean decorateWithPatched) {
 		final CodeSystemVersions versions = CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.all()
-			.build(repositoryId, createMainPath().getPath())
+			.build(repositoryId)
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.getSync();
 		

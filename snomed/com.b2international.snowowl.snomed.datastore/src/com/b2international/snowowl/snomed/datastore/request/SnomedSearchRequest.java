@@ -25,8 +25,7 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
-import com.b2international.snowowl.datastore.request.BaseSearchRequest;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator2;
 import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
@@ -45,7 +44,7 @@ import com.google.common.collect.Iterables;
  * Abstract class for SNOMED CT search requests.
  * @since 4.5
  */
-public abstract class SnomedSearchRequest<R> extends RevisionSearchRequest<R> {
+public abstract class SnomedSearchRequest<R> extends SearchResourceRequest<BranchContext, R> {
 
 	enum OptionKey {
 		
@@ -81,11 +80,6 @@ public abstract class SnomedSearchRequest<R> extends RevisionSearchRequest<R> {
 		return getList(OptionKey.LANGUAGE_REFSET, String.class);
 	}
 
-	@Override
-	protected String getIdField() {
-		return "id";
-	}
-	
 	protected final void addModuleClause(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.MODULE)) {
 			queryBuilder.must(SnomedDocument.Expressions.module(getString(OptionKey.MODULE)));
@@ -161,7 +155,7 @@ public abstract class SnomedSearchRequest<R> extends RevisionSearchRequest<R> {
 					.execute(context);
 				idFilter = FluentIterable.from(matchingConcepts).transform(IComponent.ID_FUNCTION).toSet();
 				if (idFilter.isEmpty()) {
-					throw new BaseSearchRequest.NoResultException();
+					throw new SearchResourceRequest.NoResultException();
 				}
 			}
 		}

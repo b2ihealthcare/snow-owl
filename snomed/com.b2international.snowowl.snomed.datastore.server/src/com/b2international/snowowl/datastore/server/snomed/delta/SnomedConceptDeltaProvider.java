@@ -199,7 +199,7 @@ public class SnomedConceptDeltaProvider extends ComponentDeltaProvider<Hierarchi
 		//supplies a single boolean flag whether the reference set that has to be authored exists on the destination branch or not
 		final SnomedReferenceSet referenceSet = Iterables.getOnlyElement(SnomedRequests.prepareSearchRefSet()
 				.setLimit(1)
-				.setComponentIds(Collections.singleton(identifierId))
+				.filterById(identifierId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, destinationBranch.get().getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync(), null);

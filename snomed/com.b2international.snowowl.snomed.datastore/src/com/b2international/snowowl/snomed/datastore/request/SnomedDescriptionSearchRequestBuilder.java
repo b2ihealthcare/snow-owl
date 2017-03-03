@@ -18,7 +18,8 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Collection;
 
 import com.b2international.commons.collections.Collections3;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequest.OptionKey;
@@ -68,7 +69,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	}
 	
 	@Override
-	protected RevisionSearchRequest<SnomedDescriptions> createSearch() {
+	protected SearchResourceRequest<BranchContext, SnomedDescriptions> createSearch() {
 		return new SnomedDescriptionSearchRequest();
 	}
 

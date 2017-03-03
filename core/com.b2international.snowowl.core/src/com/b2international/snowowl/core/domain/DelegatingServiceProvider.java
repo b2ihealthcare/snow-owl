@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,11 @@ package com.b2international.snowowl.core.domain;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.MapMaker;
 import com.google.inject.Provider;
 
@@ -28,13 +31,33 @@ import com.google.inject.Provider;
  * 
  * @since 5.0
  */
-public class DelegatingServiceProvider implements ServiceProvider {
+public class DelegatingServiceProvider implements ServiceProvider, IDisposableService {
 
 	private final Map<Class<?>, Object> registry = new MapMaker().makeMap();
 	private final ServiceProvider delegate;
+	private final AtomicBoolean disposed = new AtomicBoolean(false);
 
 	protected DelegatingServiceProvider(ServiceProvider delegate) {
 		this.delegate = checkNotNull(delegate, "delegate");
+	}
+	
+	@Override
+	public final boolean isDisposed() {
+		return disposed.get();
+	}
+	
+	@Override
+	public final void dispose() {
+		if (disposed.compareAndSet(false, true)) {
+			doDispose();
+			FluentIterable.from(registry.values()).filter(IDisposableService.class).forEach(IDisposableService::dispose);
+		}
+	}
+
+	/**
+	 * Subclasses may override this method to do additional work before disposing this {@link DelegatingServiceProvider}. 
+	 */
+	protected void doDispose() {
 	}
 
 	/**

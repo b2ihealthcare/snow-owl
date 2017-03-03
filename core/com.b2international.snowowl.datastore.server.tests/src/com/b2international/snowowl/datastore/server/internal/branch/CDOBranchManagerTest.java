@@ -110,7 +110,7 @@ public class CDOBranchManagerTest {
 		when(repositoryContext.service(ReviewManager.class)).thenReturn(reviewManager);
 		when(repositoryContext.service(BranchManager.class)).thenReturn(manager);
 		
-		when(repositoryContextProvider.get(context, repository.id())).thenReturn(repositoryContext);
+		when(repositoryContextProvider.get(repository.id())).thenReturn(repositoryContext);
 		when(context.service(RepositoryContextProvider.class)).thenReturn(repositoryContextProvider);
 	}
 	
