@@ -15,15 +15,17 @@
  */
 package com.b2international.snowowl.datastore.request.job;
 
-import java.util.UUID;
-
 import javax.validation.constraints.NotNull;
 
+import org.eclipse.core.runtime.jobs.ILock;
+import org.eclipse.core.runtime.jobs.Job;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
+import com.b2international.snowowl.datastore.remotejobs.SingleRemoteJobFamily;
 
 /**
  * @since 5.7
@@ -31,6 +33,11 @@ import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 
 	private static final long serialVersionUID = 1L;
+	
+	private static final ILock SCHEDULE_LOCK = Job.getJobManager().newLock();
+	
+	@NotEmpty
+	private final String id;
 	
 	@NotEmpty
 	private final String user;
@@ -41,7 +48,8 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 	@NotNull
 	private final Request<ServiceProvider, ?> request;
 
-	ScheduleJobRequest(String user, Request<ServiceProvider, ?> request, String description) {
+	ScheduleJobRequest(String id, String user, Request<ServiceProvider, ?> request, String description) {
+		this.id = id;
 		this.user = user;
 		this.request = request;
 		this.description = description;
@@ -49,11 +57,23 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 	
 	@Override
 	public String execute(ServiceProvider context) {
-		final String id = UUID.randomUUID().toString();
-		final RemoteJob job = new RemoteJob(id, description, user, context, request);
-		job.setSystem(true);
-		job.schedule();
-		return id;
+		try {
+			
+			SCHEDULE_LOCK.acquire();
+			
+			Job[] remoteJobsWithId = Job.getJobManager().find(SingleRemoteJobFamily.create(id));
+			if (remoteJobsWithId.length > 0) {
+				throw new BadRequestException("Multiple remote jobs scheduled with identifier '%s'.", id);
+			} else {
+				RemoteJob job = new RemoteJob(id, description, user, context, request);
+				job.setSystem(true);
+				job.schedule();
+				return id;
+			}
+			
+		} finally {
+			SCHEDULE_LOCK.release();
+		}
 	}
 
 }

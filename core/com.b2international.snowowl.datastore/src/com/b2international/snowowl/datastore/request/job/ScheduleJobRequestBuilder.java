@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.request.job;
 
+import java.util.UUID;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
@@ -26,6 +28,7 @@ import com.b2international.snowowl.datastore.request.SystemRequestBuilder;
  */
 public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<ScheduleJobRequestBuilder, ServiceProvider, String> implements SystemRequestBuilder<String> {
 
+	private String id = UUID.randomUUID().toString();
 	private String user;
 	private String description;
 	private Request<ServiceProvider, ?> request;
@@ -35,7 +38,12 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 
 	@Override
 	protected Request<ServiceProvider, String> doBuild() {
-		return new ScheduleJobRequest(user, request, description);
+		return new ScheduleJobRequest(id, user, request, description);
+	}
+	
+	public ScheduleJobRequestBuilder setId(String id) {
+		this.id = id;
+		return getSelf();
 	}
 
 	public ScheduleJobRequestBuilder setUser(String user) {
