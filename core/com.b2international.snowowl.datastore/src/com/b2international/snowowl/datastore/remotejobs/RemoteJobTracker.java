@@ -29,6 +29,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.Hits;
@@ -51,6 +53,8 @@ import com.google.common.collect.Sets;
  */
 public final class RemoteJobTracker implements IDisposableService {
 
+	private static final Logger LOG = LoggerFactory.getLogger("jobs");
+	
 	private static class Holder {
 		private static final Timer CLEANUP_TIMER = new Timer("RemoteJob cleanup", true);
 	}
@@ -72,7 +76,7 @@ public final class RemoteJobTracker implements IDisposableService {
 							.build());
 					if (hits.getTotal() > 0) {
 						final Set<String> ids = FluentIterable.from(hits).transform(RemoteJobEntry::getId).toSet();
-						System.err.println("purging " + ids);
+						LOG.trace("Purging job entries {}", ids);
 						writer.removeAll(ImmutableMap.of(RemoteJobEntry.class, ids));
 						writer.commit();
 					}
@@ -126,7 +130,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	public void requestCancel(String jobId) {
 		final RemoteJobEntry job = get(jobId);
 		if (job != null && !job.isCancelled()) {
-			System.err.println("cancelling " + jobId);
+			LOG.trace("Cancelling job {}", jobId);
 			update(jobId, current -> RemoteJobEntry.from(current).state(RemoteJobState.CANCEL_REQUESTED).build());
 			Job.getJobManager().cancel(SingleRemoteJobFamily.create(jobId));
 		}
@@ -149,10 +153,10 @@ public final class RemoteJobTracker implements IDisposableService {
 		final Set<String> remoteJobsToDelete = Sets.difference(Sets.newHashSet(jobIds), remoteJobsToCancel);
 		index.write(writer -> {
 			// if the job still running or scheduled, then mark it deleted and the done handler will delete it
-			System.err.println("deleting " + remoteJobsToDelete);
+			LOG.trace("Deleting jobs {}", remoteJobsToDelete);
 			writer.removeAll(ImmutableMap.of(RemoteJobEntry.class, remoteJobsToDelete));
 			final Function<RemoteJobEntry, RemoteJobEntry> setDeletedToTrue = current -> RemoteJobEntry.from(current).deleted(true).build();
-			System.err.println("marking for deletion " + remoteJobsToCancel);
+			LOG.trace("Marking deletable jobs {}", remoteJobsToCancel);
 			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, Expressions.matchAny(DocumentMapping._ID, remoteJobsToCancel), RemoteJobEntry::getId, setDeletedToTrue));
 			writer.commit();
 			return null;
@@ -217,7 +221,7 @@ public final class RemoteJobTracker implements IDisposableService {
 			if (event.getJob() instanceof RemoteJob) {
 				final RemoteJob job = (RemoteJob) event.getJob();
 				final String jobId = job.getId();
-				System.err.println("scheduled " + jobId);
+				LOG.trace("Scheduled job {}", jobId);
 				// try to convert the request to a param object
 				Map<String, Object> parameters;
 				try {
@@ -241,7 +245,7 @@ public final class RemoteJobTracker implements IDisposableService {
 				final RemoteJob job = (RemoteJob) event.getJob();
 				final String jobId = job.getId();
 				final Date startDate = new Date();
-				System.err.println("running " + jobId);
+				LOG.trace("Running job {}", jobId);
 				update(jobId, current -> {
 					return RemoteJobEntry.from(current)
 							.state(RemoteJobState.RUNNING)
@@ -256,7 +260,7 @@ public final class RemoteJobTracker implements IDisposableService {
 			if (event.getJob() instanceof RemoteJob) {
 				final RemoteJob job = (RemoteJob) event.getJob();
 				final String jobId = job.getId();
-				System.err.println("done " + jobId);
+				LOG.trace("Completed job {}", jobId);
 				final RemoteJobEntry jobEntry = get(jobId);
 				if (jobEntry == null) {
 					return;
