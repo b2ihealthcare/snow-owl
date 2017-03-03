@@ -17,8 +17,11 @@ package com.b2international.snowowl.core;
 
 import java.io.Closeable;
 
+import com.b2international.snowowl.core.events.Notifications;
 import com.b2international.snowowl.core.events.RepositoryEvent;
 import com.b2international.snowowl.eventbus.IEventBus;
+
+import rx.Observable;
 
 /**
  * @since 4.5
@@ -38,7 +41,16 @@ public interface Repository extends ServiceProvider, Closeable {
 	 * @return
 	 */
 	IEventBus events();
-
+	
+	/**
+	 * @return an {@link Observable} of {@link RepositoryEvent}s sent by this {@link Repository}.
+	 */
+	default Observable<RepositoryEvent> notifications() {
+		return service(Notifications.class)
+				.ofType(RepositoryEvent.class)
+				.filter(notification -> id().equals(notification.getRepositoryId()));
+	}
+ 
 	/**
 	 * Send a {@link RepositoryEvent notification} to each and every listener of this repository.
 	 * 
