@@ -32,7 +32,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
-import org.eclipse.core.runtime.IStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,15 +39,13 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.events.SystemNotification;
+import com.b2international.snowowl.core.events.Notifications;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.remotejobs.*;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.eventbus.IHandler;
-import com.b2international.snowowl.eventbus.IMessage;
 import com.b2international.snowowl.snomed.api.ISnomedClassificationService;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationship;
@@ -73,166 +70,17 @@ import com.b2international.snowowl.snomed.reasoner.classification.*;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
 import com.google.common.io.Closeables;
 
+import rx.Subscription;
+
 /**
  */
 public class SnomedClassificationServiceImpl implements ISnomedClassificationService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedClassificationServiceImpl.class);
 	
-	private final class PersistenceCompletionHandler implements IHandler<IMessage> {
-
-		private final String classificationJobId;
-		private final String persistenceJobId;
-
-		private PersistenceCompletionHandler(final String classificationJobId, final String persistenceJobId) {
-			this.classificationJobId = classificationJobId;
-			this.persistenceJobId = persistenceJobId;
-		}
-
-		@Override
-		public void handle(final IMessage message) {
-			
-			SystemNotification notification = message.body(SystemNotification.class);
-			if (!(notification instanceof RemoteJobNotification)) {
-				return;
-			}
-			
-			RemoteJobNotification jobNotification = (RemoteJobNotification) notification;
-			if (!RemoteJobNotification.isChanged(jobNotification)) {
-				return;
-			}
-			
-			if (!jobNotification.getJobIds().contains(persistenceJobId)) {
-				return;
-			}
-
-			JobRequests.prepareGet(persistenceJobId)
-					.buildAsync()
-					.execute(getEventBus())
-					.then(remoteJob -> {
-						
-						if (!RemoteJobState.FINISHED.equals(remoteJob.getState())) {
-							return remoteJob;
-						}
-
-						try {
-							// FIXME
-							final Map<String, Object> result = remoteJob.getResultAs(Map.class);
-							
-							if ((int) result.get("severity") == IStatus.OK) {
-								indexService.updateClassificationRunStatus(classificationJobId, ClassificationStatus.SAVED);
-							} else {
-								indexService.updateClassificationRunStatus(classificationJobId, ClassificationStatus.SAVE_FAILED);
-							}
-						} catch (final IOException e) {
-							LOG.error("Caught IOException while updating classification status after save.", e);
-						} finally {
-							getEventBus().unregisterHandler(SystemNotification.ADDRESS, this);
-						}
-						
-						return remoteJob;
-						
-					})
-					.getSync();
-		}
-	}
-
-	private final class RemoteJobChangeHandler implements IHandler<IMessage> {
-		@Override
-		public void handle(final IMessage message) {
-
-			SystemNotification notification = message.body(SystemNotification.class);
-			if (!(notification instanceof RemoteJobNotification)) {
-				return;
-			}
-			
-			RemoteJobNotification jobNotification = (RemoteJobNotification) notification;
-			if (!RemoteJobNotification.isChanged(jobNotification)) {
-				return;
-			}
-			
-			JobRequests.prepareSearch()
-			.all()
-			.filterByIds(jobNotification.getJobIds())
-			.buildAsync()
-			.execute(getEventBus())
-			.then(remoteJobs -> {
-				
-				for (RemoteJobEntry remoteJob : remoteJobs) {
-				
-					// FIXME
-					if (!"ClassifyRequest".equals(remoteJob.getParameters().get("type"))) { 
-						continue;
-					}
-					
-					try {
-						
-						switch (remoteJob.getState()) {
-						case CANCELED:
-							indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.CANCELED);
-							break;
-						case FAILED:
-							indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.FAILED);
-							break;
-						case FINISHED: 
-							handleFinished(remoteJob);
-							break;
-						case RUNNING:
-							indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.RUNNING);
-							break;
-						case SCHEDULED: //$FALL-THROUGH$
-						case CANCEL_REQUESTED:
-							// Nothing to do
-							break;
-						default:
-							throw new IllegalStateException(MessageFormat.format("Unexpected remote job state ''{0}''.", remoteJob.getState()));
-						}
-						
-					} catch (final IOException e) {
-						LOG.error("Caught IOException while updating classification status.", e);
-					}
-					
-				}
-
-				return remoteJobs;
-			})
-			.getSync();
-		}
-
-		private void handleFinished(RemoteJobEntry remoteJob) {
-			executorService.submit(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						
-						final GetResultResponse result = getReasonerService().getResult(remoteJob.getId());
-						final Type responseType = result.getType();
-
-						switch (responseType) {
-							case NOT_AVAILABLE: 
-								indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.FAILED);
-								break;
-							case STALE: 
-								indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.STALE);
-								break;
-							case SUCCESS:
-								indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.COMPLETED, result.getChanges());
-								break;
-							default:
-								throw new IllegalStateException(MessageFormat.format("Unexpected response type ''{0}''.", responseType));
-						}
-
-					} catch (final IOException e) {
-						LOG.error("Caught IOException while registering classification data.", e);
-					}
-				}
-			});
-		}
-	}
-
 	private ClassificationRunIndex indexService;
-	private RemoteJobChangeHandler changeHandler;
 	private ExecutorService executorService;
+	private Subscription remoteJobSubscription;
 
 	@Resource
 	private SnomedBrowserService browserService;
@@ -259,15 +107,139 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 		}
 
 		// TODO: common ExecutorService for asynchronous work?
-		executorService = Executors.newCachedThreadPool(); 
-		changeHandler = new RemoteJobChangeHandler();
-		getEventBus().registerHandler(SystemNotification.ADDRESS, changeHandler);
+		executorService = Executors.newCachedThreadPool();
+		remoteJobSubscription = getNotifications()
+				.ofType(RemoteJobNotification.class)
+				.subscribe(this::onRemoteJobNotification);
+	}
+	
+	private void onRemoteJobNotification(RemoteJobNotification notification) {
+		if (!RemoteJobNotification.isChanged(notification)) {
+			return;
+		}
+		
+		JobRequests.prepareSearch()
+		.all()
+		.filterByIds(notification.getJobIds())
+		.buildAsync()
+		.execute(getEventBus())
+		.then(remoteJobs -> {
+			for (RemoteJobEntry remoteJob : remoteJobs) {
+				onRemoteJobChanged(remoteJob);
+			}
+			return remoteJobs;
+		});
+	}
+
+	private void onRemoteJobChanged(RemoteJobEntry remoteJob) {
+		String type = (String) remoteJob.getParameters().get("type");
+		
+		switch (type) {
+		case "ClassifyRequest":
+			onClassifyJobChanged(remoteJob);
+			break;
+		case "PersistChangesRequest":
+			onPersistJobChanged(remoteJob);
+			break;
+		default:
+			break;
+		}
+	}
+	
+	private void onClassifyJobChanged(RemoteJobEntry remoteJob) {
+		try {
+			
+			switch (remoteJob.getState()) {
+			case CANCELED:
+				indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.CANCELED);
+				break;
+			case FAILED:
+				indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.FAILED);
+				break;
+			case FINISHED: 
+				onClassifyJobFinished(remoteJob);
+				break;
+			case RUNNING:
+				indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.RUNNING);
+				break;
+			case SCHEDULED:
+				indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.SCHEDULED);
+				break;
+			case CANCEL_REQUESTED:
+				// Nothing to do for this state change
+				break;
+			default:
+				throw new IllegalStateException(MessageFormat.format("Unexpected remote job state ''{0}''.", remoteJob.getState()));
+			}
+			
+		} catch (final IOException e) {
+			LOG.error("Caught IOException while updating classification status.", e);
+		}
+	}
+
+	private void onClassifyJobFinished(RemoteJobEntry remoteJob) {
+		executorService.submit(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					
+					final GetResultResponse result = getReasonerService().getResult(remoteJob.getId());
+					final Type responseType = result.getType();
+	
+					switch (responseType) {
+						case NOT_AVAILABLE: 
+							indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.FAILED);
+							break;
+						case STALE: 
+							indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.STALE);
+							break;
+						case SUCCESS:
+							indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.COMPLETED, result.getChanges());
+							break;
+						default:
+							throw new IllegalStateException(MessageFormat.format("Unexpected response type ''{0}''.", responseType));
+					}
+	
+				} catch (final IOException e) {
+					LOG.error("Caught IOException while registering classification data.", e);
+				}
+			}
+		});
+	}
+
+	private void onPersistJobChanged(RemoteJobEntry remoteJob) {
+		try {
+
+			String classificationJobId = (String) remoteJob.getParameters().get("classificationId");
+			
+			switch (remoteJob.getState()) {
+			case CANCELED: //$FALL-THROUGH$
+			case FAILED:
+				indexService.updateClassificationRunStatus(classificationJobId, ClassificationStatus.SAVE_FAILED);
+				break;
+			case FINISHED: 
+				indexService.updateClassificationRunStatus(classificationJobId, ClassificationStatus.SAVED);
+				break;
+			case RUNNING: //$FALL-THROUGH$
+			case SCHEDULED: //$FALL-THROUGH$
+			case CANCEL_REQUESTED:
+				// Nothing to do for these state changes
+				break;
+			default:
+				throw new IllegalStateException(MessageFormat.format("Unexpected remote job state ''{0}''.", remoteJob.getState()));
+			}
+
+		} catch (final IOException e) {
+			LOG.error("Caught IOException while updating classification status after save.", e);
+		}
 	}
 
 	@PreDestroy
 	protected void shutdown() {
-		getEventBus().unregisterHandler(SystemNotification.ADDRESS, changeHandler);
-		changeHandler = null;
+		if (null != remoteJobSubscription) {
+			remoteJobSubscription.unsubscribe();
+			remoteJobSubscription = null;
+		}
 
 		if (null != executorService) {
 			executorService.shutdown();
@@ -289,6 +261,10 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 
 	private static IEventBus getEventBus() {
 		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
+	
+	private static Notifications getNotifications() {
+		return ApplicationContext.getServiceForClass(Notifications.class);
 	}
 
 	@Override
@@ -313,21 +289,20 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 				.withParentContextDescription(DatastoreLockContextDescriptions.ROOT)
 				.withReasonerId(reasonerId);
 
-		String classificationId = getReasonerService().beginClassification(settings);
-		
 		final ClassificationRun classificationRun = new ClassificationRun();
-		classificationRun.setId(classificationId);
+		classificationRun.setId(settings.getClassificationId());
 		classificationRun.setReasonerId(reasonerId);
 		classificationRun.setCreationDate(new Date());
 		classificationRun.setUserId(userId);
 		classificationRun.setStatus(ClassificationStatus.SCHEDULED);
-
+		
 		try {
 			indexService.upsertClassificationRun(oldBranchPath, classificationRun);
 		} catch (final IOException e) {
 			throw new RuntimeException(e);
 		}
-
+		
+		getReasonerService().beginClassification(settings);
 		return classificationRun;
 	}
 
@@ -459,21 +434,8 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 		}
 
 		final PersistChangesResponse persistChanges = getReasonerService().persistChanges(classificationId, userId);
-
-		if (Type.SUCCESS.equals(persistChanges.getType())) {
-			// Subscribe to change notifications
-			final PersistenceCompletionHandler handler = new PersistenceCompletionHandler(classificationId, persistChanges.getJobId());
-			getEventBus().registerHandler(SystemNotification.ADDRESS, handler);
-
-			// Start things with an artifical change notification
-			JobRequests.prepareGet(persistChanges.getJobId())
-					.buildAsync()
-					.execute(getEventBus())
-					.then(remoteJob -> RemoteJobNotification.changed(remoteJob.getId()))
-					.getSync();
-		}
-		
 		final ClassificationStatus saveStatus;
+
 		switch (persistChanges.getType()) {
 			case NOT_AVAILABLE:
 			case STALE:

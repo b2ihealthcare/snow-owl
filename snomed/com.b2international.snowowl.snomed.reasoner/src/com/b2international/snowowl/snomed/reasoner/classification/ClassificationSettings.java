@@ -20,6 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.UUID;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
@@ -32,7 +33,8 @@ import com.google.common.base.Objects;
 public class ClassificationSettings implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
+	private final String classificationId = UUID.randomUUID().toString();
 	private final String userId;
 	private final IBranchPath snomedBranchPath;
 	private final List<ConceptDefinition> additionalDefinitions = newArrayList();
@@ -68,6 +70,10 @@ public class ClassificationSettings implements Serializable {
 		return this;
 	}
 
+	public String getClassificationId() {
+		return classificationId;
+	}
+	
 	public List<ConceptDefinition> getAdditionalDefinitions() {
 		return additionalDefinitions;
 	}
@@ -91,6 +97,7 @@ public class ClassificationSettings implements Serializable {
 	@Override
 	public String toString() {
 		return Objects.toStringHelper(this)
+				.add("classificationId", classificationId)
 				.add("userId", userId)
 				.add("snomedBranchPath", snomedBranchPath)
 				.add("additionalDefinitions", additionalDefinitions)

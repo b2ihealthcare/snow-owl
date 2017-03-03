@@ -226,20 +226,18 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	}
 
 	@Override
-	public String beginClassification(ClassificationSettings settings) {
+	public void beginClassification(ClassificationSettings settings) {
 		checkNotNull(settings, "Classification settings may not be null.");
 
 		if (null == settings.getReasonerId()) {
 			settings.withReasonerId(ApplicationContext.getServiceForClass(IReasonerPreferencesService.class).getSelectedReasonerId());
 		}
 
-		String classificationId = SnomedReasonerRequests.prepareClassify()
+		SnomedReasonerRequests.prepareClassify()
 				.setSettings(settings)
 				.buildAsync()
 				.execute(getEventBus())
 				.getSync();
-
-		return classificationId;
 	}
 
 	@Override 
@@ -491,6 +489,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	private PersistChangesResponse doPersistChanges(String classificationId, ReasonerTaxonomy taxonomy, String userId) throws OperationLockException, InterruptedException {
 		
 		String persistJobId = SnomedReasonerRequests.preparePersistChanges()
+				.setClassificationId(classificationId)
 				.setTaxonomy(taxonomy)
 				.setUserId(userId)
 				.buildAsync()

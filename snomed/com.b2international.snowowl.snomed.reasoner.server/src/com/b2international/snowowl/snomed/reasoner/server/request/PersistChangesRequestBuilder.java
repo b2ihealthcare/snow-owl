@@ -15,23 +15,28 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server.request;
 
-import org.eclipse.core.runtime.IStatus;
-
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.ApiError;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
 
 /**
  * @since 5.7
  */
-public final class PersistChangesRequestBuilder extends BaseRequestBuilder<PersistChangesRequestBuilder, ServiceProvider, IStatus> {
+public final class PersistChangesRequestBuilder extends BaseRequestBuilder<PersistChangesRequestBuilder, ServiceProvider, ApiError> {
 
+	private String classificationId;
 	private ReasonerTaxonomy taxonomy;
 	private String userId;
 
+	public PersistChangesRequestBuilder setClassificationId(String classificationId) {
+		this.classificationId = classificationId;
+		return getSelf();
+	}
+	
 	public PersistChangesRequestBuilder setTaxonomy(ReasonerTaxonomy taxonomy) {
 		this.taxonomy = taxonomy;
 		return getSelf();
@@ -43,8 +48,8 @@ public final class PersistChangesRequestBuilder extends BaseRequestBuilder<Persi
 	}
 
 	@Override
-	protected Request<ServiceProvider, IStatus> doBuild() {
-		return new PersistChangesRequest(taxonomy, userId);
+	protected Request<ServiceProvider, ApiError> doBuild() {
+		return new PersistChangesRequest(classificationId, taxonomy, userId);
 	}
 
 	public AsyncRequest<String> buildAsync() {

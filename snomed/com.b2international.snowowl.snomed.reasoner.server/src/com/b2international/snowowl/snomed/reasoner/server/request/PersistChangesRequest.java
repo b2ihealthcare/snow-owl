@@ -24,14 +24,14 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.status.SerializableStatus;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
@@ -40,6 +40,7 @@ import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.ApiError;
 import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
@@ -55,7 +56,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.reasoner.server.SnomedReasonerServerActivator;
 import com.b2international.snowowl.snomed.reasoner.server.classification.EquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange;
@@ -63,16 +63,21 @@ import com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain.Co
 import com.b2international.snowowl.snomed.reasoner.server.diff.relationship.RelationshipPersister;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 /**
  * @since 5.7
  */
-public class PersistChangesRequest implements Request<ServiceProvider, IStatus> {
+public class PersistChangesRequest implements Request<ServiceProvider, ApiError> {
 
+	private static final Logger LOG = LoggerFactory.getLogger(PersistChangesRequest.class);
+	
 	private static final long LOCK_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(5L);
 
+	@JsonProperty
+	private final String classificationId;
 	private final String userId;
 
 	private ReasonerTaxonomy taxonomy;
@@ -80,28 +85,31 @@ public class PersistChangesRequest implements Request<ServiceProvider, IStatus> 
 	private IOperationLockTarget lockTarget;
 	private LongSet statedDescendantsOfSmp;
 
-	public PersistChangesRequest(ReasonerTaxonomy taxonomy, String userId) {
+	public PersistChangesRequest(String classificationId, ReasonerTaxonomy taxonomy, String userId) {
+		this.classificationId = classificationId;
 		this.taxonomy = taxonomy;
 		this.userId = userId;
 	}
 
 	@Override
-	public IStatus execute(ServiceProvider context) {
+	public ApiError execute(ServiceProvider context) {
 		IProgressMonitor monitor = context.service(IProgressMonitor.class);
 
 		try {
 			lockBeforeChanges();
 			return persistChanges(monitor);
 		} catch (Exception e) {
-			return createErrorStatus(e);
+			return createApiError(e);
 		} finally {
 			monitor.done();
 			cleanup();
 		}
 	}
 
-	private IStatus createErrorStatus(final Exception e) {
-		return new SerializableStatus(IStatus.ERROR, SnomedReasonerServerActivator.PLUGIN_ID, "Error while persisting classification changes on '" + taxonomy.getBranchPath() + "'.", e);
+	private ApiError createApiError(final Exception e) {
+		String message = "Error while persisting classification changes on '" + taxonomy.getBranchPath() + "'.";
+		LOG.error(message, e);
+		return new ApiError.Builder(message).code(500).build();
 	}
 
 	private void lockBeforeChanges() {
@@ -127,7 +135,7 @@ public class PersistChangesRequest implements Request<ServiceProvider, IStatus> 
 		}
 	}
 
-	private IStatus persistChanges(IProgressMonitor monitor) throws CommitException {
+	private ApiError persistChanges(IProgressMonitor monitor) throws CommitException {
 
 		if (null == taxonomy) {
 			throw new IllegalStateException("Tried to run the same persist changes job twice.");
@@ -179,7 +187,7 @@ public class PersistChangesRequest implements Request<ServiceProvider, IStatus> 
 			.parentContextDescription(SAVE_CLASSIFICATION_RESULTS)
 			.commitOne(subMonitor.newChild(2));
 
-			return SerializableStatus.OK_STATUS;
+			return new ApiError.Builder("OK").code(200).build();
 		} catch (CommitException e) {
 			if (editingContext != null) {
 				editingContext.releaseIds();

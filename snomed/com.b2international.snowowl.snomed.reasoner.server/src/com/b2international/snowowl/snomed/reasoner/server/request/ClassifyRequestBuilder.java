@@ -15,19 +15,18 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server.request;
 
-import org.eclipse.core.runtime.IStatus;
-
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.ApiError;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSettings;
 
 /**
  * @since 5.7
  */
-public final class ClassifyRequestBuilder extends BaseRequestBuilder<ClassifyRequestBuilder, ServiceProvider, IStatus> {
+public final class ClassifyRequestBuilder extends BaseRequestBuilder<ClassifyRequestBuilder, ServiceProvider, ApiError> {
 
 	private ClassificationSettings settings;
 
@@ -37,17 +36,16 @@ public final class ClassifyRequestBuilder extends BaseRequestBuilder<ClassifyReq
 	}
 
 	@Override
-	protected Request<ServiceProvider, IStatus> doBuild() {
+	protected Request<ServiceProvider, ApiError> doBuild() {
 		return new ClassifyRequest(settings);
 	}
 
 	public AsyncRequest<String> buildAsync() {
-		String branch = settings.getSnomedBranchPath().getPath();
-
 		return JobRequests.prepareSchedule()
+				.setId(settings.getClassificationId())
 				.setUser(settings.getUserId())
 				.setRequest(build())
-				.setDescription(String.format("Classifying the ontology on %s", branch))
+				.setDescription(String.format("Classifying the ontology on %s", settings.getSnomedBranchPath().getPath()))
 				.buildAsync();
 	}
 

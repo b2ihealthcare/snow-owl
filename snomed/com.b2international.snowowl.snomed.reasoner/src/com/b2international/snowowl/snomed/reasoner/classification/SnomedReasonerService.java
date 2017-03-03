@@ -36,9 +36,8 @@ public interface SnomedReasonerService {
 	 * takes precedence.
 	 * 
 	 * @param settings the object describing parameters for the classification run
-	 * @return the identifier for the classification run
 	 */
-	String beginClassification(ClassificationSettings settings);
+	void beginClassification(ClassificationSettings settings);
 
 	/**
 	 * Returns the results of the classification for review. This method blocks until a result becomes available.

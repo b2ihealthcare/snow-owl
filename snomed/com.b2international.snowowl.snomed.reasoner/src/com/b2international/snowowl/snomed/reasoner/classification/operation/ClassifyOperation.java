@@ -54,7 +54,7 @@ public abstract class ClassifyOperation<T> {
 
 		try {
 
-			String classificationId = getReasonerService().beginClassification(settings);
+			getReasonerService().beginClassification(settings);
 
 			while (true) {
 
@@ -62,7 +62,7 @@ public abstract class ClassifyOperation<T> {
 					throw new OperationCanceledException();
 				}
 
-				RemoteJobEntry jobEntry = JobRequests.prepareGet(classificationId)
+				RemoteJobEntry jobEntry = JobRequests.prepareGet(settings.getClassificationId())
 						.buildAsync()
 						.execute(getEventBus())
 						.getSync();
@@ -72,7 +72,7 @@ public abstract class ClassifyOperation<T> {
 				case RUNNING:
 					break;
 				case FINISHED:
-					return processResults(classificationId);
+					return processResults(settings.getClassificationId());
 				case CANCELED: //$FALL-THROUGH$
 				case CANCEL_REQUESTED:
 					throw new OperationCanceledException();
