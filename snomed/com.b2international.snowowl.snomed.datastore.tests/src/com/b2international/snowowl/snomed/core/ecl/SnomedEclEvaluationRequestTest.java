@@ -64,6 +64,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
@@ -113,6 +114,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	@Override
 	protected void configureMapper(ObjectMapper mapper) {
 		super.configureMapper(mapper);
+		mapper.setSerializationInclusion(Include.NON_NULL);
 		mapper.registerModule(new PrimitiveCollectionModule());
 	}
 	
