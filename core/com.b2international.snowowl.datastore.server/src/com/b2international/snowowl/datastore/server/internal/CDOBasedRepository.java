@@ -48,7 +48,6 @@ import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
 import com.b2international.snowowl.core.events.RepositoryEvent;
-import com.b2international.snowowl.core.events.SystemNotification;
 import com.b2international.snowowl.core.merge.MergeService;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -192,8 +191,6 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(this, reviewConfiguration);
 		bind(ReviewManager.class, reviewManager);
 
-		events().registerHandler(SystemNotification.ADDRESS, reviewManager.getStaleHandler());
-		
 		final MergeServiceImpl mergeService = new MergeServiceImpl(this, mergeMaxResults);
 		bind(MergeService.class, mergeService);
 	}
