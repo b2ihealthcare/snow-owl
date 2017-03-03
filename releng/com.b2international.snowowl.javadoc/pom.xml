@@ -65,6 +65,7 @@
 									<exclude>*.test*</exclude>
 									<exclude>com.jgoodies.looks*</exclude>
 									<exclude>io.reactivex*</exclude>
+									<exclude>net.jodah*</exclude>
 								</excludes>
 							</javadocOptions>
 						</configuration>
