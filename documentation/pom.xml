@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>documentation</artifactId>
-	<packaging>pom</packaging>
+	<packaging>eclipse-plugin</packaging>
 
 	<properties>
 		<asciidoctor.version>1.5.4</asciidoctor.version>
@@ -20,13 +20,74 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.eclipse.tycho.extras</groupId>
+				<artifactId>tycho-document-bundle-plugin</artifactId>
+				<version>${tycho-extras.version}</version>
+				<executions>
+					<execution>
+						<id>api-docs</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>javadoc</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>api-docs</outputDirectory>
+							<skipTocGen>true</skipTocGen>
+							<javadocOptions>
+								<additionalArguments>
+									<additionalArgument>${javadoc-args}</additionalArgument>
+									<additionalArgument>
+										-link
+										http://docs.oracle.com/javase/8/docs/api/
+									</additionalArgument>
+									<additionalArgument>-quiet</additionalArgument>
+<!-- 									<additionalArgument>-verbose</additionalArgument> -->
+									<additionalArgument>-windowtitle "Snow Owl"</additionalArgument>
+								</additionalArguments>
+								<excludes>
+									<exclude>com.h2database*</exclude>
+									<exclude>com.fasterxml*</exclude>
+									<exclude>com.mysql*</exclude>
+									<exclude>com.thoughtworks*</exclude>
+									<exclude>com.healthmarketscience*</exclude>
+									<exclude>com.codahale*</exclude>
+									<exclude>javax.annotation*</exclude>
+									<exclude>javax.validation*</exclude>
+									<exclude>gr.forth.ics*</exclude>
+									<exclude>it.unimi.dsi.fastutil*</exclude>
+									<exclude>org.apache*</exclude>
+									<exclude>org.assertj*</exclude>
+									<exclude>org.easyb*</exclude>
+									<exclude>org.eclipse*</exclude>
+									<exclude>org.hibernate*</exclude>
+									<exclude>org.ihtsdo*</exclude>
+									<exclude>org.osgi*</exclude>
+									<exclude>org.protege*</exclude>
+									<exclude>org.supercsv*</exclude>
+									<exclude>org.semanticweb*</exclude>
+									<exclude>org.xmlpull*</exclude>
+									<exclude>sun.*</exclude>
+									<exclude>spiffy*</exclude>
+									<exclude>*.test*</exclude>
+									<exclude>com.jgoodies.looks*</exclude>
+									<exclude>io.reactivex*</exclude>
+									<exclude>net.jodah*</exclude>
+									<exclude>org.tartarus.snowball*</exclude>
+									<exclude>*internal*</exclude>
+								</excludes>
+							</javadocOptions>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.asciidoctor</groupId>
 				<artifactId>asciidoctor-maven-plugin</artifactId>
 				<version>${asciidoctor.maven.plugin.version}</version>
 
 				<executions>
 					<execution>
-						<id>output-html</id>
+						<id>guides-html</id>
 						<phase>generate-resources</phase>
 						<goals>
 							<goal>process-asciidoc</goal>
@@ -34,11 +95,12 @@
 						<configuration>
 							<backend>html5</backend>
 							<sourceHighlighter>coderay</sourceHighlighter>
+							<outputDirectory>guides</outputDirectory>
 						</configuration>
 					</execution>
 
 					<execution>
-						<id>output-pdf</id>
+						<id>guides-pdf</id>
 						<phase>generate-resources</phase>
 						<goals>
 							<goal>process-asciidoc</goal>
@@ -46,6 +108,7 @@
 						<configuration>
 							<backend>pdf</backend>
 							<sourceHighlighter>coderay</sourceHighlighter>
+							<outputDirectory>guides</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
@@ -67,6 +130,35 @@
                         <version>9.0.4.0</version>
                     </dependency>
 				</dependencies>
+			</plugin>
+			<plugin>
+			    <!-- Deploys the site to gh-pages -->
+			    <groupId>com.github.github</groupId>
+			    <artifactId>site-maven-plugin</artifactId>
+			    <version>0.12</version>
+			    <executions>
+			        <execution>
+			            <goals>
+			                <goal>site</goal>
+			            </goals>
+			            <!-- select the Maven phase in which the plugin will be executed -->
+			            <phase>verify</phase>
+			            <configuration>
+			                <server>github</server>
+			                <includes>
+			                	<include>api-docs/**/*</include>
+			                	<include>guides/**/*</include>
+			               	</includes>
+			                <outputDirectory>${project.basedir}</outputDirectory>
+			                <!-- The commit message -->
+			                <message>Generated site for ${project.version}</message>
+			                <!-- The location where the site is uploaded -->
+			                <path>${project.version}</path>
+			                <!-- Use merge or override the content -->
+			                <merge>true</merge>
+			            </configuration>
+			        </execution>
+			    </executions>
 			</plugin>
 		</plugins>
 	</build>

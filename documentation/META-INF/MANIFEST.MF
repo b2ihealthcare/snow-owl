@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Javadoc documentation for Snow Owl
-Bundle-SymbolicName: com.b2international.snowowl.javadoc;singleton:=true
+Bundle-Name: Snow Owl Documentation
+Bundle-SymbolicName: documentation;singleton:=true
 Bundle-Version: 5.7.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-ActivationPolicy: lazy
@@ -28,11 +28,9 @@ Require-Bundle: com.b2international.commons,
  com.b2international.snowowl.snomed.api.impl,
  com.b2international.snowowl.snomed.api.rest,
  com.b2international.snowowl.snomed.common,
- com.b2international.snowowl.snomed.model,
  com.b2international.snowowl.snomed.datastore,
  com.b2international.snowowl.snomed.datastore.server,
  com.b2international.snowowl.snomed.dsl,
- com.b2international.snowowl.snomed.escg,
  com.b2international.snowowl.snomed.exporter,
  com.b2international.snowowl.snomed.exporter.server,
  com.b2international.snowowl.snomed.importer,
@@ -40,10 +38,8 @@ Require-Bundle: com.b2international.commons,
  com.b2international.snowowl.snomed.mrcm.core,
  com.b2international.snowowl.snomed.mrcm.core.server,
  com.b2international.snowowl.snomed.refset.core,
- com.b2international.snowowl.snomed.scg,
  com.b2international.snowowl.snomed.semanticengine,
  com.b2international.snowowl.snomed.semanticengine.simpleast,
  com.b2international.snowowl.snomed.validation.constraints,
  com.b2international.snowowl.snomed.reasoner,
- com.b2international.snowowl.snomed.reasoner.server,
- com.b2international.snowowl.snomed.ecl
+ com.b2international.snowowl.snomed.reasoner.server
