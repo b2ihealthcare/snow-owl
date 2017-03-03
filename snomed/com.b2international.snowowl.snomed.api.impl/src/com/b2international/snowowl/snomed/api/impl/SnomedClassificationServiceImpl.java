@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.events.SystemNotification;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.remotejobs.*;
@@ -306,12 +307,13 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 	public IClassificationRun beginClassification(final String branchPath, final String reasonerId, final String userId) {
 
 		final StorageRef storageRef = createStorageRef(branchPath);
+		final IBranchPath oldBranchPath = storageRef.getBranch().branchPath();
 
-		final ClassificationSettings settings = new ClassificationSettings(storageRef.getBranchPath())
+		final ClassificationSettings settings = new ClassificationSettings(userId, oldBranchPath)
 				.withParentContextDescription(DatastoreLockContextDescriptions.ROOT)
 				.withReasonerId(reasonerId);
 
-		String classificationId = getReasonerService().beginClassification(settings, userId);
+		String classificationId = getReasonerService().beginClassification(settings);
 		
 		final ClassificationRun classificationRun = new ClassificationRun();
 		classificationRun.setId(classificationId);
@@ -321,7 +323,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 		classificationRun.setStatus(ClassificationStatus.SCHEDULED);
 
 		try {
-			indexService.upsertClassificationRun(storageRef.getBranch().branchPath(), classificationRun);
+			indexService.upsertClassificationRun(oldBranchPath, classificationRun);
 		} catch (final IOException e) {
 			throw new RuntimeException(e);
 		}
