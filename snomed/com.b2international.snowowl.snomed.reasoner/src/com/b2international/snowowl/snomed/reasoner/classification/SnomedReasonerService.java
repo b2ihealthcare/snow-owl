@@ -20,7 +20,7 @@ package com.b2international.snowowl.snomed.reasoner.classification;
  * <p>
  * Supported operations are:
  * <ul>
- * <li>{@link #beginClassification(ClassificationSettings) starting classification of a branch}
+ * <li>{@link #beginClassification(ClassificationSettings, String) starting classification of a branch}
  * <li>{@link #getResult(String) retrieving a classification result for review}
  * <li>{@link #getEquivalentConcepts(String) returning equivalence sets}
  * <li>{@link #persistChanges(String, String) persisting changes from a classification run}
@@ -36,9 +36,10 @@ public interface SnomedReasonerService {
 	 * takes precedence.
 	 * 
 	 * @param settings the object describing parameters for the classification run
+	 * @param userId the identifier of the user requesting classification
 	 * @return the identifier for the classification run
 	 */
-	String beginClassification(ClassificationSettings settings);
+	String beginClassification(ClassificationSettings settings, String userId);
 
 	/**
 	 * Returns the results of the classification for review. This method blocks until a result becomes available.

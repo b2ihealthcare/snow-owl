@@ -226,7 +226,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	}
 
 	@Override
-	public String beginClassification(ClassificationSettings settings) {
+	public String beginClassification(ClassificationSettings settings, String userId) {
 		checkNotNull(settings, "Classification settings may not be null.");
 
 		if (null == settings.getReasonerId()) {
@@ -235,6 +235,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 
 		String classificationId = SnomedReasonerRequests.prepareClassify()
 				.setSettings(settings)
+				.setUserId(userId)
 				.buildAsync()
 				.execute(getEventBus())
 				.getSync();

@@ -37,8 +37,8 @@ import com.b2international.snowowl.snomed.reasoner.model.ConceptDefinition;
  */
 public class EquivalencyChecker extends ClassifyOperation<LongKeyLongMap> {
 
-	public EquivalencyChecker(ClassificationSettings settings) {
-		super(settings);
+	public EquivalencyChecker(ClassificationSettings settings, String userId) {
+		super(settings, userId);
 	}
 
 	@Override

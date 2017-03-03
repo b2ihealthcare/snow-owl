@@ -37,9 +37,11 @@ public abstract class ClassifyOperation<T> {
 	private static final long CHECK_CANCEL_INTERVAL_MILLIS = 500L;
 
 	protected final ClassificationSettings settings;
+	protected final String userId;
 
-	public ClassifyOperation(ClassificationSettings settings) {
+	public ClassifyOperation(ClassificationSettings settings, String userId) {
 		this.settings = settings;
+		this.userId = userId;
 	}
 
 	/**
@@ -54,7 +56,7 @@ public abstract class ClassifyOperation<T> {
 
 		try {
 
-			String classificationId = getReasonerService().beginClassification(settings);
+			String classificationId = getReasonerService().beginClassification(settings, userId);
 
 			while (true) {
 

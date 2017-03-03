@@ -25,6 +25,7 @@ import com.b2international.commons.status.SerializableStatus;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSettings;
 import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerService;
@@ -68,7 +69,7 @@ public class ClassifyRequest implements Request<ServiceProvider, IStatus> {
 
 		try {
 
-			IBranchPath snomedBranchPath = settings.getSnomedBranchPath();
+			IBranchPath snomedBranchPath = BranchPathUtils.createPath(settings.getBranch());
 			List<ConceptDefinition> additionalDefinitions = settings.getAdditionalDefinitions();
 			String parentContextDescription = settings.getParentContextDescription();
 

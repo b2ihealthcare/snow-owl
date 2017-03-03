@@ -30,9 +30,15 @@ import com.b2international.snowowl.snomed.reasoner.classification.Classification
 public final class ClassifyRequestBuilder extends BaseRequestBuilder<ClassifyRequestBuilder, ServiceProvider, IStatus> {
 
 	private ClassificationSettings settings;
+	private String userId;
 
 	public ClassifyRequestBuilder setSettings(ClassificationSettings settings) {
 		this.settings = settings;
+		return getSelf();
+	}
+
+	public ClassifyRequestBuilder setUserId(String userId) {
+		this.userId = userId;
 		return getSelf();
 	}
 
@@ -42,12 +48,10 @@ public final class ClassifyRequestBuilder extends BaseRequestBuilder<ClassifyReq
 	}
 
 	public AsyncRequest<String> buildAsync() {
-		String branch = settings.getSnomedBranchPath().getPath();
-
 		return JobRequests.prepareSchedule()
-				.setUser(settings.getUserId())
+				.setUser(userId)
 				.setRequest(build())
-				.setDescription(String.format("Classifying the ontology on %s", branch))
+				.setDescription(String.format("Classifying the ontology on %s", settings.getBranch()))
 				.buildAsync();
 	}
 

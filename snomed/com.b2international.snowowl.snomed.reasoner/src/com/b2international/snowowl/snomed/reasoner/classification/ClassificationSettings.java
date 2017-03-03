@@ -21,9 +21,9 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.io.Serializable;
 import java.util.List;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.snomed.reasoner.model.ConceptDefinition;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 
 /**
@@ -33,19 +33,15 @@ public class ClassificationSettings implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
-	private final String userId;
-	private final IBranchPath snomedBranchPath;
+	private final String branch;
 	private final List<ConceptDefinition> additionalDefinitions = newArrayList();
 	
 	private String parentContextDescription = DatastoreLockContextDescriptions.CLASSIFY_WITH_REVIEW;
 	private String reasonerId;
 	
-	public ClassificationSettings(String userId, IBranchPath snomedBranchPath) {
-		checkNotNull(userId, "User identifier may not be null.");
-		checkNotNull(snomedBranchPath, "SNOMED CT branch path may not be null.");
-		
-		this.userId = userId;
-		this.snomedBranchPath = snomedBranchPath;
+	public ClassificationSettings(String branch) {
+		checkNotNull(branch, "SNOMED CT branch path may not be null.");
+		this.branch = branch;
 	}
 	
 	public ClassificationSettings withAdditionalDefinitions(List<ConceptDefinition> additionalDefinitions) {
@@ -68,20 +64,18 @@ public class ClassificationSettings implements Serializable {
 		return this;
 	}
 
+	@JsonIgnore
 	public List<ConceptDefinition> getAdditionalDefinitions() {
 		return additionalDefinitions;
 	}
 
+	@JsonIgnore
 	public String getParentContextDescription() {
 		return parentContextDescription;
 	}
 
-	public String getUserId() {
-		return userId;
-	}
-
-	public IBranchPath getSnomedBranchPath() {
-		return snomedBranchPath;
+	public String getBranch() {
+		return branch;
 	}
 	
 	public String getReasonerId() {
@@ -91,8 +85,7 @@ public class ClassificationSettings implements Serializable {
 	@Override
 	public String toString() {
 		return Objects.toStringHelper(this)
-				.add("userId", userId)
-				.add("snomedBranchPath", snomedBranchPath)
+				.add("branch", branch)
 				.add("additionalDefinitions", additionalDefinitions)
 				.add("parentContextDescription", parentContextDescription)
 				.add("reasonerId", reasonerId)
