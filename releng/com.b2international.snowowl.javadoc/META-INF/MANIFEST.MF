@@ -6,8 +6,6 @@ Bundle-Version: 5.7.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-ActivationPolicy: lazy
 Require-Bundle: com.b2international.commons,
- com.b2international.commons.groovy,
- com.b2international.org.apache.lucene,
  com.b2international.snowowl.eventbus,
  com.b2international.snowowl.rpc,
  com.b2international.snowowl.core,
@@ -21,8 +19,6 @@ Require-Bundle: com.b2international.commons,
  com.b2international.snowowl.emf.compare,
  com.b2international.snowowl.importer,
  com.b2international.snowowl.index.diff,
- com.b2international.snowowl.scripting.core,
- com.b2international.snowowl.scripting.services,
  com.b2international.snowowl.server.console,
  com.b2international.snowowl.terminologyregistry.core.server,
  com.b2international.snowowl.api,
@@ -49,4 +45,5 @@ Require-Bundle: com.b2international.commons,
  com.b2international.snowowl.snomed.semanticengine.simpleast,
  com.b2international.snowowl.snomed.validation.constraints,
  com.b2international.snowowl.snomed.reasoner,
- com.b2international.snowowl.snomed.reasoner.server
+ com.b2international.snowowl.snomed.reasoner.server,
+ com.b2international.snowowl.snomed.ecl

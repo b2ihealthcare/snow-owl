@@ -32,7 +32,7 @@
 									<additionalArgument>${javadoc-args}</additionalArgument>
 									<additionalArgument>
 										-link
-										http://docs.oracle.com/javase/7/docs/api/
+										http://docs.oracle.com/javase/8/docs/api/
 									</additionalArgument>
 									<additionalArgument>-quiet</additionalArgument>
 									<additionalArgument>-verbose</additionalArgument>

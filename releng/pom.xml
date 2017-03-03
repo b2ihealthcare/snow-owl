@@ -49,10 +49,10 @@
 			</modules>
 		</profile>
 		<profile>
-			<id>javadoc</id>
+			<id>docs</id>
 			<activation>
 				<property>
-					<name>javadoc</name>
+					<name>docs</name>
 					<value>true</value>
 				</property>
 			</activation>
