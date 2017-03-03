@@ -428,7 +428,7 @@ public class VersioningService implements IVersioningService {
 			.setVersionId(versionId)
 			.build();
 		final String jobId = JobRequests.prepareSchedule()
-			.setDescription("Creating code system version...")
+			.setDescription(buildJobDescription())
 			.setUser(ApplicationContext.getServiceForClass(ICDOConnectionManager.class).getUserId())
 			.setRequest(req)
 			.buildAsync()
@@ -441,6 +441,29 @@ public class VersioningService implements IVersioningService {
 		} while (job == null || !job.isDone());
 	}
 	
+	private String buildJobDescription() {
+		final List<String> toolingIds = newArrayList(this.toolingIds);
+		final StringBuilder sb = new StringBuilder("Creating version '");
+		sb.append(versionId);
+		sb.append("' for");
+		if (toolingIds.size() == 1) {
+			sb.append(" ");
+			sb.append(getToolingName(toolingIds.get(0)));
+		} else {
+			for (int i = 0; i < toolingIds.size(); i++) {
+				sb.append(" ");
+				sb.append(getToolingName(toolingIds.get(i)));
+				if (toolingIds.size() - 2 == i) {
+					sb.append(" and");
+				} else if (toolingIds.size() - 2 > i) {
+					sb.append(",");
+				}
+			}
+		}
+		sb.append(".");
+		return sb.toString();
+	}
+
 	/*
 	 * Checks if the version id for the requested repositories (identified by their tooling id) exists or not.
 	 */

@@ -21,7 +21,6 @@ import static com.b2international.snowowl.datastore.version.TagConfigurationBuil
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.size;
 import static com.google.common.collect.Iterables.tryFind;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.text.MessageFormat.format;
@@ -30,7 +29,6 @@ import static org.eclipse.core.runtime.SubMonitor.convert;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,7 +52,11 @@ import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionAggregator;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
+import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
+import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
+import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.datastore.version.ITagConfiguration;
@@ -102,17 +104,18 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, V
 	private String primaryToolingId;
 	
 	private Collection<String> toolingIds = Collections.emptySet();
+
+	// lock props
+	private DatastoreLockContext lockContext;
+	private Map<String, SingleRepositoryAndBranchLockTarget> lockTargets;
 	
 	@Override
 	public Void execute(ServiceProvider context) {
 		final IProgressMonitor monitor = context.service(IProgressMonitor.class);
 		final RemoteJob job = context.service(RemoteJob.class);
+		final String user = job.getUser();
 		
-		
-//		final DatastoreLockContext lockContext = createLockContext(configuration.getUserId());
-//		final Map<String, SingleRepositoryAndBranchLockTarget> lockTargets = createLockTargets(configuration);
-		
-//		acquireLocks(lockContext, lockTargets);
+		acquireLocks(context, user);
 		
 		try ( final ICDOTransactionAggregator aggregator = CDOTransactionAggregator.create(Lists.<CDOTransaction>newArrayList()); ) {
 			final IProgressMonitor subMonitor = convert(monitor, TASK_WORK_STEP * size(toolingIds) + 1);
@@ -131,14 +134,13 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, V
 			});
 			
 			doPublish(aggregator, versioningManagers, subMonitor);
-			doCommitChanges(job.getUser(), aggregator, subMonitor, existingVersions);
-			doTag(job.getUser(), performTagPerToolingFeatures, subMonitor);
+			doCommitChanges(user, aggregator, subMonitor, existingVersions);
+			doTag(user, performTagPerToolingFeatures, subMonitor);
 			postCommit(aggregator, versioningManagers, monitor);
 		} catch (final SnowowlServiceException e) {
-//			LOGGER.error("Error occurred during versioning.", e);
 			throw new SnowowlRuntimeException("Error occurred during versioning.", e);
 		} finally {
-//			getLockManager().unlock(lockContext, lockTargets.values());
+			releaseLocks(context);
 			if (null != monitor) {
 				monitor.done();
 			}
@@ -174,19 +176,21 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, V
 		this.versionId = versionId;
 	}
 	
-//	private void acquireLocks(final DatastoreLockContext lockContext, final Map<String, SingleRepositoryAndBranchLockTarget> lockTargets) {
-//		try {
-//			getLockManager().lock(lockContext, IMMEDIATE, lockTargets.values());
-//		} catch (final OperationLockException e) {
-//			if (e instanceof DatastoreOperationLockException) {
-//				throw new DatastoreOperationLockException(String.format("Failed to acquire locks for versioning because %s.", e.getMessage())); 
-//			} else {
-//				throw new DatastoreOperationLockException("Error while trying to acquire lock on repository for versioning.");
-//			}
-//		} catch (final InterruptedException e) {
-//			throw new SnowowlRuntimeException(e);
-//		}
-//	}
+	private void acquireLocks(ServiceProvider context, String user) {
+		try {
+			this.lockContext = createLockContext(user);
+			this.lockTargets = createLockTargets();
+			context.service(IDatastoreOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTargets.values());
+		} catch (final OperationLockException e) {
+			if (e instanceof DatastoreOperationLockException) {
+				throw new DatastoreOperationLockException(String.format("Failed to acquire locks for versioning because %s.", e.getMessage())); 
+			} else {
+				throw new DatastoreOperationLockException("Error while trying to acquire lock on repository for versioning.");
+			}
+		} catch (final InterruptedException e) {
+			throw new SnowowlRuntimeException(e);
+		}
+	}
 
 	private Map<String, SingleRepositoryAndBranchLockTarget> createLockTargets() {
 		final Builder<String, SingleRepositoryAndBranchLockTarget> lockTargetsBuilder = ImmutableMap.builder();
@@ -195,6 +199,10 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, V
 		}
 		final Map<String,SingleRepositoryAndBranchLockTarget> lockTargets = lockTargetsBuilder.build();
 		return lockTargets;
+	}
+	
+	private void releaseLocks(ServiceProvider context) {
+		context.service(IDatastoreOperationLockManager.class).unlock(lockContext, lockTargets.values());
 	}
 	
 	private void doPublish(final ICDOTransactionAggregator aggregator, final Map<String, IVersioningManager> versioningManagers, final IProgressMonitor monitor) throws SnowowlServiceException {
@@ -333,29 +341,6 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, V
 	
 	private String getToolingName(final String toolingId) {
 		return CoreTerminologyBroker.getInstance().getTerminologyName(toolingId);
-	}
-	
-	private String buildTaskName() {
-		final List<String> toolingIds = newArrayList(this.toolingIds);
-		final StringBuilder sb = new StringBuilder("Creating version '");
-		sb.append(versionId);
-		sb.append("' for");
-		if (toolingIds.size() == 1) {
-			sb.append(" ");
-			sb.append(getToolingName(toolingIds.get(0)));
-		} else {
-			for (int i = 0; i < toolingIds.size(); i++) {
-				sb.append(" ");
-				sb.append(getToolingName(toolingIds.get(i)));
-				if (toolingIds.size() - 2 == i) {
-					sb.append(" and");
-				} else if (toolingIds.size() - 2 > i) {
-					sb.append(",");
-				}
-			}
-		}
-		sb.append(".");
-		return sb.toString();
 	}
 	
 }
