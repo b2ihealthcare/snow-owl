@@ -26,11 +26,11 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.inject.Provider;
 
 /**
@@ -48,7 +48,7 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 	@Override
 	public Branch branch() {
 		if (null == branch) {
-			branch = SnomedRequests
+			branch = RepositoryRequests
 						.branching()
 						.prepareGet(editingContext.getBranch())
 						.build(SnomedDatastoreActivator.REPOSITORY_UUID)
