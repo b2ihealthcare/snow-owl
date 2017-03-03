@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 package com.b2international.snowowl.datastore.server.internal.branch;
 
 import java.util.Collection;
+import java.util.Set;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.Metadata;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
 
 /**
  * @since 4.1
@@ -71,12 +71,15 @@ public class CDOBranchImpl extends BranchImpl implements InternalCDOBasedBranch 
 	}
 	
 	@Override
-	public InternalCDOBasedBranch withSegmentId(int segmentId) {
-		final Builder<Integer> builder = ImmutableSet.builder();
-		builder.add(segmentId);
-		// use previous segments here, the branch got a new segment because a new child branch got opened
-		builder.addAll(segments());
-		return new CDOBranchImpl(name(), parentPath(), baseTimestamp(), headTimestamp(), isDeleted(), metadata(), cdoBranchId(), segmentId, builder.build(), parentSegments);
+	public InternalCDOBasedBranch withSegmentId(int newSegmentId) {
+		final Set<Integer> newSegments = ImmutableSet.<Integer>builder()
+				.add(newSegmentId)
+				.addAll(segments())
+				.build();
+		
+		CDOBranchImpl branch = new CDOBranchImpl(name(), parentPath(), baseTimestamp(), headTimestamp(), isDeleted(), metadata(), cdoBranchId(), newSegmentId, newSegments, parentSegments());
+		branch.setBranchManager(getBranchManager());
+		return branch;
 	}
 	
 	@Override

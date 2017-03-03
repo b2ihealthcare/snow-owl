@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,21 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 		super();
 	}
 	
+	/**
+	 * Sets the offset for the paging of the result set. 
+	 * @param offset for paging the result set returned
+	 * @return this builder instance
+	 */
 	public final B setOffset(int offset) {
 		this.offset = offset;
 		return getSelf();
 	}
 	
+	/**
+	 * Sets the limit of the result set returned
+	 * @param limit of the result set
+	 * @return this builder instance
+	 */
 	public final B setLimit(int limit) {
 		this.limit = limit;
 		return getSelf();
@@ -53,13 +63,18 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	/**
 	 * Filter by resource identifiers.
-	 * @param componentIds
-	 * @return RevisionSearchRequestBuilder
+	 * @param id - a single identifier to match
+	 * @return this builder instance
 	 */
 	public final B filterById(String id) {
 		return filterByIds(Collections.singleton(id));
 	}
 	
+	/**
+	 * Filter by resource identifiers.
+	 * @param ids - a {@link Collection} of identifiers to match
+	 * @return this builder instance
+	 */
 	public final B filterByIds(Collection<String> ids) {
 		this.ids = ids;
 		return getSelf();
@@ -67,7 +82,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	/**
 	 * Sets the request to return the entire results set as a single 'page'.
-	 * @return {@link SearchResourceRequestBuilder}
+	 * @return this builder instance
 	 */
 	public final B all() {
 		return setOffset(0).setLimit(MAX_LIMIT);
@@ -75,7 +90,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	/**
 	 * Returns a single hit from the result set.
-	 * @return {@link SearchResourceRequestBuilder}
+	 * @return this builder instance
 	 */
 	public final B one() {
 		return setOffset(0).setLimit(1);

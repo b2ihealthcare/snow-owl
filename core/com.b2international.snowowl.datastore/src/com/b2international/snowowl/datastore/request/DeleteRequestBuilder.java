@@ -22,6 +22,9 @@ import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 
 /**
+ * <i>Builder</i> class to build a generic requests responsible for deleting a SNOMED CT component.
+ * This class should be instantiated from the corresponding static method on the central SnomedRequests class.
+ * 
  * @since 4.5
  */
 public class DeleteRequestBuilder extends BaseRequestBuilder<DeleteRequestBuilder, TransactionContext, Void> implements TransactionalRequestBuilder<Void> {

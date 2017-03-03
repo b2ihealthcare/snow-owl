@@ -25,6 +25,7 @@ import org.eclipse.emf.ecore.EObject;
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -40,9 +41,13 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -53,17 +58,43 @@ import com.google.common.collect.Iterables;
 
 /**
  * The central class of the SNOMED CT Java API provided by Snow Owl Terminology Server and Authoring Environment Runtime.
- * This class cannot be instantiated or subclassed by clients, all the functionality is accesible
- * via static methods.  In general, this class provides access to the API via a set of RequestBuilder
+ * This class cannot be instantiated or subclassed by clients, all the functionality is accessible
+ * via static methods.  In general, this class provides access to the API via a set of {@link RequestBuilder}
  * classes that follow the <i>Builder</i> pattern focusing on features such as:
  * <ul>
- * <li>searching for SNOMED CT artefacts such as concepts, relationships, descriptions and reference sets</li>
- * <li>creating new SNOMED CT artefacts</li>
- * <li>deleting SNOMED CT artefacts</li>
- * <li>updating SNOMED CT artefacts</li>
+ * <li>searching for SNOMED CT components such as {@link SnomedConcept Concept}s, {@link SnomedRelationship Relationship}s, {@link SnomedDescription Description}s, {@link SnomedReferenceSet Reference Set}s and {@link SnomedReferenceSetMember Reference Set Member}s</li>
+ * <li>creating new SNOMED CT components</li>
+ * <li>deleting SNOMED CT components</li>
+ * <li>updating SNOMED CT components</li>
  * <li>access to Snow Owl's revision control features</li>
  * </ul>
  * <p>
+ * 
+ * In general the following steps are required to issue a request to the Snow Owl server:
+ * <ol>
+ * <li>invoke the proper <i>prepare</i> method to obtain a request builder</li>
+ * <li>specify the filter conditions, settings, parameters for the request</li>
+ * <li>invoke the <i>build</i> method with the <i>branchpath</i> parameter that specifies the target branch for the request</li>
+ * <li>call <i>execute</i> for async or <i>executeSync</i> for synchronous execution</li>
+ * </ol>
+ * 
+ * A representative example:
+ * <pre><code>
+ * //define the branch to operate on
+ * String branch = Branch.MAIN_PATH;
+ * 
+ * //Obtain the eventbus required to execution of the request
+ * IEventBus bus = ApplicationContext.getInstance().getService(IEventBus.class);
+ * 
+ * //Search for concepts matching the an ECL expression (DescendantsOrSelfOf: 'Clinical finding')
+ * SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
+ *  .filterByEcl('<<404684003')
+ *  .all()
+ *  .build(SnomedDatastoreActivator.REPOSITORY_UUID, branch) // the repository UUID is required to identify the target Repository
+ *  .execute(bus)
+ *  .getSync(); // blocks until the request completes
+ *  
+ * </code></pre>
  *  
  * @since 4.5
  */
@@ -76,34 +107,66 @@ public abstract class SnomedRequests {
 		return new SnomedConstraintSearchRequestBuilder();
 	}
 	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request to search for concepts.
+	 * @return SNOMED CT concept search request builder
+	 */
 	public static SnomedConceptSearchRequestBuilder prepareSearchConcept() {
 		return new SnomedConceptSearchRequestBuilder();
 	}
 	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request to search for descriptions.
+	 * @return SNOMED CT description search request builder
+	 */
 	public static SnomedDescriptionSearchRequestBuilder prepareSearchDescription() {
 		return new SnomedDescriptionSearchRequestBuilder();
 	}
-	
+
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request to search for reference sets.
+	 * @return SNOMED CT reference set search request builder
+	 */
 	public static SnomedRefSetSearchRequestBuilder prepareSearchRefSet() {
 		return new SnomedRefSetSearchRequestBuilder();
 	}
 
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request to search for reference set members.
+	 * @return SNOMED CT reference set member search request builder
+	 */
 	public static SnomedRefSetMemberSearchRequestBuilder prepareSearchMember() {
 		return new SnomedRefSetMemberSearchRequestBuilder();
 	}
 
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request to search for relationships.
+	 * @return {@link SnomedRelationshipSearchRequestBuilder}
+	 */
 	public static SnomedRelationshipSearchRequestBuilder prepareSearchRelationship() {
 		return new SnomedRelationshipSearchRequestBuilder();
 	}
 	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request to return a concept.
+	 * @return {@link SnomedConceptCreateRequestBuilder}
+	 */
 	public static SnomedConceptGetRequestBuilder prepareGetConcept(String conceptId) {
 		return new SnomedConceptGetRequestBuilder(conceptId);
 	}
 	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request to return a description.
+	 * @return {@link SnomedDescriptionGetRequestBuilder}
+	 */
 	public static SnomedDescriptionGetRequestBuilder prepareGetDescription(String descriptionId) {
 		return new SnomedDescriptionGetRequestBuilder(descriptionId);
 	}
 	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request to return a relationship.
+	 * @return {@link SnomedRelationshipGetRequestBuilder}
+	 */
 	public static SnomedRelationshipGetRequestBuilder prepareGetRelationship(String relationshipId) {
 		return new SnomedRelationshipGetRequestBuilder(relationshipId);
 	}
@@ -112,108 +175,224 @@ public abstract class SnomedRequests {
 		return new SnomedDeleteRequestBuilder(componentId, type);
 	}
 	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request that deletes a reference set member.
+	 * @param memberId - the identifier of the member
+	 * @return {@link DeleteRequestBuilder}
+	 */
 	public static DeleteRequestBuilder prepareDeleteMember(String memberId) {
 		return prepareDelete(memberId, SnomedRefSetMember.class);
 	}
 
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request that deletes a concept.
+	 * @param conceptId - the identifier of the concept
+	 * @return {@link DeleteRequestBuilder}
+	 */
 	public static DeleteRequestBuilder prepareDeleteConcept(String conceptId) {
 		return prepareDelete(conceptId, Concept.class);
 	}
 	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request that deletes a description.
+	 * @param descriptionId - the identifier of the description
+	 * @return {@link DeleteRequestBuilder}
+	 */
 	public static DeleteRequestBuilder prepareDeleteDescription(String descriptionId) {
 		return prepareDelete(descriptionId, Description.class);
 	}
 	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request that deletes a relationship.
+	 * @param relationshipId - the identifier of the relationship
+	 * @return {@link DeleteRequestBuilder}
+	 */
 	public static DeleteRequestBuilder prepareDeleteRelationship(String relationshipId) {
 		return prepareDelete(relationshipId, Relationship.class);
 	}
 	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request that deletes a reference set.
+	 * @param refSetId - the identifier of the reference set
+	 * @return {@link DeleteRequestBuilder}
+	 */
 	public static DeleteRequestBuilder prepareDeleteReferenceSet(String refSetId) {
 		return prepareDelete(refSetId, SnomedRefSet.class);
 	}
 
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request that creates a reference set member.
+	 * @return {@link SnomedRefSetMemberCreateRequestBuilder}
+	 */
 	public static SnomedRefSetMemberCreateRequestBuilder prepareNewMember() {
 		return new SnomedRefSetMemberCreateRequestBuilder();
 	}
 	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request that creates a reference set.
+	 * @return {@link SnomedRefSetCreateRequestBuilder}
+	 */
 	public static SnomedRefSetCreateRequestBuilder prepareNewRefSet() {
 		return new SnomedRefSetCreateRequestBuilder();
 	}
 	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request that creates a concept.
+	 * @return {@link SnomedConceptCreateRequestBuilder}
+	 */
 	public static SnomedConceptCreateRequestBuilder prepareNewConcept() {
 		return new SnomedConceptCreateRequestBuilder();
 	}
 	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request that creates a description.
+	 * @return {@link SnomedDescriptionCreateRequestBuilder}
+	 */
 	public static SnomedDescriptionCreateRequestBuilder prepareNewDescription() {
 		return new SnomedDescriptionCreateRequestBuilder();
 	}
 	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request that creates a relationship.
+	 * @return {@link SnomedRelationshipCreateRequestBuilder}
+	 */
 	public static SnomedRelationshipCreateRequestBuilder prepareNewRelationship() {
 		return new SnomedRelationshipCreateRequestBuilder();
 	}
 	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request to return a reference set.
+	 * @param referenceSetId - the identifier of the reference set
+	 * @return {@link SnomedRefSetGetRequestBuilder}
+	 */
 	public static SnomedRefSetGetRequestBuilder prepareGetReferenceSet(String referenceSetId) {
 		return new SnomedRefSetGetRequestBuilder(referenceSetId);
 	}
 	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request to return a reference set member.
+	 * @param memberId - the identifier of the member
+	 * @return {@link SnomedRefSetMemberGetRequestBuilder}
+	 */
+	public static SnomedRefSetMemberGetRequestBuilder prepareGetMember(String memberId) {
+		return new SnomedRefSetMemberGetRequestBuilder(memberId);
+	}
+
+	/**
+	 * Returns a SNOMED CT request builder to prepare the evaluation of an 
+	 * Expression Constraint Language (ECL) expression.
+	 * @return {@link SnomedEclEvaluationRequestBuilder}
+	 */
 	public static SnomedEclEvaluationRequestBuilder prepareEclEvaluation(String expression) {
 		return new SnomedEclEvaluationRequestBuilder(expression);
 	}
 	
+	/**
+	 * Returns the central class that provides access the server's branching features.
+	 * @return central branching class with access to branching features
+	 */
 	public static Branching branching() {
 		return RepositoryRequests.branching();
 	}
 	
+	/**
+	 * Returns the central class that provides access the server's revision control
+	 * merging features.
+	 * @return central merging class with access to merging features
+	 */
 	public static Merging merging() {
 		return RepositoryRequests.merging();
 	}
 
+	/**
+	 * Returns the central class that provides access the server's review features
+	 * @return central review class with access to review features
+	 */
 	public static Reviews review() {
 		return RepositoryRequests.reviews();
 	}
 	
+	/**
+	 * Returns the central class that provides access the server's SNOMED CT identifier services.
+	 * @return central SNOMED CT identifier service class
+	 */
 	public static Identifiers identifiers() {
 		return new Identifiers();
 	}
 
+	/**
+	 * Returns a SNOMED CT request builder to prepare the evaluation of an Query type reference set.
+	 * @return SNOMED CT Query type reference set evaluation request builder
+	 */
 	public static QueryRefSetEvaluationRequestBuilder prepareQueryRefSetEvaluation(String referenceSetId) {
 		return new QueryRefSetEvaluationRequestBuilder().setReferenceSetId(referenceSetId);
 	}
 	
+	/**
+	 * Returns a SNOMED CT request builder to prepare the evaluation of Query type reference set members.
+	 * @return SNOMED CT Query type reference set members evaluation request builder
+	 */
 	public static QueryRefSetMemberEvaluationRequestBuilder prepareQueryRefSetMemberEvaluation(String memberId) {
 		return new QueryRefSetMemberEvaluationRequestBuilder().setMemberId(memberId);
 	}
 
+	/**
+	 * Returns a SNOMED CT request builder to prepare the updating of Query type reference set members.
+	 * @return SNOMED CT Query type reference set members update request builder
+	 */
 	public static QueryRefSetMemberUpdateRequestBuilder prepareUpdateQueryRefSetMember() {
 		return new QueryRefSetMemberUpdateRequestBuilder();
 	}
 
+	/**
+	 * Returns a SNOMED CT request builder to prepare the changing of reference set members.
+	 * @return SNOMED CT reference set members change request builder
+	 */
 	public static SnomedRefSetMemberChangeRequestBuilder prepareMemberChangeRequest(MemberChange change, String moduleId, String referenceSetId) {
 		return new SnomedRefSetMemberChangeRequestBuilder(change, moduleId, referenceSetId);
 	}
 
+	/**
+	 * Returns a SNOMED CT request builder to prepare the updating of a Query type reference set.
+	 * @return SNOMED CT Query type reference set update request builder
+	 */
 	public static QueryRefSetUpdateRequestBuilder prepareUpdateQueryRefSet() {
 		return new QueryRefSetUpdateRequestBuilder();
 	}
 
+	/**
+	 * Returns a SNOMED CT request builder to prepare the updating reference set members.
+	 * @return SNOMED CT reference set member update request builder
+	 */
 	public static SnomedRefSetMemberUpdateRequestBuilder prepareUpdateMember() {
 		return new SnomedRefSetMemberUpdateRequestBuilder();
 	}
 
+	/**
+	 * Returns a SNOMED CT request builder to prepare the updating a concept.
+	 * @param concept id of the concept to be updated
+	 * @return SNOMED CT concept update request builder
+	 */
 	public static SnomedConceptUpdateRequestBuilder prepareUpdateConcept(String componentId) {
 		return new SnomedConceptUpdateRequestBuilder(componentId);
 	}
 
+	/**
+	 * Returns a SNOMED CT request builder to prepare the updating a description.
+	 * @param description id of the description to be updated
+	 * @return SNOMED CT description update request builder
+	 */
 	public static SnomedDescriptionUpdateRequestBuilder prepareUpdateDescription(String componentId) {
 		return new SnomedDescriptionUpdateRequestBuilder(componentId);
 	}
 
+	/**
+	 * Returns a SNOMED CT request builder to prepare the updating a relationship.
+	 * @param relationship id of the relationship to be updated
+	 * @return SNOMED CT relationship update request builder
+	 */
 	public static SnomedRelationshipUpdateRequestBuilder prepareUpdateRelationship(String componentId) {
 		return new SnomedRelationshipUpdateRequestBuilder(componentId);
-	}
-
-	public static SnomedRefSetMemberGetRequestBuilder prepareGetMember(String memberId) {
-		return new SnomedRefSetMemberGetRequestBuilder(memberId);
 	}
 
 	public static SnomedRepositoryCommitRequestBuilder prepareCommit() {
@@ -282,7 +461,5 @@ public abstract class SnomedRequests {
 				}
 			});
 	}
-
-	
 	
 }
