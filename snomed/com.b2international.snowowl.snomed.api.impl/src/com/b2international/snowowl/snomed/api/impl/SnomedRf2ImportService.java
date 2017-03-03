@@ -36,9 +36,9 @@ import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
@@ -226,7 +226,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 					.build(REPOSITORY_UUID)
 					.execute(getEventBus())
 					.getSync();
-		} catch (CodeSystemNotFoundException e) {
+		} catch (NotFoundException e) {
 			return null;
 		}
 	}

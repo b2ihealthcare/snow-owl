@@ -41,7 +41,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
@@ -169,7 +168,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 					.execute(getEventBus())
 					.getSync();
-			} catch (CodeSystemNotFoundException e2) {
+			} catch (NotFoundException e2) {
 				throw new ImportException(String.format(
 						"Unable to find the specified SNOMED CT release among the registered terminologies. Short name: %s, OID: %s",
 						importContext.getCodeSystemShortName(), importContext.getCodeSystemOID()));
