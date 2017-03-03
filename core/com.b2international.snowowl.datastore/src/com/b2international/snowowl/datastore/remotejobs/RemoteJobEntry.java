@@ -43,7 +43,7 @@ import com.google.common.collect.ImmutableSet;
 public final class RemoteJobEntry implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private static final Set<RemoteJobState> DONE_STATES = ImmutableSet.of(RemoteJobState.FINISHED, RemoteJobState.FAILED, RemoteJobState.CANCELLED);
+	private static final Set<RemoteJobState> DONE_STATES = ImmutableSet.of(RemoteJobState.FINISHED, RemoteJobState.FAILED, RemoteJobState.CANCELED);
 
 	public static final int MIN_COMPLETION_LEVEL = 0;
 	public static final int MAX_COMPLETION_LEVEL = 100;
@@ -279,7 +279,7 @@ public final class RemoteJobEntry implements Serializable {
 	
 	@JsonIgnore
 	public boolean isCancelled() {
-		return getState().oneOf(RemoteJobState.CANCELLED, RemoteJobState.CANCEL_REQUESTED);
+		return getState().oneOf(RemoteJobState.CANCELED, RemoteJobState.CANCEL_REQUESTED);
 	}
 	
 //	public String getFormattedScheduleDate() {

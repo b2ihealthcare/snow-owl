@@ -75,7 +75,7 @@ public abstract class ClassifyOperation<T> {
 					break;
 				case FINISHED:
 					return processResults(classificationId);
-				case CANCELLED: //$FALL-THROUGH$
+				case CANCELED: //$FALL-THROUGH$
 				case CANCEL_REQUESTED:
 					throw new OperationCanceledException();
 				case FAILED:

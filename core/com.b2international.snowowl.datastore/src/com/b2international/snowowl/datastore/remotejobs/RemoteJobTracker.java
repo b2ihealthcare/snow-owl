@@ -272,7 +272,7 @@ public final class RemoteJobTracker implements IDisposableService {
 				if (result.isOK()) {
 					newState = RemoteJobState.FINISHED;
 				} else if (result.matches(IStatus.CANCEL)) {
-					newState = RemoteJobState.CANCELLED;
+					newState = RemoteJobState.CANCELED;
 				} else {
 					newState = RemoteJobState.FAILED;
 				}

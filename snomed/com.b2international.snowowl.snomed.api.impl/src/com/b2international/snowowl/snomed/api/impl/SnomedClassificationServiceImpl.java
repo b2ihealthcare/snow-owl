@@ -167,7 +167,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 					try {
 						
 						switch (remoteJob.getState()) {
-						case CANCELLED:
+						case CANCELED:
 							indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.CANCELED);
 							break;
 						case FAILED:

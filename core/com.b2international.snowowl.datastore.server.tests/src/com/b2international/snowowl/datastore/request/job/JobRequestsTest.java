@@ -111,7 +111,7 @@ public class JobRequestsTest {
 		});
 		cancel(jobId);
 		final RemoteJobEntry entry = waitDone(jobId);
-		assertEquals(RemoteJobState.CANCELLED, entry.getState());
+		assertEquals(RemoteJobState.CANCELED, entry.getState());
 		assertNull(entry.getResult());
 		// verify job events
 		// 1 added
