@@ -13,15 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.ecl.scoping
+package com.b2international.snowowl.snomed.ecl.scoping;
 
+import org.eclipse.xtext.scoping.impl.DelegatingScopeProvider;
 
-/**
- * This class contains custom scoping description.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
- */
-class EclScopeProvider extends AbstractEclScopeProvider {
-
+public abstract class AbstractEclScopeProvider extends DelegatingScopeProvider {
 }

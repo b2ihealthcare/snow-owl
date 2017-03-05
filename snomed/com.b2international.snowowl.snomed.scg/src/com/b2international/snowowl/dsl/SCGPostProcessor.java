@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.dsl;
 
-import java.util.List;
-
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
@@ -24,9 +22,8 @@ import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.xtext.GeneratedMetamodel;
-import org.eclipse.xtext.xbase.lib.IterableExtensions;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.FluentIterable;
 
 /**
  * Simple PostProcessor class. Changes can be applied to the Ecore model, that
@@ -43,9 +40,7 @@ public class SCGPostProcessor {
 	}
 
 	public static void process(EPackage ePackage) {
-		List<EClassifier> classifiers = Lists.newArrayList(ePackage.getEClassifiers());
-		Iterable<EClass> allEClasses = IterableExtensions.filter(classifiers, EClass.class);
-		for (EClass eClass : allEClasses) {
+		for (EClass eClass : FluentIterable.from(ePackage.getEClassifiers()).filter(EClass.class)) {
 			if (CONCEPT_ECLASS_NAME.equals(eClass.getName())) {
 				processConcept(eClass);
 			}

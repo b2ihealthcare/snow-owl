@@ -71,13 +71,13 @@
       xsi:type="setup.p2:P2Task">
     <requirement
         name="org.eclipse.emf.mwe2.language.sdk.feature.group"
-        versionRange="[2.8.1,2.8.2)"/>
+        versionRange="[2.9.0,3.0.0)"/>
     <requirement
         name="org.eclipse.xtend.sdk.feature.group"
-        versionRange="[2.8.4,2.8.5)"/>
+        versionRange="[2.11.0,2.13.0)"/>
     <requirement
         name="org.eclipse.xtext.sdk.feature.group"
-        versionRange="[2.8.4,2.8.5)"/>
+        versionRange="[2.11.0,2.13.0)"/>
     <requirement
         name="org.eclipse.m2e.feature.feature.group"/>
     <requirement
