@@ -165,7 +165,6 @@
 					        	<!-- Deletes files only from the docs currently being updated -->
 					        	<ignorePathsToDelete>%regex[^(?!${project.version}).*$]</ignorePathsToDelete>
 					        </ignorePathsToDelete>
-					        <dryRun>true</dryRun>
 					        <serverId>github</serverId>
 					        <pubScmUrl>scm:git:https://github.com/b2ihealthcare/snow-owl.git</pubScmUrl>
 					        <scmBranch>gh-pages</scmBranch>
