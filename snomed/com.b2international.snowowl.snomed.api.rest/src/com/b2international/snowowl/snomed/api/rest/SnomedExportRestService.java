@@ -47,6 +47,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
 import com.b2international.snowowl.snomed.api.exception.ExportRunNotFoundException;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedExportConfiguration;
@@ -56,7 +57,6 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestRun;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
 import com.google.common.collect.MapMaker;
@@ -122,8 +122,8 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			
 			int hitSize = CodeSystemRequests.prepareSearchCodeSystem()
 				.one()
-				.filterByShortName(configuration.getCodeSystemShortName())
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
+				.filterById(configuration.getCodeSystemShortName())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(bus)
 				.getSync().getTotal();
 			
@@ -152,7 +152,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 
 	private Branch validateBranch(SnomedExportRestConfiguration configuration) {
 		
-		Branch branch = SnomedRequests.branching()
+		Branch branch = RepositoryRequests.branching()
 				.prepareGet(configuration.getBranchPath())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(bus)

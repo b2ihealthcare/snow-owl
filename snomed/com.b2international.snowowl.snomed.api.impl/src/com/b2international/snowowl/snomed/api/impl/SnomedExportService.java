@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
@@ -122,7 +123,7 @@ public class SnomedExportService implements ISnomedExportService {
 		
 		final ContentSubType contentSubType = convertType(configuration.getRf2ReleaseType());
 		
-		Branch branch = SnomedRequests.branching()
+		Branch branch = RepositoryRequests.branching()
 			.prepareGet(configuration.getBranchPath())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 			.execute(bus)

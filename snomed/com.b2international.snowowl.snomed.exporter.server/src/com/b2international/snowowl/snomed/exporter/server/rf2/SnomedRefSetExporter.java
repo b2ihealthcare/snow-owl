@@ -109,8 +109,7 @@ public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRe
 
 	protected String getRefsetName() {
 		
-		return SnomedRequests.prepareGetConcept()
-			.setComponentId(refset.getId())
+		return SnomedRequests.prepareGetConcept(refset.getId())
 			.setExpand("pt()")
 			.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, getExportContext().getCurrentBranchPath().getPath())

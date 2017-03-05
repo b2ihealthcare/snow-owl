@@ -58,6 +58,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.common.ContentSubType;
@@ -184,7 +185,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		
 		referenceSetsToExport = refsetIdentifierConcepts.isEmpty() ? Collections.<SnomedReferenceSet>emptyList() : SnomedRequests.prepareSearchRefSet()
 				.all()
-				.setComponentIds(refsetIdentifierConcepts)
+				.filterByIds(refsetIdentifierConcepts)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 				.execute(getEventBus())
 				.getSync()
@@ -710,7 +711,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			return CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.all()
 				.filterByCodeSystemShortName(codeSystemShortName)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(getEventBus())
 				.getSync()
 				.getItems();
@@ -727,18 +728,18 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		List<CodeSystemVersionEntry> codeSystemVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.all()
 				.filterByCodeSystemShortName(codeSystem.getShortName())
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(getEventBus())
 				.getSync()
 				.getItems();
 		
 		results.addAll(codeSystemVersions);
 		
-		if (!codeSystem.getShortName().equals(SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME)) {
+		if (!codeSystem.getShortName().equals(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)) {
 			
 			if (!Strings.isNullOrEmpty(codeSystem.getExtensionOf())) {
 				
-				Branch codeSystemBranch = SnomedRequests.branching()
+				Branch codeSystemBranch = RepositoryRequests.branching()
 					.prepareGet(codeSystem.getBranchPath())
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 					.execute(getEventBus())
@@ -750,7 +751,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 					.one()
 					.filterByCodeSystemShortName(parentCodeSystem.getShortName())
 					.filterByVersionId(codeSystemBranch.parent().name()) // must be a version branch of the parent extension 
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 					.execute(getEventBus())
 					.getSync());
 				
@@ -776,8 +777,8 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 	private CodeSystemEntry getCodeSystem(String shortName) {
 		return Iterables.getOnlyElement(CodeSystemRequests.prepareSearchCodeSystem()
 				.one()
-				.filterByShortName(shortName)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
+				.filterById(shortName)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(getEventBus())
 				.getSync());
 	}
