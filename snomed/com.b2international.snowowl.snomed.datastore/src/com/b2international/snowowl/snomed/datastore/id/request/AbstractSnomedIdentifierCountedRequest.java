@@ -21,7 +21,7 @@ import javax.annotation.Nonnegative;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.domain.SnomedComponentIds;
@@ -29,7 +29,7 @@ import com.b2international.snowowl.snomed.datastore.id.domain.SnomedComponentIds
 /**
  * @since 5.5
  */
-abstract class AbstractSnomedIdentifierCountedRequest extends BaseRequest<RepositoryContext, SnomedComponentIds> {
+abstract class AbstractSnomedIdentifierCountedRequest implements Request<RepositoryContext, SnomedComponentIds> {
 
 	@NotNull
 	private final ComponentCategory category;
@@ -51,10 +51,5 @@ abstract class AbstractSnomedIdentifierCountedRequest extends BaseRequest<Reposi
 	}
 
 	protected abstract Set<String> doExecute(ISnomedIdentifierService identifierService, String namespace, ComponentCategory category, int quantity);
-
-	@Override
-	protected final Class<SnomedComponentIds> getReturnType() {
-		return SnomedComponentIds.class;
-	}
 
 }

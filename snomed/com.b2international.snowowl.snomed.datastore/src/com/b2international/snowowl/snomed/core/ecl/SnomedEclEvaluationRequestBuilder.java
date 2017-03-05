@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2016-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,17 @@ package com.b2international.snowowl.snomed.core.ecl;
 
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.datastore.request.BaseRevisionIndexReadRequestBuilder;
-import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
 
 /**
  * @since 5.4
  */
-public final class SnomedEclEvaluationRequestBuilder extends BaseRevisionIndexReadRequestBuilder<SnomedEclEvaluationRequestBuilder, Promise<Expression>> {
+public final class SnomedEclEvaluationRequestBuilder 
+		extends BaseRequestBuilder<SnomedEclEvaluationRequestBuilder, BranchContext, Promise<Expression>> 
+		implements RevisionIndexRequestBuilder<Promise<Expression>> {
 
 	private final SnomedEclEvaluationRequest req = new SnomedEclEvaluationRequest();
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.server.internal.branch.InternalCDOBasedBranch;
@@ -33,7 +33,7 @@ import com.b2international.snowowl.datastore.server.internal.branch.InternalCDOB
  * @since 4.7
  */
 @SuppressWarnings("restriction")
-public class ReindexRequest extends BaseRequest<RepositoryContext, ReindexResult> {
+public final class ReindexRequest implements Request<RepositoryContext, ReindexResult> {
 	
 	private long failedCommitTimestamp = 1;
 
@@ -77,11 +77,6 @@ public class ReindexRequest extends BaseRequest<RepositoryContext, ReindexResult
 			StoreThreadLocal.release();
 			session.close();
 		}
-	}
-
-	@Override
-	protected Class<ReindexResult> getReturnType() {
-		return ReindexResult.class;
 	}
 
 	public static ReindexRequestBuilder builder() {

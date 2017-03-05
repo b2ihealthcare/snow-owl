@@ -19,13 +19,19 @@ import java.util.Collections;
 import java.util.Map;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.Requests;
 
 /**
+ * <i>Builder</i> class to build requests responsible for creating SNOMED CT reference set members.
+ * This class should be instantiated from the corresponding static method on the central {@link SnomedRequests} class.
+ * 
  * @since 4.5
  */
-public final class SnomedRefSetMemberCreateRequestBuilder extends BaseSnomedTransactionalRequestBuilder<SnomedRefSetMemberCreateRequestBuilder, String> {
+public final class SnomedRefSetMemberCreateRequestBuilder 
+		extends BaseRequestBuilder<SnomedRefSetMemberCreateRequestBuilder, TransactionContext, String>
+		implements SnomedTransactionalRequestBuilder<String> {
 
 	private Boolean active = Boolean.TRUE;
 	private String moduleId;
@@ -34,7 +40,6 @@ public final class SnomedRefSetMemberCreateRequestBuilder extends BaseSnomedTran
 	private Map<String, Object> properties = Collections.emptyMap();
 	
 	SnomedRefSetMemberCreateRequestBuilder() {
-		super();
 	}
 	
 	public SnomedRefSetMemberCreateRequestBuilder setReferencedComponentId(String referencedComponentId) {
@@ -72,13 +77,13 @@ public final class SnomedRefSetMemberCreateRequestBuilder extends BaseSnomedTran
 	
 	@Override
 	public Request<TransactionContext, String> doBuild() {
-		final SnomedRefSetMemberCreateRequest req = new SnomedRefSetMemberCreateRequest();
-		req.setActive(active == null ? Boolean.TRUE : active);
-		req.setModuleId(moduleId);
-		req.setReferencedComponentId(referencedComponentId);
-		req.setReferenceSetId(referenceSetId);
-		req.setProperties(properties);
-		return req;
+		final SnomedRefSetMemberCreateRequest request = new SnomedRefSetMemberCreateRequest();
+		request.setActive(active);
+		request.setModuleId(moduleId);
+		request.setReferencedComponentId(referencedComponentId);
+		request.setReferenceSetId(referenceSetId);
+		request.setProperties(properties);
+		return request;
 	}
 
 	public Request<TransactionContext, Void> buildNoContent() {

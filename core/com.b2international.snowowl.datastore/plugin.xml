@@ -30,11 +30,6 @@
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob
-            class="com.b2international.snowowl.datastore.remotejobs.RemoteJobClientServiceConfigJob"
-            id="com.b2international.snowowl.datastore.remotejobs.RemoteJobClientServiceConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.datastore.version.VersionCompareServiceClientConfigJob"
             id="com.b2international.snowowl.datastore.version.VersionCompareServiceClientConfigJob"
             terminologyId="UNSPECIFIED">
@@ -55,13 +50,18 @@
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob
-            class="com.b2international.snowowl.datastore.version.GlobalPublishClientConfigJob"
-            id="com.b2international.snowowl.datastore.version.GlobalPublishClientConfigJob"
+            class="com.b2international.snowowl.datastore.serviceconfig.HistoryServiceClientConfigJob"
+            id="com.b2international.snowowl.datastore.serviceconfig.HistoryServiceClientConfigJob"
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob
-            class="com.b2international.snowowl.datastore.serviceconfig.HistoryServiceClientConfigJob"
-            id="com.b2international.snowowl.datastore.serviceconfig.HistoryServiceClientConfigJob"
+            class="com.b2international.snowowl.datastore.file.FileRegistryServerServiceConfigJob"
+            id="com.b2international.snowowl.datastore.file.FileRegistryServerServiceConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.datastore.file.FileRegistryClientServiceConfigJob"
+            id="com.b2international.snowowl.datastore.file.FileRegistryClientServiceConfigJob"
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
    </extension>
@@ -98,4 +98,11 @@
                class="com.b2international.snowowl.datastore.connection.RepositoryConnectionBootstrap">
          </bootstrapFragment>
       </extension>
+
+	<extension point="org.eclipse.emf.ecore.generated_package">
+      <package
+            uri="urn:com:b2international:snowowl:terminologymetadata:model"
+            class="com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage"
+            genModel="model/terminologymetadata.genmodel"/>
+	</extension>
 </plugin>

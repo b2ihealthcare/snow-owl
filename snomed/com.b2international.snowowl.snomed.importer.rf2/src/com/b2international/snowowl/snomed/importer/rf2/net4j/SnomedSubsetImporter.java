@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -380,7 +379,7 @@ public class SnomedSubsetImporter {
 	private boolean exists(String conceptId) {
 		return SnomedRequests.prepareSearchConcept()
 				.setLimit(0)
-				.setComponentIds(Collections.singleton(conceptId))
+				.filterById(conceptId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync().getTotal() > 0;

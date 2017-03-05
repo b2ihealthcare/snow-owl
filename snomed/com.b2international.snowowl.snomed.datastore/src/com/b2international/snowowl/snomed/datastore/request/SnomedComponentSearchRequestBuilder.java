@@ -19,6 +19,8 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedComponentSearchRequest.OptionKey;
 
 /**
+ * Abstract superclass for building request for SNOMED CT component searches.
+ * Clients should not extend. 
  * @since 5.3
  */
 public abstract class SnomedComponentSearchRequestBuilder<B extends SnomedComponentSearchRequestBuilder<B, R>, R> extends SnomedSearchRequestBuilder<B, R> {

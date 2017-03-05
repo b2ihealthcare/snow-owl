@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.request.BaseResourceRequest;
+import com.b2international.snowowl.datastore.request.ResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluations;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -35,7 +35,7 @@ import com.google.common.collect.FluentIterable;
 /**
  * @since 4.5
  */
-public final class EvaluateQueryRefSetRequest extends BaseResourceRequest<BranchContext, QueryRefSetMemberEvaluations> {
+public final class EvaluateQueryRefSetRequest extends ResourceRequest<BranchContext, QueryRefSetMemberEvaluations> {
 
 	@NotNull
 	@JsonProperty
@@ -47,7 +47,7 @@ public final class EvaluateQueryRefSetRequest extends BaseResourceRequest<Branch
 	
 	@Override
 	public QueryRefSetMemberEvaluations execute(final BranchContext context) {
-		final SnomedReferenceSet referenceSet = SnomedRequests.prepareGetReferenceSet().setComponentId(referenceSetId).build().execute(context);
+		final SnomedReferenceSet referenceSet = SnomedRequests.prepareGetReferenceSet(referenceSetId).build().execute(context);
 		return new QueryRefSetMemberEvaluations(
 				FluentIterable
 				.from(getQueryMembers(context, referenceSet))
@@ -64,11 +64,6 @@ public final class EvaluateQueryRefSetRequest extends BaseResourceRequest<Branch
 					}
 				})
 				.toList());
-	}
-	
-	@Override
-	protected Class<QueryRefSetMemberEvaluations> getReturnType() {
-		return QueryRefSetMemberEvaluations.class;
 	}
 	
 	private Collection<SnomedReferenceSetMember> getQueryMembers(BranchContext context, SnomedReferenceSet referenceSet) {

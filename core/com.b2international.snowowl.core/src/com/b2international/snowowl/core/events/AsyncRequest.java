@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.events;
 
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
@@ -25,11 +26,9 @@ import com.b2international.snowowl.eventbus.IMessage;
  */
 public final class AsyncRequest<R> {
 
-	private final String address;
-	private final Request<?, R> request;
+	private final Request<ServiceProvider, R> request;
 
-	public AsyncRequest(String address, Request<?, R> request) {
-		this.address = address;
+	public AsyncRequest(Request<ServiceProvider, R> request) {
 		this.request = request;
 	}
 	
@@ -40,8 +39,8 @@ public final class AsyncRequest<R> {
 	 */
 	public Promise<R> execute(IEventBus bus) {
 		final Promise<R> promise = new Promise<>();
-		final Class<R> responseType = ((BaseRequest<?, R>) request).getReturnType(); 
-		bus.send(address, request, new IHandler<IMessage>() {
+		final Class<R> responseType = request.getReturnType(); 
+		bus.send(Request.ADDRESS, request, new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				try {
@@ -56,6 +55,10 @@ public final class AsyncRequest<R> {
 			}
 		});
 		return promise;
+	}
+	
+	public Request<ServiceProvider, R> getRequest() {
+		return request;
 	}
 
 }

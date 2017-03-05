@@ -23,5 +23,7 @@ import com.b2international.snowowl.core.ClassLoaderProvider;
 public interface RepositoryClassLoaderProviderRegistry {
 	
 	ClassLoaderProvider get(String repositoryId);
+	
+	ClassLoader getClassLoader();
 
 }

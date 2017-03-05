@@ -232,7 +232,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		
 		// if not, then check if any of the specified parents is subTypeOf the requiredSuperType
 		final long superTypeIdLong = Long.parseLong(requiredSuperType);
-		final SnomedConcepts parentConcepts = SnomedRequests.prepareSearchConcept().setLimit(parents.size()).setComponentIds(parents).build().execute(context);
+		final SnomedConcepts parentConcepts = SnomedRequests.prepareSearchConcept().setLimit(parents.size()).filterByIds(parents).build().execute(context);
 		for (SnomedConcept parentConcept : parentConcepts) {
 			if (parentConcept.getParentIds() != null) {
 				if (PrimitiveSets.newLongOpenHashSet(parentConcept.getParentIds()).contains(superTypeIdLong)) {

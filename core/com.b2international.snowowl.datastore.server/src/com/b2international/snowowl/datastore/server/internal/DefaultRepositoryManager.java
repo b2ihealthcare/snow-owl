@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.server.internal;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -67,8 +66,8 @@ public final class DefaultRepositoryManager implements RepositoryManager {
 		if (disposed.compareAndSet(false, true)) {
 			for (Repository repository : repositories.values()) {
 				try {
-					repository.close();
-				} catch (IOException e) {
+					repository.dispose();
+				} catch (Exception e) {
 					LOG.error("Failed to close repository: " + repository.id(), e);
 				}
 			}

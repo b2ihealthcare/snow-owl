@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,8 +53,7 @@ public class CommitInfoRequestTest {
 	public void getNonExistentCommitInfo() {
 		RepositoryRequests
 			.commitInfos()
-			.prepareGetCommitInfo()
-			.setDocId(UUID.randomUUID().toString())
+			.prepareGetCommitInfo(UUID.randomUUID().toString())
 			.build(REPOSITORY_ID)
 			.execute(bus)
 			.getSync();
@@ -82,8 +81,7 @@ public class CommitInfoRequestTest {
 		
 		final CommitInfo commitInfo = RepositoryRequests
 				.commitInfos()
-				.prepareGetCommitInfo()
-				.setDocId(id)
+				.prepareGetCommitInfo(id)
 				.build(REPOSITORY_ID)
 				.execute(bus)
 				.getSync();

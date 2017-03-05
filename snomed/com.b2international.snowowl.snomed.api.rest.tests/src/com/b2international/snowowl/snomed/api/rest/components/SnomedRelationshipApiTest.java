@@ -15,38 +15,36 @@
  */
 package com.b2international.snowowl.snomed.api.rest.components;
 
-import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.*;
+import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranchRecursively;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.updateComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRelationshipRequestBody;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
+import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.Maps;
 
 /**
  * @since 4.0
@@ -55,291 +53,295 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createRelationshipNonExistentBranch() {
-		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on a non-existent branch");
-		assertComponentCreatedWithStatus(createPath("MAIN/1998-01-31"), SnomedComponentType.RELATIONSHIP, requestBody, 404)
-		.and().body("status", equalTo(404));
+		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT)
+				.put("commitComment", "Created new relationship on non-existent branch")
+				.build();
 
+		createComponent(BranchPathUtils.createPath("MAIN/x/y/z"), SnomedComponentType.RELATIONSHIP, requestBody).statusCode(404);
 	}
 
 	@Test
-	public void createRelationshipWithNonExistentSource() {
-		final Map<?, ?> requestBody = givenRelationshipRequestBody("1", TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship with a non-existent source ID");		
-		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
+	public void createRelationshipInvalidSource() {
+		Map<?, ?> requestBody = createRelationshipRequestBody("11110000", Concepts.PART_OF, Concepts.NAMESPACE_ROOT)
+				.put("commitComment", "Created new relationship with invalid sourceId")
+				.build();
+
+		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
 	}
 
 	@Test
-	public void createRelationshipWithNonexistentType() {
-		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, "2", FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on a non-existent branch");		
-		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
+	public void createRelationshipInvalidType() {
+		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, "11110000", Concepts.NAMESPACE_ROOT)
+				.put("commitComment", "Created new relationship with invalid typeId")
+				.build();
+
+		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
 	}
 
 	@Test
-	public void createRelationshipWithNonExistentDestination() {
-		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, "3", MODULE_SCT_CORE, "New relationship with a non-existent destination ID");		
-		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
+	public void createRelationshipInvalidDestination() {
+		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, "11110000")
+				.put("commitComment", "Created new relationship with invalid destinationId")
+				.build();
+
+		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
 	}
 
 	@Test
-	public void createRelationshipWithNonexistentModule() {
-		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, "4", "New relationship with a non-existent module ID");
-		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
+	public void createRelationshipInvalidModule() {
+		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, "11110000")
+				.put("commitComment", "Created new relationship with invalid moduleId")
+				.build();
+
+		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
 	}
 
 	@Test
 	public void createRelationship() {
-		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
-		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
-		assertCharacteristicType(createMainPath(), relationshipId, CharacteristicType.STATED_RELATIONSHIP);
+		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT)
+				.put("commitComment", "Created new relationship")
+				.build();
+
+		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(201);
 	}
-	
+
 	@Test
-	public void createRelationshipWithPredefinedId() {
-		final ISnomedIdentifierService identifierService = ApplicationContext.getInstance().getServiceChecked(ISnomedIdentifierService.class);
-		final String relationshipId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.RELATIONSHIP, 1));
-		Map<String, Object> requestBody = createRelationshipRequestBuilder(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship with predefined id")
-			.put("id", relationshipId)
-			.build();
-		String createdId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
-		assertEquals(relationshipId, createdId);
+	public void createRelationshipWithReservedId() {
+		ISnomedIdentifierService identifierService = getServiceForClass(ISnomedIdentifierService.class);
+		String relationshipId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.RELATIONSHIP, 1));
+
+		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT)
+				.put("id", relationshipId)
+				.put("commitComment", "Created new relationship with reserved identifier")
+				.build();
+
+		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(201)
+		.header("Location", endsWith("/" + relationshipId));
 	}
-	
+
 	@Test
 	public void createDuplicateRelationship() {
-		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
-		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
-		
-		final Map<Object, Object> dupRequestBody = Maps.<Object, Object>newHashMap(requestBody);
-		dupRequestBody.put("id", relationshipId);
-		dupRequestBody.put("commitComment", "New duplicate relationship on MAIN");
-		assertComponentCreatedWithStatus(createMainPath(), SnomedComponentType.RELATIONSHIP, dupRequestBody, 409);
+		String relationshipId = createNewRelationship(branchPath);
+		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT)
+				.put("id", relationshipId)
+				.put("commitComment", "Created new relationship with duplicate identifier")
+				.build();
+
+		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(409);
 	}
 
 	@Test
 	public void createRelationshipInferred() {
-		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, CharacteristicType.INFERRED_RELATIONSHIP, "New relationship on MAIN");
-		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
-		assertCharacteristicType(createMainPath(), relationshipId, CharacteristicType.INFERRED_RELATIONSHIP);
+		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT,  
+				CharacteristicType.INFERRED_RELATIONSHIP)
+				.put("commitComment", "Created new relationship with inferred characteristic type")
+				.build();
+
+		String relationshipId = lastPathSegment(createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
+		.body("characteristicType", equalTo(CharacteristicType.INFERRED_RELATIONSHIP.name()));
 	}
 
 	@Test
 	public void deleteRelationship() {
-		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
-		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, requestBody);
-
-		assertRelationshipCanBeDeleted(createMainPath(), relationshipId);
-		assertRelationshipNotExists(createMainPath(), relationshipId);
+		String relationshipId = createNewRelationship(branchPath);
+		deleteComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, false).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(404);
 	}
 
 	@Test
 	public void inactivateRelationship() {
-		final Map<?, ?> createRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
-		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, createRequestBody);
-		assertComponentActive(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, true);
-
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+		String relationshipId = createNewRelationship(branchPath);
+		Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("active", false)
 				.put("commitComment", "Inactivated relationship")
 				.build();
 
-		assertRelationshipCanBeUpdated(createMainPath(), relationshipId, updateRequestBody);
-		assertComponentActive(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, false);
-	}
-	
-	@Test
-	public void deleteInactiveNonIsaRelationship() throws Exception {
-		deleteInactiveRelationship(TEMPORAL_CONTEXT);
-	}
-	
-	@Test
-	public void deleteInactiveIsaRelationship() throws Exception {
-		deleteInactiveRelationship(IS_A);
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
+		.body("active", equalTo(false));
 	}
 
-	private void deleteInactiveRelationship(final String relationshipType) {
-		givenBranchWithPath(testBranchPath);
-		// create relationship on active but released concept
-		final Map<?, ?> requestBody = givenRelationshipRequestBody(BLEEDING, relationshipType, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
-		final String relationshipId = assertComponentCreated(testBranchPath, SnomedComponentType.RELATIONSHIP, requestBody);
-		assertComponentActive(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId, true);
-		
-		final Map<String, Object> inactivationBody = newHashMap();
-		inactivationBody.put("active", false);
-		inactivationBody.put("commitComment", "Inactivated " + BLEEDING);
-		assertComponentCanBeUpdated(testBranchPath, SnomedComponentType.CONCEPT, BLEEDING, inactivationBody);
-		assertComponentHasProperty(testBranchPath, SnomedComponentType.CONCEPT, BLEEDING, "active", false);
-		assertComponentHasProperty(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "active", false);
-		
-		// try to delete the relationship
-		assertRelationshipCanBeDeleted(testBranchPath, relationshipId);
-		assertRelationshipNotExists(testBranchPath, relationshipId);
-		// assert that the concept is still exists
-		assertConceptExists(testBranchPath, BLEEDING);
-	}
-	
 	@Test
-	public void changeRelationshipGroup() {
-		final Map<?, ?> createRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
-		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, createRequestBody);
-		assertComponentActive(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, true);
-		
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+	public void deleteInactiveNonIsaRelationship() throws Exception {
+		deleteInactiveRelationship(Concepts.PART_OF);
+	}
+
+	@Test
+	public void deleteInactiveIsaRelationship() throws Exception {
+		deleteInactiveRelationship(Concepts.IS_A);
+	}
+
+	private void deleteInactiveRelationship(String typeId) {
+		String sourceId = createNewConcept(branchPath);
+		String relationshipId = createNewRelationship(branchPath, sourceId, typeId, Concepts.NAMESPACE_ROOT);
+
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("active", false)
+				.put("commitComment", "Inactivated relationship")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
+		deleteComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, false).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(404);
+
+		/* 
+		 * Source concept should still exist at this point (the deletion plan should not 
+		 * consider removing it with the relationship).
+		 */
+		getComponent(branchPath, SnomedComponentType.CONCEPT, sourceId).statusCode(200);
+	}
+
+	@Test
+	public void createInactiveNonIsaRelationship() throws Exception {
+		createInactiveRelationship(Concepts.PART_OF);
+	}
+
+	@Test
+	public void createInactiveIsaRelationship() throws Exception {
+		createInactiveRelationship(Concepts.IS_A);
+	}
+
+	private void createInactiveRelationship(String typeId) {
+		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, typeId, Concepts.NAMESPACE_ROOT)
+				.put("active", false)
+				.put("commitComment", "Created inactive relationship")
+				.build();
+
+		String relationshipId = lastPathSegment(createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
+		.body("active", equalTo(false));
+	}
+
+	@Test
+	public void createIsARelationshipToSelf() throws Exception {
+		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.NAMESPACE_ROOT, Concepts.IS_A, Concepts.NAMESPACE_ROOT)
+				.put("commitComment", "Created new relationship pointing to itself")
+				.build();
+
+		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
+	}
+
+	@Test
+	public void updateGroup() {
+		String relationshipId = createNewRelationship(branchPath);
+		Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("group", 99)
-				.put("commitComment", "Changed group on relationship")
+				.put("commitComment", "Updated relationship group")
 				.build();
-		
-		assertRelationshipCanBeUpdated(createMainPath(), relationshipId, updateRequestBody);
-		assertComponentHasProperty(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, "group", 99);
+
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
+		.body("group", equalTo(99));
 	}
-	
+
 	@Test
-	public void changeRelationshipGroupToInvalidValue() {
-		final Map<?, ?> createRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
-		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, createRequestBody);
-		assertComponentActive(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, true);
-		
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+	public void updateGroupToInvalidValue() {
+		String relationshipId = createNewRelationship(branchPath);
+		Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("group", -5)
-				.put("commitComment", "Changed group on relationship")
+				.put("commitComment", "Updated relationship group to invalid value")
 				.build();
-		
-		assertComponentUpdatedWithStatus(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, updateRequestBody, 400);
-		assertComponentHasProperty(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, "group", 0);
+
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(400);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
+		.body("group", equalTo(0));
 	}
-	
+
 	@Test
 	public void changeRelationshipUnionGroup() {
-		final Map<?, ?> createRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
-		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, createRequestBody);
-		assertComponentActive(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, true);
-		
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("unionGroup", 99)
-				.put("commitComment", "Changed union group on relationship")
+		String relationshipId = createNewRelationship(branchPath);
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("unionGroup", 101)
+				.put("commitComment", "Updated relationship union group")
 				.build();
-		
-		assertRelationshipCanBeUpdated(createMainPath(), relationshipId, updateRequestBody);
-		assertComponentHasProperty(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, "unionGroup", 99);
+
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
+		.body("unionGroup", equalTo(101));
 	}
-	
+
 	@Test
 	public void changeRelationshipCharacteristicType() {
-		final Map<?, ?> createRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
-		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, createRequestBody);
-		assertComponentActive(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, true);
-		
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("characteristicType", CharacteristicType.ADDITIONAL_RELATIONSHIP.name())
-				.put("commitComment", "Changed characteristic type on relationship")
+		String relationshipId = createNewRelationship(branchPath);
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("characteristicType", CharacteristicType.ADDITIONAL_RELATIONSHIP)
+				.put("commitComment", "Updated relationship characteristic type")
 				.build();
-		
-		assertRelationshipCanBeUpdated(createMainPath(), relationshipId, updateRequestBody);
-		assertCharacteristicType(createMainPath(), relationshipId, CharacteristicType.ADDITIONAL_RELATIONSHIP);
+
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
+		.body("characteristicType", equalTo(CharacteristicType.ADDITIONAL_RELATIONSHIP.name()));
 	}
-	
+
 	@Test
 	public void changeRelationshipModifier() {
-		final Map<?, ?> createRequestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
-		final String relationshipId = assertComponentCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, createRequestBody);
-		assertComponentActive(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, true);
-		
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("modifier", RelationshipModifier.UNIVERSAL.name())
-				.put("commitComment", "Changed modifier on relationship")
+		String relationshipId = createNewRelationship(branchPath);
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("modifier", RelationshipModifier.UNIVERSAL)
+				.put("commitComment", "Updated relationship modifier")
 				.build();
-		
-		assertRelationshipCanBeUpdated(createMainPath(), relationshipId, updateRequestBody);
-		assertComponentHasProperty(createMainPath(), SnomedComponentType.RELATIONSHIP, relationshipId, "modifier", RelationshipModifier.UNIVERSAL.name());
+
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
+		.body("modifier", equalTo(RelationshipModifier.UNIVERSAL.name()));
 	}
 
 	@Test
 	public void createRelationshipOnNestedBranch() {
-		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
-		final IBranchPath nestedBranchPath = createNestedBranch(testBranchPath, "a", "b");
-		final Map<?, ?> requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
-		final String relationshipId = assertComponentCreated(nestedBranchPath, SnomedComponentType.RELATIONSHIP, requestBody);		
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		IBranchPath b = BranchPathUtils.createPath(a, "b");
+		createBranchRecursively(b);
 
-		assertRelationshipExists(nestedBranchPath, relationshipId);
-		assertRelationshipNotExists(nestedBranchPath.getParent(), relationshipId);
-		assertRelationshipNotExists(nestedBranchPath.getParent().getParent(), relationshipId);
-		assertRelationshipNotExists(nestedBranchPath.getParent().getParent().getParent(), relationshipId);
+		String relationshipId = createNewRelationship(b);
+
+		getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(404);
 	}
 
 	@Test
 	public void deleteRelationshipOnNestedBranch() {
-		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
-		
+		String conceptId = createNewConcept(branchPath);
+
 		List<String> typeIds = newArrayList();
-		List<String> relationshipIds = newArrayList();
-		Map<?, ?> requestBody;
-		
 		for (int i = 0; i < 10; i++) {
-			requestBody = givenConceptRequestBody(null, Concepts.CONCEPT_MODEL_ATTRIBUTE, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-			final String typeId = assertComponentCreated(testBranchPath, SnomedComponentType.CONCEPT, requestBody);
+			String typeId = createNewConcept(branchPath);
 			typeIds.add(typeId);
 		}
-			
+
+		List<String> relationshipIds = newArrayList();
 		for (int i = 0; i < 10; i++) {
-			requestBody = givenRelationshipRequestBody(DISEASE, typeIds.get(i), FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on " + testBranchPath.getPath());
-			final String relationshipId = assertComponentCreated(testBranchPath, SnomedComponentType.RELATIONSHIP, requestBody);
+			String relationshipId = createNewRelationship(branchPath, conceptId, typeIds.get(i), Concepts.NAMESPACE_ROOT);
 			relationshipIds.add(relationshipId);
 		}
-		
+
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		IBranchPath b = BranchPathUtils.createPath(a, "b");
+		createBranchRecursively(b);
+
 		// New relationship on nested branch resets the concept's version to 1 again
-		final IBranchPath nestedBranchPath = createNestedBranch(testBranchPath, "a", "b");
-		requestBody = givenRelationshipRequestBody(DISEASE, TEMPORAL_CONTEXT, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on " + nestedBranchPath.getPath());
-		assertComponentCreated(nestedBranchPath, SnomedComponentType.RELATIONSHIP, requestBody);
-		
-		// Deleting a relationship from the middle
-		final String relationshipId = relationshipIds.remove(7);
-		
-		assertRelationshipCanBeDeleted(testBranchPath, relationshipId);
-		assertRelationshipNotExists(testBranchPath, relationshipId);
-		
-		assertRelationshipCanBeDeleted(nestedBranchPath, relationshipId);
-		assertRelationshipNotExists(nestedBranchPath, relationshipId);
-		
-		for (String remainingId : relationshipIds) {
-			assertRelationshipExists(testBranchPath, remainingId);
-			assertRelationshipExists(nestedBranchPath, remainingId);
+		createNewRelationship(b, conceptId, Concepts.PART_OF, Concepts.NAMESPACE_ROOT);
+
+		// Deleting a relationship from the middle should work
+		String relationshipToDeleteId = relationshipIds.remove(7);
+		deleteComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipToDeleteId, false).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipToDeleteId).statusCode(404);
+
+		deleteComponent(b, SnomedComponentType.RELATIONSHIP, relationshipToDeleteId, false).statusCode(204);
+		getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipToDeleteId).statusCode(404);
+
+		// All the remaining relationships should be visible
+		for (String relationshipId : relationshipIds) {
+			getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
+			getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
 		}
 	}
-	
-	@Test
-	public void createCyclicIsaRelationship_Self() throws Exception {
-		final Map<?, ?> body = givenRelationshipRequestBody(DISEASE, IS_A, DISEASE, MODULE_SCT_CORE, "New cyclic ISA relationship");
-		assertComponentNotCreated(createMainPath(), SnomedComponentType.RELATIONSHIP, body);
-	}
-	
-	@Test
-	public void createInactiveNonIsaRelationship() throws Exception {
-		createInactiveRelationship(TEMPORAL_CONTEXT);
-	}
-	
-	@Test
-	public void createInactiveIsaRelationship() throws Exception {
-		createInactiveRelationship(IS_A);
-	}
 
-	private void createInactiveRelationship(final String type) {
-		SnomedBranchingApiAssert.givenBranchWithPath(testBranchPath);
-		final Builder<String, Object> req = ImmutableMap.builder();
-		final Map<String, Object> requestBody = givenRelationshipRequestBody(DISEASE, type, FINDING_CONTEXT, MODULE_SCT_CORE, "New relationship on MAIN");
-		req.putAll(requestBody);
-		req.put("active", false);
-		final String relationshipId = assertComponentCreated(testBranchPath, SnomedComponentType.RELATIONSHIP, req.build());
-		assertComponentHasProperty(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "active", false);
-	}
-	
-	private static void assertRelationshipCanBeDeleted(final IBranchPath branchPath, final String relationshipId, final String... segments) {
-		assertComponentCanBeDeleted(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId);
-	}
-
-	private static void assertRelationshipCanBeUpdated(final IBranchPath branchPath, final String relationshipId, final Map<?, ?> requestBody) {
-		assertComponentCanBeUpdated(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody);
-	}
-	
-	private static void assertCharacteristicType(final IBranchPath branchPath, final String relationshipId, final CharacteristicType characteristicType) {
-		assertComponentHasProperty(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "characteristicType", characteristicType.name());
-	}
-	
 }

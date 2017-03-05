@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.exporter.server.rf1;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -49,7 +48,7 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedExporter {
 	protected boolean isLanguageType(final String refSetId) {
 		return SnomedRequests.prepareSearchRefSet()
 				.setLimit(0)
-				.setComponentIds(Collections.singleton(refSetId))
+				.filterById(refSetId)
 				.filterByType(SnomedRefSetType.LANGUAGE)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranchPath().getPath()) // is the export branch path ok here?
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))

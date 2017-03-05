@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import com.b2international.snowowl.datastore.server.internal.review.BranchStateI
 import com.b2international.snowowl.datastore.server.internal.review.ConceptChangesImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewImplMixin;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -45,6 +46,7 @@ public class JsonSupport {
 	public static ObjectMapper getDefaultObjectMapper() {
 		final ObjectMapper mapper = new ObjectMapper();
 		
+		mapper.setSerializationInclusion(Include.NON_NULL);
 		mapper.addMixInAnnotations(Metadata.class, MetadataMixin.class);
 		mapper.addMixInAnnotations(MetadataHolder.class, MetadataHolderMixin.class);
 		

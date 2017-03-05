@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.reasoner.equivalence;
 
 import java.util.List;
-import java.util.UUID;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.PrimitiveSets;
@@ -25,7 +24,7 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
-import com.b2international.snowowl.snomed.reasoner.classification.ClassificationRequest;
+import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSettings;
 import com.b2international.snowowl.snomed.reasoner.classification.EquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.GetEquivalentConceptsResponse;
 import com.b2international.snowowl.snomed.reasoner.classification.operation.ClassifyOperation;
@@ -35,74 +34,73 @@ import com.b2international.snowowl.snomed.reasoner.model.ConceptDefinition;
 /**
  * Utility class that uses Snow Owl's current reasoner settings to run an equivalency check on the supplied concepts and offer replacement concept IDs
  * if an equivalency is detected.
- * 
  */
 public class EquivalencyChecker extends ClassifyOperation<LongKeyLongMap> {
 
-	public EquivalencyChecker(final ClassificationRequest classificationRequest) {
-		super(classificationRequest);
+	public EquivalencyChecker(ClassificationSettings settings) {
+		super(settings);
 	}
 
 	@Override
-	protected LongKeyLongMap processResults(final UUID classificationId) {
+	protected LongKeyLongMap processResults(String classificationId) {
 
-		final List<ConceptDefinition> additionalDefinitions = classificationRequest.getAdditionalDefinitions();
-		final LongSet conceptIdsToCheck = collectConceptIds(additionalDefinitions);
-		final LongKeyLongMap equivalentConceptMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
-		final GetEquivalentConceptsResponse response = getReasonerService().getEquivalentConcepts(classificationId);
+		List<ConceptDefinition> additionalDefinitions = settings.getAdditionalDefinitions();
+		LongSet conceptIdsToCheck = collectConceptIds(additionalDefinitions);
+		LongKeyLongMap equivalentConceptMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
+		GetEquivalentConceptsResponse response = getReasonerService().getEquivalentConcepts(classificationId);
 
 		if (Type.NOT_AVAILABLE == response.getType()) {
 			throw new ReasonerException("Selected reasoner could not start or failed to finish its job.");
 		}
-		
-		final List<AbstractEquivalenceSet> equivalentConcepts = response.getEquivalenceSets();
+
+		List<AbstractEquivalenceSet> equivalentConcepts = response.getEquivalenceSets();
 		registerEquivalentConcepts(equivalentConcepts, conceptIdsToCheck, equivalentConceptMap);
 		return equivalentConceptMap;
 	}
 
-	private void registerEquivalentConcepts(final List<AbstractEquivalenceSet> equivalentConcepts, 
-			final LongSet conceptIdsToCheck,
-			final LongKeyLongMap equivalentConceptMap) {
+	private void registerEquivalentConcepts(List<AbstractEquivalenceSet> equivalentConcepts, 
+			LongSet conceptIdsToCheck,
+			LongKeyLongMap equivalentConceptMap) {
 
-		for (final AbstractEquivalenceSet equivalenceSet : equivalentConcepts) {
+		for (AbstractEquivalenceSet equivalenceSet : equivalentConcepts) {
 
 			if (equivalenceSet.isUnsatisfiable()) {
 				continue;
 			}
 
-			final SnomedConcept suggestedConcept = ((EquivalenceSet) equivalenceSet).getSuggestedConcept();
+			SnomedConcept suggestedConcept = ((EquivalenceSet) equivalenceSet).getSuggestedConcept();
 			registerEquivalentConcepts(suggestedConcept, equivalenceSet.getConcepts(), equivalentConceptMap, conceptIdsToCheck);
 		}
 	}
 
-	private LongSet collectConceptIds(final List<ConceptDefinition> conceptDefinitions) {
+	private LongSet collectConceptIds(List<ConceptDefinition> conceptDefinitions) {
 
-		final LongSet conceptIds = PrimitiveSets.newLongOpenHashSet();
+		LongSet conceptIds = PrimitiveSets.newLongOpenHashSet();
 
-		for (final ConceptDefinition definition : conceptDefinitions) {
+		for (ConceptDefinition definition : conceptDefinitions) {
 			conceptIds.add(definition.getConceptId());
 		}
 
 		return conceptIds;
 	}
 
-	private void registerEquivalentConcepts(final SnomedConcept suggestedConcept, 
-			final List<SnomedConcept> equivalentConcepts,
-			final LongKeyLongMap equivalentConceptMap, 
-			final LongSet conceptIdsToCheck) {
+	private void registerEquivalentConcepts(SnomedConcept suggestedConcept, 
+			List<SnomedConcept> equivalentConcepts,
+			LongKeyLongMap equivalentConceptMap, 
+			LongSet conceptIdsToCheck) {
 
-		final long replacementConceptId = getConceptId(suggestedConcept);
-		final boolean registerAll = conceptIdsToCheck.isEmpty();
-		
-		for (final SnomedConcept equivalentConcept : equivalentConcepts) {
-			final long equivalentConceptId = getConceptId(equivalentConcept);
+		long replacementConceptId = getConceptId(suggestedConcept);
+		boolean registerAll = conceptIdsToCheck.isEmpty();
+
+		for (SnomedConcept equivalentConcept : equivalentConcepts) {
+			long equivalentConceptId = getConceptId(equivalentConcept);
 			if (registerAll || conceptIdsToCheck.contains(equivalentConceptId)) {
 				equivalentConceptMap.put(equivalentConceptId, replacementConceptId);
 			}
 		}
 	}
 
-	private Long getConceptId(final SnomedConcept conceptIndexEntry) {
+	private Long getConceptId(SnomedConcept conceptIndexEntry) {
 		return Long.valueOf(conceptIndexEntry.getId());
 	}
 }

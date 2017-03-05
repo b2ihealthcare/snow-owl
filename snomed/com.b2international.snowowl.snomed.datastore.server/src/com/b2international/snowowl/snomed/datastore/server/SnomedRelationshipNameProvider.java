@@ -30,8 +30,7 @@ public class SnomedRelationshipNameProvider implements ISnomedRelationshipNamePr
 
 	@Override
 	public String getComponentLabel(IBranchPath branchPath, String componentId) {
-		final SnomedRelationship relationship = SnomedRequests.prepareGetRelationship()
-				.setComponentId(componentId)
+		final SnomedRelationship relationship = SnomedRequests.prepareGetRelationship(componentId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();

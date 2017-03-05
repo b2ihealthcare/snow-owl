@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,16 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification.operation;
 
-import static com.b2international.snowowl.datastore.remotejobs.RemoteJobUtils.getJobSpecificAddress;
-
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.remotejobs.IRemoteJobManager;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEventBusHandler;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
+import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.reasoner.classification.ClassificationRequest;
+import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSettings;
 import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerService;
-import com.google.common.util.concurrent.SettableFuture;
 
 /**
  * Represents an abstract operation which requires the classification of the SNOMED&nbsp;CT terminology on the active branch path.
@@ -43,11 +35,11 @@ import com.google.common.util.concurrent.SettableFuture;
 public abstract class ClassifyOperation<T> {
 
 	private static final long CHECK_CANCEL_INTERVAL_MILLIS = 500L;
-	
-	protected final ClassificationRequest classificationRequest;
 
-	public ClassifyOperation(final ClassificationRequest classificationRequest) {
-		this.classificationRequest = classificationRequest;
+	protected final ClassificationSettings settings;
+
+	public ClassifyOperation(ClassificationSettings settings) {
+		this.settings = settings;
 	}
 
 	/**
@@ -56,68 +48,58 @@ public abstract class ClassifyOperation<T> {
 	 * @return the value returned by {@link #processResults(IProgressMonitor, long)}
 	 * @throws OperationCanceledException
 	 */
-	public T run(final IProgressMonitor monitor) throws OperationCanceledException {
+	public T run(IProgressMonitor monitor) throws OperationCanceledException {
 
 		monitor.beginTask("Classification in progress...", IProgressMonitor.UNKNOWN);
-		
+
 		try {
-			
-			final SettableFuture<T> result = SettableFuture.create();
-			final UUID classificationId = classificationRequest.getClassificationId();
-			
-			getEventBus().registerHandler(getJobSpecificAddress(IRemoteJobManager.ADDRESS_REMOTE_JOB_COMPLETED, classificationId), new RemoteJobEventBusHandler(classificationId) {
-				@Override
-				protected void handleResult(final UUID jobId, final boolean cancelRequested) {
-					if (cancelRequested) {
-						result.setException(new OperationCanceledException());
-					} else {
-						
-						try {
-							result.set(processResults(jobId));
-						} catch (final RuntimeException e) {
-							result.setException(e);
-						}
-						
-						getRemoteJobManager().cancelRemoteJob(jobId);
-					}
+
+			getReasonerService().beginClassification(settings);
+
+			while (true) {
+
+				if (monitor.isCanceled()) {
+					throw new OperationCanceledException();
 				}
-			});
-			
-			getReasonerService().beginClassification(classificationRequest);
-			
-			try {
-				while (true) {
-					try {
-						return result.get(CHECK_CANCEL_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
-					} catch (final InterruptedException | TimeoutException e) {
-						if (monitor.isCanceled()) {
-							throw new OperationCanceledException();
-						}
-					}
+
+				RemoteJobEntry jobEntry = JobRequests.prepareGet(settings.getClassificationId())
+						.buildAsync()
+						.execute(getEventBus())
+						.getSync();
+
+				switch (jobEntry.getState()) {
+				case SCHEDULED: //$FALL-THROUGH$
+				case RUNNING:
+					break;
+				case FINISHED:
+					return processResults(settings.getClassificationId());
+				case CANCELED: //$FALL-THROUGH$
+				case CANCEL_REQUESTED:
+					throw new OperationCanceledException();
+				case FAILED:
+					throw new SnowowlRuntimeException("Failed to retrieve the results of the classification.");
+				default:
+					throw new IllegalStateException("Unexpected state '" + jobEntry.getState() + "'.");
 				}
-			} catch (final ExecutionException e) {
-				throw new SnowowlRuntimeException("Failed to retrieve the results of the classification.", e);
+
+				try {
+					Thread.sleep(CHECK_CANCEL_INTERVAL_MILLIS);
+				} catch (InterruptedException e) {
+					// Nothing to do
+				}
 			}
-			
+
 		} finally {
 			monitor.done();
 		}
 	}
 
-	private IEventBus getEventBus() {
-		return getApplicationContext().getService(IEventBus.class);
-	}
-
-	private IRemoteJobManager getRemoteJobManager() {
-		return getApplicationContext().getService(IRemoteJobManager.class);
+	protected IEventBus getEventBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 
 	protected SnomedReasonerService getReasonerService() {
-		return getApplicationContext().getService(SnomedReasonerService.class);
-	}
-
-	private ApplicationContext getApplicationContext() {
-		return ApplicationContext.getInstance();
+		return ApplicationContext.getServiceForClass(SnomedReasonerService.class);
 	}
 
 	/**
@@ -127,5 +109,5 @@ public abstract class ClassifyOperation<T> {
 	 * @param classificationId the classification's unique identifier
 	 * @return the extracted results of the classification
 	 */
-	protected abstract T processResults(final UUID classificationId);
+	protected abstract T processResults(String classificationId);
 }

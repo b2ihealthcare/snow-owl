@@ -23,6 +23,7 @@ import java.util.Map;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
@@ -30,7 +31,7 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequestBuilder;
+import com.b2international.snowowl.datastore.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -38,8 +39,8 @@ import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -109,9 +110,9 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 
 	private CollectionResource<? extends SnomedCoreComponent> getComponents(ComponentCategory category, Collection<String> componentIds, Options expand) {
 		switch (category) {
-		case CONCEPT: return SnomedRequests.prepareSearchConcept().setLimit(componentIds.size()).setComponentIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
-		case DESCRIPTION: return SnomedRequests.prepareSearchDescription().setLimit(componentIds.size()).setComponentIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
-		case RELATIONSHIP: return SnomedRequests.prepareSearchRelationship().setLimit(componentIds.size()).setComponentIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
+		case CONCEPT: return SnomedRequests.prepareSearchConcept().setLimit(componentIds.size()).filterByIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
+		case DESCRIPTION: return SnomedRequests.prepareSearchDescription().setLimit(componentIds.size()).filterByIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
+		case RELATIONSHIP: return SnomedRequests.prepareSearchRelationship().setLimit(componentIds.size()).filterByIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
 		default: throw new NotImplementedException("Not implemented non core target component expansion", category);
 		}
 	}
@@ -135,7 +136,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 			ComponentCategory category) {
 		
 		final Collection<String> componentIds = componentCategoryToIdMap.get(category);
-		final RevisionSearchRequestBuilder<?, ? extends CollectionResource<? extends SnomedCoreComponent>> search;
+		final SearchResourceRequestBuilder<?, BranchContext, ? extends CollectionResource<? extends SnomedCoreComponent>> search;
 		
 		switch (category) {
 			case CONCEPT:
@@ -152,7 +153,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 		}
 
 		search
-			.setComponentIds(componentIds)
+			.filterByIds(componentIds)
 			.setLimit(componentIds.size())
 			.setLocales(locales())
 			.setExpand(expandOptions.get("expand", Options.class));
@@ -203,10 +204,19 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 		member.setScore(entry.getScore());
 
 		final Map<String, Object> props = newHashMap(entry.getAdditionalFields());
-		// convert ID to resources where possible to override value with nested object in JSON
 		switch (entry.getReferenceSetType()) {
 			case ASSOCIATION:
+				// convert ID to resources where possible to override value with nested object in JSON
 				props.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, convertToResource(entry.getTargetComponent()));
+				break;
+			case MODULE_DEPENDENCY:
+				// convert stored long values to short date format
+				props.put(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, EffectiveTimes.format(entry.getSourceEffectiveTime(), DateFormats.SHORT));
+				props.put(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, EffectiveTimes.format(entry.getTargetEffectiveTime(), DateFormats.SHORT));
+				break;
+			case CONCRETE_DATA_TYPE:
+				// convert concrete domain value to serialized String format
+				props.put(SnomedRf2Headers.FIELD_VALUE, SnomedRefSetUtil.serializeValue(entry.getDataType(), entry.getValue()));
 				break;
 			default:
 				break;

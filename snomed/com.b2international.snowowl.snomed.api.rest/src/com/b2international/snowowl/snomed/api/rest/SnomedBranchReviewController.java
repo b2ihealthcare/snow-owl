@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -41,7 +42,6 @@ import com.b2international.snowowl.snomed.api.rest.domain.CreateReviewRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
@@ -73,8 +73,8 @@ public class SnomedBranchReviewController extends AbstractRestService {
 		ApiValidation.checkInput(request);
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
 		final ControllerLinkBuilder linkTo = linkTo(SnomedBranchReviewController.class);
-		SnomedRequests
-			.review()
+		RepositoryRequests
+			.reviews()
 			.prepareCreate()
 			.setSource(request.getSource())
 			.setTarget(request.getTarget())
@@ -98,8 +98,8 @@ public class SnomedBranchReviewController extends AbstractRestService {
 	})
 	@RequestMapping(value="/{id}", method=RequestMethod.GET)
 	public DeferredResult<Review> getReview(@PathVariable("id") final String reviewId) {
-		return DeferredResults.wrap(SnomedRequests
-			.review()
+		return DeferredResults.wrap(RepositoryRequests
+			.reviews()
 			.prepareGet(reviewId)
 			.build(repositoryId)
 			.execute(bus));
@@ -115,8 +115,8 @@ public class SnomedBranchReviewController extends AbstractRestService {
 	@RequestMapping(value="/{id}/concept-changes", method=RequestMethod.GET)
 	public DeferredResult<ConceptChanges> getConceptChanges(@PathVariable("id") final String reviewId) {
 		return DeferredResults.wrap(
-				SnomedRequests
-					.review()
+				RepositoryRequests
+					.reviews()
 					.prepareGetConceptChanges(reviewId)
 					.build(repositoryId)
 					.execute(bus));
@@ -133,8 +133,8 @@ public class SnomedBranchReviewController extends AbstractRestService {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public DeferredResult<ResponseEntity<Void>> deleteReview(@PathVariable("id") final String reviewId) {
 		return DeferredResults.wrap(
-				SnomedRequests
-					.review()
+				RepositoryRequests
+					.reviews()
 					.prepareDelete(reviewId)
 					.build(repositoryId)
 					.execute(bus),

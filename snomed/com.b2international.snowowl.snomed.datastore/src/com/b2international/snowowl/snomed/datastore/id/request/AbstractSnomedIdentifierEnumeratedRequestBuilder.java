@@ -17,13 +17,17 @@ package com.b2international.snowowl.snomed.datastore.id.request;
 
 import java.util.Set;
 
-import com.b2international.snowowl.datastore.request.BaseRepositoryRequestBuilder;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
+import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
 import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 5.5
  */
-public abstract class AbstractSnomedIdentifierEnumeratedRequestBuilder<B extends AbstractSnomedIdentifierEnumeratedRequestBuilder<B, R>, R> extends BaseRepositoryRequestBuilder<B, R> {
+public abstract class AbstractSnomedIdentifierEnumeratedRequestBuilder<B extends AbstractSnomedIdentifierEnumeratedRequestBuilder<B, R>, R> 
+		extends BaseRequestBuilder<B, RepositoryContext, R>
+		implements RepositoryRequestBuilder<R> {
 
 	protected Set<String> componentIds;
 

@@ -40,9 +40,4 @@ public final class ReopenBranchRequest extends BranchRequest<Branch> {
 		}
 	}
 
-	@Override
-	protected Class<Branch> getReturnType() {
-		return Branch.class;
-	}
-	
 }

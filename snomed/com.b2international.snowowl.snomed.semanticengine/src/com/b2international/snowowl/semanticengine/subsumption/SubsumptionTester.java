@@ -185,8 +185,7 @@ public class SubsumptionTester {
 	 */
 	public boolean isSubsumed(Concept predicate, Concept candidate) {
 		
-		final SnomedConcept candidateConcept = SnomedRequests.prepareGetConcept()
-				.setComponentId(candidate.getId())
+		final SnomedConcept candidateConcept = SnomedRequests.prepareGetConcept(candidate.getId())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();

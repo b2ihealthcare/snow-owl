@@ -79,11 +79,6 @@
 								<id>org.semanticweb.elk</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
-							<requirement>
-								<type>eclipse-plugin</type>
-								<id>com.b2international.collections.fastutil</id>
-								<versionRange>0.0.0</versionRange>
-							</requirement>
 						</extraRequirements>
 					</dependency-resolution>
 				</configuration>
@@ -104,22 +99,10 @@
 							</includes>
 						</configuration>
 					</execution>
-					<execution>
-						<id>snomed-ext-tests</id>
-						<phase>integration-test</phase>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<configuration>
-							<includes>
-								<include>**/SnomedExtensionApiTests.java</include>
-							</includes>
-						</configuration>
-					</execution>
 				</executions>
 				<configuration>
 					<useUIThread>false</useUIThread>
-					<argLine>-XX:MaxPermSize=256m -Xms512m -Xmx2g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090</argLine>
+					<argLine>-Xms512m -Xmx2g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090</argLine>
 					<bundleStartLevel>
 						<bundle>
 							<id>org.eclipse.jetty.osgi.boot</id>

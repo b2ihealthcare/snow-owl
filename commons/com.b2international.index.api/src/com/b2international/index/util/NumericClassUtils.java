@@ -18,6 +18,7 @@ package com.b2international.index.util;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Date;
 
 import com.b2international.collections.PrimitiveCollection;
 import com.b2international.collections.bytes.ByteCollection;
@@ -87,5 +88,9 @@ public class NumericClassUtils {
 
 	private NumericClassUtils() {
 		throw new UnsupportedOperationException(NumericClassUtils.class.getSimpleName() + " is not supposed to be instantiated.");
+	}
+
+	public static boolean isDate(Class<?> fieldType) {
+		return fieldType == Date.class;
 	}
 }

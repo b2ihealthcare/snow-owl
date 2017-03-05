@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 
 /**
  * Represents a collection resource in the RESTful API.
@@ -79,6 +82,14 @@ public class CollectionResource<T> implements Serializable, Iterable<T> {
 	@Override
 	public String toString() {
 		return Objects.toStringHelper(CollectionResource.class).add("items", getItems()).toString();
+	}
+	
+	/**
+	 * @return an {@link Optional} item in this collection resource
+	 */
+	@JsonIgnore
+	public Optional<T> first() {
+		return Optional.ofNullable(Iterables.getFirst(getItems(), null));
 	}
 
 }

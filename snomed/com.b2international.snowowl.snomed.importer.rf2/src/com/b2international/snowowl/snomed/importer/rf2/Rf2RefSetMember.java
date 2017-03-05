@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,13 +154,13 @@ public class Rf2RefSetMember extends UnsupportedRf2RefSetMember {
 	}
 
 	@Override
-	public byte getMapGroup() {
-		return Byte.parseByte(record.get(6));
+	public int getMapGroup() {
+		return Integer.parseInt(record.get(6));
 	}
 
 	@Override
-	public byte getMapPriority() {
-		return Byte.parseByte(record.get(7));
+	public int getMapPriority() {
+		return Integer.parseInt(record.get(7));
 	}
 
 	@Override

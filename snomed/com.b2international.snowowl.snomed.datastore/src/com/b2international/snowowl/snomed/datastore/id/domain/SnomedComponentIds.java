@@ -15,12 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.domain;
 
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 
 /**
  * @since 5.5
@@ -31,13 +29,4 @@ public final class SnomedComponentIds extends CollectionResource<String> {
 		super(ImmutableSet.copyOf(componentIds).asList());
 	}
 	
-	/**
-	 * @return the single item in this collection resource
-	 * @throws NoSuchElementException if this resource is empty
-	 * @throws IllegalArgumentException if this resource contains multiple elements
-	 */
-	public String getOnlyItem() {
-		return Iterables.getOnlyElement(getItems());
-	}
-
 }

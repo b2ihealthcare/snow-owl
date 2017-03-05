@@ -9,9 +9,11 @@
 	</parent>
 
 	<artifactId>documentation</artifactId>
-	<packaging>pom</packaging>
+	<packaging>eclipse-plugin</packaging>
 
 	<properties>
+		<siteOutputDirectory>${project.build.directory}/site/${project.version}</siteOutputDirectory>
+		<scmPubCheckoutDirectory>${user.home}/git/snow-owl-gh-pages</scmPubCheckoutDirectory>
 		<asciidoctor.version>1.5.4</asciidoctor.version>
 		<asciidoctorj.pdf.version>1.5.0-alpha.11</asciidoctorj.pdf.version>
 		<asciidoctor.maven.plugin.version>1.5.3</asciidoctor.maven.plugin.version>
@@ -20,13 +22,88 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-packaging-plugin</artifactId>
+				<configuration>
+					<additionalFileSets>
+				 		<fileSet>
+					  		<directory>${siteOutputDirectory}</directory>
+					  		<includes>
+					   			<include>guides/**/*</include>
+					   			<include>api-docs/**/*</include>
+					  		</includes>
+				 		</fileSet>     
+					</additionalFileSets>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho.extras</groupId>
+				<artifactId>tycho-document-bundle-plugin</artifactId>
+				<version>${tycho-extras.version}</version>
+				<executions>
+					<execution>
+						<id>api-docs</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>javadoc</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${siteOutputDirectory}/api-docs</outputDirectory>
+							<skipTocGen>true</skipTocGen>
+							<javadocOptions>
+								<additionalArguments>
+									<additionalArgument>${javadoc-args}</additionalArgument>
+									<additionalArgument>
+										-link
+										http://docs.oracle.com/javase/8/docs/api/
+									</additionalArgument>
+									<additionalArgument>-quiet</additionalArgument>
+									<additionalArgument>-windowtitle "Snow Owl"</additionalArgument>
+								</additionalArguments>
+								<excludes>
+									<exclude>com.h2database*</exclude>
+									<exclude>com.fasterxml*</exclude>
+									<exclude>com.mysql*</exclude>
+									<exclude>com.thoughtworks*</exclude>
+									<exclude>com.healthmarketscience*</exclude>
+									<exclude>com.codahale*</exclude>
+									<exclude>javax.annotation*</exclude>
+									<exclude>javax.validation*</exclude>
+									<exclude>gr.forth.ics*</exclude>
+									<exclude>it.unimi.dsi.fastutil*</exclude>
+									<exclude>org.apache*</exclude>
+									<exclude>org.assertj*</exclude>
+									<exclude>org.easyb*</exclude>
+									<exclude>org.eclipse*</exclude>
+									<exclude>org.hibernate*</exclude>
+									<exclude>org.ihtsdo*</exclude>
+									<exclude>org.osgi*</exclude>
+									<exclude>org.protege*</exclude>
+									<exclude>org.supercsv*</exclude>
+									<exclude>org.semanticweb*</exclude>
+									<exclude>org.xmlpull*</exclude>
+									<exclude>sun.*</exclude>
+									<exclude>spiffy*</exclude>
+									<exclude>*.test*</exclude>
+									<exclude>com.jgoodies.looks*</exclude>
+									<exclude>io.reactivex*</exclude>
+									<exclude>net.jodah*</exclude>
+									<exclude>org.tartarus.snowball*</exclude>
+									<exclude>*internal*</exclude>
+								</excludes>
+							</javadocOptions>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.asciidoctor</groupId>
 				<artifactId>asciidoctor-maven-plugin</artifactId>
 				<version>${asciidoctor.maven.plugin.version}</version>
 
 				<executions>
 					<execution>
-						<id>output-html</id>
+						<id>guides-html</id>
 						<phase>generate-resources</phase>
 						<goals>
 							<goal>process-asciidoc</goal>
@@ -34,11 +111,11 @@
 						<configuration>
 							<backend>html5</backend>
 							<sourceHighlighter>coderay</sourceHighlighter>
+							<outputDirectory>${siteOutputDirectory}/guides</outputDirectory>
 						</configuration>
 					</execution>
-
 					<execution>
-						<id>output-pdf</id>
+						<id>guides-pdf</id>
 						<phase>generate-resources</phase>
 						<goals>
 							<goal>process-asciidoc</goal>
@@ -46,6 +123,7 @@
 						<configuration>
 							<backend>pdf</backend>
 							<sourceHighlighter>coderay</sourceHighlighter>
+							<outputDirectory>${siteOutputDirectory}/guides</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
@@ -67,6 +145,33 @@
                         <version>9.0.4.0</version>
                     </dependency>
 				</dependencies>
+			</plugin>
+			<plugin>
+			   	<groupId>org.apache.maven.plugins</groupId>
+			   	<artifactId>maven-scm-publish-plugin</artifactId>
+			   	<version>1.1</version>
+			   	<executions>
+			   		<execution>
+            			<id>publish-docs</id>
+            			<phase>verify</phase>
+			            <goals>
+			              	<goal>publish-scm</goal>
+			            </goals>
+			            <configuration>
+					       	<checkoutDirectory>${scmPubCheckoutDirectory}</checkoutDirectory>
+					       	<checkinComment>Publishing Docs for Snow Owl ${project.version}</checkinComment>
+					        <content>${project.build.directory}/site</content>
+					        <ignorePathsToDelete>
+					        	<!-- Deletes files only from the docs currently being updated -->
+					        	<ignorePathsToDelete>%regex[^(?!${project.version}).*$]</ignorePathsToDelete>
+					        </ignorePathsToDelete>
+					        <serverId>github</serverId>
+					        <pubScmUrl>scm:git:https://github.com/b2ihealthcare/snow-owl.git</pubScmUrl>
+					        <scmBranch>gh-pages</scmBranch>
+					        <tryUpdate>true</tryUpdate>
+					    </configuration>
+          			</execution>
+			   	</executions>
 			</plugin>
 		</plugins>
 	</build>

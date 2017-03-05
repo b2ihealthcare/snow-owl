@@ -68,6 +68,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
@@ -100,6 +101,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	@Override
 	protected void configureMapper(ObjectMapper mapper) {
 		super.configureMapper(mapper);
+		mapper.setSerializationInclusion(Include.NON_NULL);
 		mapper.registerModule(new PrimitiveCollectionModule());
 	}
 	

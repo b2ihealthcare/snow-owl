@@ -27,7 +27,7 @@ public abstract class VersioningManager implements IVersioningManager {
 
 	@Override
 	public void publish(final ICDOTransactionAggregator aggregator, final String toolingId, 
-			final IPublishOperationConfiguration configuration, final IProgressMonitor monitor) throws SnowowlServiceException {
+			final PublishOperationConfiguration configuration, final IProgressMonitor monitor) throws SnowowlServiceException {
 		
 		getPublishManager().publish(aggregator, toolingId, configuration, monitor);
 	}

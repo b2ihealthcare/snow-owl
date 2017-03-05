@@ -15,72 +15,58 @@
  */
 package com.b2international.snowowl.snomed.api.rest.ext;
 
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
-import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.assertVersionGetStatus;
-import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.assertVersionCreated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedVersioningApiAssert.getLatestAvailableVersionDateAsString;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createVersion;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getVersion;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
-
-import java.util.Map;
-import java.util.UUID;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.BranchBase;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 
 /**
  * @since 4.7
  */
-public class SnomedExtensionVersioningTest extends ExtensionTest {
-	
+@BranchBase(value = SnomedApiTestConstants.EXTENSION_PATH, isolateTests = false)
+public class SnomedExtensionVersioningTest extends AbstractSnomedApiTest {
+
 	@Test
-	public void createVersionWithoutChangesOnB2iBranch() {
-		assertB2iExtensionExistsWithDefaults();
-		
-		final String versionDate = getLatestAvailableVersionDateAsString(B2I_EXT_SHORT_NAME);
-		final String versionId = UUID.randomUUID().toString();
-		
-		assertVersionCreated(versionId, versionDate, B2I_EXT_SHORT_NAME, 201);
-		assertVersionGetStatus(versionId, 200, B2I_EXT_SHORT_NAME);
+	public void createVersionWithoutChanges() {
+		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMED_B2I_SHORT_NAME);
+		String versionId = "v1";
+
+		createVersion(SNOMED_B2I_SHORT_NAME, versionId, effectiveDate).statusCode(201);
+		getVersion(SNOMED_B2I_SHORT_NAME, versionId).statusCode(200).body("effectiveDate", equalTo(effectiveDate));
 	}
-	
+
 	@Test
-	public void createVersionWithoutVersionIdOnB2iBranch() {
-		assertB2iExtensionExistsWithDefaults();
-		
-		final String versionDate = getLatestAvailableVersionDateAsString(B2I_EXT_SHORT_NAME);
-		assertVersionCreated("", versionDate, B2I_EXT_SHORT_NAME, 400);
+	public void createVersionWithoutVersionId() {
+		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMED_B2I_SHORT_NAME);
+		String versionId = "";
+
+		createVersion(SNOMED_B2I_SHORT_NAME, versionId, effectiveDate).statusCode(400);
 	}
-	
+
 	@Test
-	public void createVersionOnB2iBranch() {
-		assertB2iExtensionExistsWithDefaults();
-		
-		final IBranchPath branchPath = BranchPathUtils.createPath(B2I_EXT_BRANCH);
-		final Map<?, ?> requestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		final String conceptId = assertComponentCreated(branchPath, SnomedComponentType.CONCEPT, requestBody);
-		
-		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-			.when().get("{path}/concepts/{conceptId}", branchPath.getPath(), conceptId)
-			.then().body("released", equalTo(false));
-		
-		final String versionDate = getLatestAvailableVersionDateAsString(B2I_EXT_SHORT_NAME);
-		final String versionId = UUID.randomUUID().toString();
-		
-		assertVersionCreated(versionId, versionDate, B2I_EXT_SHORT_NAME, 201);
-		assertVersionGetStatus(versionId, 200, B2I_EXT_SHORT_NAME);
-		
-		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-			.when().get("{path}/concepts/{conceptId}", branchPath.getPath(), conceptId)
-			.then().body("released", equalTo(true));
+	public void createRegularVersion() {
+		String conceptId = createNewConcept(branchPath);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200).body("released", equalTo(false));
+
+		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMED_B2I_SHORT_NAME);
+		String versionId = "v2";
+
+		createVersion(SNOMED_B2I_SHORT_NAME, versionId, effectiveDate).statusCode(201);
+		getVersion(SNOMED_B2I_SHORT_NAME, versionId).statusCode(200).body("effectiveDate", equalTo(effectiveDate));
+
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
+		.body("released", equalTo(true))
+		.body("effectiveTime", equalTo(effectiveDate));
 	}
 
 }

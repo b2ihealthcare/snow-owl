@@ -478,7 +478,7 @@ public final class ImportUtil {
 				.all()
 				.setLocales(getLocales())
 				.setExpand("pt()")
-				.setComponentIds(getAsStringList(visitedConceptIds))
+				.filterByIds(getAsStringList(visitedConceptIds))
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getEventBus())
 				.then(new Function<SnomedConcepts, Collection<SnomedConceptDocument>>() {

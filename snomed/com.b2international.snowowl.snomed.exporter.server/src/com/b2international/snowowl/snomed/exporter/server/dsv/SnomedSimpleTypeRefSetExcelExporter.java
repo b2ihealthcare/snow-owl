@@ -76,7 +76,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 	public SnomedSimpleTypeRefSetExcelExporter(final String userId, final IBranchPath branchPath, final String refSetId) {
 		super(userId, branchPath);
 		
-		this.refSet = SnomedRequests.prepareGetReferenceSet().setComponentId(refSetId).build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(getBus()).getSync();
+		this.refSet = SnomedRequests.prepareGetReferenceSet(refSetId).build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(getBus()).getSync();
 		this.context = new SnomedEditingContext(branchPath);
 		this.workbook = new XSSFWorkbook();
 		

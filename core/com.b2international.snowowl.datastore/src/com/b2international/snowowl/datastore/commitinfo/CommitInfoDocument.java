@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,17 @@
 package com.b2international.snowowl.datastore.commitinfo;
 
 import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchTextAllPrefix;
 import static com.b2international.index.query.Expressions.matchTextPhrase;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collection;
+
 import com.b2international.index.Analyzed;
 import com.b2international.index.Doc;
 import com.b2international.index.WithId;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -84,7 +88,11 @@ public final class CommitInfoDocument implements WithId {
 		private Expressions() {}
 		
 		public static final Expression id(String id) {
-			return exactMatch(Fields.ID, id);
+			return DocumentMapping.matchId(id);
+		}
+		
+		public static final Expression ids(Collection<String> ids) {
+			return matchAny(DocumentMapping._ID, ids);
 		}
 		
 		public static Expression branch(final String branch) {
@@ -110,7 +118,6 @@ public final class CommitInfoDocument implements WithId {
 	}
 	
 	public static final class Fields {
-		public static final String ID = "id";
 		public static final String BRANCH = "branch";
 		public static final String USER_ID = "userId";
 		public static final String COMMENT = "comment";

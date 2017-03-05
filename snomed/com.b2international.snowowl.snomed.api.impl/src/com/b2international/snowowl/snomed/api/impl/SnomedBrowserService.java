@@ -69,11 +69,11 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.ConceptEnum;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptUpdateRequest;
@@ -127,8 +127,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		
 		final IBranchPath branchPath = internalConceptRef.getBranch().branchPath();
 		final String conceptId = conceptRef.getComponentId();
-		final SnomedConcept concept = SnomedRequests.prepareGetConcept()
-				.setComponentId(conceptId)
+		final SnomedConcept concept = SnomedRequests.prepareGetConcept(conceptId)
 				.setLocales(locales)
 				.setExpand("pt(),fsn(),descriptions(limit:"+Integer.MAX_VALUE+"),relationships(limit:"+Integer.MAX_VALUE+")")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
@@ -228,7 +227,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			commitReq.add(descriptionReq);
 		}
 		for (String descriptionDeletionId : descriptionDeletionIds) {
-			commitReq.add(SnomedRequests.prepareDeleteDescription().setComponentId(descriptionDeletionId).build());
+			commitReq.add(SnomedRequests.prepareDeleteDescription(descriptionDeletionId).build());
 		}
 
 		for (String relationshipId : relationshipUpdates.keySet()) {
@@ -238,7 +237,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			commitReq.add(relationshipReq);
 		}
 		for (String relationshipDeletionId : relationshipDeletionIds) {
-			commitReq.add(SnomedRequests.prepareDeleteRelationship().setComponentId(relationshipDeletionId).build());
+			commitReq.add(SnomedRequests.prepareDeleteRelationship(relationshipDeletionId).build());
 		}
 
 		// Inactivate concept last
@@ -409,7 +408,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		}
 		return SnomedRequests.prepareSearchConcept()
 				.all()
-				.setComponentIds(destinationConceptIds)
+				.filterByIds(destinationConceptIds)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(bus)
 				.getSync();
@@ -445,8 +444,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			
 			@Override
 			protected Iterable<SnomedConcept> getConceptEntries(String conceptId) {
-				return SnomedRequests.prepareGetConcept()
-						.setComponentId(conceptId)
+				return SnomedRequests.prepareGetConcept(conceptId)
 						.setExpand("ancestors(form:\"inferred\",direct:true)")
 						.setLocales(locales)
 						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
@@ -632,8 +630,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				final String conceptId = conceptEnum.getConceptId();
 
 				// Check if the corresponding concept exists
-				SnomedRequests.prepareGetConcept()
-						.setComponentId(conceptId)
+				SnomedRequests.prepareGetConcept(conceptId)
 						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 						.execute(bus)
 						.getSync();

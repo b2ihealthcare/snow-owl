@@ -46,9 +46,4 @@ public final class BranchUpdateRequest extends BranchRequest<Boolean> {
 		return Boolean.TRUE;
 	}
 
-	@Override
-	protected Class<Boolean> getReturnType() {
-		return Boolean.class;
-	}
-
 }

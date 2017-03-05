@@ -92,12 +92,13 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1CoreExporter<Snom
 		IEventBus eventBus = ApplicationContext.getInstance().getService(IEventBus.class);
 		
 		try {
-
 			//fsn
-			SnomedConcept snomedConcept = SnomedRequests.prepareGetConcept()
-				.setComponentId(doc.getId())
+			SnomedConcept snomedConcept = SnomedRequests.prepareGetConcept(doc.getId())
 				.setLocales(languageSetting.getLanguagePreference())
-				.setExpand("fsn()").build(SnomedDatastoreActivator.REPOSITORY_UUID, getExportContext().getCurrentBranchPath().getPath()).execute(eventBus).getSync();
+				.setExpand("fsn()")
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getExportContext().getCurrentBranchPath().getPath())
+				.execute(eventBus)
+				.getSync();
 			
 			concept.fsn = snomedConcept.getFsn().getTerm();
 		

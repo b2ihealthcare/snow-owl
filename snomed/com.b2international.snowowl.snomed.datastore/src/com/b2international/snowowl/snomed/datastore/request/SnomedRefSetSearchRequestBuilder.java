@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,18 @@ import java.util.Collection;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Strings;
 
 /**
+ * <i>Builder</i> class to build requests responsible for searching SNOMED CT reference sets.
+ * This class should be instantiated from the corresponding static method on the central {@link SnomedRequests} class.
+ * Filter methods restrict the results set returned from the search requests; 
+ * what passes the filters will be returned as part of the pageable resultset.
+ * 
  * @since 4.5
  */
 public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestBuilder<SnomedRefSetSearchRequestBuilder, SnomedReferenceSets> {
@@ -32,7 +38,7 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 	SnomedRefSetSearchRequestBuilder() {}
 
 	@Override
-	protected RevisionSearchRequest<SnomedReferenceSets> createSearch() {
+	protected SearchResourceRequest<BranchContext, SnomedReferenceSets> createSearch() {
 		return new SnomedRefSetSearchRequest();
 	}
 	

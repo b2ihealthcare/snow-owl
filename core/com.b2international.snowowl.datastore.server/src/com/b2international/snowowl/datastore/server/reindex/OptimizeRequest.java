@@ -17,12 +17,12 @@ package com.b2international.snowowl.datastore.server.reindex;
 
 import com.b2international.index.Index;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequest;
+import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 4.7
  */
-public final class OptimizeRequest extends BaseRequest<RepositoryContext, Boolean> {
+public final class OptimizeRequest implements Request<RepositoryContext, Boolean> {
 
 	private int maxSegments;
 	
@@ -38,11 +38,6 @@ public final class OptimizeRequest extends BaseRequest<RepositoryContext, Boolea
 		return Boolean.TRUE;
 	}
 
-	@Override
-	protected Class<Boolean> getReturnType() {
-		return Boolean.class;
-	}
-	
 	public static OptimizeRequestBuilder builder() {
 		return new OptimizeRequestBuilder();
 	}

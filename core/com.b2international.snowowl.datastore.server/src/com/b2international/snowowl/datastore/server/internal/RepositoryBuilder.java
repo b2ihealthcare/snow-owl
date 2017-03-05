@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ public final class RepositoryBuilder {
 	private final String repositoryId;
 	private final DefaultRepositoryManager manager;
 	
-	private int numberOfWorkers;
 	private int mergeMaxResults;
 
 	RepositoryBuilder(DefaultRepositoryManager defaultRepositoryManager, String repositoryId, String toolingId) {
@@ -36,18 +35,13 @@ public final class RepositoryBuilder {
 		this.toolingId = toolingId;
 	}
 
-	public RepositoryBuilder setNumberOfWorkers(int numberOfWorkers) {
-		this.numberOfWorkers = numberOfWorkers;
-		return this;
-	}
-
 	public RepositoryBuilder setMergeMaxResults(int mergeMaxResults) {
 		this.mergeMaxResults = mergeMaxResults;
 		return this;
 	}
 	
 	public Repository build(Environment env) {
-		final CDOBasedRepository repository = new CDOBasedRepository(repositoryId, toolingId, numberOfWorkers, mergeMaxResults, env);
+		final CDOBasedRepository repository = new CDOBasedRepository(repositoryId, toolingId, mergeMaxResults, env);
 		manager.put(repositoryId, repository);
 		return repository;
 	}

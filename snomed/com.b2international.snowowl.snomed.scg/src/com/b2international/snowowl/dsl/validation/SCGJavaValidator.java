@@ -18,7 +18,6 @@ package com.b2international.snowowl.dsl.validation;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -216,8 +215,7 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 	
 	private void checkNonMatchingTerm(String id, String term, EAttribute termAttribute) {
 		
-		final SnomedConcept concept = SnomedRequests.prepareGetConcept()
-				.setComponentId(id)
+		final SnomedConcept concept = SnomedRequests.prepareGetConcept(id)
 				.setExpand("descriptions(),pt()")
 				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
@@ -261,7 +259,11 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 	}
 
 	private SnomedConcept getConcept(String id) {
-		return Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept().setLimit(1).setComponentIds(Collections.singleton(id)).build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch()).execute(bus.get()).getSync(), null);
+		return Iterables.getOnlyElement(SnomedRequests.prepareSearchConcept()
+				.setLimit(1)
+				.filterById(id)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
+				.execute(bus.get()).getSync(), null);
 	}
 
 	private String getBranch() {

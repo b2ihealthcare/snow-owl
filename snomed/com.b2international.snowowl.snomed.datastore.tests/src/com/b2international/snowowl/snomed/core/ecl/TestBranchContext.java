@@ -55,7 +55,7 @@ public final class TestBranchContext extends DelegatingServiceProvider implement
 	}
 	
 	@Override
-	public RepositoryContext get(ServiceProvider context, String repositoryId) {
+	public RepositoryContext get(String repositoryId) {
 		return this;
 	}
 	
@@ -88,7 +88,7 @@ public final class TestBranchContext extends DelegatingServiceProvider implement
 			when(mockBranch.path()).thenReturn(branch);
 			context = new TestBranchContext(repositoryId, mockBranch);
 			final IEventBus bus = EventBusUtil.getWorkerBus(repositoryId, Runtime.getRuntime().availableProcessors());
-			bus.registerHandler("/"+repositoryId, new IHandler<IMessage>() {
+			bus.registerHandler(Request.ADDRESS, new IHandler<IMessage>() {
 				@Override
 				public void handle(IMessage message) {
 					try {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,107 +15,131 @@
  */
 package com.b2international.snowowl.snomed.api.rest.ext;
 
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_CONCEPT;
-import static com.b2international.snowowl.snomed.api.rest.CodeSystemApiAssert.assertCodeSystemHasProperty;
-import static com.b2international.snowowl.snomed.api.rest.CodeSystemApiAssert.assertCodeSystemUpdated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeMerged;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertMergeJobFails;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentCreated;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertConceptExists;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertConceptNotExists;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.givenConceptRequestBody;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentType.CONCEPT;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests.getCodeSystem;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests.updateCodeSystem;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getVersion;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranch;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.merge;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.util.Map;
 
+import org.junit.AfterClass;
 import org.junit.Test;
 
+import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystemVersion;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.BranchBase;
+import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
+import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.7
  */
-public class SnomedExtensionDowngradeTest extends ExtensionTest {
-	
-	@Test
-	public void downgradeB2iExtensionWithoutChanges() {
-		assertB2iExtensionExistsWithDefaults();
-		
-		final IBranchPath b2iBranchPath = BranchPathUtils.createPath(B2I_EXT_BRANCH);
-		final IBranchPath branchPath = createBranchOnNewVersion(INT_SHORT_NAME);
-		
-		assertBranchCanBeMerged(b2iBranchPath, branchPath, "Upgrade extension branch.");
-		
-		assertCodeSystemUpdated(B2I_EXT_SHORT_NAME, ImmutableMap.of("branchPath", branchPath.getPath(), "repositoryUuid", "snomedStore"));
-		assertCodeSystemHasProperty(B2I_EXT_SHORT_NAME, "branchPath", branchPath.getPath());
-		
-		assertBranchCanBeMerged(branchPath, b2iBranchPath, "Downgrade extension branch.");
-		
-		assertCodeSystemUpdated(B2I_EXT_SHORT_NAME, ImmutableMap.of("branchPath", b2iBranchPath.getPath(), "repositoryUuid", "snomedStore"));
-		assertCodeSystemHasProperty(B2I_EXT_SHORT_NAME, "branchPath", b2iBranchPath.getPath());
-	}
-	
-	@Test
-	public void downgradeB2iExtensionWithNewConceptOnUpgradedBranch() {
-		assertB2iExtensionExistsWithDefaults();
-		
-		final IBranchPath b2iBranchPath = BranchPathUtils.createPath(B2I_EXT_BRANCH);
-		final IBranchPath branchPath = createBranchOnNewVersion(INT_SHORT_NAME);
-		
-		assertBranchCanBeMerged(b2iBranchPath, branchPath, "Upgrade extension branch.");
-		
-		assertCodeSystemUpdated(B2I_EXT_SHORT_NAME, ImmutableMap.of("branchPath", branchPath.getPath(), "repositoryUuid", "snomedStore"));
-		assertCodeSystemHasProperty(B2I_EXT_SHORT_NAME, "branchPath", branchPath.getPath());
-		
-		final IBranchPath branchPath2 = createBranchOnNewVersion(INT_SHORT_NAME);
-		
-		assertBranchCanBeMerged(branchPath, branchPath2, "Upgrade extension branch.");
-		
-		assertCodeSystemUpdated(B2I_EXT_SHORT_NAME, ImmutableMap.of("branchPath", branchPath2.getPath(), "repositoryUuid", "snomedStore"));
-		assertCodeSystemHasProperty(B2I_EXT_SHORT_NAME, "branchPath", branchPath2.getPath());
+@BranchBase(value = SnomedApiTestConstants.EXTENSION_PATH, isolateTests = false)
+public class SnomedExtensionDowngradeTest extends AbstractSnomedApiTest {
 
-		final Map<?, ?> requestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		final String conceptId = assertComponentCreated(branchPath2, CONCEPT, requestBody);
-		
-		assertBranchCanBeMerged(branchPath2, branchPath, "Downgrade extension branch with new concept.");
-		
-		assertCodeSystemUpdated(B2I_EXT_SHORT_NAME, ImmutableMap.of("branchPath", branchPath.getPath(), "repositoryUuid", "snomedStore"));
-		assertCodeSystemHasProperty(B2I_EXT_SHORT_NAME, "branchPath", branchPath.getPath());
-		
-		assertConceptExists(branchPath, conceptId);
-	}
-	
 	@Test
-	public void downgradeB2iExtensionWithConflictingContent() {
-		assertB2iExtensionExistsWithDefaults();
-		
-		final IBranchPath b2iBranchPath = BranchPathUtils.createPath(B2I_EXT_BRANCH);
-		final IBranchPath branchPath = createBranchOnNewVersion(INT_SHORT_NAME);
-		
-		assertBranchCanBeMerged(b2iBranchPath, branchPath, "Upgrade extension branch.");
-		
-		assertCodeSystemUpdated(B2I_EXT_SHORT_NAME, ImmutableMap.of("branchPath", branchPath.getPath(), "repositoryUuid", "snomedStore"));
-		assertCodeSystemHasProperty(B2I_EXT_SHORT_NAME, "branchPath", branchPath.getPath());
-		
-		final Map<?, ?> mainConceptRequestBody = givenConceptRequestBody(null, ROOT_CONCEPT, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		final String conceptId = assertComponentCreated(BranchPathUtils.createMainPath(), CONCEPT, mainConceptRequestBody);
-		
-		final IBranchPath branchPath2 = createBranchOnNewVersion(INT_SHORT_NAME);
-		
-		assertBranchCanBeMerged(branchPath, branchPath2, "Upgrade extension branch.");
-		
-		assertCodeSystemUpdated(B2I_EXT_SHORT_NAME, ImmutableMap.of("branchPath", branchPath2.getPath(), "repositoryUuid", "snomedStore"));
-		assertCodeSystemHasProperty(B2I_EXT_SHORT_NAME, "branchPath", branchPath2.getPath());
+	public void downgradeWithoutChanges() {
+		CodeSystemVersion version = getVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, "2016-01-31")
+				.statusCode(200)
+				.extract().as(CodeSystemVersion.class);
 
-		final Map<?, ?> extensionConceptRequestBody = givenConceptRequestBody(null, conceptId, MODULE_SCT_CORE, PREFERRED_ACCEPTABILITY_MAP, false);
-		assertComponentCreated(branchPath2, CONCEPT, extensionConceptRequestBody);
-		
-		assertConceptNotExists(branchPath, conceptId);
-		assertMergeJobFails(branchPath2, branchPath, "Downgrade extension branch with conflicting content.");
+		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(version.getParentBranchPath(), 
+				version.getVersion(),
+				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
+
+		createBranch(targetPath).statusCode(201);
+		merge(branchPath, targetPath, "Downgraded B2i extension to 2016-01-31.").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		Map<?, ?> updateRequest = ImmutableMap.builder()
+				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
+				.put("branchPath", targetPath.getPath())
+				.build();
+
+		updateCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME, updateRequest).statusCode(204);
+
+		getCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME).statusCode(200)
+		.body("branchPath", equalTo(targetPath.getPath()));
 	}
-	
+
+	@Test
+	public void downgradeWithNewConcept() {
+		CodeSystemVersion version = getVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, "2015-07-31")
+				.statusCode(200)
+				.extract().as(CodeSystemVersion.class);
+
+		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(version.getParentBranchPath(), 
+				version.getVersion(),
+				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
+
+		createBranch(targetPath).statusCode(201);
+
+		String conceptId = createNewConcept(targetPath);
+
+		merge(branchPath, targetPath, "Downgraded B2i extension to 2015-07-31.").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		Map<?, ?> updateRequest = ImmutableMap.builder()
+				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
+				.put("branchPath", targetPath.getPath())
+				.build();
+
+		updateCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME, updateRequest).statusCode(204);
+
+		getCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME).statusCode(200)
+		.body("branchPath", equalTo(targetPath.getPath()));
+
+		getComponent(targetPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200);
+	}
+
+	@Test
+	public void downgradeWithConflictingContent() {
+		CodeSystemVersion version = getVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, "2015-01-31")
+				.statusCode(200)
+				.extract().as(CodeSystemVersion.class);
+
+		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(version.getParentBranchPath(), 
+				version.getVersion(),
+				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
+
+		createBranch(targetPath).statusCode(201);
+
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("id", "476216051000154119") // Description of Date-time reference set
+				.put("conceptId", Concepts.ROOT_CONCEPT)
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("typeId", Concepts.SYNONYM)
+				.put("term", "Synonym of root concept")
+				.put("languageCode", "en")
+				.put("acceptability", SnomedApiTestConstants.UK_ACCEPTABLE_MAP)
+				.put("caseSignificance", CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE)
+				.put("commitComment", "Created new synonym with duplicate SCTID")
+				.build();
+
+		createComponent(targetPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(201);
+
+		merge(branchPath, targetPath, "Downgraded B2i extension to 2015-01-31.").body("status", equalTo(Merge.Status.CONFLICTS.name()));
+	}
+
+	@AfterClass
+	public static void restoreB2iCodeSystem() {
+		Map<?, ?> updateRequest = ImmutableMap.builder()
+				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
+				.put("branchPath", SnomedApiTestConstants.EXTENSION_PATH)
+				.build();
+
+		updateCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME, updateRequest).statusCode(204);
+	}
+
 }

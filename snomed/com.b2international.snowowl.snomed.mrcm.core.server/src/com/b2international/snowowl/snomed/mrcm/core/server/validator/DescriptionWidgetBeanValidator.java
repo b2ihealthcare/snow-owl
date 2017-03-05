@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server.validator;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
@@ -75,7 +74,7 @@ public class DescriptionWidgetBeanValidator implements ModeledWidgetBeanValidato
 	static boolean exists(IBranchPath branchPath, String conceptId) {
 		return SnomedRequests.prepareSearchConcept()
 				.setLimit(0)
-				.setComponentIds(Collections.singleton(conceptId))
+				.filterById(conceptId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync().getTotal() > 0;

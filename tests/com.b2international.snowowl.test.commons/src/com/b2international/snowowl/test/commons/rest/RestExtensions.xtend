@@ -43,7 +43,7 @@ import com.google.common.base.Joiner
 class RestExtensions {
 
 	// HTTP and REST API
-	static AtomicBoolean BASE_URI_CHANGED = new AtomicBoolean(false) 
+	static AtomicBoolean INITIALIZE_ONCE = new AtomicBoolean(false) 
 	public static final String CONTEXT = "snowowl"
 
 	public static final int OK = 200
@@ -74,12 +74,15 @@ class RestExtensions {
 	}
 
 	def static RequestSpecification givenUnauthenticatedRequest(String api) {
-		if (BASE_URI_CHANGED.compareAndSet(false, true)) {
+		if (INITIALIZE_ONCE.compareAndSet(false, true)) {
 			// change Base URI if defined as sysarg
 			val serverLocation = System.getProperty("test.server.location")
 			if (!serverLocation.nullOrEmpty) {
 				RestAssured.baseURI = serverLocation
 			}
+			
+			// Enable logging on failed requests
+			RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 		}
 		Preconditions.checkArgument(api.startsWith("/"), "Api param should start with a forward slash: '/'")
 		return given().port(getPort()).basePath(CONTEXT + api)

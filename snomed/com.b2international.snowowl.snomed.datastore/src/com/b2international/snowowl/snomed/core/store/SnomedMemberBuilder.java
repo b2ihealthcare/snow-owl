@@ -60,15 +60,17 @@ public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B, T>, T
 		return getSelf();
 	}
 	
-	public T addTo(TransactionContext context) {
+	public final T addTo(TransactionContext context) {
 		final T component = build(context);
 		final SnomedRefSet refSet = context.lookup(referenceSetId, SnomedRefSet.class);
-		if (refSet instanceof SnomedRegularRefSet) {
-			((SnomedRegularRefSet) refSet).getMembers().add(component);
-		}
+		addToList(context, refSet, component);
 		return component;
 	}
 	
+	protected void addToList(TransactionContext context, SnomedRefSet refSet, T component) {
+		((SnomedRegularRefSet) refSet).getMembers().add(component);
+	}
+
 	@Override
 	@OverridingMethodsMustInvokeSuper
 	protected void init(T component, TransactionContext context) {
@@ -77,6 +79,5 @@ public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B, T>, T
 		final SnomedRefSet refSet = context.lookup(referenceSetId, SnomedRefSet.class);
 		component.setRefSet(refSet);
 	}
-	
 	
 }

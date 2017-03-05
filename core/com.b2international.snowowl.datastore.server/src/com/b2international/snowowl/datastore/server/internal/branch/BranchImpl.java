@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,24 +90,24 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	
     @Override
     public InternalBranch withDeleted() {
-		return createBranch(name, parentPath, baseTimestamp, headTimestamp, true, metadata());
+		return createBranch(name(), parentPath(), baseTimestamp(), headTimestamp(), true, metadata());
 	}
 
     @Override
     public InternalBranch withBaseTimestamp(long newBaseTimestamp) {
-        checkArgument(newBaseTimestamp > baseTimestamp, "New base timestamp may not be smaller or equal than old base timestamp.");
-		return createBranch(name, parentPath, newBaseTimestamp, newBaseTimestamp, deleted, metadata());
+        checkArgument(newBaseTimestamp > baseTimestamp(), "New base timestamp may not be smaller or equal than old base timestamp.");
+		return createBranch(name(), parentPath(), newBaseTimestamp, newBaseTimestamp, isDeleted(), metadata());
 	}
 	
     @Override
     public InternalBranch withHeadTimestamp(long newHeadTimestamp) {
-		checkArgument(newHeadTimestamp > headTimestamp, "New head timestamp may not be smaller or equal than old head timestamp.");
-		return createBranch(name, parentPath, baseTimestamp, newHeadTimestamp, deleted, metadata());
+		checkArgument(newHeadTimestamp > headTimestamp(), "New head timestamp may not be smaller or equal than old head timestamp.");
+		return createBranch(name(), parentPath(), baseTimestamp(), newHeadTimestamp, isDeleted(), metadata());
 	}
     
     @Override
-    public InternalBranch withMetadata(Metadata metadata) {
-    	return createBranch(name, parentPath, baseTimestamp, headTimestamp, deleted, metadata);
+    public InternalBranch withMetadata(Metadata newMetadata) {
+    	return createBranch(name(), parentPath(), baseTimestamp(), headTimestamp(), isDeleted(), newMetadata);
     }
     
 	private BranchImpl createBranch(String name, String parentPath, long baseTimestamp, long headTimestamp, boolean deleted, Metadata metadata) {

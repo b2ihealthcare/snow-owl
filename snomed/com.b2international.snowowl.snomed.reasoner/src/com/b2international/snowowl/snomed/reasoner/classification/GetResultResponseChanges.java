@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.reasoner.classification;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.UUID;
 
 import com.b2international.snowowl.snomed.reasoner.classification.entry.ConceptConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.IConcreteDomainChangeEntry;
@@ -33,39 +32,27 @@ public class GetResultResponseChanges implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private final UUID classificationId;
 	private final long elapsedTimeMillis;
-
 	private final List<AbstractEquivalenceSet> equivalenceSets;
 	private final List<RelationshipChangeEntry> relationshipEntries;
 	private final List<IConcreteDomainChangeEntry> concreteDomainEntries;
 
 	/**
 	 * Creates a new change set with the specified arguments.
-	 * @param classificationId the classification ID associated with this change set
 	 * @param elapsedTimeMillis elapsed time measured on the server in milliseconds
 	 * @param equivalenceSets the list of equivalence sets (including both regular and unsatisfiable ones)
 	 * @param relationshipEntries the list of inferred or redundant SNOMED&nbsp;CT relationship entries
 	 * @param concreteDomainEntries the list of inferred or redundant SNOMED&nbsp;CT concrete domain reference set member entries
 	 */
-	public GetResultResponseChanges(final UUID classificationId, 
-			final long elapsedTimeMillis,
-			final List<? extends AbstractEquivalenceSet> equivalenceSets,
-			final List<RelationshipChangeEntry> relationshipEntries, 
-			final List<? extends IConcreteDomainChangeEntry> concreteDomainEntries) {
+	public GetResultResponseChanges(long elapsedTimeMillis, 
+			List<? extends AbstractEquivalenceSet> equivalenceSets,
+			List<RelationshipChangeEntry> relationshipEntries,
+			List<? extends IConcreteDomainChangeEntry> concreteDomainEntries) {
 
-		this.classificationId = classificationId;
 		this.elapsedTimeMillis = elapsedTimeMillis;
 		this.equivalenceSets = ImmutableList.copyOf(equivalenceSets);
 		this.relationshipEntries = ImmutableList.copyOf(relationshipEntries);
 		this.concreteDomainEntries = ImmutableList.copyOf(concreteDomainEntries);
-	}
-
-	/**
-	 * @return the classification ID associated with this change set
-	 */
-	public UUID getClassificationId() {
-		return classificationId;
 	}
 
 	/**

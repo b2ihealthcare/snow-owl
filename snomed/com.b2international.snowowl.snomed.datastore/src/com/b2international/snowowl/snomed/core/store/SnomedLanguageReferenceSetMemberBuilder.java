@@ -19,13 +19,13 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 
 /**
  * @since 4.5
  */
-public final class SnomedLanguageReferenceSetMemberBuilder
-		extends SnomedMemberBuilder<SnomedLanguageReferenceSetMemberBuilder, SnomedLanguageRefSetMember> {
+public final class SnomedLanguageReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedLanguageReferenceSetMemberBuilder, SnomedLanguageRefSetMember> {
 
 	private Acceptability acceptability = Acceptability.ACCEPTABLE;
 
@@ -41,20 +41,9 @@ public final class SnomedLanguageReferenceSetMemberBuilder
 		return getSelf();
 	}
 
-	/**
-	 * Builds and adds a new SNOMED CT Language reference set member to the given description using the given {@link TransactionContext}.
-	 * 
-	 * @param context - the context where the new member should be made available
-	 * @param description - the corresponding description of the referenced component
-	 */
-	public SnomedLanguageRefSetMember addTo(TransactionContext context, Description description) {
-		// FIXME default module handling (sometimes we would like to specify other modules for member than the description's)
-		final SnomedLanguageRefSetMember member = this
-				.withReferencedComponent(description.getId())
-				.withModule(description.getModule().getId())
-				.addTo(context);
-		description.getLanguageRefSetMembers().add(member);
-		return member;
+	@Override
+	protected SnomedLanguageRefSetMember create() {
+		return SnomedRefSetFactory.eINSTANCE.createSnomedLanguageRefSetMember();
 	}
 
 	@Override
@@ -62,10 +51,11 @@ public final class SnomedLanguageReferenceSetMemberBuilder
 		super.init(component, context);
 		component.setAcceptabilityId(acceptability.getConceptId());
 	}
-
+	
 	@Override
-	protected SnomedLanguageRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedLanguageRefSetMember();
+	protected void addToList(TransactionContext context, SnomedRefSet refSet, SnomedLanguageRefSetMember component) {
+		Description description = context.lookup(component.getReferencedComponentId(), Description.class);
+		description.getLanguageRefSetMembers().add(component);
 	}
 
 }

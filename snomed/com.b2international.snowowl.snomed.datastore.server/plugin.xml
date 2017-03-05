@@ -81,14 +81,6 @@
       </manager>
    </extension>
    <extension
-         point="com.b2international.snowowl.terminologyregistry.core.codeSystemVersionProvider">
-      <codeSystemVersionProvider
-            class="com.b2international.snowowl.snomed.datastore.server.SnomedConceptVersionProvider"
-            id="com.b2international.snowowl.snomed.datastore.server.snomedConceptVersionProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
-      </codeSystemVersionProvider>
-   </extension>
-   <extension
          point="com.b2international.snowowl.datastore.server.versionCompareHierarchyBuilder">
       <builder
             class="com.b2international.snowowl.datastore.server.snomed.version.SnomedVersionCompareHierarchyBuilder"

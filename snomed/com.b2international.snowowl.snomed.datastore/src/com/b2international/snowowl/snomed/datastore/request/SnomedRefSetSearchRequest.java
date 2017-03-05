@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -53,7 +54,7 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		
-		addComponentIdFilter(queryBuilder);
+		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
 		addModuleClause(queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
 		
@@ -61,7 +62,7 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 			queryBuilder.must(refSetTypes(getCollection(OptionKey.TYPE, SnomedRefSetType.class)));
 		} else {
 			// always add type filter, so only concept docs with refset props will be returned
-			queryBuilder.must(Expressions.prefixMatch(SnomedConceptDocument.Fields.REFSET_TYPE, ""));
+			queryBuilder.must(Expressions.exists(SnomedConceptDocument.Fields.REFSET_TYPE));
 		}
 		
 		if (containsKey(OptionKey.REFERENCED_COMPONENT_TYPE)) {
@@ -88,8 +89,4 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 		return new SnomedReferenceSets(offset, limit, 0);
 	}
 	
-	@Override
-	protected Class<SnomedReferenceSets> getReturnType() {
-		return SnomedReferenceSets.class;
-	}
 }

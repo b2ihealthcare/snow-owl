@@ -11,7 +11,6 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.datastore;visibility:=reexport,
  com.b2international.snowowl.rpc,
  com.b2international.snowowl.dependencies,
- com.b2international.snowowl.terminologyregistry.core,
  com.b2international.snowowl.index.diff,
  com.b2international.snowowl.emf.compare,
  com.b2international.collections.jackson

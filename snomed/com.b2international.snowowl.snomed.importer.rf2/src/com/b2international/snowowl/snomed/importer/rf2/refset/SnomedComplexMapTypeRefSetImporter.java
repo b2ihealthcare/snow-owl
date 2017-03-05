@@ -22,12 +22,12 @@ import java.util.Map;
 
 import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
+import org.supercsv.cellprocessor.ParseInt;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.importer.rf2.csv.ComplexMapTypeRefSetRow;
-import com.b2international.snowowl.snomed.importer.rf2.csv.cellprocessor.ParseByte;
 import com.b2international.snowowl.snomed.importer.rf2.csv.cellprocessor.ParseUuid;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.IndexConfiguration;
@@ -70,8 +70,8 @@ public class SnomedComplexMapTypeRefSetImporter extends AbstractSnomedMapTypeRef
 				.put(ComplexMapTypeRefSetRow.PROP_MODULE_ID, NullObjectPattern.INSTANCE)
 				.put(ComplexMapTypeRefSetRow.PROP_REF_SET_ID, NullObjectPattern.INSTANCE)
 				.put(ComplexMapTypeRefSetRow.PROP_REFERENCED_COMPONENT_ID, NullObjectPattern.INSTANCE)
-				.put(ComplexMapTypeRefSetRow.PROP_MAP_GROUP, new ParseByte())
-				.put(ComplexMapTypeRefSetRow.PROP_MAP_PRIORITY, new ParseByte())
+				.put(ComplexMapTypeRefSetRow.PROP_MAP_GROUP, new ParseInt())
+				.put(ComplexMapTypeRefSetRow.PROP_MAP_PRIORITY, new ParseInt())
 				.put(ComplexMapTypeRefSetRow.PROP_MAP_RULE, NullObjectPattern.INSTANCE)
 				.put(ComplexMapTypeRefSetRow.PROP_MAP_ADVICE, NullObjectPattern.INSTANCE)
 				.put(ComplexMapTypeRefSetRow.PROP_ASSOCIATED_COMPONENT_ID, NullObjectPattern.INSTANCE)
