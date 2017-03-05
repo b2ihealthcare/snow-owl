@@ -129,6 +129,8 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 						return input.getIdentifierId();
 					}
 				}));
+		// collect deleted reference sets
+		final Set<Long> deletedRefSets = newHashSet(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET)));
 		
 		// index new concepts
 		for (final Concept concept : commitChangeSet.getNewComponents(Concept.class)) {
@@ -170,7 +172,9 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				SnomedRefSet refSet = newAndDirtyRefSetsById.remove(id);
 				if (refSet != null) {
 					doc.refSet(refSet);
-				} else {
+				}
+				// clear refset props when deleting refset
+				if (deletedRefSets.contains(currentDoc.getRefSetStorageKey())) {
 					doc.clearRefSet();
 				}
 				if (concept != null) {
