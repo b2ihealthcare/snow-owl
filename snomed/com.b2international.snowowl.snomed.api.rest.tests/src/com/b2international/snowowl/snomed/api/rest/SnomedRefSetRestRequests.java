@@ -63,10 +63,12 @@ public abstract class SnomedRefSetRestRequests {
 	}
 
 	public static void updateRefSetMemberEffectiveTime(IBranchPath memberPath, String memberId, Date effectiveTime) {
-		String effectiveTimeAsString = EffectiveTimes.format(effectiveTime, DateFormats.SHORT);
+		updateRefSetMemberEffectiveTime(memberPath, memberId, EffectiveTimes.format(effectiveTime, DateFormats.SHORT));
+	}
 
+	public static void updateRefSetMemberEffectiveTime(IBranchPath memberPath, String memberId, String effectiveTime) {
 		Map<?, ?> parentRequest = ImmutableMap.builder()
-				.put("effectiveTime", effectiveTimeAsString)
+				.put("effectiveTime", effectiveTime)
 				.put("commitComment", "Updated effective time on reference set member")
 				.build();
 

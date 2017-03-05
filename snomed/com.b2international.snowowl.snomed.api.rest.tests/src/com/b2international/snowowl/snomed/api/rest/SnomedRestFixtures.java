@@ -240,6 +240,10 @@ public abstract class SnomedRestFixtures {
 	public static String createNewRefSetMember(IBranchPath memberPath, String referencedConceptId) {
 		String refSetId = createNewRefSet(memberPath);
 
+		return createNewRefSetMember(memberPath, referencedConceptId, refSetId);
+	}
+
+	public static String createNewRefSetMember(IBranchPath memberPath, String referencedConceptId, String refSetId) {
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, referencedConceptId)
 				.put("commitComment", "Created new reference set member")
 				.build();
