@@ -1,37 +1,9 @@
-## Welcome to GitHub Pages
+# Snow Owl
 
-You can use the [editor on GitHub](https://github.com/b2ihealthcare/snow-owl/edit/gh-pages/README.md) to maintain and preview the content for your website in Markdown files.
+## Introduction
+Snow Owl<sup>®</sup> is a terminology server and a collaborative terminology authoring platform.  The authoring platform maintains terminology artifacts developed by a team and supported by business workflows that are driven by external task management systems like Bugzilla and JIRA.  With its modular design, the server can maintain multiple terminologies where new terminologies can be plugged-in to the platform.  The functionality of Snow Owl is exposed via a REST API.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+Clients can easily access and query SNOMED CT, LOINC®, ATC, ICD-10, and dozens of additional terminologies via REST or Java APIs. Collaborative distributed authoring is also supported, including creating and maintaining your own local code systems, mapping between terminologies, and creating terminology subsets.
 
-### Markdown
+Snow Owl is maintained by B2i Healthcare (http://b2i.sg)
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/b2ihealthcare/snow-owl/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
