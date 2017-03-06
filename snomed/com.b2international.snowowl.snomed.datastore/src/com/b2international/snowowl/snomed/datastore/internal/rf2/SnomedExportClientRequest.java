@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.service;
+package com.b2international.snowowl.snomed.datastore.internal.rf2;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -29,15 +28,11 @@ import org.eclipse.net4j.util.io.ExtendedDataInputStream;
 import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.net4j.RequestCancelationRunnable;
-import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
-import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult;
-import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult.Result;
-import com.b2international.snowowl.snomed.exporter.model.SnomedRf2ExportModel;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult.Result;
+import com.google.common.base.Strings;
 
 /**
  * This class sends user export request to the server-side. The server response contains the zipped archive file.
@@ -81,8 +76,8 @@ public class SnomedExportClientRequest extends RequestWithMonitoring<File> {
 		out.writeUTF(model.getUserId());
 		out.writeUTF(model.getClientBranch().path());
 		
-		out.writeUTF(convertDateToRF2String(model.getStartEffectiveTime()));
-		out.writeUTF(convertDateToRF2String(model.getEndEffectiveTime()));
+		out.writeUTF(Strings.nullToEmpty(model.getStartEffectiveTime()));
+		out.writeUTF(Strings.nullToEmpty(model.getEndEffectiveTime()));
 		
 		out.writeInt(model.getReleaseType().getValue());
 		out.writeUTF(model.getUnsetEffectiveTimeLabel());
@@ -191,14 +186,6 @@ public class SnomedExportClientRequest extends RequestWithMonitoring<File> {
 	
 	public SnomedExportResult getExportResult() {
 		return result;
-	}
-
-	private String convertDateToRF2String(final Date date) {
-		if (date != null) {
-			return EffectiveTimes.format(date, SnomedConstants.RF2_EFFECTIVE_TIME_FORMAT);
-		} else {
-			return StringUtils.EMPTY_STRING;
-		}
 	}
 
 }

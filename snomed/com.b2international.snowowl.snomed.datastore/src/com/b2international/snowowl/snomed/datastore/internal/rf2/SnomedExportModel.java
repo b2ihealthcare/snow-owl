@@ -13,23 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.service;
-
+package com.b2international.snowowl.snomed.datastore.internal.rf2;
 
 /**
- * This exception indicates if a SNOMED CT publication is started while it is in progress already. Used in {@link SnomedExportClientRequest}.
+ * Model class to collect common properties of RF2 and DSV export wizards.
  *
  */
+public abstract class SnomedExportModel {
 
-public class SnomedMutexRf2PublicationException extends RuntimeException {
+	private String exportPath;
+	private final SnomedExportResult exportResult;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 5679921836698255641L;
-	
-	public SnomedMutexRf2PublicationException() {
-		super("SNOMED CT publication is in progress.");
+	public SnomedExportModel() {
+		exportResult = new SnomedExportResult();
+	}
+
+	public String getExportPath() {
+		return exportPath;
+	}
+
+	public void setExportPath(final String exportPath) {
+		this.exportPath = exportPath;
+	}
+
+	public SnomedExportResult getExportResult() {
+		return exportResult;
 	}
 
 }

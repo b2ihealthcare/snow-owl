@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.service;
+package com.b2international.snowowl.snomed.datastore.internal.rf2;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -27,10 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
-import com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem;
-import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult;
-import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult.Result;
-import com.b2international.snowowl.snomed.exporter.model.SnomedRefSetDSVExportModel;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult.Result;
 
 /**
  * This class sends the client's export request to the server. The server

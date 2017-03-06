@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.model;
+package com.b2international.snowowl.snomed.datastore.internal.rf2;
+
 
 /**
- * 
+ * This exception indicates if a SNOMED CT publication is started while it is in progress already. Used in {@link SnomedExportClientRequest}.
  *
  */
-public class SimpleSnomedDsvExportItem extends AbstractSnomedDsvExportItem {
 
-	public SimpleSnomedDsvExportItem(final SnomedDsvExportItemType type) {
-		super(type);
-	}
+public class SnomedMutexRf2PublicationException extends RuntimeException {
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem#getDisplayName()
+	/**
+	 * 
 	 */
-	@Override
-	public String getDisplayName() {
-		return getType().getDisplayName();
+	private static final long serialVersionUID = 5679921836698255641L;
+	
+	public SnomedMutexRf2PublicationException() {
+		super("SNOMED CT publication is in progress.");
 	}
+
 }

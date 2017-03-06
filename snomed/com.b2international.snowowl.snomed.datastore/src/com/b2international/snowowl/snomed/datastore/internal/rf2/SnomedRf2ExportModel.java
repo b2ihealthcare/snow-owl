@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.model;
+package com.b2international.snowowl.snomed.datastore.internal.rf2;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
@@ -63,8 +63,8 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	private boolean extendedDescriptionTypesForRf1;
 	private boolean includeUnpublised;
 
-	private Date startEffectiveTime;
-	private Date endEffectiveTime;
+	private String startEffectiveTime;
+	private String endEffectiveTime;
 	private ContentSubType releaseType;
 	private Set<SnomedMapSetSetting> settings;
 	private Set<String> modulesToExport;
@@ -189,19 +189,19 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		return modulesToExport;
 	}
 
-	public Date getStartEffectiveTime() {
+	public String getStartEffectiveTime() {
 		return startEffectiveTime;
 	}
 
-	public void setStartEffectiveTime(Date startEffectiveTime) {
+	public void setStartEffectiveTime(String startEffectiveTime) {
 		this.startEffectiveTime = startEffectiveTime;
 	}
 
-	public Date getEndEffectiveTime() {
+	public String getEndEffectiveTime() {
 		return endEffectiveTime;
 	}
 
-	public void setEndEffectiveTime(Date endEffectiveTime) {
+	public void setEndEffectiveTime(String endEffectiveTime) {
 		this.endEffectiveTime = endEffectiveTime;
 	}
 

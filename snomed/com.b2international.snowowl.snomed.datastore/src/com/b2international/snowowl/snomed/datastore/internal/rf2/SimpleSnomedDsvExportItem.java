@@ -13,32 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.model;
-
+package com.b2international.snowowl.snomed.datastore.internal.rf2;
 
 /**
- * Model class to collect common properties of RF2 and DSV export wizards.
+ * 
  *
  */
-public abstract class SnomedExportModel {
+public class SimpleSnomedDsvExportItem extends AbstractSnomedDsvExportItem {
 
-	private String exportPath;
-	private final SnomedExportResult exportResult;
-
-	public SnomedExportModel() {
-		exportResult = new SnomedExportResult();
+	public SimpleSnomedDsvExportItem(final SnomedDsvExportItemType type) {
+		super(type);
 	}
 
-	public String getExportPath() {
-		return exportPath;
+	/* (non-Javadoc)
+	 * @see com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem#getDisplayName()
+	 */
+	@Override
+	public String getDisplayName() {
+		return getType().getDisplayName();
 	}
-
-	public void setExportPath(final String exportPath) {
-		this.exportPath = exportPath;
-	}
-
-	public SnomedExportResult getExportResult() {
-		return exportResult;
-	}
-
 }
