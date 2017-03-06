@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
-import static com.b2international.commons.StringUtils.isEmpty;
 import static com.b2international.snowowl.snomed.common.ContentSubType.DELTA;
 import static com.b2international.snowowl.snomed.common.ContentSubType.FULL;
 import static com.b2international.snowowl.snomed.common.ContentSubType.SNAPSHOT;
@@ -28,11 +27,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.validation.constraints.NotNull;
+
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.net4j.util.om.monitor.EclipseMonitor;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
@@ -65,6 +67,7 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 	@NotEmpty
 	private String codeSystem;
 	private boolean includeUnpublished;
+	@NotNull
 	private Rf2ReleaseType releaseType;
 	private boolean extensionOnly;
 	private String startEffectiveTime;
@@ -119,8 +122,8 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 			context.service(FileRegistry.class).upload(fileId, new FileInputStream(file));
 			return fileId;
 		} catch (final Exception e) {
-			return throwExportException(isEmpty(e.getMessage())	? "Error occurred while exporting SNOMED CT." : e.getMessage());
-		}		
+			return throwExportException("Error occurred while exporting SNOMED CT.", e);
+		}
 	}
 
 	private File doExport(final SnomedRf2ExportModel model) throws Exception {
@@ -154,7 +157,7 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 				
 		final SnomedRf2ExportModel model = SnomedRf2ExportModel.createExportModelWithAllRefSets(contentSubType, branch, namespace);
 
-		if (modules.isEmpty()) {
+		if (CompareUtils.isEmpty(modules)) {
 			final SnomedConcepts allModules = SnomedRequests.prepareSearchConcept()
 					.all()
 					.filterByActive(true)
@@ -203,11 +206,11 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 	}
 
 	private <T> T checkNotNull(final T arg, final String message) {
-		return null == arg ? this.<T>throwExportException(message) : arg;
+		return null == arg ? this.throwExportException(message, null) : arg;
 	}
 
-	private <T> T throwExportException(final String message) {
-		throw new RuntimeException(nullToEmpty(message));
+	private <T> T throwExportException(final String message, Throwable t) {
+		throw new RuntimeException(nullToEmpty(message), t);
 	}
 
 }

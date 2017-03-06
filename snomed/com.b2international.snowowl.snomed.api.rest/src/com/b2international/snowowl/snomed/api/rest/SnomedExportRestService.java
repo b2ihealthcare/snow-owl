@@ -19,8 +19,6 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.net.URI;
 import java.text.ParseException;
 import java.util.Date;
@@ -29,7 +27,8 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -244,14 +243,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			.execute(bus)
 			.getSync();
 		
-		PipedInputStream snk = new PipedInputStream();
-		PipedOutputStream out = new PipedOutputStream(snk);
-		
-		new Thread(() -> {
-			fileRegistry.download(exportedFile, out);
-		}).start();
-		
-		final InputStreamResource exportZipResource = new InputStreamResource(snk);
+		final Resource exportZipResource = new FileSystemResource(fileRegistry.getFile(exportedFile));
 		
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		
