@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.junit.Ignore;
@@ -274,14 +275,52 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void deleteRefSetButKeepIdentifierConcept() throws Exception {
-		final SnomedRefSet refSet = getRegularRefSet(generateConceptId(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+		final String generateConceptId = generateConceptId();
+		final SnomedRefSet refSet = getRegularRefSet(generateConceptId, SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+		indexRevision(MAIN, nextStorageKey(), doc(createConcept(generateConceptId)).refSet(refSet).build());
 		registerDetached(refSet.cdoID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET);
 		
 		final ConceptChangeProcessor processor = process();
 		
 		assertEquals(0, processor.getNewMappings().size());
-		assertEquals(0, processor.getChangedMappings().size());
+		assertEquals(1, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void updateRefSetIdentifierEffectiveTime() throws Exception {
+		final String conceptId = generateConceptId();
+		final long conceptStorageKey = nextStorageKey();
+		final SnomedRefSet refSet = getRegularRefSet(conceptId, SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+		final long refSetStorageKey = CDOIDUtil.getLong(refSet.cdoID());
+		indexRevision(MAIN, conceptStorageKey, doc(createConcept(conceptId)).refSet(refSet).build());
+		
+		// change set
+		// XXX intentionally not registering this object to the concept map
+		final Date newEffectiveTime = new Date();
+		final Concept dirtyConcept = SnomedFactory.eINSTANCE.createConcept();
+		withCDOID(dirtyConcept, conceptStorageKey);
+		dirtyConcept.setId(conceptId);
+		dirtyConcept.setEffectiveTime(newEffectiveTime);
+		dirtyConcept.setReleased(true);
+		dirtyConcept.setDefinitionStatus(getConcept(Concepts.FULLY_DEFINED));
+		dirtyConcept.setModule(module());
+		dirtyConcept.setExhaustive(false);
+		registerDirty(dirtyConcept);
+		registerSetRevisionDelta(dirtyConcept, SnomedPackage.Literals.COMPONENT__RELEASED, false, true);
+		registerSetRevisionDelta(dirtyConcept, SnomedPackage.Literals.COMPONENT__EFFECTIVE_TIME, null, newEffectiveTime);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(1, processor.getChangedMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+		
+		// assert that refset props are not going to be removed from the concept doc
+		final SnomedConceptDocument newRevision = (SnomedConceptDocument) processor.getChangedMappings().get(conceptStorageKey);
+		assertEquals(refSetStorageKey, newRevision.getRefSetStorageKey());
+		assertEquals(newEffectiveTime.getTime(), newRevision.getEffectiveTime());
+		assertEquals(true, newRevision.isReleased());
 	}
 	
 	@Test

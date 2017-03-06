@@ -194,7 +194,7 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 	 * @param inferredConceptIds 
 	 */
 	private void prepareTaxonomyBuilders(final ICDOCommitChangeSet commitChangeSet, final RevisionSearcher searcher, final LongSet statedConceptIds, final LongSet inferredConceptIds) {
-		log().info("Retrieving taxonomic information from store.");
+		log().trace("Retrieving taxonomic information from store.");
 		final IStoreAccessor accessor = StoreThreadLocal.getAccessor();
 		
 		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);

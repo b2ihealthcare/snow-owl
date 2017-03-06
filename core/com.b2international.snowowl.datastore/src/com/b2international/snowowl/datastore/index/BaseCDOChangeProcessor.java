@@ -158,7 +158,7 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 		preUpdateDocuments(commitChangeSet, index);
 
 		for (ChangeSetProcessor processor : getChangeSetProcessors()) {
-			log.info("Collecting {}...", processor.description());
+			log.trace("Collecting {}...", processor.description());
 			processor.process(commitChangeSet, index);
 			// register additions, deletions from the sub processor
 			indexCommitChangeSet.putRevisionMappings(processor.getNewMappings());

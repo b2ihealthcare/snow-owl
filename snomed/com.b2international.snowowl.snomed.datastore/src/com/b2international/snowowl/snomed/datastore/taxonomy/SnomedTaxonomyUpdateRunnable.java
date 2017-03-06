@@ -102,7 +102,7 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 	@Override 
 	public void run() {
 		
-		LOGGER.info("Processing changes taxonomic information.");
+		LOGGER.trace("Processing changes taxonomic information.");
 		
 		//here we have to consider changes triggered by repository state revert
 		//this point the following might happen:
@@ -213,7 +213,7 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 				}
 			}
 		}
-		LOGGER.info("Rebuilding taxonomic information based on the changes.");
+		LOGGER.trace("Rebuilding taxonomic information based on the changes.");
 		this.taxonomyBuilderResult = taxonomyBuilder.build();
 	}
 	
