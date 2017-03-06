@@ -68,17 +68,23 @@ public final class DefaultFileRegistry implements FileRegistry {
 
 	@Override
 	public void download(UUID id, OutputStream out) {
-		final Path requestedPath = this.folder.resolve(id.toString());
-		final File requestedFile = requestedPath.toFile();
-		if (!requestedFile.exists()) {
-			throw new NotFoundException("File", id.toString());
-		}
+		final File requestedFile = getFile(id);
 		
 		try {
 			Files.copy(requestedFile, out);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Failed to download attachment of " + id, e); 
 		}
+	}
+
+	@Override
+	public File getFile(UUID id) {
+		final Path requestedPath = this.folder.resolve(id.toString());
+		final File requestedFile = requestedPath.toFile();
+		if (!requestedFile.exists()) {
+			throw new NotFoundException("File", id.toString());
+		}
+		return requestedFile;
 	}
 	
 	private static boolean isZip(InputStream in) {
