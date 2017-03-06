@@ -22,12 +22,15 @@ import static com.b2international.snowowl.snomed.common.ContentSubType.SNAPSHOT;
 import static com.google.common.base.Strings.nullToEmpty;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.net4j.util.om.monitor.EclipseMonitor;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.StringUtils;
@@ -40,11 +43,16 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedClientProtocol;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportClientRequest;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRf2ExportModel;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
@@ -106,18 +114,33 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 	@Override
 	public UUID execute(BranchContext context) {
 		try {
-			return doExport(toExportModel(context));
+			final File file = doExport(toExportModel(context));
+			final UUID fileId = UUID.randomUUID();
+			context.service(FileRegistry.class).upload(fileId, new FileInputStream(file));
+			return fileId;
 		} catch (final Exception e) {
 			return throwExportException(isEmpty(e.getMessage())	? "Error occurred while exporting SNOMED CT." : e.getMessage());
 		}		
 	}
 
 	private File doExport(final SnomedRf2ExportModel model) throws Exception {
-		return getDelegateService().export(model, new NullProgressMonitor());
-	}
+		final SnomedExportClientRequest snomedExportClientRequest = new SnomedExportClientRequest(SnomedClientProtocol.getInstance(), model);
+		final StringBuilder sb = new StringBuilder("Performing SNOMED CT publication into ");
+		
+		if (model.isExportToRf1()) {
+			sb.append("RF1 and ");
+		}
+		
+		sb.append("RF2 release format...");
+		
+		final SubMonitor subMonitor = SubMonitor.convert(new NullProgressMonitor(), sb.toString(), 1000).newChild(1000, SubMonitor.SUPPRESS_ALL_LABELS);
+		subMonitor.worked(5);
+		
+		final File resultFile = snomedExportClientRequest.send(new EclipseMonitor(subMonitor));
+		final SnomedExportResult result = snomedExportClientRequest.getExportResult();
+		model.getExportResult().setResultAndMessage(result.getResult(), result.getMessage());
 
-	private com.b2international.snowowl.snomed.exporter.service.SnomedExportService getDelegateService() {
-		return new com.b2international.snowowl.snomed.exporter.service.SnomedExportService();
+		return resultFile;
 	}
 
 	private SnomedRf2ExportModel toExportModel(BranchContext context) {
@@ -129,7 +152,7 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 			.build()
 			.execute(context);
 				
-		final SnomedRf2ExportModel model = createExportModelWithAllRefSets(contentSubType, branch, namespace);
+		final SnomedRf2ExportModel model = SnomedRf2ExportModel.createExportModelWithAllRefSets(contentSubType, branch, namespace);
 
 		if (modules.isEmpty()) {
 			final SnomedConcepts allModules = SnomedRequests.prepareSearchConcept()
@@ -138,8 +161,8 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 					.filterByAncestor(Concepts.MODULE_ROOT)
 					.build()
 					.execute(context);
-			Set<String> moduleIds = FluentIterable.from(allModules).transform(IComponent.ID_FUNCTION).toSet();
-			model.getModulesToExport().addAll(allModules);
+			Set<String> allModuleIds = FluentIterable.from(allModules).transform(IComponent.ID_FUNCTION).toSet();
+			model.getModulesToExport().addAll(allModuleIds);
 		} else {
 			model.getModulesToExport().addAll(modules);
 		}
