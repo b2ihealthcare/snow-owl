@@ -24,34 +24,37 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 
 /**
- * SNOMED CT concrete domain reference set exporter.
+ * SNOMED CT extended map type reference set exporter.
  */
-public class SnomedConcreteDomainRefSetExporter extends SnomedRefSetExporter {
+public class SnomedExtendedMapRefSetExporter extends SnomedRefSetExporter {
 
-	public SnomedConcreteDomainRefSetExporter(final SnomedExportContext exportContext, SnomedReferenceSet refset, final RevisionSearcher revisionSearcher) {
+	public SnomedExtendedMapRefSetExporter(final SnomedExportContext exportContext, SnomedReferenceSet refset, final RevisionSearcher revisionSearcher) {
 		super(exportContext, refset, revisionSearcher);
 	}
-	
+
 	@Override
-	public String convertToString(SnomedRefSetMemberIndexEntry doc) {
-		
+	public String convertToString(final SnomedRefSetMemberIndexEntry doc) {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(super.convertToString(doc));
 		sb.append(HT);
-		sb.append(doc.getUnitId());
+		sb.append(doc.getMapGroup());
 		sb.append(HT);
-		sb.append(doc.getOperatorId());
+		sb.append(doc.getMapPriority());
 		sb.append(HT);
-		sb.append(nullToEmpty(doc.getAttributeName()));
+		sb.append(nullToEmpty(doc.getMapRule()));
 		sb.append(HT);
-		sb.append(doc.getValue()); //the direct value
+		sb.append(nullToEmpty(doc.getMapAdvice()));
 		sb.append(HT);
-		sb.append(nullToEmpty(doc.getCharacteristicTypeId()));
+		sb.append(nullToEmpty(doc.getMapTarget()));
+		sb.append(HT);
+		sb.append(doc.getCorrelationId());
+		sb.append(HT);
+		sb.append(nullToEmpty(doc.getMapCategoryId()));
 		return sb.toString();
 	}
-	
+
 	@Override
 	public String[] getColumnHeaders() {
-		return SnomedRf2Headers.CONCRETE_DATA_TYPE_HEADER_WITH_LABEL;
+		return SnomedRf2Headers.EXTENDED_MAP_TYPE_HEADER;
 	}
 }

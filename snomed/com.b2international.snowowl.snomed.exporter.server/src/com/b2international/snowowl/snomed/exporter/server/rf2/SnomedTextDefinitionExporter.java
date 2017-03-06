@@ -18,27 +18,29 @@ package com.b2international.snowowl.snomed.exporter.server.rf2;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 
 /**
- * RF2 exporter for all SNOMED CT relationships except stated ones.
+ *
  */
-public class SnomedInferredRelationshipExporter extends SnomedRf2RelationshipExporter {
+public class SnomedTextDefinitionExporter extends SnomedRf2DescriptionExporter {
 
-	public SnomedInferredRelationshipExporter(final SnomedExportContext exportContext, final RevisionSearcher revisionSearcher) {
-		super(exportContext, revisionSearcher);
+	public SnomedTextDefinitionExporter(final SnomedExportContext exportContext, final RevisionSearcher revisionSearcher, final String languageCode) {
+		super(exportContext, revisionSearcher, languageCode);
 	}
 	
 	@Override
 	public ComponentExportType getType() {
-		return ComponentExportType.RELATIONSHIP;
+		return ComponentExportType.TEXT_DEFINITION;
 	}
 	
 	@Override
-	protected void appendExpressionConstraint(ExpressionBuilder builder) {
-		builder.mustNot(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP));
+	protected void appendExpressionConstraint(final ExpressionBuilder builder) {
+		builder
+			.must(SnomedDescriptionIndexEntry.Expressions.type(Concepts.TEXT_DEFINITION))
+			.must(SnomedDescriptionIndexEntry.Expressions.languageCode(getLanguageCode()));
 	}
 
 }

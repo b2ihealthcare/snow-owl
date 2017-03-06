@@ -33,25 +33,31 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 	private String branchPath;
 	private String namespaceId;
 	private Collection<String> moduleIds;
-	private Date deltaExportStartEffectiveTime;
-	private Date deltaExportEndEffectiveTime;
+	private Date startEffectiveTime;
+	private Date endEffectiveTime;
 	private String transientEffectiveTime;
-	private boolean includeUnpublised;
+	private boolean includeUnpublished;
+	private String codeSystemShortName;
+	private boolean extensionOnly;
 
 	public SnomedExportConfiguration(Rf2ReleaseType type, 
 			String branchPath, 
 			String namespaceId, Collection<String> moduleIds,
-			Date deltaExportStartEffectiveTime, Date deltaExportEndEffectiveTime, 
+			Date startEffectiveTime, Date endEffectiveTime, 
 			String transientEffectiveTime,
-			final boolean includeUnpublished) {
+			final boolean includeUnpublished,
+			String codeSystemShortName,
+			boolean extensionOnly) {
 		this.type = checkNotNull(type, "type");
 		this.namespaceId = checkNotNull(namespaceId, "namespaceId");
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 		this.moduleIds = moduleIds == null ? Collections.<String>emptySet() : moduleIds;
-		this.deltaExportStartEffectiveTime = deltaExportStartEffectiveTime;
-		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
+		this.startEffectiveTime = startEffectiveTime;
+		this.endEffectiveTime = endEffectiveTime;
 		this.transientEffectiveTime = transientEffectiveTime;
-		this.includeUnpublised = includeUnpublished;
+		this.includeUnpublished = includeUnpublished;
+		this.codeSystemShortName = checkNotNull(codeSystemShortName, "codeSystemShortName");
+		this.extensionOnly = extensionOnly;
 	}
 	
 	@Override
@@ -65,13 +71,13 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 	}
 	
 	@Override
-	public Date getDeltaExportStartEffectiveTime() {
-		return deltaExportStartEffectiveTime;
+	public Date getStartEffectiveTime() {
+		return startEffectiveTime;
 	}
 	
 	@Override
-	public Date getDeltaExportEndEffectiveTime() {
-		return deltaExportEndEffectiveTime;
+	public Date getEndEffectiveTime() {
+		return endEffectiveTime;
 	}
 	
 	@Override
@@ -90,7 +96,18 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 	}
 
 	@Override
-	public boolean includeUnpublised() {
-		return includeUnpublised;
+	public boolean isIncludeUnpublished() {
+		return includeUnpublished;
 	}
+	
+	@Override
+	public String getCodeSystemShortName() {
+		return codeSystemShortName;
+	}
+	
+	@Override
+	public boolean isExtensionOnly() {
+		return extensionOnly;
+	}
+	
 }

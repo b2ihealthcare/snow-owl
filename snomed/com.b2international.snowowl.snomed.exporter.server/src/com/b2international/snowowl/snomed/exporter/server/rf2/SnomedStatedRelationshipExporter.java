@@ -27,8 +27,8 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
  */
 public class SnomedStatedRelationshipExporter extends SnomedRf2RelationshipExporter {
 
-	public SnomedStatedRelationshipExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean unpublished) {
-		super(configuration, revisionSearcher, unpublished);
+	public SnomedStatedRelationshipExporter(final SnomedExportContext exportContext, final RevisionSearcher revisionSearcher) {
+		super(exportContext, revisionSearcher);
 	}
 	
 	@Override

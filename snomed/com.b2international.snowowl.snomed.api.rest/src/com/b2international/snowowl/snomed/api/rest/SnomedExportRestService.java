@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
@@ -43,9 +42,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.server.domain.StorageRef;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
 import com.b2international.snowowl.snomed.api.exception.ExportRunNotFoundException;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedExportConfiguration;
@@ -54,6 +56,8 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestConfig
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestRun;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
 import com.google.common.collect.MapMaker;
 import com.wordnik.swagger.annotations.Api;
@@ -90,32 +94,79 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			@RequestBody
 			final SnomedExportRestConfiguration configuration) throws IOException {
 
-		ApiValidation.checkInput(configuration);
+		validate(configuration);
 		
-		if (!Rf2ReleaseType.DELTA.equals(configuration.getType())) {
-			if (configuration.getDeltaStartEffectiveTime() != null || configuration.getDeltaEndEffectiveTime() != null) {
-				throw new BadRequestException("Export date ranges can only be set if the export mode is set to DELTA.");
-			}
-		}
-		
-		final String transientEffectiveTime = configuration.getTransientEffectiveTime();
-		validateTransientEffectiveTime(transientEffectiveTime);
-
-		final StorageRef exportStorageRef = new StorageRef(repositoryId, configuration.getBranchPath());
-		
-		// Check version and branch existence
-		exportStorageRef.checkStorageExists();
-		
-		final UUID id = UUID.randomUUID();
 		final SnomedExportRestRun run = new SnomedExportRestRun();
-		
 		BeanUtils.copyProperties(configuration, run);
-		run.setId(id);
-		exports.put(id, run);
+		run.setId(UUID.randomUUID());
 		
-		return Responses.created(getExportRunURI(id)).build();
+		exports.put(run.getId(), run);
+		
+		return Responses.created(getExportRunURI(run.getId())).build();
 	}
 	
+	private void validate(SnomedExportRestConfiguration configuration) {
+
+		ApiValidation.checkInput(configuration);
+		
+		validateExportType(configuration);
+		validateTransientEffectiveTime(configuration.getTransientEffectiveTime());
+		Branch branch = validateBranch(configuration);
+		
+		validateNamespace(configuration, branch);
+		validateCodeSystemShortName(configuration);
+	}
+
+	private void validateCodeSystemShortName(SnomedExportRestConfiguration configuration) {
+		if (!Strings.isNullOrEmpty(configuration.getCodeSystemShortName())) {
+			
+			int hitSize = CodeSystemRequests.prepareSearchCodeSystem()
+				.one()
+				.filterById(configuration.getCodeSystemShortName())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.execute(bus)
+				.getSync().getTotal();
+			
+			if (hitSize == 0) {
+				throw new BadRequestException("Unknown code system with short name: %s", configuration.getCodeSystemShortName());
+			}
+			
+		} else {
+			throw new BadRequestException("Code system short name must be set for configuring the export properly.");
+		}
+	}
+
+	private void validateNamespace(SnomedExportRestConfiguration configuration, Branch branch) {
+		if (Strings.isNullOrEmpty(configuration.getNamespaceId())) {
+			configuration.setNamespaceId(exportService.resolveNamespaceId(branch));
+		}
+	}
+
+	private void validateExportType(SnomedExportRestConfiguration configuration) {
+		if (Rf2ReleaseType.FULL.equals(configuration.getType())) {
+			if (configuration.getStartEffectiveTime() != null || configuration.getEndEffectiveTime() != null) {
+				throw new BadRequestException("Export date ranges can only be set if the export mode is not FULL.");
+			}
+		}
+	}
+
+	private Branch validateBranch(SnomedExportRestConfiguration configuration) {
+		
+		Branch branch = RepositoryRequests.branching()
+				.prepareGet(configuration.getBranchPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.execute(bus)
+				.getSync();
+		
+		if (branch == null) {
+			throw new BadRequestException("The specified branch (%s) does not exists", configuration.getBranchPath()); 
+		} else if (branch.isDeleted()) {
+			throw new BadRequestException("Branch '%s' has been deleted and cannot accept further modifications.", configuration.getBranchPath());
+		}
+		
+		return branch;
+	}
+
 	private void validateTransientEffectiveTime(final String transientEffectiveTime) {
 		
 		if (Strings.isNullOrEmpty(transientEffectiveTime)) {
@@ -125,9 +176,11 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		}
 
 		try {
-			new SimpleDateFormat("yyyyMMdd").parse(transientEffectiveTime);
-		} catch (ParseException e) {
-			throw new BadRequestException("Transient effective time '%s' was not empty, 'NOW' or a date in the expected format.", transientEffectiveTime);
+			Dates.parse(transientEffectiveTime, DateFormats.SHORT);
+		} catch (Exception e) {
+			if (e.getCause() instanceof ParseException) {
+				throw new BadRequestException("Transient effective time '%s' was not empty, 'NOW' or a date in the expected format.", transientEffectiveTime);
+			}
 		}
 	}
 
@@ -174,9 +227,9 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		final FileSystemResource exportZipResource = new FileSystemResource(exportZipFile);
 		
 		final HttpHeaders httpHeaders = new HttpHeaders();
-		final String timestamp = new SimpleDateFormat("yyyyMMdd").format(new Date());
+		
 		httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-		httpHeaders.set("Content-Disposition", "attachment; filename=\"snomed_export_" + timestamp + ".zip\"");
+		httpHeaders.set("Content-Disposition", "attachment; filename=\"snomed_export_" + Dates.formatByHostTimeZone(new Date(), DateFormats.COMPACT_LONG) + ".zip\"");
 
 		exports.remove(exportId);
 		return new ResponseEntity<FileSystemResource>(exportZipResource, httpHeaders, HttpStatus.OK);
@@ -187,9 +240,11 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 				configuration.getType(), 
 				configuration.getBranchPath(),
 				configuration.getNamespaceId(), configuration.getModuleIds(),
-				configuration.getDeltaStartEffectiveTime(), configuration.getDeltaEndEffectiveTime(),
+				configuration.getStartEffectiveTime(), configuration.getEndEffectiveTime(),
 				configuration.getTransientEffectiveTime(),
-				configuration.isIncludeUnpublished());
+				configuration.isIncludeUnpublished(),
+				configuration.getCodeSystemShortName(),
+				configuration.isExtensionOnly());
 
 		return conf;
 	}

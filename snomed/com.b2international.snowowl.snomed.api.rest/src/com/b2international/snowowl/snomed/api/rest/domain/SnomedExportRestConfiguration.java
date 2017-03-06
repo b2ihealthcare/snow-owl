@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
@@ -41,11 +42,13 @@ public class SnomedExportRestConfiguration {
 	private String namespaceId = "INT";
 	
 	private Collection<String> moduleIds;
-	private Date deltaStartEffectiveTime;
-	private Date deltaEndEffectiveTime;
+	private Date startEffectiveTime;
+	private Date endEffectiveTime;
 	private String transientEffectiveTime;
-	
 	private boolean includeUnpublished;
+	
+	private String codeSystemShortName = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
+	private boolean extensionOnly = false;
 
 	/**
 	 * Returns with the RF2 release type of the current export configuration.
@@ -72,31 +75,27 @@ public class SnomedExportRestConfiguration {
 	}
 	
 	/**
-	 * Returns with the delta export start effective time.
-	 * <br>Can be {@code null} even 
-	 * if the {@link Rf2ReleaseType release type} is {@link Rf2ReleaseType#DELTA delta}.
+	 * Returns with a restricting export start effective time. Can be {@code null}.
 	 */
 	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
-	public Date getDeltaStartEffectiveTime() {
-		return deltaStartEffectiveTime;
+	public Date getStartEffectiveTime() {
+		return startEffectiveTime;
 	}
 	
-	public void setDeltaStartEffectiveTime(Date deltaStartEffectiveTime) {
-		this.deltaStartEffectiveTime = deltaStartEffectiveTime;
+	public void setStartEffectiveTime(Date startEffectiveTime) {
+		this.startEffectiveTime = startEffectiveTime;
 	}
 
 	/**
-	 * Returns with the delta export end effective time.
-	 * <br>May return with {@code null} even 
-	 * if the {@link Rf2ReleaseType release type} is {@link Rf2ReleaseType#DELTA delta}.
+	 * Returns with a restricting export end effective time.May return with {@code null}.
 	 */
 	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
-	public Date getDeltaEndEffectiveTime() {
-		return deltaEndEffectiveTime;
+	public Date getEndEffectiveTime() {
+		return endEffectiveTime;
 	}
 	
-	public void setDeltaEndEffectiveTime(Date deltaEndEffectiveTime) {
-		this.deltaEndEffectiveTime = deltaEndEffectiveTime;
+	public void setEndEffectiveTime(Date endEffectiveTime) {
+		this.endEffectiveTime = endEffectiveTime;
 	}
 	
 	/**
@@ -143,7 +142,7 @@ public class SnomedExportRestConfiguration {
 	}
 	
 	/**
-	 * Sets whether the unpublished artefacts should be exported
+	 * Sets whether unpublished components should be exported
 	 * @param includeUnpublished
 	 */
 	public void setIncludeUnpublished(boolean includeUnpublished) {
@@ -151,10 +150,48 @@ public class SnomedExportRestConfiguration {
 	}
 	
 	/**
-	 * Returns true if the 
+	 * Returns if unpublished components should be exported 
 	 * @return
 	 */
 	public boolean isIncludeUnpublished() {
 		return includeUnpublished;
+	}
+	
+	/**
+	 * Sets the short name of the code system that needs to be exported
+	 * 
+	 * @param codeSystemShortName the codeSystemShortName to set
+	 */
+	public void setCodeSystemShortName(String codeSystemShortName) {
+		this.codeSystemShortName = codeSystemShortName;
+	}
+	
+	/**
+	 * Returns the short name of the code system that needs to be exported
+	 * 
+	 * @return the codeSystemShortName
+	 */
+	public String getCodeSystemShortName() {
+		return codeSystemShortName;
+	}
+	
+	/**
+	 * If set to true only the code system specified by it's short name will be exported. If set to false all versions from parent code systems
+	 * will be collected and exported.
+	 * 
+	 * @param extensionOnly the extensionOnly to set
+	 */
+	public void setExtensionOnly(boolean extensionOnly) {
+		this.extensionOnly = extensionOnly;
+	}
+	
+	/**
+	 * Returns true if only the code system specified by it's short name should be exported. If set to false all versions from parent code systems
+	 * will be collected and exported.
+	 * 
+	 * @return the extensionOnly
+	 */
+	public boolean isExtensionOnly() {
+		return extensionOnly;
 	}
 }
