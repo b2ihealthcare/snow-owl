@@ -620,7 +620,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     Attribute returns ConceptReference
 	 *
 	 * Constraint:
-	 *     (id=SnomedIdentifier term=Term?)
+	 *     (id=SnomedIdentifier term=TERM_STRING?)
 	 */
 	protected void sequence_ConceptReference(ISerializationContext context, ConceptReference semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);

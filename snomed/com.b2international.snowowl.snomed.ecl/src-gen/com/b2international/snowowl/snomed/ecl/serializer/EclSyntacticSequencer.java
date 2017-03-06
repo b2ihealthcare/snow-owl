@@ -23,6 +23,9 @@ import org.eclipse.xtext.IGrammarAccess;
 import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.serializer.analysis.GrammarAlias.AbstractElementAlias;
+import org.eclipse.xtext.serializer.analysis.GrammarAlias.AlternativeAlias;
+import org.eclipse.xtext.serializer.analysis.GrammarAlias.TokenAlias;
+import org.eclipse.xtext.serializer.analysis.ISyntacticSequencerPDAProvider.ISynNavigable;
 import org.eclipse.xtext.serializer.analysis.ISyntacticSequencerPDAProvider.ISynTransition;
 import org.eclipse.xtext.serializer.sequencer.AbstractSyntacticSequencer;
 
@@ -30,17 +33,21 @@ import org.eclipse.xtext.serializer.sequencer.AbstractSyntacticSequencer;
 public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 
 	protected EclGrammarAccess grammarAccess;
+	protected AbstractElementAlias match_AndAttributeSet_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1;
+	protected AbstractElementAlias match_AndExpressionConstraint_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1;
+	protected AbstractElementAlias match_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1;
 	
 	@Inject
 	protected void init(IGrammarAccess access) {
 		grammarAccess = (EclGrammarAccess) access;
+		match_AndAttributeSet_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndAttributeSetAccess().getANDKeyword_1_1_0()), new TokenAlias(false, false, grammarAccess.getAndAttributeSetAccess().getCommaKeyword_1_1_1()));
+		match_AndExpressionConstraint_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndExpressionConstraintAccess().getANDKeyword_1_1_0()), new TokenAlias(false, false, grammarAccess.getAndExpressionConstraintAccess().getCommaKeyword_1_1_1()));
+		match_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1 = new AlternativeAlias(false, false, new TokenAlias(false, false, grammarAccess.getAndRefinementAccess().getANDKeyword_1_0_1_0()), new TokenAlias(false, false, grammarAccess.getAndRefinementAccess().getCommaKeyword_1_0_1_1()));
 	}
 	
 	@Override
 	protected String getUnassignedRuleCallToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (ruleCall.getRule() == grammarAccess.getAndOperatorRule())
-			return getAndOperatorToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getCARETRule())
+		if (ruleCall.getRule() == grammarAccess.getCARETRule())
 			return getCARETToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getCOLONRule())
 			return getCOLONToken(semanticObject, ruleCall, node);
@@ -70,14 +77,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getLTEToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getLT_EMRule())
 			return getLT_EMToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getMINUSRule())
-			return getMINUSToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getNOT_EQUALRule())
 			return getNOT_EQUALToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getORRule())
-			return getORToken(semanticObject, ruleCall, node);
-		else if (ruleCall.getRule() == grammarAccess.getPIPERule())
-			return getPIPEToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getREVERSEDRule())
 			return getREVERSEDToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getROUND_CLOSERule())
@@ -96,16 +97,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * AndOperator			hidden() : AND | COMMA;
-	 */
-	protected String getAndOperatorToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return "AND";
-	}
-	
-	/**
-	 * terminal CARET 					: '^';
+	 * terminal CARET:
+	 * 	'^';
 	 */
 	protected String getCARETToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -114,7 +107,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal COLON 					: ':';
+	 * terminal COLON:
+	 * 	':';
 	 */
 	protected String getCOLONToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -123,7 +117,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal CURLY_CLOSE			: '}';
+	 * terminal CURLY_CLOSE:
+	 * 	'}';
 	 */
 	protected String getCURLY_CLOSEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -132,7 +127,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal CURLY_OPEN 			: '{';
+	 * terminal CURLY_OPEN:
+	 * 	'{';
 	 */
 	protected String getCURLY_OPENToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -141,7 +137,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal DBL_GT					: '>>';
+	 * terminal DBL_GT:
+	 * 	'>>';
 	 */
 	protected String getDBL_GTToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -150,7 +147,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal DBL_LT					: '<<';
+	 * terminal DBL_LT:
+	 * 	'<<';
 	 */
 	protected String getDBL_LTToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -159,7 +157,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal DOT					: '.';
+	 * terminal DOT:
+	 * 	'.';
 	 */
 	protected String getDOTToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -168,7 +167,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal EQUAL					: '=';
+	 * terminal EQUAL:
+	 * 	'=';
 	 */
 	protected String getEQUALToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -177,7 +177,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal GT						: '>';
+	 * terminal GT:
+	 * 	'>';
 	 */
 	protected String getGTToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -186,7 +187,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal GTE					: '>=';
+	 * terminal GTE:
+	 * 	'>=';
 	 */
 	protected String getGTEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -195,7 +197,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal GT_EM					: '>!';
+	 * terminal GT_EM:
+	 * 	'>!';
 	 */
 	protected String getGT_EMToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -204,7 +207,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal HASH					: '#';
+	 * terminal HASH:
+	 * 	'#';
 	 */
 	protected String getHASHToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -213,7 +217,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal LT						: '<';
+	 * terminal LT:
+	 * 	'<';
 	 */
 	protected String getLTToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -222,7 +227,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal LTE					: '<=';
+	 * terminal LTE:
+	 * 	'<=';
 	 */
 	protected String getLTEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -231,7 +237,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal LT_EM					: '<!';
+	 * terminal LT_EM:
+	 * 	'<!';
 	 */
 	protected String getLT_EMToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -240,16 +247,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal MINUS					: 'MINUS';
-	 */
-	protected String getMINUSToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return "MINUS";
-	}
-	
-	/**
-	 * terminal NOT_EQUAL				: '!=';
+	 * terminal NOT_EQUAL:
+	 * 	'!=';
 	 */
 	protected String getNOT_EQUALToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -258,25 +257,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal OR 					: 'OR';
-	 */
-	protected String getORToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return "OR";
-	}
-	
-	/**
-	 * terminal PIPE 					: '|';
-	 */
-	protected String getPIPEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
-		if (node != null)
-			return getTokenText(node);
-		return "|";
-	}
-	
-	/**
-	 * terminal REVERSED				: 'R';
+	 * terminal REVERSED:
+	 * 	'R';
 	 */
 	protected String getREVERSEDToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -285,7 +267,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal ROUND_CLOSE 			: ')';
+	 * terminal ROUND_CLOSE:
+	 * 	')';
 	 */
 	protected String getROUND_CLOSEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -294,7 +277,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal ROUND_OPEN 			: '(';
+	 * terminal ROUND_OPEN:
+	 * 	'(';
 	 */
 	protected String getROUND_OPENToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -303,7 +287,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal SQUARE_CLOSE 			: ']';
+	 * terminal SQUARE_CLOSE:
+	 * 	']';
 	 */
 	protected String getSQUARE_CLOSEToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -312,7 +297,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal SQUARE_OPEN 			: '[';
+	 * terminal SQUARE_OPEN:
+	 * 	'[';
 	 */
 	protected String getSQUARE_OPENToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -321,7 +307,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal TO						: '..';
+	 * terminal TO:
+	 * 	'..';
 	 */
 	protected String getTOToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -330,7 +317,8 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
-	 * terminal WILDCARD 				: '*';
+	 * terminal WILDCARD:
+	 * 	'*';
 	 */
 	protected String getWILDCARDToken(EObject semanticObject, RuleCall ruleCall, INode node) {
 		if (node != null)
@@ -344,8 +332,47 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 		List<INode> transitionNodes = collectNodes(fromNode, toNode);
 		for (AbstractElementAlias syntax : transition.getAmbiguousSyntaxes()) {
 			List<INode> syntaxNodes = getNodesFor(transitionNodes, syntax);
-			acceptNodes(getLastNavigableState(), syntaxNodes);
+			if (match_AndAttributeSet_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1.equals(syntax))
+				emit_AndAttributeSet_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1(semanticObject, getLastNavigableState(), syntaxNodes);
+			else if (match_AndExpressionConstraint_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1.equals(syntax))
+				emit_AndExpressionConstraint_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1(semanticObject, getLastNavigableState(), syntaxNodes);
+			else if (match_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1.equals(syntax))
+				emit_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1(semanticObject, getLastNavigableState(), syntaxNodes);
+			else acceptNodes(getLastNavigableState(), syntaxNodes);
 		}
 	}
 
+	/**
+	 * Ambiguous syntax:
+	 *     ',' | 'AND'
+	 *
+	 * This ambiguous syntax occurs at:
+	 *     {AndRefinement.left=} (ambiguity) right=SubAttributeSet
+	 */
+	protected void emit_AndAttributeSet_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
+		acceptNodes(transition, nodes);
+	}
+	
+	/**
+	 * Ambiguous syntax:
+	 *     'AND' | ','
+	 *
+	 * This ambiguous syntax occurs at:
+	 *     {AndExpressionConstraint.left=} (ambiguity) right=ExclusionExpressionConstraint
+	 */
+	protected void emit_AndExpressionConstraint_ANDKeyword_1_1_0_or_CommaKeyword_1_1_1(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
+		acceptNodes(transition, nodes);
+	}
+	
+	/**
+	 * Ambiguous syntax:
+	 *     'AND' | ','
+	 *
+	 * This ambiguous syntax occurs at:
+	 *     {AndRefinement.left=} (ambiguity) right=SubRefinement
+	 */
+	protected void emit_AndRefinement_ANDKeyword_1_0_1_0_or_CommaKeyword_1_0_1_1(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
+		acceptNodes(transition, nodes);
+	}
+	
 }

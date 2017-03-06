@@ -62,6 +62,7 @@
 		<module>com.b2international.snowowl.snomed.escg</module>
 		<module>com.b2international.snowowl.snomed.scg</module>
 		<module>com.b2international.snowowl.snomed.ecl</module>
+		<module>com.b2international.snowowl.snomed.ecl.tests</module>
 		
 		<!-- SNOMED CT Core Features -->
 		<module>com.b2international.snowowl.snomed.core.feature</module>
