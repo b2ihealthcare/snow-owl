@@ -251,7 +251,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		createBranch(a).statusCode(201);
 
 		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204); // Parent deletes the concept
-		changeDefinitionStatus(a, conceptId); // Child branch changes to DefinitionStatus.FULLY_DEFINED
+		changeToDefining(a, conceptId); // Child branch changes to DefinitionStatus.FULLY_DEFINED
 
 		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased definition status change over deletion")
 				.body("status", equalTo(Merge.Status.CONFLICTS.name()))
