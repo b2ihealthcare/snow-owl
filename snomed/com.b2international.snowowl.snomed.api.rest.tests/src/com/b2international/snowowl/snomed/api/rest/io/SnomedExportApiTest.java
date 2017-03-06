@@ -456,12 +456,6 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				.build();
 			
 		final String exportId = getExportId(createExport(config));
-		
-		getExport(exportId)
-			.and().body("type", equalTo(Rf2ReleaseType.SNAPSHOT.name()))
-			.and().body("branchPath", equalTo(taskBranch.getPath()))
-			.and().body("startEffectiveTime", equalTo(versionEffectiveTime));
-		
 		final File exportArchive = getExportFile(exportId);
 		
 		String refsetMemberLine = getComponentLine(ImmutableList.<String>of(memberId, newEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
