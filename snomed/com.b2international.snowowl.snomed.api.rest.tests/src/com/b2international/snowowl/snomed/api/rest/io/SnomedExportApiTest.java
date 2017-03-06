@@ -639,7 +639,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void exportTextDef_DescAndLangRefSetsPerLanguageCode() throws Exception {
-		final String codeSystemShortName = "SNOMEDCT-";
+		final String codeSystemShortName = "SNOMEDCT-EXPORT-PER-LANGUAGE";
 		createCodeSystem(branchPath, codeSystemShortName).statusCode(201);
 		
 		// create new concept
