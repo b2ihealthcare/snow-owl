@@ -66,7 +66,7 @@ public interface ISnomedExportConfiguration extends ISnomedRF2Configuration {
 	 * Returns true if the unpublished components are exported
 	 * @return
 	 */
-	boolean isIncludeUnpublised();
+	boolean isIncludeUnpublished();
 	
 	/**
 	 * Returns the short name of the code system that needs to be exported 

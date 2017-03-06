@@ -36,7 +36,7 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 	private Date startEffectiveTime;
 	private Date endEffectiveTime;
 	private String transientEffectiveTime;
-	private boolean includeUnpublised;
+	private boolean includeUnpublished;
 	private String codeSystemShortName;
 	private boolean extensionOnly;
 
@@ -55,7 +55,7 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 		this.startEffectiveTime = startEffectiveTime;
 		this.endEffectiveTime = endEffectiveTime;
 		this.transientEffectiveTime = transientEffectiveTime;
-		this.includeUnpublised = includeUnpublished;
+		this.includeUnpublished = includeUnpublished;
 		this.codeSystemShortName = checkNotNull(codeSystemShortName, "codeSystemShortName");
 		this.extensionOnly = extensionOnly;
 	}
@@ -96,8 +96,8 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 	}
 
 	@Override
-	public boolean isIncludeUnpublised() {
-		return includeUnpublised;
+	public boolean isIncludeUnpublished() {
+		return includeUnpublished;
 	}
 	
 	@Override

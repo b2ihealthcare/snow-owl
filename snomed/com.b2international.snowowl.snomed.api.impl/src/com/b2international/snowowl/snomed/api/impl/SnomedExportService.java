@@ -151,7 +151,7 @@ public class SnomedExportService implements ISnomedExportService {
 		
 		model.setStartEffectiveTime(configuration.getStartEffectiveTime());
 		model.setEndEffectiveTime(configuration.getEndEffectiveTime());
-		model.setIncludeUnpublised(configuration.isIncludeUnpublised());
+		model.setIncludeUnpublised(configuration.isIncludeUnpublished());
 		
 		final String transientEffectiveTime = configuration.getTransientEffectiveTime();
 		
