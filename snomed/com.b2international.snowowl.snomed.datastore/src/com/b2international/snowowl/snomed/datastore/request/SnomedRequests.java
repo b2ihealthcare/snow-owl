@@ -47,6 +47,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.collect.ImmutableSet;
@@ -295,6 +296,14 @@ public abstract class SnomedRequests {
 	public static Identifiers identifiers() {
 		return new Identifiers();
 	}
+	
+	/**
+	 * Returns the central class that provides access to the SNOMED CT RF2 services.
+	 * @return central SNOMED CT RF2 client
+	 */
+	public static SnomedRf2Requests rf2() {
+		return new SnomedRf2Requests();
+	}
 
 	/**
 	 * Returns a SNOMED CT request builder to prepare the evaluation of an Query type reference set.
@@ -434,5 +443,5 @@ public abstract class SnomedRequests {
 			})
 			.then(input -> ImmutableSet.copyOf(Iterables.concat(input.getResponses(SnomedConstraints.class))));
 	}
-	
+
 }
