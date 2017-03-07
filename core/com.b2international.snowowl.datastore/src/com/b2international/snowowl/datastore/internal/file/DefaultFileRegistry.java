@@ -50,8 +50,8 @@ public final class DefaultFileRegistry implements InternalFileRegistry {
 	
 	@Override
 	public void upload(UUID id, InputStream in) {
-		final Path destination = this.folder.resolve(id.toString());
-		if (destination.toFile().exists()) {
+		final File file = toFile(id);
+		if (file.exists()) {
 			throw new AlreadyExistsException("Zip File", id.toString());
 		}
 		
@@ -61,7 +61,7 @@ public final class DefaultFileRegistry implements InternalFileRegistry {
 		}
 		
 		try {
-			Files.copy(() -> bin, destination.toFile());
+			Files.copy(() -> bin, file);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Failed to upload attachment of " + id, e);
 		}
@@ -80,12 +80,20 @@ public final class DefaultFileRegistry implements InternalFileRegistry {
 
 	@Override
 	public File getFile(UUID id) {
-		final Path requestedPath = this.folder.resolve(id.toString());
-		final File requestedFile = requestedPath.toFile();
+		final File requestedFile = toFile(id);
 		if (!requestedFile.exists()) {
 			throw new NotFoundException("File", id.toString());
 		}
 		return requestedFile;
+	}
+	
+	@Override
+	public void delete(UUID id) {
+		toFile(id).delete();
+	}
+
+	private File toFile(UUID id) {
+		return this.folder.resolve(id.toString()).toFile();
 	}
 	
 	private static boolean isZip(InputStream in) {
