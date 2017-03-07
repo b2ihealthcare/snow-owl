@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.api.rest;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.text.ParseException;
@@ -244,7 +245,8 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			.execute(bus)
 			.getSync();
 		
-		final Resource exportZipResource = new FileSystemResource(((InternalFileRegistry) fileRegistry).getFile(exportedFile));
+		final File file = ((InternalFileRegistry) fileRegistry).getFile(exportedFile);
+		final Resource exportZipResource = new FileSystemResource(file);
 		
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		
@@ -252,6 +254,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		httpHeaders.set("Content-Disposition", "attachment; filename=\"snomed_export_" + Dates.formatByHostTimeZone(new Date(), DateFormats.COMPACT_LONG) + ".zip\"");
 
 		exports.remove(exportId);
+		file.deleteOnExit();
 		return new ResponseEntity<>(exportZipResource, httpHeaders, HttpStatus.OK);
 	}
 	
