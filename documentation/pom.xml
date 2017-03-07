@@ -162,8 +162,8 @@
 					       	<checkinComment>Publishing Docs for Snow Owl ${project.version}</checkinComment>
 					        <content>${project.build.directory}/site</content>
 					        <ignorePathsToDelete>
-					        	<!-- Deletes files only from the docs currently being updated -->
-					        	<ignorePathsToDelete>%regex[^(?!${project.version}).*$]</ignorePathsToDelete>
+					        	<!-- Deletes files only from the current doc versions and the SNAPSHOT suffixed version when releasing -->
+					        	<ignorePathsToDelete>%regex[^(?!${project.version}|${project.version}-SNASPHOT).*$]</ignorePathsToDelete>
 					        </ignorePathsToDelete>
 					        <serverId>github</serverId>
 					        <pubScmUrl>scm:git:https://github.com/b2ihealthcare/snow-owl.git</pubScmUrl>
