@@ -117,8 +117,7 @@ public class FocusConceptNormalizerTest {
 	}
 
 	private SnomedConceptDocument getConcept(String conceptId) {
-		return SnomedRequests.prepareGetConcept()
-				.setComponentId(conceptId)
+		return SnomedRequests.prepareGetConcept(conceptId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedConcept, SnomedConceptDocument>() {

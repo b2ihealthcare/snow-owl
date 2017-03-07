@@ -164,7 +164,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 
 	private boolean conceptExists(final String conceptId, final String branch) {
 		return SnomedRequests.prepareSearchConcept()
-				.setComponentIds(ImmutableSet.of(conceptId))
+				.filterByIds(ImmutableSet.of(conceptId))
 				.setLimit(0)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getServiceForClass(IEventBus.class))
@@ -174,7 +174,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 
 	private boolean refsetExists(final String refsetId, final String branch) {
 		return SnomedRequests.prepareSearchRefSet()
-				.setComponentIds(ImmutableSet.of(refsetId))
+				.filterByIds(ImmutableSet.of(refsetId))
 				.setLimit(0)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getServiceForClass(IEventBus.class))
@@ -243,7 +243,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 				.build();
 		
 		final SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
-				.setComponentIds(refSetIds)
+				.filterByIds(refSetIds)
 				.setLimit(0)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getServiceForClass(IEventBus.class))

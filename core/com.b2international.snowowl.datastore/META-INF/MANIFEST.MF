@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Terminology Datastore
 Bundle-SymbolicName: com.b2international.snowowl.datastore;singleton:=true
-Bundle-Version: 5.6.0
+Bundle-Version: 5.7.0.qualifier
 Bundle-Activator: com.b2international.snowowl.datastore.DatastoreActivator
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
@@ -21,8 +21,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.eventbus;visibility:=reexport,
  com.b2international.snowowl.core;visibility:=reexport,
  com.b2international.index.api;visibility:=reexport,
- com.b2international.snowowl.index.diff,
- com.b2international.snowowl.terminologyregistry.model
+ com.b2international.snowowl.index.diff
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.b2international.snowowl.datastore,
  com.b2international.snowowl.datastore.advancedsearch,
@@ -40,26 +39,34 @@ Export-Package: com.b2international.snowowl.datastore,
  com.b2international.snowowl.datastore.editor.service,
  com.b2international.snowowl.datastore.events,
  com.b2international.snowowl.datastore.exception,
+ com.b2international.snowowl.datastore.file,
  com.b2international.snowowl.datastore.history,
  com.b2international.snowowl.datastore.importer,
  com.b2international.snowowl.datastore.index,
  com.b2international.snowowl.datastore.index.diff,
+ com.b2international.snowowl.datastore.internal.file,
  com.b2international.snowowl.datastore.lock,
  com.b2international.snowowl.datastore.net4j,
  com.b2international.snowowl.datastore.net4j.push,
  com.b2international.snowowl.datastore.oplock,
  com.b2international.snowowl.datastore.oplock.impl,
- com.b2international.snowowl.datastore.quicksearch,
  com.b2international.snowowl.datastore.remotejobs,
  com.b2international.snowowl.datastore.replicate,
  com.b2international.snowowl.datastore.request,
+ com.b2international.snowowl.datastore.request.job,
  com.b2international.snowowl.datastore.review,
  com.b2international.snowowl.datastore.serviceconfig,
  com.b2international.snowowl.datastore.session,
  com.b2international.snowowl.datastore.tasks,
  com.b2international.snowowl.datastore.utils,
  com.b2international.snowowl.datastore.validation,
- com.b2international.snowowl.datastore.version
+ com.b2international.snowowl.datastore.version,
+ com.b2international.snowowl.terminologymetadata,
+ com.b2international.snowowl.terminologymetadata.impl,
+ com.b2international.snowowl.terminologymetadata.util,
+ com.b2international.snowowl.terminologymetadata.validation,
+ com.b2international.snowowl.terminologyregistry.core.builder,
+ com.b2international.snowowl.terminologyregistry.core.request
 Import-Package: com.b2international.index.compat,
  org.apache.log4j;version="1.2.15",
  org.slf4j;version="1.7.2"

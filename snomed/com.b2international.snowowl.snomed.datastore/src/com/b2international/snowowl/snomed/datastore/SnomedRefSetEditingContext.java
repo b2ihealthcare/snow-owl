@@ -28,6 +28,7 @@ import javax.annotation.Nullable;
 import org.eclipse.emf.cdo.CDOState;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.view.CDOView;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.spi.cdo.FSMUtil;
 
 import com.b2international.commons.StringUtils;
@@ -41,9 +42,11 @@ import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkResponse;
+import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CdoViewComponentTextProvider;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
@@ -202,6 +205,11 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 
 	public SnomedEditingContext getSnomedEditingContext() {
 		return snomedEditingContext;
+	}
+	
+	@Override
+	public void delete(EObject object, boolean force) throws ConflictException {
+		snomedEditingContext.delete(object, force);
 	}
 	
 	/*
@@ -547,7 +555,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		// Try to retrieve from the lightweight store first
 		final SnomedRelationship relationshipMini = Iterables.getOnlyElement(SnomedRequests.prepareSearchRelationship()
 				.setLimit(1)
-				.setComponentIds(Collections.singleton(relationshipId))
+				.filterById(relationshipId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync(), null);
@@ -763,14 +771,6 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		snomedEditingContext.close();
 	}
 
-	protected SnomedDeletionPlan deleteRefSet(final SnomedRefSet refSet, SnomedDeletionPlan deletionPlan) {
-		if (deletionPlan == null) {
-			deletionPlan = new SnomedDeletionPlan();
-		}
-		deletionPlan.markForDeletion(refSet);
-		return deletionPlan;
-	}
-
 	protected List<SnomedRefSetMember> getReferringMembers(final Component component) {
 		
 		checkNotNull(component, "Component argument cannot be null.");
@@ -809,9 +809,45 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		return referringMembers;
 	}
 	
+	protected List<SnomedRefSetMember> getMembers(final SnomedRefSet refSet) {
+		checkNotNull(refSet, "Component argument cannot be null.");
+		
+		if (FSMUtil.isTransient(refSet)) {
+			return Collections.emptyList();
+		}
+		
+		final List<SnomedRefSetMember> referringMembers = Lists.newArrayList();
+		final String id = checkNotNull(refSet.getIdentifierId(), "Identifier was null for reference set. [" + refSet + "]");
+		
+		if (CDOState.NEW.equals(refSet.cdoState())) {
+			final Iterable<SnomedRefSetMember> newMembers = ComponentUtils2.getNewObjects(transaction, SnomedRefSetMember.class);
+			
+			for (final SnomedRefSetMember member : newMembers) {
+				if (id.equals(member.getRefSetIdentifierId())) {
+					referringMembers.add(member);
+				}
+			}
+		} else {
+			for (SnomedReferenceSetMember member : getMemberStorageKeys(id)) {
+				referringMembers.add((SnomedRefSetMember) getSnomedEditingContext().lookupIfExists(member.getStorageKey()));
+			}
+		}
+		
+		return referringMembers;
+	}
+	
+	private SnomedReferenceSetMembers getMemberStorageKeys(String id) {
+		return SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByRefSet(id)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
+	}
+
 	private SnomedReferenceSetMembers getAllReferringMembersStorageKey(String id, EnumSet<SnomedRefSetType> types) {
 		// construct bulk requests with many sub queries to search for any member that references the given ID in any RF2 member component field
-		return SnomedRequests.prepareBulkRead()
+		return RepositoryRequests.prepareBulkRead()
 				.setBody(BulkRequest.<BranchContext>create()
 						.add(getReferringMembers(id, types))
 						.add(getReferringMembersByProps(id, types, Fields.ACCEPTABILITY_ID))

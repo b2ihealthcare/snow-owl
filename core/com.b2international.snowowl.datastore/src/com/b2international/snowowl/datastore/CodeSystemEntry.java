@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.datastore;
 
-import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.*;
+
+import java.util.Collection;
 
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
@@ -41,10 +43,17 @@ public class CodeSystemEntry implements ICodeSystem {
 			return exactMatch(Fields.SHORT_NAME, shortName);
 		}
 		
+		public static Expression shortNames(Collection<String> shortNames) {
+			return matchAny(Fields.SHORT_NAME, shortNames);
+		}
+		
 		public static Expression oid(String oid) {
 			return exactMatch(Fields.OID, oid);
 		}
 		
+		public static Expression oids(Collection<String> oids) {
+			return matchAny(Fields.OID, oids);
+		}
 		
 	}
 	

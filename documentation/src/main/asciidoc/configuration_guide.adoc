@@ -745,6 +745,14 @@ authentication:
 |revisionCache
 |`true`
 |Enable CDO revision cache to keep data returned from the database.
+
+|readerPoolCapacity
+|`7`
+|The capacity of the reader pool associated with the SNOMED CT store.
+
+|writerPoolCapacity
+|`3`
+|The capacity of the writer pool associated with the SNOMED CT store.
 |===
 
 --------------------------
@@ -915,6 +923,14 @@ Configuration of SNOMED CT terminology services.
 |Default
 |Description
 
+|readerPoolCapacity
+|`7`
+|The capacity of the reader pool associated with the SNOMED CT store.
+
+|writerPoolCapacity
+|`3`
+|The capacity of the writer pool associated with the SNOMED CT store.
+
 |language
 |`en-gb`
 |`en-gb`, `en-us`, `en-sg` - The language code to use for SNOMED CT Descriptions. Descriptions with membership of the chosen
@@ -961,8 +977,8 @@ snomed:
 
 ==== SNOMED CT Component Identifier Configuration
 
-Snow Owl can be configured to obtain valid SNOMED CT identifiers from IHTSDO's CIS service. The configuration needs to be placed within the *snomed/ids* section.
-If omitted, then default strategy will be used.
+Snow Owl's SNOMED CT identifier service an be configured to be either using the built-in or IHTSDO's external Component Identifier Service (CIS).  The configuration needs to be placed within the *snomed/ids* section.
+If omitted, then default configuration will be used, which is the built-in (embedded) service based on the index store allocating ids in a sequential fashion.
 
 [cols="3*", options="header"]
 |===
@@ -970,9 +986,17 @@ If omitted, then default strategy will be used.
 |Default
 |Description
 
-|strategy
+|service
+|EMBEDDED 
+|`EMBEDDED` or `CIS` - The service used to generate ids.
+
+|source
 |INDEX
-|`EMBEDDED`, `CIS` - The source of the ID generation.
+|`INDEX` or `MEMORY` - The source of the generated ids.  `MEMORY` is used for testing.
+
+|strategy
+|SEQUENTIAL
+|`SEQUENTIAL` or `RANDOM` - The strategy of the id generation.
 
 |cisBaseUrl
 |
@@ -1015,11 +1039,34 @@ If omitted, then default strategy will be used.
 |Maximum number of attempts any non-CIS ID generator will take to generate a single SNOMED CT identifier, if exceeded it throws an exception.
 |===
 
+Example for using the built-in service with random ids using the index as the source:
+
 --------------------------
 snomed:
   ...
   ids:
-    strategy : CIS
+    service: EMBEDDED
+    source: INDEX
+    strategy : RANDOM
+    cisBaseUrl : <cis_host_and_port>
+    cisContextRoot : api
+    cisUserName : <your-cis-username>
+    cisPassword : <your-cis-password>
+    cisClientSoftwareKey : Snow Owl dev. deployment
+    cisNumberOfPollTries : 1
+    cisTimeBetweenPollTries : 1000
+    cisMaxConnections: 100
+  ...
+--------------------------
+
+
+Example for using IHTSDO's external CIS service:
+
+--------------------------
+snomed:
+  ...
+  ids:
+    service : CIS
     cisBaseUrl : <cis_host_and_port>
     cisContextRoot : api
     cisUserName : <your-cis-username>

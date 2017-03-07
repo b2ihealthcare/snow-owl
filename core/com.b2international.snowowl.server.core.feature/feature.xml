@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.server.core.feature"
       label="Snow Owl Common Server Core"
-      version="5.6.0"
+      version="5.7.0.qualifier"
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
@@ -93,21 +93,7 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="com.b2international.snowowl.terminologyregistry.core"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="com.b2international.snowowl.terminologyregistry.core.server"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.b2international.snowowl.terminologyregistry.model"
          download-size="0"
          install-size="0"
          version="0.0.0"

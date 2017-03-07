@@ -4,23 +4,8 @@
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob
-            class="com.b2international.snowowl.snomed.mrcm.core.server.widget.WidgetModelProviderConfigJob"
-            id="com.b2international.snowowl.snomed.mrcm.core.server.widget.WidgetModelProviderConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.mrcm.core.server.widget.WidgetBeanProviderConfigJob"
-            id="com.b2international.snowowl.snomed.mrcm.core.server.widget.WidgetBeanProviderConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.snomed.mrcm.core.server.validator.WidgetBeanValidatorConfigJob"
             id="com.b2international.snowowl.snomed.mrcm.core.server.validator.WidgetBeanValidatorConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.mrcm.core.server.concepteditor.SnomedConceptEditorServiceConfigJob"
-            id="com.b2international.snowowl.snomed.mrcm.core.server.concepteditor.SnomedConceptEditorServiceConfigJob"
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </serviceConfigJob>
       <serviceConfigJob

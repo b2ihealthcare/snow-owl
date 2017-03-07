@@ -18,11 +18,17 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Collection;
 
 import com.b2international.commons.collections.Collections3;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequest.OptionKey;
 
 /**
+ * <i>Builder</i> class to build requests responsible for searching SNOMED CT relationships.
+ * This class should be instantiated from the corresponding static method on the central {@link SnomedRequests} class.
+ * Filter methods restrict the results set returned from the search requests; 
+ * what passes the filters will be returned as part of the pageable resultset.
+ * 
  * @since 4.5
  */
 public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponentSearchRequestBuilder<SnomedRelationshipSearchRequestBuilder, SnomedRelationships> {
@@ -76,7 +82,7 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 	}
 	
 	@Override
-	protected RevisionSearchRequest<SnomedRelationships> createSearch() {
+	protected SearchResourceRequest<BranchContext, SnomedRelationships> createSearch() {
 		return new SnomedRelationshipSearchRequest();
 	}
 

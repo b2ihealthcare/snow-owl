@@ -67,7 +67,7 @@ public class SnomedInvalidRelationshipMergeConflictRule extends AbstractSnomedMe
 		Set<String> inactiveConceptIds = newHashSet();
 
 		SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept()
-				.setComponentIds(relationshipConceptIds)
+				.filterByIds(relationshipConceptIds)
 				.filterByActive(false)
 				.all()
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, BranchPathUtils.createPath(transaction).getPath())

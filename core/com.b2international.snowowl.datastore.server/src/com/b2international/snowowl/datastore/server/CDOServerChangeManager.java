@@ -50,6 +50,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.datastore.CDOCommitChangeSet;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
+import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.Collections2;

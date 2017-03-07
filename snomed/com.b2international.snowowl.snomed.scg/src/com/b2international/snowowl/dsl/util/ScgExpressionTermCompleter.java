@@ -80,8 +80,7 @@ public class ScgExpressionTermCompleter {
 	}
 
 	private SnomedDescription getPt(String id) {
-		return SnomedRequests.prepareGetConcept()
-				.setComponentId(id)
+		return SnomedRequests.prepareGetConcept(id)
 				.setExpand("pt()")
 				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)

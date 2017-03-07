@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import java.util.Collections;
-
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoProvider;
@@ -34,7 +32,7 @@ public class SnomedAvailabilityInfoProvider implements ContentAvailabilityInfoPr
 	public boolean isAvailable() {
 		return SnomedRequests.prepareSearchConcept()
 				.setLimit(0)
-				.setComponentIds(Collections.singleton(Concepts.ROOT_CONCEPT))
+				.filterById(Concepts.ROOT_CONCEPT)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync().getTotal() > 0;

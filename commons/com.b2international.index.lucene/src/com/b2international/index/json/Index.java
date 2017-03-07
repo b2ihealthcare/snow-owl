@@ -218,6 +218,8 @@ public final class Index implements Operation {
 				if (docValues) {
 					doc.add(new BinaryDocValuesField(name, term));
 				}
+			} else if (NumericClassUtils.isDate(fieldType)) {
+				Fields.searchOnlyLongField(name).addTo(doc, node.longValue());
 			} else {
 				throw new UnsupportedOperationException("Unsupported number type: " + fieldType + " for field: " + name);
 			}
@@ -225,7 +227,7 @@ public final class Index implements Operation {
 			if (docValues) {
 				if (NumericClassUtils.isFloat(fieldType)) {
 					doc.add(new FloatDocValuesField(name, node.floatValue()));
-				} else if (NumericClassUtils.isLong(fieldType) || NumericClassUtils.isInt(fieldType) || NumericClassUtils.isShort(fieldType)) {
+				} else if (NumericClassUtils.isLong(fieldType) || NumericClassUtils.isInt(fieldType) || NumericClassUtils.isShort(fieldType) || NumericClassUtils.isDate(fieldType)) {
 					doc.add(new NumericDocValuesField(name, node.longValue()));
 				}
 				// BigDecimals are handled above

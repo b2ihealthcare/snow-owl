@@ -37,8 +37,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
@@ -55,9 +53,12 @@ import com.b2international.commons.status.SerializableStatus;
 import com.b2international.commons.status.Statuses;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemUtils;
@@ -73,17 +74,18 @@ import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
-import com.b2international.snowowl.datastore.remotejobs.IRemoteJobManager;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEventBusHandler;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobUtils;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
+import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.datastore.validation.TimeValidator;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -109,27 +111,37 @@ public class VersioningService implements IVersioningService {
 			));
 	
 	
-	private final PublishOperationConfiguration configuration;
 	private final Map<String, Collection<ICodeSystemVersion>> existingVersions;
 	private Map<String, DatastoreLockContext> lockContexts;
 	private Map<String, SingleRepositoryAndBranchLockTarget> lockTargets;
 	private final Map<String, Supplier<ICodeSystemVersion>> currentVersionSuppliers;
-	private final AtomicBoolean locked; 
+	private final AtomicBoolean locked;
+
+	private final String primaryToolingId; 
+	private final List<String> toolingIds;
+	// version props
+	private String versionId;
+	private String parentBranchPath;
+	private String codeSystemShortName;
+	private Date effectiveTime;
+	private String description;
 	
 	/**Creates a new versioning service for the given tooling feature.*/
 	public VersioningService(final String toolingId, final String... otherToolingIds) {
-		configuration = new PublishOperationConfiguration(toolingId, otherToolingIds);
-		existingVersions = initExistingVersions(configuration.getToolingIds());
-		currentVersionSuppliers = initCurrentVersionSuppliers(configuration.getToolingIds());
+		this.primaryToolingId = toolingId;
+		this.toolingIds = Lists.asList(toolingId, otherToolingIds);
+		existingVersions = initExistingVersions(toolingIds);
+		currentVersionSuppliers = initCurrentVersionSuppliers(toolingIds);
 		lockContexts = newHashMap();
 		lockTargets = newHashMap();
 		locked = new AtomicBoolean();
 	}
 	
 	public VersioningService(final String toolingId, final Map<String, Collection<ICodeSystemVersion>> existingVersions, final String... otherToolingIds) {
-		this.configuration = new PublishOperationConfiguration(toolingId, otherToolingIds);
+		this.primaryToolingId = toolingId;
+		this.toolingIds = Lists.asList(toolingId, otherToolingIds);
 		this.existingVersions = existingVersions;
-		currentVersionSuppliers = initCurrentVersionSuppliers(configuration.getToolingIds());
+		currentVersionSuppliers = initCurrentVersionSuppliers(toolingIds);
 		lockContexts = newHashMap();
 		lockTargets = newHashMap();
 		locked = new AtomicBoolean();
@@ -161,19 +173,19 @@ public class VersioningService implements IVersioningService {
 				}
 			}
 		}
-		configuration.setVersionId(versionId);
+		this.versionId = versionId;
 		return okStatus();
 	}
 	
 	@Override
 	public IStatus configureParentBranchPath(String parentBranchPath) {
-		configuration.setParentBranchPath(parentBranchPath);
+		this.parentBranchPath = parentBranchPath;
 		return okStatus();
 	}
 	
 	@Override
 	public IStatus configureCodeSystemShortName(String codeSystemShortName) {
-		configuration.setCodeSystemShortName(codeSystemShortName);
+		this.codeSystemShortName = codeSystemShortName;
 		return okStatus();
 	}
 	
@@ -185,13 +197,13 @@ public class VersioningService implements IVersioningService {
 				return status;
 			}
 		}
-		configuration.setEffectiveTime(effectiveTime);
+		this.effectiveTime = effectiveTime;
 		return okStatus();
 	}
 
 	@Override
 	public IStatus configureDescription(@Nullable final String description) {
-		configuration.setDescription(Strings.nullToEmpty(description));
+		this.description = Strings.nullToEmpty(description);
 		return okStatus();
 	}
 
@@ -210,7 +222,7 @@ public class VersioningService implements IVersioningService {
 
 	@Override
 	public String getVersionId() {
-		return configuration.getVersionId();
+		return versionId;
 	}
 	
 	@Override
@@ -399,32 +411,65 @@ public class VersioningService implements IVersioningService {
 				}
 			}));
 		}
+		
 		return unmodifiableMap(currentVersionSuppliers);
 	}
 
 	/**Publishes the unpublished and changed components.*/
 	private void publishComponents() throws SnowowlServiceException {
 		releaseLock();
-
-		final CountDownLatch latch = new CountDownLatch(1);
-		final UUID remoteJobId = configuration.getRemoteJobId();
-		final String jobAddress = RemoteJobUtils.getJobSpecificAddress(IRemoteJobManager.ADDRESS_REMOTE_JOB_COMPLETED, remoteJobId);
-		getServiceForClass(IEventBus.class).registerHandler(jobAddress, new RemoteJobEventBusHandler(remoteJobId) {
-			@Override
-			protected void handleResult(UUID jobId, boolean cancelRequested) {
-				latch.countDown();
-			}
-		});
-
-		getServiceForClass(GlobalPublishManager.class).publish(configuration);
+		final IEventBus bus = ApplicationContext.getServiceForClass(IEventBus.class);
+		final Request<ServiceProvider, Void> req = CodeSystemRequests.prepareNewCodeSystemVersion()
+			.setCodeSystemShortName(codeSystemShortName)
+			.setPrimaryToolingId(primaryToolingId)
+			.setParentBranchPath(parentBranchPath)
+			.setEffectiveTime(effectiveTime)
+			.setDescription(description)
+			.setToolingIds(toolingIds)
+			.setVersionId(versionId)
+			.build();
+		final String jobId = JobRequests.prepareSchedule()
+			.setDescription(buildJobDescription())
+			.setUser(ApplicationContext.getServiceForClass(ICDOConnectionManager.class).getUserId())
+			.setRequest(req)
+			.buildAsync()
+			.execute(bus)
+			.getSync();
 		
-		try {
-			latch.await();
-		} catch (InterruptedException e) {
-			throw new SnowowlServiceException(e);
-		}
+		RemoteJobEntry job = null;
+		do {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				throw new SnowowlRuntimeException(e);
+			}
+			job = JobRequests.prepareGet(jobId).buildAsync().execute(bus).getSync();
+		} while (job == null || !job.isDone());
 	}
 	
+	private String buildJobDescription() {
+		final List<String> toolingIds = newArrayList(this.toolingIds);
+		final StringBuilder sb = new StringBuilder("Creating version '");
+		sb.append(versionId);
+		sb.append("' for");
+		if (toolingIds.size() == 1) {
+			sb.append(" ");
+			sb.append(getToolingName(toolingIds.get(0)));
+		} else {
+			for (int i = 0; i < toolingIds.size(); i++) {
+				sb.append(" ");
+				sb.append(getToolingName(toolingIds.get(i)));
+				if (toolingIds.size() - 2 == i) {
+					sb.append(" and");
+				} else if (toolingIds.size() - 2 > i) {
+					sb.append(",");
+				}
+			}
+		}
+		sb.append(".");
+		return sb.toString();
+	}
+
 	/*
 	 * Checks if the version id for the requested repositories (identified by their tooling id) exists or not.
 	 */
@@ -433,7 +478,7 @@ public class VersioningService implements IVersioningService {
 		for (final String toolingId : getToolingIds()) {
 			shouldPerformTagPerToolingFeature.put(toolingId, !tryFind(existingVersions.get(toolingId), new Predicate<ICodeSystemVersion>() {
 				@Override public boolean apply(final ICodeSystemVersion version) {
-					return checkNotNull(version).getVersionId().equals(configuration.getVersionId());
+					return checkNotNull(version).getVersionId().equals(versionId);
 				}
 			}).isPresent());
 		}
@@ -544,7 +589,7 @@ public class VersioningService implements IVersioningService {
 	}
 	
 	private Collection<String> getToolingIds() {
-		return configuration.getToolingIds();
+		return toolingIds;
 	}
 
 	private DatastoreLockContext createLockContext(final String userId) {

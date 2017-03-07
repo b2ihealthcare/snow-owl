@@ -17,7 +17,6 @@ package com.b2international.snowowl.semanticengine.simpleast.subsumption;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -210,7 +209,7 @@ public class SubsumptionTester {
 	}
 	
 	private SnomedConcept getConcept(String conceptId) {
-		return SnomedRequests.prepareGetConcept().setComponentId(conceptId).build(SnomedDatastoreActivator.REPOSITORY_UUID, branch).execute(getBus()).getSync();
+		return SnomedRequests.prepareGetConcept(conceptId).build(SnomedDatastoreActivator.REPOSITORY_UUID, branch).execute(getBus()).getSync();
 	}
 
 	/**
@@ -281,7 +280,7 @@ public class SubsumptionTester {
 		return SnomedRequests.prepareSearchConcept()
 			.setLimit(0)
 			.filterByAncestor(predicate.getId())
-			.setComponentIds(Collections.singleton(candidateId))
+			.filterById(candidateId)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 			.execute(getBus())
 			.getSync().getTotal() > 0;

@@ -23,19 +23,11 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.UUID;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.NumericRangeQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.*;
 import org.apache.lucene.search.SortField.Type;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TotalHitCountCollector;
 
 import com.b2international.index.compat.SingleDirectoryIndexImpl;
 import com.b2international.index.lucene.Fields;
@@ -46,22 +38,12 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.api.domain.classification.ChangeNature;
-import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
-import com.b2international.snowowl.snomed.api.domain.classification.IClassificationRun;
-import com.b2international.snowowl.snomed.api.domain.classification.IEquivalentConcept;
-import com.b2international.snowowl.snomed.api.domain.classification.IEquivalentConceptSet;
-import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChange;
-import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChangeList;
+import com.b2international.snowowl.snomed.api.domain.classification.*;
 import com.b2international.snowowl.snomed.api.exception.ClassificationRunNotFoundException;
-import com.b2international.snowowl.snomed.api.impl.domain.classification.ClassificationRun;
-import com.b2international.snowowl.snomed.api.impl.domain.classification.EquivalentConcept;
-import com.b2international.snowowl.snomed.api.impl.domain.classification.EquivalentConceptSet;
-import com.b2international.snowowl.snomed.api.impl.domain.classification.RelationshipChange;
-import com.b2international.snowowl.snomed.api.impl.domain.classification.RelationshipChangeList;
+import com.b2international.snowowl.snomed.api.impl.domain.classification.*;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
@@ -212,11 +194,11 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		writer.addDocument(updatedDocument);
 	}
 
-	public void updateClassificationRunStatus(final UUID id, final ClassificationStatus newStatus) throws IOException {
+	public void updateClassificationRunStatus(final String id, final ClassificationStatus newStatus) throws IOException {
 		updateClassificationRunStatus(id, newStatus, null);
 	}
 
-	public void updateClassificationRunStatus(final UUID id, final ClassificationStatus newStatus, final GetResultResponseChanges changes) throws IOException {
+	public void updateClassificationRunStatus(final String id, final ClassificationStatus newStatus, final GetResultResponseChanges changes) throws IOException {
 
 		final Document sourceDocument = getClassificationRunDocument(id);
 		if (null == sourceDocument) {
@@ -239,7 +221,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 				classificationRun.setCompletionDate(new Date());
 			}
 			
-			final ClassificationIssueFlags issueFlags = indexChanges(sourceDocument, changes);
+			final ClassificationIssueFlags issueFlags = indexChanges(sourceDocument, id, changes);
 			classificationRun.setInferredRelationshipChangesFound(!changes.getRelationshipEntries().isEmpty());
 			classificationRun.setRedundantStatedRelationshipsFound(issueFlags.isRedundantStatedFound());
 			classificationRun.setEquivalentConceptsFound(issueFlags.isEquivalentConceptsFound());
@@ -268,8 +250,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		commit();
 	}
 
-	private ClassificationIssueFlags indexChanges(Document sourceDocument, final GetResultResponseChanges changes) throws IOException {
-		final UUID id = changes.getClassificationId();
+	private ClassificationIssueFlags indexChanges(Document sourceDocument, String id, final GetResultResponseChanges changes) throws IOException {
 		final IBranchPath branchPath = BranchPathUtils.createPath(sourceDocument.get(FIELD_BRANCH_PATH));
 		final String userId = sourceDocument.get(FIELD_USER_ID);
 		final long creationDate = sourceDocument.getField(FIELD_CREATION_DATE).numericValue().longValue();
@@ -367,7 +348,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		return result;
 	}
 
-	private <T> void indexResult(final UUID id, final IBranchPath branchPath, final String userId, final long creationDate,
+	private <T> void indexResult(final String id, final IBranchPath branchPath, final String userId, final long creationDate,
 			final Class<T> clazz, String componentId, final T value) throws IOException {
 		final Document doc = new Document();
 		
@@ -382,7 +363,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		writer.addDocument(doc);
 	}
 
-	private Document getClassificationRunDocument(final UUID id) throws IOException {
+	private Document getClassificationRunDocument(final String id) throws IOException {
 		final Query query = Fields.newQuery()
 				.field(FIELD_CLASS, ClassificationRun.class.getSimpleName())
 				.field(FIELD_ID, id.toString())

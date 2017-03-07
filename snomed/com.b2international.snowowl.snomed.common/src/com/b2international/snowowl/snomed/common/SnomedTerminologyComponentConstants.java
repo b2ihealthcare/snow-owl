@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,11 +58,12 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String DATA_TYPE_DATE = "com.b2international.snowowl.terminology.snomed.datatype.date";
 	public static final short DATA_TYPE_DATE_NUMBER = 109;
 	
-	public static final String SNOMED_INT_SHORT_NAME = "SNOMEDCT";
-	public static final String SNOMED_INT_NAME = "Systematized Nomenclature of Medicine Clinical Terms International Version";
+	public static final String SNOMED_SHORT_NAME = "SNOMEDCT";
+	public static final String SNOMED_NAME = "SNOMED CT";
+	
 	public static final String SNOMED_INT_OID = "2.16.840.1.113883.6.96";
 	public static final String SNOMED_INT_LANGUAGE = "ENG";
-	public static final String SNOMED_INT_LINK = "http://www.ihtsdo.org";
+	public static final String SNOMED_INT_LINK = "http://www.snomed.org";
 	public static final String SNOMED_INT_ICON_PATH = "icons/snomed.png";
 	public static final String SNOMED_INT_CITATION = "SNOMED CT contributes to the improvement of patient care by underpinning the " +
 			"development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. " +
@@ -70,6 +71,11 @@ public abstract class SnomedTerminologyComponentConstants {
 			"Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, " +
 			"leading to improvements in the quality of care.";
 	
+	public static final String SNOMED_B2I_SHORT_NAME = SNOMED_SHORT_NAME + "-B2I";
+	public static final String SNOMED_B2I_NAME = SNOMED_NAME + ", B2i extension";
+	public static final String SNOMED_B2I_OID = SNOMED_INT_OID + ".1000154";
+	public static final String SNOMED_B2I_LINK = "https://b2i.sg";
+
 	/**
 	 * Fake terminology component type ID for predicates.
 	 * <br>ID: {@value}. 

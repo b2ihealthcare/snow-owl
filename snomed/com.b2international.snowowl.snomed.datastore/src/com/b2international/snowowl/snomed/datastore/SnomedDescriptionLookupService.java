@@ -83,8 +83,7 @@ public class SnomedDescriptionLookupService extends AbstractLookupService<String
 	@Override
 	public SnomedDescriptionIndexEntry getComponent(final IBranchPath branchPath, final String id) {
 		try {
-			return SnomedRequests.prepareGetDescription()
-					.setComponentId(id)
+			return SnomedRequests.prepareGetDescription(id)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.then(new Function<SnomedDescription, SnomedDescriptionIndexEntry>() {

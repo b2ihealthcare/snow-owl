@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,28 +21,34 @@ import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.QueryParseException;
-import com.b2international.snowowl.core.domain.DelegatingBranchContext;
+import com.b2international.snowowl.core.domain.DelegatingRepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 
 /**
+ * A subclass of {@link DelegatingRequest} that:
+ * <ul>
+ * <li>opens an index read transaction using {@link Index};
+ * <li>executes the delegate with a {@link RepositoryContext} that allows access to {@link Searcher} from the read transaction.
+ * </ul>
+ * 
  * @since 5.2
  */
-public final class IndexReadRequest<B> extends DelegatingRequest<RepositoryContext, RepositoryContext, B> {
+public final class IndexReadRequest<R> extends DelegatingRequest<RepositoryContext, RepositoryContext, R> {
 
-	IndexReadRequest(final Request<RepositoryContext, B> next) {
+	public IndexReadRequest(final Request<RepositoryContext, R> next) {
 		super(next);
 	}
 
 	@Override
-	public B execute(final RepositoryContext context) {
-		return context.service(Index.class).read(new IndexRead<B>() {
+	public R execute(final RepositoryContext context) {
+		return context.service(Index.class).read(new IndexRead<R>() {
 			@Override
-			public B execute(Searcher index) throws IOException {
+			public R execute(Searcher index) throws IOException {
 				try {
-					return next(DelegatingBranchContext
+					return next(DelegatingRepositoryContext
 							.basedOn(context)
 							.bind(Searcher.class, index)
 							.build());

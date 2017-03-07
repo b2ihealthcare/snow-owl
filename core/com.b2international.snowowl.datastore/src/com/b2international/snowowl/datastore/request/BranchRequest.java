@@ -40,7 +40,7 @@ public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext,
 	@JsonProperty
 	private final String branchPath;
 	
-	BranchRequest(String branchPath, Request<BranchContext, B> next) {
+	public BranchRequest(String branchPath, Request<BranchContext, B> next) {
 		super(next);
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 	}

@@ -45,6 +45,10 @@ public interface ICDORepository extends ICDOManagedItem<ICDORepository> {
 	/**Returns with the pooled SQL connection to the underlying {@link IDBStore DB store}.*/
 	Connection getConnection();
 	
+	void setReaderPoolCapacity(int capacity);
+	
+	void setWriterPoolCapacity(int capacity);
+	
 	/**
 	 * User ID predicate class.
 	 * @see ICDORepository#lock(IBranchPath, Predicate)

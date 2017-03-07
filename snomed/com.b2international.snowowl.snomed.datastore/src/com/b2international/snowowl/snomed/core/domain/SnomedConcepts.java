@@ -25,6 +25,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 
 /**
+ * A page-able collection of SNOMED CT concepts. To access the items of this collection call
+ * see {@link #getItems()}
+ * 
+ * @see SnomedConcept
  * @since 4.5
  */
 public final class SnomedConcepts extends PageableCollectionResource<SnomedConcept> {
@@ -36,10 +40,23 @@ public final class SnomedConcepts extends PageableCollectionResource<SnomedConce
 		}
 	};
 
+	/**
+	 * Instantiates an empty pageable collection for SNOMED CT concepts.
+	 * @param offset for paging
+	 * @param limit of items for a single page
+	 * @param total number of items in the resultset
+	 */
 	public SnomedConcepts(int offset, int limit, int total) {
 		super(Collections.emptyList(), offset, limit, total);
 	}
 	
+	/**
+	 * Instantiates a pageable collection of SNOMED CT concepts.
+	 * @param list of @link {@link SnomedConcept}s
+	 * @param offset for paging
+	 * @param limit of items for a single page
+	 * @param total number of items in the resultset
+	 */
 	@JsonCreator
 	public SnomedConcepts(
 			@JsonProperty("items") List<SnomedConcept> items, 

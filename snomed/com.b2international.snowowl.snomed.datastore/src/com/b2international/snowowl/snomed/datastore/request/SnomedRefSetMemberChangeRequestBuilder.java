@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public final class SnomedRefSetMemberChangeRequestBuilder extends BaseRequestBui
 					.buildNoContent();
 		case REMOVE:
 			// FIXME what happens when we remove a published member, currently we don't inactivate it
-			return SnomedRequests.prepareDeleteMember().setComponentId(change.getMemberId()).build();
+			return SnomedRequests.prepareDeleteMember(change.getMemberId()).build();
 		default: throw new UnsupportedOperationException("Not implemented case: " + change.getChangeKind()); 
 		}
 	}

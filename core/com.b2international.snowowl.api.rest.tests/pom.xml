@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>core-parent</artifactId>
-		<version>5.6.0</version>
+		<version>5.7.0-SNAPSHOT</version>
 	</parent>
 
 	<build>
@@ -63,11 +63,6 @@
 							<requirement>
 								<type>eclipse-plugin</type>
 								<id>com.sun.el</id>
-								<versionRange>0.0.0</versionRange>
-							</requirement>
-							<requirement>
-								<type>eclipse-plugin</type>
-								<id>com.b2international.collections.fastutil</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
 						</extraRequirements>

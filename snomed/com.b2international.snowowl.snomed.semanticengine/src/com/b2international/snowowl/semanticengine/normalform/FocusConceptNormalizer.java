@@ -28,8 +28,8 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.semanticengine.subsumption.SubsumptionTester;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -96,7 +96,7 @@ public class FocusConceptNormalizer {
 		}
 		
 		Collection<SnomedConceptDocument> focusConcepts = SnomedRequests.prepareSearchConcept()
-				.setComponentIds(focusConceptIds)
+				.filterByIds(focusConceptIds)
 				.setLimit(focusConceptIds.size())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))

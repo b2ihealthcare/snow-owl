@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import static com.b2international.snowowl.datastore.commitinfo.CommitInfoDocumen
 import static com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument.Expressions.userId;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 import com.b2international.index.Hits;
@@ -40,7 +39,7 @@ import com.google.common.collect.Lists;
 /**
  * @since 5.2
  */
-final class CommitInfoSearchRequest extends SearchRequest<CommitInfos> {
+final class CommitInfoSearchRequest extends SearchResourceRequest<RepositoryContext, CommitInfos> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -60,6 +59,7 @@ final class CommitInfoSearchRequest extends SearchRequest<CommitInfos> {
 		final Searcher searcher = context.service(Searcher.class);
 		final ExpressionBuilder builder = Expressions.builder();
 		
+		addIdFilter(builder, CommitInfoDocument.Expressions::ids);
 		addBranchClause(builder);
 		addUserIdClause(builder);
 		addCommentClause(builder);
@@ -117,11 +117,6 @@ final class CommitInfoSearchRequest extends SearchRequest<CommitInfos> {
 			final Long timeStamp = get(OptionKey.TIME_STAMP, Long.class);
 			builder.must(timeStamp(timeStamp));
 		}
-	}
-
-	@Override
-	protected Class<CommitInfos> getReturnType() {
-		return CommitInfos.class;
 	}
 
 }

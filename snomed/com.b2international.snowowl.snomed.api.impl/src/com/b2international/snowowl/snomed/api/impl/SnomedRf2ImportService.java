@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,9 +36,9 @@ import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
@@ -146,7 +146,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		
 		final String codeSystemShortName = configuration.getCodeSystemShortName();
 		final CodeSystemEntry codeSystemEntry = getCodeSystem(codeSystemShortName);
-		if (codeSystemEntry == null && !SnomedTerminologyComponentConstants.SNOMED_INT_SHORT_NAME.equals(codeSystemShortName)) {
+		if (codeSystemEntry == null && !SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME.equals(codeSystemShortName)) {
 			throw new BadRequestException("Importing a release of SNOMED CT from an archive is prohibited "
 					+ "when SNOMED CT extension with short name %s does not exist. Please create it before "
 					+ "importing content with this configuration, or use SNOMEDCT for importing the "
@@ -158,7 +158,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		
 		final CodeSystem codeSystem;
 		if (codeSystemEntry == null) {
-			codeSystem = SnomedReleases.newSnomedInternationalRelease();
+			codeSystem = SnomedReleases.internationalRelease();
 		} else {
 			codeSystem = CodeSystem.builder()
 					.name(codeSystemEntry.getName())
@@ -222,12 +222,11 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 	
 	private CodeSystemEntry getCodeSystem(final String shortName) {
 		try {
-			return CodeSystemRequests.prepareGetCodeSystem()
-					.setUniqueId(shortName)
-					.build(REPOSITORY_UUID, IBranchPath.MAIN_BRANCH)
+			return CodeSystemRequests.prepareGetCodeSystem(shortName)
+					.build(REPOSITORY_UUID)
 					.execute(getEventBus())
 					.getSync();
-		} catch (CodeSystemNotFoundException e) {
+		} catch (NotFoundException e) {
 			return null;
 		}
 	}

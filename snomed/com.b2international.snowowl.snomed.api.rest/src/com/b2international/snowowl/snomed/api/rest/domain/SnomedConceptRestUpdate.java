@@ -15,15 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import java.util.List;
-
-import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.*;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.Multimap;
@@ -37,9 +30,9 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 	private SubclassDefinitionStatus subclassDefinitionStatus;
 	private Multimap<AssociationType, String> associationTargets;
 	private InactivationIndicator inactivationIndicator;
-	private List<SnomedDescription> descriptions;
-	private List<SnomedRelationship> relationships;
-	private List<SnomedReferenceSetMember> members;
+	private SnomedDescriptions descriptions;
+	private SnomedRelationships relationships;
+	private SnomedReferenceSetMembers members;
 
 	public DefinitionStatus getDefinitionStatus() {
 		return definitionStatus;
@@ -95,27 +88,27 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 		this.inactivationIndicator = inactivationIndicator;
 	}
 
-	public List<SnomedDescription> getDescriptions() {
+	public SnomedDescriptions getDescriptions() {
 		return descriptions;
 	}
 	
-	public List<SnomedReferenceSetMember> getMembers() {
+	public SnomedReferenceSetMembers getMembers() {
 		return members;
 	}
 	
-	public List<SnomedRelationship> getRelationships() {
+	public SnomedRelationships getRelationships() {
 		return relationships;
 	}
 	
-	public void setDescriptions(List<SnomedDescription> descriptions) {
+	public void setDescriptions(SnomedDescriptions descriptions) {
 		this.descriptions = descriptions;
 	}
 	
-	public void setMembers(List<SnomedReferenceSetMember> members) {
+	public void setMembers(SnomedReferenceSetMembers members) {
 		this.members = members;
 	}
 	
-	public void setRelationships(List<SnomedRelationship> relationships) {
+	public void setRelationships(SnomedRelationships relationships) {
 		this.relationships = relationships;
 	}
 

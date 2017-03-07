@@ -95,7 +95,7 @@ public class SnomedRefSetHistoryInfoQueryExecutor extends HistoryInfoQueryExecut
 	private SnomedReferenceSet getRefSet(final InternalHistoryInfoConfiguration configuration) {
 		final IBranchPath branchPath = configuration.getBranchPath();
 		final String refSetId = configuration.getComponentId();
-		return SnomedRequests.prepareGetReferenceSet().setComponentId(refSetId).build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+		return SnomedRequests.prepareGetReferenceSet(refSetId).build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class)).getSync();
 	}
 

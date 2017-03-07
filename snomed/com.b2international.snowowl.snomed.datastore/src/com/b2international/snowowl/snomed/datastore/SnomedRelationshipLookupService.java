@@ -82,8 +82,7 @@ public class SnomedRelationshipLookupService extends AbstractLookupService<Strin
 	@Override
 	public SnomedRelationshipIndexEntry getComponent(final IBranchPath branchPath, final String id) {
 		try {
-			return SnomedRequests.prepareGetRelationship()
-					.setComponentId(id)
+			return SnomedRequests.prepareGetRelationship(id)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.then(new Function<SnomedRelationship, SnomedRelationshipIndexEntry>() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,41 +15,68 @@
  */
 package com.b2international.snowowl.core.events;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.Serializable;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import net.jodah.typetools.TypeResolver;
 
 /**
  * A {@link Request} represents an executable form of user intent. They can be executed in a specific context usually within a {@link ServiceProvider}
  * . Executing a {@link Request} will result in either a success or failure. Success usually returns the requested object or success message while
  * failure usually delivers an error object or {@link Throwable} to the caller.
  * <p>
- * If you have a reference to the context where an instance of {@link Request} can be executed, then you can immediately execute it via the
- * {@link #execute(ServiceProvider)} method, this is basically the same as invoking a function. If you don't have the required context, then you can
- * dispatch it via the following methods using a dispatcher (currently {@link IEventBus} is supported), which will deliver the message to the owner of
- * the context and execute your {@link Request}:
- * <ul>
- * <li>{@link #execute(IEventBus)} - async execution, will return with a {@link Promise}</li>
- * <li>{@link #execute(C)} - sync execution, will return with the response or throws exception if fails</li>
- * </p>
+ * A reference to the context is required in order to execute a {@link Request} instance. This is basically the same as invoking a function. If you
+ * don't have the required context, then you can build an {@link AsyncRequest} using a different build on the sub type of the {@link RequestBuilder}
+ * interface.
  *
  * @since 4.5
  * @param <C>
  *            - the type of context where this {@link Request} can be executed
  * @param <R>
- *            - the type of the resource aka the response
+ *            - the type of response
  */
+@FunctionalInterface
 public interface Request<C extends ServiceProvider, R> extends Serializable {
 
 	/**
-	 * Executes this action on the given {@link ExecutionContext} directly without dispatching it.
+	 * Address where implementations of the {@link Request} interface will be sent over the {@link IEventBus}.
+	 */
+	String ADDRESS = "/requests";
+
+	/**
+	 * Executes this action in the given context.
 	 *
 	 * @param context
-	 *            - the context within this {@link Request} can be executed
+	 *            - the context where this {@link Request} is going to be executed
 	 * @return - the result of the {@link Request}, never <code>null</code>.
 	 */
 	R execute(C context);
 	
+	/**
+	 * @return the type of the request for serialization in log messages
+	 */
+	@JsonProperty
+	default String getType() {
+		return getClass().getSimpleName();
+	}
+	
+	/**
+	 * Returns the class of the actual return type.
+	 * 
+	 * @return
+	 */
+	@JsonIgnore
+	@SuppressWarnings("unchecked")
+	default Class<R> getReturnType() {
+		final Class<?>[] types = TypeResolver.resolveRawArguments(Request.class, getClass());
+		checkState(TypeResolver.Unknown.class != types[1], "Couldn't resolve return type parameter for class %s", getClass().getSimpleName());
+		return (Class<R>) types[1];
+	}
+
 }

@@ -15,928 +15,751 @@
  */
 package com.b2international.snowowl.snomed.api.rest.branches;
 
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP;
-import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PREFERRED_ACCEPTABILITY_MAP;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeMerged;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertBranchCanBeRebased;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertMergeJobFails;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.assertMergeJobFailsWithConflict;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingApiAssert.givenBranchWithPath;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert.assertComponentHasProperty;
-import static com.b2international.snowowl.snomed.api.rest.SnomedMergeApiAssert.*;
-import static com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiAssert.assertComponentUpdatedWithStatus;
-import static com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiAssert.whenRetrievingConcept;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.startsWith;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranch;
+import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.getBranchChildren;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.updateComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedMergingRestRequests.createMerge;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetMemberEffectiveTime;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.*;
+import static org.hamcrest.CoreMatchers.*;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.Calendar;
 import java.util.Map;
-import java.util.UUID;
 
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.merge.ConflictingAttribute;
-import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
-import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
-import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
-import com.b2international.snowowl.snomed.api.rest.SnomedComponentApiAssert;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiAssert;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.google.common.collect.ImmutableMap;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.response.ValidatableResponse;
 
 /**
+ * Contains test cases for the branch rebase and merge functionality.
+ * <p>
+ * All scenarios that result in a content conflict should be placed in {@link SnomedMergeConflictTest} instead.
+ * 
  * @since 2.0
  */
 public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
-	@Override
-	public void setup() {
-		super.setup();
-		givenBranchWithPath(testBranchPath);
-	}
-	
 	@After
 	public void noTempBranchVisibleAfter() {
-		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API).when().get("/branches/{path}/children", BranchPathUtils.createMainPath().getPath())
-			.then().assertThat().statusCode(200)
-			.and().body("items.name", not(hasItem(startsWith(Branch.TEMP_PREFIX))));
+		getBranchChildren(branchPath).statusCode(200).body("items.name", not(hasItem(startsWith(Branch.TEMP_PREFIX))));
 	}
 
-	@Override
-	protected IBranchPath createRandomBranchPath() {
-		// XXX make sure we nest the merge test cases under MAIN, so MAIN is not affected at all
-		final IBranchPath parentBranch = super.createRandomBranchPath();
-		givenBranchWithPath(parentBranch);
-		return BranchPathUtils.createPath(parentBranch, "merge-test");
-	}
-
-	@Test
-	public void mergeNewConceptForward() {
-		assertConceptCreated(testBranchPath, "C1");
-		assertConceptExists(testBranchPath, "C1");
-
-		assertBranchCanBeMerged(testBranchPath, "Merge new concept");
-
-		assertConceptExists(testBranchPath, "C1");
-		assertConceptExists(testBranchPath.getParent(), "C1");
-	}
-
-	@Test
-	public void mergeNewDescriptionForward() {
-		assertDescriptionCreated(testBranchPath, "D1", ACCEPTABLE_ACCEPTABILITY_MAP);
-		assertDescriptionExists(testBranchPath, "D1");
-
-		assertBranchCanBeMerged(testBranchPath, "Merge new description");
-
-		assertDescriptionExists(testBranchPath, "D1");
-		assertDescriptionExists(testBranchPath.getParent(), "D1");
-	}
-
-	@Test
-	public void mergeNewRelationshipForward() {
-		assertRelationshipCreated(testBranchPath, "R1");
-		assertRelationshipExists(testBranchPath, "R1");
-
-		assertBranchCanBeMerged(testBranchPath, "Merge new relationship");
-
-		assertRelationshipExists(testBranchPath, "R1");
-		assertRelationshipExists(testBranchPath.getParent(), "R1");
-	}
-
-	@Test
-	public void noMergeNewConceptDiverged() {
-		assertConceptCreated(testBranchPath, "C1");
-		assertConceptExists(testBranchPath, "C1");
-		assertConceptNotExists(testBranchPath.getParent(), "C1");
-
-		assertConceptCreated(testBranchPath.getParent(), "C2");
-		assertConceptExists(testBranchPath.getParent(), "C2");
-		assertConceptNotExists(testBranchPath, "C2");
-
-		assertMergeJobFails(testBranchPath, testBranchPath.getParent(), "Merge new concept");
-
-		assertConceptExists(testBranchPath, "C1");
-		assertConceptNotExists(testBranchPath.getParent(), "C1");
-		assertConceptExists(testBranchPath.getParent(), "C2");
-		assertConceptNotExists(testBranchPath, "C2");
-	}
-
-	@Test
-	public void noMergeNewDescriptionDiverged() {
-		assertDescriptionCreated(testBranchPath, "D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
-		assertDescriptionExists(testBranchPath, "D1");
-		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
-
-		assertDescriptionCreated(testBranchPath.getParent(), "D2", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
-		assertDescriptionExists(testBranchPath.getParent(), "D2");
-		assertDescriptionNotExists(testBranchPath, "D2");
-
-		assertMergeJobFails(testBranchPath, testBranchPath.getParent(), "Merge new description");
-
-		assertDescriptionExists(testBranchPath, "D1");
-		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
-		assertDescriptionExists(testBranchPath.getParent(), "D2");
-		assertDescriptionNotExists(testBranchPath, "D2");
-	}
-
-	@Test
-	public void noMergeNewRelationshipDiverged() {
-		assertRelationshipCreated(testBranchPath, "R1");
-		assertRelationshipExists(testBranchPath, "R1");
-		assertRelationshipNotExists(testBranchPath.getParent(), "R1");
-
-		assertRelationshipCreated(testBranchPath.getParent(), "R2");
-		assertRelationshipExists(testBranchPath.getParent(), "R2");
-		assertRelationshipNotExists(testBranchPath, "R2");
-
-		assertMergeJobFails(testBranchPath, testBranchPath.getParent(), "Merge new relationship");
-
-		assertRelationshipExists(testBranchPath, "R1");
-		assertRelationshipNotExists(testBranchPath.getParent(), "R1");
-		assertRelationshipExists(testBranchPath.getParent(), "R2");
-		assertRelationshipNotExists(testBranchPath, "R2");
-	}
-	
-	@Test
-	public void mergeNewConceptToEmptyStaleBranch() {
-		final IBranchPath b1 = createRandomBranchPath();
-		final IBranchPath b2 = createRandomBranchPath();
-		
-		givenBranchWithPath(b1);
-		givenBranchWithPath(b2);
-		
-		assertConceptCreated(b1, "C1");
-		assertConceptExists(b1, "C1");
-		
-		assertConceptNotExists(b2, "C1");
-		
-		assertBranchCanBeMerged(b1, b2, "Merge b1 to b2");
-		
-		assertConceptExists(b1, "C1");
-		assertConceptExists(b2, "C1");
-	}
-	
-	@Test
-	public void mergeNewConceptToStaleBranchWithChangesInBoth() {
-		final IBranchPath b1 = createRandomBranchPath();
-		givenBranchWithPath(b1);
-		
-		assertConceptCreated(b1, "C1");
-		assertConceptExists(b1, "C1");
-		
-		assertConceptCreated(BranchPathUtils.createMainPath(), "C");
-		assertConceptExists(BranchPathUtils.createMainPath(), "C");
-		
-		final IBranchPath b2 = createRandomBranchPath();
-		givenBranchWithPath(b2);
-		
-		assertConceptExists(b2, "C");
-		assertConceptNotExists(b1, "C");
-		assertConceptNotExists(b2, "C1");
-		
-		assertBranchCanBeMerged(b1, b2, "Merge b1 to b2");
-		
-		assertConceptExists(b2, "C");
-		assertConceptExists(b2, "C1");
-	}
-	
-	@Test
-	public void mergeNewDescriptionToEmptyStaleBranch() {
-		final IBranchPath b1 = createRandomBranchPath();
-		final IBranchPath b2 = createRandomBranchPath();
-		
-		givenBranchWithPath(b1);
-		givenBranchWithPath(b2);
-		
-		assertDescriptionCreated(b1, "D", ACCEPTABLE_ACCEPTABILITY_MAP);
-		assertDescriptionExists(b1, "D");
-
-		assertBranchCanBeMerged(b1, b2, "Merge b1 to b2");
-
-		assertDescriptionExists(b1, "D");
-		assertDescriptionExists(b2, "D");
-	}
-	
-	@Test
-	public void mergeNewRelationshipToEmptyStaleBranch() {
-		final IBranchPath b1 = createRandomBranchPath();
-		final IBranchPath b2 = createRandomBranchPath();
-		
-		givenBranchWithPath(b1);
-		givenBranchWithPath(b2);
-		
-		assertRelationshipCreated(b1, "R");
-		assertRelationshipExists(b1, "R");
-
-		assertBranchCanBeMerged(b1, b2, "Merge b1 to b2");
-
-		assertRelationshipExists(b1, "R");
-		assertRelationshipExists(b2, "R");
-	}
-	
-	@Test
-	@SuppressWarnings("unchecked")
-	public void mergeReactivatedConcept() {
-		assertConceptCreated(testBranchPath, "C1");
-		
-		final Map<?, ?> changeOnTask = ImmutableMap.builder()
-				.put("active", false)
-				.put("commitComment", "Inactivated test concept")
-				.build();
-		
-		assertConceptCanBeUpdated(testBranchPath, "C1", changeOnTask);
-		assertBranchCanBeMerged(testBranchPath, "merge");
-		
-		assertConceptExists(testBranchPath, "C1");
-		assertConceptExists(testBranchPath.getParent(), "C1");
-		
-		Map<String, Object> conceptUpdate = SnomedBrowserApiAssert.getConcept(testBranchPath, symbolicNameMap.get("C1"));
-		conceptUpdate.put("active", true);
-		final List<Map<String, Object>> relationshipsResponse = (List<Map<String, Object>>) conceptUpdate.get("relationships");
-		relationshipsResponse.get(0).put("active", true);
-
-		assertComponentUpdatedWithStatus(testBranchPath, symbolicNameMap.get("C1"), conceptUpdate, 200)
-			.and().body("active", equalTo(true))
-			.and().body("descriptions[0].active", equalTo(true))
-			.and().body("descriptions[1].active", equalTo(true))
-			.and().body("relationships[0].active", equalTo(true));
-		
-		assertBranchCanBeMerged(testBranchPath, "merge reactivation");
-		
-		whenRetrievingConcept(testBranchPath.getParent(), symbolicNameMap.get("C1"))
-			.then().assertThat().statusCode(200)
-			.and().body("active", equalTo(true))
-			.and().body("descriptions[0].active", equalTo(true))
-			.and().body("descriptions[1].active", equalTo(true))
-			.and().body("relationships[0].active", equalTo(true));
-	}
-	
-	@Test
-	@SuppressWarnings("unchecked")
-	public void rebaseReactivatedConcept() {
-		assertConceptCreated(testBranchPath, "C1");
-		
-		final Map<?, ?> changeOnTask = ImmutableMap.builder()
-				.put("active", false)
-				.put("commitComment", "Inactivated test concept")
-				.build();
-		
-		assertConceptCanBeUpdated(testBranchPath, "C1", changeOnTask);
-		assertBranchCanBeMerged(testBranchPath, "merge");
-		
-		assertConceptExists(testBranchPath, "C1");
-		assertConceptExists(testBranchPath.getParent(), "C1");
-		
-		// Commit to parent so that testBranchPath falls behind
-		assertConceptCreated(testBranchPath.getParent(), "C2");
-		assertConceptNotExists(testBranchPath, "C2");
-		assertConceptExists(testBranchPath.getParent(), "C2");
-
-		Map<String, Object> conceptUpdate = SnomedBrowserApiAssert.getConcept(testBranchPath, symbolicNameMap.get("C1"));
-		conceptUpdate.put("active", true);
-		final List<Map<String, Object>> relationshipsResponse = (List<Map<String, Object>>) conceptUpdate.get("relationships");
-		relationshipsResponse.get(0).put("active", true);
-		
-		assertComponentUpdatedWithStatus(testBranchPath, symbolicNameMap.get("C1"), conceptUpdate, 200)
-				.and().body("active", equalTo(true))
-				.and().body("descriptions[0].active", equalTo(true))
-				.and().body("descriptions[1].active", equalTo(true))
-				.and().body("relationships[0].active", equalTo(true));
-		
-		assertBranchCanBeRebased(testBranchPath, "rebase reactivation");
-		
-		// Following the rebase, C2 should be visible...
-		assertConceptExists(testBranchPath, "C2");
-		
-		// ...C1 should remain active on testBranchPath...
-		whenRetrievingConcept(testBranchPath, symbolicNameMap.get("C1"))
-				.then().assertThat().statusCode(200)
-				.and().body("active", equalTo(true))
-				.and().body("descriptions[0].active", equalTo(true))
-				.and().body("descriptions[1].active", equalTo(true))
-				.and().body("relationships[0].active", equalTo(true));
-
-		// ...but it should still be inactive on its parent.
-		whenRetrievingConcept(testBranchPath.getParent(), symbolicNameMap.get("C1"))
-				.then().assertThat().statusCode(200)
-				.and().body("active", equalTo(false))
-				.and().body("descriptions[0].active", equalTo(true))
-				.and().body("descriptions[1].active", equalTo(true))
-				.and().body("relationships[0].active", equalTo(false));
-		
-	}
-
-	@Test
-	public void noMergeNewDescriptionToConflictingStaleBranch() {
-		final IBranchPath mainPath = BranchPathUtils.createMainPath();
-		assertConceptCreated(mainPath, "C");
-		assertConceptExists(mainPath, "C");
-		
-		final IBranchPath b1 = createRandomBranchPath();
-		givenBranchWithPath(b1);
-		
-		final String conceptId = symbolicNameMap.get("C");
-		assertDescriptionCreated(b1, "D1", conceptId, SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
-		assertDescriptionExists(b1, "D1");
-		
-		final IBranchPath b2 = createRandomBranchPath();
-		givenBranchWithPath(b2);
-		
-		assertConceptCanBeDeleted(b2, "C");
-		assertConceptNotExists(b2, "C");
-
-		Response mergeResponse = assertMergeJobFailsWithConflict(b1, b2, "Merge b1 to b2");
-		
-		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
-		
-		assertEquals(1, conflicts.size());
-		
-		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-				.put("componentId", conceptId)
-				.put("componentType", "Concept")
-				.put("type", ConflictType.CAUSES_MISSING_REFERENCE.name())
-				.put("message", MergeConflictImpl.buildDefaultMessage(
-						conceptId, 
-						"Concept", 
-						Collections.<ConflictingAttribute>emptyList(), 
-						ConflictType.CAUSES_MISSING_REFERENCE))
-				.build();
-		
-		assertThat(conflicts, hasItem(conflict));
-		
-		assertDescriptionNotExists(b2, "D1");
-	}
-	
-	@Test
-	public void noMergeNewRelationshipToConflictingStaleBranch() {
-		final IBranchPath mainPath = BranchPathUtils.createMainPath();
-		assertConceptCreated(mainPath, "C");
-		assertConceptExists(mainPath, "C");
-		
-		final IBranchPath b1 = createRandomBranchPath();
-		givenBranchWithPath(b1);
-		assertConceptExists(b1, "C");
-		
-		final String conceptId = symbolicNameMap.get("C");
-		assertRelationshipCreated(b1, "R", Concepts.ROOT_CONCEPT, conceptId);
-		assertRelationshipExists(b1, "R");
-		
-		final IBranchPath b2 = createRandomBranchPath();
-		givenBranchWithPath(b2);
-		
-		assertConceptCanBeDeleted(b2, "C");
-		assertConceptNotExists(b2, "C");
-		
-		Response mergeResponse = assertMergeJobFailsWithConflict(b1, b2, "Merge b1 to b2");
-		
-		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
-		
-		assertEquals(1, conflicts.size());
-		
-		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-				.put("componentId", conceptId)
-				.put("componentType", "Concept")
-				.put("type", ConflictType.CAUSES_MISSING_REFERENCE.name())
-				.put("message", MergeConflictImpl.buildDefaultMessage(
-						conceptId, 
-						"Concept", 
-						Collections.<ConflictingAttribute>emptyList(), 
-						ConflictType.CAUSES_MISSING_REFERENCE))
-				.build();
-
-		assertThat(conflicts, hasItem(conflict));
-		
-		assertRelationshipNotExists(b2, "R");
-	}
-
-	@Test
-	public void rebaseNewConceptDiverged() {
-		assertConceptCreated(testBranchPath, "C1");
-		assertConceptExists(testBranchPath, "C1");
-		assertConceptNotExists(testBranchPath.getParent(), "C1");
-
-		assertConceptCreated(testBranchPath.getParent(), "C2");
-		assertConceptExists(testBranchPath.getParent(), "C2");
-		assertConceptNotExists(testBranchPath,"C2");
-
-		assertBranchCanBeRebased(testBranchPath, "Rebase new concept");
-
-		assertConceptExists(testBranchPath,"C1");
-		assertConceptNotExists(testBranchPath.getParent(), "C1");
-		assertConceptExists(testBranchPath.getParent(), "C2");
-		assertConceptExists(testBranchPath, "C2"); // C2 from the parent becomes visible on the test branch after rebasing
-	}
-
-	@Test
-	public void rebaseNewDescriptionDiverged() {
-		assertDescriptionCreated(testBranchPath, "D1", ACCEPTABLE_ACCEPTABILITY_MAP);
-		assertDescriptionExists(testBranchPath, "D1");
-		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
-
-		assertDescriptionCreated(testBranchPath.getParent(), "D2", ACCEPTABLE_ACCEPTABILITY_MAP);
-		assertDescriptionExists(testBranchPath.getParent(), "D2");
-		assertDescriptionNotExists(testBranchPath,"D2");
-
-		assertBranchCanBeRebased(testBranchPath, "Rebase new description");
-
-		assertDescriptionExists(testBranchPath,"D1");
-		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
-		assertDescriptionExists(testBranchPath.getParent(), "D2");
-		assertDescriptionExists(testBranchPath, "D2");
-	}
-
-	@Test
-	public void rebaseNewRelationshipDiverged() {
-		assertRelationshipCreated(testBranchPath, "R1");
-		assertRelationshipExists(testBranchPath, "R1");
-		assertRelationshipNotExists(testBranchPath.getParent(), "R1");
-
-		assertRelationshipCreated(testBranchPath.getParent(), "R2");
-		assertRelationshipExists(testBranchPath.getParent(), "R2");
-		assertRelationshipNotExists(testBranchPath,"R2");
-
-		assertBranchCanBeRebased(testBranchPath, "Rebase new concept");
-
-		assertRelationshipExists(testBranchPath,"R1");
-		assertRelationshipNotExists(testBranchPath.getParent(), "R1");
-		assertRelationshipExists(testBranchPath.getParent(), "R2");
-		assertRelationshipExists(testBranchPath, "R2");
-	}
-
-	@Test
-	public void rebaseNewConceptStale() {
-		IBranchPath branchPath = createNestedBranch(testBranchPath, "A", "B");
-
-		assertConceptCreated(branchPath, "CB1");
-		assertConceptExists(branchPath, "CB1");
-		assertConceptNotExists(branchPath.getParent(), "CB1");
-		assertConceptNotExists(branchPath.getParent().getParent(), "CB1");
-
-		assertConceptCreated(branchPath.getParent(), "CA");
-		assertConceptExists(branchPath.getParent(), "CA");
-		assertConceptNotExists(branchPath, "CA");
-		assertConceptNotExists(branchPath.getParent().getParent(), "CA");
-
-		assertConceptCreated(branchPath.getParent().getParent(), "Cm");
-		assertConceptExists(branchPath.getParent().getParent(), "Cm");
-		assertConceptNotExists(branchPath, "Cm");
-		assertConceptNotExists(branchPath.getParent(), "Cm");
-
-		assertBranchCanBeRebased(branchPath.getParent(), "Rebase test/A");
-
-		assertConceptExists(branchPath, "CB1");
-		assertConceptExists(branchPath.getParent(), "CA");
-		assertConceptExists(branchPath.getParent().getParent(), "Cm");
-
-		assertConceptExists(branchPath.getParent(), "Cm"); // The rebase made the concept on test visible to test/A
-		assertConceptNotExists(branchPath, "CA"); // test/A/B is left behind, and still doesn't know about the other concepts
-		assertConceptNotExists(branchPath, "Cm");
-
-		assertConceptCreated(branchPath, "CB2");
-		assertConceptExists(branchPath, "CB2");
-		assertConceptNotExists(branchPath.getParent(), "CB2");
-		assertConceptNotExists(branchPath.getParent().getParent(), "CB2");
-
-		assertBranchCanBeRebased(branchPath, "Rebase test/A/B");
-
-		assertConceptExists(branchPath, "CB1");
-		assertConceptExists(branchPath, "CB2");
-		assertConceptExists(branchPath.getParent(), "CA");
-		assertConceptExists(branchPath.getParent().getParent(), "Cm");
-
-		assertConceptExists(branchPath.getParent(), "Cm"); // The rebase made the concept on test and test/A visible to test/A/B
-		assertConceptExists(branchPath, "CA");
-	}
-
-	@Test
-	public void noRebaseNewPreferredTerm() {
-		assertDescriptionCreated(testBranchPath, "D1", PREFERRED_ACCEPTABILITY_MAP);
-		assertDescriptionExists(testBranchPath, "D1");
-		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
-
-		ValidatableResponse response = SnomedComponentApiAssert.assertDescriptionExists(testBranchPath, symbolicNameMap.get("D1"), "members()");
-		List<String> memberIds = response.and().extract().body().path("members.items.id");
-		assertEquals(memberIds.size(), 1);
-		String memberId = memberIds.get(0);
-
-		List<String> acceptabilityIds = response.and().extract().body().path("members.items.acceptabilityId");
-		assertEquals(acceptabilityIds.size(), 1);
-		String acceptabilityId = acceptabilityIds.get(0);
-		
-		assertDescriptionCreated(testBranchPath.getParent(), "D2", PREFERRED_ACCEPTABILITY_MAP);
-		assertDescriptionExists(testBranchPath.getParent(), "D2");
-		assertDescriptionNotExists(testBranchPath,"D2");
-
-		Response mergeResponse = assertMergeJobFailsWithConflict(testBranchPath.getParent(), testBranchPath, "Rebase new preferred term");
-
-		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
-		
-		assertEquals(1, conflicts.size());
-		
-		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
-				.property("acceptabilityId")
-				.value(acceptabilityId)
-				.build();
-
-		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-				.put("componentId", memberId)
-				.put("componentType", "SnomedLanguageRefSetMember")
-				.put("conflictingAttributes", createAttributesMap(attribute))
-				.put("type", ConflictType.CONFLICTING_CHANGE.name())
-				.put("message", MergeConflictImpl.buildDefaultMessage(
-						memberId, 
-						"SnomedLanguageRefSetMember", 
-						Collections.<ConflictingAttribute>singletonList(attribute), 
-						ConflictType.CONFLICTING_CHANGE))
-				.build();
-		
-		assertThat(conflicts, hasItem(conflict));
-		
-		assertDescriptionExists(testBranchPath, "D1");
-		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
-		assertDescriptionExists(testBranchPath.getParent(), "D2");
-		assertDescriptionNotExists(testBranchPath,"D2"); // D2 did not become visible because the rebase was rejected
-	}
-
-	private void assertDescriptionChangesConflict(final Map<?, ?> changesOnParent, final Map<?, ?> changesOnBranch) {
-		mergeNewDescriptionForward();
-
-		assertDescriptionCanBeUpdated(testBranchPath.getParent(), "D1", changesOnParent);
-		assertDescriptionCanBeUpdated(testBranchPath, "D1", changesOnBranch);
-
-		assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "Rebase conflicting description change");
-	}
-
-	@Test
-	public void noRebaseConflictingDescription() {
-		final Map<?, ?> changesOnParent = ImmutableMap.builder()
-				.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE)
-				.put("commitComment", "Changed case significance on parent")
-				.build();
-
-		final Map<?, ?> changesOnBranch = ImmutableMap.builder()
-				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
-				.put("commitComment", "Changed case significance on branch")
-				.build();
-
-		assertDescriptionChangesConflict(changesOnParent, changesOnBranch);
-	}
-
-	@Test
-	public void noRebaseConflictingDescriptionMultipleChanges() {
-		final Map<?, ?> changesOnParent = ImmutableMap.builder()
-				.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE)
-				.put("moduleId", "900000000000013009")
-				.put("commitComment", "Changed case significance and module on parent")
-				.build();
-
-		final Map<?, ?> changesOnBranch = ImmutableMap.builder()
-				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
-				.put("moduleId", "900000000000443000")
-				.put("commitComment", "Changed case significance and module on branch")
-				.build();
-
-		assertDescriptionChangesConflict(changesOnParent, changesOnBranch);
-	}
-
-	@Test
-	public void noRebaseChangedConceptOnBranchDeletedOnParent() {
-		mergeNewConceptForward();
-
-		final Map<?, ?> changeOnBranch = ImmutableMap.builder()
-				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
-				.put("commitComment", "Changed definition status on branch")
-				.build();
-
-		assertConceptCanBeDeleted(testBranchPath.getParent(), "C1");
-		assertConceptCanBeUpdated(testBranchPath, "C1", changeOnBranch);
-
-		assertMergeJobFails(testBranchPath.getParent(), testBranchPath, "Rebase conflicting concept deletion");
-	}
-	
-	@Test
-	public void noRebaseInactivatedConceptOnBranchNewRelationshipOnParent() {
-		mergeNewConceptForward();
-		
-		final Map<?, ?> changeOnBranch = ImmutableMap.builder()
-				.put("active", false)
-				.put("commitComment", "Inactivated concept on branch")
-				.build();
-		
-		assertConceptCanBeUpdated(testBranchPath, "C1", changeOnBranch);
-
-		final Map<?, ?> changeOnParent = ImmutableMap.builder()
-				.put("sourceId", symbolicNameMap.get("C1"))
-				.put("moduleId", Concepts.MODULE_SCT_CORE)
-				.put("typeId", Concepts.IS_A)
-				.put("destinationId", "49755003") // Morphologic abnormality
-				.put("commitComment", "New relationship")
-				.build();
-
-		assertComponentCreated(testBranchPath.getParent(), "R1", SnomedComponentType.RELATIONSHIP, changeOnParent);
-		
-		Response mergeResponse = assertMergeJobFailsWithConflict(testBranchPath.getParent(), testBranchPath, "Rebase conflicting concept inactivation");
-		
-		List<Map<String, Object>> conflicts = mergeResponse.jsonPath().getList("conflicts");
-		
-		assertEquals(1, conflicts.size());
-		
-		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
-				.property("sourceId")
-				.value(symbolicNameMap.get("C1"))
-				.build();
-		
-		ImmutableMap<String, Object> conflict = ImmutableMap.<String, Object>builder()
-				.put("componentId", symbolicNameMap.get("R1"))
-				.put("componentType", "Relationship")
-				.put("conflictingAttributes", createAttributesMap(attribute))
-				.put("type", ConflictType.HAS_INACTIVE_REFERENCE.name())
-				.put("message", MergeConflictImpl.buildDefaultMessage(
-						symbolicNameMap.get("R1"), 
-						"Relationship",
-						Collections.<ConflictingAttribute>singletonList(attribute),
-						ConflictType.HAS_INACTIVE_REFERENCE))
-				.build();
-		
-		assertThat(conflicts, hasItem(conflict));
-		
-		// If changes could not be taken over, C1 will be active on the test branch
-		SnomedComponentApiAssert.assertComponentActive(testBranchPath, SnomedComponentType.CONCEPT, symbolicNameMap.get("C1"), false);
-	}
-
-	@Test
-	public void rebaseChangedConceptOnParentDeletedOnBranch() {
-		mergeNewConceptForward();
-
-		final Map<?, ?> changeOnParent = ImmutableMap.builder()
+	private static void rebaseConceptDeletionOverChange(IBranchPath parentPath, IBranchPath childPath, String conceptId) {
+		Map<?, ?> changeOnParent = ImmutableMap.builder()
 				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
 				.put("commitComment", "Changed definition status on parent")
 				.build();
 
-		assertConceptCanBeUpdated(testBranchPath.getParent(), "C1", changeOnParent);
-		assertConceptCanBeDeleted(testBranchPath, "C1");
+		updateComponent(parentPath, SnomedComponentType.CONCEPT, conceptId, changeOnParent).statusCode(204);
+		deleteComponent(childPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
 
-		assertBranchCanBeRebased(testBranchPath, "Rebase concept deletion");
-
-		assertConceptExists(testBranchPath.getParent(), "C1");
-		assertConceptNotExists(testBranchPath, "C1");
+		merge(parentPath, childPath, "Rebased concept deletion over concept change").body("status", equalTo(Merge.Status.COMPLETED.name()));
 	}
 
 	@Test
-	public void rebaseAndMergeChangedConceptOnParentDeletedOnBranch() {
-		rebaseChangedConceptOnParentDeletedOnBranch();
+	public void mergeNewConceptForward() {
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
 
-		assertBranchCanBeMerged(testBranchPath, "Merge concept deletion back to MAIN");
+		String conceptId = createNewConcept(a);
+		merge(a, branchPath, "Merged new concept from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
-		assertConceptNotExists(testBranchPath.getParent(), "C1");
-		assertConceptNotExists(testBranchPath, "C1");
+		getComponent(a, SnomedComponentType.CONCEPT, conceptId).statusCode(200);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200);
 	}
 
 	@Test
-	public void rebaseAndMergeChangedDescriptionMultipleChanges() {
-		mergeNewDescriptionForward();
+	public void mergeNewDescriptionForward() {
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
 
-		assertDescriptionCreated(testBranchPath.getParent(), "D2", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
+		String descriptionId = createNewDescription(a);
+		merge(a, branchPath, "Merged new description from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
-		final Map<?, ?> changesOnBranch = ImmutableMap.builder()
+		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200);
+	}
+
+	@Test
+	public void mergeNewRelationshipForward() {
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		String relationshipId = createNewRelationship(a);
+		merge(a, branchPath, "Merged new relationship from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
+	}
+
+	@Test
+	public void noMergeWithNonExistentReview() {
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		createNewConcept(a);
+		createMerge(a, branchPath, "Merged new concept from child branch with non-existent review ID", "non-existent-id").statusCode(400);
+	}
+
+	@Test
+	public void noMergeNewConceptDiverged() {
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		String concept1Id = createNewConcept(a);
+		String concept2Id = createNewConcept(branchPath);
+
+		getComponent(branchPath, SnomedComponentType.CONCEPT, concept1Id).statusCode(404);
+		getComponent(a, SnomedComponentType.CONCEPT, concept1Id).statusCode(200);
+
+		getComponent(branchPath, SnomedComponentType.CONCEPT, concept2Id).statusCode(200);
+		getComponent(a, SnomedComponentType.CONCEPT, concept2Id).statusCode(404);
+
+		merge(a, branchPath, "Merged new concept from diverged branch").body("status", equalTo(Merge.Status.FAILED.name()));
+
+		getComponent(branchPath, SnomedComponentType.CONCEPT, concept1Id).statusCode(404);
+		getComponent(a, SnomedComponentType.CONCEPT, concept1Id).statusCode(200);
+
+		getComponent(branchPath, SnomedComponentType.CONCEPT, concept2Id).statusCode(200);
+		getComponent(a, SnomedComponentType.CONCEPT, concept2Id).statusCode(404);
+	}
+
+	@Test
+	public void noMergeNewDescriptionDiverged() {
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		String description1Id = createNewDescription(a);
+		String description2Id = createNewDescription(branchPath);
+
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description1Id).statusCode(404);
+		getComponent(a, SnomedComponentType.DESCRIPTION, description1Id).statusCode(200);
+
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id).statusCode(200);
+		getComponent(a, SnomedComponentType.DESCRIPTION, description2Id).statusCode(404);
+
+		merge(a, branchPath, "Merged new description from diverged branch").body("status", equalTo(Merge.Status.FAILED.name()));
+
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description1Id).statusCode(404);
+		getComponent(a, SnomedComponentType.DESCRIPTION, description1Id).statusCode(200);
+
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id).statusCode(200);
+		getComponent(a, SnomedComponentType.DESCRIPTION, description2Id).statusCode(404);
+	}
+
+	@Test
+	public void noMergeNewRelationshipDiverged() {
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		String relationship1Id = createNewRelationship(a);
+		String relationship2Id = createNewRelationship(branchPath);
+
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationship1Id).statusCode(404);
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationship1Id).statusCode(200);
+
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationship2Id).statusCode(200);
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationship2Id).statusCode(404);
+
+		merge(a, branchPath, "Merged new relationship from diverged branch").body("status", equalTo(Merge.Status.FAILED.name()));
+
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationship1Id).statusCode(404);
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationship1Id).statusCode(200);
+
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationship2Id).statusCode(200);
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationship2Id).statusCode(404);
+	}
+
+	@Test
+	public void mergeNewConceptToUnrelatedBranch() {
+		IBranchPath v1 = BranchPathUtils.createPath(branchPath, "v1");
+		createBranch(v1).statusCode(201);
+
+		// Concept 1 is created on the two branches' common ancestor
+		String concept1Id = createNewConcept(branchPath);
+
+		IBranchPath v2 = BranchPathUtils.createPath(branchPath, "v2");
+		createBranch(v2).statusCode(201);
+
+		IBranchPath a = BranchPathUtils.createPath(v1, "extension-old");
+		createBranch(a).statusCode(201);
+		IBranchPath b = BranchPathUtils.createPath(v2, "extension-new");
+		createBranch(b).statusCode(201);
+
+		// Concept 2 is initially only visible on branch "extension-old"
+		String concept2Id = createNewConcept(a);
+		getComponent(a, SnomedComponentType.CONCEPT, concept2Id).statusCode(200);
+
+		getComponent(branchPath, SnomedComponentType.CONCEPT, concept1Id).statusCode(200);
+		getComponent(a, SnomedComponentType.CONCEPT, concept1Id).statusCode(404);
+		getComponent(b, SnomedComponentType.CONCEPT, concept1Id).statusCode(200);
+
+		merge(a, b, "Merged new concept from unrelated branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		getComponent(b, SnomedComponentType.CONCEPT, concept1Id).statusCode(200);
+		getComponent(b, SnomedComponentType.CONCEPT, concept2Id).statusCode(200);
+	}
+
+	@Test
+	public void mergeNewDescriptionToUnrelatedBranch() {
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+		IBranchPath b = BranchPathUtils.createPath(branchPath, "b");
+		createBranch(b).statusCode(201);
+
+		String descriptionId = createNewDescription(a);
+		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200);
+		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(404);
+
+		merge(a, b, "Merged new description from unrelated branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200);
+		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200);
+	}
+
+	@Test
+	public void mergeNewRelationshipToUnrelatedBranch() {
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+		IBranchPath b = BranchPathUtils.createPath(branchPath, "b");
+		createBranch(b).statusCode(201);
+
+		String relationshipId = createNewRelationship(a);
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
+		getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(404);
+
+		merge(a, b, "Merged new relationship from unrelated branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
+		getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
+	}
+
+	@Test
+	public void mergeReactivatedConcept() {
+		String conceptId = createInactiveConcept(branchPath);
+
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		reactivateConcept(a, conceptId);
+
+		merge(a, branchPath, "Merged reactivation from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "descriptions()", "relationships()").statusCode(200)
+		.body("active", equalTo(true))
+		.body("descriptions.items[0].active", equalTo(true))
+		.body("descriptions.items[1].active", equalTo(true))
+		.body("relationships.items[0].active", equalTo(true));
+	}
+
+	@Test
+	public void rebaseReactivatedConcept() {
+		String concept1Id = createInactiveConcept(branchPath);
+
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		reactivateConcept(a, concept1Id);
+
+		// Create concept 2 on "branchPath" so that "a" can be rebased
+		String concept2Id = createNewConcept(branchPath);
+
+		merge(branchPath, a, "Rebased reactivation on child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		// Concept 1 should be active on "a", but still inactive on "branchPath"
+		getComponent(branchPath, SnomedComponentType.CONCEPT, concept1Id, "descriptions()", "relationships()").statusCode(200)
+		.body("active", equalTo(false))
+		.body("descriptions.items[0].active", equalTo(true))
+		.body("descriptions.items[1].active", equalTo(true))
+		.body("relationships.items[0].active", equalTo(false));
+
+		getComponent(a, SnomedComponentType.CONCEPT, concept1Id, "descriptions()", "relationships()").statusCode(200)
+		.body("active", equalTo(true))
+		.body("descriptions.items[0].active", equalTo(true))
+		.body("descriptions.items[1].active", equalTo(true))
+		.body("relationships.items[0].active", equalTo(true));
+
+		// Concept 2 should be visible everywhere
+		getComponent(branchPath, SnomedComponentType.CONCEPT, concept2Id).statusCode(200);
+		getComponent(a, SnomedComponentType.CONCEPT, concept2Id).statusCode(200);
+	}
+
+	@Test
+	public void rebaseNewConceptDiverged() {
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		String concept1Id = createNewConcept(branchPath);
+		String concept2Id = createNewConcept(a);
+
+		getComponent(branchPath, SnomedComponentType.CONCEPT, concept1Id).statusCode(200);
+		getComponent(a, SnomedComponentType.CONCEPT, concept1Id).statusCode(404);
+
+		getComponent(branchPath, SnomedComponentType.CONCEPT, concept2Id).statusCode(404);
+		getComponent(a, SnomedComponentType.CONCEPT, concept2Id).statusCode(200);
+
+		merge(branchPath, a, "Rebased new concept").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		// Concept 1 from the parent becomes visible on the child after rebasing
+		getComponent(branchPath, SnomedComponentType.CONCEPT, concept1Id).statusCode(200);
+		getComponent(a, SnomedComponentType.CONCEPT, concept1Id).statusCode(200);
+
+		// Concept 2 should still not be present on the parent, however
+		getComponent(branchPath, SnomedComponentType.CONCEPT, concept2Id).statusCode(404);
+		getComponent(a, SnomedComponentType.CONCEPT, concept2Id).statusCode(200);
+	}
+
+	@Test
+	public void rebaseNewDescriptionDiverged() {
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		String description1Id = createNewDescription(branchPath);
+		String description2Id = createNewDescription(a);
+
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description1Id).statusCode(200);
+		getComponent(a, SnomedComponentType.DESCRIPTION, description1Id).statusCode(404);
+
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id).statusCode(404);
+		getComponent(a, SnomedComponentType.DESCRIPTION, description2Id).statusCode(200);
+
+		merge(branchPath, a, "Rebased new description").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		// Description 1 from the parent becomes visible on the child after rebasing
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description1Id).statusCode(200);
+		getComponent(a, SnomedComponentType.DESCRIPTION, description1Id).statusCode(200);
+
+		// Description 2 should still not be present on the parent, however
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id).statusCode(404);
+		getComponent(a, SnomedComponentType.DESCRIPTION, description2Id).statusCode(200);
+	}
+
+	@Test
+	public void rebaseNewRelationshipDiverged() {
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		String relationship1Id = createNewRelationship(branchPath);
+		String relationship2Id = createNewRelationship(a);
+
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationship1Id).statusCode(200);
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationship1Id).statusCode(404);
+
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationship2Id).statusCode(404);
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationship2Id).statusCode(200);
+
+		merge(branchPath, a, "Rebased new relationship").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		// Relationship 1 from the parent becomes visible on the child after rebasing
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationship1Id).statusCode(200);
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationship1Id).statusCode(200);
+
+		// Relationship 2 should still not be present on the parent, however
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationship2Id).statusCode(404);
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationship2Id).statusCode(200);
+	}
+
+	@Test
+	public void rebaseNewConceptStale() {
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		IBranchPath b = BranchPathUtils.createPath(a, "b");
+		createBranch(b).statusCode(201);
+
+		String concept1Id = createNewConcept(b);
+		String concept2Id = createNewConcept(a);
+		String concept3Id = createNewConcept(branchPath);
+
+		merge(branchPath, a, "Rebased new concept on child over new concept on parent").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		// "a" now knows about concept 3
+		getComponent(branchPath, SnomedComponentType.CONCEPT, concept3Id).statusCode(200);
+		getComponent(a, SnomedComponentType.CONCEPT, concept3Id).statusCode(200);
+
+		// "b" is now in STALE state, and doesn't know about either concept 2 or 3
+		getComponent(b, SnomedComponentType.CONCEPT, concept3Id).statusCode(404);
+		getComponent(b, SnomedComponentType.CONCEPT, concept2Id).statusCode(404);
+
+		merge(a, b, "Rebased new concept on nested child over new concepts on child").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		// Now "b" should see all three concepts
+		getComponent(b, SnomedComponentType.CONCEPT, concept3Id).statusCode(200);
+		getComponent(b, SnomedComponentType.CONCEPT, concept2Id).statusCode(200);
+		getComponent(b, SnomedComponentType.CONCEPT, concept1Id).statusCode(200);
+	}
+
+	@Test
+	public void rebaseChangedConceptOnParentDeletedOnBranch() {
+		String conceptId = createNewConcept(branchPath);
+
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		rebaseConceptDeletionOverChange(branchPath, a, conceptId);
+
+		// Concept should still be present on parent, and deleted on child
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200).body("definitionStatus", equalTo(DefinitionStatus.FULLY_DEFINED.name()));
+		getComponent(a, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
+	}
+
+	@Test
+	public void rebaseChangedDescriptionOnParentDeletedOnBranch() {
+		String descriptionId = createNewDescription(branchPath);
+
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		changeCaseSignificance(branchPath, descriptionId); // Parent branch changes to CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE
+		deleteComponent(a, SnomedComponentType.DESCRIPTION, descriptionId, false).statusCode(204);
+
+		merge(branchPath, a, "Rebased deletion over case significance change").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200).body("caseSignificance", equalTo(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.name()));
+		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(404);
+	}
+
+	@Test
+	public void rebaseAndMergeChangedOnParentDeletedOnBranch() {
+		String conceptId = createNewConcept(branchPath);
+
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		rebaseConceptDeletionOverChange(branchPath, a, conceptId);
+
+		merge(a, branchPath, "Merged concept deletion").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		// Concept should now be deleted everywhere
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
+		getComponent(a, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
+	}
+
+	@Test
+	public void rebaseAndMergeChangedDescription() {
+		String description1Id = createNewDescription(branchPath);
+
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		String description2Id = createNewDescription(branchPath);
+
+		Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("caseSignificance", CaseSignificance.CASE_INSENSITIVE)
-				.put("moduleId", "900000000000013009")
-				.put("commitComment", "Changed case significance and module on branch")
+				.put("moduleId", Concepts.MODULE_ROOT)
+				.put("commitComment", "Changed case significance and module on child")
 				.build();
 
-		assertDescriptionCanBeUpdated(testBranchPath, "D1", changesOnBranch);
+		updateComponent(a, SnomedComponentType.DESCRIPTION, description1Id, requestBody);
 
-		assertBranchCanBeRebased(testBranchPath, "Rebase description update");
-		assertBranchCanBeMerged(testBranchPath, "Merge description update");
+		merge(branchPath, a, "Rebased description change over new description creation").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
-		assertDescriptionExists(testBranchPath.getParent(), "D1");
-		assertDescriptionExists(testBranchPath.getParent(), "D2");
+		// Description 2 is now visible on both parent and child
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id).statusCode(200);
+		getComponent(a, SnomedComponentType.DESCRIPTION, description2Id).statusCode(200);
 
-		assertComponentHasProperty(testBranchPath.getParent(), SnomedComponentType.DESCRIPTION, symbolicNameMap.get("D1"), "caseSignificance", CaseSignificance.CASE_INSENSITIVE.name());
-		assertComponentHasProperty(testBranchPath.getParent(), SnomedComponentType.DESCRIPTION, symbolicNameMap.get("D1"), "moduleId", "900000000000013009");
+		// Description 1 retains the changes on child, keeps the original values on parent
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description1Id).statusCode(200)
+		.body("caseSignificance", equalTo(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.name()))
+		.body("moduleId", equalTo(Concepts.MODULE_SCT_CORE));
+
+		getComponent(a, SnomedComponentType.DESCRIPTION, description1Id).statusCode(200)
+		.body("caseSignificance", equalTo(CaseSignificance.CASE_INSENSITIVE.name()))
+		.body("moduleId", equalTo(Concepts.MODULE_ROOT));
+
+		merge(a, branchPath, "Merged description change to parent").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id).statusCode(200);
+		getComponent(a, SnomedComponentType.DESCRIPTION, description2Id).statusCode(200);
+
+		// Description 1 changes are visible everywhere
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description1Id).statusCode(200)
+		.body("caseSignificance", equalTo(CaseSignificance.CASE_INSENSITIVE.name()))
+		.body("moduleId", equalTo(Concepts.MODULE_ROOT));
+
+		getComponent(a, SnomedComponentType.DESCRIPTION, description1Id).statusCode(200)
+		.body("caseSignificance", equalTo(CaseSignificance.CASE_INSENSITIVE.name()))
+		.body("moduleId", equalTo(Concepts.MODULE_ROOT));
 	}
 
 	@Test
 	public void rebaseAndMergeNewDescriptionBothDeleted() {
-		mergeNewDescriptionForward();
+		String description1Id = createNewDescription(branchPath);
 
-		assertDescriptionCreated(testBranchPath.getParent(), "D2", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
-		assertDescriptionCanBeDeleted(testBranchPath, "D1");
-		assertDescriptionCanBeDeleted(testBranchPath.getParent(), "D1");
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		String description2Id = createNewDescription(branchPath);
+
+		deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, description1Id, false).statusCode(204);
+		deleteComponent(a, SnomedComponentType.DESCRIPTION, description1Id, false).statusCode(204);
 
 		/* 
 		 * The rebase sees that the same thing has already happened on the parent branch, and does not 
 		 * add an empty commit to the new instance of the child; it will be in UP_TO_DATE state and can 
 		 * not be promoted.
 		 */
-		assertBranchCanBeRebased(testBranchPath, "Rebase description dual deletion");
-		assertMergeJobFails(testBranchPath, testBranchPath.getParent(), "Merge description dual deletion");
+		merge(branchPath, a, "Rebased description dual deletion over description creation").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		merge(a, branchPath, "Merged description dual deletion").body("status", equalTo(Merge.Status.FAILED.name()));
 
-		assertDescriptionNotExists(testBranchPath, "D1");
-		assertDescriptionNotExists(testBranchPath.getParent(), "D1");
-		assertDescriptionExists(testBranchPath, "D2");
-		assertDescriptionExists(testBranchPath.getParent(), "D2");
+		// Description 1 is now deleted on both branches
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description1Id).statusCode(404);
+		getComponent(a, SnomedComponentType.DESCRIPTION, description1Id).statusCode(404);
+
+		// Description 2 should be present, however
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, description2Id).statusCode(200);
+		getComponent(a, SnomedComponentType.DESCRIPTION, description2Id).statusCode(200);
 	}
-	
+
 	@Test
 	public void rebaseOverReusedRelationshipId() {
-		assertRelationshipCreated(testBranchPath.getParent(), "R1");
-		assertRelationshipExists(testBranchPath.getParent(), "R1");
-		final String relationshipId = symbolicNameMap.get("R1");
-		
-		assertBranchCanBeRebased(testBranchPath, "Rebase after relationship creation");
-		assertRelationshipCanBeDeleted(testBranchPath.getParent(), "R1");
-		
-		final Map<?, ?> requestBody = ImmutableMap.builder()
+		String relationshipId = createNewRelationship(branchPath);
+
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		deleteComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, false).statusCode(204);
+
+		Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("sourceId", Concepts.ROOT_CONCEPT)
 				.put("moduleId", Concepts.MODULE_SCT_CORE)
-				.put("typeId", "116676008") // Associated morphology
-				.put("destinationId", "404684003") // ??? (different from morphologic abnormality)
+				.put("typeId", Concepts.FINDING_SITE)
+				.put("destinationId", Concepts.ROOT_CONCEPT)
 				.put("id", relationshipId)
-				.put("commitComment", "New relationship with same ID")
+				.put("commitComment", "Created new relationship on parent with same SCTID")
 				.build();
 
-		assertComponentCreated(testBranchPath.getParent(), "new-R1", SnomedComponentType.RELATIONSHIP, requestBody);
-		
+		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(201);
+
 		// Different relationships before rebase
-		assertComponentHasProperty(testBranchPath.getParent(), SnomedComponentType.RELATIONSHIP, relationshipId, "destinationId", "404684003");
-		assertComponentHasProperty(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "destinationId", "49755003");
-		
-		assertBranchCanBeRebased(testBranchPath, "Rebase after new relationship creation");
-		
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("typeId", equalTo(Concepts.FINDING_SITE));
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("typeId", equalTo(Concepts.PART_OF));
+
+		merge(branchPath, a, "Rebase after new relationship creation on parent").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
 		// Same relationships after rebase
-		assertComponentHasProperty(testBranchPath.getParent(), SnomedComponentType.RELATIONSHIP, relationshipId, "destinationId", "404684003");
-		assertComponentHasProperty(testBranchPath, SnomedComponentType.RELATIONSHIP, relationshipId, "destinationId", "404684003");
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("typeId", equalTo(Concepts.FINDING_SITE));
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("typeId", equalTo(Concepts.FINDING_SITE));
 	}
-	
+
 	@Test
-	public void rebaseTwoNewTextDefinitionsWithDifferentAcceptabilityMapShouldNotConflict() throws Exception {
-		// create two new text definitions with different lang. acceptability on testBranchPath
-		assertDescriptionCreated(testBranchPath, "D1", Concepts.TEXT_DEFINITION, ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE));
-		assertDescriptionCreated(testBranchPath, "D2", Concepts.TEXT_DEFINITION, ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED));
-		
-		// create change on parent
-		assertRelationshipCreated(testBranchPath.getParent(), "R1");
-		
-		assertBranchCanBeRebased(testBranchPath, "Rebase two new text definitions");
-		assertDescriptionExists(testBranchPath, "D1");
-		assertDescriptionExists(testBranchPath, "D2");
+	public void rebaseTextDefinitions() throws Exception {
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		// Create two new text definitions with "cross-shaped" acceptability on child
+		String textDefinition1Id = createNewTextDefinition(a, ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE));
+		String textDefinition2Id = createNewTextDefinition(a, ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED));
+
+		// Create change on parent
+		String relationshipId = createNewRelationship(branchPath);
+
+		merge(branchPath, a, "Rebased new text definitions over new relationship").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		// Relationship should be visible on both branches
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
+
+		// Text definitions are only on the child, however
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, textDefinition1Id).statusCode(404);
+		getComponent(a, SnomedComponentType.DESCRIPTION, textDefinition1Id).statusCode(200);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, textDefinition2Id).statusCode(404);
+		getComponent(a, SnomedComponentType.DESCRIPTION, textDefinition2Id).statusCode(200);
 	}
-	
+
 	@Test
 	public void rebaseStaleBranchWithChangesOnDeletedContent() throws Exception {
-		// create changes on test branch
-		assertRelationshipCreated(testBranchPath, "R1");
-		assertDescriptionCreated(testBranchPath, "D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
-		
-		// create child branch of test branch
-		final IBranchPath childBranch = BranchPathUtils.createPath(testBranchPath, UUID.randomUUID().toString());
-		givenBranchWithPath(childBranch);
-		
-		// delete change on test branch
-		assertRelationshipCanBeDeleted(testBranchPath, "R1");
-		assertDescriptionCanBeDeleted(testBranchPath, "D1");
-		
-		// modify content on task which is already deleted on parent
-		final Map<?, ?> changesOnTestDescription = ImmutableMap.builder()
-				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
-				.put("commitComment", "Changed case significance on test")
-				.build();
-		assertDescriptionCanBeUpdated(childBranch, "D1", changesOnTestDescription);
-		
-		final Map<?, ?> changesOnTestRelationship = ImmutableMap.builder()
-				.put("group", 99)
-				.put("commitComment", "Changed group on test")
-				.build();
-		assertRelationshipCanBeUpdated(childBranch, "R1", changesOnTestRelationship);
-		
-		// make change on test's parent
-		assertRelationshipCreated(testBranchPath.getParent(), "R2");
-		
-		// rebase project
-		assertBranchCanBeRebased(testBranchPath, "Rebase test branch");
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
 
-		// child should be STALE at this point, try to rebase it, it should pass and R1 and D1 should be deleted
-		assertBranchCanBeRebased(childBranch, "Rebase child with modification on deleted components should be possible");
-		
-		// after the rebase verify that the two deleted components are really deleted
-		assertRelationshipNotExists(childBranch, "R1");
-		assertDescriptionNotExists(childBranch, "D1");
+		String relationshipId = createNewRelationship(a);
+		String descriptionId = createNewDescription(a);
+
+		IBranchPath b = BranchPathUtils.createPath(a, "b");
+		createBranch(b).statusCode(201);
+
+		deleteComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId, false).statusCode(204);
+		deleteComponent(a, SnomedComponentType.DESCRIPTION, descriptionId, false).statusCode(204);
+
+		changeCaseSignificance(b, descriptionId);
+		changeRelationshipGroup(b, relationshipId);
+
+		// Make change on "branchPath" so "a" can be rebased
+		createNewRelationship(branchPath);
+		merge(branchPath, a, "Rebased component deletion over new relationship").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		// "b" should be STALE at this point, try to rebase it, it should pass and the components should be deleted
+		merge(a, b, "Rebased component updates over deletion").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		// Verify that the two deleted components are really deleted
+		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(404);
+		getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(404);
 	}
-	
+
 	@Test
 	public void rebaseStaleBranchWithChangesOnNewContent() throws Exception {
-		// create changes on test branch
-		assertRelationshipCreated(testBranchPath, "R1");
-		assertDescriptionCreated(testBranchPath, "D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
-		
-		// create child branch of test branch
-		final IBranchPath childBranch = BranchPathUtils.createPath(testBranchPath, UUID.randomUUID().toString());
-		givenBranchWithPath(childBranch);
-		
-		// modify content on task which is already deleted on parent
-		final Map<?, ?> changesOnTestDescription = ImmutableMap.builder()
-				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
-				.put("commitComment", "Changed case significance on test")
-				.build();
-		assertDescriptionCanBeUpdated(childBranch, "D1", changesOnTestDescription);
-		
-		final Map<?, ?> changesOnTestRelationship = ImmutableMap.builder()
-				.put("group", 99)
-				.put("commitComment", "Changed group on test")
-				.build();
-		assertRelationshipCanBeUpdated(childBranch, "R1", changesOnTestRelationship);
-		
-		// make change on test's parent
-		assertRelationshipCreated(testBranchPath.getParent(), "R2");
-		
-		// rebase project
-		assertBranchCanBeRebased(testBranchPath, "Rebase test branch");
-		assertRelationshipExists(testBranchPath, "R1");
-		assertDescriptionExists(testBranchPath, "D1");
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
 
-		// child should be STALE at this point, try to rebase it, it should pass and R1 and D1 should still exist with changed content
-		assertBranchCanBeRebased(childBranch, "Rebase child with modification on deleted components should be possible");
-		
-		// after the rebase verify that the two components have the modified values
-		assertComponentHasProperty(childBranch, SnomedComponentType.RELATIONSHIP, symbolicNameMap.get("R1"), "group", 99);
-		assertComponentHasProperty(childBranch, SnomedComponentType.DESCRIPTION, symbolicNameMap.get("D1"), "caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.name());
+		String relationshipId = createNewRelationship(a);
+		String descriptionId = createNewDescription(a);
+
+		IBranchPath b = BranchPathUtils.createPath(a, "b");
+		createBranch(b).statusCode(201);
+
+		changeCaseSignificance(b, descriptionId);
+		changeRelationshipGroup(b, relationshipId);
+
+		// Make change on "branchPath" so "a" can be rebased
+		createNewRelationship(branchPath);
+		merge(branchPath, a, "Rebased new components over new relationship").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200).body("caseSignificance", equalTo(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.name()));
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("group", equalTo(0));
+
+		// "b" should be STALE at this point, try to rebase it, it should pass and the components should still exist with changed content
+		merge(a, b, "Rebased changed components over new components").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		// Verify that the two components have the modified values
+		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200).body("caseSignificance", equalTo(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.name()));
+		getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("group", equalTo(99));
 	}
-	
+
 	@Test
 	public void rebaseStaleBranchWithDeleteOnChangedContent() throws Exception {
-		// create changes on test branch
-		assertRelationshipCreated(testBranchPath, "R1");
-		assertDescriptionCreated(testBranchPath, "D1", SnomedApiTestConstants.ACCEPTABLE_ACCEPTABILITY_MAP);
-		
-		// create child branch of test branch
-		final IBranchPath childBranch = BranchPathUtils.createPath(testBranchPath, UUID.randomUUID().toString());
-		givenBranchWithPath(childBranch);
-		
-		// modify content on task which is already deleted on parent
-		final Map<?, ?> changesOnTestDescription = ImmutableMap.builder()
-				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
-				.put("commitComment", "Changed case significance on test")
-				.build();
-		assertDescriptionCanBeUpdated(testBranchPath, "D1", changesOnTestDescription);
-		
-		final Map<?, ?> changesOnTestRelationship = ImmutableMap.builder()
-				.put("group", 99)
-				.put("commitComment", "Changed group on test")
-				.build();
-		assertRelationshipCanBeUpdated(testBranchPath, "R1", changesOnTestRelationship);
-		
-		// delete changed content on task
-		assertDescriptionCanBeDeleted(childBranch, "D1");
-		
-		// make change on test's parent to rebase testBranchPath
-		assertRelationshipCreated(testBranchPath.getParent(), "R2");
-		
-		// rebase project
-		assertBranchCanBeRebased(testBranchPath, "Rebase test branch");
-		assertRelationshipExists(testBranchPath, "R1");
-		assertDescriptionExists(testBranchPath, "D1");
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
 
-		// child should be STALE at this point, try to rebase it, it should pass and R1 and D1 should still exist with changed content
-		assertBranchCanBeRebased(childBranch, "Rebase child with deletion of changed components should be possible");
-		
-		// after the rebase verify that the two components have the modified values
-		assertComponentHasProperty(childBranch, SnomedComponentType.RELATIONSHIP, symbolicNameMap.get("R1"), "group", 99);
-		assertDescriptionNotExists(childBranch, "D1");
+		String relationshipId = createNewRelationship(a);
+		String descriptionId = createNewDescription(a);
+
+		IBranchPath b = BranchPathUtils.createPath(a, "b");
+		createBranch(b).statusCode(201);
+
+		// Make changes on branch "a"
+		changeCaseSignificance(a, descriptionId);
+		changeRelationshipGroup(a, relationshipId);
+
+		// Delete description on branch "b"
+		deleteComponent(b, SnomedComponentType.DESCRIPTION, descriptionId, false).statusCode(204);
+
+		// Make change on "branchPath" so "a" can be rebased
+		createNewRelationship(branchPath);
+		merge(branchPath, a, "Rebased changed components over new relationship").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		// "b" should be STALE at this point, try to rebase it, it should pass and the description should be deleted
+		merge(a, b, "Rebased description deletion over changed components").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		// Verify that the relationship has the modified values, and the description stayed deleted
+		getComponent(b, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(404);
+		getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200).body("group", equalTo(99));
 	}
-	
+
 	@Test
 	@Ignore("Currently always fails due to merge policy")
 	public void rebaseChangedConceptOnBranchDeletedOnParent() {
-		mergeNewConceptForward();
+		String conceptId = createNewConcept(branchPath);
 
-		final Map<?, ?> changeOnBranch = ImmutableMap.builder()
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
-				.put("commitComment", "Changed definition status on parent")
+				.put("commitComment", "Changed definition status on child")
 				.build();
 
-		assertConceptCanBeUpdated(testBranchPath, "C1", changeOnBranch);
-		assertConceptCanBeDeleted(testBranchPath.getParent(), "C1");
+		updateComponent(a, SnomedComponentType.CONCEPT, conceptId, requestBody).statusCode(204);
+		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
 
-		assertBranchCanBeRebased(testBranchPath, "Rebase concept change over deletion");
+		merge(branchPath, a, "Rebased concept change over deletion").body("status", equalTo(Merge.Status.COMPLETED.name()));
 	}
+
+	@Test
+	public void rebaseUnsetEffectiveTimeOnSource() {
+		String memberId = createNewRefSetMember(branchPath);
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME));
+		updateRefSetMemberEffectiveTime(branchPath, memberId, calendar.getTime());
+
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		calendar.add(Calendar.DATE, 1);
+		updateRefSetMemberEffectiveTime(branchPath, memberId, calendar.getTime()); // Parent increases the effective time by one day
+
+		Map<?, ?> childRequest = ImmutableMap.builder()
+				.put("active", false)
+				.put("commitComment", "Inactivated reference set member")
+				.build();
+
+		updateRefSetComponent(a, SnomedComponentType.MEMBER, memberId, childRequest, false).statusCode(204); // Child unsets it and inactivates the member
+
+		merge(branchPath, a, "Rebased update over effective time change").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
+		.body("released", equalTo(true))
+		.body("effectiveTime", equalTo(EffectiveTimes.format(calendar.getTime(), DateFormats.SHORT)))
+		.body("active", equalTo(true));
+
+		getComponent(a, SnomedComponentType.MEMBER, memberId).statusCode(200)
+		.body("released", equalTo(true))
+		.body("effectiveTime", nullValue())
+		.body("active", equalTo(false));
+	}
+
+	@Test
+	public void rebaseUnsetEffectiveTimeOnTarget() {
+		String memberId = createNewRefSetMember(branchPath);
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME));
+		updateRefSetMemberEffectiveTime(branchPath, memberId, calendar.getTime());
+
+		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+
+		Map<?, ?> parentRequest = ImmutableMap.builder()
+				.put("active", false)
+				.put("commitComment", "Inactivated reference set member")
+				.build();
+
+		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, parentRequest, false).statusCode(204); // Parent unsets the effective time and inactivates the member
+
+		calendar.add(Calendar.DATE, 1);
+		updateRefSetMemberEffectiveTime(a, memberId, calendar.getTime()); // Child increases the effective time by one day
+
+		merge(branchPath, a, "Rebased effective time change over update").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
+		.body("released", equalTo(true))
+		.body("effectiveTime", nullValue())
+		.body("active", equalTo(false));
+
+		getComponent(a, SnomedComponentType.MEMBER, memberId).statusCode(200)
+		.body("released", equalTo(true))
+		.body("effectiveTime", nullValue()) // Parent wins because of the effective time unset
+		.body("active", equalTo(false)); // Child didn't update the status, so inactivation on the parent is in effect
+	}
+
 }

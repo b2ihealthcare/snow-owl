@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,26 +36,26 @@ public class ComplexMapTypeRefSetRow extends AssociatingRefSetRow {
 	public static final String PROP_CORRELATION_ID = "correlationId";
 	public static final String PROP_MAP_CATEGORY_ID = "mapCategoryId";
 	
-	private byte mapGroup;
-	private byte mapPriority;
+	private int mapGroup;
+	private int mapPriority;
 	private String mapRule;
 	private String mapAdvice;
 	private String correlationId;
 	private String mapCategoryId;
 	
-	public byte getMapGroup() {
+	public int getMapGroup() {
 		return mapGroup;
 	}
 	
-	public void setMapGroup(final byte mapGroup) {
+	public void setMapGroup(final int mapGroup) {
 		this.mapGroup = mapGroup;
 	}
 	
-	public byte getMapPriority() {
+	public int getMapPriority() {
 		return mapPriority;
 	}
 	
-	public void setMapPriority(final byte mapPriority) {
+	public void setMapPriority(final int mapPriority) {
 		this.mapPriority = mapPriority;
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,13 +35,13 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.api.rest.domain.BranchUpdateRestRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.CreateBranchRestRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
-import com.b2international.snowowl.snomed.api.rest.domain.BranchUpdateRestRequest;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
@@ -70,7 +70,7 @@ public class SnomedBranchingController extends AbstractRestService {
 	public DeferredResult<ResponseEntity<Void>> createBranch(@RequestBody CreateBranchRestRequest request) {
 		ApiValidation.checkInput(request);
 		return DeferredResults.wrap(
-				SnomedRequests
+				RepositoryRequests
 					.branching()
 					.prepareCreate()
 					.setParent(request.getParent())
@@ -90,7 +90,7 @@ public class SnomedBranchingController extends AbstractRestService {
 	@RequestMapping(method=RequestMethod.GET)
 	public DeferredResult<Branches> getBranches() {
 		return DeferredResults.wrap(
-				SnomedRequests
+				RepositoryRequests
 					.branching()
 					.prepareSearch()
 					.build(repositoryId)
@@ -107,7 +107,7 @@ public class SnomedBranchingController extends AbstractRestService {
 	@RequestMapping(value="/{path:**}/children", method=RequestMethod.GET)
 	public DeferredResult<Branches> getChildren(@PathVariable("path") String branchPath) {
 		return DeferredResults.wrap(
-				SnomedRequests
+				RepositoryRequests
 					.branching()
 					.prepareGetChildren(branchPath)
 					.build(repositoryId)
@@ -124,7 +124,7 @@ public class SnomedBranchingController extends AbstractRestService {
 	@RequestMapping(value="/{path:**}", method=RequestMethod.GET)
 	public DeferredResult<Branch> getBranch(@PathVariable("path") String branchPath) {
 		return DeferredResults.wrap(
-				SnomedRequests
+				RepositoryRequests
 					.branching()
 					.prepareGet(branchPath)
 					.build(repositoryId)
@@ -146,7 +146,7 @@ public class SnomedBranchingController extends AbstractRestService {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public DeferredResult<ResponseEntity<Void>> deleteBranch(@PathVariable("path") String branchPath) {
 		return DeferredResults.wrap(
-				SnomedRequests
+				RepositoryRequests
 					.branching()
 					.prepareDelete(branchPath)
 					.build(repositoryId)
@@ -170,7 +170,7 @@ public class SnomedBranchingController extends AbstractRestService {
 			@PathVariable("path") String branchPath,
 			@RequestBody BranchUpdateRestRequest request) {
 		return DeferredResults.wrap(
-				SnomedRequests
+				RepositoryRequests
 					.branching()
 					.prepareUpdate(branchPath)
 					.setMetadata(request.getMetadata())

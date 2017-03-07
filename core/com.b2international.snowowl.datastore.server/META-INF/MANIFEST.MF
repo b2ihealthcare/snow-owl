@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Datastore Server
 Bundle-SymbolicName: com.b2international.snowowl.datastore.server;singleton:=true
-Bundle-Version: 5.6.0
+Bundle-Version: 5.7.0.qualifier
 Bundle-Activator: com.b2international.snowowl.datastore.server.DatastoreServerActivator
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
@@ -11,7 +11,6 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.datastore;visibility:=reexport,
  com.b2international.snowowl.rpc,
  com.b2international.snowowl.dependencies,
- com.b2international.snowowl.terminologyregistry.core,
  com.b2international.snowowl.index.diff,
  com.b2international.snowowl.emf.compare,
  com.b2international.collections.jackson
@@ -25,12 +24,10 @@ Export-Package: com.b2international.snowowl.datastore.server,
  com.b2international.snowowl.datastore.server.index,
  com.b2international.snowowl.datastore.server.internal,
  com.b2international.snowowl.datastore.server.internal.branch,
- com.b2international.snowowl.datastore.server.jobs,
  com.b2international.snowowl.datastore.server.net4j,
  com.b2international.snowowl.datastore.server.net4j.push,
  com.b2international.snowowl.datastore.server.oplock,
  com.b2international.snowowl.datastore.server.oplock.impl,
- com.b2international.snowowl.datastore.server.quicksearch,
  com.b2international.snowowl.datastore.server.reindex,
  com.b2international.snowowl.datastore.server.remotejobs,
  com.b2international.snowowl.datastore.server.validation,

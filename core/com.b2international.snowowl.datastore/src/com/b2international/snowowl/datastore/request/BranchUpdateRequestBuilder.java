@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@ package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 
 /**
  * @since 5.0
  */
-public final class BranchUpdateRequestBuilder extends BaseRepositoryRequestBuilder<BranchUpdateRequestBuilder, Boolean> {
+public final class BranchUpdateRequestBuilder extends BaseRequestBuilder<BranchUpdateRequestBuilder, RepositoryContext, Boolean> implements RepositoryRequestBuilder<Boolean> {
 
 	private final String branchPath;
 	private Metadata metadata;

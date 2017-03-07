@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Collections;
 import org.eclipse.emf.common.util.WrappedException;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
-import com.b2international.snowowl.core.ClassLoaderProvider;
 import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.eventbus.IHandler;
@@ -48,18 +47,18 @@ public abstract class ApiEventHandler implements IHandler<IMessage> {
 		}
 	});
 	
-	private final ClassLoaderProvider classLoaderProvider;
+	private final ClassLoader classLoader;
 	private final Class<?> eventInterface;
 	
-	protected ApiEventHandler(Class<?> eventInterface, ClassLoaderProvider classLoaderProvider) {
+	protected ApiEventHandler(Class<?> eventInterface, ClassLoader classLoader) {
 		this.eventInterface = eventInterface;
-		this.classLoaderProvider = classLoaderProvider;
+		this.classLoader = classLoader;
 	}
 	
 	@Override
 	public final void handle(IMessage message) {
 		try {
-			message.reply(handlerDispatcher.invoke(message.body(eventInterface, classLoaderProvider.getClassLoader())));
+			message.reply(handlerDispatcher.invoke(message.body(eventInterface, classLoader)));
 		} catch (WrappedException e) {
 			message.fail(e.getCause());
 		} catch (ApiException e) {

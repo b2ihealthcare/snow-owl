@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,20 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.datastore.request.RevisionSearchRequest;
-import com.b2international.snowowl.datastore.request.RevisionSearchRequestBuilder;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
+import com.b2international.snowowl.datastore.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
 
 /**
+ * 
  * @since 4.7
  */
-public final class SnomedConstraintSearchRequestBuilder extends RevisionSearchRequestBuilder<SnomedConstraintSearchRequestBuilder, SnomedConstraints> {
+public final class SnomedConstraintSearchRequestBuilder 
+		extends SearchResourceRequestBuilder<SnomedConstraintSearchRequestBuilder, BranchContext, SnomedConstraints>
+		implements RevisionIndexRequestBuilder<SnomedConstraints> {
 
 	SnomedConstraintSearchRequestBuilder() {
 		super();
@@ -64,7 +69,7 @@ public final class SnomedConstraintSearchRequestBuilder extends RevisionSearchRe
 	}
 
 	@Override
-	protected RevisionSearchRequest<SnomedConstraints> createSearch() {
+	protected SearchResourceRequest<BranchContext, SnomedConstraints> createSearch() {
 		return new SnomedConstraintSearchRequest();
 	}
 

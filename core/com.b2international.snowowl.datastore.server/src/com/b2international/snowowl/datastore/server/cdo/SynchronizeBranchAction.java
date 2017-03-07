@@ -47,6 +47,7 @@ import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.IBranchPathMap;
+import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.cdo.ConflictWrapper;
 import com.b2international.snowowl.datastore.cdo.ConflictingChange;
 import com.b2international.snowowl.datastore.cdo.CustomConflictException;
@@ -55,7 +56,6 @@ import com.b2international.snowowl.datastore.events.BranchChangedEvent;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchMerger;
 import com.b2international.snowowl.eventbus.IEventBus;
 

@@ -49,12 +49,12 @@ public interface ServiceProvider {
 	ServiceProvider EMPTY = new ServiceProvider() {
 		@Override
 		public <T> T service(Class<T> type) {
-			throw new UnsupportedOperationException("Empty service provider can't provide services");
+			throw new UnsupportedOperationException("Empty service provider can't provide services. Requested: " + type);
 		}
 
 		@Override
 		public <T> Provider<T> provider(Class<T> type) {
-			throw new UnsupportedOperationException("Empty service provider can't provide services");
+			throw new UnsupportedOperationException("Empty service provider can't provide services. Requested: " + type);
 		}
 	};
 

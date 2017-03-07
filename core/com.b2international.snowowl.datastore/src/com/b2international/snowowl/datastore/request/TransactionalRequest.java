@@ -23,7 +23,6 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.domain.TransactionContextProvider;
-import com.b2international.snowowl.core.events.BaseRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.metrics.Metrics;
 import com.b2international.snowowl.core.events.metrics.MetricsThreadLocal;
@@ -34,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 4.5
  */
-public final class TransactionalRequest extends BaseRequest<BranchContext, CommitResult> {
+public final class TransactionalRequest implements Request<BranchContext, CommitResult> {
 
 	@JsonProperty
 	@NotEmpty
@@ -102,11 +101,6 @@ public final class TransactionalRequest extends BaseRequest<BranchContext, Commi
 		}
 	}
 
-	@Override
-	protected Class<CommitResult> getReturnType() {
-		return CommitResult.class;
-	}
-	
 	/**
 	 * @return the next request in the chain, which will be executed
 	 */

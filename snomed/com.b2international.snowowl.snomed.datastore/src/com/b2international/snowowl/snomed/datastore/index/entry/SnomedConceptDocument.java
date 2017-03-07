@@ -105,6 +105,10 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			return exactMatch(Fields.REFSET_STORAGEKEY, storageKey);
 		}
 		
+		public static Expression refSetStorageKeys(Iterable<Long> storageKeys) {
+			return matchAnyLong(Fields.REFSET_STORAGEKEY, storageKeys);
+		}
+
 		public static Expression refSetType(SnomedRefSetType type) {
 			return refSetTypes(Collections.singleton(type));
 		}
@@ -273,6 +277,16 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		
 		public Builder statedAncestors(final LongSet statedAncestors) {
 			this.statedAncestors = statedAncestors;
+			return getSelf();
+		}
+		
+		@JsonIgnore
+		public Builder clearRefSet() {
+			referencedComponentType = 0;
+			mapTargetComponentType = 0;
+			refSetStorageKey = CDOUtils.NO_STORAGE_KEY;
+			refSetType = null;
+			structural = false;
 			return getSelf();
 		}
 		

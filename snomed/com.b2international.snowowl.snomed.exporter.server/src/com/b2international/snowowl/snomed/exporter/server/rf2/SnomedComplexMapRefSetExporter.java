@@ -19,24 +19,19 @@ import static com.google.common.base.Strings.nullToEmpty;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * SNOMED CT complex and extended map type reference set exporter.
  */
 public class SnomedComplexMapRefSetExporter extends SnomedRefSetExporter {
 
-	private final boolean extended;
-	
-	public SnomedComplexMapRefSetExporter(final SnomedExportContext configuration, final String refSetId, 
-			final SnomedRefSetType type, final boolean extended, final RevisionSearcher revisionSearcher, final boolean unpublished) {
-		
-		super(configuration, refSetId, type, revisionSearcher, unpublished);
-		this.extended = extended;
+	public SnomedComplexMapRefSetExporter(final SnomedExportContext exportContext, SnomedReferenceSet refset, final RevisionSearcher revisionSearcher) {
+		super(exportContext, refset, revisionSearcher);
 	}
-	
+
 	@Override
 	public String convertToString(SnomedRefSetMemberIndexEntry doc) {
 		final StringBuilder sb = new StringBuilder();
@@ -53,15 +48,11 @@ public class SnomedComplexMapRefSetExporter extends SnomedRefSetExporter {
 		sb.append(nullToEmpty(doc.getMapTarget()));
 		sb.append(HT);
 		sb.append(doc.getCorrelationId());
-		if (extended) {
-			sb.append(HT);
-			sb.append(nullToEmpty(doc.getMapCategoryId()));
-		}
 		return sb.toString();
 	}
-	
+
 	@Override
 	public String[] getColumnHeaders() {
-		return extended ? SnomedRf2Headers.EXTENDED_MAP_TYPE_HEADER : SnomedRf2Headers.COMPLEX_MAP_TYPE_HEADER;
+		return SnomedRf2Headers.COMPLEX_MAP_TYPE_HEADER;
 	}
 }

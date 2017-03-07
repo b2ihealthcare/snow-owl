@@ -22,11 +22,13 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.converter.ResourceConverter;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -35,6 +37,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 
 /**
  * @since 4.5
@@ -42,6 +45,10 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 public class SnomedConverters {
 	
 	private SnomedConverters() {}
+	
+	public static ResourceConverter<SnomedConstraintDocument, SnomedConstraint, SnomedConstraints> newConstraintConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
+		return new SnomedConstraintConverter(context, expand, locales);
+	}
 	
 	public static ResourceConverter<SnomedConceptDocument, SnomedConcept, SnomedConcepts> newConceptConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		return new SnomedConceptConverter(context, expand, locales);

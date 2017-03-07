@@ -55,11 +55,11 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedDsvExportItemType;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportModel;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
-import com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem;
-import com.b2international.snowowl.snomed.exporter.model.SnomedDsvExportItemType;
-import com.b2international.snowowl.snomed.exporter.model.SnomedRefSetDSVExportModel;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
@@ -99,8 +99,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		final LanguageSetting languageSetting = applicationContext.getService(LanguageSetting.class);
 		final IEventBus bus = applicationContext.getService(IEventBus.class);
 		
-		final SnomedReferenceSet refSet = SnomedRequests.prepareGetReferenceSet()
-				.setComponentId(exportSetting.getRefSetId())
+		final SnomedReferenceSet refSet = SnomedRequests.prepareGetReferenceSet(exportSetting.getRefSetId())
 				.setExpand("members(limit:" + Integer.MAX_VALUE + ", expand(referencedComponent(expand(pt()))))")
 				.setLocales(languageSetting.getLanguagePreference())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(bus).getSync();
@@ -144,7 +143,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			
 			Collection<SnomedConceptDocument> modelComponents = SnomedRequests
 					.prepareSearchConcept()
-					.setComponentIds(ImmutableSet.of(
+					.filterByIds(ImmutableSet.of(
 							Concepts.MODULE_ROOT,
 							Concepts.REFSET_ATTRIBUTE))
 					.setExpand("pt(),descendants(limit:100,form:\"inferred\",direct:false,expand(pt(),parentIds(),ancestorIds()))")

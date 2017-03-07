@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.internal;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -30,7 +29,6 @@ import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
 
-import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.commons.platform.Extensions;
 import com.b2international.index.DefaultIndex;
 import com.b2international.index.Index;
@@ -45,16 +43,11 @@ import com.b2international.index.revision.DefaultRevisionIndex;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranchProvider;
 import com.b2international.index.revision.RevisionIndex;
-import com.b2international.snowowl.core.ClassLoaderProvider;
 import com.b2international.snowowl.core.Repository;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.RepositoryEvent;
-import com.b2international.snowowl.core.events.util.ApiRequestHandler;
 import com.b2international.snowowl.core.merge.MergeService;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -78,7 +71,6 @@ import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.EditingContextFactory;
 import com.b2international.snowowl.datastore.server.EditingContextFactoryProvider;
-import com.b2international.snowowl.datastore.server.RepositoryClassLoaderProviderRegistry;
 import com.b2international.snowowl.datastore.server.ReviewConfiguration;
 import com.b2international.snowowl.datastore.server.cdo.CDOConflictProcessorBroker;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
@@ -91,9 +83,7 @@ import com.b2international.snowowl.datastore.server.internal.merge.MergeServiceI
 import com.b2international.snowowl.datastore.server.internal.review.ConceptChangesImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewManagerImpl;
-import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.eventbus.Pipe;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -105,31 +95,24 @@ import com.google.inject.Provider;
 /**
  * @since 4.1
  */
-public final class CDOBasedRepository extends DelegatingServiceProvider implements InternalRepository, RepositoryContextProvider, CDOCommitInfoHandler {
+public final class CDOBasedRepository extends DelegatingServiceProvider implements InternalRepository, CDOCommitInfoHandler {
 
 	private static final String REINDEX_KEY = "snowowl.reindex";
 	
 	private final String toolingId;
 	private final String repositoryId;
-	private final IEventBus handlers;
 	private final Map<Long, RepositoryCommitNotification> commitNotifications = new MapMaker().makeMap();
 	
-	CDOBasedRepository(String repositoryId, String toolingId, int numberOfWorkers, int mergeMaxResults, Environment env) {
+	CDOBasedRepository(String repositoryId, String toolingId, int mergeMaxResults, Environment env) {
 		super(env);
-		checkArgument(numberOfWorkers > 0, "At least one worker thread must be specified");
-		
 		this.toolingId = toolingId;
 		this.repositoryId = repositoryId;
-		this.handlers = EventBusUtil.getWorkerBus(repositoryId, numberOfWorkers);
 		getCdoRepository().getRepository().addCommitInfoHandler(this);
-		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
-		mapper.registerModule(new PrimitiveCollectionModule());
+		final ObjectMapper mapper = service(ObjectMapper.class);
 		initIndex(mapper);
 		initializeBranchingSupport(mergeMaxResults);
-		initializeRequestSupport(numberOfWorkers);
 		reindex();
 		bind(Repository.class, this);
-		bind(ObjectMapper.class, mapper);
 	}
 
 	@Override
@@ -151,19 +134,6 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		} else {
 			event.publish(events());
 		}
-	}
-	
-	@Override
-	public IEventBus handlers() {
-		return handlers;
-	}
-	
-	private String address() {
-		return String.format("/%s", repositoryId);
-	}
-	
-	private String address(String path) {
-		return String.format("%s%s", address(), path);
 	}
 	
 	@Override
@@ -211,29 +181,6 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		return Math.max(getBaseTimestamp(branch), CDOServerUtils.getLastCommitTime(branch));
 	}
 	
-	private void initializeRequestSupport(int numberOfWorkers) {
-		final ClassLoaderProvider classLoaderProvider = getClassLoaderProvider();
-		for (int i = 0; i < numberOfWorkers; i++) {
-			handlers().registerHandler(address(), new ApiRequestHandler(this, classLoaderProvider));
-		}
-		
-		// register number of cores event bridge/pipe between events and handlers
-		for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
-			events().registerHandler(address(), new Pipe(handlers(), address()));
-		}
-		// register RepositoryContextProvider
-		bind(RepositoryContextProvider.class, this);
-	}
-
-	private ClassLoaderProvider getClassLoaderProvider() {
-		return getDelegate().service(RepositoryClassLoaderProviderRegistry.class).get(repositoryId);
-	}
-	
-	@Override
-	public RepositoryContext get(ServiceProvider context, String repositoryId) {
-		return new DefaultRepositoryContext(context, repositoryId);
-	}
-
 	private void initializeBranchingSupport(int mergeMaxResults) {
 		final CDOBranchManagerImpl branchManager = new CDOBranchManagerImpl(this);
 		bind(BranchManager.class, branchManager);
@@ -244,8 +191,6 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(this, reviewConfiguration);
 		bind(ReviewManager.class, reviewManager);
 
-		events().registerHandler(String.format(RepositoryEvent.ADDRESS_TEMPLATE, repositoryId), reviewManager.getStaleHandler());
-		
 		final MergeServiceImpl mergeService = new MergeServiceImpl(this, mergeMaxResults);
 		bind(MergeService.class, mergeService);
 	}
@@ -335,7 +280,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void doDispose() {
 		getCdoRepository().getRepository().removeCommitInfoHandler(this);
 		getIndex().admin().close();
 	}

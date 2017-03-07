@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.exporter.server.rf1;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 
 import com.b2international.index.revision.RevisionSearcher;
@@ -28,6 +29,7 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
+import com.b2international.snowowl.snomed.exporter.server.SnomedExportExecutor;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
 
 /**
@@ -39,25 +41,30 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedExporter {
 	
 	private final SnomedMapSetSetting mapSetSetting;
 	private final String label;
-	private SnomedExportContext configuration;
+	private SnomedExportContext exportContext;
 	private String refSetId;
 	protected RevisionSearcher revisionSearcher;
 
-	protected AbstractSnomedCrossMapExporter(final SnomedExportContext configuration, final String refSetId, 
+	protected AbstractSnomedCrossMapExporter(final SnomedExportContext exportContext, final String refSetId, 
 			final SnomedMapSetSetting mapSetSetting, final RevisionSearcher revisionSearcher) {
 		this.refSetId = checkNotNull(refSetId, "refSetId");
-		this.configuration = checkNotNull(configuration, "configuration");
+		this.exportContext = checkNotNull(exportContext, "exportContext");
 		this.mapSetSetting = checkNotNull(mapSetSetting);
 		this.revisionSearcher = checkNotNull(revisionSearcher);
 		label = ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(getBranchPath(), refSetId);
 	}
 
 	protected IBranchPath getBranchPath() {
-		return configuration.getCurrentBranchPath();
+		return exportContext.getCurrentBranchPath();
 	}
 	
 	public String getRefSetId() {
 		return refSetId;
+	}
+	
+	@Override
+	public void remove() {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -79,7 +86,12 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedExporter {
 	
 	@Override
 	public SnomedExportContext getExportContext() {
-		return configuration;
+		return exportContext;
+	}
+	
+	@Override
+	public void execute() throws IOException {
+		new SnomedExportExecutor(this).execute();
 	}
 	
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,14 @@ import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 4.7
@@ -39,6 +44,12 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	@Override
 	protected Collection<Class<?>> getTypes() {
 		return Collections.<Class<?>>singleton(SnomedRefSetMemberIndexEntry.class);
+	}
+	
+	@Override
+	protected void configureMapper(ObjectMapper mapper) {
+		super.configureMapper(mapper);
+		mapper.setSerializationInclusion(Include.NON_NULL);
 	}
 	
 	@Test
@@ -105,6 +116,35 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		assertEquals(STORAGE_KEY1, actual.getStorageKey());
 		assertEquals(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
+	}
+	
+	@Test
+	public void indexStringConcreteDomainMember() throws Exception {
+		final SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+				.released(false)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.referencedComponentId(Concepts.ROOT_CONCEPT)
+				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+				.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
+				.referenceSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
+				.field(Fields.DATA_TYPE, DataType.STRING)
+				.field(SnomedRf2Headers.FIELD_VALUE, "TEST")
+				.build();
+			
+		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
+		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		assertEquals("TEST", actual.getValue());
+		assertDocEquals(member, actual);
+		
+		// verify that concrete domain members have only a single value field indexed
+		final JsonNode json = getMapper().convertValue(member, JsonNode.class);
+		assertNull(json.get(Fields.BOOLEAN_VALUE));
+		assertNull(json.get(Fields.INTEGER_VALUE));
+		assertNull(json.get(Fields.DECIMAL_VALUE));
 	}
 	
 }

@@ -28,9 +28,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.datastore.request.BaseResourceRequest;
+import com.b2international.snowowl.datastore.request.ResourceRequest;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
@@ -46,7 +45,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 4.5
  */
-public final class EvaluateQueryRefSetMemberRequest extends BaseResourceRequest<BranchContext, QueryRefSetMemberEvaluation> {
+public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<BranchContext, QueryRefSetMemberEvaluation> {
 
 	@NotEmpty
 	private String memberId;
@@ -59,8 +58,7 @@ public final class EvaluateQueryRefSetMemberRequest extends BaseResourceRequest<
 	public QueryRefSetMemberEvaluation execute(BranchContext context) {
 		// TODO support pre-population???
 		final SnomedReferenceSetMember member = SnomedRequests
-				.prepareGetMember()
-				.setComponentId(memberId)
+				.prepareGetMember(memberId)
 				.build()
 				.execute(context);
 		final String query = (String) member.getProperties().get(SnomedRf2Headers.FIELD_QUERY);
@@ -118,7 +116,7 @@ public final class EvaluateQueryRefSetMemberRequest extends BaseResourceRequest<
 		if (expand().containsKey("referencedComponent")) {
 			final Options expandOptions = expand().getOptions("referencedComponent");
 			concepts = Maps.uniqueIndex(SnomedRequests.prepareSearchConcept()
-					.setComponentIds(referencedConceptIds)
+					.filterByIds(referencedConceptIds)
 					.setLimit(referencedConceptIds.size())
 					.setExpand(expandOptions.getOptions("expand"))
 					.setLocales(locales())
@@ -147,9 +145,4 @@ public final class EvaluateQueryRefSetMemberRequest extends BaseResourceRequest<
 		return new QueryRefSetMemberEvaluationImpl(targetReferenceSet, changes);
 	}
 
-	@Override
-	protected Class<QueryRefSetMemberEvaluation> getReturnType() {
-		return QueryRefSetMemberEvaluation.class;
-	}
-	
 }

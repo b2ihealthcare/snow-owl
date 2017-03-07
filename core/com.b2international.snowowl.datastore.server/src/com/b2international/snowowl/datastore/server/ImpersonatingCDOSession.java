@@ -19,7 +19,7 @@ import org.eclipse.emf.cdo.internal.server.Session;
 import org.eclipse.emf.cdo.spi.server.ISessionProtocol;
 import org.eclipse.emf.cdo.spi.server.InternalSessionManager;
 
-import com.b2international.snowowl.datastore.server.internal.ImpersonatingSessionProtocol;
+import com.b2international.snowowl.datastore.cdo.ImpersonatingSessionProtocol;
 
 /**
  * Session for impersonating a user on the server side

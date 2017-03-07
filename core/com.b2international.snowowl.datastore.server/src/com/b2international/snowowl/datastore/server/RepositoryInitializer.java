@@ -88,7 +88,8 @@ import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.CDORootResourceNameProvider;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
-import com.b2international.snowowl.datastore.server.internal.ImpersonatingSessionProtocol;
+import com.b2international.snowowl.datastore.cdo.ImpersonatingSessionProtocol;
+import com.b2international.snowowl.datastore.cdo.WriteAccessHandlerFilteringRepository;
 import com.google.common.base.Predicate;
 
 /**

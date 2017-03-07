@@ -32,7 +32,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.users.Role;
 import com.b2international.snowowl.core.users.SpecialRole;
-import com.b2international.snowowl.datastore.server.internal.ImpersonatingSessionProtocol;
+import com.b2international.snowowl.datastore.cdo.ImpersonatingSessionProtocol;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.rpc.RpcSession;

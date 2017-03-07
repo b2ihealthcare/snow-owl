@@ -33,9 +33,4 @@ public final class ReadBranchRequest extends BranchRequest<Branch> {
 		return context.service(BranchManager.class).getBranch(getBranchPath());
 	}
 	
-	@Override
-	protected Class<Branch> getReturnType() {
-		return Branch.class;
-	}
-	
 }

@@ -17,7 +17,6 @@ package com.b2international.snowowl.semanticengine.simpleast.normalform;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +27,8 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -92,8 +91,7 @@ public class FocusConceptNormalizer {
 		Set<SnomedConceptDocument> proximatePrimitiveSuperTypes = new HashSet<SnomedConceptDocument>();
 		
 		for (ConceptRef concept : focusConcepts) {
-			final SnomedConcept fc = SnomedRequests.prepareGetConcept()
-					.setComponentId(concept.getConceptId())
+			final SnomedConcept fc = SnomedRequests.prepareGetConcept(concept.getConceptId())
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
@@ -222,7 +220,7 @@ public class FocusConceptNormalizer {
 		return SnomedRequests.prepareSearchConcept()
 				.setLimit(0)
 				.filterByAncestor(superType.getId())
-				.setComponentIds(Collections.singleton(subType.getId()))
+				.filterById(subType.getId())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync().getTotal() > 0;

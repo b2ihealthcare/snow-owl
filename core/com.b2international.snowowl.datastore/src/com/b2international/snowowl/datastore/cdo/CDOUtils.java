@@ -15,13 +15,17 @@
  */
 package com.b2international.snowowl.datastore.cdo;
 
+import static com.b2international.commons.CompareUtils.isEmpty;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.emptyList;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -44,9 +48,17 @@ import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.CDOList;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
+import org.eclipse.emf.cdo.server.IRepository;
+import org.eclipse.emf.cdo.server.StoreThreadLocal;
+import org.eclipse.emf.cdo.server.db.IDBStore;
+import org.eclipse.emf.cdo.server.db.IDBStoreAccessor;
 import org.eclipse.emf.cdo.spi.common.revision.CDOReferenceAdjuster;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionDelta;
+import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionManager;
+import org.eclipse.emf.cdo.spi.server.InternalRepository;
+import org.eclipse.emf.cdo.spi.server.InternalSession;
+import org.eclipse.emf.cdo.spi.server.InternalSessionManager;
 import org.eclipse.emf.cdo.transaction.CDOPushTransaction;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
@@ -83,8 +95,8 @@ import com.google.common.collect.Lists;
  */
 public abstract class CDOUtils {
 
-
 	private static final Logger LOGGER = LoggerFactory.getLogger(CDOUtils.class); 
+	private static final int MAX_REVISION_LIMIT = 1_000_000;
 	
 	/**
 	 * Storage key representing object with temporary storage key. Value: {@value}.
@@ -101,6 +113,95 @@ public abstract class CDOUtils {
 		public Object adjustReference(final Object id, final EStructuralFeature feature, final int index) {
 			return id instanceof CDOObject ? ((CDOObject) id).cdoID() : id;
 		}
+	}
+	
+	/**Opens and returns with a new session with the given user ID for a repository.*/
+	public static InternalSession openSession(final String userID, final String uuid) {
+		return getSessionManager(uuid).openSession(new ImpersonatingSessionProtocol(userID));
+	}
+	
+	/*returns with the session manager*/
+	private static InternalSessionManager getSessionManager(final String uuid) {
+		return getRepositoryByUuid(uuid).getSessionManager();
+	}
+	
+	/**Returns with the repository identified by its unique ID.*/
+	public static InternalRepository getRepositoryByUuid(final String uuid) {
+		return (InternalRepository) getRepositoryManager().getByUuid(uuid).getRepository();
+	}
+	
+	/*returns with the repository manager service*/
+	private static ICDORepositoryManager getRepositoryManager() {
+		return ApplicationContext.getInstance().getService(ICDORepositoryManager.class);
+	}
+	
+	/*returns with the repository*/
+	public static IRepository getRepository(final CDOID cdoId) {
+		return getRepositoryManager().get(cdoId).getRepository();
+	}
+	
+	/*returns with the repository*/
+	public static IRepository getRepository(final long cdoId) {
+		return getRepositoryManager().get(cdoId).getRepository();
+	}
+	
+	/*returns with the revision manager sticked with the underlying repository instance*/
+	public static InternalCDORevisionManager getRevisionManager(final CDOID cdoId) {
+		return (InternalCDORevisionManager) getRepository(cdoId).getRevisionManager();
+	}
+	
+	/**
+	 * Returns with the revisions for the given CDO IDs on a specified {@link CDOBranchPoint branch point}.
+	 * @param branchPoint the branch point to get the revisions.
+	 * @param ids the CDO IDs.
+	 * @return a list of CDO revisions.
+	 */
+	public static List<CDORevision> getRevisions(final CDOBranchPoint branchPoint, final Collection<CDOID> ids) {
+		
+		if (isEmpty(ids)) {
+			return emptyList();
+		}
+		
+		try {
+
+			final CDOID cdoId = Iterables.get(ids, 0);
+			StoreThreadLocal.setAccessor(getAccessor(cdoId));
+			
+			final List<CDORevision> revisions = newArrayList();
+			final Iterator<List<CDOID>> itr = Iterators.partition(ids.iterator(), MAX_REVISION_LIMIT);
+			final InternalCDORevisionManager revisionManager = getRevisionManager(cdoId);
+			
+			while (itr.hasNext()) {
+				//get revisions at once but at most 1,000,000
+				revisions.addAll(revisionManager.getRevisions(
+						newArrayList(itr.next()), 
+						branchPoint, 
+						CDORevision.UNCHUNKED,
+						CDORevision.DEPTH_NONE,
+						true,
+						null));
+				
+			}
+			
+			return revisions;
+			
+		} finally {
+			
+			//release resources
+			StoreThreadLocal.release();
+			
+		}
+		
+	}
+	
+	/*returns with the DB store*/
+	private static IDBStore getDbStore(final CDOID cdoId) {
+		return (IDBStore) getRepository(cdoId).getStore();
+	}
+	
+	/*returns with the DB accessor*/
+	public static IDBStoreAccessor getAccessor(final CDOID cdoId) {
+		return getDbStore(cdoId).getWriter(null);
 	}
 	
 	/**

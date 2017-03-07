@@ -220,7 +220,7 @@ public class ConceptWidgetBean extends ModeledWidgetBean implements Serializable
 	private Collection<SnomedConceptDocument> getConcepts(Collection<String> unresolvedComponentIds) {
 		return SnomedRequests.prepareSearchConcept()
 				.all()
-				.setComponentIds(unresolvedComponentIds)
+				.filterByIds(unresolvedComponentIds)
 				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))

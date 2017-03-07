@@ -42,7 +42,7 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest<Merge
 	}
 
 	BranchRebaseRequest(final String sourcePath, final String targetPath, final String commitMessage, String reviewId) {
-		super(Merge.class, sourcePath, targetPath, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId);
+		super(sourcePath, targetPath, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId);
 	}
 	
 	@Override

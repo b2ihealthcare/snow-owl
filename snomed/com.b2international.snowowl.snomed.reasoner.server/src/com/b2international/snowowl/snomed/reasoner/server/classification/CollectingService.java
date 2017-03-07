@@ -112,7 +112,7 @@ public abstract class CollectingService<S, P> extends AbstractDisposableService 
 		return sharedServiceCache.get(branchPath);
 	}
 	
-	protected final CollectingServiceReference<S> takeServiceReference(final IBranchPath branchPath, final boolean shared, final P serviceParams) throws Exception {
+	public final CollectingServiceReference<S> takeServiceReference(final IBranchPath branchPath, final boolean shared, final P serviceParams) throws Exception {
 		
 		CollectingServiceReference<S> sharedServiceReference = null;
 		
@@ -169,7 +169,7 @@ public abstract class CollectingService<S, P> extends AbstractDisposableService 
 		}
 	}
 
-	protected final void retireServiceReference(final CollectingServiceReference<S> serviceReference) throws InterruptedException {
+	public final void retireServiceReference(final CollectingServiceReference<S> serviceReference) throws InterruptedException {
 
 		if (!serviceReference.isShared()) {
 			retireRegularServiceReference(serviceReference);

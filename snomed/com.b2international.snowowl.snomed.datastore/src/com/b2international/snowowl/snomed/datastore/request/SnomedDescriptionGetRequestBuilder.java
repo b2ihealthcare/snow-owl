@@ -15,20 +15,23 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.datastore.request.RevisionGetRequest;
-import com.b2international.snowowl.datastore.request.RevisionGetRequestBuilder;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.request.GetResourceRequestBuilder;
+import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 
 /**
+ * <i>Builder</i> class to build requests responsible for fetching a single SNOMED CT description.
+ * This class should be instantiated from the corresponding static method on the central {@link SnomedRequests} class.
+ * 
  * @since 4.5
  */
-public final class SnomedDescriptionGetRequestBuilder extends RevisionGetRequestBuilder<SnomedDescriptionGetRequestBuilder, SnomedDescription> {
+public final class SnomedDescriptionGetRequestBuilder 
+		extends GetResourceRequestBuilder<SnomedDescriptionGetRequestBuilder, SnomedDescriptionSearchRequestBuilder, BranchContext, SnomedDescription> 
+		implements RevisionIndexRequestBuilder<SnomedDescription> {
 
-	SnomedDescriptionGetRequestBuilder() {}
-
-	@Override
-	protected RevisionGetRequest<SnomedDescription> createGet() {
-		return new SnomedDescriptionGetRequest();
+	SnomedDescriptionGetRequestBuilder(String descriptionId) {
+		super(SnomedDescription.class, descriptionId, SnomedDescriptionSearchRequestBuilder::new);
 	}
 
 }

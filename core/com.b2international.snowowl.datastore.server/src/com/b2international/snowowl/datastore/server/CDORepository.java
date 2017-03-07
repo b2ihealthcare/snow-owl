@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,12 @@ import org.eclipse.emf.cdo.server.db.CDODBUtil;
 import org.eclipse.emf.cdo.server.db.IDBStore;
 import org.eclipse.emf.cdo.server.db.IIDHandler;
 import org.eclipse.emf.cdo.server.db.mapping.IMappingStrategy;
+import org.eclipse.emf.cdo.server.internal.db.DBStore;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionManager;
 import org.eclipse.emf.cdo.spi.server.ContainerQueryHandlerProvider;
 import org.eclipse.emf.cdo.spi.server.InternalRepository;
 import org.eclipse.emf.cdo.spi.server.InternalSessionManager;
+import org.eclipse.emf.cdo.spi.server.StoreAccessorPool;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.net4j.db.DBUtil;
 import org.eclipse.net4j.db.IDBAdapter;
@@ -53,11 +55,11 @@ import org.eclipse.net4j.util.security.UserManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.commons.ReflectionUtils;
 import com.b2international.snowowl.core.api.NsUri;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.datastore.cdo.CDOContainer;
 import com.b2international.snowowl.datastore.cdo.CDOManagedItem;
+import com.b2international.snowowl.datastore.cdo.FilteringErrorLoggingStrategy;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.google.common.base.Preconditions;
@@ -134,7 +136,7 @@ import com.google.common.base.Preconditions;
 	@SuppressWarnings("restriction")
 	@Override
 	protected void doActivate() throws Exception {
-		final IDBConnectionProvider connectionProvider = createConnectionProvider(getRepositoryConfiguration().getDatasourceProperties(getUuid()));
+		final IDBConnectionProvider connectionProvider = createConnectionProvider(configuration.getDatasourceProperties(getUuid()));
 
 		final IDBStore dbStore = createDBStore(connectionProvider);
 		final IIDHandler idHandler =
@@ -144,9 +146,11 @@ import com.google.common.base.Preconditions;
 		((org.eclipse.emf.cdo.server.internal.db.DBStore) dbStore).setIdHandler(idHandler);
 
 		repository = createRepository(IPluginContainer.INSTANCE, dbStore);
+		setReaderPoolCapacity(configuration.getReaderPoolCapacity());
+		setWriterPoolCapacity(configuration.getWriterPoolCapacity());
 		
 		// disable revision cache by using a NOOP instance
-		if (!getRepositoryConfiguration().isRevisionCacheEnabled()) {
+		if (!configuration.isRevisionCacheEnabled()) {
 			repository.setRevisionManager((InternalCDORevisionManager) CDORevisionUtil.createRevisionManager(CDORevisionCache.NOOP));
 		}
 		
@@ -191,7 +195,21 @@ import com.google.common.base.Preconditions;
 		final String databaseType = configuration.getDatabaseConfiguration().getType();
 		final IDBAdapter dbAdapter = DBUtil.getDBAdapter(databaseType);
 		checkArg(dbAdapter, "DB adapter not found for id: " + databaseType);
-	    return CDODBUtil.createStore(mappingStrategy, dbAdapter, connectionProvider);
+	    return (DBStore) CDODBUtil.createStore(mappingStrategy, dbAdapter, connectionProvider);
+	}
+	
+	@Override
+	public void setReaderPoolCapacity(int capacity) {
+		StoreAccessorPool readerPool = ReflectionUtils.getField(DBStore.class, (DBStore) getDbStore(), "readerPool");
+		readerPool.setCapacity(capacity);
+		LOGGER.info("Setting {}.readerPoolCapacity to {}", getUuid(), capacity);
+	}
+	
+	@Override
+	public void setWriterPoolCapacity(int capacity) {
+		StoreAccessorPool writerPool = ReflectionUtils.getField(DBStore.class, (DBStore) getDbStore(), "writerPool");
+		writerPool.setCapacity(capacity);
+		LOGGER.info("Setting {}.writerPoolCapacity to {}", getUuid(), capacity);
 	}
 
 	private InternalRepository createRepository(final IManagedContainer container, final IDBStore dbStore) {
@@ -218,17 +236,9 @@ import com.google.common.base.Preconditions;
 		repository.setQueryHandlerProvider(new ContainerQueryHandlerProvider(container));
 
 		LOGGER.info(MessageFormat.format("Starting repository ''{0}'' with JDBC URL ''{1}''.",
-				getRepositoryName(), getRepositoryConfiguration().getDatabaseUrl().build(getUuid())));
+				getRepositoryName(), configuration.getDatabaseUrl().build(getUuid())));
 
 		return repository;
 	}
-
-	private ApplicationContext getApplicationContext() {
-		return ApplicationContext.getInstance();
-	}
 	
-	private RepositoryConfiguration getRepositoryConfiguration() {
-		return getApplicationContext().getServiceChecked(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class);
-	}
-
 }

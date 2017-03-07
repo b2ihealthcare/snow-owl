@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.datastore.request.BaseResourceRequest;
-import com.b2international.snowowl.datastore.request.BaseRevisionResourceRequestBuilder;
+import com.b2international.snowowl.datastore.request.ResourceRequest;
+import com.b2international.snowowl.datastore.request.ResourceRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 
 /**
  * @since 4.5
  */
-public final class QueryRefSetMemberEvaluationRequestBuilder extends BaseRevisionResourceRequestBuilder<QueryRefSetMemberEvaluationRequestBuilder, QueryRefSetMemberEvaluation> {
+public final class QueryRefSetMemberEvaluationRequestBuilder extends ResourceRequestBuilder<QueryRefSetMemberEvaluationRequestBuilder, BranchContext, QueryRefSetMemberEvaluation> {
 
 	private String memberId;
 
@@ -35,7 +35,7 @@ public final class QueryRefSetMemberEvaluationRequestBuilder extends BaseRevisio
 	}
 	
 	@Override
-	public BaseResourceRequest<BranchContext, QueryRefSetMemberEvaluation> create() {
+	public ResourceRequest<BranchContext, QueryRefSetMemberEvaluation> create() {
 		return new EvaluateQueryRefSetMemberRequest(memberId);
 	}
 

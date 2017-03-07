@@ -16,19 +16,20 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.snomed.Annotatable;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 
 /**
  * @since 4.6
  */
-public class SnomedConcreteDomainReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedConcreteDomainReferenceSetMemberBuilder, SnomedConcreteDataTypeRefSetMember> {
+public final class SnomedConcreteDomainReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedConcreteDomainReferenceSetMemberBuilder, SnomedConcreteDataTypeRefSetMember> {
 
 	private String uomId;
 	private String operatorId = Concepts.CD_EQUAL;
@@ -36,60 +37,61 @@ public class SnomedConcreteDomainReferenceSetMemberBuilder extends SnomedMemberB
 	private String serializedValue;
 	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
 	
-	@Override
-	protected SnomedConcreteDataTypeRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedConcreteDataTypeRefSetMember();
-	}
-
-	public final SnomedConcreteDomainReferenceSetMemberBuilder withUom(final String uomId) {
+	public SnomedConcreteDomainReferenceSetMemberBuilder withUom(String uomId) {
 		this.uomId = uomId;
 		return getSelf();
 	}
 	
-	public final SnomedConcreteDomainReferenceSetMemberBuilder withOperatorId(final String operatorId) {
+	public SnomedConcreteDomainReferenceSetMemberBuilder withOperatorId(String operatorId) {
 		this.operatorId = operatorId;
 		return getSelf();
 	}
 	
-	public final SnomedConcreteDomainReferenceSetMemberBuilder withAttributeLabel(final String label) {
+	public SnomedConcreteDomainReferenceSetMemberBuilder withAttributeLabel(String label) {
 		this.attributeLabel = label;
 		return getSelf();
 	}
 	
-	public final SnomedConcreteDomainReferenceSetMemberBuilder withSerializedValue(final String serializedValue) {
+	public SnomedConcreteDomainReferenceSetMemberBuilder withSerializedValue(String serializedValue) {
 		this.serializedValue = serializedValue;
 		return getSelf();
 	}
 	
-	public final SnomedConcreteDomainReferenceSetMemberBuilder withCharacteristicType(final CharacteristicType characteristicType) {
+	public SnomedConcreteDomainReferenceSetMemberBuilder withCharacteristicType(CharacteristicType characteristicType) {
 		this.characteristicType = characteristicType;
 		return getSelf();
 	}
 	
 	@Override
-	public SnomedConcreteDataTypeRefSetMember addTo(final TransactionContext context) {
-		final SnomedConcreteDataTypeRefSetMember member = build(context);
-		final Annotatable annotatable = getAnnotatable(context, member.getReferencedComponentId());
-		annotatable.getConcreteDomainRefSetMembers().add(member);
-		return member;
+	protected SnomedConcreteDataTypeRefSetMember create() {
+		return SnomedRefSetFactory.eINSTANCE.createSnomedConcreteDataTypeRefSetMember();
 	}
 
-	private Annotatable getAnnotatable(final TransactionContext context, final String referencedComponentId) {
-		try {
-			return context.lookup(referencedComponentId, Concept.class);
-		} catch (final NotFoundException e) {
-			return context.lookup(referencedComponentId, Relationship.class);
-		}
-	}
-	
 	@Override
-	protected void init(final SnomedConcreteDataTypeRefSetMember component, final TransactionContext context) {
+	protected void init(SnomedConcreteDataTypeRefSetMember component, TransactionContext context) {
 		super.init(component, context);
 		component.setUomComponentId(uomId);
 		component.setOperatorComponentId(operatorId);
 		component.setLabel(attributeLabel);
 		component.setSerializedValue(serializedValue);
 		component.setCharacteristicTypeId(characteristicType.getConceptId());
+	}
+
+	@Override
+	protected void addToList(TransactionContext context, SnomedRefSet refSet, SnomedConcreteDataTypeRefSetMember component) {
+		Annotatable annotatable = getAnnotatable(context, component.getReferencedComponentId(), component.getReferencedComponentType());
+		annotatable.getConcreteDomainRefSetMembers().add(component);
+	}
+
+	private Annotatable getAnnotatable(TransactionContext context, String referencedComponentId, short referencedComponentType) {
+		switch (referencedComponentType) {
+		case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
+			return context.lookup(referencedComponentId, Concept.class);
+		case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
+			return context.lookup(referencedComponentId, Relationship.class);
+		default:
+			throw new IllegalStateException("Unexpected referenced component type '" + referencedComponentType + "'.");
+		}
 	}
 	
 }
