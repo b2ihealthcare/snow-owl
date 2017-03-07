@@ -49,6 +49,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.file.FileRegistry;
+import com.b2international.snowowl.datastore.internal.file.InternalFileRegistry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
 import com.b2international.snowowl.snomed.api.exception.ExportRunNotFoundException;
@@ -243,7 +244,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			.execute(bus)
 			.getSync();
 		
-		final Resource exportZipResource = new FileSystemResource(fileRegistry.getFile(exportedFile));
+		final Resource exportZipResource = new FileSystemResource(((InternalFileRegistry) fileRegistry).getFile(exportedFile));
 		
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		

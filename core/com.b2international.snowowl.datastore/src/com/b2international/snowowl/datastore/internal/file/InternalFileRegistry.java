@@ -15,22 +15,24 @@
  */
 package com.b2international.snowowl.datastore.internal.file;
 
-import com.b2international.snowowl.datastore.DatastoreActivator;
+import java.io.File;
+import java.util.UUID;
+
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.file.FileRegistry;
-import com.b2international.snowowl.datastore.serviceconfig.AbstractClientServiceConfigJob;
 
 /**
  * @since 5.7
  */
-public class FileRegistryClientServiceConfigJob extends AbstractClientServiceConfigJob<FileRegistry> {
+public interface InternalFileRegistry extends FileRegistry {
 
-	public FileRegistryClientServiceConfigJob() {
-		super("Attachment registry client service configuration...", DatastoreActivator.PLUGIN_ID);
-	}
-
-	@Override
-	protected Class<FileRegistry> getServiceClass() {
-		return FileRegistry.class;
-	}
-
+	/**
+	 * Returns the file associated with the given identifier.
+	 * @param id - the unique identifier of the file
+	 * @return the file
+	 * @throws NotFoundException
+	 *             - if the file does not exist with the given identifier
+	 */
+	File getFile(UUID id);
+	
 }

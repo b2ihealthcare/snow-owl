@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.file;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
@@ -53,15 +52,5 @@ public interface FileRegistry {
 	 *             - if the file does not exist with the given identifier
 	 */
 	void download(UUID id, OutputStream out);
-
-	/**
-	 * (non-API)
-	 * Returns the file associated with the given identifier.
-	 * @param id - the unique identifier of the file
-	 * @return the file
-	 * @throws NotFoundException
-	 *             - if the file does not exist with the given identifier
-	 */
-	File getFile(UUID id);
 
 }

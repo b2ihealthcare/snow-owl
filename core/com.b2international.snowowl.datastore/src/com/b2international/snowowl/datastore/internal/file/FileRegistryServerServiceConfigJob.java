@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.file;
+package com.b2international.snowowl.datastore.internal.file;
 
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.DatastoreActivator;
+import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob;
 
 /**
