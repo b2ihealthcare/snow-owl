@@ -5,6 +5,7 @@
 	<id>mysql</id>
 	<formats>
 		<format>zip</format>
+		<format>dir</format> <!-- Required for packaging to RPM -->
 	</formats>
 	<componentDescriptors>
 		<componentDescriptor>assembly/common.xml</componentDescriptor>

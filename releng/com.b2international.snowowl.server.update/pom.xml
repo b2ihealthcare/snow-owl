@@ -74,6 +74,88 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>de.dentrassi.maven</groupId>
+				<artifactId>rpm</artifactId>
+				<version>0.8.0</version>
+				<executions>
+					<execution>
+						<id>generate-rpm</id>
+						<goals>
+							<goal>rpm</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<attach>true</attach>
+					<group>Unspecified</group>
+					<packageName>snowowl-${customer}</packageName>
+					<architecture>x86_64</architecture>
+					<skipSigning>true</skipSigning>
+					<rulesets>
+						<ruleset>
+							<id>rpm-default</id>
+							<rules>
+								<rule>
+									<user>snowowl</user>
+									<group>snowowl</group>
+								</rule>
+								<rule>
+									<when>
+										<prefix>/opt/snowowl-${customer}/snowowl_config.yml</prefix>
+										<type>file</type>
+									</when>
+									<when>
+										<prefix>/opt/snowowl-${customer}/configuration/</prefix>
+										<type>file</type>
+									</when>
+									<configuration>true</configuration>
+								</rule>
+								<rule>
+									<when>
+										<type>directory</type>
+									</when>
+									<mode>0755</mode>
+								</rule>
+								<rule>
+									<when>
+										<type>file</type>
+									</when>
+									<mode>0644</mode>
+								</rule>
+								<rule>
+									<when>
+										<prefix>/opt/snowowl-${customer}/bin/</prefix>
+										<type>file</type>
+									</when>
+									<mode>0755</mode>
+								</rule>
+							</rules>
+						</ruleset>
+					</rulesets>
+					<entries>
+						<entry>
+							<name>/opt/snowowl-${customer}</name>
+							<ruleset>rpm-default</ruleset>
+							<collect>
+								<from>${project.build.directory}/${project.build.finalName}-mysql/${project.build.finalName}</from>
+							</collect>
+						</entry>
+					</entries>
+					<prerequisites>
+						<prererequisite>shadow-utils</prererequisite>
+					</prerequisites>
+					<beforeInstallation>
+						<script>
+							getent group snowowl >/dev/null || groupadd -r snowowl
+							getent passwd USERNAME >/dev/null || \
+								useradd -r -g snowowl -d /opt/snowowl-${customer} -s /sbin/nologin \
+    							-c "Snow Owl Server" snowowl
+    						exit 0
+						</script>
+					</beforeInstallation>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
