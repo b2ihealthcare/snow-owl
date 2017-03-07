@@ -207,6 +207,7 @@ public class ReviewManagerImpl implements ReviewManager {
 	@Override
 	public void dispose() {
 		if (disposed.compareAndSet(false, true)) {
+			cleanupTask.cancel();
 			notificationSubscription.unsubscribe();
 		}
 	}
