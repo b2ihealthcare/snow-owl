@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.file;
+package com.b2international.snowowl.datastore.internal.file;
 
-import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.DatastoreActivator;
-import com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob;
+import com.b2international.snowowl.datastore.file.FileRegistry;
+import com.b2international.snowowl.datastore.serviceconfig.AbstractClientServiceConfigJob;
 
 /**
  * @since 5.7
  */
-public class FileRegistryServerServiceConfigJob extends AbstractServerServiceConfigJob<FileRegistry> {
+public class FileRegistryClientServiceConfigJob extends AbstractClientServiceConfigJob<FileRegistry> {
 
-	public FileRegistryServerServiceConfigJob() {
-		super("Attachment registry configuration...", DatastoreActivator.PLUGIN_ID);
+	public FileRegistryClientServiceConfigJob() {
+		super("Attachment registry client service configuration...", DatastoreActivator.PLUGIN_ID);
 	}
 
 	@Override
@@ -33,9 +33,4 @@ public class FileRegistryServerServiceConfigJob extends AbstractServerServiceCon
 		return FileRegistry.class;
 	}
 
-	@Override
-	protected FileRegistry createServiceImplementation() throws SnowowlServiceException {
-		return new DefaultFileRegistry(getEnvironment().getDataDirectory().toPath().resolve("attachments"));
-	}
-	
 }

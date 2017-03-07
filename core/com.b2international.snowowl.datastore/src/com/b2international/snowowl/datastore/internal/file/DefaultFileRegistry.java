@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.file;
+package com.b2international.snowowl.datastore.internal.file;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.google.common.io.Files;
 
 /**
@@ -35,7 +36,7 @@ import com.google.common.io.Files;
  * 
  * @since 5.7
  */
-public final class DefaultFileRegistry implements FileRegistry {
+public final class DefaultFileRegistry implements InternalFileRegistry {
 
 	private static final int ZIP_HEADER_LEN = 4; /*4 bytes*/
 	private static final byte[] ZIP_HEADER = new byte[]{80, 75, 3, 4};
@@ -68,17 +69,23 @@ public final class DefaultFileRegistry implements FileRegistry {
 
 	@Override
 	public void download(UUID id, OutputStream out) {
-		final Path requestedPath = this.folder.resolve(id.toString());
-		final File requestedFile = requestedPath.toFile();
-		if (!requestedFile.exists()) {
-			throw new NotFoundException("File", id.toString());
-		}
+		final File requestedFile = getFile(id);
 		
 		try {
 			Files.copy(requestedFile, out);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Failed to download attachment of " + id, e); 
 		}
+	}
+
+	@Override
+	public File getFile(UUID id) {
+		final Path requestedPath = this.folder.resolve(id.toString());
+		final File requestedFile = requestedPath.toFile();
+		if (!requestedFile.exists()) {
+			throw new NotFoundException("File", id.toString());
+		}
+		return requestedFile;
 	}
 	
 	private static boolean isZip(InputStream in) {

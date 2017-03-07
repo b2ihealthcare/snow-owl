@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.service;
+package com.b2international.snowowl.snomed.datastore.internal.rf2;
 
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.net4j.signal.SignalProtocol;
@@ -23,7 +23,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.datastore.net4j.AbstractExportRequest;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.exporter.model.SnomedRefSetExcelExportModel;
 
 /**
  * This class sends simple type reference set into Excel export request to the server-side.

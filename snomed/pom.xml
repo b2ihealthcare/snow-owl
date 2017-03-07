@@ -52,7 +52,6 @@
 		<module>com.b2international.snowowl.snomed.mrcm.model</module>
 		
 		<!-- SNOMED CT Import-Export -->
-		<module>com.b2international.snowowl.snomed.exporter</module>
 		<module>com.b2international.snowowl.snomed.exporter.server</module>
 		<module>com.b2international.snowowl.snomed.importer</module>
 		<module>com.b2international.snowowl.snomed.importer.rf2</module>

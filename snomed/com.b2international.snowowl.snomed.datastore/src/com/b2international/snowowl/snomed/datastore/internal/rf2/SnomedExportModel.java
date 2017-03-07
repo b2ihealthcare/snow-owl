@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.model;
-
+package com.b2international.snowowl.snomed.datastore.internal.rf2;
 
 /**
  * Model class to collect common properties of RF2 and DSV export wizards.

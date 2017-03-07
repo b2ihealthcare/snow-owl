@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.service;
+package com.b2international.snowowl.snomed.datastore.internal.rf2;
 
 import org.eclipse.net4j.signal.SignalProtocol;
 

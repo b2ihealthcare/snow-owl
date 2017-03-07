@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.service;
-
+package com.b2international.snowowl.snomed.datastore.internal.rf2;
 
 /**
- * This exception indicates if a SNOMED CT publication is started while it is in progress already. Used in {@link SnomedExportClientRequest}.
- *
+ * Model used in simple type reference set Excel export process.
+ * 
+ * @since Snow&nbsp;Owl 3.0.1
  */
-
-public class SnomedMutexRf2PublicationException extends RuntimeException {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 5679921836698255641L;
+public class SnomedRefSetExcelExportModel extends SnomedExportModel {
 	
-	public SnomedMutexRf2PublicationException() {
-		super("SNOMED CT publication is in progress.");
+	private final String refSetId;
+	
+	public SnomedRefSetExcelExportModel(final String refSetId) {
+		this.refSetId = refSetId;
+	}
+
+	public String getRefSetId() {
+		return refSetId;
 	}
 
 }

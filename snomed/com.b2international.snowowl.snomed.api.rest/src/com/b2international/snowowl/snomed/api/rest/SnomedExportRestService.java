@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.api.rest;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.text.ParseException;
@@ -29,6 +28,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -45,18 +45,21 @@ import org.springframework.web.bind.annotation.RestController;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.file.FileRegistry;
+import com.b2international.snowowl.datastore.internal.file.InternalFileRegistry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
 import com.b2international.snowowl.snomed.api.exception.ExportRunNotFoundException;
-import com.b2international.snowowl.snomed.api.impl.domain.SnomedExportConfiguration;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestConfiguration;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestRun;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
 import com.google.common.collect.MapMaker;
@@ -77,6 +80,9 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 
 	@Autowired
 	private ISnomedExportService exportService;
+	
+	@Autowired
+	private FileRegistry fileRegistry;
 	
 	private ConcurrentMap<UUID, SnomedExportRestRun> exports = new MapMaker().makeMap();
 	
@@ -223,8 +229,22 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			final HttpHeaders headers) throws IOException {
 
 		final SnomedExportRestRun export = getExport(exportId);
-		final File exportZipFile = exportService.export(toExportConfiguration(export));
-		final FileSystemResource exportZipResource = new FileSystemResource(exportZipFile);
+		
+		final UUID exportedFile = SnomedRequests.rf2().prepareExport()
+			.setReleaseType(export.getType())
+			.setCodeSystem(export.getCodeSystemShortName())
+			.setExtensionOnly(export.isExtensionOnly())
+			.setIncludeUnpublished(export.isIncludeUnpublished())
+			.setModules(export.getModuleIds())
+			.setNamespace(export.getNamespaceId())
+			.setTransientEffectiveTime(export.getTransientEffectiveTime())
+			.setStartEffectiveTime(EffectiveTimes.format(export.getStartEffectiveTime(), DateFormats.SHORT))
+			.setEndEffectiveTime(EffectiveTimes.format(export.getEndEffectiveTime(), DateFormats.SHORT))
+			.build(this.repositoryId, export.getBranchPath())
+			.execute(bus)
+			.getSync();
+		
+		final Resource exportZipResource = new FileSystemResource(((InternalFileRegistry) fileRegistry).getFile(exportedFile));
 		
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		
@@ -232,21 +252,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		httpHeaders.set("Content-Disposition", "attachment; filename=\"snomed_export_" + Dates.formatByHostTimeZone(new Date(), DateFormats.COMPACT_LONG) + ".zip\"");
 
 		exports.remove(exportId);
-		return new ResponseEntity<FileSystemResource>(exportZipResource, httpHeaders, HttpStatus.OK);
-	}
-	
-	private SnomedExportConfiguration toExportConfiguration(final SnomedExportRestConfiguration configuration) {
-		final SnomedExportConfiguration conf = new SnomedExportConfiguration(
-				configuration.getType(), 
-				configuration.getBranchPath(),
-				configuration.getNamespaceId(), configuration.getModuleIds(),
-				configuration.getStartEffectiveTime(), configuration.getEndEffectiveTime(),
-				configuration.getTransientEffectiveTime(),
-				configuration.isIncludeUnpublished(),
-				configuration.getCodeSystemShortName(),
-				configuration.isExtensionOnly());
-
-		return conf;
+		return new ResponseEntity<>(exportZipResource, httpHeaders, HttpStatus.OK);
 	}
 	
 	private URI getExportRunURI(UUID exportId) {

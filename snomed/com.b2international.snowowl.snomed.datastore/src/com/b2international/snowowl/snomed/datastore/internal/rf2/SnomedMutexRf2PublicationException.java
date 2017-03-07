@@ -13,22 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api;
+package com.b2international.snowowl.snomed.datastore.internal.rf2;
 
-import com.b2international.snowowl.core.branch.Branch;
 
 /**
- * Implementations of this interface are responsible for generating export archive in RF2 release format from the state
- * of the underlying SNOMED CT ontology.
- * @deprecated
+ * This exception indicates if a SNOMED CT publication is started while it is in progress already. Used in {@link SnomedExportClientRequest}.
+ *
  */
-public interface ISnomedExportService {
+
+public class SnomedMutexRf2PublicationException extends RuntimeException {
 
 	/**
-	 * Resolves the namespace to be used for the export by extracting branch metadata information.
-	 * @param branch the branch used for extracting the metadata information
-	 * @return the namespace extracted from the branch metadata information or INT by default.
+	 * 
 	 */
-	String resolveNamespaceId(Branch branch);
+	private static final long serialVersionUID = 5679921836698255641L;
 	
+	public SnomedMutexRf2PublicationException() {
+		super("SNOMED CT publication is in progress.");
+	}
+
 }

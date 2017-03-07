@@ -33,6 +33,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.internal.file.DefaultFileRegistry;
 import com.google.common.io.Resources;
 
 /**
