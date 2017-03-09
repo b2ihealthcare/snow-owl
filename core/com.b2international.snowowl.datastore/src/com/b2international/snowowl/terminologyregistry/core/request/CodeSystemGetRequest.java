@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,22 @@ package com.b2international.snowowl.terminologyregistry.core.request;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
-import com.b2international.snowowl.datastore.request.GetResourceRequestBuilder;
-import com.b2international.snowowl.datastore.request.IndexRequestBuilder;
+import com.b2international.snowowl.datastore.request.GetResourceRequest;
 
 /**
- * @since 4.7
+ * @since 5.7
  */
-public final class CodeSystemGetRequestBuilder 
-		extends GetResourceRequestBuilder<CodeSystemGetRequestBuilder, CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystemEntry>
-		implements IndexRequestBuilder<CodeSystemEntry> {
+final class CodeSystemGetRequest extends GetResourceRequest<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystemEntry> {
 
-	CodeSystemGetRequestBuilder(String uniqueId) {
-		super(new CodeSystemGetRequest(uniqueId));
-	}
+	private static final long serialVersionUID = 1L;
 	
+	CodeSystemGetRequest(String id) {
+		super(id);
+	}
+
+	@Override
+	protected CodeSystemSearchRequestBuilder createSearchRequestBuilder() {
+		return new CodeSystemSearchRequestBuilder();
+	}
+
 }

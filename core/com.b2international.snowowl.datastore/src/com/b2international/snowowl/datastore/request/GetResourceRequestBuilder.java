@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import java.util.function.Supplier;
-
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.CollectionResource;
 
@@ -24,25 +22,21 @@ import com.b2international.snowowl.core.domain.CollectionResource;
  * @since 5.2
  */
 public abstract class GetResourceRequestBuilder<
-	B extends GetResourceRequestBuilder<B, SB, C, R>, 
-	SB extends SearchResourceRequestBuilder<SB, C, ? extends CollectionResource<R>>, 
+	B extends GetResourceRequestBuilder<B, SB, C, R>,
+	SB extends SearchResourceRequestBuilder<SB, C, ? extends CollectionResource<R>>,
 	C extends ServiceProvider, 
 	R> extends ResourceRequestBuilder<B, C, R> {
 	
-	private final String id;
-	private final Class<R> type;
-	private final Supplier<SB> searchRequestFactory;
-	
-	protected GetResourceRequestBuilder(final Class<R> type, final String id, Supplier<SB> searchRequestFactory) {
+	private final GetResourceRequest<SB, C, R> request;
+
+	protected GetResourceRequestBuilder(final GetResourceRequest<SB, C, R> request) {
 		super();
-		this.type = type;
-		this.id = id;
-		this.searchRequestFactory = searchRequestFactory;
+		this.request = request;
 	}
 	
 	@Override
 	protected final ResourceRequest<C, R> create() {
-		return new GetResourceRequest<>(type, id, searchRequestFactory);
+		return request;
 	}
 
 }
