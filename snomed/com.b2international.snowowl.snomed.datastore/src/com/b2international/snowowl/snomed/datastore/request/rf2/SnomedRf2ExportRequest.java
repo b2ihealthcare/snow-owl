@@ -36,6 +36,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -64,6 +65,8 @@ import com.google.common.collect.ImmutableMap;
  */
 final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 
+	private static final long serialVersionUID = 1L;
+	
 	@NotEmpty
 	private String codeSystem;
 	private boolean includeUnpublished;
@@ -75,6 +78,7 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 	private Collection<String> modules;
 	private String transientEffectiveTime;
 	private String namespace;
+	private Collection<String> refSets;
 
 	SnomedRf2ExportRequest() {}
 	
@@ -112,6 +116,10 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 
 	void setNamespace(String namespace) {
 		this.namespace = namespace;
+	}
+	
+	public void setRefSets(Collection<String> refSets) {
+		this.refSets = Collections3.toImmutableSet(refSets);
 	}
 	
 	@Override
@@ -191,6 +199,7 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 		
 		model.setCodeSystemShortName(codeSystem);
 		model.setExtensionOnly(extensionOnly);
+		model.getRefSetIds().addAll(refSets);
 
 		return model; 
 	}
