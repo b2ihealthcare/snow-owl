@@ -67,6 +67,15 @@ public interface Request<C extends ServiceProvider, R> extends Serializable {
 	}
 	
 	/**
+	 * Returns the {@link ClassLoader} associated with this {@link Request} implementation. By default the class loader equals to the return type's class loader.
+	 * @return
+	 */
+	@JsonIgnore
+	default ClassLoader getClassLoader() {
+		return getReturnType().getClassLoader();
+	}
+	
+	/**
 	 * Returns the class of the actual return type.
 	 * 
 	 * @return
