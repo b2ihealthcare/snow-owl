@@ -15,12 +15,6 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.function.Supplier;
-
-import javax.validation.constraints.NotNull;
-
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.StringUtils;
@@ -32,32 +26,27 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 5.2
  */
-public final class GetResourceRequest<B extends SearchResourceRequestBuilder<B, C, ? extends CollectionResource<R>>, C extends ServiceProvider, R> extends ResourceRequest<C, R> {
+public abstract class GetResourceRequest<SB extends SearchResourceRequestBuilder<SB, C, ? extends CollectionResource<R>>, C extends ServiceProvider, R> extends ResourceRequest<C, R> {
 	
-	@NotNull
-	private final Supplier<B> searchRequestFactory;
-	
-	@NotNull
-	private final Class<R> type;
+	private static final long serialVersionUID = 1L;
 	
 	@NotEmpty
 	@JsonProperty
 	private final String id;
 	
-	GetResourceRequest(final Class<R> type, final String id, final Supplier<B> searchRequestFactory) {
-		this.type = checkNotNull(type, "type");
+	protected GetResourceRequest(final String id) {
 		this.id = id;
-		this.searchRequestFactory = searchRequestFactory;
 	}
 	
-	@Override
-	public Class<R> getReturnType() {
-		return type;
-	}
-
+	/**
+	 * Creates a new {@link SearchResourceRequestBuilder} to search for the resource by its identifier.
+	 * @return
+	 */
+	protected abstract SB createSearchRequestBuilder();
+	
 	@Override
 	public R execute(final C context) {
-		return searchRequestFactory.get()
+		return createSearchRequestBuilder()
 			.setLimit(2)
 			.setFields(fields())
 			.setLocales(locales())
@@ -66,7 +55,7 @@ public final class GetResourceRequest<B extends SearchResourceRequestBuilder<B, 
 			.build()
 			.execute(context)
 			.first()
-			.orElseThrow(() -> new NotFoundException(StringUtils.splitCamelCaseAndCapitalize(type.getSimpleName()), id));
+			.orElseThrow(() -> new NotFoundException(StringUtils.splitCamelCaseAndCapitalize(getReturnType().getSimpleName()), id));
 	}
 
 }

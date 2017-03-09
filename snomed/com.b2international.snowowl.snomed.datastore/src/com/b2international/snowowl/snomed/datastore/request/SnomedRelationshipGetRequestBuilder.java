@@ -31,7 +31,7 @@ public final class SnomedRelationshipGetRequestBuilder
 		implements RevisionIndexRequestBuilder<SnomedRelationship> {
 
 	SnomedRelationshipGetRequestBuilder(String relationshipId) {
-		super(SnomedRelationship.class, relationshipId, SnomedRelationshipSearchRequestBuilder::new);
+		super(new SnomedRelationshipGetRequest(relationshipId));
 	}
 	
 }
