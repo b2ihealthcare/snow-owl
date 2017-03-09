@@ -25,17 +25,21 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.domain.SnomedComponentIds;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.5
  */
 abstract class AbstractSnomedIdentifierCountedRequest implements Request<RepositoryContext, SnomedComponentIds> {
 
+	@JsonProperty
 	@NotNull
 	private final ComponentCategory category;
 	
+	@JsonProperty
 	private final String namespace;
 
+	@JsonProperty
 	@Nonnegative
 	private final int quantity;
 

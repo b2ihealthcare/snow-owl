@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.request.job;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.7
@@ -26,6 +27,7 @@ final class CancelJobRequest implements Request<ServiceProvider, Void> {
 	
 	private static final long serialVersionUID = 1L;
 	
+	@JsonProperty
 	private final String id;
 
 	CancelJobRequest(String id) {

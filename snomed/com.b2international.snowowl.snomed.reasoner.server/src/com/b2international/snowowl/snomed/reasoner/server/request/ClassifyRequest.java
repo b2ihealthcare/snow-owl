@@ -42,6 +42,7 @@ public class ClassifyRequest implements Request<ServiceProvider, ApiError> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ClassifyRequest.class);
 	
+	@JsonProperty
 	private final ClassificationSettings settings;
 
 	public ClassifyRequest(ClassificationSettings settings) {
