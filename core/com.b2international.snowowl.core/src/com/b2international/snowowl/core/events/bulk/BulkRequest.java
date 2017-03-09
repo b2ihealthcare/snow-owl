@@ -20,6 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.b2international.commons.CompositeClassLoader;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 
@@ -61,4 +62,15 @@ public final class BulkRequest<C extends ServiceProvider> implements Request<C, 
 	public List<Request<C, ?>> getRequests() {
 		return requests;
 	}
+	
+	@Override
+	public ClassLoader getClassLoader() {
+		final CompositeClassLoader classLoader = new CompositeClassLoader();
+		classLoader.add(Request.super.getClassLoader());
+		for (Request<C, ?> req : requests) {
+			classLoader.add(req.getClassLoader());
+		}
+		return classLoader;
+	}
+	
 }

@@ -72,5 +72,10 @@ public abstract class DelegatingRequest<C extends ServiceProvider, T extends Ser
 	public final Class<R> getReturnType() {
 		return next.getReturnType();
 	}
+	
+	@Override
+	public final ClassLoader getClassLoader() {
+		return next.getClassLoader();
+	}
 
 }
