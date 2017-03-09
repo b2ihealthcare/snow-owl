@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.7.1
+
+### Bugs
+- Fixed node initialization issue when connecting to a master node (client-server mode)
+- Fixed serialization of GetResourceRequest classes
+
 ## 5.7.0
 
 ### Breaking changes

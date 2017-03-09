@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>core-parent</artifactId>
-		<version>5.7.0</version>
+		<version>5.7.1</version>
 	</parent>
 
 	<artifactId>com.b2international.snowowl.api.rest</artifactId>

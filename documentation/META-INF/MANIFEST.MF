@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Documentation
 Bundle-SymbolicName: documentation;singleton:=true
-Bundle-Version: 5.7.0
+Bundle-Version: 5.7.1
 Bundle-Vendor: B2i Healthcare
 Bundle-ActivationPolicy: lazy
 Require-Bundle: com.b2international.commons,
