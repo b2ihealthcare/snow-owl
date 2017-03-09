@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Generic Index API
 Bundle-SymbolicName: com.b2international.index.api;singleton:=true
-Bundle-Version: 5.7.1
+Bundle-Version: 5.7.2
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Require-Bundle: com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.4.5";visibility:=reexport,

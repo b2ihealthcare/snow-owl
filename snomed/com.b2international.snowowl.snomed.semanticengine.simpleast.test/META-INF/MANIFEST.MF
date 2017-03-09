@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Semantic Engine Test
 Bundle-SymbolicName: com.b2international.snowowl.snomed.semanticengine.simpleast.test
-Bundle-Version: 5.7.1
+Bundle-Version: 5.7.2
 Bundle-Activator: com.b2international.snowowl.semanticengine.simpleast.test.SemanticEngineTestPlugin
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.junit;bundle-version="4.8.2",
