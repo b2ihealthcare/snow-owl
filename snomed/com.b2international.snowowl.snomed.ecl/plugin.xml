@@ -6,7 +6,7 @@
   <extension point="org.eclipse.emf.ecore.generated_package">
     <package 
        uri = "http://www.b2international.com/snowowl/snomed/Ecl" 
-       class = "com.b2international.snowowl.snomed.ecl.EclPackage"
+       class = "com.b2international.snowowl.snomed.ecl.ecl.EclPackage"
        genModel = "model/generated/Ecl.genmodel" /> 
 	
   </extension>

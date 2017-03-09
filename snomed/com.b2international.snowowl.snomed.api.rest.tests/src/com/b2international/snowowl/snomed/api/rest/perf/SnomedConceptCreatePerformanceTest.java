@@ -19,6 +19,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.cre
 
 import org.databene.contiperf.PerfTest;
 import org.databene.contiperf.junit.ContiPerfRule;
+import org.databene.contiperf.junit.ContiPerfRuleExt;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -30,7 +31,7 @@ import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 public class SnomedConceptCreatePerformanceTest extends AbstractSnomedApiTest {
 
 	@Rule
-	public ContiPerfRule rule = new ContiPerfRule();
+	public ContiPerfRule rule = new ContiPerfRuleExt();
 	
 	@Test
 	@PerfTest(invocations = 10)
