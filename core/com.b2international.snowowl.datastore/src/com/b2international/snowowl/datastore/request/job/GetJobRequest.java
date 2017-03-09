@@ -20,6 +20,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Iterables;
 
 /**
@@ -27,6 +28,7 @@ import com.google.common.collect.Iterables;
  */
 final class GetJobRequest implements Request<ServiceProvider, RemoteJobEntry> {
 
+	@JsonProperty
 	private final String id;
 
 	GetJobRequest(String id) {

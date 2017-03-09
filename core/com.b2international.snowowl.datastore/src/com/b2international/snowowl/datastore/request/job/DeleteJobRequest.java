@@ -20,12 +20,14 @@ import java.util.Collection;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.7
  */
 final class DeleteJobRequest implements Request<ServiceProvider, Void> {
 
+	@JsonProperty
 	private final Collection<String> jobIds;
 
 	DeleteJobRequest(Collection<String> jobIds) {

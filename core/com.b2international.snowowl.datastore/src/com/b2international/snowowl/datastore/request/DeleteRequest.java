@@ -21,12 +21,14 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.5
  */
 final class DeleteRequest implements Request<TransactionContext, Void> {
 
+	@JsonProperty
 	@NotNull
 	private String componentId;
 	
