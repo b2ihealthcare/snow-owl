@@ -55,6 +55,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.events.Request;
@@ -437,6 +438,11 @@ public class VersioningService implements IVersioningService {
 		
 		RemoteJobEntry job = null;
 		do {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				throw new SnowowlRuntimeException(e);
+			}
 			job = JobRequests.prepareGet(jobId).buildAsync().execute(bus).getSync();
 		} while (job == null || !job.isDone());
 	}

@@ -5,13 +5,15 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snowowl-parent</artifactId>
-		<version>5.7.0-SNAPSHOT</version>
+		<version>5.8.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>documentation</artifactId>
 	<packaging>eclipse-plugin</packaging>
 
 	<properties>
+		<siteOutputDirectory>${project.build.directory}/site/${project.version}</siteOutputDirectory>
+		<scmPubCheckoutDirectory>${user.home}/git/snow-owl-gh-pages</scmPubCheckoutDirectory>
 		<asciidoctor.version>1.5.4</asciidoctor.version>
 		<asciidoctorj.pdf.version>1.5.0-alpha.11</asciidoctorj.pdf.version>
 		<asciidoctor.maven.plugin.version>1.5.3</asciidoctor.maven.plugin.version>
@@ -19,6 +21,21 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-packaging-plugin</artifactId>
+				<configuration>
+					<additionalFileSets>
+				 		<fileSet>
+					  		<directory>${siteOutputDirectory}</directory>
+					  		<includes>
+					   			<include>guides/**/*</include>
+					   			<include>api-docs/**/*</include>
+					  		</includes>
+				 		</fileSet>     
+					</additionalFileSets>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.eclipse.tycho.extras</groupId>
 				<artifactId>tycho-document-bundle-plugin</artifactId>
@@ -31,7 +48,7 @@
 							<goal>javadoc</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>api-docs</outputDirectory>
+							<outputDirectory>${siteOutputDirectory}/api-docs</outputDirectory>
 							<skipTocGen>true</skipTocGen>
 							<javadocOptions>
 								<additionalArguments>
@@ -41,7 +58,6 @@
 										http://docs.oracle.com/javase/8/docs/api/
 									</additionalArgument>
 									<additionalArgument>-quiet</additionalArgument>
-<!-- 									<additionalArgument>-verbose</additionalArgument> -->
 									<additionalArgument>-windowtitle "Snow Owl"</additionalArgument>
 								</additionalArguments>
 								<excludes>
@@ -95,10 +111,9 @@
 						<configuration>
 							<backend>html5</backend>
 							<sourceHighlighter>coderay</sourceHighlighter>
-							<outputDirectory>guides</outputDirectory>
+							<outputDirectory>${siteOutputDirectory}/guides</outputDirectory>
 						</configuration>
 					</execution>
-
 					<execution>
 						<id>guides-pdf</id>
 						<phase>generate-resources</phase>
@@ -108,7 +123,7 @@
 						<configuration>
 							<backend>pdf</backend>
 							<sourceHighlighter>coderay</sourceHighlighter>
-							<outputDirectory>guides</outputDirectory>
+							<outputDirectory>${siteOutputDirectory}/guides</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
@@ -132,33 +147,31 @@
 				</dependencies>
 			</plugin>
 			<plugin>
-			    <!-- Deploys the site to gh-pages -->
-			    <groupId>com.github.github</groupId>
-			    <artifactId>site-maven-plugin</artifactId>
-			    <version>0.12</version>
-			    <executions>
-			        <execution>
+			   	<groupId>org.apache.maven.plugins</groupId>
+			   	<artifactId>maven-scm-publish-plugin</artifactId>
+			   	<version>1.1</version>
+			   	<executions>
+			   		<execution>
+            			<id>publish-docs</id>
+            			<phase>verify</phase>
 			            <goals>
-			                <goal>site</goal>
+			              	<goal>publish-scm</goal>
 			            </goals>
-			            <!-- select the Maven phase in which the plugin will be executed -->
-			            <phase>verify</phase>
 			            <configuration>
-			                <server>github</server>
-			                <includes>
-			                	<include>api-docs/**/*</include>
-			                	<include>guides/**/*</include>
-			               	</includes>
-			                <outputDirectory>${project.basedir}</outputDirectory>
-			                <!-- The commit message -->
-			                <message>Generated site for ${project.version}</message>
-			                <!-- The location where the site is uploaded -->
-			                <path>${project.version}</path>
-			                <!-- Use merge or override the content -->
-			                <merge>true</merge>
-			            </configuration>
-			        </execution>
-			    </executions>
+					       	<checkoutDirectory>${scmPubCheckoutDirectory}</checkoutDirectory>
+					       	<checkinComment>Publishing Docs for Snow Owl ${project.version}</checkinComment>
+					        <content>${project.build.directory}/site</content>
+					        <ignorePathsToDelete>
+					        	<!-- Deletes files only from the current doc versions and the SNAPSHOT suffixed version when releasing -->
+					        	<ignorePathsToDelete>%regex[^(?!${project.version}).*$]</ignorePathsToDelete>
+					        </ignorePathsToDelete>
+					        <serverId>github</serverId>
+					        <pubScmUrl>scm:git:https://github.com/b2ihealthcare/snow-owl.git</pubScmUrl>
+					        <scmBranch>gh-pages</scmBranch>
+					        <tryUpdate>true</tryUpdate>
+					    </configuration>
+          			</execution>
+			   	</executions>
 			</plugin>
 		</plugins>
 	</build>

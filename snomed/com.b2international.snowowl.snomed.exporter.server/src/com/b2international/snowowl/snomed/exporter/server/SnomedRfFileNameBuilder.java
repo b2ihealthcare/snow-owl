@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.exporter.server;
 
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.LANGUAGE;
-
 import java.util.Date;
 
 import com.b2international.commons.StringUtils;
@@ -24,10 +22,10 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.LanguageConfiguration;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.google.common.base.Preconditions;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * Utility class for building core release file names when publishing
@@ -36,57 +34,60 @@ import com.google.common.base.Preconditions;
  */
 public class SnomedRfFileNameBuilder {
 
-	public static String buildCoreRf1FileName(final ComponentExportType type, final SnomedExportContext configuration) {
+	public static String buildCoreRf1FileName(final ComponentExportType type, final SnomedExportContext exportContext) {
 		return new StringBuilder("sct1_")
 				.append(String.valueOf(type))
 				.append("s_")
 				.append(ComponentExportType.DESCRIPTION.equals(type) ? getLanguageCode() : "Core")
-				.append("_INT_")
-				.append(getReleaseDate(configuration))
+				.append('_')
+				.append(exportContext.getNamespaceId())
+				.append('_')
+				.append(getReleaseDate(exportContext))
 				.append(".txt")
 				.toString();
 	}
 
-	public static String buildCoreRf2FileName(final ComponentExportType type, final SnomedExportContext configuration) {
+	public static String buildCoreRf2FileName(final ComponentExportType type, final SnomedExportContext exportContext) {
 		return new StringBuilder("sct2_")
 				.append(String.valueOf(type))
-				.append("_")
-				.append(String.valueOf(configuration.getContentSubType()))
-				.append(ComponentExportType.DESCRIPTION.equals(type) ? "-" : "")
-				.append(ComponentExportType.DESCRIPTION.equals(type) ? getLanguageCode() : "")
-				.append("_INT_")
-				.append(getReleaseDate(configuration))
+				.append('_')
+				.append(String.valueOf(exportContext.getContentSubType()))
+				.append('_')
+				.append(exportContext.getNamespaceId())
+				.append('_')
+				.append(getReleaseDate(exportContext))
 				.append(".txt")
 				.toString();
 	}
-
-	/*
-	 * return the transient effective time if set, otherwise today's date
-	 */
-	private static String getReleaseDate(final SnomedExportContext config) {
-		String releaseDate = getExportTime();
-		if (!config.getUnsetEffectiveTimeLabel().isEmpty() && !config.getUnsetEffectiveTimeLabel().equals(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL)) {
-			releaseDate = config.getUnsetEffectiveTimeLabel();
-		}
-		return releaseDate;
+	
+	public static String buildRefSetFileName(final SnomedExportContext exportContext, final String refSetName, final SnomedReferenceSet refSet) {
+		return buildRefSetFileName(exportContext, refSetName, refSet, false);
 	}
 
-	public static String buildRefSetFileName(final SnomedExportContext configuration, final String refSetName, final SnomedRefSet refSet) {
-		return buildRefSetFileName(configuration, refSetName, refSet, false);
-	}
-
-	public static String buildRefSetFileName(final SnomedExportContext configuration, final String refSetName, final SnomedRefSet refSet, final boolean includeMapTargetDescription) {
+	public static String buildRefSetFileName(final SnomedExportContext exportContext, final String refSetName, final SnomedReferenceSet refSet,
+			final boolean includeMapTargetDescription) {
 		return new StringBuilder("der2_")
-				.append(getPrefix(refSet, includeMapTargetDescription))
+				.append(getPrefix(refSet.getType(), includeMapTargetDescription))
 				.append("Refset_")
 				.append(toCamelCase(refSetName))
-				.append(String.valueOf(configuration.getContentSubType()))
-				.append(isLanguageType(refSet) ? "-" : "")
-				.append(isLanguageType(refSet) ? getLanguageCode(refSet) : "")
-				.append("_INT_")
-				.append(getReleaseDate(configuration))
+				.append(String.valueOf(exportContext.getContentSubType()))
+				.append('_')
+				.append(exportContext.getNamespaceId())
+				.append('_')
+				.append(getReleaseDate(exportContext))
 				.append(".txt")
 				.toString();
+	}
+
+	/**
+	 * Returns the transient effective time if set, otherwise today's date
+	 */
+	public static String getReleaseDate(final SnomedExportContext exportContext) {
+		if (!exportContext.getUnsetEffectiveTimeLabel().isEmpty()
+				&& !exportContext.getUnsetEffectiveTimeLabel().equals(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL)) {
+			return exportContext.getUnsetEffectiveTimeLabel();
+		}
+		return Dates.formatByHostTimeZone(new Date(), DateFormats.SHORT);
 	}
 
 	/**
@@ -119,43 +120,26 @@ public class SnomedRfFileNameBuilder {
 		return result.substring(0, writeIdx);
 	}
 
-	/*returns with the language code for the reference set*/
-	private static String getLanguageCode(final SnomedRefSet refSet) {
-		return com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping.getLanguageCode(refSet.getIdentifierId()); 
-	}
-
-	/*returns true if the reference set is a language type*/
-	private static boolean isLanguageType(final SnomedRefSet refSet) {
-		return LANGUAGE.equals(refSet.getType()); 
-	}
-
-	/*returns with the RF2 file name prefix for the reference set*/
-	private static String getPrefix(final SnomedRefSet refSet, final boolean includeMapTargetDescription) {
-		switch (Preconditions.checkNotNull(refSet, "SNOMED CT reference set argument cannot be null.").getType()) {
-		case CONCRETE_DATA_TYPE: return "ccss";
-		case QUERY: return "s";
-		case SIMPLE: return "";
-		case LANGUAGE:
-		case ATTRIBUTE_VALUE:
-		case ASSOCIATION: return "c";
-		case DESCRIPTION_TYPE: return "ci";
-		case COMPLEX_MAP: return "iisssc";
-		case EXTENDED_MAP: return "iissscc";
-		case SIMPLE_MAP: return getSimpleMapPrefix(refSet, includeMapTargetDescription);
-		case MODULE_DEPENDENCY: return "ss";
+	/**
+	 * Returns the column prefix for reference sets
+	 */
+	public static String getPrefix(final SnomedRefSetType type, final boolean includeMapTargetDescription) {
+		switch (type) {
+			case CONCRETE_DATA_TYPE: return "ccss";
+			case QUERY: return "s";
+			case SIMPLE: return "";
+			case LANGUAGE:
+			case ATTRIBUTE_VALUE:
+			case ASSOCIATION: return "c";
+			case DESCRIPTION_TYPE: return "ci";
+			case COMPLEX_MAP: return "iisssc";
+			case EXTENDED_MAP: return "iissscc";
+			case SIMPLE_MAP: return includeMapTargetDescription ? "ss" : "s";
+			case MODULE_DEPENDENCY: return "ss";
 		}
-		throw new IllegalArgumentException ("Unknown reference set type. Type: " + refSet.getType());
+		throw new IllegalArgumentException ("Unknown reference set type. Type: " + type);
 	}
 	
-	private static String getSimpleMapPrefix(final SnomedRefSet refSet, final boolean includeMapTargetDescription) {
-		return includeMapTargetDescription ? "ss" : "s";
-	}
-
-	/*returns with the previously configured release time in yyyyMMdd format*/
-	private static String getExportTime() {
-		return Dates.formatByHostTimeZone(new Date(), DateFormats.SHORT);
-	}
-
 	/*returns with the language code*/
 	private static String getLanguageCode() {
 		return getLanguageConfiguration().getLanguageCode();

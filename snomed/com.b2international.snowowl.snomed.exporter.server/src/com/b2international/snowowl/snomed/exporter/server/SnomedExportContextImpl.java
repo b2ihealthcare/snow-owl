@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.exporter.server;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.Set;
 
@@ -35,8 +36,8 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	private final ContentSubType contentSubType;
 	private final String unsetEffectiveTimeLabel;
 
-	private final Date deltaExportStartEffectiveTime;
-	private final Date deltaExportEndEffectiveTime;
+	private Date startEffectiveTime;
+	private Date endEffectiveTime;
 	
 	// FIXME always false, clients should specify the value
 	private boolean includeMapTargetDescription = false; 
@@ -45,37 +46,33 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	private Set<String> moduleIds;
 	
 	private Id2Rf1PropertyMapper id2Rf1PropertyMapper;
-	private ExportFormat exportFormat;
+	private String namespaceId;
+	private Path releaseRootPath;
+	private boolean unpublishedExport;
 	
-	public SnomedExportContextImpl(final ExportFormat exportFormat, 
+	public SnomedExportContextImpl( 
 			final IBranchPath currentBranchPath,
 			final ContentSubType contentSubType,
 			final String unsetEffectiveTimeLabel,
-			@Nullable final Date deltaExportStartEffectiveTime, 
-			@Nullable final Date deltaExportEndEffectiveTime,
+			@Nullable final Date startEffectiveTime, 
+			@Nullable final Date endEffectiveTime,
+			final String namespaceId,
 			final Set<String> moduleIds,
-			final Id2Rf1PropertyMapper id2Rf1PropertyMapper) {
+			final Id2Rf1PropertyMapper id2Rf1PropertyMapper,
+			final Path releaseRootPath) {
 
-		this.exportFormat = checkNotNull(exportFormat, "exportFormat");
 		this.currentBranchPath = checkNotNull(currentBranchPath, "currentBranchPath");
 		this.contentSubType = checkNotNull(contentSubType, "contentSubType");
 		this.unsetEffectiveTimeLabel = checkNotNull(unsetEffectiveTimeLabel, "unsetEffectiveTimeLabel");
-		this.deltaExportStartEffectiveTime = deltaExportStartEffectiveTime;
-		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
+		this.startEffectiveTime = startEffectiveTime;
+		this.endEffectiveTime = endEffectiveTime;
+		this.namespaceId = namespaceId;
 		this.moduleIds = moduleIds;
 		this.id2Rf1PropertyMapper = id2Rf1PropertyMapper;
+		this.releaseRootPath = releaseRootPath;
+		this.unpublishedExport = false;
 	}
 	
-	@Override
-	public ExportFormat getExportFormat() {
-		return exportFormat;
-	}
-	
-	@Override
-	public void setExportFormat(ExportFormat exportFormat) {
-		this.exportFormat = exportFormat;
-	}
-
 	@Override
 	public IBranchPath getCurrentBranchPath() {
 		return currentBranchPath;
@@ -92,13 +89,23 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	}
 	
 	@Override
-	@Nullable public Date getDeltaExportStartEffectiveTime() {
-		return deltaExportStartEffectiveTime;
+	@Nullable public Date getStartEffectiveTime() {
+		return startEffectiveTime;
 	}
 
 	@Override
-	@Nullable public Date getDeltaExportEndEffectiveTime() {
-		return deltaExportEndEffectiveTime;
+	public void setStartEffectiveTime(Date startEffectiveTime) {
+		this.startEffectiveTime = startEffectiveTime;
+	}
+	
+	@Override
+	@Nullable public Date getEndEffectiveTime() {
+		return endEffectiveTime;
+	}
+	
+	@Override
+	public void setEndEffectiveTime(Date endEffectiveTime) {
+		this.endEffectiveTime = endEffectiveTime;
 	}
 	
 	@Override
@@ -116,4 +123,23 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 		return id2Rf1PropertyMapper;
 	}
 
+	@Override
+	public String getNamespaceId() {
+		return namespaceId;
+	}
+	
+	@Override
+	public Path getReleaseRootPath() {
+		return releaseRootPath;
+	}
+	
+	@Override
+	public boolean isUnpublishedExport() {
+		return unpublishedExport;
+	}
+	
+	@Override
+	public void setUnpublishedExport(boolean isUnpublishedExport) {
+		this.unpublishedExport = isUnpublishedExport;
+	}
 }

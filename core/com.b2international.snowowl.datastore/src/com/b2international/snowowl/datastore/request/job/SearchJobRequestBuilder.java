@@ -15,69 +15,36 @@
  */
 package com.b2international.snowowl.datastore.request.job;
 
-import java.util.Collection;
-
-import com.b2international.commons.CompareUtils;
-import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
-import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
+import com.b2international.snowowl.datastore.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.datastore.request.SystemRequestBuilder;
 
 /**
+ * A request builder that builds a request to search/list {@link RemoteJob job entries}.
+ * 
  * @since 5.7
  */
-public final class SearchJobRequestBuilder extends BaseRequestBuilder<SearchJobRequestBuilder, ServiceProvider, RemoteJobs> implements SystemRequestBuilder<RemoteJobs> {
+public final class SearchJobRequestBuilder extends SearchResourceRequestBuilder<SearchJobRequestBuilder, ServiceProvider, RemoteJobs> implements SystemRequestBuilder<RemoteJobs> {
 
-	private int offset = 0;
-	private int limit = 50;
-	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
-	
 	SearchJobRequestBuilder() {
 	}
 
-	public SearchJobRequestBuilder one() {
-		return setLimit(1);
-	}
-	
-	public SearchJobRequestBuilder all() {
-		return setLimit(Integer.MAX_VALUE);
-	}
-	
-	public SearchJobRequestBuilder setLimit(int limit) {
-		this.limit = limit;
-		return getSelf();
-	}
-	
-	public SearchJobRequestBuilder setOffset(int offset) {
-		this.offset = offset;
-		return getSelf();
-	}
-	
-	public SearchJobRequestBuilder filterByIds(Collection<String> ids) {
-		return addOption(RemoteJobEntry.Fields.ID, ids);
-	}
-	
+	/**
+	 * Filter {@link RemoteJob job entries} by the assigned user.
+	 * @param user
+	 * @return
+	 */
 	public SearchJobRequestBuilder filterByUser(String user) {
 		return addOption(RemoteJobEntry.Fields.USER, user);
 	}
 	
-	private SearchJobRequestBuilder addOption(String key, Object value) {
-		if (!CompareUtils.isEmpty(value)) {
-			this.optionsBuilder.put(key, value);
-		}
-		return getSelf();
-	}
-
 	@Override
-	protected Request<ServiceProvider, RemoteJobs> doBuild() {
-		final SearchJobRequest req = new SearchJobRequest();
-		req.setOffset(offset);
-		req.setLimit(limit);
-		req.setOptions(optionsBuilder.build());
-		return req;
+	protected SearchResourceRequest<ServiceProvider, RemoteJobs> createSearch() {
+		return new SearchJobRequest();
 	}
-
+	
 }

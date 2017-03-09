@@ -26,8 +26,8 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
  */
 public class SnomedRf2RelationshipExporter extends AbstractSnomedRf2CoreExporter<SnomedRelationshipIndexEntry> {
 
-	protected SnomedRf2RelationshipExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean unpublished) {
-		super(configuration, SnomedRelationshipIndexEntry.class, revisionSearcher, unpublished);
+	protected SnomedRf2RelationshipExporter(final SnomedExportContext exportContext, final RevisionSearcher revisionSearcher) {
+		super(exportContext, SnomedRelationshipIndexEntry.class, revisionSearcher);
 	}
 	
 	@Override
@@ -37,7 +37,7 @@ public class SnomedRf2RelationshipExporter extends AbstractSnomedRf2CoreExporter
 		sb.append(HT);
 		sb.append(formatEffectiveTime(doc.getEffectiveTime()));
 		sb.append(HT);
-		sb.append(doc.isActive() ? "1" : "0");
+		sb.append(formatStatus(doc.isActive()));
 		sb.append(HT);
 		sb.append(doc.getModuleId());
 		sb.append(HT);

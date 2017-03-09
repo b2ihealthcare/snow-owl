@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.datastore.remotejobs.SingleRemoteJobFamily;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.7
@@ -36,12 +37,15 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 	
 	private static final ILock SCHEDULE_LOCK = Job.getJobManager().newLock();
 	
+	@JsonProperty
 	@NotEmpty
 	private final String id;
 	
+	@JsonProperty
 	@NotEmpty
 	private final String user;
 	
+	@JsonProperty
 	@NotEmpty
 	private final String description;
 	

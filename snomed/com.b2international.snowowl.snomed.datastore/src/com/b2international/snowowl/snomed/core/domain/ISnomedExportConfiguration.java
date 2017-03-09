@@ -32,22 +32,18 @@ public interface ISnomedExportConfiguration extends ISnomedRF2Configuration {
 	String getTransientEffectiveTime();
 	
 	/**
-	 * Returns the export's starting effective time range. Only applicable if the release type is set to
-	 * {@link Rf2ReleaseType#DELTA}.
+	 * Returns a restricting starting effective time.
 	 * 
-	 * @return the starting effective time range, or {@code null} if the export has an open-ended beginning date
+	 * @return the starting effective time, or {@code null}
 	 */
-	Date getDeltaExportStartEffectiveTime();
+	Date getStartEffectiveTime();
 
 	/**
-	 * Returns the export's ending effective time range. Only applicable if the release type is set to
-	 * {@link Rf2ReleaseType#DELTA}.
-	 * <p>
-	 * If both beginning and ending dates are set to {@code null}, all unpublished components will be exported.
+	 * Returns a restricting ending effective time. 
 	 * 
-	 * @return the ending effective time range, or {@code null} if the export has an open-ended finishing date
+	 * @return the ending effective time range, or {@code null}
 	 */
-	Date getDeltaExportEndEffectiveTime();
+	Date getEndEffectiveTime();
 
 	/**
 	 * Returns the country/namespace element to use when generating file and folder names for the RF2 export.
@@ -70,5 +66,17 @@ public interface ISnomedExportConfiguration extends ISnomedRF2Configuration {
 	 * Returns true if the unpublished components are exported
 	 * @return
 	 */
-	boolean includeUnpublised();
+	boolean isIncludeUnpublished();
+	
+	/**
+	 * Returns the short name of the code system that needs to be exported 
+	 */
+	String getCodeSystemShortName();
+	
+	/**
+	 * Returns true if only the code system specified by it's short name should be exported. If set to false all versions from parent code systems
+	 * will be collected and exported. 
+	 */
+	boolean isExtensionOnly();
+	
 }

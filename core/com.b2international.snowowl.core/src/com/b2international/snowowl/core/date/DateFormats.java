@@ -38,6 +38,11 @@ public abstract class DateFormats {
 	public static final String LONG = "yyyy-MM-dd HH:mm:ss";
 	
 	/**
+	 * Compact long date format indicating years, months, days, hours, minutes and seconds. Value: {@value} 
+	 */
+	public static final String COMPACT_LONG = "yyyyMMdd_HHmmss";
+	
+	/**
 	 * Medium date format, wich includes time up to minutes resolution. Value: {@value}
 	 */
 	public static final String MEDIUM = "yyyy-MM-dd HH:mm";

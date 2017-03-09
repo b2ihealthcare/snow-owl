@@ -55,12 +55,12 @@
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob
-            class="com.b2international.snowowl.datastore.file.FileRegistryServerServiceConfigJob"
+            class="com.b2international.snowowl.datastore.internal.file.FileRegistryServerServiceConfigJob"
             id="com.b2international.snowowl.datastore.file.FileRegistryServerServiceConfigJob"
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob
-            class="com.b2international.snowowl.datastore.file.FileRegistryClientServiceConfigJob"
+            class="com.b2international.snowowl.datastore.internal.file.FileRegistryClientServiceConfigJob"
             id="com.b2international.snowowl.datastore.file.FileRegistryClientServiceConfigJob"
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
