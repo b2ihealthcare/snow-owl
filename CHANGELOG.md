@@ -1,6 +1,20 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.7.2
+
+### Added
+- Support reference set filtering in SNOMED CT RF2 export Java API
+
+### Changed
+- Improved repository request log output
+
+### Bugs
+- Fixed serialization of ValidationException (62d3d0516b87c62e4841a6d9b0eba6e262e18410)
+- Fixed class loading issue when using BulkRequests
+- Fixed Highlighting.getMatchRegions() bug (e7d449df9843c188700c11591ca7e70755f9f140)
+
+
 ## 5.7.1
 
 ### Bugs
