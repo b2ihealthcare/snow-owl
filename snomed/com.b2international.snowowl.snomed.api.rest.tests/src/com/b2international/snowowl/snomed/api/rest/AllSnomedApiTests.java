@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.api.rest;
 import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.commons.platform.PlatformUtil;
@@ -41,6 +40,7 @@ import com.b2international.snowowl.snomed.api.rest.perf.SnomedConceptCreatePerfo
 import com.b2international.snowowl.snomed.api.rest.versioning.SnomedVersioningApiTest;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.test.commons.BundleStartRule;
+import com.b2international.snowowl.test.commons.LogSuite;
 import com.b2international.snowowl.test.commons.Resources;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
@@ -48,7 +48,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 /**
  * @since 1.0
  */
-@RunWith(Suite.class)
+@RunWith(LogSuite.class)
 @SuiteClasses({ 
 	// RESTful API test cases
 	SnomedBranchingApiTest.class,
