@@ -57,6 +57,7 @@ import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportCli
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRf2ExportModel;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
@@ -67,17 +68,36 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 
 	private static final long serialVersionUID = 1L;
 	
+	@JsonProperty
 	@NotEmpty
 	private String codeSystem;
+	
+	@JsonProperty
 	private boolean includeUnpublished;
-	@NotNull
+	
+	@JsonProperty 
+	@NotNull 
 	private Rf2ReleaseType releaseType;
+	
+	@JsonProperty 
 	private boolean extensionOnly;
+	
+	@JsonProperty 
 	private String startEffectiveTime;
+	
+	@JsonProperty 
 	private String endEffectiveTime;
+	
+	@JsonProperty 
 	private Collection<String> modules;
+	
+	@JsonProperty
 	private String transientEffectiveTime;
+	
+	@JsonProperty
 	private String namespace;
+	
+	@JsonProperty
 	private Collection<String> refSets;
 
 	SnomedRf2ExportRequest() {}
