@@ -40,6 +40,7 @@ public final class SnomedRf2ExportRequestBuilder extends BaseRequestBuilder<Snom
 	private String transientEffectiveTime;
 	private boolean extensionOnly;
 	private String namespace;
+	private Collection<String> refSets = Collections.emptySet();
 	
 	SnomedRf2ExportRequestBuilder() {}
 	
@@ -87,6 +88,11 @@ public final class SnomedRf2ExportRequestBuilder extends BaseRequestBuilder<Snom
 		this.namespace = namespace;
 		return getSelf();
 	}
+	
+	public SnomedRf2ExportRequestBuilder setRefSets(Collection<String> refSets) {
+		this.refSets = refSets;
+		return getSelf();
+	}
 
 	@Override
 	protected Request<BranchContext, UUID> doBuild() {
@@ -100,6 +106,7 @@ public final class SnomedRf2ExportRequestBuilder extends BaseRequestBuilder<Snom
 		req.setModules(modules);
 		req.setTransientEffectiveTime(transientEffectiveTime);
 		req.setNamespace(namespace);
+		req.setRefSets(refSets);
 		return req;
 	}
 
