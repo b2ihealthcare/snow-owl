@@ -26,7 +26,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
-import com.b2international.index.analyzer.DelimiterAnalyzer;
+import com.b2international.index.analyzer.ComponentTermAnalyzer;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -87,31 +87,33 @@ public class Highlighting {
 	}
 	
 	public static int[][] getMatchRegions(final String queryExpression, final String sortKeyLabel) {
-		final Analyzer analyzer = new DelimiterAnalyzer();
-		final List<String> filterTokens = split(analyzer, queryExpression);
-		// FIXME: Remove this when the new Analyzer chain is used
-		final List<String> labelTokens = split(analyzer, sortKeyLabel);
+		final String lcQuery = queryExpression.toLowerCase();
+		final String lcLabel = sortKeyLabel.toLowerCase();
+		
+		final Analyzer analyzer = new ComponentTermAnalyzer(false, false);
+		
+		final List<String> filterTokens = split(analyzer, lcQuery);
+		final List<String> labelTokens = split(analyzer, lcLabel);
 		final List<int[]> elementMatchRegions = Lists.newArrayList();
 		
 		int startIndex = 0;
 		
 		for (final String labelToken : labelTokens) {
 			
-			startIndex = sortKeyLabel.indexOf(labelToken, startIndex);
+			startIndex = lcLabel.indexOf(labelToken, startIndex);
 			
 			final Iterator<String> itr = filterTokens.iterator();
 			while (itr.hasNext()) {
 				final String filterToken = itr.next();
 				if (labelToken.startsWith(filterToken)) {
 					// XXX: the same segment of text may be selected for highlighting multiple times, revisit if this causes problems
-					elementMatchRegions.add(new int[] { startIndex, startIndex + filterToken.length() });
+					elementMatchRegions.add(new int[] { startIndex, startIndex + filterToken.length() - 1 });
 				}
 			}
 			
 			// Move past this label token
 			startIndex += labelToken.length();
 		}
-		
 		return Iterables.toArray(elementMatchRegions, int[].class);
 	}
 	

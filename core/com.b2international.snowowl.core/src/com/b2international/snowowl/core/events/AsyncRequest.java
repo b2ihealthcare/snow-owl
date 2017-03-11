@@ -39,13 +39,14 @@ public final class AsyncRequest<R> {
 	 */
 	public Promise<R> execute(IEventBus bus) {
 		final Promise<R> promise = new Promise<>();
-		final Class<R> responseType = request.getReturnType(); 
+		final Class<R> responseType = request.getReturnType();
+		final ClassLoader classLoader = request.getClassLoader();
 		bus.send(Request.ADDRESS, request, new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				try {
 					if (message.isSucceeded()) {
-						promise.resolve(message.body(responseType));
+						promise.resolve(message.body(responseType, classLoader));
 					} else {
 						promise.reject(message.body(Throwable.class, AsyncRequest.class.getClassLoader()));
 					}

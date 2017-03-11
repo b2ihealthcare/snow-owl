@@ -36,6 +36,8 @@ public abstract class ResourceRequestBuilder<B extends ResourceRequestBuilder<B,
 	private List<ExtendedLocale> locales = Collections.emptyList();
 	private Set<String> fields = Collections.emptySet();
 
+	protected ResourceRequestBuilder() {}
+	
 	/**
 	 * Sets the request to use the given {@link ExtendedLocale}s for the returned display labels. The given {@link ExtendedLocale}s are in preferred order.
 	 * @param locales - to use for all the labels returned by the request

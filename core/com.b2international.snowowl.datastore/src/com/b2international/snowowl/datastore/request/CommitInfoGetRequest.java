@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,29 +15,23 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import java.util.UUID;
-
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.merge.MergeService;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.b2international.snowowl.datastore.commitinfo.CommitInfo;
 
 /**
- * @since 4.6
+ * @since 5.7
  */
-final class DeleteMergeRequest implements Request<RepositoryContext, Boolean> {
+final class CommitInfoGetRequest extends GetResourceRequest<CommitInfoSearchRequestBuilder, RepositoryContext, CommitInfo> {
 
-	@JsonProperty
-	private final UUID id;
+	private static final long serialVersionUID = 1L;
 
-	DeleteMergeRequest(UUID id) {
-		this.id = id;
+	CommitInfoGetRequest(String commitId) {
+		super(commitId);
 	}
 
 	@Override
-	public Boolean execute(RepositoryContext context) {
-		context.service(MergeService.class).deleteMerge(id);
-		return Boolean.TRUE;
+	protected CommitInfoSearchRequestBuilder createSearchRequestBuilder() {
+		return new CommitInfoSearchRequestBuilder();
 	}
 
 }

@@ -31,7 +31,7 @@ public final class SnomedDescriptionGetRequestBuilder
 		implements RevisionIndexRequestBuilder<SnomedDescription> {
 
 	SnomedDescriptionGetRequestBuilder(String descriptionId) {
-		super(SnomedDescription.class, descriptionId, SnomedDescriptionSearchRequestBuilder::new);
+		super(new SnomedDescriptionGetRequest(descriptionId));
 	}
 
 }

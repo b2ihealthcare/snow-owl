@@ -13,31 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request.job;
+package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Collection;
-
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.request.GetResourceRequest;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 
 /**
  * @since 5.7
  */
-final class DeleteJobRequest implements Request<ServiceProvider, Void> {
+final class SnomedConceptGetRequest extends GetResourceRequest<SnomedConceptSearchRequestBuilder, BranchContext, SnomedConcept> {
 
-	@JsonProperty
-	private final Collection<String> jobIds;
-
-	DeleteJobRequest(Collection<String> jobIds) {
-		this.jobIds = jobIds;
-	}
+	private static final long serialVersionUID = 1L;
 	
+	SnomedConceptGetRequest(String conceptId) {
+		super(conceptId);
+	}
+
 	@Override
-	public Void execute(ServiceProvider context) {
-		context.service(RemoteJobTracker.class).requestDeletes(jobIds);
-		return null;
+	protected SnomedConceptSearchRequestBuilder createSearchRequestBuilder() {
+		return new SnomedConceptSearchRequestBuilder();
 	}
 
 }

@@ -15,11 +15,13 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import java.io.Serializable;
+
 /**
  * Implementations allow clients to generate component identifiers conforming to
  * the specified constraints.
  */
-public interface IdGenerationStrategy {
+public interface IdGenerationStrategy extends Serializable {
 
 	/**
 	 * @return the namespace of the identifier to be used

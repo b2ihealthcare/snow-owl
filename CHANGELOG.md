@@ -1,6 +1,31 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.7.3
+
+### Bugs
+- Fixed serialization of IdGenerationStrategy (555c3a585b8ea721c396de18d18c3fad4ac9568d)
+
+## 5.7.2
+
+### Added
+- Support reference set filtering in SNOMED CT RF2 export Java API
+
+### Changed
+- Improved repository request log output
+
+### Bugs
+- Fixed serialization of ValidationException (62d3d0516b87c62e4841a6d9b0eba6e262e18410)
+- Fixed class loading issue when using BulkRequests
+- Fixed Highlighting.getMatchRegions() bug (e7d449df9843c188700c11591ca7e70755f9f140)
+
+
+## 5.7.1
+
+### Bugs
+- Fixed node initialization issue when connecting to a master node (client-server mode)
+- Fixed serialization of GetResourceRequest classes
+
 ## 5.7.0
 
 ### Breaking changes

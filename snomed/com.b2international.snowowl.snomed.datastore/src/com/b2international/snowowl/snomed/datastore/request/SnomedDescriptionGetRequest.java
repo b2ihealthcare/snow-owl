@@ -13,31 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request.job;
+package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.datastore.request.GetResourceRequest;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 
 /**
  * @since 5.7
  */
-final class CancelJobRequest implements Request<ServiceProvider, Void> {
-	
-	private static final long serialVersionUID = 1L;
-	
-	@JsonProperty
-	private final String id;
+final class SnomedDescriptionGetRequest extends GetResourceRequest<SnomedDescriptionSearchRequestBuilder, BranchContext, SnomedDescription> {
 
-	CancelJobRequest(String id) {
-		this.id = id;
+	private static final long serialVersionUID = 1L;
+
+	SnomedDescriptionGetRequest(String descriptionId) {
+		super(descriptionId);
 	}
 
 	@Override
-	public Void execute(ServiceProvider context) {
-		context.service(RemoteJobTracker.class).requestCancel(id);
-		return null;
+	protected SnomedDescriptionSearchRequestBuilder createSearchRequestBuilder() {
+		return new SnomedDescriptionSearchRequestBuilder();
 	}
 
 }
