@@ -41,8 +41,6 @@ RULE_ZERO : '0';
 
 RULE_DIGIT_NONZERO : '1'..'9';
 
-RULE_LETTER : ('a'..'z'|'A'..'Z');
-
 RULE_COLON : ':';
 
 RULE_CURLY_OPEN : '{';
@@ -96,7 +94,5 @@ RULE_WS : (' '|'\t'|'\n'|'\r');
 RULE_ML_COMMENT : '/*' ( options {greedy=false;} : . )*'*/';
 
 RULE_SL_COMMENT : '//' ~(('\n'|'\r'))* ('\r'? '\n')?;
-
-RULE_OTHER_CHARACTER : ~('|');
 
 RULE_STRING : ('"' ('\\' .|~(('\\'|'"')))* '"'|'\'' ('\\' .|~(('\\'|'\'')))* '\'');

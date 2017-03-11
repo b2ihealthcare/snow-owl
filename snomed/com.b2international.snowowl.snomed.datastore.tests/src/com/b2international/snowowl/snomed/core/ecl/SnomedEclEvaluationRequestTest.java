@@ -41,6 +41,7 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.index.Index;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.MatchNone;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -130,13 +131,33 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 				.build();
 	}
 	
-	@Test(expected=BadRequestException.class)
+	@Test(expected = BadRequestException.class)
 	public void syntaxErrorsShouldThrowException() throws Exception {
 		eval("invalid");
 	}
 	
 	private Expression eval(String expression) {
 		return SnomedRequests.prepareEclEvaluation(expression).build().execute(context).getSync();		
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void _null() throws Exception {
+		eval(null);
+	}
+	
+
+	@Test
+	public void empty() throws Exception {
+		final Expression actual = eval("");
+		final Expression expected = MatchNone.INSTANCE;
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void whitespaces() {
+		final Expression actual = eval(" \n \t");
+		final Expression expected = MatchNone.INSTANCE;
+		assertEquals(expected, actual);
 	}
 
 	@Test

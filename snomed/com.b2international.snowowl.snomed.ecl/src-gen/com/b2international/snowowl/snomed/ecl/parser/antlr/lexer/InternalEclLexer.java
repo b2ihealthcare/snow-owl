@@ -12,45 +12,43 @@ import java.util.ArrayList;
 
 @SuppressWarnings("all")
 public class InternalEclLexer extends Lexer {
-    public static final int RULE_LTE=36;
+    public static final int RULE_LTE=35;
     public static final int RULE_DIGIT_NONZERO=12;
-    public static final int RULE_CURLY_OPEN=15;
+    public static final int RULE_CURLY_OPEN=14;
     public static final int RULE_TO=10;
-    public static final int RULE_ROUND_CLOSE=18;
-    public static final int RULE_DBL_GT=32;
-    public static final int RULE_GT=30;
-    public static final int RULE_STRING=42;
-    public static final int RULE_NOT=24;
+    public static final int RULE_ROUND_CLOSE=17;
+    public static final int RULE_DBL_GT=31;
+    public static final int RULE_GT=29;
+    public static final int RULE_STRING=40;
+    public static final int RULE_NOT=23;
     public static final int RULE_REVERSED=9;
     public static final int MINUS=4;
-    public static final int RULE_GTE=35;
-    public static final int RULE_SL_COMMENT=40;
+    public static final int RULE_GTE=34;
+    public static final int RULE_SL_COMMENT=39;
     public static final int Comma=7;
-    public static final int RULE_HASH=37;
-    public static final int RULE_ROUND_OPEN=17;
-    public static final int RULE_DASH=22;
-    public static final int RULE_OTHER_CHARACTER=41;
-    public static final int RULE_DBL_LT=31;
-    public static final int RULE_PLUS=21;
-    public static final int RULE_NOT_EQUAL=28;
-    public static final int RULE_DOT=25;
+    public static final int RULE_HASH=36;
+    public static final int RULE_ROUND_OPEN=16;
+    public static final int RULE_DASH=21;
+    public static final int RULE_DBL_LT=30;
+    public static final int RULE_PLUS=20;
+    public static final int RULE_NOT_EQUAL=27;
+    public static final int RULE_DOT=24;
     public static final int EOF=-1;
-    public static final int RULE_SQUARE_CLOSE=20;
+    public static final int RULE_SQUARE_CLOSE=19;
     public static final int OR=6;
-    public static final int RULE_SQUARE_OPEN=19;
-    public static final int RULE_EQUAL=27;
-    public static final int RULE_LT_EM=33;
-    public static final int RULE_GT_EM=34;
-    public static final int RULE_WS=38;
-    public static final int RULE_CURLY_CLOSE=16;
+    public static final int RULE_SQUARE_OPEN=18;
+    public static final int RULE_EQUAL=26;
+    public static final int RULE_LT_EM=32;
+    public static final int RULE_GT_EM=33;
+    public static final int RULE_WS=37;
+    public static final int RULE_CURLY_CLOSE=15;
     public static final int RULE_ZERO=11;
-    public static final int RULE_COLON=14;
-    public static final int RULE_LETTER=13;
-    public static final int RULE_CARET=23;
-    public static final int RULE_LT=29;
+    public static final int RULE_COLON=13;
+    public static final int RULE_CARET=22;
+    public static final int RULE_LT=28;
     public static final int AND=5;
-    public static final int RULE_ML_COMMENT=39;
-    public static final int RULE_WILDCARD=26;
+    public static final int RULE_ML_COMMENT=38;
+    public static final int RULE_WILDCARD=25;
     public static final int RULE_TERM_STRING=8;
 
     // delegates
@@ -368,41 +366,13 @@ public class InternalEclLexer extends Lexer {
     }
     // $ANTLR end "RULE_DIGIT_NONZERO"
 
-    // $ANTLR start "RULE_LETTER"
-    public final void mRULE_LETTER() throws RecognitionException {
-        try {
-            int _type = RULE_LETTER;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:44:13: ( ( 'a' .. 'z' | 'A' .. 'Z' ) )
-            // InternalEclLexer.g:44:15: ( 'a' .. 'z' | 'A' .. 'Z' )
-            {
-            if ( (input.LA(1)>='A' && input.LA(1)<='Z')||(input.LA(1)>='a' && input.LA(1)<='z') ) {
-                input.consume();
-
-            }
-            else {
-                MismatchedSetException mse = new MismatchedSetException(null,input);
-                recover(mse);
-                throw mse;}
-
-
-            }
-
-            state.type = _type;
-            state.channel = _channel;
-        }
-        finally {
-        }
-    }
-    // $ANTLR end "RULE_LETTER"
-
     // $ANTLR start "RULE_COLON"
     public final void mRULE_COLON() throws RecognitionException {
         try {
             int _type = RULE_COLON;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:46:12: ( ':' )
-            // InternalEclLexer.g:46:14: ':'
+            // InternalEclLexer.g:44:12: ( ':' )
+            // InternalEclLexer.g:44:14: ':'
             {
             match(':'); 
 
@@ -421,8 +391,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_CURLY_OPEN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:48:17: ( '{' )
-            // InternalEclLexer.g:48:19: '{'
+            // InternalEclLexer.g:46:17: ( '{' )
+            // InternalEclLexer.g:46:19: '{'
             {
             match('{'); 
 
@@ -441,8 +411,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_CURLY_CLOSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:50:18: ( '}' )
-            // InternalEclLexer.g:50:20: '}'
+            // InternalEclLexer.g:48:18: ( '}' )
+            // InternalEclLexer.g:48:20: '}'
             {
             match('}'); 
 
@@ -461,8 +431,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_ROUND_OPEN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:52:17: ( '(' )
-            // InternalEclLexer.g:52:19: '('
+            // InternalEclLexer.g:50:17: ( '(' )
+            // InternalEclLexer.g:50:19: '('
             {
             match('('); 
 
@@ -481,8 +451,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_ROUND_CLOSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:54:18: ( ')' )
-            // InternalEclLexer.g:54:20: ')'
+            // InternalEclLexer.g:52:18: ( ')' )
+            // InternalEclLexer.g:52:20: ')'
             {
             match(')'); 
 
@@ -501,8 +471,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_SQUARE_OPEN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:56:18: ( '[' )
-            // InternalEclLexer.g:56:20: '['
+            // InternalEclLexer.g:54:18: ( '[' )
+            // InternalEclLexer.g:54:20: '['
             {
             match('['); 
 
@@ -521,8 +491,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_SQUARE_CLOSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:58:19: ( ']' )
-            // InternalEclLexer.g:58:21: ']'
+            // InternalEclLexer.g:56:19: ( ']' )
+            // InternalEclLexer.g:56:21: ']'
             {
             match(']'); 
 
@@ -541,8 +511,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_PLUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:60:11: ( '+' )
-            // InternalEclLexer.g:60:13: '+'
+            // InternalEclLexer.g:58:11: ( '+' )
+            // InternalEclLexer.g:58:13: '+'
             {
             match('+'); 
 
@@ -561,8 +531,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_DASH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:62:11: ( '-' )
-            // InternalEclLexer.g:62:13: '-'
+            // InternalEclLexer.g:60:11: ( '-' )
+            // InternalEclLexer.g:60:13: '-'
             {
             match('-'); 
 
@@ -581,8 +551,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_CARET;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:64:12: ( '^' )
-            // InternalEclLexer.g:64:14: '^'
+            // InternalEclLexer.g:62:12: ( '^' )
+            // InternalEclLexer.g:62:14: '^'
             {
             match('^'); 
 
@@ -601,8 +571,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_NOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:66:10: ( '!' )
-            // InternalEclLexer.g:66:12: '!'
+            // InternalEclLexer.g:64:10: ( '!' )
+            // InternalEclLexer.g:64:12: '!'
             {
             match('!'); 
 
@@ -621,8 +591,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_DOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:68:10: ( '.' )
-            // InternalEclLexer.g:68:12: '.'
+            // InternalEclLexer.g:66:10: ( '.' )
+            // InternalEclLexer.g:66:12: '.'
             {
             match('.'); 
 
@@ -641,8 +611,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_WILDCARD;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:70:15: ( '*' )
-            // InternalEclLexer.g:70:17: '*'
+            // InternalEclLexer.g:68:15: ( '*' )
+            // InternalEclLexer.g:68:17: '*'
             {
             match('*'); 
 
@@ -661,8 +631,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_EQUAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:72:12: ( '=' )
-            // InternalEclLexer.g:72:14: '='
+            // InternalEclLexer.g:70:12: ( '=' )
+            // InternalEclLexer.g:70:14: '='
             {
             match('='); 
 
@@ -681,8 +651,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_NOT_EQUAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:74:16: ( '!=' )
-            // InternalEclLexer.g:74:18: '!='
+            // InternalEclLexer.g:72:16: ( '!=' )
+            // InternalEclLexer.g:72:18: '!='
             {
             match("!="); 
 
@@ -702,8 +672,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_LT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:76:9: ( '<' )
-            // InternalEclLexer.g:76:11: '<'
+            // InternalEclLexer.g:74:9: ( '<' )
+            // InternalEclLexer.g:74:11: '<'
             {
             match('<'); 
 
@@ -722,8 +692,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_GT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:78:9: ( '>' )
-            // InternalEclLexer.g:78:11: '>'
+            // InternalEclLexer.g:76:9: ( '>' )
+            // InternalEclLexer.g:76:11: '>'
             {
             match('>'); 
 
@@ -742,8 +712,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_DBL_LT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:80:13: ( '<<' )
-            // InternalEclLexer.g:80:15: '<<'
+            // InternalEclLexer.g:78:13: ( '<<' )
+            // InternalEclLexer.g:78:15: '<<'
             {
             match("<<"); 
 
@@ -763,8 +733,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_DBL_GT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:82:13: ( '>>' )
-            // InternalEclLexer.g:82:15: '>>'
+            // InternalEclLexer.g:80:13: ( '>>' )
+            // InternalEclLexer.g:80:15: '>>'
             {
             match(">>"); 
 
@@ -784,8 +754,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_LT_EM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:84:12: ( '<!' )
-            // InternalEclLexer.g:84:14: '<!'
+            // InternalEclLexer.g:82:12: ( '<!' )
+            // InternalEclLexer.g:82:14: '<!'
             {
             match("<!"); 
 
@@ -805,8 +775,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_GT_EM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:86:12: ( '>!' )
-            // InternalEclLexer.g:86:14: '>!'
+            // InternalEclLexer.g:84:12: ( '>!' )
+            // InternalEclLexer.g:84:14: '>!'
             {
             match(">!"); 
 
@@ -826,8 +796,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_GTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:88:10: ( '>=' )
-            // InternalEclLexer.g:88:12: '>='
+            // InternalEclLexer.g:86:10: ( '>=' )
+            // InternalEclLexer.g:86:12: '>='
             {
             match(">="); 
 
@@ -847,8 +817,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_LTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:90:10: ( '<=' )
-            // InternalEclLexer.g:90:12: '<='
+            // InternalEclLexer.g:88:10: ( '<=' )
+            // InternalEclLexer.g:88:12: '<='
             {
             match("<="); 
 
@@ -868,8 +838,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_HASH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:92:11: ( '#' )
-            // InternalEclLexer.g:92:13: '#'
+            // InternalEclLexer.g:90:11: ( '#' )
+            // InternalEclLexer.g:90:13: '#'
             {
             match('#'); 
 
@@ -888,8 +858,8 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:94:9: ( ( ' ' | '\\t' | '\\n' | '\\r' ) )
-            // InternalEclLexer.g:94:11: ( ' ' | '\\t' | '\\n' | '\\r' )
+            // InternalEclLexer.g:92:9: ( ( ' ' | '\\t' | '\\n' | '\\r' ) )
+            // InternalEclLexer.g:92:11: ( ' ' | '\\t' | '\\n' | '\\r' )
             {
             if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
                 input.consume();
@@ -916,12 +886,12 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:96:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // InternalEclLexer.g:96:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // InternalEclLexer.g:94:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // InternalEclLexer.g:94:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // InternalEclLexer.g:96:24: ( options {greedy=false; } : . )*
+            // InternalEclLexer.g:94:24: ( options {greedy=false; } : . )*
             loop2:
             do {
                 int alt2=2;
@@ -946,7 +916,7 @@ public class InternalEclLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // InternalEclLexer.g:96:52: .
+            	    // InternalEclLexer.g:94:52: .
             	    {
             	    matchAny(); 
 
@@ -976,12 +946,12 @@ public class InternalEclLexer extends Lexer {
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:98:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // InternalEclLexer.g:98:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // InternalEclLexer.g:96:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // InternalEclLexer.g:96:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match("//"); 
 
-            // InternalEclLexer.g:98:24: (~ ( ( '\\n' | '\\r' ) ) )*
+            // InternalEclLexer.g:96:24: (~ ( ( '\\n' | '\\r' ) ) )*
             loop3:
             do {
                 int alt3=2;
@@ -994,7 +964,7 @@ public class InternalEclLexer extends Lexer {
 
                 switch (alt3) {
             	case 1 :
-            	    // InternalEclLexer.g:98:24: ~ ( ( '\\n' | '\\r' ) )
+            	    // InternalEclLexer.g:96:24: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -1014,7 +984,7 @@ public class InternalEclLexer extends Lexer {
                 }
             } while (true);
 
-            // InternalEclLexer.g:98:40: ( ( '\\r' )? '\\n' )?
+            // InternalEclLexer.g:96:40: ( ( '\\r' )? '\\n' )?
             int alt5=2;
             int LA5_0 = input.LA(1);
 
@@ -1023,9 +993,9 @@ public class InternalEclLexer extends Lexer {
             }
             switch (alt5) {
                 case 1 :
-                    // InternalEclLexer.g:98:41: ( '\\r' )? '\\n'
+                    // InternalEclLexer.g:96:41: ( '\\r' )? '\\n'
                     {
-                    // InternalEclLexer.g:98:41: ( '\\r' )?
+                    // InternalEclLexer.g:96:41: ( '\\r' )?
                     int alt4=2;
                     int LA4_0 = input.LA(1);
 
@@ -1034,7 +1004,7 @@ public class InternalEclLexer extends Lexer {
                     }
                     switch (alt4) {
                         case 1 :
-                            // InternalEclLexer.g:98:41: '\\r'
+                            // InternalEclLexer.g:96:41: '\\r'
                             {
                             match('\r'); 
 
@@ -1061,43 +1031,15 @@ public class InternalEclLexer extends Lexer {
     }
     // $ANTLR end "RULE_SL_COMMENT"
 
-    // $ANTLR start "RULE_OTHER_CHARACTER"
-    public final void mRULE_OTHER_CHARACTER() throws RecognitionException {
-        try {
-            int _type = RULE_OTHER_CHARACTER;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:100:22: (~ ( '|' ) )
-            // InternalEclLexer.g:100:24: ~ ( '|' )
-            {
-            if ( (input.LA(1)>='\u0000' && input.LA(1)<='{')||(input.LA(1)>='}' && input.LA(1)<='\uFFFF') ) {
-                input.consume();
-
-            }
-            else {
-                MismatchedSetException mse = new MismatchedSetException(null,input);
-                recover(mse);
-                throw mse;}
-
-
-            }
-
-            state.type = _type;
-            state.channel = _channel;
-        }
-        finally {
-        }
-    }
-    // $ANTLR end "RULE_OTHER_CHARACTER"
-
     // $ANTLR start "RULE_STRING"
     public final void mRULE_STRING() throws RecognitionException {
         try {
             int _type = RULE_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalEclLexer.g:102:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
-            // InternalEclLexer.g:102:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalEclLexer.g:98:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
+            // InternalEclLexer.g:98:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             {
-            // InternalEclLexer.g:102:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalEclLexer.g:98:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             int alt8=2;
             int LA8_0 = input.LA(1);
 
@@ -1115,10 +1057,10 @@ public class InternalEclLexer extends Lexer {
             }
             switch (alt8) {
                 case 1 :
-                    // InternalEclLexer.g:102:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
+                    // InternalEclLexer.g:98:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
                     {
                     match('\"'); 
-                    // InternalEclLexer.g:102:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
+                    // InternalEclLexer.g:98:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
                     loop6:
                     do {
                         int alt6=3;
@@ -1134,7 +1076,7 @@ public class InternalEclLexer extends Lexer {
 
                         switch (alt6) {
                     	case 1 :
-                    	    // InternalEclLexer.g:102:21: '\\\\' .
+                    	    // InternalEclLexer.g:98:21: '\\\\' .
                     	    {
                     	    match('\\'); 
                     	    matchAny(); 
@@ -1142,7 +1084,7 @@ public class InternalEclLexer extends Lexer {
                     	    }
                     	    break;
                     	case 2 :
-                    	    // InternalEclLexer.g:102:28: ~ ( ( '\\\\' | '\"' ) )
+                    	    // InternalEclLexer.g:98:28: ~ ( ( '\\\\' | '\"' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -1167,10 +1109,10 @@ public class InternalEclLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // InternalEclLexer.g:102:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
+                    // InternalEclLexer.g:98:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
                     {
                     match('\''); 
-                    // InternalEclLexer.g:102:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
+                    // InternalEclLexer.g:98:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
                     loop7:
                     do {
                         int alt7=3;
@@ -1186,7 +1128,7 @@ public class InternalEclLexer extends Lexer {
 
                         switch (alt7) {
                     	case 1 :
-                    	    // InternalEclLexer.g:102:54: '\\\\' .
+                    	    // InternalEclLexer.g:98:54: '\\\\' .
                     	    {
                     	    match('\\'); 
                     	    matchAny(); 
@@ -1194,7 +1136,7 @@ public class InternalEclLexer extends Lexer {
                     	    }
                     	    break;
                     	case 2 :
-                    	    // InternalEclLexer.g:102:61: ~ ( ( '\\\\' | '\\'' ) )
+                    	    // InternalEclLexer.g:98:61: ~ ( ( '\\\\' | '\\'' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -1233,8 +1175,8 @@ public class InternalEclLexer extends Lexer {
     // $ANTLR end "RULE_STRING"
 
     public void mTokens() throws RecognitionException {
-        // InternalEclLexer.g:1:8: ( MINUS | AND | OR | Comma | RULE_TERM_STRING | RULE_REVERSED | RULE_TO | RULE_ZERO | RULE_DIGIT_NONZERO | RULE_LETTER | RULE_COLON | RULE_CURLY_OPEN | RULE_CURLY_CLOSE | RULE_ROUND_OPEN | RULE_ROUND_CLOSE | RULE_SQUARE_OPEN | RULE_SQUARE_CLOSE | RULE_PLUS | RULE_DASH | RULE_CARET | RULE_NOT | RULE_DOT | RULE_WILDCARD | RULE_EQUAL | RULE_NOT_EQUAL | RULE_LT | RULE_GT | RULE_DBL_LT | RULE_DBL_GT | RULE_LT_EM | RULE_GT_EM | RULE_GTE | RULE_LTE | RULE_HASH | RULE_WS | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_OTHER_CHARACTER | RULE_STRING )
-        int alt9=39;
+        // InternalEclLexer.g:1:8: ( MINUS | AND | OR | Comma | RULE_TERM_STRING | RULE_REVERSED | RULE_TO | RULE_ZERO | RULE_DIGIT_NONZERO | RULE_COLON | RULE_CURLY_OPEN | RULE_CURLY_CLOSE | RULE_ROUND_OPEN | RULE_ROUND_CLOSE | RULE_SQUARE_OPEN | RULE_SQUARE_CLOSE | RULE_PLUS | RULE_DASH | RULE_CARET | RULE_NOT | RULE_DOT | RULE_WILDCARD | RULE_EQUAL | RULE_NOT_EQUAL | RULE_LT | RULE_GT | RULE_DBL_LT | RULE_DBL_GT | RULE_LT_EM | RULE_GT_EM | RULE_GTE | RULE_LTE | RULE_HASH | RULE_WS | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_STRING )
+        int alt9=37;
         alt9 = dfa9.predict(input);
         switch (alt9) {
             case 1 :
@@ -1301,210 +1243,196 @@ public class InternalEclLexer extends Lexer {
                 }
                 break;
             case 10 :
-                // InternalEclLexer.g:1:97: RULE_LETTER
-                {
-                mRULE_LETTER(); 
-
-                }
-                break;
-            case 11 :
-                // InternalEclLexer.g:1:109: RULE_COLON
+                // InternalEclLexer.g:1:97: RULE_COLON
                 {
                 mRULE_COLON(); 
 
                 }
                 break;
-            case 12 :
-                // InternalEclLexer.g:1:120: RULE_CURLY_OPEN
+            case 11 :
+                // InternalEclLexer.g:1:108: RULE_CURLY_OPEN
                 {
                 mRULE_CURLY_OPEN(); 
 
                 }
                 break;
-            case 13 :
-                // InternalEclLexer.g:1:136: RULE_CURLY_CLOSE
+            case 12 :
+                // InternalEclLexer.g:1:124: RULE_CURLY_CLOSE
                 {
                 mRULE_CURLY_CLOSE(); 
 
                 }
                 break;
-            case 14 :
-                // InternalEclLexer.g:1:153: RULE_ROUND_OPEN
+            case 13 :
+                // InternalEclLexer.g:1:141: RULE_ROUND_OPEN
                 {
                 mRULE_ROUND_OPEN(); 
 
                 }
                 break;
-            case 15 :
-                // InternalEclLexer.g:1:169: RULE_ROUND_CLOSE
+            case 14 :
+                // InternalEclLexer.g:1:157: RULE_ROUND_CLOSE
                 {
                 mRULE_ROUND_CLOSE(); 
 
                 }
                 break;
-            case 16 :
-                // InternalEclLexer.g:1:186: RULE_SQUARE_OPEN
+            case 15 :
+                // InternalEclLexer.g:1:174: RULE_SQUARE_OPEN
                 {
                 mRULE_SQUARE_OPEN(); 
 
                 }
                 break;
-            case 17 :
-                // InternalEclLexer.g:1:203: RULE_SQUARE_CLOSE
+            case 16 :
+                // InternalEclLexer.g:1:191: RULE_SQUARE_CLOSE
                 {
                 mRULE_SQUARE_CLOSE(); 
 
                 }
                 break;
-            case 18 :
-                // InternalEclLexer.g:1:221: RULE_PLUS
+            case 17 :
+                // InternalEclLexer.g:1:209: RULE_PLUS
                 {
                 mRULE_PLUS(); 
 
                 }
                 break;
-            case 19 :
-                // InternalEclLexer.g:1:231: RULE_DASH
+            case 18 :
+                // InternalEclLexer.g:1:219: RULE_DASH
                 {
                 mRULE_DASH(); 
 
                 }
                 break;
-            case 20 :
-                // InternalEclLexer.g:1:241: RULE_CARET
+            case 19 :
+                // InternalEclLexer.g:1:229: RULE_CARET
                 {
                 mRULE_CARET(); 
 
                 }
                 break;
-            case 21 :
-                // InternalEclLexer.g:1:252: RULE_NOT
+            case 20 :
+                // InternalEclLexer.g:1:240: RULE_NOT
                 {
                 mRULE_NOT(); 
 
                 }
                 break;
-            case 22 :
-                // InternalEclLexer.g:1:261: RULE_DOT
+            case 21 :
+                // InternalEclLexer.g:1:249: RULE_DOT
                 {
                 mRULE_DOT(); 
 
                 }
                 break;
-            case 23 :
-                // InternalEclLexer.g:1:270: RULE_WILDCARD
+            case 22 :
+                // InternalEclLexer.g:1:258: RULE_WILDCARD
                 {
                 mRULE_WILDCARD(); 
 
                 }
                 break;
-            case 24 :
-                // InternalEclLexer.g:1:284: RULE_EQUAL
+            case 23 :
+                // InternalEclLexer.g:1:272: RULE_EQUAL
                 {
                 mRULE_EQUAL(); 
 
                 }
                 break;
-            case 25 :
-                // InternalEclLexer.g:1:295: RULE_NOT_EQUAL
+            case 24 :
+                // InternalEclLexer.g:1:283: RULE_NOT_EQUAL
                 {
                 mRULE_NOT_EQUAL(); 
 
                 }
                 break;
-            case 26 :
-                // InternalEclLexer.g:1:310: RULE_LT
+            case 25 :
+                // InternalEclLexer.g:1:298: RULE_LT
                 {
                 mRULE_LT(); 
 
                 }
                 break;
-            case 27 :
-                // InternalEclLexer.g:1:318: RULE_GT
+            case 26 :
+                // InternalEclLexer.g:1:306: RULE_GT
                 {
                 mRULE_GT(); 
 
                 }
                 break;
-            case 28 :
-                // InternalEclLexer.g:1:326: RULE_DBL_LT
+            case 27 :
+                // InternalEclLexer.g:1:314: RULE_DBL_LT
                 {
                 mRULE_DBL_LT(); 
 
                 }
                 break;
-            case 29 :
-                // InternalEclLexer.g:1:338: RULE_DBL_GT
+            case 28 :
+                // InternalEclLexer.g:1:326: RULE_DBL_GT
                 {
                 mRULE_DBL_GT(); 
 
                 }
                 break;
-            case 30 :
-                // InternalEclLexer.g:1:350: RULE_LT_EM
+            case 29 :
+                // InternalEclLexer.g:1:338: RULE_LT_EM
                 {
                 mRULE_LT_EM(); 
 
                 }
                 break;
-            case 31 :
-                // InternalEclLexer.g:1:361: RULE_GT_EM
+            case 30 :
+                // InternalEclLexer.g:1:349: RULE_GT_EM
                 {
                 mRULE_GT_EM(); 
 
                 }
                 break;
-            case 32 :
-                // InternalEclLexer.g:1:372: RULE_GTE
+            case 31 :
+                // InternalEclLexer.g:1:360: RULE_GTE
                 {
                 mRULE_GTE(); 
 
                 }
                 break;
-            case 33 :
-                // InternalEclLexer.g:1:381: RULE_LTE
+            case 32 :
+                // InternalEclLexer.g:1:369: RULE_LTE
                 {
                 mRULE_LTE(); 
 
                 }
                 break;
-            case 34 :
-                // InternalEclLexer.g:1:390: RULE_HASH
+            case 33 :
+                // InternalEclLexer.g:1:378: RULE_HASH
                 {
                 mRULE_HASH(); 
 
                 }
                 break;
-            case 35 :
-                // InternalEclLexer.g:1:400: RULE_WS
+            case 34 :
+                // InternalEclLexer.g:1:388: RULE_WS
                 {
                 mRULE_WS(); 
 
                 }
                 break;
-            case 36 :
-                // InternalEclLexer.g:1:408: RULE_ML_COMMENT
+            case 35 :
+                // InternalEclLexer.g:1:396: RULE_ML_COMMENT
                 {
                 mRULE_ML_COMMENT(); 
 
                 }
                 break;
-            case 37 :
-                // InternalEclLexer.g:1:424: RULE_SL_COMMENT
+            case 36 :
+                // InternalEclLexer.g:1:412: RULE_SL_COMMENT
                 {
                 mRULE_SL_COMMENT(); 
 
                 }
                 break;
-            case 38 :
-                // InternalEclLexer.g:1:440: RULE_OTHER_CHARACTER
-                {
-                mRULE_OTHER_CHARACTER(); 
-
-                }
-                break;
-            case 39 :
-                // InternalEclLexer.g:1:461: RULE_STRING
+            case 37 :
+                // InternalEclLexer.g:1:428: RULE_STRING
                 {
                 mRULE_STRING(); 
 
@@ -1518,49 +1446,26 @@ public class InternalEclLexer extends Lexer {
 
     protected DFA9 dfa9 = new DFA9(this);
     static final String DFA9_eotS =
-        "\1\uffff\3\41\3\uffff\1\47\15\uffff\1\65\2\uffff\1\73\1\77\2\uffff\3\37\46\uffff";
+        "\7\uffff\1\36\14\uffff\1\40\2\uffff\1\44\1\50\22\uffff";
     static final String DFA9_eofS =
-        "\105\uffff";
+        "\53\uffff";
     static final String DFA9_minS =
-        "\1\0\1\111\1\116\1\122\3\uffff\1\56\15\uffff\1\75\2\uffff\2\41\2\uffff\1\52\2\0\46\uffff";
+        "\1\11\6\uffff\1\56\14\uffff\1\75\2\uffff\2\41\2\uffff\1\52\17\uffff";
     static final String DFA9_maxS =
-        "\1\uffff\1\151\1\156\1\162\3\uffff\1\56\15\uffff\1\75\2\uffff\1\75\1\76\2\uffff\1\57\2\uffff\46\uffff";
+        "\1\175\6\uffff\1\56\14\uffff\1\75\2\uffff\1\75\1\76\2\uffff\1\57\17\uffff";
     static final String DFA9_acceptS =
-        "\4\uffff\1\4\1\5\1\6\1\uffff\1\10\1\11\1\12\1\13\1\14\1\15\1\16\1\17\1\20\1\21\1\22\1\23\1\24\1\uffff\1\27\1\30\2\uffff\1\42\1\43\3\uffff\1\46\1\1\1\12\1\2\1\3\1\4\1\6\1\7\1\26\1\10\1\11\1\13\1\14\1\15\1\16\1\17\1\20\1\21\1\22\1\23\1\24\1\31\1\25\1\27\1\30\1\34\1\36\1\41\1\32\1\35\1\37\1\40\1\33\1\42\1\43\1\44\1\45\1\47";
+        "\1\uffff\1\1\1\2\1\3\1\4\1\5\1\6\1\uffff\1\10\1\11\1\12\1\13\1\14\1\15\1\16\1\17\1\20\1\21\1\22\1\23\1\uffff\1\26\1\27\2\uffff\1\41\1\42\1\uffff\1\45\1\7\1\25\1\30\1\24\1\33\1\35\1\40\1\31\1\34\1\36\1\37\1\32\1\43\1\44";
     static final String DFA9_specialS =
-        "\1\1\34\uffff\1\2\1\0\46\uffff}>";
+        "\53\uffff}>";
     static final String[] DFA9_transitionS = {
-            "\11\37\2\33\2\37\1\33\22\37\1\33\1\25\1\35\1\32\3\37\1\36\1\16\1\17\1\26\1\22\1\4\1\23\1\7\1\34\1\10\11\11\1\13\1\37\1\30\1\27\1\31\2\37\1\2\13\12\1\1\1\12\1\3\2\12\1\6\10\12\1\20\1\37\1\21\1\24\2\37\1\2\13\12\1\1\1\12\1\3\13\12\1\14\1\5\1\15\uff82\37",
-            "\1\40\37\uffff\1\40",
-            "\1\42\37\uffff\1\42",
-            "\1\43\37\uffff\1\43",
-            "",
-            "",
-            "",
-            "\1\46",
+            "\2\32\2\uffff\1\32\22\uffff\1\32\1\24\1\34\1\31\3\uffff\1\34\1\15\1\16\1\25\1\21\1\4\1\22\1\7\1\33\1\10\11\11\1\12\1\uffff\1\27\1\26\1\30\2\uffff\1\2\13\uffff\1\1\1\uffff\1\3\2\uffff\1\6\10\uffff\1\17\1\uffff\1\20\1\23\2\uffff\1\2\13\uffff\1\1\1\uffff\1\3\13\uffff\1\13\1\5\1\14",
             "",
             "",
             "",
             "",
             "",
             "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "\1\64",
-            "",
-            "",
-            "\1\71\32\uffff\1\70\1\72",
-            "\1\75\33\uffff\1\76\1\74",
-            "",
-            "",
-            "\1\102\4\uffff\1\103",
-            "\0\104",
-            "\0\104",
+            "\1\35",
             "",
             "",
             "",
@@ -1573,17 +1478,14 @@ public class InternalEclLexer extends Lexer {
             "",
             "",
             "",
+            "\1\37",
             "",
             "",
+            "\1\42\32\uffff\1\41\1\43",
+            "\1\46\33\uffff\1\47\1\45",
             "",
             "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
+            "\1\51\4\uffff\1\52",
             "",
             "",
             "",
@@ -1617,7 +1519,7 @@ public class InternalEclLexer extends Lexer {
         }
     }
 
-    static class DFA9 extends DFA {
+    class DFA9 extends DFA {
 
         public DFA9(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
@@ -1631,105 +1533,7 @@ public class InternalEclLexer extends Lexer {
             this.transition = DFA9_transition;
         }
         public String getDescription() {
-            return "1:1: Tokens : ( MINUS | AND | OR | Comma | RULE_TERM_STRING | RULE_REVERSED | RULE_TO | RULE_ZERO | RULE_DIGIT_NONZERO | RULE_LETTER | RULE_COLON | RULE_CURLY_OPEN | RULE_CURLY_CLOSE | RULE_ROUND_OPEN | RULE_ROUND_CLOSE | RULE_SQUARE_OPEN | RULE_SQUARE_CLOSE | RULE_PLUS | RULE_DASH | RULE_CARET | RULE_NOT | RULE_DOT | RULE_WILDCARD | RULE_EQUAL | RULE_NOT_EQUAL | RULE_LT | RULE_GT | RULE_DBL_LT | RULE_DBL_GT | RULE_LT_EM | RULE_GT_EM | RULE_GTE | RULE_LTE | RULE_HASH | RULE_WS | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_OTHER_CHARACTER | RULE_STRING );";
-        }
-        public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
-            IntStream input = _input;
-        	int _s = s;
-            switch ( s ) {
-                    case 0 : 
-                        int LA9_30 = input.LA(1);
-
-                        s = -1;
-                        if ( ((LA9_30>='\u0000' && LA9_30<='\uFFFF')) ) {s = 68;}
-
-                        else s = 31;
-
-                        if ( s>=0 ) return s;
-                        break;
-                    case 1 : 
-                        int LA9_0 = input.LA(1);
-
-                        s = -1;
-                        if ( (LA9_0=='M'||LA9_0=='m') ) {s = 1;}
-
-                        else if ( (LA9_0=='A'||LA9_0=='a') ) {s = 2;}
-
-                        else if ( (LA9_0=='O'||LA9_0=='o') ) {s = 3;}
-
-                        else if ( (LA9_0==',') ) {s = 4;}
-
-                        else if ( (LA9_0=='|') ) {s = 5;}
-
-                        else if ( (LA9_0=='R') ) {s = 6;}
-
-                        else if ( (LA9_0=='.') ) {s = 7;}
-
-                        else if ( (LA9_0=='0') ) {s = 8;}
-
-                        else if ( ((LA9_0>='1' && LA9_0<='9')) ) {s = 9;}
-
-                        else if ( ((LA9_0>='B' && LA9_0<='L')||LA9_0=='N'||(LA9_0>='P' && LA9_0<='Q')||(LA9_0>='S' && LA9_0<='Z')||(LA9_0>='b' && LA9_0<='l')||LA9_0=='n'||(LA9_0>='p' && LA9_0<='z')) ) {s = 10;}
-
-                        else if ( (LA9_0==':') ) {s = 11;}
-
-                        else if ( (LA9_0=='{') ) {s = 12;}
-
-                        else if ( (LA9_0=='}') ) {s = 13;}
-
-                        else if ( (LA9_0=='(') ) {s = 14;}
-
-                        else if ( (LA9_0==')') ) {s = 15;}
-
-                        else if ( (LA9_0=='[') ) {s = 16;}
-
-                        else if ( (LA9_0==']') ) {s = 17;}
-
-                        else if ( (LA9_0=='+') ) {s = 18;}
-
-                        else if ( (LA9_0=='-') ) {s = 19;}
-
-                        else if ( (LA9_0=='^') ) {s = 20;}
-
-                        else if ( (LA9_0=='!') ) {s = 21;}
-
-                        else if ( (LA9_0=='*') ) {s = 22;}
-
-                        else if ( (LA9_0=='=') ) {s = 23;}
-
-                        else if ( (LA9_0=='<') ) {s = 24;}
-
-                        else if ( (LA9_0=='>') ) {s = 25;}
-
-                        else if ( (LA9_0=='#') ) {s = 26;}
-
-                        else if ( ((LA9_0>='\t' && LA9_0<='\n')||LA9_0=='\r'||LA9_0==' ') ) {s = 27;}
-
-                        else if ( (LA9_0=='/') ) {s = 28;}
-
-                        else if ( (LA9_0=='\"') ) {s = 29;}
-
-                        else if ( (LA9_0=='\'') ) {s = 30;}
-
-                        else if ( ((LA9_0>='\u0000' && LA9_0<='\b')||(LA9_0>='\u000B' && LA9_0<='\f')||(LA9_0>='\u000E' && LA9_0<='\u001F')||(LA9_0>='$' && LA9_0<='&')||LA9_0==';'||(LA9_0>='?' && LA9_0<='@')||LA9_0=='\\'||(LA9_0>='_' && LA9_0<='`')||(LA9_0>='~' && LA9_0<='\uFFFF')) ) {s = 31;}
-
-                        if ( s>=0 ) return s;
-                        break;
-                    case 2 : 
-                        int LA9_29 = input.LA(1);
-
-                        s = -1;
-                        if ( ((LA9_29>='\u0000' && LA9_29<='\uFFFF')) ) {s = 68;}
-
-                        else s = 31;
-
-                        if ( s>=0 ) return s;
-                        break;
-            }
-            NoViableAltException nvae =
-                new NoViableAltException(getDescription(), 9, _s, input);
-            error(nvae);
-            throw nvae;
+            return "1:1: Tokens : ( MINUS | AND | OR | Comma | RULE_TERM_STRING | RULE_REVERSED | RULE_TO | RULE_ZERO | RULE_DIGIT_NONZERO | RULE_COLON | RULE_CURLY_OPEN | RULE_CURLY_CLOSE | RULE_ROUND_OPEN | RULE_ROUND_CLOSE | RULE_SQUARE_OPEN | RULE_SQUARE_CLOSE | RULE_PLUS | RULE_DASH | RULE_CARET | RULE_NOT | RULE_DOT | RULE_WILDCARD | RULE_EQUAL | RULE_NOT_EQUAL | RULE_LT | RULE_GT | RULE_DBL_LT | RULE_DBL_GT | RULE_LT_EM | RULE_GT_EM | RULE_GTE | RULE_LTE | RULE_HASH | RULE_WS | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_STRING );";
         }
     }
  

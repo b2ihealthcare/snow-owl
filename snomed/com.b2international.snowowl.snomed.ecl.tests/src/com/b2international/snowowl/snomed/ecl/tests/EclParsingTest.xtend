@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.ecl.tests
 
-import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint
+import com.b2international.snowowl.snomed.ecl.ecl.Script
 import com.google.inject.Inject
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.XtextRunner
@@ -35,8 +35,13 @@ import static org.junit.Assert.*
 @FixMethodOrder(NAME_ASCENDING)
 class EclParsingTest {
 
-	@Inject extension ParseHelper<ExpressionConstraint>
+	@Inject extension ParseHelper<Script>
 	@Inject extension ValidationTestHelper
+
+	@Test
+	def void test_empty() {
+		''.assertNoErrors;
+	}
 
 	@Test
 	def void test_6_2_1_Self_1() {
@@ -491,10 +496,10 @@ class EclParsingTest {
 		'''.assertNoErrors;
 	}
 
-	private def void assertNoErrors(CharSequence expression) throws Exception {
-		val constraint = expression.parse;
-		assertNotNull('''Cannot parse expression: «expression».''', constraint);
-		constraint.assertNoErrors;
+	private def void assertNoErrors(CharSequence it) throws Exception {
+		val script = parse;
+		assertNotNull('''Cannot parse expression: «it».''', script);
+		script.assertNoErrors;
 	}
 
 }

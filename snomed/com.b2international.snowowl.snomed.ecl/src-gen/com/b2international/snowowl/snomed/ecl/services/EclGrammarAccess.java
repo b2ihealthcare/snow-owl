@@ -34,6 +34,29 @@ import org.eclipse.xtext.service.GrammarProvider;
 @Singleton
 public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	
+	public class ScriptElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.Script");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Action cScriptAction_0 = (Action)cGroup.eContents().get(0);
+		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cConstraintExpressionConstraintParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
+		
+		//Script:
+		//	{Script} constraint=ExpressionConstraint?;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//{Script} constraint=ExpressionConstraint?
+		public Group getGroup() { return cGroup; }
+		
+		//{Script}
+		public Action getScriptAction_0() { return cScriptAction_0; }
+		
+		//constraint=ExpressionConstraint?
+		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
+		
+		//ExpressionConstraint
+		public RuleCall getConstraintExpressionConstraintParserRuleCall_1_0() { return cConstraintExpressionConstraintParserRuleCall_1_0; }
+	}
 	public class ExpressionConstraintElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
 		private final RuleCall cOrExpressionConstraintParserRuleCall = (RuleCall)rule.eContents().get(1);
@@ -1782,6 +1805,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	
+	private final ScriptElements pScript;
 	private final ExpressionConstraintElements pExpressionConstraint;
 	private final OrExpressionConstraintElements pOrExpressionConstraint;
 	private final AndExpressionConstraintElements pAndExpressionConstraint;
@@ -1846,7 +1870,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final TerminalRule tTO;
 	private final TerminalRule tZERO;
 	private final TerminalRule tDIGIT_NONZERO;
-	private final TerminalRule tLETTER;
 	private final TerminalRule tCOLON;
 	private final TerminalRule tCURLY_OPEN;
 	private final TerminalRule tCURLY_CLOSE;
@@ -1874,7 +1897,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final TerminalRule tWS;
 	private final TerminalRule tML_COMMENT;
 	private final TerminalRule tSL_COMMENT;
-	private final TerminalRule tOTHER_CHARACTER;
 	private final TerminalRule tSTRING;
 	
 	private final Grammar grammar;
@@ -1882,6 +1904,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	@Inject
 	public EclGrammarAccess(GrammarProvider grammarProvider) {
 		this.grammar = internalFindGrammar(grammarProvider);
+		this.pScript = new ScriptElements();
 		this.pExpressionConstraint = new ExpressionConstraintElements();
 		this.pOrExpressionConstraint = new OrExpressionConstraintElements();
 		this.pAndExpressionConstraint = new AndExpressionConstraintElements();
@@ -1946,7 +1969,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.tTO = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.TO");
 		this.tZERO = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.ZERO");
 		this.tDIGIT_NONZERO = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.DIGIT_NONZERO");
-		this.tLETTER = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.LETTER");
 		this.tCOLON = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.COLON");
 		this.tCURLY_OPEN = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.CURLY_OPEN");
 		this.tCURLY_CLOSE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.CURLY_CLOSE");
@@ -1974,7 +1996,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.tWS = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.WS");
 		this.tML_COMMENT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.ML_COMMENT");
 		this.tSL_COMMENT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.SL_COMMENT");
-		this.tOTHER_CHARACTER = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.OTHER_CHARACTER");
 		this.tSTRING = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.STRING");
 	}
 	
@@ -2000,6 +2021,16 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 
+	
+	//Script:
+	//	{Script} constraint=ExpressionConstraint?;
+	public ScriptElements getScriptAccess() {
+		return pScript;
+	}
+	
+	public ParserRule getScriptRule() {
+		return getScriptAccess().getRule();
+	}
 	
 	//ExpressionConstraint:
 	//	OrExpressionConstraint;
@@ -2637,12 +2668,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return tDIGIT_NONZERO;
 	}
 	
-	//terminal LETTER:
-	//	'a'..'z' | 'A'..'Z';
-	public TerminalRule getLETTERRule() {
-		return tLETTER;
-	}
-	
 	//terminal COLON:
 	//	':';
 	public TerminalRule getCOLONRule() {
@@ -2803,12 +2828,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	//	'//' !('\n' | '\r')* ('\r'? '\n')?;
 	public TerminalRule getSL_COMMENTRule() {
 		return tSL_COMMENT;
-	}
-	
-	//terminal OTHER_CHARACTER:
-	//	!'|';
-	public TerminalRule getOTHER_CHARACTERRule() {
-		return tOTHER_CHARACTER;
 	}
 	
 	//terminal STRING:

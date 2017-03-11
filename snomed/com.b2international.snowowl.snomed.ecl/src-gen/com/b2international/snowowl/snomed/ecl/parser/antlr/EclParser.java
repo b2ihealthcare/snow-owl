@@ -39,7 +39,7 @@ public class EclParser extends AbstractAntlrParser {
 
 	@Override 
 	protected String getDefaultRuleName() {
-		return "ExpressionConstraint";
+		return "Script";
 	}
 
 	public EclGrammarAccess getGrammarAccess() {

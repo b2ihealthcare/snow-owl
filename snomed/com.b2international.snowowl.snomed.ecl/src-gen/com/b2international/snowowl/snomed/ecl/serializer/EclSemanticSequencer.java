@@ -51,6 +51,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
 import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.Script;
 import com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.services.EclGrammarAccess;
@@ -269,6 +270,9 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				return; 
 			case EclPackage.REFINED_EXPRESSION_CONSTRAINT:
 				sequence_RefinedExpressionConstraint(context, (RefinedExpressionConstraint) semanticObject); 
+				return; 
+			case EclPackage.SCRIPT:
+				sequence_Script(context, (Script) semanticObject); 
 				return; 
 			case EclPackage.STRING_VALUE_EQUALS:
 				sequence_StringValueEquals(context, (StringValueEquals) semanticObject); 
@@ -1212,6 +1216,18 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 		feeder.accept(grammarAccess.getRefinedExpressionConstraintAccess().getRefinedExpressionConstraintConstraintAction_1_0(), semanticObject.getConstraint());
 		feeder.accept(grammarAccess.getRefinedExpressionConstraintAccess().getRefinementRefinementParserRuleCall_1_2_0(), semanticObject.getRefinement());
 		feeder.finish();
+	}
+	
+	
+	/**
+	 * Contexts:
+	 *     Script returns Script
+	 *
+	 * Constraint:
+	 *     constraint=ExpressionConstraint?
+	 */
+	protected void sequence_Script(ISerializationContext context, Script semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	

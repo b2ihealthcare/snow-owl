@@ -54,7 +54,7 @@ import com.b2international.snowowl.snomed.ecl.services.EclGrammarAccess;
 
     @Override
     protected String getFirstRuleName() {
-    	return "ExpressionConstraint";
+    	return "Script";
    	}
 
    	@Override
@@ -70,6 +70,54 @@ import com.b2international.snowowl.snomed.ecl.services.EclGrammarAccess;
         appendSkippedTokens();
     }
 }
+
+// Entry rule entryRuleScript
+entryRuleScript returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getScriptRule()); }
+	iv_ruleScript=ruleScript
+	{ $current=$iv_ruleScript.current; }
+	EOF;
+
+// Rule Script
+ruleScript returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		(
+			{
+				/* */
+			}
+			{
+				$current = forceCreateModelElement(
+					grammarAccess.getScriptAccess().getScriptAction_0(),
+					$current);
+			}
+		)
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getScriptAccess().getConstraintExpressionConstraintParserRuleCall_1_0());
+				}
+				lv_constraint_1_0=ruleExpressionConstraint
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getScriptRule());
+					}
+					set(
+						$current,
+						"constraint",
+						lv_constraint_1_0,
+						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)?
+	)
+;
 
 // Entry rule entryRuleExpressionConstraint
 entryRuleExpressionConstraint returns [EObject current=null]:

@@ -77,6 +77,7 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
   {
     switch (eClass.getClassifierID())
     {
+      case EclPackage.SCRIPT: return createScript();
       case EclPackage.EXPRESSION_CONSTRAINT: return createExpressionConstraint();
       case EclPackage.CHILD_OF: return createChildOf();
       case EclPackage.DESCENDANT_OF: return createDescendantOf();
@@ -122,6 +123,17 @@ public class EclFactoryImpl extends EFactoryImpl implements EclFactory
       default:
         throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
     }
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public Script createScript()
+  {
+    ScriptImpl script = new ScriptImpl();
+    return script;
   }
 
   /**
