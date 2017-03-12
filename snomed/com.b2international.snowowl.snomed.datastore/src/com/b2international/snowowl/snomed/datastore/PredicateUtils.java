@@ -47,11 +47,6 @@ public abstract class PredicateUtils {
 	public static final String SELF_OR_DESCENDANT = "<<";
 	
 	/**
-	 * Union. {@value}
-	 */
-	public static final String UNION = "UNION";
-	
-	/**
 	 * Or. {@value}
 	 */
 	public static final String OR = "OR";
@@ -108,7 +103,7 @@ public abstract class PredicateUtils {
 	 * 
 	 * 
 	 */
-	public static String getEscgExpression(final ConceptSetDefinition conceptSetDefinition) {
+	public static String toEclExpression(final ConceptSetDefinition conceptSetDefinition) {
 		if (conceptSetDefinition instanceof HierarchyConceptSetDefinition) {
 			final HierarchyConceptSetDefinition hierarchyConceptSetDefinition = (HierarchyConceptSetDefinition)conceptSetDefinition;
 			
@@ -158,9 +153,9 @@ public abstract class PredicateUtils {
 			final StringBuilder sb = new StringBuilder();
 			for (final ConceptSetDefinition child : compositeConceptSetDefinition.getChildren()) {
 				if (sb.length() > 0) {
-					sb.append(UNION);
+					sb.append(OR);
 				}
-				sb.append(getEscgExpression(child));
+				sb.append(toEclExpression(child));
 			}
 			return sb.toString();
 			
