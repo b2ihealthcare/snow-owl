@@ -142,10 +142,10 @@ public class DBStore extends Store implements IDBStore, CDOAllRevisionsProvider
         set(RevisionParallelism.NONE, RevisionParallelism.BRANCHING));
     
     readerPool = new StoreAccessorPool(this, null);
-    readerPool.setCapacity(35);
+    readerPool.setCapacity(7);
     
     writerPool = new StoreAccessorPool(this, null);
-    writerPool.setCapacity(15);
+    writerPool.setCapacity(3);
   }
 
   public IMappingStrategy getMappingStrategy()
