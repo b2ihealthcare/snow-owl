@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.b2international.snowowl</groupId>
     <artifactId>dependencies-parent</artifactId>
-    <version>5.7.3</version>
+    <version>5.7.4</version>
   </parent>
   <artifactId>com.b2international.org.apache.lucene</artifactId>
   <packaging>eclipse-plugin</packaging>

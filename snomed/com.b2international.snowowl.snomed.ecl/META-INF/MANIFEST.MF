@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: com.b2international.snowowl.snomed.ecl
 Bundle-Vendor: B2i Healthcare
-Bundle-Version: 5.7.3
+Bundle-Version: 5.7.4
 Bundle-SymbolicName: com.b2international.snowowl.snomed.ecl; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.xtext;visibility:=reexport,

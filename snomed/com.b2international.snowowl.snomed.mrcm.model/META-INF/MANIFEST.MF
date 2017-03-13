@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl MRCM Model
 Bundle-SymbolicName: com.b2international.snowowl.snomed.mrcm.model;singleton:=true
-Bundle-Version: 5.7.3
+Bundle-Version: 5.7.4
 Bundle-ClassPath: .
 Bundle-Vendor: B2i Healthcare
 Bundle-Localization: plugin
