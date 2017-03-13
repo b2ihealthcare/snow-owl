@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.7.4
+
+### Changed
+- Support UUID as return value of a RemoteJob (bee443409401b0ece88a520c009e07130b924357)
+
+### Bugs
+- Fixed invalid MRCM domain expression calculation in case of CompositeConceptSetDefinition (1600d9e1821b9d403ab3365e15f05a96f238eba1)
+
 ## 5.7.3
 
 ### Bugs
