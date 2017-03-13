@@ -36,27 +36,5 @@ echo "Deleting workspace directory."
 rm -rf $SCRIPT_DIR/../workspace
 echo "Finished cleanup, starting server."
 
-#
-# Starting server
-# http://veithen.github.io/2014/11/16/sigterm-propagation.html
-#
-
-# Set up signal handler for TERM (sent by supervisor) and INT (keyboard interrupt)
-# Note: we don't pass additional arguments from the startup script here
-trap '{ echo "Stopping server on signal." ; "$SCRIPT_DIR"/"$EXECUTABLE" stop ; }' TERM INT
-
-# Run start command in subshell (child process)
-"$SCRIPT_DIR"/"$EXECUTABLE" start "$@" &
-
-# Capture PID of child and wait for completion
-PID=$!
-wait $PID
-
-# The first wait can return before the child completes if a signal has been received.
-# Remove signal handler, then wait again (which will return immediately if the child
-# did exit in the meantime)
-trap - TERM INT
-wait $PID
-
-# Capture the exit status from the child, as reported by wait
-exit $?
+# Run start command in the same process using exec
+exec "$SCRIPT_DIR"/"$EXECUTABLE" start "$@"
