@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.remotejobs;
 
 import java.util.Map;
+import java.util.UUID;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -71,7 +72,7 @@ public final class RemoteJob extends Job {
 			final Object response = request.execute(context);
 			if (response != null) {
 				final Class<? extends Object> responseType = response.getClass();
-				if (Primitives.isWrapperType(responseType) || String.class.isAssignableFrom(responseType)) {
+				if (Primitives.isWrapperType(responseType) || String.class.isAssignableFrom(responseType) || UUID.class.isAssignableFrom(responseType)) {
 					this.response = response;
 				} else {
 					this.response = mapper.convertValue(response, Map.class);
