@@ -72,7 +72,7 @@ public final class DefaultFileRegistry implements InternalFileRegistry {
 		final File requestedFile = getFile(id);
 		
 		try {
-			Files.copy(requestedFile, out);
+			Files.copy(requestedFile, () -> out);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Failed to download attachment of " + id, e); 
 		}
