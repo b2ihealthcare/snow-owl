@@ -402,7 +402,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		}
 		
 		if (!problematicCommitInfos.isEmpty()) {
-			LOG.error("Index must be re-initialized! Deactivated repository for {}. (The database is ahead of the indexes with commit timestamp(s): {})", getCdoRepository().getRepositoryName(), Iterables.transform(problematicCommitInfos, item -> item.getTimeStamp()));
+			LOG.error("Index must be re-initialized for repository: {}. (The database is ahead of the indexes with commit timestamp(s): {})", getCdoRepository().getRepositoryName(), Iterables.transform(problematicCommitInfos, item -> item.getTimeStamp()));
 			return true;
 		} else {
 			LOG.info("{}'s {} branch's head CDO timestamp is: {} ", getCdoRepository().getRepositoryName(), branch.getPath(), Iterables.getLast(immutableCdoCommitInfosList).getTimeStamp() );
