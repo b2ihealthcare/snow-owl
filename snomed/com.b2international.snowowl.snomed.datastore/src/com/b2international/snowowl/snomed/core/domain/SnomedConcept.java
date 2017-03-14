@@ -67,6 +67,8 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	private SnomedRelationships relationships;
 	private SnomedConcepts ancestors;
 	private SnomedConcepts descendants;
+	private SnomedConcepts statedAncestors;
+	private SnomedConcepts statedDescendants;
 	private long[] ancestorIds;
 	private long[] parentIds;
 	private long[] statedAncestorIds;
@@ -150,17 +152,31 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	}
 
 	/**
-	 * @return the ancestors of the SNOMED CT concept
+	 * @return the inferred ancestors of the SNOMED CT concept
 	 */
 	public SnomedConcepts getAncestors() {
 		return ancestors;
 	}
+	
+	/**
+	 * @return the stated ancestors of the SNOMED CT concept
+	 */
+	public SnomedConcepts getStatedAncestors() {
+		return statedAncestors;
+	}
 
 	/**
-	 * @return the descendants of the SNOMED CT concept
+	 * @return the inferred descendants of the SNOMED CT concept
 	 */
 	public SnomedConcepts getDescendants() {
 		return descendants;
+	}
+	
+	/**
+	 * @return the stated descendants of the SNOMED CT concept
+	 */
+	public SnomedConcepts getStatedDescendants() {
+		return statedDescendants;
 	}
 
 	/**
@@ -233,6 +249,14 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	
 	public void setDescendants(SnomedConcepts descendants) {
 		this.descendants = descendants;
+	}
+	
+	public void setStatedAncestors(SnomedConcepts statedAncestors) {
+		this.statedAncestors = statedAncestors;
+	}
+	
+	public void setStatedDescendants(SnomedConcepts statedDescendants) {
+		this.statedDescendants = statedDescendants;
 	}
 	
 	public void setAncestorIds(final long[] ancestorIds) {
