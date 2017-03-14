@@ -15,11 +15,14 @@
  */
 package com.b2international.snowowl.datastore.server.internal;
 
+import static com.google.common.collect.Iterables.getLast;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +31,8 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.platform.Extensions;
 import com.b2international.index.DefaultIndex;
@@ -36,6 +41,7 @@ import com.b2international.index.IndexClient;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexWrite;
 import com.b2international.index.Indexes;
+import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.slowlog.SlowLogConfig;
@@ -44,9 +50,12 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranchProvider;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.RepositoryEvent;
 import com.b2international.snowowl.core.merge.MergeService;
 import com.b2international.snowowl.core.setup.Environment;
@@ -55,16 +64,20 @@ import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
+import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils.CDOCommitInfoQuery;
+import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils.ConsumeAllCommitInfoHandler;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument;
+import com.b2international.snowowl.datastore.commitinfo.CommitInfos;
 import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.b2international.snowowl.datastore.index.MappingProvider;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
@@ -88,6 +101,7 @@ import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Ordering;
 import com.google.inject.Provider;
@@ -97,6 +111,7 @@ import com.google.inject.Provider;
  */
 public final class CDOBasedRepository extends DelegatingServiceProvider implements InternalRepository, CDOCommitInfoHandler {
 
+	private static final Logger LOG = LoggerFactory.getLogger(CDOBasedRepository.class);
 	private static final String REINDEX_KEY = "snowowl.reindex";
 	
 	private final String toolingId;
@@ -235,7 +250,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		bind(RevisionIndex.class, revisionIndex);
 		// initialize the index
 		index.admin().create();
-		
+		getDelegate().services().registerService(Searcher.class, indexClient.searcher());
 	}
 
 	private Map<String, Object> initIndexSettings() {
@@ -348,5 +363,81 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 			notification.publish(events());
         }
 	}
-	
+
+	@Override
+	public boolean isConsistent(IBranchPath branch) {
+		List<CDOCommitInfo> cdoCommitInfos = getCDOCommitInfos(branch);
+		CommitInfos indexCommitInfos = getIndexCommitInfos(branch);
+		
+		boolean emptyDb = cdoCommitInfos.isEmpty();
+		boolean emptyIndex = indexCommitInfos.getItems().isEmpty();
+
+		if (emptyDb && emptyIndex) {
+			return true; // empty dataset
+		}
+		
+		if (emptyDb ^ emptyIndex) {
+			LOG.error("{} is in inconsistent state. CDO {} but INDEX {}", getCdoRepository().getRepositoryName(), contentCheck(emptyDb), contentCheck(emptyIndex));
+			return false; // either CDO or index was deleted but not the other.
+		}
+		
+		return !hasInvalidCDOTimeStamps(cdoCommitInfos, getLast(indexCommitInfos).getTimeStamp(), branch);
+	}
+
+	private String contentCheck(boolean empty) {
+		return empty ? "IS EMPTY" : "HAS CONTENT";
+	}
+
+	private boolean hasInvalidCDOTimeStamps(List<CDOCommitInfo> immutableCdoCommitInfosList, long lastIndexCommitTimestamp, IBranchPath branch) {
+		// expect all the commit infos to be invalid
+		List<CDOCommitInfo> problematicCommitInfos = newArrayList(immutableCdoCommitInfosList);
+		Iterator<CDOCommitInfo> cdoCommitInfosIterator = problematicCommitInfos.iterator();
+		while (cdoCommitInfosIterator.hasNext()) {
+			CDOCommitInfo cdoCommitInfo = cdoCommitInfosIterator.next();
+			
+			if (cdoCommitInfo.getTimeStamp() <= lastIndexCommitTimestamp) {
+				//removing valid commits from the problematic list
+				cdoCommitInfosIterator.remove();
+			} 
+		}
+		
+		if (!problematicCommitInfos.isEmpty()) {
+			LOG.error("Index must be re-initialized! Deactivated repository for {}. (The database is ahead of the indexes with commit timestamp(s): {})", getCdoRepository().getRepositoryName(), Iterables.transform(problematicCommitInfos, item -> item.getTimeStamp()));
+			return true;
+		} else {
+			LOG.info("{}'s {} branch's head CDO timestamp is: {} ", getCdoRepository().getRepositoryName(), branch.getPath(), Iterables.getLast(immutableCdoCommitInfosList).getTimeStamp() );
+			LOG.info("{}'s {} branch's head INDEX timestamp is: {} ", getCdoRepository().getRepositoryName(), branch.getPath(), lastIndexCommitTimestamp);
+			return false;
+		}
+	}
+
+	private List<CDOCommitInfo> getCDOCommitInfos(IBranchPath branchPath) {
+		
+		long baseTimestamp = getBaseTimestamp(getCdoMainBranch());
+		long headTimestamp = getHeadTimestamp(getCdoMainBranch());
+		Map<String, IBranchPath> branchPathMap = ImmutableMap.of(repositoryId, branchPath);
+
+		final CDOCommitInfoQuery query = new CDOCommitInfoQuery(branchPathMap)
+											.setStartTime(baseTimestamp)
+											.setEndTime(headTimestamp);
+		
+		final ConsumeAllCommitInfoHandler handler = new ConsumeAllCommitInfoHandler();
+		CDOCommitInfoUtils.getCommitInfos(query, handler);
+		
+		return handler.getInfos();
+	}
+
+	private CommitInfos getIndexCommitInfos(IBranchPath branch) {
+		RepositoryContext context = getDelegate().service(RepositoryContextProvider.class).get(repositoryId);
+		
+		CommitInfos commitInfos = RepositoryRequests
+					.commitInfos()
+					.prepareSearchCommitInfo()
+					.filterByBranch(branch.getPath())
+					.all()
+					.build()
+					.execute(context);
+		
+		return commitInfos;
+	}
 }

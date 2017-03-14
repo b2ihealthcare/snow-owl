@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -41,6 +42,7 @@ import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
 import com.b2international.snowowl.core.users.SpecialUserStore;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOConnectionFactoryProvider;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
@@ -53,6 +55,7 @@ import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryCo
 import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryManager;
 import com.b2international.snowowl.datastore.server.internal.ExtensionBasedEditingContextFactoryProvider;
 import com.b2international.snowowl.datastore.server.internal.ExtensionBasedRepositoryClassLoaderProviderRegistry;
+import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.server.session.LogListener;
@@ -147,9 +150,26 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			initializeJobSupport(env, configuration);
 			initializeRepositories(configuration, env);
 			initializeRequestSupport(env, configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers());
+			verifyRepositories(env);
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
+	private void verifyRepositories(Environment env) {
+		final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
+		Optional<InternalRepository> inConsistentRepository = repositories.repositories()
+			.stream()
+			.filter(repository -> repository instanceof InternalRepository).map(InternalRepository.class::cast)
+			.filter(repository -> !repository.isConsistent(BranchPathUtils.createMainPath())) 
+			/* XXX: or should we check all the branches, not just the main??*/
+			.findAny();
+		
+		if (inConsistentRepository.isPresent()) {
+				LOG.error("Found inconsistent repository: {}, halting boot.", inConsistentRepository.get().getCdoRepository().getRepositoryName());
+				Thread.currentThread().suspend();
+		}
+	}
+
 	private void initializeJobSupport(Environment env, SnowOwlConfiguration configuration) {
 		final Index index = Indexes.createIndex("jobs", env.service(ObjectMapper.class), new Mappings(RemoteJobEntry.class));
 		// TODO make this configurable
