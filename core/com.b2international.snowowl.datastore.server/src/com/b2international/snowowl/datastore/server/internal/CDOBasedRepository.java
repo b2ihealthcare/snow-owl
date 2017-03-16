@@ -377,14 +377,14 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		}
 		
 		if (emptyDb ^ emptyIndex) {
-			LOG.error("{} is in inconsistent state. CDO {} but INDEX {}", getCdoRepository().getRepositoryName(), contentCheck(emptyDb), contentCheck(emptyIndex));
+			LOG.error("{} is in inconsistent state. CDO {} but INDEX {}", getCdoRepository().getRepositoryName(), contentMessage(emptyDb), contentMessage(emptyIndex));
 			return false; // either CDO or index was deleted but not the other.
 		}
 		
 		return !hasInvalidCDOTimeStamps(cdoCommitInfos, getLast(indexCommitInfos).getTimeStamp(), branch);
 	}
 
-	private String contentCheck(boolean empty) {
+	private String contentMessage(boolean empty) {
 		return empty ? "IS EMPTY" : "HAS CONTENT";
 	}
 
