@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server;
 
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -154,20 +153,18 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
 	private void verifyRepositories(Environment env) {
 		final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
-		Optional<InternalRepository> inConsistentRepository = repositories.repositories()
+		repositories.repositories()
 			.stream()
 			.filter(repository -> repository instanceof InternalRepository).map(InternalRepository.class::cast)
-			.filter(repository -> !repository.isConsistent(BranchPathUtils.createMainPath())) 
+			.filter(repository -> !repository.isConsistent(BranchPathUtils.createMainPath()))
 			/* XXX: or should we check all the branches, not just the main??*/
-			.findAny();
+			.forEach(inconsistentRepository -> {
+				LOG.error("Disposing inconsistent repository: {}.", inconsistentRepository.getCdoRepository().getRepositoryName());				
+				inconsistentRepository.dispose();
+			});
 		
-		if (inConsistentRepository.isPresent()) {
-				LOG.error("Found inconsistent repository: {}, halting boot.", inConsistentRepository.get().getCdoRepository().getRepositoryName());
-				Thread.currentThread().suspend();
-		}
 	}
 
 	private void initializeJobSupport(Environment env, SnowOwlConfiguration configuration) {
