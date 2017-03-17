@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -29,6 +30,7 @@ import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.config.ClientPreferences;
@@ -155,15 +157,17 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 	
 	private void verifyRepositories(Environment env) {
 		final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
-		repositories.repositories()
+		Optional<InternalRepository> inconsistentRepository = repositories.repositories()
 			.stream()
 			.filter(repository -> repository instanceof InternalRepository).map(InternalRepository.class::cast)
 			.filter(repository -> !repository.isConsistent(BranchPathUtils.createMainPath()))
-			/* XXX: or should we check all the branches, not just the main??*/
-			.forEach(inconsistentRepository -> {
-				LOG.error("Disposing inconsistent repository: {}.", inconsistentRepository.getCdoRepository().getRepositoryName());				
-				inconsistentRepository.dispose();
-			});
+			/* XXX: we are checking MAIN only */
+			.findAny();
+		
+		if (inconsistentRepository.isPresent()) {
+			String message = String.format("Inconsistent repository: %s.", inconsistentRepository.get().getCdoRepository().getRepositoryName());
+			throw new SnowOwlApplication.InitializationException(message);
+		}
 		
 	}
 

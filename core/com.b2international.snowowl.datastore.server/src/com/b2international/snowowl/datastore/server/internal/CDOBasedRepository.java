@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.internal;
 
 import static com.google.common.collect.Iterables.getLast;
+import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -41,7 +42,6 @@ import com.b2international.index.IndexClient;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexWrite;
 import com.b2international.index.Indexes;
-import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.slowlog.SlowLogConfig;
@@ -54,8 +54,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.RepositoryEvent;
 import com.b2international.snowowl.core.merge.MergeService;
 import com.b2international.snowowl.core.setup.Environment;
@@ -250,7 +248,6 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		bind(RevisionIndex.class, revisionIndex);
 		// initialize the index
 		index.admin().create();
-		getDelegate().services().registerService(Searcher.class, indexClient.searcher());
 	}
 
 	private Map<String, Object> initIndexSettings() {
@@ -388,9 +385,9 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		return empty ? "IS EMPTY" : "HAS CONTENT";
 	}
 
-	private boolean hasInvalidCDOTimeStamps(List<CDOCommitInfo> immutableCdoCommitInfosList, long lastIndexCommitTimestamp, IBranchPath branch) {
+	private boolean hasInvalidCDOTimeStamps(List<CDOCommitInfo> cdoCommitInfos, long lastIndexCommitTimestamp, IBranchPath branch) {
 		// expect all the commit infos to be invalid
-		List<CDOCommitInfo> problematicCommitInfos = newArrayList(immutableCdoCommitInfosList);
+		List<CDOCommitInfo> problematicCommitInfos = newArrayList(cdoCommitInfos);
 		Iterator<CDOCommitInfo> cdoCommitInfosIterator = problematicCommitInfos.iterator();
 		while (cdoCommitInfosIterator.hasNext()) {
 			CDOCommitInfo cdoCommitInfo = cdoCommitInfosIterator.next();
@@ -402,10 +399,13 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		}
 		
 		if (!problematicCommitInfos.isEmpty()) {
-			LOG.error("Index must be re-initialized for repository: {}. (The database is ahead of the indexes with commit timestamp(s): {})", getCdoRepository().getRepositoryName(), Iterables.transform(problematicCommitInfos, item -> item.getTimeStamp()));
+			LOG.error("Index must be re-initialized for repository: {}. (The database is ahead of the index's timestamp: {} with CDO commit timestamp(s): {})", getCdoRepository().getRepositoryName(), lastIndexCommitTimestamp, transform(problematicCommitInfos, item -> item.getTimeStamp()));
+			return true;
+		} else if (getLast(cdoCommitInfos).getTimeStamp()  < lastIndexCommitTimestamp) {
+			LOG.error("Database inconsistency for repository: {}. (The index head timestamp: {} is ahead of CDO's head timestamp : {})", getCdoRepository().getRepositoryName(),  lastIndexCommitTimestamp, getLast(cdoCommitInfos).getTimeStamp());
 			return true;
 		} else {
-			LOG.info("{}'s {} branch's head CDO timestamp is: {} ", getCdoRepository().getRepositoryName(), branch.getPath(), Iterables.getLast(immutableCdoCommitInfosList).getTimeStamp() );
+			LOG.info("{}'s {} branch's head CDO timestamp is: {} ", getCdoRepository().getRepositoryName(), branch.getPath(), Iterables.getLast(cdoCommitInfos).getTimeStamp() );
 			LOG.info("{}'s {} branch's head INDEX timestamp is: {} ", getCdoRepository().getRepositoryName(), branch.getPath(), lastIndexCommitTimestamp);
 			return false;
 		}
@@ -428,16 +428,13 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 	}
 
 	private CommitInfos getIndexCommitInfos(IBranchPath branch) {
-		RepositoryContext context = getDelegate().service(RepositoryContextProvider.class).get(repositoryId);
-		
-		CommitInfos commitInfos = RepositoryRequests
+		return RepositoryRequests
 					.commitInfos()
 					.prepareSearchCommitInfo()
 					.filterByBranch(branch.getPath())
 					.all()
-					.build()
-					.execute(context);
-		
-		return commitInfos;
+					.build(repositoryId)
+					.execute(events())
+					.getSync();
 	}
 }
