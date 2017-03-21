@@ -50,4 +50,8 @@ public interface InternalRepository extends Repository {
 	long getHeadTimestamp(CDOBranch branch);
 	
 	boolean isConsistent(IBranchPath branchPath);
+	
+	void updateState();
+	
+	void setState(RepositoryState state);
 }

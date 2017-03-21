@@ -20,7 +20,6 @@ import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -40,9 +39,7 @@ import com.b2international.index.DefaultIndex;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClient;
 import com.b2international.index.IndexClientFactory;
-import com.b2international.index.IndexWrite;
 import com.b2international.index.Indexes;
-import com.b2international.index.Writer;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.slowlog.SlowLogConfig;
 import com.b2international.index.revision.DefaultRevisionIndex;
@@ -58,7 +55,6 @@ import com.b2international.snowowl.core.events.RepositoryEvent;
 import com.b2international.snowowl.core.merge.MergeService;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
@@ -80,8 +76,6 @@ import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
-import com.b2international.snowowl.datastore.server.EditingContextFactory;
-import com.b2international.snowowl.datastore.server.EditingContextFactoryProvider;
 import com.b2international.snowowl.datastore.server.ReviewConfiguration;
 import com.b2international.snowowl.datastore.server.cdo.CDOConflictProcessorBroker;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
@@ -95,8 +89,6 @@ import com.b2international.snowowl.datastore.server.internal.review.ConceptChang
 import com.b2international.snowowl.datastore.server.internal.review.ReviewImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewManagerImpl;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -110,11 +102,12 @@ import com.google.inject.Provider;
 public final class CDOBasedRepository extends DelegatingServiceProvider implements InternalRepository, CDOCommitInfoHandler {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CDOBasedRepository.class);
-	private static final String REINDEX_KEY = "snowowl.reindex";
 	
 	private final String toolingId;
 	private final String repositoryId;
 	private final Map<Long, RepositoryCommitNotification> commitNotifications = new MapMaker().makeMap();
+	private RepositoryState state = RepositoryState.UNKNOWN;
+	
 	
 	CDOBasedRepository(String repositoryId, String toolingId, int mergeMaxResults, Environment env) {
 		super(env);
@@ -124,7 +117,6 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		final ObjectMapper mapper = service(ObjectMapper.class);
 		initIndex(mapper);
 		initializeBranchingSupport(mergeMaxResults);
-		reindex();
 		bind(Repository.class, this);
 	}
 
@@ -297,43 +289,12 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		getIndex().admin().close();
 	}
 	
-	private void reindex() {
-		final boolean reindex = Boolean.parseBoolean(System.getProperty(REINDEX_KEY, "false"));
-		if (reindex) {
-			reindexCodeSystems();
-		}
-	}
-	
-	private void reindexCodeSystems() {
-		final EditingContextFactoryProvider contextFactoryProvider = getDelegate().service(EditingContextFactoryProvider.class);
-		final EditingContextFactory contextFactory = contextFactoryProvider.get(repositoryId);
-		
-		try (final CDOEditingContext editingContext = contextFactory.createEditingContext(BranchPathUtils.createMainPath())) {
-			final List<CodeSystem> codeSystems = editingContext.getCodeSystems();
-			
-			getIndex().write(new IndexWrite<Void>() {
-				@Override
-				public Void execute(Writer index) throws IOException {
-					for (final CodeSystem codeSystem : codeSystems) {
-						final CodeSystemEntry entry = CodeSystemEntry.builder(codeSystem).build();
-						index.put(Long.toString(entry.getStorageKey()), entry);
-						
-						for (final CodeSystemVersion codeSystemVersion : codeSystem.getCodeSystemVersions()) {
-							final CodeSystemVersionEntry versionEntry = CodeSystemVersionEntry.builder(codeSystemVersion).build();
-							index.put(Long.toString(versionEntry.getStorageKey()), versionEntry);
-						}
-					}
-					index.commit();
-					return null;
-				}
-			});
-		}
-	}
 	
 	@Override
 	protected Environment getDelegate() {
 		return (Environment) super.getDelegate();
 	}
+	
 	
 	@Override
 	@SuppressWarnings("restriction")
@@ -361,10 +322,42 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
         }
 	}
 
+	/**
+	 * Verifies if the repository is in a consistent state, and sets the {@link #state repositoryState} accordingly
+	 */
+	@Override
+	public void updateState() {
+		RepositoryState newState = isConsistent(BranchPathUtils.createMainPath()) ? RepositoryState.CONSISTENT : RepositoryState.INCONSISTENT;
+		if (state != newState) {
+			LOG.debug("Repository state for {} is changing from {} to {}", getCdoRepository().getRepositoryName(), state, newState);
+			state = newState;
+		} else {
+			LOG.debug("Repository state for {} is remaining the same: {}", getCdoRepository().getRepositoryName(), state);
+		}
+	}
+	
+	@Override
+	public RepositoryState getRepositoryState() {
+		return state;
+	}
+	
+	@Override
+	public void setState(RepositoryState state) {
+		this.state = state;
+	}
+	
 	@Override
 	public boolean isConsistent(IBranchPath branch) {
-		List<CDOCommitInfo> cdoCommitInfos = getCDOCommitInfos(branch);
-		CommitInfos indexCommitInfos = getIndexCommitInfos(branch);
+		try {
+			return isConsistentInternal(branch);
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	private boolean isConsistentInternal(IBranchPath branchPath) {
+		List<CDOCommitInfo> cdoCommitInfos = getCDOCommitInfos(branchPath);
+		CommitInfos indexCommitInfos = getIndexCommitInfos(branchPath);
 		
 		boolean emptyDb = cdoCommitInfos.isEmpty();
 		boolean emptyIndex = indexCommitInfos.getItems().isEmpty();
@@ -378,7 +371,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 			return false; // either CDO or index was deleted but not the other.
 		}
 		
-		return !hasInvalidCDOTimeStamps(cdoCommitInfos, getLast(indexCommitInfos).getTimeStamp(), branch);
+		return !hasInvalidCDOTimeStamps(cdoCommitInfos, getLast(indexCommitInfos).getTimeStamp(), branchPath);
 	}
 
 	private String contentMessage(boolean empty) {

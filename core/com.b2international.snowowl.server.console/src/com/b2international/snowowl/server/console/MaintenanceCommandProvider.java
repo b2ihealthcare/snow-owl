@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.server.console;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -27,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.StringUtils;
 import com.b2international.index.revision.Purge;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.Repository.RepositoryState;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
@@ -34,6 +39,7 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.ServerDbUtils;
+import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.server.reindex.OptimizeRequest;
 import com.b2international.snowowl.datastore.server.reindex.PurgeRequest;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
@@ -46,6 +52,7 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.primitives.Longs;
 
 /**
@@ -58,6 +65,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	private static final String LISTBRANCHES_COMMAND = "listbranches";
 	private static final String LISTREPOSITORIES_COMMAND = "listrepositories";
 	private static final String DBCREATEINDEX_COMMAND = "dbcreateindex";
+	private static final String REPOSITORY_STATE_COMMAND = "repositorystate";
 
 	@Override
 	public String getHelp() {
@@ -66,9 +74,11 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		buffer.append("\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namespace URI.\n");
 		buffer.append("\tsnowowl listrepositories - prints all the repositories in the system.\n");
 		buffer.append("\tsnowowl listbranches [repository] [branchPath] - prints all the child branches of the specified branch path in the system for a repository. Branch path is MAIN by default and has to be full path (e.g. MAIN/PROJECT/TASK)\n");
-		buffer.append("\tsnowowl reindex [repositoryId] [failedCommitTimestamp]- reindexes the content for the given repository ID from the given failed commit timestamp (optional, default timestamp is 1 which means no failed commit).\n");
+		buffer.append("\tsnowowl reindex [repositoryId] [failedCommitTimestamp] - reindexes the content for the given repository ID from the given failed commit timestamp (optional, default timestamp is 1 which means no failed commit).\n");
 		buffer.append("\tsnowowl optimize [repositoryId] [maxSegments] - optimizes the underlying index for the repository to have the supplied maximum number of segments (default number is 1)\n");
 		buffer.append("\tsnowowl purge [repositoryId] [branchPath] [ALL|LATEST|HISTORY] - optimizes the underlying index by deleting unnecessary documents from the given branch using the given purge strategy (default strategy is LATEST)\n");
+		buffer.append("\tsnowowl repositorystate update [repositoryId_1, ... repositoryId_N] - Computes and updates the repository state for the given repisoryId(s). If no repositoryId is given, it computes and updates states for all available repositories.\n");
+		buffer.append("\tsnowowl repositorystate list [repositoryId_1, ... repositoryId_N] - Lists the repository state for the given repisoryId(s). If no repositoryId is given, it lists states for all available repositories.\n");
 		return buffer.toString();
 	}
 
@@ -97,6 +107,11 @@ public class MaintenanceCommandProvider implements CommandProvider {
 				return;
 			}
 
+			if (REPOSITORY_STATE_COMMAND.equals(cmd)) {
+				handleRepositoryStateCommand(interpreter);
+				return;
+			}
+			
 			if ("reindex".equals(cmd)) {
 				reindex(interpreter);
 				return;
@@ -123,6 +138,72 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		}
 	}
 
+	public synchronized void handleRepositoryStateCommand(CommandInterpreter interpreter) {
+		String command = interpreter.nextArgument();
+		
+		if ("list".equals(command)) {
+			handleListRepositoryState(interpreter);
+		} else if ("update".equals(command)) {
+			handleUpdateRepositoryState(interpreter);
+		} else { 
+			interpreter.println("One of the repository state commands should be specified:");
+			interpreter.println("\t snowowl repositorystate list [repositoryId_1, ... repositoryId_N]");
+			interpreter.println("\t snowowl repositorystate update [repositoryId_1, ... repositoryId_N]");
+		}
+	}
+
+	private List<String> resolveArguments(CommandInterpreter interpreter) {
+		List<String> results = Lists.newArrayList();
+		String argument = interpreter.nextArgument();
+		while(!isNullOrEmpty(argument)) {
+			results.add(argument);
+			argument = interpreter.nextArgument();
+		}
+		
+		return results;
+	}
+
+	private void handleListRepositoryState(CommandInterpreter interpreter) {
+		RepositoryManager repositoryManager = ApplicationContext.getServiceForClass(RepositoryManager.class);
+
+		Collection<String> repositoryIds = getRepositories(interpreter);
+		
+		repositoryIds.stream()
+					.filter(respositoryId -> isValidRepositoryName(respositoryId, interpreter))
+					.map(repositoryId -> repositoryManager.get(repositoryId))
+				.forEach(repository -> {
+					interpreter.println(String.format("[%s] is in state: %s", repository.id(), repository.getRepositoryState()));
+				});
+	}
+
+	
+	
+	private void handleUpdateRepositoryState(CommandInterpreter interpreter) {
+		
+		RepositoryManager repositoryManager = ApplicationContext.getServiceForClass(RepositoryManager.class);
+		Collection<String> repositoryIds = getRepositories(interpreter);
+		
+		repositoryIds.stream()
+					.filter(respositoryId -> isValidRepositoryName(respositoryId, interpreter))	
+					.map(repositoryId -> repositoryManager.get(repositoryId))
+					.filter(InternalRepository.class::isInstance).map(InternalRepository.class::cast)
+				.forEach(repository -> {
+					RepositoryState oldState = repository.getRepositoryState();
+					repository.updateState();
+					RepositoryState newState = repository.getRepositoryState();
+					interpreter.println(String.format("Repository state is updated for: [%s]. Old state: %s, new state: %s", repository.id(), oldState, newState));
+				});
+	}
+
+	private Collection<String> getRepositories(CommandInterpreter interpreter) {
+		// remaining arguments are/must be repository ids.
+		Collection<String> repositoryIds = resolveArguments(interpreter);
+		if (repositoryIds.isEmpty()) {
+			repositoryIds = getRepositoryManager().uuidKeySet();
+		}
+		return repositoryIds;
+	}
+	
 	public synchronized void createDbIndex(CommandInterpreter interpreter) {
 		String nsUri = interpreter.nextArgument();
 		if (!Strings.isNullOrEmpty(nsUri)) {

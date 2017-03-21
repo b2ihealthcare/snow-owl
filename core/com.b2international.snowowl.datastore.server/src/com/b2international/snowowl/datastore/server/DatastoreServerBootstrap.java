@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server;
 
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -30,7 +29,6 @@ import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.config.ClientPreferences;
@@ -43,7 +41,6 @@ import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
 import com.b2international.snowowl.core.users.SpecialUserStore;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOConnectionFactoryProvider;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
@@ -157,18 +154,10 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 	
 	private void verifyRepositories(Environment env) {
 		final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
-		Optional<InternalRepository> inconsistentRepository = repositories.repositories()
+		repositories.repositories()
 			.stream()
 			.filter(repository -> repository instanceof InternalRepository).map(InternalRepository.class::cast)
-			.filter(repository -> !repository.isConsistent(BranchPathUtils.createMainPath()))
-			/* XXX: we are checking MAIN only */
-			.findAny();
-		
-		if (inconsistentRepository.isPresent()) {
-			String message = String.format("Inconsistent repository: %s.", inconsistentRepository.get().getCdoRepository().getRepositoryName());
-			throw new SnowOwlApplication.InitializationException(message);
-		}
-		
+			.forEach(repository -> repository.updateState());
 	}
 
 	private void initializeJobSupport(Environment env, SnowOwlConfiguration configuration) {
@@ -215,6 +204,7 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 				.prepareCreate(repositoryId, cdoRepositoryManager.getByUuid(repositoryId).getSnowOwlTerminologyComponentId())
 				.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
 				.build(env);
+			
 		}
 		
 		LOG.debug("<<< Branch and review services registered. [{}]", branchStopwatch);
