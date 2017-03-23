@@ -1,6 +1,72 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.7.4
+
+### Changed
+- Support UUID as return value of a RemoteJob (bee443409401b0ece88a520c009e07130b924357)
+
+### Bugs
+- Fixed invalid MRCM domain expression calculation in case of CompositeConceptSetDefinition (1600d9e1821b9d403ab3365e15f05a96f238eba1)
+
+## 5.7.3
+
+### Bugs
+- Fixed serialization of IdGenerationStrategy (555c3a585b8ea721c396de18d18c3fad4ac9568d)
+
+## 5.7.2
+
+### Added
+- Support reference set filtering in SNOMED CT RF2 export Java API
+
+### Changed
+- Improved repository request log output
+
+### Bugs
+- Fixed serialization of ValidationException (62d3d0516b87c62e4841a6d9b0eba6e262e18410)
+- Fixed class loading issue when using BulkRequests
+- Fixed Highlighting.getMatchRegions() bug (e7d449df9843c188700c11591ca7e70755f9f140)
+
+
+## 5.7.1
+
+### Bugs
+- Fixed node initialization issue when connecting to a master node (client-server mode)
+- Fixed serialization of GetResourceRequest classes
+
+## 5.7.0
+
+### Breaking changes
+- SNOMED CT Complex Map Members properties, `mapGroup` and `mapPriority` are changed to integer type instead of byte. This requires migration of the SNOMED CT database (TODO ref to sql script).
+
+### Added
+- Reader/Writer database connection pool capacity configuration (see configuration guide)
+- Domain representation classes for SNOMED CT MRCM Constraints
+ * SnomedRelationshipConstraint
+ * SnomedDescriptionConstraint
+ * SnomedConcreteDomainConstraint
+- Complete Java and REST support for SNOMED CT Reference Sets and Members (https://github.com/b2ihealthcare/snow-owl/pull/131)
+- Generic request-based job API (https://github.com/b2ihealthcare/snow-owl/pull/132)
+- RxJava-based notification observable support (part of https://github.com/b2ihealthcare/snow-owl/pull/132)
+- File attachment API (https://github.com/b2ihealthcare/snow-owl/pull/129)
+
+### Changed
+- SNOMED CT RF2 export API
+ * `startEffectiveTime` and `endEffectiveTime` export filters can be used for all RF2 export types
+ * `codeSystemShortName` and `extensionOnly` properties to select the right content for your RF2 package
+ * Export now always creates empty description, text definition and language refset files
+ * Export now creates description/text definition/lang refset files per language code
+ * A new RF2 API (https://github.com/b2ihealthcare/snow-owl/pull/135) 
+- Index API
+ * Support java.util.Date types in document mapping
+- Refactored SNOMED CT API test cases (part of https://github.com/b2ihealthcare/snow-owl/pull/131)
+
+### Removed
+- The obsolete rpc-based quick search API (use SearchResourceRequests instead)
+
+### Bugs
+- Properly dispose ReviewManager instance when disposing the Repository
+
 ## 5.6.0
 
 ### Added

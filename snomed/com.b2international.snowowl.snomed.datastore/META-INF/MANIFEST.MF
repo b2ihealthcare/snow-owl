@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl SNOMED CT Datastore
 Bundle-SymbolicName: com.b2international.snowowl.snomed.datastore;singleton:=true
-Bundle-Version: 5.7.0.qualifier
+Bundle-Version: 5.8.0.qualifier
 Bundle-Activator: com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
@@ -13,7 +13,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.eclipse.core.commands;bundle-version="3.6.0",
  org.eclipse.core.databinding;bundle-version="1.4.0",
  org.eclipse.core.expressions;bundle-version="3.4.400",
- org.eclipse.xtend.lib;bundle-version="[2.8.0,2.9.0)",
+ org.eclipse.xtend.lib;bundle-version="[2.11.0,2.13.0)",
  com.b2international.snowowl.rpc,
  com.b2international.snowowl.datastore;visibility:=reexport,
  com.b2international.snowowl.snomed.common;visibility:=reexport,
@@ -55,8 +55,10 @@ Export-Package: com.b2international.snowowl.snomed.core.domain,
  com.b2international.snowowl.snomed.datastore.index.refset,
  com.b2international.snowowl.snomed.datastore.index.update,
  com.b2international.snowowl.snomed.datastore.internal.id.reservations,
+ com.b2international.snowowl.snomed.datastore.internal.rf2,
  com.b2international.snowowl.snomed.datastore.model,
  com.b2international.snowowl.snomed.datastore.request,
+ com.b2international.snowowl.snomed.datastore.request.rf2,
  com.b2international.snowowl.snomed.datastore.serviceconfig,
  com.b2international.snowowl.snomed.datastore.services,
  com.b2international.snowowl.snomed.datastore.snor,

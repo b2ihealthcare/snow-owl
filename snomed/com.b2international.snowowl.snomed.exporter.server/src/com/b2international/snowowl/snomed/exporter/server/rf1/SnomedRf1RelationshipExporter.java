@@ -64,9 +64,9 @@ public class SnomedRf1RelationshipExporter extends AbstractSnomedRf1CoreExporter
 	
 	Id2Rf1PropertyMapper mapper;
 	
-	protected SnomedRf1RelationshipExporter(final SnomedExportContext configuration, final RevisionSearcher revisionSearcher, final boolean unpublished) {
-		super(configuration, SnomedRelationshipIndexEntry.class, revisionSearcher, unpublished);
-		mapper = configuration.getId2Rf1PropertyMapper();
+	public SnomedRf1RelationshipExporter(final SnomedExportContext exportContext, final RevisionSearcher revisionSearcher) {
+		super(exportContext, SnomedRelationshipIndexEntry.class, revisionSearcher);
+		mapper = exportContext.getId2Rf1PropertyMapper();
 	}
 	
 	@Override

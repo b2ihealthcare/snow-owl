@@ -26,7 +26,7 @@ public final class CommitInfoGetRequestBuilder
 		implements IndexRequestBuilder<CommitInfo> {
 
 	CommitInfoGetRequestBuilder(String commitId) {
-		super(CommitInfo.class, commitId, CommitInfoSearchRequestBuilder::new);
+		super(new CommitInfoGetRequest(commitId));
 	}
 
 }

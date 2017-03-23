@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b2international.snowowl</groupId>
 	<artifactId>snowowl-parent</artifactId>
-	<version>5.7.0-SNAPSHOT</version>
+	<version>5.8.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -100,14 +100,14 @@
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.emf.mwe2.runtime</id>
 							<restrictTo>
-								<versionRange>[2.8.0,2.9.0)</versionRange>
+								<versionRange>[2.9.0,3.0.0)</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.emf.mwe2.lib</id>
 							<restrictTo>
-								<versionRange>[2.8.0,2.9.0)</versionRange>
+								<versionRange>[2.9.0,3.0.0)</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
@@ -135,35 +135,35 @@
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtext</id>
 							<restrictTo>
-								<versionRange>[2.8.0,2.9.0)</versionRange>
+								<versionRange>[2.11.0,2.13.0)</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtext.smap</id>
 							<restrictTo>
-								<versionRange>[2.8.0,2.9.0)</versionRange>
+								<versionRange>[2.11.0,2.13.0)</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtext.util</id>
 							<restrictTo>
-								<versionRange>[2.8.0,2.9.0)</versionRange>
+								<versionRange>[2.11.0,2.13.0)</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtext.xbase.lib</id>
 							<restrictTo>
-								<versionRange>[2.8.0,2.9.0)</versionRange>
+								<versionRange>[2.11.0,2.13.0)</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtend.lib</id>
 							<restrictTo>
-								<versionRange>[2.8.0,2.9.0)</versionRange>
+								<versionRange>[2.11.0,2.13.0)</versionRange>
 							</restrictTo>
 						</filter>
 						<!-- Remove RAP -->
@@ -283,10 +283,10 @@
 							</restrictTo>
 						</filter>
 						<filter>
-            				<type>p2-installable-unit</type>
-            				<id>javax.annotation</id>
-            				<removeAll />
-         				</filter>
+							<type>p2-installable-unit</type>
+							<id>javax.annotation</id>
+							<removeAll />
+		 				</filter>
 					</filters>
 					<environments>
 						<environment>
@@ -412,39 +412,39 @@
 			<id>dependencies</id>
 			<dependencies>
 				<dependency>
-				    <groupId>com.fasterxml.jackson.core</groupId>
-				    <artifactId>jackson-core</artifactId>
-				    <version>${jackson.version}</version>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-core</artifactId>
+					<version>${jackson.version}</version>
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
-				    <groupId>com.fasterxml.jackson.core</groupId>
-				    <artifactId>jackson-annotations</artifactId>
-				    <version>${jackson.version}</version>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-annotations</artifactId>
+					<version>${jackson.version}</version>
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
-				    <groupId>com.fasterxml.jackson.core</groupId>
-				    <artifactId>jackson-databind</artifactId>
-				    <version>${jackson.version}</version>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
+					<version>${jackson.version}</version>
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
-    				<groupId>com.fasterxml.jackson.dataformat</groupId>
-    				<artifactId>jackson-dataformat-yaml</artifactId>
-    				<version>${jackson.version}</version>
+					<groupId>com.fasterxml.jackson.dataformat</groupId>
+					<artifactId>jackson-dataformat-yaml</artifactId>
+					<version>${jackson.version}</version>
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
-    				<groupId>com.fasterxml.jackson.dataformat</groupId>
-    				<artifactId>jackson-dataformat-csv</artifactId>
-    				<version>${jackson.version}</version>
+					<groupId>com.fasterxml.jackson.dataformat</groupId>
+					<artifactId>jackson-dataformat-csv</artifactId>
+					<version>${jackson.version}</version>
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
-				    <groupId>com.fasterxml.jackson.module</groupId>
-				    <artifactId>jackson-module-afterburner</artifactId>
-				    <version>${jackson.version}</version>
+					<groupId>com.fasterxml.jackson.module</groupId>
+					<artifactId>jackson-module-afterburner</artifactId>
+					<version>${jackson.version}</version>
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
@@ -550,22 +550,22 @@
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
-				    <groupId>edu.stanford.protege</groupId>
-				    <artifactId>org.semanticweb.owl.owlapi</artifactId>
-				    <version>3.4.4</version>
+					<groupId>edu.stanford.protege</groupId>
+					<artifactId>org.semanticweb.owl.owlapi</artifactId>
+					<version>3.4.4</version>
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
-				    <groupId>commons-collections</groupId>
-				    <artifactId>commons-collections</artifactId>
-				    <version>3.2.2</version>
-				    <scope>provided</scope>
+					<groupId>commons-collections</groupId>
+					<artifactId>commons-collections</artifactId>
+					<version>3.2.2</version>
+					<scope>provided</scope>
 				</dependency>
 			</dependencies>
 			<repositories>
 				<repository>
 					<id>emf</id>
-					<url>http://download.eclipse.org/modeling/emf/emf/updates/2.11/core/R201506010402/</url>
+					<url>http://download.eclipse.org/modeling/emf/emf/updates/2.12/core/</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>
@@ -575,12 +575,12 @@
 				</repository>
 				<repository>
 					<id>xtext</id>
-					<url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.8.4/</url>
+					<url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.11.0/</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>
 					<id>mwe</id>
-					<url>http://download.eclipse.org/modeling/emft/mwe/updates/releases/2.8.1/</url>
+					<url>http://download.eclipse.org/modeling/emft/mwe/updates/releases/2.9.0/</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>
@@ -595,7 +595,7 @@
 				</repository>
 				<repository>
 					<id>latest_orbit_site</id>
-					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository</url>
+					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20160520211859/repository</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>
@@ -623,7 +623,7 @@
 		<profile>
 			<id>tp_dependencies</id>
 			<properties>
-				<target.platform.version>5.1.0-SNAPSHOT</target.platform.version>
+				<target.platform.version>5.8.0-SNAPSHOT</target.platform.version>
 				<target.platform.url>${nexus.url}/content/unzip/snapshots.unzip/com/b2international/snowowl/com.b2international.snowowl.server.target.update/${target.platform.version}/com.b2international.snowowl.server.target.update-${target.platform.version}.zip-unzip/</target.platform.url>
 			</properties>
 			<repositories>
@@ -635,17 +635,17 @@
 			</repositories>
 		</profile>
 		<profile>
-      		<id>docs</id>
-      		<activation>
-      			<property>
+			<id>docs</id>
+			<activation>
+				<property>
 					<name>docs</name>
-					<value>true</value>      			
-      			</property>
-      		</activation>
-      		<modules>
-      			<module>documentation</module>
-      		</modules>
-    	</profile>
+					<value>true</value>
+				</property>
+			</activation>
+			<modules>
+				<module>documentation</module>
+			</modules>
+		</profile>
 	</profiles>
 
 	<distributionManagement>

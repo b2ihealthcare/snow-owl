@@ -148,11 +148,14 @@ public class LogUtils {
 	 * @param message
 	 */
 	public static void logExportActivity(Logger logger, String user, IBranchPath branchPath, String message) {
+		logExportActivity(logger, user, branchPath.getPath(), message);
+	}
+	
+	public static void logExportActivity(Logger logger, String user, String branchPath, String message) {
 		MDC.put(MDC_USER_KEY, user);
-		MDC.put(MDC_BRANCH_KEY, branchPath.getPath());
+		MDC.put(MDC_BRANCH_KEY, branchPath);
 		logger.info(MarkerFactory.getMarker(SNOWOWL_EXPORT_MARKER), message);
 		MDC.remove(MDC_USER_KEY);
 		MDC.remove(MDC_BRANCH_KEY);
 	}
-	
 }

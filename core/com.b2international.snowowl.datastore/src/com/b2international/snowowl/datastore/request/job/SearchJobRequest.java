@@ -15,64 +15,44 @@
  */
 package com.b2international.snowowl.datastore.request.job;
 
-import static com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry.Expressions.ids;
 import static com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry.Expressions.user;
-import static com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry.Fields.ID;
 import static com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry.Fields.USER;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.util.Collections;
 
-import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
 
 /**
  * @since 5.7
  */
-final class SearchJobRequest implements Request<ServiceProvider, RemoteJobs> {
+final class SearchJobRequest extends SearchResourceRequest<ServiceProvider, RemoteJobs> {
 
-	@Min(0)
-	private int offset;
-
-	@Min(0)
-	private int limit;
-
-	@NotNull
-	private Options options;
-	
 	SearchJobRequest() {
 	}
 	
 	@Override
-	public RemoteJobs execute(ServiceProvider context) {
+	protected RemoteJobs doExecute(ServiceProvider context) throws IOException {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		
-		if (options.containsKey(ID)) {
-			queryBuilder.must(ids(options.getCollection(ID, String.class)));
+		addIdFilter(queryBuilder, RemoteJobEntry.Expressions::ids);
+		
+		if (options().containsKey(USER)) {
+			queryBuilder.must(user(options().getString(USER)));
 		}
 		
-		if (options.containsKey(USER)) {
-			queryBuilder.must(user(options.getString(USER)));
-		}
-		
-		return context.service(RemoteJobTracker.class).search(queryBuilder.build(), offset, limit);
+		return context.service(RemoteJobTracker.class).search(queryBuilder.build(), offset(), limit());
 	}
 
-	void setOffset(int offset) {
-		this.offset = offset;
+	@Override
+	protected RemoteJobs createEmptyResult(int offset, int limit) {
+		return new RemoteJobs(Collections.emptyList(), offset, limit, 0);
 	}
 	
-	void setLimit(int limit) {
-		this.limit = limit;
-	}
-	
-	void setOptions(Options options) {
-		this.options = options;
-	}
-
 }

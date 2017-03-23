@@ -31,7 +31,7 @@ public final class SnomedConceptGetRequestBuilder
 		implements RevisionIndexRequestBuilder<SnomedConcept> {
 
 	SnomedConceptGetRequestBuilder(String conceptId) {
-		super(SnomedConcept.class, conceptId, SnomedConceptSearchRequestBuilder::new);
+		super(new SnomedConceptGetRequest(conceptId));
 	}
 
 }

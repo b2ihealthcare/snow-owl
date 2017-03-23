@@ -78,12 +78,15 @@ public abstract class SnomedRf2Headers {
 	// Field names introduced in attribute value type reference set files
 	public static final String FIELD_VALUE_ID = "valueId";
 	
-	// Field names introduced in association type reference set files
+	/* 
+	 * Field names introduced in association type reference set files
+	 * (Used throughout Snow Owl's codebase) 
+	 */
 	public static final String FIELD_TARGET_COMPONENT = "targetComponent";
 	
 	/*
-	 * FIXME: Incorrect AU field naming, but is last in reference set column for 
-	 * association reference sets, so we have to accept it for now
+	 * Alternative column name for association type reference set files 
+	 * (Used only in RF2 import/export parts)
 	 */
 	public static final String FIELD_TARGET_COMPONENT_ID = "targetComponentId"; 
 	

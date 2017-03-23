@@ -18,12 +18,13 @@ package com.b2international.snowowl.datastore.request.job;
 import java.util.UUID;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.SystemRequestBuilder;
 
 /**
+ * A request builder that wraps existing {@link Request} instances to run them as jobs.
+ * 
  * @since 5.7
  */
 public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<ScheduleJobRequestBuilder, ServiceProvider, String> implements SystemRequestBuilder<String> {
@@ -41,25 +42,41 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 		return new ScheduleJobRequest(id, user, request, description);
 	}
 	
+	/**
+	 * Set a custom unique identifier for the job.
+	 * @param id - the identifier the job will be assigned to
+	 * @return this builder
+	 */
 	public ScheduleJobRequestBuilder setId(String id) {
 		this.id = id;
 		return getSelf();
 	}
 
+	/**
+	 * Set the initiator/author of the job request.
+	 * @param user - the user the job will be assigned to
+	 * @return this builder
+	 */
 	public ScheduleJobRequestBuilder setUser(String user) {
 		this.user = user;
 		return getSelf();
 	}
 	
+	/**
+	 * Set a human readable description about the {@link Request} that will be executed by the job.
+	 * @param description - the human readable description of the job
+	 * @return this builder
+	 */
 	public ScheduleJobRequestBuilder setDescription(String description) {
 		this.description = description;
 		return getSelf();
 	}
 	
-	public ScheduleJobRequestBuilder setRequest(AsyncRequest<?> request) {
-		return setRequest(request.getRequest());
-	}
-	
+	/**
+	 * Set the {@link Request} that will be {@link Request#execute(ServiceProvider) executed} by the job. 
+	 * @param request - the request to execute
+	 * @return this builder
+	 */
 	public ScheduleJobRequestBuilder setRequest(Request<ServiceProvider, ?> request) {
 		this.request = request;
 		return getSelf();

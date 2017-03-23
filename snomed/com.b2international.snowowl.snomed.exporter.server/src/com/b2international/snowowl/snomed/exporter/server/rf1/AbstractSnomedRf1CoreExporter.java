@@ -32,8 +32,8 @@ public abstract class AbstractSnomedRf1CoreExporter<T extends SnomedDocument> ex
 	 * @param revisionSearcher
 	 * @param unpublished
 	 */
-	protected AbstractSnomedRf1CoreExporter(SnomedExportContext exportContext, Class<T> clazz, RevisionSearcher revisionSearcher, boolean unpublished) {
-		super(exportContext, clazz, revisionSearcher, unpublished);
+	protected AbstractSnomedRf1CoreExporter(SnomedExportContext exportContext, Class<T> clazz, RevisionSearcher revisionSearcher) {
+		super(exportContext, clazz, revisionSearcher);
 	}
 	
 	@Override

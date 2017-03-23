@@ -90,7 +90,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 
 	public static Builder builder(AttributeConstraint constraint) {
 		final ConceptSetDefinition domain = constraint.getDomain();
-		final String domainExpression = PredicateUtils.getEscgExpression(domain);
+		final String domainExpression = PredicateUtils.toEclExpression(domain);
 
 		// collect and index domain identifier based on their domain type
 		final Set<String> selfIds = newHashSet();
@@ -131,8 +131,8 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		} else if (predicate instanceof RelationshipPredicate) {
 			final RelationshipPredicate relationshipPredicate = (RelationshipPredicate) predicate;
 			final String characteristicTypeConceptId = relationshipPredicate.getCharacteristicTypeConceptId();
-			final String type = PredicateUtils.getEscgExpression(relationshipPredicate.getAttribute());
-			final String valueType = PredicateUtils.getEscgExpression(relationshipPredicate.getRange());
+			final String type = PredicateUtils.toEclExpression(relationshipPredicate.getAttribute());
+			final String valueType = PredicateUtils.toEclExpression(relationshipPredicate.getRange());
 			final String characteristicType = Strings.isNullOrEmpty(characteristicTypeConceptId) ? "<" + Concepts.CHARACTERISTIC_TYPE : "<<" + characteristicTypeConceptId;
 
 			doc = SnomedConstraintDocument.relationshipBuilder()

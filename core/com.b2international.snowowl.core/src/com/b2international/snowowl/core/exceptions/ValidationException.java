@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,20 +28,20 @@ import com.google.common.collect.ImmutableMap.Builder;
 /**
  * @since 4.1.1
  */
-public class ValidationException extends BadRequestException {
+public final class ValidationException extends BadRequestException {
 
-	private static final long serialVersionUID = 5786944138934316434L;
-	private Collection<? extends ConstraintViolation<?>> violations;
+	private static final long serialVersionUID = -1656929747149578841L;
+	private final Map<String, Object> additionalInfo;
 
 	public ValidationException(Collection<? extends ConstraintViolation<?>> violations) {
 		super("%s validation error%s", violations.size(), violations.size() == 1 ? "" : "s");
-		this.violations = violations;
+		final Builder<String, Object> builder = ImmutableMap.<String, Object>builder();
+		this.additionalInfo = builder.put("violations", ConstraintViolations.format(violations)).build();
 	}
 	
 	@Override
 	protected Map<String, Object> getAdditionalInfo() {
-		final Builder<String, Object> builder = ImmutableMap.<String, Object>builder();
-		return builder.put("violations", ConstraintViolations.format(this.violations)).build();
+		return additionalInfo;
 	}
 	
 }

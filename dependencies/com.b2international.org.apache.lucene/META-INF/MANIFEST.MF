@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Apache Lucene
 Bundle-SymbolicName: com.b2international.org.apache.lucene
-Bundle-Version: 5.5.0.b2i
+Bundle-Version: 5.5.1.b2i
 Bundle-ClassPath: .,
  lib/lucene-analyzers-common-5.5.0.jar,
  lib/lucene-codecs-5.5.0.jar,

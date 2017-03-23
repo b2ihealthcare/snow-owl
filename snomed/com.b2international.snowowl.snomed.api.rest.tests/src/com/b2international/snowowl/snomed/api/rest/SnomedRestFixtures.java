@@ -117,6 +117,17 @@ public abstract class SnomedRestFixtures {
 		return createNewDescription(descriptionPath, conceptId, typeId, SnomedApiTestConstants.UK_ACCEPTABLE_MAP);
 	}
 
+	public static String createNewDescription(IBranchPath descriptionPath, String conceptId, String typeId, Map<String, Acceptability> acceptabilityMap, final String languageCode) {
+		Map<?, ?> requestBody = createDescriptionRequestBody(conceptId, typeId, Concepts.MODULE_SCT_CORE, acceptabilityMap, CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE, languageCode)
+				.put("commitComment", "Created new description")
+				.build();
+
+		return lastPathSegment(createComponent(descriptionPath, SnomedComponentType.DESCRIPTION, requestBody)
+				.statusCode(201)
+				.body(equalTo(""))
+				.extract().header("Location"));
+	}
+	
 	public static String createNewDescription(IBranchPath descriptionPath, String conceptId, String typeId, Map<String, Acceptability> acceptabilityMap) {
 		Map<?, ?> requestBody = createDescriptionRequestBody(conceptId, typeId, Concepts.MODULE_SCT_CORE, acceptabilityMap)
 				.put("commitComment", "Created new description")
@@ -158,13 +169,17 @@ public abstract class SnomedRestFixtures {
 	public static Builder<String, Object> createDescriptionRequestBody(String conceptId, String typeId, String moduleId, 
 			Map<String, Acceptability> acceptabilityMap,
 			CaseSignificance caseSignificance) {
+		return createDescriptionRequestBody(conceptId, typeId, moduleId, acceptabilityMap, caseSignificance, "en");
+	}
 
+	private static Builder<String, Object> createDescriptionRequestBody(String conceptId, String typeId, String moduleId, Map<String, Acceptability> acceptabilityMap,
+			CaseSignificance caseSignificance, final String languageCode) {
 		return ImmutableMap.<String, Object>builder()
 				.put("conceptId", conceptId)
 				.put("moduleId", moduleId)
 				.put("typeId", typeId)
 				.put("term", "Description term")
-				.put("languageCode", "en")
+				.put("languageCode", languageCode)
 				.put("acceptability", acceptabilityMap)
 				.put("caseSignificance", caseSignificance);
 	}
@@ -240,6 +255,10 @@ public abstract class SnomedRestFixtures {
 	public static String createNewRefSetMember(IBranchPath memberPath, String referencedConceptId) {
 		String refSetId = createNewRefSet(memberPath);
 
+		return createNewRefSetMember(memberPath, referencedConceptId, refSetId);
+	}
+
+	public static String createNewRefSetMember(IBranchPath memberPath, String referencedConceptId, String refSetId) {
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, referencedConceptId)
 				.put("commitComment", "Created new reference set member")
 				.build();
@@ -344,7 +363,7 @@ public abstract class SnomedRestFixtures {
 		updateComponent(descriptionPath, SnomedComponentType.DESCRIPTION, descriptionId, descriptionUpdateRequest).statusCode(204);
 	}
 
-	public static void changeDefinitionStatus(IBranchPath conceptPath, String conceptId) {
+	public static void changeToDefining(IBranchPath conceptPath, String conceptId) {
 		Map<?, ?> conceptUpdateRequest = ImmutableMap.builder()
 				.put("definitionStatus", DefinitionStatus.FULLY_DEFINED)
 				.put("commitComment", "Changed definition status on concept")

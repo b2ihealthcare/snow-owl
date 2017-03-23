@@ -84,6 +84,10 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 		public static final Expression effectiveTime(long from, long to) {
 			return matchRange(Fields.EFFECTIVE_TIME, from, to);
 		}
+		
+		public static final Expression effectiveTime(long from, long to, boolean minInclusive, boolean maxInclusive) {
+			return matchRange(Fields.EFFECTIVE_TIME, from, to, minInclusive, maxInclusive);
+		}
 
 
 	}

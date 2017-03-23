@@ -19,8 +19,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
+import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 /**
@@ -36,8 +36,8 @@ public interface FileRegistry {
 	 * @param id
 	 *            - the unique identifier of the file
 	 * @param in - the contents of the file
-	 * @throws BadRequestException - if the 
-	 * @throws ConflictException
+	 * @throws BadRequestException - if the file is not a valid zip file
+	 * @throws AlreadyExistsException
 	 *             - if a file already exists with the given {@link UUID}
 	 */
 	void upload(UUID id, InputStream in);
@@ -52,5 +52,12 @@ public interface FileRegistry {
 	 *             - if the file does not exist with the given identifier
 	 */
 	void download(UUID id, OutputStream out);
+	
+	/**
+	 * Deletes the file associated with the given identifier. Does nothing when the file is missing or already deleted.
+	 * 
+	 * @param id - the unique identifier of the file
+	 */
+	void delete(UUID id);
 
 }

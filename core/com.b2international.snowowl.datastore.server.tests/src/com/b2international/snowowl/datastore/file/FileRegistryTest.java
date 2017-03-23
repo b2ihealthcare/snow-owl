@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.file;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,6 +34,8 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.internal.file.DefaultFileRegistry;
+import com.b2international.snowowl.datastore.internal.file.InternalFileRegistry;
 import com.google.common.io.Resources;
 
 /**
@@ -41,7 +44,7 @@ import com.google.common.io.Resources;
 public class FileRegistryTest {
 
 	private static final Path FOLDER = Paths.get("target", FileRegistry.class.getSimpleName().toLowerCase());
-	private FileRegistry registry;
+	private InternalFileRegistry registry;
 
 	@Before
 	public void setup() {
@@ -70,9 +73,25 @@ public class FileRegistryTest {
 	public void downloadMissing() throws Exception {
 		download(UUID.randomUUID(), "missing.zip");
 	}
+	
+	@Test
+	public void delete() throws Exception {
+		final UUID id = UUID.randomUUID();
+		upload(id, "file-reg-upload.zip");
+		assertTrue(exists(id));
+		
+		registry.delete(id);
+		
+		try {
+			registry.getFile(id);
+			fail("Expected exception " + NotFoundException.class.getName());
+		} catch (NotFoundException e) {
+			// expected
+		}
+	}
 
-	private static boolean exists(UUID id) {
-		return FOLDER.resolve(id.toString()).toFile().exists();
+	private boolean exists(UUID id) {
+		return registry.getFile(id).exists();
 	}
 
 	private void upload(final UUID id, final String resourceName) throws IOException {

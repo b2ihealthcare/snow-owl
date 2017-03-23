@@ -20,12 +20,14 @@ import java.util.UUID;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.merge.MergeService;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.6
  */
 final class DeleteMergeRequest implements Request<RepositoryContext, Boolean> {
 
+	@JsonProperty
 	private final UUID id;
 
 	DeleteMergeRequest(UUID id) {

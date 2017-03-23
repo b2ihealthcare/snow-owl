@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.exporter.server;
 
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.Set;
 
@@ -32,18 +33,6 @@ import com.b2international.snowowl.snomed.exporter.server.rf1.Id2Rf1PropertyMapp
 public interface SnomedExportContext {
 
 	/**
-	 * Returns the export format requested
-	 * @return export format
-	 */
-	ExportFormat getExportFormat();
-	
-	/**
-	 * Sets the export format
-	 * @param exportFormat
-	 */
-	void setExportFormat(ExportFormat exportFormat);
-	
-	/**
 	 * Returns with the current branch path of the client who 
 	 * triggered the export. 
 	 * @return the client's current branch path.
@@ -58,16 +47,24 @@ public interface SnomedExportContext {
 	ContentSubType getContentSubType();
 
 	/**
-	 * Returns with the delta export start effective time. Can be {@code null} even 
-	 * if the {@link ContentSubType} is {@link ContentSubType#DELTA delta}.
+	 * Returns with a restricting start effective time. Can be {@code null}.
 	 */
-	@Nullable Date getDeltaExportStartEffectiveTime();
+	@Nullable Date getStartEffectiveTime();
 
 	/**
-	 * Returns with the delta export end effective time. Can be {@code null} even 
-	 * if the {@link ContentSubType} is {@link ContentSubType#DELTA delta}.
+	 * Sets a restricting start effective time.
 	 */
-	@Nullable Date getDeltaExportEndEffectiveTime();
+	void setStartEffectiveTime(Date startEffectiveTime);
+	
+	/**
+	 * Returns with a restricting end effective time. Can be {@code null}.
+	 */
+	@Nullable Date getEndEffectiveTime();
+	
+	/**
+	 * Sets a restricting end effective time.
+	 */
+	void setEndEffectiveTime(Date endEffectiveTime);
 	
 	/**
 	 * Returns the label to use when a component does not have an effective time assigned. Defaults to {@link EffectiveTimes#UNSET_EFFECTIVE_TIME_LABEL}. 
@@ -93,4 +90,24 @@ public interface SnomedExportContext {
 	 */
 	Id2Rf1PropertyMapper getId2Rf1PropertyMapper();
 
+	/**
+	 * Returns INT or the country-code and namespace identifier. This is used in the directory name and filenames of the exported files.
+	 * @return namespace for directory and file names.
+	 */
+	String getNamespaceId();
+	
+	/**
+	 * Returns the path to '&lt;path_to_export_temp_dir&gt;\SnomedCT_Release_&lt;namespace&gt;'
+	 */
+	Path getReleaseRootPath();
+	
+	/**
+	 * Returns true if only unpublished components must be exported. False by default.
+	 */
+	boolean isUnpublishedExport();
+	
+	/**
+	 * Sets the value of the flag responsible for unpublished export.
+	 */
+	void setUnpublishedExport(boolean isUnpublishedExport);
 }

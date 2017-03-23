@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snowowl-parent</artifactId>
-		<version>5.7.0-SNAPSHOT</version>
+		<version>5.8.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>documentation</artifactId>
@@ -190,7 +190,7 @@
 					       	<checkinComment>Publishing Docs for Snow Owl ${project.version}</checkinComment>
 					        <content>${project.build.directory}/site</content>
 					        <ignorePathsToDelete>
-					        	<!-- Deletes files only from the docs currently being updated -->
+					        	<!-- Deletes files only from the current doc versions and the SNAPSHOT suffixed version when releasing -->
 					        	<ignorePathsToDelete>%regex[^(?!${project.version}).*$]</ignorePathsToDelete>
 					        </ignorePathsToDelete>
 					        <serverId>github</serverId>
