@@ -37,9 +37,13 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService.IdStorageKeyPair;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -75,6 +79,7 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 	}
 	
 	private Supplier<Iterator<String>> createSupplier() {
+		
 		return memoize(new Supplier<Iterator<String>>() {
 			@Override
 			public Iterator<String> get() {
@@ -108,17 +113,24 @@ public class SnomedRf1ConceptExporter implements SnomedRf1Exporter {
 								manager = indexService.getManager(getBranchPath());
 								searcher = manager.acquire();
 								
-								final Query conceptQuery = SnomedMappings.newQuery().concept().id(conceptId).matchAll();
-								final TopDocs conceptTopDocs = indexService.search(getBranchPath(), conceptQuery, 1);
+								ISnomedConcept concept = SnomedRequests.prepareGetConcept()
+									.setComponentId(conceptId)
+									.setExpand("descriptions()")
+									.build(getBranchPath().getPath())
+									.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+									.getSync();
 								
-								Preconditions.checkState(null != conceptTopDocs && !CompareUtils.isEmpty(conceptTopDocs.scoreDocs));
-								
-								final Document doc = searcher.doc(conceptTopDocs.scoreDocs[0].doc, CONCEPT_FIELDS_TO_LOAD);
+								String fsn = null;
+								for (ISnomedDescription description : concept.getDescriptions()) {
+									if (description.isActive() && description.getTypeId().equals(Concepts.FULLY_SPECIFIED_NAME)) {
+										fsn = description.getTerm();
+									}
+								}
 								
 								_values[0] = conceptId;
-								_values[1] = BooleanUtils.valueOf(SnomedMappings.active().getValue(doc)) ? "1" : "0";
-								_values[2] = conceptId; // doc.get(CONCEPT_FULLY_SPECIFIED_NAME);
-								_values[3] = BooleanUtils.valueOf(SnomedMappings.primitive().getValue(doc)) ? "1" : "0";
+								_values[1] = concept.isActive() ? "1" : "0";
+								_values[2] = fsn;
+								_values[3] = concept.getDefinitionStatus().isPrimitive() ? "1" : "0";
 								
 								if ("0".equals(String.valueOf(_values[1]))) {
 									
