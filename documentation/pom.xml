@@ -94,6 +94,34 @@
 							</javadocOptions>
 						</configuration>
 					</execution>
+					<!-- Scripting distilled API documentation -->
+					<execution>
+						<id>scripting-api-docs</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>javadoc</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${siteOutputDirectory}/scripting-api-docs</outputDirectory>
+							<skipTocGen>true</skipTocGen>
+							<javadocOptions>
+								<additionalArguments>
+									<additionalArgument>${javadoc-args}</additionalArgument>
+									<additionalArgument>
+										-link
+										http://docs.oracle.com/javase/8/docs/api/
+									</additionalArgument>
+									<additionalArgument>-quiet</additionalArgument>
+									<additionalArgument>-windowtitle "Snow Owl Scripting API"</additionalArgument>
+								</additionalArguments>
+								<includes>
+									<include>com.b2international.snowowl.datastore.request</include>
+									<include>com.b2international.snowowl.snomed.datastore.request</include>
+									<include>com.b2international.snowowl.snomed.core.domain</include>
+								</includes>
+							</javadocOptions>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -166,6 +194,7 @@
 					        	<ignorePathsToDelete>%regex[^(?!${project.version}).*$]</ignorePathsToDelete>
 					        </ignorePathsToDelete>
 					        <serverId>github</serverId>
+					        <dryRun>true</dryRun>
 					        <pubScmUrl>scm:git:https://github.com/b2ihealthcare/snow-owl.git</pubScmUrl>
 					        <scmBranch>gh-pages</scmBranch>
 					        <tryUpdate>true</tryUpdate>
