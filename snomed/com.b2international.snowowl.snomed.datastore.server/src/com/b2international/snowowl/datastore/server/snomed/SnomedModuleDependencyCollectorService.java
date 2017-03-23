@@ -49,6 +49,8 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -323,14 +325,14 @@ public enum SnomedModuleDependencyCollectorService {
 
 	private Date getExistingModuleEffectiveTime(final String expectedModuleId) {
 		for (final SnomedReferenceSetMember module : getExistingModules()) {
-			final Long sourceEffectiveTime = (Long) module.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
+			final String sourceEffectiveTime = (String) module.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
 			final String moduleId = module.getModuleId();
-			if (null != sourceEffectiveTime && moduleId.equals(expectedModuleId)) {
-				return new Date(sourceEffectiveTime);
+			if (Strings.isNullOrEmpty(sourceEffectiveTime) && moduleId.equals(expectedModuleId)) {
+				return EffectiveTimes.parse(sourceEffectiveTime, DateFormats.SHORT);
 			}
-			final Long targetEffectiveTime = (Long) module.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
-			if (null != targetEffectiveTime && moduleId.equals(expectedModuleId)) {
-				return new Date(targetEffectiveTime);
+			final String targetEffectiveTime = (String) module.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
+			if (Strings.isNullOrEmpty(targetEffectiveTime) && moduleId.equals(expectedModuleId)) {
+				return EffectiveTimes.parse(targetEffectiveTime, DateFormats.SHORT);
 			}
 		}
 		return null;
