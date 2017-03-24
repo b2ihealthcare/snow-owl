@@ -53,7 +53,7 @@ public class TerminologyImportValidationDefect {
 		INCORRECT_FORMAT,
 		GROUP,
 		CYCLE, 
-		DUPLICATED_CODE
+		DUPLICATE
 	}
 	
 	/**
