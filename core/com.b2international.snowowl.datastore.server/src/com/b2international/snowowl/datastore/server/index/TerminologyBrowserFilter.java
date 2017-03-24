@@ -232,8 +232,10 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 		String label = idToLabelMap.get(componentId);
 		E resultObject = createResultObject(branchPath, doc);
 		
-		//set the label from outside
-		resultObject.setLabel(label);
+		
+		//set the label from outside if necessary (see subclass)
+		setLabel(resultObject, label);
+
 		componentMap.put(componentId, resultObject);
 		
 		Collection<String> superTypeIds = componentIdParentComponentIdMap.get(componentId);
@@ -243,6 +245,10 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 		}
 		
 		processConceptSuperTypes(branchPath, componentId, superTypeIds, idToLabelMap);
+	}
+
+	protected void setLabel(IIndexEntry resultObject, String label) {
+		//do nothing
 	}
 
 	private void processConceptSuperTypes(final IBranchPath branchPath, final String componentId, final Collection<String> superTypeIds, final Map<String, String> idToLabelMap) {
@@ -300,8 +306,8 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 			
 			final E childConcept = getConcept(branchPath, childId);
 			
-			//explicitely set the label
-			childConcept.setLabel(childrenIdtoLabelMap.get(childId));
+			//explicitely set the label if needed (see subclass)
+			setLabel(childConcept, childrenIdtoLabelMap.get(childId));
 			
 			componentMap.put(childId, childConcept);
 			subTypeMap.put(parentId, childId);
