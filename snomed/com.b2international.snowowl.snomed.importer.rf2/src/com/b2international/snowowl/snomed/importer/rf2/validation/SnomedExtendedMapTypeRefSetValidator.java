@@ -86,7 +86,7 @@ public class SnomedExtendedMapTypeRefSetValidator extends SnomedRefSetValidator 
 	private ComponentCategory getComponentCategory(String id) {
 		try {
 			return SnomedIdentifiers.getComponentCategory(id);
-		} catch (final IllegalArgumentException e) {
+		} catch (final Exception e) {
 			return null;
 		}
 	}
