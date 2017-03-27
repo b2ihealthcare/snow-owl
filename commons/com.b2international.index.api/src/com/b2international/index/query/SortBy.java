@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -31,27 +32,31 @@ import com.google.common.collect.Maps;
  * @since 4.7
  */
 public class SortBy {
+	
 	public static enum Order {
-		ASC, DESC;
+		ASC, 
+		DESC;
 	}
 
 	/**
-	 * Singleton representing document sort based on their natural occurrence. 
+	 * Special field name for sorting based on the document's natural occurrence (document order). 
 	 */
-	public static final SortBy NONE = new SortBy() {
-		public String toString() {
-			return "NONE";
-		};
-	};
+	public static final String FIELD_DOC = "$doc";
 	
 	/**
-	 * Singleton representing document sort based on their score (relevance).
+	 * Special field name for sorting based on the document score (relevance).
 	 */
-	public static final SortBy SCORE = new SortBy() {
-		public String toString() {
-			return "SCORE";
-		};
-	};
+	public static final String FIELD_SCORE = "$score";
+	
+	/**
+	 * Singleton representing document sort based on their natural occurrence. 
+	 */
+	public static final SortBy DOC = SortBy.field(FIELD_DOC, Order.ASC);
+	
+	/**
+	 * Singleton representing document sort based on their score in decreasing order (higher score first).
+	 */
+	public static final SortBy SCORE = SortBy.field(FIELD_SCORE, Order.DESC);
 	
 	public static final class SortByField extends SortBy {
 		private final String field;
@@ -69,7 +74,24 @@ public class SortBy {
 		public Order getOrder() {
 			return order;
 		}
-		
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(field, order);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) { return true; }
+			if (obj == null) { return false; }
+			if (getClass() != obj.getClass()) { return false; }
+			
+			SortByField other = (SortByField) obj;
+			if (!Objects.equals(field, other.field)) { return false; }
+			if (order != other.order) { return false; }
+			return true;
+		}
+
 		@Override
 		public String toString() {
 			return field + " " + order;
@@ -88,6 +110,21 @@ public class SortBy {
 		}
 
 		@Override
+		public int hashCode() {
+			return 31 + items.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) { return true; }
+			if (obj == null) { return false; }
+			if (getClass() != obj.getClass()) { return false; }
+			
+			MultiSortBy other = (MultiSortBy) obj;
+			return items.equals(other.items);
+		}
+
+		@Override
 		public String toString() {
 			return Joiner.on(", ").join(items);
 		}
@@ -103,7 +140,7 @@ public class SortBy {
 		
 		public SortBy build() {
 			if (sortOrderMap.isEmpty()) {
-				return NONE;
+				return DOC;
 			} else if (sortOrderMap.size() == 1) {
 				Entry<String, Order> onlyElement = Iterables.getOnlyElement(sortOrderMap.entrySet());
 				return new SortByField(onlyElement.getKey(), onlyElement.getValue());

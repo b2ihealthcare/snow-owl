@@ -87,8 +87,9 @@ final class SnomedConstraintSearchRequest extends SearchResourceRequest<BranchCo
 		}
 		
 		
-		final Query<SnomedConstraintDocument> query = Query.select(SnomedConstraintDocument.class)
+		final Query<SnomedConstraintDocument> query = select(SnomedConstraintDocument.class)
 				.where(queryBuilder.build())
+				.sortBy(sortBy())
 				.offset(offset())
 				.limit(limit())
 				.build();

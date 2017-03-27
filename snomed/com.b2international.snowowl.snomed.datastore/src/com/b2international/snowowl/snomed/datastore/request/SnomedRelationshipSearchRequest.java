@@ -24,7 +24,6 @@ import java.io.IOException;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
@@ -77,8 +76,9 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 			queryBuilder.must(unionGroup(get(OptionKey.UNION_GROUP, Integer.class)));
 		}
 		
-		final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(Query.selectPartial(SnomedRelationshipIndexEntry.class, fields())
+		final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(select(SnomedRelationshipIndexEntry.class)
 				.where(queryBuilder.build())
+				.sortBy(sortBy())
 				.offset(offset())
 				.limit(limit())
 				.build());

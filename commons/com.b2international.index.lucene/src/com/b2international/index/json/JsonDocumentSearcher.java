@@ -16,7 +16,6 @@
 package com.b2international.index.json;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -59,7 +58,6 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.common.primitives.Ints;
 
 /**
@@ -111,7 +109,7 @@ public class JsonDocumentSearcher implements Searcher {
 			return searchDefault(query);
 		}
 		
-		if (!SortBy.NONE.equals(query.getSortBy())) {
+		if (!SortBy.DOC.equals(query.getSortBy())) {
 			throw new IllegalArgumentException("Queries with field selection can't be sorted: " + query.getSortBy()); 
 		}
 		
@@ -244,48 +242,50 @@ public class JsonDocumentSearcher implements Searcher {
 	private org.apache.lucene.search.Sort toLuceneSort(DocumentMapping mapping, Query<?> query) {
 		final SortBy sortBy = query.getSortBy();
 		final List<SortBy> items = newArrayList();
-		
+
 		// Unpack the top level multi-sort if present
 		if (sortBy instanceof MultiSortBy) {
 			items.addAll(((MultiSortBy) sortBy).getItems());
 		} else {
 			items.add(sortBy);
 		}
-		
-		final List<SortField> convertedItems = newArrayListWithExpectedSize(items.size());
-		for (final SortBy item : items) {
-			if (SortBy.NONE.equals(item)) {
-				convertedItems.add(SortField.FIELD_DOC);
-			} else if (SortBy.SCORE.equals(item)) {
-				convertedItems.add(SortField.FIELD_SCORE);
-			} else if (item instanceof SortByField) {
-				final SortByField fieldItem = (SortByField) item;
-				final String sortField = fieldItem.getField();
-				final Field mappingField = mapping.getField(sortField);
 
-				if (NumericClassUtils.isCollection(mappingField)) {
-					throw new IllegalArgumentException("Can't sort on field collection: " + sortField);
-				}
-				
-				final Class<?> fieldType = mappingField.getType();
-				final boolean reverse = SortBy.Order.DESC.equals(fieldItem.getOrder());
-				
-				if (NumericClassUtils.isLong(fieldType)) {
-					convertedItems.add(new SortField(sortField, Type.LONG, reverse));
-				} else if (NumericClassUtils.isFloat(fieldType)) {
-					convertedItems.add(new SortField(sortField, Type.FLOAT, reverse));
-				} else if (NumericClassUtils.isInt(fieldType) || NumericClassUtils.isShort(fieldType)) {
-					convertedItems.add(new SortField(sortField, Type.INT, reverse));
-				} else if (NumericClassUtils.isBigDecimal(fieldType) || String.class.isAssignableFrom(fieldType)) {
-					// TODO: STRING mode might be faster, but requires SortedDocValueFields
-					convertedItems.add(new SortField(sortField, Type.STRING_VAL, reverse));
-				} else {
-					throw new IllegalArgumentException("Unsupported sort field type: " + fieldType + " for field: " + sortField);
-				}
-			}
-		}
-		
-		return new org.apache.lucene.search.Sort(Iterables.toArray(convertedItems, SortField.class));
+		SortField[] convertedFields = FluentIterable.from(items)
+				.filter(SortByField.class)
+				.transform(item -> {
+					switch (item.getField()) {
+					case SortBy.FIELD_DOC:
+						return new SortField(null, SortField.Type.DOC, item.getOrder() == SortBy.Order.DESC);
+					case SortBy.FIELD_SCORE:
+						return new SortField(null, SortField.Type.SCORE, item.getOrder() == SortBy.Order.ASC); // XXX: default order for scores is *descending*
+					default:
+						final String sortField = item.getField();
+						final Field mappingField = mapping.getField(sortField);
+
+						if (NumericClassUtils.isCollection(mappingField)) {
+							throw new IllegalArgumentException("Can't sort on field collection: " + sortField);
+						}
+
+						final Class<?> fieldType = mappingField.getType();
+						final boolean reverse = (item.getOrder() == SortBy.Order.DESC);
+
+						if (NumericClassUtils.isLong(fieldType)) {
+							return new SortField(sortField, Type.LONG, reverse);
+						} else if (NumericClassUtils.isFloat(fieldType)) {
+							return new SortField(sortField, Type.FLOAT, reverse);
+						} else if (NumericClassUtils.isInt(fieldType) || NumericClassUtils.isShort(fieldType)) {
+							return new SortField(sortField, Type.INT, reverse);
+						} else if (NumericClassUtils.isBigDecimal(fieldType) || String.class.isAssignableFrom(fieldType)) {
+							// TODO: STRING mode might be faster, but requires SortedDocValueFields
+							return new SortField(sortField, Type.STRING_VAL, reverse);
+						} else {
+							throw new IllegalArgumentException("Unsupported sort field type: " + fieldType + " for field: " + sortField);
+						}
+					}
+				})
+				.toArray(SortField.class);
+
+		return new org.apache.lucene.search.Sort(convertedFields);
 	}
 	
 	private int numDocsToRetrieve(final int offset, final int limit) {

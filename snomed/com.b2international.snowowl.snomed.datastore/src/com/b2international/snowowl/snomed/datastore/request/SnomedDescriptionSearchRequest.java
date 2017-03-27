@@ -33,7 +33,6 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -130,7 +129,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		addEclFilter(context, queryBuilder, OptionKey.CONCEPT, SnomedDescriptionIndexEntry.Expressions::concepts);
 		addEclFilter(context, queryBuilder, OptionKey.TYPE, SnomedDescriptionIndexEntry.Expressions::types);
 		
-		SortBy sortBy = SortBy.NONE;
+		SortBy sortBy = SortBy.DOC;
 		
 		if (containsKey(OptionKey.TERM)) {
 			final String searchTerm = getString(OptionKey.TERM);
@@ -142,7 +141,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 			sortBy = SortBy.SCORE;
 		}
 
-		final Hits<SnomedDescriptionIndexEntry> hits = searcher.search(Query.select(SnomedDescriptionIndexEntry.class)
+		final Hits<SnomedDescriptionIndexEntry> hits = searcher.search(select(SnomedDescriptionIndexEntry.class)
 				.where(queryBuilder.build())
 				.offset(offset)
 				.limit(limit)
