@@ -33,7 +33,6 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.query.SortBy;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -129,8 +128,6 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		addEclFilter(context, queryBuilder, OptionKey.CONCEPT, SnomedDescriptionIndexEntry.Expressions::concepts);
 		addEclFilter(context, queryBuilder, OptionKey.TYPE, SnomedDescriptionIndexEntry.Expressions::types);
 		
-		SortBy sortBy = SortBy.DOC;
-		
 		if (containsKey(OptionKey.TERM)) {
 			final String searchTerm = getString(OptionKey.TERM);
 			if (!containsKey(OptionKey.USE_FUZZY)) {
@@ -138,14 +135,13 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 			} else {
 				queryBuilder.must(fuzzy(searchTerm));
 			}
-			sortBy = SortBy.SCORE;
 		}
 
 		final Hits<SnomedDescriptionIndexEntry> hits = searcher.search(select(SnomedDescriptionIndexEntry.class)
 				.where(queryBuilder.build())
 				.offset(offset)
 				.limit(limit)
-				.sortBy(sortBy)
+				.sortBy(sortBy())
 				.withScores(containsKey(OptionKey.TERM))
 				.build());
 		if (limit < 1 || hits.getTotal() < 1) {
