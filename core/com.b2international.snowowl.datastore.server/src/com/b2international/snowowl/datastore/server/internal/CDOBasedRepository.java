@@ -106,7 +106,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 	private final String toolingId;
 	private final String repositoryId;
 	private final Map<Long, RepositoryCommitNotification> commitNotifications = new MapMaker().makeMap();
-	private RepositoryState state = RepositoryState.UNKNOWN;
+	private Health health = Health.RED;
 	
 	
 	CDOBasedRepository(String repositoryId, String toolingId, int mergeMaxResults, Environment env) {
@@ -326,36 +326,23 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 	 * Verifies if the repository is in a consistent state, and sets the {@link #state repositoryState} accordingly
 	 */
 	@Override
-	public void updateState() {
-		RepositoryState newState = isConsistent(BranchPathUtils.createMainPath()) ? RepositoryState.CONSISTENT : RepositoryState.INCONSISTENT;
-		if (state != newState) {
-			LOG.debug("Repository state for {} is changing from {} to {}", getCdoRepository().getRepositoryName(), state, newState);
-			state = newState;
+	public void updateHealth() {
+		Health newHealth = calculateHealth();
+		if (health != newHealth) {
+			LOG.debug("Repository state for {} is changing from {} to {}", getCdoRepository().getRepositoryName(), health, newHealth);
+			health = newHealth;
 		} else {
-			LOG.debug("Repository state for {} is remaining the same: {}", getCdoRepository().getRepositoryName(), state);
+			LOG.debug("Repository state for {} is remaining the same: {}", getCdoRepository().getRepositoryName(), health);
 		}
 	}
 	
 	@Override
-	public RepositoryState getRepositoryState() {
-		return state;
+	public Health getHealth() {
+		return health;
 	}
 	
-	@Override
-	public void setState(RepositoryState state) {
-		this.state = state;
-	}
-	
-	@Override
-	public boolean isConsistent(IBranchPath branch) {
-		try {
-			return isConsistentInternal(branch);
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
-	private boolean isConsistentInternal(IBranchPath branchPath) {
+	public Health calculateHealth() {
+		IBranchPath branchPath = BranchPathUtils.createMainPath();
 		List<CDOCommitInfo> cdoCommitInfos = getCDOCommitInfos(branchPath);
 		CommitInfos indexCommitInfos = getIndexCommitInfos(branchPath);
 		
@@ -363,15 +350,17 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		boolean emptyIndex = indexCommitInfos.getItems().isEmpty();
 
 		if (emptyDb && emptyIndex) {
-			return true; // empty dataset
+			return Health.GREEN; // empty dataset
 		}
 		
 		if (emptyDb ^ emptyIndex) {
 			LOG.error("{} is in inconsistent state. CDO {} but INDEX {}", getCdoRepository().getRepositoryName(), contentMessage(emptyDb), contentMessage(emptyIndex));
-			return false; // either CDO or index was deleted but not the other.
+			return Health.RED; // either CDO or index was deleted but not the other.
 		}
 		
-		return !hasInvalidCDOTimeStamps(cdoCommitInfos, getLast(indexCommitInfos).getTimeStamp(), branchPath);
+		boolean validContent = !hasInvalidCDOTimeStamps(cdoCommitInfos, getLast(indexCommitInfos).getTimeStamp(), branchPath);
+		
+		return validContent == true ? Health.GREEN : Health.RED;
 	}
 
 	private String contentMessage(boolean empty) {

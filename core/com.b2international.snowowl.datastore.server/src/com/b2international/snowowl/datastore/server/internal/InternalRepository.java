@@ -21,7 +21,6 @@ import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import com.b2international.index.Index;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
@@ -49,9 +48,5 @@ public interface InternalRepository extends Repository {
 
 	long getHeadTimestamp(CDOBranch branch);
 	
-	boolean isConsistent(IBranchPath branchPath);
-	
-	void updateState();
-	
-	void setState(RepositoryState state);
+	void updateHealth();
 }

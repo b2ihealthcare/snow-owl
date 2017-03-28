@@ -157,7 +157,7 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		repositories.repositories()
 			.stream()
 			.filter(repository -> repository instanceof InternalRepository).map(InternalRepository.class::cast)
-			.forEach(repository -> repository.updateState());
+			.forEach(repository -> repository.updateHealth());
 	}
 
 	private void initializeJobSupport(Environment env, SnowOwlConfiguration configuration) {

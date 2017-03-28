@@ -57,14 +57,14 @@ public interface Repository extends ServiceProvider, IDisposableService {
 	void sendNotification(RepositoryEvent event);
 
 	/**
-	 * @return Returns the {@link RepositoryState state} for this repository. The repository is considerred healthy if it is in {@link RepositoryState#CONSISTENT} 
+	 * @return Returns the {@link Health health} state for this repository. The repository is considered healthy if it is in {@link Health#GREEN} state.
 	 */
-	RepositoryState getRepositoryState();
+	Health getHealth();
 	
 	/**
 	 * @since 5.8 
 	 */
-	enum RepositoryState {
-		UNKNOWN, CONSISTENT, INCONSISTENT, REINDEXING;
+	enum Health {
+		RED, YELLOW, GREEN;
 	}
 }

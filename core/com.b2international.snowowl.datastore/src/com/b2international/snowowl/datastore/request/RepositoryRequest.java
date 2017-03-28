@@ -17,14 +17,11 @@ package com.b2international.snowowl.datastore.request;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.snowowl.core.Repository;
-import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -42,19 +39,6 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 	
 	@Override
 	public B execute(final ServiceProvider context) {
-		checkRepositoryConsistency(context);
 		return next(context.service(RepositoryContextProvider.class).get(repositoryId));
 	}
-
-	private void checkRepositoryConsistency(final ServiceProvider context) {
-		if (!next().needsConsistencyCheck())
-			return;
-		
-		Repository repository = context.service(RepositoryManager.class).get(repositoryId);
-		
-		if (repository.getRepositoryState() == Repository.RepositoryState.INCONSISTENT) {
-			throw new BadRequestException(String.format("Repository [%s] is in %s state. Until consistency is restored requests to this repository will fail. Consistency can be restored by restoring a consistent state or re-indexing this repository.", repository.id(), repository.getRepositoryState().toString().toLowerCase()));
-		}
-	}
-	
 }

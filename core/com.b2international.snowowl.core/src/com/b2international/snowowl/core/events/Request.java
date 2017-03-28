@@ -58,9 +58,6 @@ public interface Request<C extends ServiceProvider, R> extends Serializable {
 	 */
 	R execute(C context);
 	
-	default boolean needsConsistencyCheck() {
-		return true;
-	}
 	/**
 	 * @return the type of the request for serialization in log messages
 	 */

@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.StringUtils;
 import com.b2international.index.revision.Purge;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.Repository.RepositoryState;
+import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -65,7 +65,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	private static final String LISTBRANCHES_COMMAND = "listbranches";
 	private static final String LISTREPOSITORIES_COMMAND = "listrepositories";
 	private static final String DBCREATEINDEX_COMMAND = "dbcreateindex";
-	private static final String REPOSITORY_STATE_COMMAND = "repositorystate";
+	private static final String REPOSITORY_HEALTH_COMMAND = "repositoryhealth";
 
 	@Override
 	public String getHelp() {
@@ -77,8 +77,8 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		buffer.append("\tsnowowl reindex [repositoryId] [failedCommitTimestamp] - reindexes the content for the given repository ID from the given failed commit timestamp (optional, default timestamp is 1 which means no failed commit).\n");
 		buffer.append("\tsnowowl optimize [repositoryId] [maxSegments] - optimizes the underlying index for the repository to have the supplied maximum number of segments (default number is 1)\n");
 		buffer.append("\tsnowowl purge [repositoryId] [branchPath] [ALL|LATEST|HISTORY] - optimizes the underlying index by deleting unnecessary documents from the given branch using the given purge strategy (default strategy is LATEST)\n");
-		buffer.append("\tsnowowl repositorystate update [repositoryId_1, ... repositoryId_N] - Computes and updates the repository state for the given repisoryId(s). If no repositoryId is given, it computes and updates states for all available repositories.\n");
-		buffer.append("\tsnowowl repositorystate list [repositoryId_1, ... repositoryId_N] - Lists the repository state for the given repisoryId(s). If no repositoryId is given, it lists states for all available repositories.\n");
+		buffer.append("\tsnowowl repositoryhealth update [repositoryId_1, ... repositoryId_N] - Computes and updates the health state for the given repisoryId(s). If no repositoryId is given, it computes and updates health states for all available repositories.\n");
+		buffer.append("\tsnowowl repositoryhealth list [repositoryId_1, ... repositoryId_N] - Lists the health state for the given repisoryId(s). If no repositoryId is given, it lists health states for all available repositories.\n");
 		return buffer.toString();
 	}
 
@@ -107,8 +107,8 @@ public class MaintenanceCommandProvider implements CommandProvider {
 				return;
 			}
 
-			if (REPOSITORY_STATE_COMMAND.equals(cmd)) {
-				handleRepositoryStateCommand(interpreter);
+			if (REPOSITORY_HEALTH_COMMAND.equals(cmd)) {
+				handleRepositoryHealthCommand(interpreter);
 				return;
 			}
 			
@@ -138,17 +138,17 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		}
 	}
 
-	public synchronized void handleRepositoryStateCommand(CommandInterpreter interpreter) {
+	public synchronized void handleRepositoryHealthCommand(CommandInterpreter interpreter) {
 		String command = interpreter.nextArgument();
 		
 		if ("list".equals(command)) {
-			handleListRepositoryState(interpreter);
+			handleListRepositoryHealth(interpreter);
 		} else if ("update".equals(command)) {
-			handleUpdateRepositoryState(interpreter);
+			handleUpdateRepositoryHealth(interpreter);
 		} else { 
 			interpreter.println("One of the repository state commands should be specified:");
-			interpreter.println("\t snowowl repositorystate list [repositoryId_1, ... repositoryId_N]");
-			interpreter.println("\t snowowl repositorystate update [repositoryId_1, ... repositoryId_N]");
+			interpreter.println("\t snowowl repositoryhealth list [repositoryId_1, ... repositoryId_N]");
+			interpreter.println("\t snowowl repositoryhealth update [repositoryId_1, ... repositoryId_N]");
 		}
 	}
 
@@ -163,7 +163,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		return results;
 	}
 
-	private void handleListRepositoryState(CommandInterpreter interpreter) {
+	private void handleListRepositoryHealth(CommandInterpreter interpreter) {
 		RepositoryManager repositoryManager = ApplicationContext.getServiceForClass(RepositoryManager.class);
 
 		Collection<String> repositoryIds = getRepositories(interpreter);
@@ -172,13 +172,13 @@ public class MaintenanceCommandProvider implements CommandProvider {
 					.filter(respositoryId -> isValidRepositoryName(respositoryId, interpreter))
 					.map(repositoryId -> repositoryManager.get(repositoryId))
 				.forEach(repository -> {
-					interpreter.println(String.format("[%s] is in state: %s", repository.id(), repository.getRepositoryState()));
+					interpreter.println(String.format("[%s] has health state: %s", repository.id(), repository.getHealth()));
 				});
 	}
 
 	
 	
-	private void handleUpdateRepositoryState(CommandInterpreter interpreter) {
+	private void handleUpdateRepositoryHealth(CommandInterpreter interpreter) {
 		
 		RepositoryManager repositoryManager = ApplicationContext.getServiceForClass(RepositoryManager.class);
 		Collection<String> repositoryIds = getRepositories(interpreter);
@@ -188,10 +188,10 @@ public class MaintenanceCommandProvider implements CommandProvider {
 					.map(repositoryId -> repositoryManager.get(repositoryId))
 					.filter(InternalRepository.class::isInstance).map(InternalRepository.class::cast)
 				.forEach(repository -> {
-					RepositoryState oldState = repository.getRepositoryState();
-					repository.updateState();
-					RepositoryState newState = repository.getRepositoryState();
-					interpreter.println(String.format("Repository state is updated for: [%s]. Old state: %s, new state: %s", repository.id(), oldState, newState));
+					Repository.Health oldHealth = repository.getHealth();
+					repository.updateHealth();
+					Repository.Health newHealth = repository.getHealth();
+					interpreter.println(String.format("Repository health is updated for: [%s]. Old state: %s, new state: %s", repository.id(), oldHealth, newHealth));
 				});
 	}
 
