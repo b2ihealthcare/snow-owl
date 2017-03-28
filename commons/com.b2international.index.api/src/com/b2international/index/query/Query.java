@@ -138,7 +138,7 @@ public final class Query<T> {
 		sb.append("SELECT " + getSelectString());
 		sb.append(" FROM " + DocumentMapping.getType(from));
 		sb.append(" WHERE " + where);
-		if (SortBy.DOC.equals(sortBy)) {
+		if (!SortBy.DOC.equals(sortBy)) {
 			sb.append(" SORT BY " + sortBy);
 		}
 		sb.append(" LIMIT " + limit);
