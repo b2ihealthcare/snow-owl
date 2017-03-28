@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.eclipse.emf.cdo.CDOObject;
@@ -101,6 +102,24 @@ public abstract class AbstractTerminologyImportValidator<T extends CDOObject> {
 	 */
 	protected abstract void validateMembers(final String sheetName, final Set<Row> members);
 
+	
+	/**
+	 * Returns true if rows contain duplicate values in the given column.
+	 * 
+	 * @param the name of the sheet being validated
+	 * @param rows to check for duplicates
+	 * @param uniqueColumn the index of the unique value column
+	 * @return true if duplicates found
+	 */
+	protected void validateDuplicateFields(final String sheetName, final Set<Row> rows, final int uniqueColumn) {
+		Set<String> fieldSet = rows.stream()
+				.map(row ->	ExcelUtilities.extractContentAsString(row.getCell(uniqueColumn))).collect(Collectors.<String>toSet());
+		
+		if(rows.size() > fieldSet.size()) {
+			addDefect(sheetName, DefectType.DUPLICATE, String.format("Spreadsheet %s, has duplicated fields in column %s.", sheetName, uniqueColumn));
+		}
+	}
+	
 	/**
 	 * Validates the metadata from the sheet.
 	 * 
