@@ -513,13 +513,9 @@ public abstract class SnomedRefSetExporterQueries {
 			+" AND concept.ACTIVE = true"
 			+" WHERE ("
 				+" member.ACTIVE = true"
-				+" OR ( "
-					+" member.ACTIVE = false"
-					+" AND concept.EFFECTIVETIME IS NOT NULL"
-				+" )"
 			+" )";
 	
-	public static final String SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_INCATIVATED_REFSET_MEMBER_CONCEPT_QUERY = "SELECT "
+	public static final String SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_INACTIVATED_REFSET_MEMBER_CONCEPT_QUERY = "SELECT "
 			+" concept.ACTIVE, concept.CDO_VERSION"
 			+" FROM SNOMED_CONCEPT concept"
 			+" WHERE concept.CDO_ID = ?"

@@ -966,7 +966,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	private Map<Long, String> getExportedMemberConceptCDOAndSnomedIds(String refSetId) throws SQLException {
 		Map<Long, String> conceptCDOIds = Maps.newHashMap();
 		PreparedStatement inactivatedCheckerStatement = connection
-				.prepareStatement(SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_INCATIVATED_REFSET_MEMBER_CONCEPT_QUERY);
+				.prepareStatement(SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_INACTIVATED_REFSET_MEMBER_CONCEPT_QUERY);
 		PreparedStatement statement = connection.prepareStatement(SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_REFSET_MEMBER_QUERY);
 		statement.setLong(1, Long.valueOf(refSetId));
 		statement.setInt(2, branchId);
