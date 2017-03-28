@@ -24,12 +24,13 @@ import org.eclipse.core.runtime.IStatus;
 
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
 
 /**
  * Represents a terminology independent service responsible for collecting and creating
  * versions for its concrete implementations. 
- *
+ * @deprecated - use {@link CodeSystemRequests#prepareNewCodeSystemVersion()} instead
  */
 public interface IVersioningService {
 	
