@@ -6,4 +6,3 @@ Snow Owl<sup>®</sup> is a terminology server and a collaborative terminology au
 Clients can easily access and query SNOMED CT, LOINC<sup>®</sup>, ATC, ICD-10, and dozens of additional terminologies via REST or Java APIs. Collaborative distributed authoring is also supported, including creating and maintaining your own local code systems, mapping between terminologies, and creating terminology subsets.
 
 Snow Owl is maintained by [B2i Healthcare](http://b2i.sg).
-
