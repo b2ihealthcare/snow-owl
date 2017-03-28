@@ -41,12 +41,12 @@ public class SortBy {
 	/**
 	 * Special field name for sorting based on the document's natural occurrence (document order). 
 	 */
-	public static final String FIELD_DOC = "$doc";
+	public static final String FIELD_DOC = "_doc";
 	
 	/**
 	 * Special field name for sorting based on the document score (relevance).
 	 */
-	public static final String FIELD_SCORE = "$score";
+	public static final String FIELD_SCORE = "_score";
 	
 	/**
 	 * Singleton representing document sort based on their natural occurrence. 
