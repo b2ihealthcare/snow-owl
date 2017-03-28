@@ -28,7 +28,7 @@
       window.swaggerUi = new SwaggerUi({
       url: "api-docs/index.json",
       dom_id: "swagger-ui-container",
-      supportedSubmitMethods: [],
+      supportedSubmitMethods: ['patch'],
       onComplete: function(swaggerApi, swaggerUi){
         log("Loaded SwaggerUI");
         $('pre code').each(function(i, e) {
