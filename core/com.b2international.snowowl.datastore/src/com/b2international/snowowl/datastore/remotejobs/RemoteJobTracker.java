@@ -109,7 +109,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	}
 	
 	public RemoteJobs search(Expression query, int offset, int limit) {
-		return search(query, ImmutableSet.<String>of(), SortBy.DOC, offset, limit); 
+		return search(query, ImmutableSet.of(), SortBy.DOC, offset, limit); 
 	}
 	
 	public RemoteJobs search(Expression query, Set<String> fields, SortBy sortBy, int offset, int limit) {
