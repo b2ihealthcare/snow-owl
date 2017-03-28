@@ -106,7 +106,7 @@ public abstract class AbstractTerminologyExcelImportJob<T extends CDOObject> ext
 	 * 
 	 * @throws SnowowlServiceException
 	 */
-	protected abstract void initializeComponents() throws SnowowlServiceException;
+	protected abstract void initializeServices() throws SnowowlServiceException;
 
 	/**
 	 * Import terminology from the given sheet.
@@ -139,7 +139,7 @@ public abstract class AbstractTerminologyExcelImportJob<T extends CDOObject> ext
 			inputStream = new FileInputStream(getImportFilePath());
 			final Workbook workbook = WorkbookFactory.create(inputStream);
 
-			initializeComponents();
+			initializeServices();
 
 			final Set<Sheet> sheets = collectSheets(workbook);
 
@@ -168,14 +168,7 @@ public abstract class AbstractTerminologyExcelImportJob<T extends CDOObject> ext
 			final long lastCommitTime = getLastCommitTimeBeforeImport();
 			latestSuccessfulCommitTime = lastCommitTime;
 
-			for (final Sheet sheet : sheets) {
-				final String terminologyName = importTerminology(sheet.getSheetName());
-				logImportActivity(MessageFormat.format("Processed excel sheet {0} for {1}", sheet.getSheetName(), getTerminologyName()));
-				final CDOCommitInfo commitInfo = commitChanges(terminologyName, fileName);
-				if (null != commitInfo) {
-					latestSuccessfulCommitTime = commitInfo.getTimeStamp();
-				}
-			}
+			commitSheets(fileName, sheets);
 
 			final CDOCommitInfo commitInfo = 
 					CDOCommitInfoUtils.createEmptyCommitInfo(getRepositoryUuid(), getBranchPath(), getUserId(), "commit comment", getLatestSuccessfulCommitTime(), lastCommitTime);
@@ -219,6 +212,17 @@ public abstract class AbstractTerminologyExcelImportJob<T extends CDOObject> ext
 		}
 	}
 
+	protected void commitSheets(final String fileName, final Set<Sheet> sheets) throws Exception, CommitException {
+		for (final Sheet sheet : sheets) {
+			final String terminologyName = importTerminology(sheet.getSheetName());
+			logImportActivity(MessageFormat.format("Processed excel sheet {0} for {1}", sheet.getSheetName(), getTerminologyName()));
+			final CDOCommitInfo commitInfo = commitChanges(terminologyName, fileName);
+			if (null != commitInfo) {
+				latestSuccessfulCommitTime = commitInfo.getTimeStamp();
+			}
+		}
+	}
+
 	/**
 	 * Clears the database for the current imported terminology.
 	 * 
@@ -255,6 +259,10 @@ public abstract class AbstractTerminologyExcelImportJob<T extends CDOObject> ext
 
 	protected long getLatestSuccessfulCommitTime() {
 		return latestSuccessfulCommitTime;
+	}
+	
+	protected void setLatestSuccessfulCommitTime(long timeStamp) {
+		this.latestSuccessfulCommitTime = timeStamp;
 	}
 
 	protected boolean getStatusBooleanValue(final String value, boolean defaultValue) {
@@ -308,13 +316,9 @@ public abstract class AbstractTerminologyExcelImportJob<T extends CDOObject> ext
 			final T component = getComponentFromDatabase(sheetName);
 
 			if (null != component) {
-
 				existingComponents.put(sheetName, component);
-
 			}
-
 		}
-
 	}
 
 	private String getRepositoryUuid() {

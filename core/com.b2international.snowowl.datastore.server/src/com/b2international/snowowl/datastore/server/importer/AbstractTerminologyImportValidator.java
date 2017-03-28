@@ -50,6 +50,7 @@ public abstract class AbstractTerminologyImportValidator<T extends CDOObject> {
 	private final TerminologyImportExcelParser excelParser;
 	private final Map<String, TerminologyImportValidationDefect> defects = Maps.newHashMap();
 	private final Map<String, T> databaseComponents;
+	
 	/**
 	 * Keys are the properties for instance, 'OID' or 'short name'
 	 * Values are the actual values for the properties such as '2.16.840.1.113883.6.96' or 'SNOMEDCT'
