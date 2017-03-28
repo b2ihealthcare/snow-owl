@@ -984,7 +984,10 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			inactivatedCheckerStatement.setLong(1, CDOId);
 			inactivatedCheckerStatement.setInt(2, branchId);
 			ResultSet inactivatedCheckerResultSet = inactivatedCheckerStatement.executeQuery();
-			// if the concept was inactivated on the task
+			
+			/*
+			 * Active refset members are skipped if the referenced concept is inactive!
+			 */
 			if (inactivatedCheckerResultSet.absolute(1) && !inactivatedCheckerResultSet.getBoolean(1)) {
 				i++;
 				continue;
