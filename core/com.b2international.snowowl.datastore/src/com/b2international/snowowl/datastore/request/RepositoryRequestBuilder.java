@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.RequestBuilder;
@@ -31,8 +32,19 @@ public interface RepositoryRequestBuilder<R> extends RequestBuilder<RepositoryCo
 	 */
 	default AsyncRequest<R> build(String repositoryId) {
 		return new AsyncRequest<>(
-			new RepositoryRequest<>(repositoryId, build())
+				new HealthCheckingRequest<>(repositoryId, 
+						new RepositoryRequest<>(repositoryId, build()), allowedHealthstates())
 		);
 	}
+
+	/**
+	 * Returns an array of {@link Repository.Health Health} statuses in which the delegate request is allowed to execute.
+	 * By Default the array contains only {@link Repository.Health#GREEN}. Which can be overriden in {@link RepositoryRequestBuilder} implementations 
+	 * 	eg.: to allow maintenance related requests to be executed against a non-green {@link Repository}.
+	 * @return an array of {@link Repository.Health} statuses.
+	 */
+	default Repository.Health[] allowedHealthstates() {
+		return new Repository.Health[] { Repository.Health.GREEN };
+	};
 	
 }
