@@ -14,47 +14,7 @@
   <body>
   
     <div class="wrapper">
-      <header>
-        <h1>Snow Owl</h1>
-         <p>Terminology Authoring Environment and Server</p>
-         <p class="view"><a href="5.7.0-SNAPSHOT/guides/installation_guide.html">Installation Guide</a></p>
-         <p class="view"><a href="5.7.0-SNAPSHOT/guides/configuration_guide.html">Configuration Guide</a></p>
-         <p class="view"><a href="5.7.0-SNAPSHOT/guides/administration_guide.html">Administration Guide</a></p>
-         <p class="view"><a href="5.7.0-SNAPSHOT/guides/administrative_console_reference.html">Console Commands Reference</a></p>
-         <p class="view"><a href="5.7.0-SNAPSHOT/guides/administrative_rest_reference.html">REST API Reference</a></p>
-         <p class="view"><a href="5.7.0-SNAPSHOT/guides/software_requirements.html">Software Requirements</a></p>
-         <p class="view"><a href="5.7.0-SNAPSHOT/guides/snomed_extension_management.html">SNOMED CT Extension Management</a></p>
-         
-        <hr>
-         <p class="view"><a href="5.7.0-SNAPSHOT/api-docs/index.html">Javadoc</a></p>
-         <p class="view"><a href="5.7.0-SNAPSHOT/scripting-api-docs/index.html">API Javadoc</a></p>
-
-        <hr>
-         <ul>
-            <li><a href="5.7.0-SNAPSHOT/guide/index.pdf">Download <strong>PDF</strong></a></li>
-         </ul>
-        
-        <!--
-        <h1>{{ site.title | default: site.github.repository_name }}</h1>
-        <p>{{ site.description | default: site.github.project_tagline }}</p>
-        -->
-        
-        {% if site.github.is_project_page %}
-          <p class="view"><a href="{{ site.github.repository_url }}">View our Project on GitHub <small>{{ github_name }}</small></a></p>
-        {% endif %}
-
-        {% if site.github.is_user_page %}
-          <p class="view"><a href="{{ site.github.owner_url }}">View My GitHub Profile</a></p>
-        {% endif %}
-
-        {% if site.show_downloads %}
-          <ul>
-            <li><a href="{{ site.github.zip_url }}">Download <strong>ZIP File</strong></a></li>
-            <li><a href="{{ site.github.tar_url }}">Download <strong>TAR Ball</strong></a></li>
-            <li><a href="{{ site.github.repository_url }}">View On <strong>GitHub</strong></a></li>
-          </ul>
-        {% endif %}
-      </header>
+      {% include header.html %}
       <section>
       {{ content }}
       </section>
