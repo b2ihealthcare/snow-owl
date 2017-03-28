@@ -121,28 +121,6 @@ public abstract class AbstractTerminologyImportValidator<T extends CDOObject> {
 		}).collect(Collectors.<String>toSet());
 		
 		if(rows.size() > fieldSet.size()) {
-			addDefect(sheetName, DefectType.DUPLICATED_CODE, String.format("Spreadsheet %s, has duplicated fields in column %s.", sheetName, uniqueColumn));
-		}
-	}
-	
-	/**
-	 * Returns true if rows contain duplicate values in the given column.
-	 * 
-	 * @param the name of the sheet being validated
-	 * @param rows to check for duplicates
-	 * @param uniqueColumn the index of the unique value column
-	 * @return true if duplicates found
-	 */
-	protected void validateDuplicateFields(final String sheetName, final Set<Row> rows, final int uniqueColumn) {
-		Set<String> fieldSet = rows.stream().map(new Function<Row, String>() {
-
-			@Override
-			public String apply(Row row) {
-				return ExcelUtilities.extractContentAsString(row.getCell(uniqueColumn));
-			}
-		}).collect(Collectors.<String>toSet());
-		
-		if(rows.size() > fieldSet.size()) {
 			addDefect(sheetName, DefectType.DUPLICATE, String.format("Spreadsheet %s, has duplicated fields in column %s.", sheetName, uniqueColumn));
 		}
 	}
