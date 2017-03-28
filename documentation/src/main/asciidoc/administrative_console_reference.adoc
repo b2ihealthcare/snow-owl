@@ -591,13 +591,13 @@ osgi>snowowl purge snomedStore MAIN/2016-01-31 ALL
 ....
 
 
-`snowowl repositorystate update [repositoryId_1, ... repositoryId_N]` Computes and updates the repository state for the given repisoryId(s). If no repositoryId is given, it computes and updates states for all available repositories.
+`snowowl repositoryhealth update [repositoryId_1, ... repositoryId_N]` Computes and updates the health state for the given repisoryId(s). If no repositoryId is given, it computes and updates health states for all available repositories.
 
 ....
 osgi>
 ....
 
-`snowowl repositorystate list [repositoryId_1, ... repositoryId_N]` Lists the repository state for the given repisoryId(s). If no repositoryId is given, it lists states for all available repositories.
+`snowowl repositoryhealth list [repositoryId_1, ... repositoryId_N]` Lists the health state for the given repisoryId(s). If no repositoryId is given, it lists health states for all available repositories.
 
 ....
 osgi>
