@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.NotAvailableException;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.google.common.collect.Lists;
 
 /**
@@ -59,7 +59,7 @@ public class HealthCheckingRequest<C extends ServiceProvider, B> extends Delegat
 		Health repositoryHealth = repository.getHealth();
 
 		if (!getAllowedHealthStates().contains(repositoryHealth)) {
-			throw new NotAvailableException("Requests for this repository [{}] are not allowed to execute with health state: {}.", repository.id(), repositoryHealth);
+			throw new BadRequestException("Requests for this repository [{}] are not allowed to execute with health state: {}.", repository.id(), repositoryHealth);
 		}
 	}
 
