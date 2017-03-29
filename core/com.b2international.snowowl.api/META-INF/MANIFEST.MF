@@ -9,7 +9,9 @@ Export-Package: com.b2international.snowowl.api,
  com.b2international.snowowl.api.admin,
  com.b2international.snowowl.api.admin.exception,
  com.b2international.snowowl.api.codesystem,
- com.b2international.snowowl.api.codesystem.domain
+ com.b2international.snowowl.api.codesystem.domain,
+ com.b2international.snowowl.api.info,
+ com.b2international.snowowl.api.info.domain
 Bundle-ActivationPolicy: lazy
 Import-Package: org.osgi.framework
 Require-Bundle: com.google.guava;visibility:=reexport,
