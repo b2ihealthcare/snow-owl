@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.google.common.collect.Lists.newArrayList;
-
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -26,10 +23,8 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.datastore.request.SearchResourceRequestBuilder;
-import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
 import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequest.OptionKey;
 
 /**
@@ -127,28 +122,10 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	 * @see #filterByLanguageRefSetIds(List)
 	 */
 	public final B filterByExtendedLocales(List<ExtendedLocale> locales) {
-		final List<String> languageRefSetIds = newArrayList();
-		final List<ExtendedLocale> unconvertableLocales = new ArrayList<ExtendedLocale>();
-		for (ExtendedLocale extendedLocale : locales) {
-			final String languageRefSetId;
-			
-			if (!extendedLocale.getLanguageRefSetId().isEmpty()) {
-				languageRefSetId = extendedLocale.getLanguageRefSetId();
-			} else {
-				languageRefSetId = LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifier(extendedLocale.getLanguageTag());
-			}
-			
-			if (languageRefSetId == null) {
-				unconvertableLocales.add(extendedLocale);
-			} else {
-				languageRefSetIds.add(languageRefSetId);
-			}
-		}
-		
-		if (languageRefSetIds.isEmpty() && !unconvertableLocales.isEmpty()) {
-			throw new BadRequestException("Don't know how to convert extended locale " + unconvertableLocales.get(0).toString() + " to a language reference set identifier.");
-		}
-		
-		return filterByLanguageRefSetIds(languageRefSetIds).setLocales(locales);
+		/* 
+		 * XXX: Pairwise matching of language code and reference set ID has to be checked on the Java side, after
+		 * results have been returned.
+		 */
+		return filterByLanguageRefSetIds(DescriptionRequestHelper.getLanguageRefSetIds(locales));
 	}
 }

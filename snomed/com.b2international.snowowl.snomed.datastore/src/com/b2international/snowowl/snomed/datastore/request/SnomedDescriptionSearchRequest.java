@@ -39,12 +39,10 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.google.common.collect.ImmutableMultimap;
 
 /**
  * @since 4.5
@@ -69,60 +67,16 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		if (containsKey(OptionKey.TERM) && getString(OptionKey.TERM).length() < 2) {
 			throw new BadRequestException("Description term must be at least 2 characters long.");
 		}
-		
-		if (containsKey(OptionKey.ACCEPTABILITY) || !languageRefSetIds().isEmpty()) {
-			
-			if (containsKey(OptionKey.ACCEPTABILITY) && languageRefSetIds().isEmpty()) {
-				throw new BadRequestException("A list of language reference set identifiers must be specified if acceptability is set.");
-			}
-			
-			final ImmutableMultimap.Builder<String, SnomedDescription> buckets = ImmutableMultimap.builder();
-			
-			int position = 0;
-			int total = 0;
-			
-			for (final String languageRefSetId : languageRefSetIds()) {
-				// Do a hitcount-only run for this language reference set first
-				SnomedDescriptions subResults = search(context, searcher, languageRefSetId, 0, 0);
-				int subTotal = subResults.getTotal();
 
-				// Run actual search only if it is within the required range
-				if (position + subTotal > offset() && position < offset() + limit()) {
-					// Relative offset may not become negative
-					int subOffset = Math.max(0, offset() - position);
-					// Relative limit may not go over subTotal, or the number of remaining items to collect
-					int subLimit = Math.min(subTotal - subOffset, offset() + limit() - position);
-					
-					subResults = search(context, searcher, languageRefSetId, subOffset, subLimit);
-					buckets.putAll(languageRefSetId, subResults.getItems());
-				}
-				
-				total += subTotal;
-				position += subTotal;
-			}
-			
-			List<SnomedDescription> concatenatedList = buckets.build().values().asList();
-			return new SnomedDescriptions(concatenatedList, offset(), limit(), total);
-			
-		} else {
-			return search(context, searcher, "-1", offset(), limit());
-		}
-	}
-	
-	@Override
-	protected SnomedDescriptions createEmptyResult(int offset, int limit) {
-		return new SnomedDescriptions(offset, limit, 0);
-	}
-
-	private SnomedDescriptions search(BranchContext context, final RevisionSearcher searcher, String languageRefSetId, int offset, int limit) throws IOException {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		// Add (presumably) most selective filters first
 		addActiveClause(queryBuilder);
 		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
+		addLocaleFilter(context, queryBuilder);
 		addModuleClause(queryBuilder);
 		addNamespaceFilter(queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
-		addLocaleFilter(context, queryBuilder, languageRefSetId);
+		addActiveMemberOfClause(queryBuilder);
 		addLanguageFilter(queryBuilder);
 		addActiveMemberOfClause(queryBuilder);
 		addEclFilter(context, queryBuilder, OptionKey.CONCEPT, SnomedDescriptionIndexEntry.Expressions::concepts);
@@ -139,16 +93,21 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 
 		final Hits<SnomedDescriptionIndexEntry> hits = searcher.search(select(SnomedDescriptionIndexEntry.class)
 				.where(queryBuilder.build())
-				.offset(offset)
-				.limit(limit)
+				.offset(offset())
+				.limit(limit())
 				.sortBy(sortBy())
 				.withScores(containsKey(OptionKey.TERM))
 				.build());
-		if (limit < 1 || hits.getTotal() < 1) {
-			return new SnomedDescriptions(offset, limit, hits.getTotal());
+		if (limit() < 1 || hits.getTotal() < 1) {
+			return new SnomedDescriptions(offset(), limit(), hits.getTotal());
 		} else {
-			return SnomedConverters.newDescriptionConverter(context, expand(), locales()).convert(hits.getHits(), offset, limit, hits.getTotal());
+			return SnomedConverters.newDescriptionConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), hits.getTotal());
 		}
+	}
+	
+	@Override
+	protected SnomedDescriptions createEmptyResult(int offset, int limit) {
+		return new SnomedDescriptions(offset, limit, 0);
 	}
 	
 	private Expression toDescriptionTermQuery(final String searchTerm) {
@@ -188,27 +147,27 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		}
 	}
 
-	private void addLocaleFilter(BranchContext context, ExpressionBuilder queryBuilder, String positiveRefSetId) {
+	private void addLocaleFilter(BranchContext context, ExpressionBuilder queryBuilder) {
+		if (languageRefSetIds().isEmpty()) {
+			return;
+		}
+		
+		ExpressionBuilder languageRefSetExpression = Expressions.builder();
+		
 		for (String languageRefSetId : languageRefSetIds()) {
-			final Expression acceptabilityFilter; 
 			if (containsKey(OptionKey.ACCEPTABILITY)) {
-				acceptabilityFilter = Acceptability.PREFERRED.equals(get(OptionKey.ACCEPTABILITY, Acceptability.class)) ?
-						preferredIn(languageRefSetId) :
-							SnomedDescriptionIndexEntry.Expressions.acceptableIn(languageRefSetId);
-			} else {
-				acceptabilityFilter = Expressions.builder()
-						.should(preferredIn(languageRefSetId))
-						.should(acceptableIn(languageRefSetId))
-						.build();
-			}
+				final Acceptability acceptability = get(OptionKey.ACCEPTABILITY, Acceptability.class);
+				final Expression acceptabilityExpression = Acceptability.PREFERRED.equals(acceptability) 
+						? preferredIn(languageRefSetId) 
+						: acceptableIn(languageRefSetId);
 
-			if (languageRefSetId.equals(positiveRefSetId)) {
-				queryBuilder.must(acceptabilityFilter);
-				break;
+				languageRefSetExpression.should(acceptabilityExpression);
 			} else {
-				queryBuilder.mustNot(acceptabilityFilter);
+				languageRefSetExpression.should(preferredIn(languageRefSetId));
+				languageRefSetExpression.should(acceptableIn(languageRefSetId));
 			}
 		}
+		
+		queryBuilder.must(languageRefSetExpression.build());
 	}
-	
 }
