@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,7 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
 import com.b2international.commons.ConsoleProgressMonitor;
-import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration.ImportSourceKind;
@@ -43,7 +40,7 @@ import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.google.common.io.Files;
 
 /**
- * 
+ * The server-side Net4J indication for SNOMED CT imports.
  */
 public class SnomedImportIndication extends IndicationWithMonitoring {
 
@@ -86,21 +83,8 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 				importConfiguration.excludeRefSet(in.readString());
 			}
 			
-			final CodeSystem codeSystem = CodeSystem.builder()
-					.branchPath(in.readUTF())
-					.citation(in.readUTF())
-					.extensionOf(in.readUTF())
-					.iconPath(in.readUTF())
-					.name(in.readUTF())
-					.oid(in.readUTF())
-					.organizationLink(in.readUTF())
-					.primaryLanguage(in.readUTF())
-					.repositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID)
-					.shortName(in.readUTF())
-					.terminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
-					.build();
-			
-			importConfiguration.setCodeSystem(codeSystem);
+			String codeSystemShortName = in.readUTF();
+			importConfiguration.setCodeSystemShortName(codeSystemShortName);
 			
 			monitor.worked();
 			

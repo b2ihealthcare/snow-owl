@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
 import com.b2international.commons.ZipURLHandler;
-import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet;
 import com.google.common.collect.Maps;
@@ -33,7 +32,6 @@ import com.google.common.collect.Sets;
 
 /**
  * Model class for SNOMED CT full release import configuration.
- * 
  */
 public final class ImportConfiguration {
 
@@ -55,7 +53,7 @@ public final class ImportConfiguration {
 		ARCHIVE,
 		ROOT_DIRECTORY,
 		FILES;
-	};
+	}
 	
 	private File archiveFile;
 	private File rootFile;
@@ -71,16 +69,14 @@ public final class ImportConfiguration {
 	private ContentSubType version = ContentSubType.DELTA;
 	private final Set<URL> additionalRefSetURLs = Sets.newHashSet(); 
 	private final Set<String> excludedRefSetIds = Sets.newHashSet();
+	
+	private String codeSystemShortName;
 	private boolean createVersions;
 	
-	private final String branchPath;
-
 	/* Not bound */
 	private ReleaseFileSet releaseFileSet;
 	
-	//the terminology registry entry for the release to be imported
-	private CodeSystem codeSystem;
-	
+	private final String branchPath;
 	private final Map<String, String> releaseFileNameMappings = Maps.newHashMap();
 
 	public ImportConfiguration(final String branchPath) {
@@ -264,12 +260,11 @@ public final class ImportConfiguration {
 		return branchPath;
 	}
 	
-	public CodeSystem getCodeSystem() {
-		return codeSystem;
+	public String getCodeSystemShortName() {
+		return codeSystemShortName;
 	}
 
-	public void setCodeSystem(CodeSystem codeSystem) {
-		this.codeSystem = codeSystem;
+	public void setCodeSystemShortName(String codeSystemShortName) {
+		this.codeSystemShortName = codeSystemShortName;
 	}
-	
 }
