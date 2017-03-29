@@ -19,32 +19,41 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 
-import rx.Observable;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
 
 /**
  * @since 5.7
  */
 public final class Notifications extends Observable<SystemNotification> {
 
+	private final IEventBus bus;
+	private final ClassLoader classLoader;
+
 	public Notifications(IEventBus bus, ClassLoader classLoader) {
-		super(subscriber -> {
-			final IHandler<IMessage> handler = new IHandler<IMessage>() {
-				@Override
-				public void handle(IMessage message) {
-					try {
-						if (!subscriber.isUnsubscribed()) {
-							final SystemNotification notification = message.body(SystemNotification.class, classLoader);
-							subscriber.onNext(notification);
-						} else {
-							bus.unregisterHandler(SystemNotification.ADDRESS, this);
-						}
-					} catch (Throwable e) {
-						subscriber.onError(e);
-					}
+		super();
+		this.bus = bus;
+		this.classLoader = classLoader;
+	}
+	
+	@Override
+	protected void subscribeActual(Observer<? super SystemNotification> subscriber) {
+		final IHandler<IMessage> handler = new IHandler<IMessage>() {
+			@Override
+			public void handle(IMessage message) {
+				try {
+//					if (!subscriber.isUnsubscribed()) {
+						final SystemNotification notification = message.body(SystemNotification.class, classLoader);
+						subscriber.onNext(notification);
+//					} else {
+//						bus.unregisterHandler(SystemNotification.ADDRESS, this);
+//					}
+				} catch (Throwable e) {
+					subscriber.onError(e);
 				}
-			};
-			bus.registerHandler(SystemNotification.ADDRESS, handler);
-		});
+			}
+		};
+		bus.registerHandler(SystemNotification.ADDRESS, handler);		
 	}
 
 }
