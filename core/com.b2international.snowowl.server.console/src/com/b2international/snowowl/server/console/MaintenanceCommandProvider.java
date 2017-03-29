@@ -68,11 +68,13 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	private static final String LISTBRANCHES_COMMAND = "listbranches";
 	private static final String DBCREATEINDEX_COMMAND = "dbcreateindex";
 	private static final String REPOSITORIES_COMMAND = "repositories";
-
+	private static final String VERSION_COMMAND = "--version";
+	
 	@Override
 	public String getHelp() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("---Snow Owl commands---\n");
+		buffer.append("\tsnowowl --version - returns the current version\n");
 		buffer.append("\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namespace URI.\n");
 		buffer.append("\tsnowowl listrepositories - prints all the repositories in the system. \n");
 		buffer.append("\tsnowowl listbranches [repository] [branchPath] - prints all the child branches of the specified branch path in the system for a repository. Branch path is MAIN by default and has to be full path (e.g. MAIN/PROJECT/TASK)\n");
@@ -105,6 +107,12 @@ public class MaintenanceCommandProvider implements CommandProvider {
 			
 			if (REPOSITORIES_COMMAND.equals(cmd)) {
 				repositories(interpreter);
+				return;
+			}
+			
+			if (VERSION_COMMAND.equals(cmd)) {
+				String version = RepositoryRequests.prepareGetServerInfo().buildAsync().execute(getBus()).getSync().version();
+				interpreter.println(version);
 				return;
 			}
 
