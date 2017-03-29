@@ -117,6 +117,7 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 			final String reason = null != e.getMessage() ? " Reason: '" + e.getMessage() + "'" : "";
 			LogUtils.logExportActivity(LOGGER, userId, branchPath, "Caught exception while exporting SNOMED CT terminology to DSV format." + reason);
 			
+			LOGGER.error("Error while exporting DSV.", e);
 			result.setResultAndMessage(Result.EXCEPTION, "An error occurred while exporting SNOMED CT components to delimiter separated files.");
 		}
 		sendResult(out, result, response);
