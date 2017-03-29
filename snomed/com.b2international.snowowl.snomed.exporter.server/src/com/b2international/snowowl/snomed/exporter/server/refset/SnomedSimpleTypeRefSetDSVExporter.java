@@ -558,7 +558,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
 			.filterByConceptId(memberConceptIds)
 			.filterByActive(true)
-			.filterByLanguageRefSetIds(Lists.newArrayList(languageConfiguration, Long.valueOf(Concepts.REFSET_LANGUAGE_TYPE_UK)))
+			.filterByLanguageRefSetIds(Lists.newArrayList(languageConfiguration))
 			.all()
 			.build(branchPath.getPath()).executeSync(eventBus);
 		
@@ -955,7 +955,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 			@Override
 			public boolean apply(ISnomedDescription description) {
-				return !description.getTypeId().equals(Concepts.FULLY_SPECIFIED_NAME);
+				return description.getTypeId().equals(descriptionTypeId);
 			}
 		})
 		
