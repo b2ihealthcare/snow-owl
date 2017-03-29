@@ -48,5 +48,7 @@ public interface InternalRepository extends Repository {
 
 	long getHeadTimestamp(CDOBranch branch);
 	
-	void updateHealth();
+	void setHealth(Health health, String diagnosis);
+
+	void checkHealth();
 }

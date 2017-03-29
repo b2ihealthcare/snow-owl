@@ -43,9 +43,15 @@ public class CollectionResource<T> implements Serializable, Iterable<T> {
 	}
 
 	/**
-	 * Returns the items associated in the collection.
-	 * 
-	 * @return
+	 * @return <tt>true</tt> if this {@link CollectionResource} contains no elements
+	 * @since 5.8 
+	 */
+	public final boolean isEmpty() {
+		return getItems().isEmpty(); 
+	}
+	
+	/**
+	 * @return the items associated in the collection.
 	 */
 	public final List<T> getItems() {
 		return items;

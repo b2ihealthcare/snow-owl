@@ -37,6 +37,14 @@ public interface RepositoryInfo {
 	Health health();
 	
 	/**
+	 * @return the diagnosis message if {@link #health()} is not {@link Health#GREEN}. 
+	 */
+	@JsonProperty
+	default String diagnosis() {
+		return null;
+	}
+	
+	/**
 	 * @since 5.8 
 	 */
 	enum Health {
@@ -52,10 +60,12 @@ public interface RepositoryInfo {
 		
 		private final String id;
 		private final Health health;
+		private final String diagnosis;
 
-		private Default(String id, Health health) {
+		private Default(String id, Health health, String diagnosis) {
 			this.id = id;
 			this.health = health;
+			this.diagnosis = diagnosis;
 		}
 		
 		@Override
@@ -68,14 +78,19 @@ public interface RepositoryInfo {
 			return health;
 		}
 		
+		@Override
+		public String diagnosis() {
+			return diagnosis;
+		}
+		
 	}
 	
-	static RepositoryInfo of(String id, Health health) {
-		return new Default(id, health);
+	static RepositoryInfo of(String id, Health health, String diagnosis) {
+		return new Default(id, health, diagnosis);
 	}
 	
 	static RepositoryInfo of(RepositoryInfo info) {
-		return of(info.id(), info.health());
+		return of(info.id(), info.health(), info.diagnosis());
 	}
 	
 }

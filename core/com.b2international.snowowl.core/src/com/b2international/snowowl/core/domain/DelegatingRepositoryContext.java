@@ -40,6 +40,11 @@ public class DelegatingRepositoryContext extends DelegatingServiceProvider imple
 	public Health health() {
 		return getDelegate().health();
 	}
+	
+	@Override
+	public String diagnosis() {
+		return getDelegate().diagnosis();
+	}
 
 	@Override
 	protected RepositoryContext getDelegate() {

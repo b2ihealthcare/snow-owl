@@ -28,6 +28,8 @@ import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -53,7 +55,6 @@ import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryCo
 import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryManager;
 import com.b2international.snowowl.datastore.server.internal.ExtensionBasedEditingContextFactoryProvider;
 import com.b2international.snowowl.datastore.server.internal.ExtensionBasedRepositoryClassLoaderProviderRegistry;
-import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.server.session.LogListener;
@@ -75,7 +76,7 @@ import com.google.common.base.Stopwatch;
 @ModuleConfig(fieldName = "reviewManager", type = ReviewConfiguration.class)
 public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment {
 
-	private static final Logger LOG = LoggerFactory.getLogger(DatastoreServerBootstrap.class);
+	private static final Logger LOG = LoggerFactory.getLogger("core");
 	
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
@@ -148,18 +149,9 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			initializeJobSupport(env, configuration);
 			initializeRepositories(configuration, env);
 			initializeRequestSupport(env, configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers());
-			verifyRepositories(env);
 		}
 	}
 	
-	private void verifyRepositories(Environment env) {
-		final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
-		repositories.repositories()
-			.stream()
-			.filter(repository -> repository instanceof InternalRepository).map(InternalRepository.class::cast)
-			.forEach(repository -> repository.updateHealth());
-	}
-
 	private void initializeJobSupport(Environment env, SnowOwlConfiguration configuration) {
 		final Index index = Indexes.createIndex("jobs", env.service(ObjectMapper.class), new Mappings(RemoteJobEntry.class));
 		// TODO make this configurable
@@ -200,11 +192,15 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		RepositoryConfiguration repositoryConfig = configuration.getModuleConfig(RepositoryConfiguration.class);
 		final ICDORepositoryManager cdoRepositoryManager = env.service(ICDORepositoryManager.class);
 		for (String repositoryId : cdoRepositoryManager.uuidKeySet()) {
-			repositories
+			Repository repo = repositories
 				.prepareCreate(repositoryId, cdoRepositoryManager.getByUuid(repositoryId).getSnowOwlTerminologyComponentId())
 				.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
 				.build(env);
-			
+			if (repo.health() == Health.GREEN) {
+				LOG.info("Started repository '{}' with status '{}'", repo.id(), repo.health());
+			} else {
+				LOG.warn("Started repository '{}' with status '{}'. Diagnosis: {}.", repo.id(), repo.health(), repo.diagnosis());
+			}
 		}
 		
 		LOG.debug("<<< Branch and review services registered. [{}]", branchStopwatch);
