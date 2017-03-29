@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.request;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import javax.validation.constraints.Min;
@@ -26,6 +27,10 @@ import javax.validation.constraints.NotNull;
 import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.Query.QueryBuilder;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.SortBy;
+import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -41,6 +46,49 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	 */
 	public static class NoResultException extends RuntimeException {
 		private static final long serialVersionUID = 5581643581423131046L;
+	}
+	
+	/**
+	 * @since 5.8
+	 */
+	public enum OptionKey {
+		/**
+		 * Restrict search to the given collection of component identifiers.
+		 */
+		COMPONENT_IDS,
+		
+		/**
+		 * Sort result by the specified sort fields.
+		 */
+		SORT_BY;
+	}
+
+	/**
+	 * Special field name for sorting based on the document's natural occurrence (document order). 
+	 */
+	public static final String DOC = SortBy.FIELD_DOC;
+	
+	/**
+	 * Special field name for sorting based on the document score (relevance).
+	 */
+	public static final String SCORE = SortBy.FIELD_SCORE;
+	
+	public static class SortField {
+		private final String field;
+		private final boolean ascending;
+		
+		public SortField(String field, boolean ascending) {
+			this.field = field;
+			this.ascending = ascending;
+		}
+		
+		public String getField() {
+			return field;
+		}
+		
+		public boolean isAscending() {
+			return ascending;
+		}
 	}
 	
 	/**
@@ -66,9 +114,6 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	@NotNull
 	private Options options;
 	
-	@NotNull
-	private Collection<String> ids;
-	
 	protected SearchResourceRequest() {}
 	
 	void setLimit(int limit) {
@@ -81,16 +126,6 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	void setOptions(Options options) {
 		this.options = options;
-	}
-	
-	void setIds(Collection<String> ids) {
-		this.ids = ids;
-	}
-	
-	//TODO include in options
-	@JsonProperty
-	protected final Collection<String> ids() {
-		return ids;
 	}
 	
 	@JsonProperty
@@ -141,14 +176,39 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	}
 	
 	/**
-	 * Adds a must clause to the given {@link ExpressionBuilder}. 
-	 * @param queryBuilder
-	 * @param expressionFactory
+	 * Modifies the specified input using the given reducer {@link BiFunction} if a component ID filter 
+	 * list is present.
+	 * 
+	 * @param input
+	 * @param reducer
 	 */
-	protected final void addIdFilter(ExpressionBuilder queryBuilder, Function<Collection<String>, Expression> expressionFactory) {
-		if (!ids.isEmpty()) {
-			queryBuilder.must(expressionFactory.apply(ids));
+	protected final <T> T applyIdFilter(T input, BiFunction<T, Collection<String>, T> reducer) {
+		if (containsKey(OptionKey.COMPONENT_IDS)) {
+			return reducer.apply(input, getCollection(OptionKey.COMPONENT_IDS, String.class));
+		} else {
+			return input;
 		}
+	}
+	
+	protected final ExpressionBuilder addIdFilter(ExpressionBuilder queryBuilder, Function<Collection<String>, Expression> expressionFactory) {
+		return applyIdFilter(queryBuilder, (qb, ids) -> qb.must(expressionFactory.apply(ids)));
+	}
+	
+	protected final SortBy sortBy() {
+		if (containsKey(OptionKey.SORT_BY)) {
+			List<SortField> fields = getList(OptionKey.SORT_BY, SortField.class);
+			SortBy.Builder builder = SortBy.builder();
+			for (SortField sortField : fields) {
+				builder.add(sortField.getField(), sortField.isAscending() ? Order.ASC : Order.DESC);
+			}
+			return builder.build();
+		} else {
+			return SortBy.DOC;
+		}		
+	}
+	
+	protected final <T> QueryBuilder<T> select(Class<T> select) {
+		return Query.selectPartial(select, fields());
 	}
 	
 	@Override

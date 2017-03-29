@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -26,6 +27,8 @@ import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 /**
  * @since 5.2
@@ -64,9 +67,13 @@ public abstract class ResourceRequestBuilder<B extends ResourceRequestBuilder<B,
 		return getSelf();
 	}
 	
-	public final B setFields(Set<String> fields) {
+	public final B setFields(String first, String... rest) {
+		return setFields(Lists.asList(first, rest));
+	}
+	
+	public final B setFields(Collection<String> fields) {
 		if (!CompareUtils.isEmpty(fields)) {
-			this.fields = fields;
+			this.fields = ImmutableSet.copyOf(fields);
 		}
 		return getSelf();
 	}

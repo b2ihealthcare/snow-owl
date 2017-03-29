@@ -53,7 +53,7 @@ public final class Query<T> {
 	private Class<T> select;
 	private Class<?> from;
 	private Expression where;
-	private SortBy sortBy = SortBy.NONE;
+	private SortBy sortBy = SortBy.DOC;
 	private Class<?> parentType;
 	private boolean withScores;
 	private Set<String> fields;
@@ -138,7 +138,7 @@ public final class Query<T> {
 		sb.append("SELECT " + getSelectString());
 		sb.append(" FROM " + DocumentMapping.getType(from));
 		sb.append(" WHERE " + where);
-		if (SortBy.NONE != sortBy) {
+		if (!SortBy.DOC.equals(sortBy)) {
 			sb.append(" SORT BY " + sortBy);
 		}
 		sb.append(" LIMIT " + limit);

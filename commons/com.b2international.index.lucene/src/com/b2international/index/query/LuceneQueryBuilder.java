@@ -196,7 +196,7 @@ public final class LuceneQueryBuilder {
 				return new FloatFieldSource(field); 
 			}
 		}
-		throw new UnsupportedOperationException("Not supported dual score function: " + func);
+		throw new UnsupportedOperationException("Not supported score function: " + func);
 	}
 	
 	private void visit(BooleanPredicate predicate) {

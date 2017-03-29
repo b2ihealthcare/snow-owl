@@ -47,7 +47,7 @@ final class SearchJobRequest extends SearchResourceRequest<ServiceProvider, Remo
 			queryBuilder.must(user(options().getString(USER)));
 		}
 		
-		return context.service(RemoteJobTracker.class).search(queryBuilder.build(), offset(), limit());
+		return context.service(RemoteJobTracker.class).search(queryBuilder.build(), fields(), sortBy(), offset(), limit());
 	}
 
 	@Override

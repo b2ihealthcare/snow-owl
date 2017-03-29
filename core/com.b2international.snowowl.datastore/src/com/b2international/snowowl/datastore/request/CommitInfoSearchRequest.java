@@ -65,9 +65,10 @@ final class CommitInfoSearchRequest extends SearchResourceRequest<RepositoryCont
 		addCommentClause(builder);
 		addTimeStampClause(builder);
 		
-		final Query<CommitInfoDocument> query = Query
-				.select(CommitInfoDocument.class)
+		final Query<CommitInfoDocument> query = select(CommitInfoDocument.class)
 				.where(builder.build())
+				.withScores(containsKey(OptionKey.COMMENT))
+				.sortBy(sortBy())
 				.offset(offset())
 				.limit(limit())
 				.build();

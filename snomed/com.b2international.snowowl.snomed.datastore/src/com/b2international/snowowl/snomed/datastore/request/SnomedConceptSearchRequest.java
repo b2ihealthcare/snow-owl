@@ -35,9 +35,7 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.FieldScoreFunction;
-import com.b2international.index.query.Query;
 import com.b2international.index.query.ScoreFunction;
-import com.b2international.index.query.SortBy;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
@@ -55,6 +53,7 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.SearchProfileQueryProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Fields;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.dsl.query.RValue;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 
@@ -208,10 +207,8 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 			final String userId = getString(OptionKey.SEARCH_PROFILE);
 			searchProfileQuery = SearchProfileQueryProvider.provideQuery(userId);
 		}
-
 		
 		final Expression queryExpression;
-		final SortBy sortBy;
 		
 		if (containsKey(OptionKey.TERM)) {
 			final ExpressionBuilder bq = Expressions.builder();
@@ -255,25 +252,21 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 				}
 			};
 			
-			
 			final Expression q = addSearchProfile(searchProfileQuery, queryBuilder.build());
 			queryExpression = Expressions.customScore(q, func);
-			sortBy = SortBy.SCORE;
 		} else if (containsKey(OptionKey.USE_DOI)) {
 			final Expression q = addSearchProfile(searchProfileQuery, queryBuilder.build());
 			queryExpression = Expressions.customScore(q, new FieldScoreFunction(Fields.DOI));
-			sortBy = SortBy.SCORE;
 		} else {
 			queryExpression = addSearchProfile(searchProfileQuery, queryBuilder.build());
-			sortBy = SortBy.NONE;
 		}
 
-		final Hits<SnomedConceptDocument> hits = searcher.search(Query.selectPartial(SnomedConceptDocument.class, fields())
+		final Hits<SnomedConceptDocument> hits = searcher.search(select(SnomedConceptDocument.class)
 				.where(queryExpression)
 				.offset(offset())
 				.limit(limit())
-				.sortBy(sortBy)
-				.withScores(SortBy.SCORE == sortBy)
+				.sortBy(sortBy())
+				.withScores(containsKey(OptionKey.TERM) || containsKey(OptionKey.USE_DOI))
 				.build());
 		if (limit() < 1 || hits.getTotal() < 1) {
 			return new SnomedConcepts(offset(), limit(), hits.getTotal());
@@ -304,7 +297,9 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 			.filterByActive(true)
 			.filterByTerm(term)
 			.filterByLanguageRefSetIds(languageRefSetIds())
-			.filterByConceptId(ids());
+			.setFields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID);
+			
+		applyIdFilter(requestBuilder, (rb, ids) -> rb.filterByConceptId(ids));
 		
 		if (containsKey(OptionKey.DESCRIPTION_TYPE)) {
 			final String type = getString(OptionKey.DESCRIPTION_TYPE);

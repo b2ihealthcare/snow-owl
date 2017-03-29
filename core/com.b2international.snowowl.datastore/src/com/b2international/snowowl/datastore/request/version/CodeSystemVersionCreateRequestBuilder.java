@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.request.version;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 
 import com.b2international.snowowl.core.ServiceProvider;
@@ -33,7 +34,7 @@ public final class CodeSystemVersionCreateRequestBuilder extends BaseRequestBuil
 	private String description;
 	private Date effectiveTime;
 	private String primaryToolingId;
-	private Collection<String> toolingIds;
+	private Collection<String> toolingIds = Collections.emptySet();
 
 	// TODO make it package visible
 	public CodeSystemVersionCreateRequestBuilder() {

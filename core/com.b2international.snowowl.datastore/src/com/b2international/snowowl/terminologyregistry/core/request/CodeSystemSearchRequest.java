@@ -22,7 +22,6 @@ import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
@@ -42,17 +41,16 @@ final class CodeSystemSearchRequest extends SearchResourceRequest<RepositoryCont
 	protected CodeSystems doExecute(final RepositoryContext context) throws IOException {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 
-		addIdFilter(queryBuilder, ids -> 
-			Expressions.builder()
+		addIdFilter(queryBuilder, ids -> Expressions.builder()
 				.should(CodeSystemEntry.Expressions.shortNames(ids))
 				.should(CodeSystemEntry.Expressions.oids(ids))
-			.build()
-		);
+				.build());
 		
 		final Searcher searcher = context.service(Searcher.class);
 
-		final Hits<CodeSystemEntry> hits = searcher.search(Query.select(CodeSystemEntry.class)
+		final Hits<CodeSystemEntry> hits = searcher.search(select(CodeSystemEntry.class)
 				.where(queryBuilder.build())
+				.sortBy(sortBy())
 				.offset(offset())
 				.limit(limit())
 				.build());
