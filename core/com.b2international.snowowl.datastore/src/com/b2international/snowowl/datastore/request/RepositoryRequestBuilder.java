@@ -32,9 +32,10 @@ public interface RepositoryRequestBuilder<R> extends RequestBuilder<RepositoryCo
 	 */
 	default AsyncRequest<R> build(String repositoryId) {
 		return new AsyncRequest<R>(
-				new HealthCheckingRequest<>(repositoryId, 
-						new RepositoryRequest<R>(repositoryId, build()), allowedHealthstates())
-		);
+					new RepositoryRequest<R>(repositoryId, 
+							new HealthCheckingRequest<>(repositoryId, build() , allowedHealthstates())
+							)
+					);
 	}
 
 	/**

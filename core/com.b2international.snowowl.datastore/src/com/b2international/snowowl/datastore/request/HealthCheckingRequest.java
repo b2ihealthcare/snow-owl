@@ -20,7 +20,7 @@ import java.util.List;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.Repository.Health;
 import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -35,39 +35,35 @@ import com.google.common.collect.Lists;
  *            - the type of the result
  * @since 5.8
  */
-public final class HealthCheckingRequest<C extends ServiceProvider, B> extends DelegatingRequest<C, ServiceProvider, B> {
+public final class HealthCheckingRequest<B> extends DelegatingRequest<RepositoryContext, RepositoryContext, B> {
 
 	private static final long serialVersionUID = 1L;
 	
 	private List<Health> allowedHealthStates;
 	private String repositoryId;
 
-	protected HealthCheckingRequest(String repositoryId, Request<ServiceProvider, B> next, Repository.Health... healths) {
+	protected HealthCheckingRequest(String repositoryId, Request<RepositoryContext, B> next, Repository.Health... healths) {
 		super(next);
 		this.repositoryId = repositoryId;
 		this.allowedHealthStates = Lists.newArrayList(healths);
 	}
 
 	@Override
-	public B execute(C context) {
+	public B execute(RepositoryContext context) {
 		assertRepositoryHealth(context);
 		return next(context.service(RepositoryContextProvider.class).get(repositoryId));
 	}
 
-	private void assertRepositoryHealth(C context) {
+	private void assertRepositoryHealth(RepositoryContext context) {
 		Repository repository = getRepository(context);
 		Health repositoryHealth = repository.getHealth();
 
-		if (!getAllowedHealthStates().contains(repositoryHealth)) {
+		if (!allowedHealthStates.contains(repositoryHealth)) {
 			throw new BadRequestException("Requests for this repository [{}] are not allowed to execute with health state: {}.", repository.id(), repositoryHealth);
 		}
 	}
 
-	private Repository getRepository(C context) {
+	private Repository getRepository(RepositoryContext context) {
 		return context.service(RepositoryManager.class).get(repositoryId);
-	}
-	
-	private List<Health> getAllowedHealthStates() {
-		return allowedHealthStates;
 	}
 }
