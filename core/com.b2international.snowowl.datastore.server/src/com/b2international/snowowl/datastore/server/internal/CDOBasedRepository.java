@@ -129,7 +129,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 
 	@Override
 	public void checkHealth() {
-		calculateHealth(Branch.MAIN_PATH);
+		checkHealth(Branch.MAIN_PATH);
 	}
 
 	@Override
@@ -353,7 +353,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		return diagnosis;
 	}
 	
-	private void calculateHealth(String branch) { 
+	private void checkHealth(String branch) { 
 		final List<CDOCommitInfo> cdoCommits = getCDOCommitInfos(branch);
 		final CommitInfos indexCommits = getIndexCommits(branch);
 		
