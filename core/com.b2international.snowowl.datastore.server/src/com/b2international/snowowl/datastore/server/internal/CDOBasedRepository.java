@@ -99,7 +99,7 @@ import com.google.inject.Provider;
 /**
  * @since 4.1
  */
-public final class CDOBasedRepository extends DelegatingServiceProvider implements InternalRepository, CDOCommitInfoHandler {
+public final class CDOBasedRepository extends DelegatingServiceProvider implements InternalRepository, CDOCommitInfoHandler, RepositoryMetadata {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CDOBasedRepository.class);
 	
@@ -393,6 +393,20 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		}
 	}
 
+	@Override
+	public long getHeadTimestampForDatabase() {
+		IBranchPath branchPath = BranchPathUtils.createMainPath();
+		List<CDOCommitInfo> cdoCommitInfos = getCDOCommitInfos(branchPath);
+		return cdoCommitInfos.isEmpty() ? 0 : Iterables.getLast(cdoCommitInfos).getTimeStamp();
+	}
+	
+	@Override
+	public long getHeadTimestampForIndex() {
+		IBranchPath branchPath = BranchPathUtils.createMainPath();
+		CommitInfos indexCommitInfos = getIndexCommitInfos(branchPath);
+		return indexCommitInfos.getTotal() == 0 ? 0 : Iterables.getLast(indexCommitInfos).getTimeStamp();
+	}
+	
 	private List<CDOCommitInfo> getCDOCommitInfos(IBranchPath branchPath) {
 		
 		long baseTimestamp = getBaseTimestamp(getCdoMainBranch());
