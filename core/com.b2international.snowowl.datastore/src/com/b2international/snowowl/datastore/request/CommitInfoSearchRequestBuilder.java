@@ -28,7 +28,7 @@ import com.b2international.snowowl.datastore.commitinfo.CommitInfos;
  */
 public final class CommitInfoSearchRequestBuilder 
 		extends SearchResourceRequestBuilder<CommitInfoSearchRequestBuilder, RepositoryContext, CommitInfos> 
-		implements IndexRequestBuilder<CommitInfos> {
+		implements RepositoryIndexRequestBuilder<CommitInfos> {
 
 	CommitInfoSearchRequestBuilder() {}
 

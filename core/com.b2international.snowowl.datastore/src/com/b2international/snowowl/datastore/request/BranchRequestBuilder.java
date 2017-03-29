@@ -22,12 +22,15 @@ import com.b2international.snowowl.core.events.RequestBuilder;
 /**
  * @since 5.7
  */
-public interface BranchRequestBuilder<R> extends RequestBuilder<BranchContext, R> {
+public interface BranchRequestBuilder<R> extends RequestBuilder<BranchContext, R>, AllowedHealthStates {
 
 	default AsyncRequest<R> build(String repositoryId, String branch) {
 		return new AsyncRequest<>(
 			new RepositoryRequest<>(repositoryId,
-				new BranchRequest<>(branch, build())
+				new HealthCheckingRequest<>(
+					new BranchRequest<>(branch, build()),
+					allowedHealthstates()
+				)
 			)
 		);
 	}
