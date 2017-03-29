@@ -273,18 +273,21 @@ public class JsonDocumentSearcher implements Searcher {
 		final Set<String> nonSortedFields = query.getFields() == null ? newHashSet() : newHashSet(query.getFields());
 		final List<SortField> convertedItems = newArrayListWithExpectedSize(items.size());
 		
-		for (final SortBy item : items) {
-            switch (item.getField()) {
+		for (final SortByField item : Iterables.filter(items, SortByField.class)) {
+            String field = item.getField();
+            SortBy.Order order = item.getOrder();
+            
+			switch (field) {
             case SortBy.FIELD_DOC:
-                convertedItems.add(new SortField(null, SortField.Type.DOC, item.getOrder() == SortBy.Order.DESC));
+                convertedItems.add(new SortField(null, SortField.Type.DOC, order == SortBy.Order.DESC));
                 break;
             case SortBy.FIELD_SCORE:
                 // XXX: default order for scores is *descending*
-                convertedItems.add(new SortField(null, SortField.Type.SCORE, item.getOrder() == SortBy.Order.ASC));
+                convertedItems.add(new SortField(null, SortField.Type.SCORE, order == SortBy.Order.ASC));
                 break;
             default:
-                convertedItems.add(toLuceneSortField(mapping, item.getField(), item.getOrder() == SortBy.Order.DESC));
-                nonSortedFields.remove(item.getField());
+                convertedItems.add(toLuceneSortField(mapping, field, order == SortBy.Order.DESC));
+                nonSortedFields.remove(field);
             }
         }
 		
