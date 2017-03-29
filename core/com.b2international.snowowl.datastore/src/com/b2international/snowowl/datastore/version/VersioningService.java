@@ -93,7 +93,7 @@ import com.google.common.collect.Sets;
  * Stateful versioning service implementation.
  * <p>Although this service is responsible for the whole versioning process it does not ensure locking on the underlying repositories.
  * <br>Clients are responsible to acquire lock in the desired repository.
- *
+ * @deprecated - use {@link CodeSystemRequests#prepareNewCodeSystemVersion()} instead
  */
 public class VersioningService implements IVersioningService {
 

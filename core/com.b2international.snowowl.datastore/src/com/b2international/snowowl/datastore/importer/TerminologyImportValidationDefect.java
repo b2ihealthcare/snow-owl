@@ -52,7 +52,8 @@ public class TerminologyImportValidationDefect {
 		EFFECTIVE_TIME,
 		INCORRECT_FORMAT,
 		GROUP,
-		CYCLE
+		CYCLE, 
+		DUPLICATE
 	}
 	
 	/**
