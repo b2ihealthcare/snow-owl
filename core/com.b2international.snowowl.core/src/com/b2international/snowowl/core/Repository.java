@@ -24,14 +24,7 @@ import rx.Observable;
 /**
  * @since 4.5
  */
-public interface Repository extends ServiceProvider, IDisposableService {
-
-	/**
-	 * Returns the ID of the repository.
-	 * 
-	 * @return
-	 */
-	String id();
+public interface Repository extends ServiceProvider, IDisposableService, RepositoryInfo {
 
 	/**
 	 * Returns the global singleton {@link IEventBus} to send events to it.
@@ -56,15 +49,4 @@ public interface Repository extends ServiceProvider, IDisposableService {
 	 */
 	void sendNotification(RepositoryEvent event);
 
-	/**
-	 * @returns the {@link Health health} state for this repository. The repository is considered healthy if it is in {@link Health#GREEN} state.
-	 */
-	Health getHealth();
-	
-	/**
-	 * @since 5.8 
-	 */
-	enum Health {
-		RED, YELLOW, GREEN;
-	}
 }
