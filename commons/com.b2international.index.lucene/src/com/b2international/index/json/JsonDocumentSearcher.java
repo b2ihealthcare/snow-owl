@@ -262,7 +262,7 @@ public class JsonDocumentSearcher implements Searcher {
 	private org.apache.lucene.search.Sort toLuceneSort(DocumentMapping mapping, Query<?> query) {
 		final SortBy sortBy = query.getSortBy();
 		final List<SortBy> items = newArrayList();
-		
+
 		// Unpack the top level multi-sort if present
 		if (sortBy instanceof MultiSortBy) {
 			items.addAll(((MultiSortBy) sortBy).getItems());
@@ -274,18 +274,19 @@ public class JsonDocumentSearcher implements Searcher {
 		final List<SortField> convertedItems = newArrayListWithExpectedSize(items.size());
 		
 		for (final SortBy item : items) {
-			if (SortBy.NONE.equals(item)) {
-				convertedItems.add(SortField.FIELD_DOC);
-			} else if (SortBy.SCORE.equals(item)) {
-				convertedItems.add(SortField.FIELD_SCORE);
-			} else if (item instanceof SortByField) {
-				final SortByField fieldItem = (SortByField) item;
-				final String sortField = fieldItem.getField();
-				final boolean reverse = SortBy.Order.DESC.equals(fieldItem.getOrder());
-				convertedItems.add(toLuceneSortField(mapping, sortField, reverse));
-				nonSortedFields.remove(sortField);
-			}
-		}
+            switch (item.getField()) {
+            case SortBy.FIELD_DOC:
+                convertedItems.add(new SortField(null, SortField.Type.DOC, item.getOrder() == SortBy.Order.DESC));
+                break;
+            case SortBy.FIELD_SCORE:
+                // XXX: default order for scores is *descending*
+                convertedItems.add(new SortField(null, SortField.Type.SCORE, item.getOrder() == SortBy.Order.ASC));
+                break;
+            default:
+                convertedItems.add(toLuceneSortField(mapping, item.getField(), item.getOrder() == SortBy.Order.DESC));
+                nonSortedFields.remove(item.getField());
+            }
+        }
 		
 		for (String nonSortedField : nonSortedFields) {
 			/* 

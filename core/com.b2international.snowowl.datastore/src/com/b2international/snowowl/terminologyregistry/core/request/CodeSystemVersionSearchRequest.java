@@ -23,7 +23,6 @@ import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
@@ -64,8 +63,9 @@ final class CodeSystemVersionSearchRequest extends SearchResourceRequest<Reposit
 		
 		final Searcher searcher = context.service(Searcher.class);
 		
-		final Hits<CodeSystemVersionEntry> hits = searcher.search(Query.select(CodeSystemVersionEntry.class)
+		final Hits<CodeSystemVersionEntry> hits = searcher.search(select(CodeSystemVersionEntry.class)
 				.where(query.build())
+				.sortBy(sortBy())
 				.offset(offset())
 				.limit(limit())
 				.build());

@@ -16,13 +16,18 @@
 package com.b2international.snowowl.datastore.request;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest.OptionKey;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest.SortField;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 /**
  * @since 5.2
@@ -34,7 +39,6 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	private int offset = 0;
 	private int limit = 50;
 	
-	private Collection<String> ids = Collections.emptyList();
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
 	protected SearchResourceRequestBuilder() {
@@ -67,7 +71,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B filterById(String id) {
-		return filterByIds(Collections.singleton(id));
+		return filterByIds(ImmutableSet.of(id));
 	}
 	
 	/**
@@ -76,7 +80,35 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B filterByIds(Collection<String> ids) {
-		this.ids = ids;
+		for (final String id : ids) {
+			if (Strings.isNullOrEmpty(id)) {
+				throw new BadRequestException("ID filter cannot contain empty values");
+			}
+		}
+
+		addOption(OptionKey.COMPONENT_IDS, ImmutableSet.copyOf(ids));
+		return getSelf();
+	}
+	
+	/**
+	 * Sorts the result set by the given sort fields.
+	 * 
+	 * @param first - the first sort field
+	 * @param rest - any remaining sort fields (optional)
+	 * @return this builder instance
+	 */
+	public final B sortBy(SortField first, SortField... rest) {
+		return sortBy(Lists.asList(first, rest));
+	}
+
+	/**
+	 * Sorts the result set by the given sort fields.
+	 * 
+	 * @param sortFields - the list of fields to sort by, in order
+	 * @return this builder instance
+	 */
+	public final B sortBy(List<SortField> sortFields) {
+		addOption(OptionKey.SORT_BY, ImmutableList.copyOf(sortFields));
 		return getSelf();
 	}
 	
@@ -112,20 +144,10 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	protected ResourceRequest<C, R> create() {
 		final SearchResourceRequest<C, R> req = createSearch();
 		req.setOffset(offset);
-		req.setLimit(Math.min(limit,  MAX_LIMIT - offset));
-		
-		for (final String id : ids) {
-			if (Strings.isNullOrEmpty(id)) {
-				throw new BadRequestException("ID filter cannot contain empty values");
-			}
-		}
-		
-		req.setIds(ids);
+		req.setLimit(Math.min(limit, MAX_LIMIT - offset));
 		req.setOptions(optionsBuilder.build());
-		
 		return req;
 	}
 	
 	protected abstract SearchResourceRequest<C, R> createSearch();
-
 }

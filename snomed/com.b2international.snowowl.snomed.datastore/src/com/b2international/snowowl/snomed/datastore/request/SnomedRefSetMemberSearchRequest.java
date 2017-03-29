@@ -221,8 +221,9 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			}
 		}
 		
-		final Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
+		final Query<SnomedRefSetMemberIndexEntry> query = select(SnomedRefSetMemberIndexEntry.class)
 			.where(queryBuilder.build())
+			.sortBy(sortBy())
 			.offset(offset())
 			.limit(limit())
 			.build();
