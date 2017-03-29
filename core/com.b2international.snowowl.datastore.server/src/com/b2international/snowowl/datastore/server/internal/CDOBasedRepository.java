@@ -342,23 +342,23 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 	}
 	
 	public Health calculateHealth() {
-		IBranchPath branchPath = BranchPathUtils.createMainPath();
-		List<CDOCommitInfo> cdoCommitInfos = getCDOCommitInfos(branchPath);
-		CommitInfos indexCommitInfos = getIndexCommitInfos(branchPath);
+		String mainBranchPath = IBranchPath.MAIN_BRANCH;
+		List<CDOCommitInfo> cdoCommitInfos = getCDOCommitInfos(mainBranchPath);
+		CommitInfos indexCommitInfos = getIndexCommitInfos(mainBranchPath);
 		
 		boolean emptyDb = cdoCommitInfos.isEmpty();
 		boolean emptyIndex = indexCommitInfos.getItems().isEmpty();
 
 		if (emptyDb && emptyIndex) {
-			return Health.GREEN; // empty dataset
+			return Health.RED; // empty dataset
 		}
 		
 		if (emptyDb ^ emptyIndex) {
 			LOG.error("{} is in inconsistent state. CDO {} but INDEX {}", getCdoRepository().getRepositoryName(), contentMessage(emptyDb), contentMessage(emptyIndex));
-			return Health.RED; // either CDO or index was deleted but not the other.
+			return Health.YELLOW; // either CDO or index was deleted but not the other.
 		}
 		
-		boolean validContent = !hasInvalidCDOTimeStamps(cdoCommitInfos, getLast(indexCommitInfos).getTimeStamp(), branchPath);
+		boolean validContent = !hasInvalidCDOTimeStamps(cdoCommitInfos, getLast(indexCommitInfos).getTimeStamp(), mainBranchPath);
 		
 		return validContent == true ? Health.GREEN : Health.RED;
 	}
@@ -367,7 +367,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		return empty ? "IS EMPTY" : "HAS CONTENT";
 	}
 
-	private boolean hasInvalidCDOTimeStamps(List<CDOCommitInfo> cdoCommitInfos, long lastIndexCommitTimestamp, IBranchPath branch) {
+	private boolean hasInvalidCDOTimeStamps(List<CDOCommitInfo> cdoCommitInfos, long lastIndexCommitTimestamp, String branchPath) {
 		// expect all the commit infos to be invalid
 		List<CDOCommitInfo> problematicCommitInfos = newArrayList(cdoCommitInfos);
 		Iterator<CDOCommitInfo> cdoCommitInfosIterator = problematicCommitInfos.iterator();
@@ -387,31 +387,29 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 			LOG.error("Database inconsistency for repository: {}. (The index head timestamp: {} is ahead of CDO's head timestamp : {})", getCdoRepository().getRepositoryName(),  lastIndexCommitTimestamp, getLast(cdoCommitInfos).getTimeStamp());
 			return true;
 		} else {
-			LOG.info("{}'s {} branch's head CDO timestamp is: {} ", getCdoRepository().getRepositoryName(), branch.getPath(), Iterables.getLast(cdoCommitInfos).getTimeStamp() );
-			LOG.info("{}'s {} branch's head INDEX timestamp is: {} ", getCdoRepository().getRepositoryName(), branch.getPath(), lastIndexCommitTimestamp);
+			LOG.info("{}'s {} branch's head CDO timestamp is: {} ", getCdoRepository().getRepositoryName(), branchPath, Iterables.getLast(cdoCommitInfos).getTimeStamp() );
+			LOG.info("{}'s {} branch's head INDEX timestamp is: {} ", getCdoRepository().getRepositoryName(), branchPath, lastIndexCommitTimestamp);
 			return false;
 		}
 	}
 
 	@Override
 	public long getHeadTimestampForDatabase() {
-		IBranchPath branchPath = BranchPathUtils.createMainPath();
-		List<CDOCommitInfo> cdoCommitInfos = getCDOCommitInfos(branchPath);
+		List<CDOCommitInfo> cdoCommitInfos = getCDOCommitInfos(IBranchPath.MAIN_BRANCH);
 		return cdoCommitInfos.isEmpty() ? 0 : Iterables.getLast(cdoCommitInfos).getTimeStamp();
 	}
 	
 	@Override
 	public long getHeadTimestampForIndex() {
-		IBranchPath branchPath = BranchPathUtils.createMainPath();
-		CommitInfos indexCommitInfos = getIndexCommitInfos(branchPath);
+		CommitInfos indexCommitInfos = getIndexCommitInfos(IBranchPath.MAIN_BRANCH);
 		return indexCommitInfos.getTotal() == 0 ? 0 : Iterables.getLast(indexCommitInfos).getTimeStamp();
 	}
 	
-	private List<CDOCommitInfo> getCDOCommitInfos(IBranchPath branchPath) {
+	private List<CDOCommitInfo> getCDOCommitInfos(String mainBranchPath) {
 		
 		long baseTimestamp = getBaseTimestamp(getCdoMainBranch());
 		long headTimestamp = getHeadTimestamp(getCdoMainBranch());
-		Map<String, IBranchPath> branchPathMap = ImmutableMap.of(repositoryId, branchPath);
+		Map<String, IBranchPath> branchPathMap = ImmutableMap.of(repositoryId, BranchPathUtils.createPath(mainBranchPath));
 
 		final CDOCommitInfoQuery query = new CDOCommitInfoQuery(branchPathMap)
 											.setStartTime(baseTimestamp)
@@ -423,11 +421,11 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		return handler.getInfos();
 	}
 
-	private CommitInfos getIndexCommitInfos(IBranchPath branch) {
+	private CommitInfos getIndexCommitInfos(String mainBranchPath) {
 		return RepositoryRequests
 					.commitInfos()
 					.prepareSearchCommitInfo()
-					.filterByBranch(branch.getPath())
+					.filterByBranch(mainBranchPath)
 					.all()
 					.build(repositoryId)
 					.execute(events())
