@@ -42,6 +42,7 @@ import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
 import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.cdo.CDOConnectionFactoryProvider;
+import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
@@ -147,6 +148,7 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			initializeJobSupport(env, configuration);
 			initializeRepositories(configuration, env);
 			initializeRequestSupport(env, configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers());
+			initializeContent();
 		}
 	}
 	
@@ -197,6 +199,12 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		}
 		
 		LOG.debug("<<< Branch and review services registered. [{}]", branchStopwatch);
+	}
+	
+	private void initializeContent() {
+		for (ICDORepository	repository : CDORepositoryManager.getInstance()) {
+			RepositoryInitializerRegistry.INSTANCE.getInitializer(repository.getUuid()).initialize(repository);
+		}
 	}
 
 	private void connectSystemUser(IManagedContainer container) throws SnowowlServiceException {
