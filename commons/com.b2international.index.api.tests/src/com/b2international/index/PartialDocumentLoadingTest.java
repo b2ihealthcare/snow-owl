@@ -27,6 +27,8 @@ import com.b2international.index.Fixtures.Data;
 import com.b2international.index.Fixtures.PartialData;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.b2international.index.query.SortBy;
+import com.b2international.index.query.SortBy.Order;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
@@ -266,6 +268,40 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		assertEquals(data2.getShortField(), hits.getHits().get(1).getShortField());
 		assertEquals(data1.getShortWrapper(), hits.getHits().get(0).getShortWrapper());
 		assertEquals(data2.getShortWrapper(), hits.getHits().get(1).getShortWrapper());
+		
+		assertNull(hits.getHits().get(0).getField1());
+		assertNull(hits.getHits().get(1).getField1());
+	}
+
+	
+	@Test
+	public void selectPartialIntFieldsWithSort() throws Exception {
+		final Data data1 = new Data();
+		data1.setIntField(64); 
+		data1.setIntWrapper(32); 
+		data1.setField1("field1_1");
+		indexDocument(KEY1, data1);
+		
+		final Data data2 = new Data();
+		data2.setIntField(16); 
+		data2.setIntWrapper(8); 
+		data2.setField1("field1_2");
+		indexDocument(KEY2, data2);
+		
+		final Query<Data> query = Query.selectPartial(Data.class, "intField", "intWrapper")
+				.where(Expressions.matchAll())
+				.sortBy(SortBy.field("field1", Order.DESC))
+				.build();
+		
+		final Hits<Data> hits = search(query);
+		
+		checkHits(hits, 0, DEFAULT_LIMIT, 2, 2);
+		
+		// Results are now inverted: the second document should appear first
+		assertEquals(data2.getIntField(), hits.getHits().get(0).getIntField());
+		assertEquals(data1.getIntField(), hits.getHits().get(1).getIntField());
+		assertEquals(data2.getIntWrapper(), hits.getHits().get(0).getIntWrapper());
+		assertEquals(data1.getIntWrapper(), hits.getHits().get(1).getIntWrapper());
 		
 		assertNull(hits.getHits().get(0).getField1());
 		assertNull(hits.getHits().get(1).getField1());
