@@ -101,7 +101,7 @@ import com.google.inject.Provider;
  */
 public final class CDOBasedRepository extends DelegatingServiceProvider implements InternalRepository, CDOCommitInfoHandler, RepositoryMetadata {
 
-	private static final Logger LOG = LoggerFactory.getLogger(CDOBasedRepository.class);
+	private static final Logger LOG = LoggerFactory.getLogger("repository");
 	
 	private final String toolingId;
 	private final String repositoryId;
