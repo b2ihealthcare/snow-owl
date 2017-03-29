@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.StringUtils;
 import com.b2international.index.revision.Purge;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -39,7 +38,7 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.ServerDbUtils;
-import com.b2international.snowowl.datastore.server.internal.InternalRepository;
+import com.b2international.snowowl.datastore.server.internal.RepositoryMetadata;
 import com.b2international.snowowl.datastore.server.reindex.OptimizeRequest;
 import com.b2international.snowowl.datastore.server.reindex.PurgeRequest;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
@@ -72,13 +71,11 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("---Snow Owl commands---\n");
 		buffer.append("\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namespace URI.\n");
-		buffer.append("\tsnowowl listrepositories - prints all the repositories in the system.\n");
+		buffer.append("\tsnowowl listrepositories [-v] - prints all the repositories in the system. By adding '-v' to the command, a more verbose output is printed with additional meta information about the repositories \n");
 		buffer.append("\tsnowowl listbranches [repository] [branchPath] - prints all the child branches of the specified branch path in the system for a repository. Branch path is MAIN by default and has to be full path (e.g. MAIN/PROJECT/TASK)\n");
 		buffer.append("\tsnowowl reindex [repositoryId] [failedCommitTimestamp] - reindexes the content for the given repository ID from the given failed commit timestamp (optional, default timestamp is 1 which means no failed commit).\n");
 		buffer.append("\tsnowowl optimize [repositoryId] [maxSegments] - optimizes the underlying index for the repository to have the supplied maximum number of segments (default number is 1)\n");
 		buffer.append("\tsnowowl purge [repositoryId] [branchPath] [ALL|LATEST|HISTORY] - optimizes the underlying index by deleting unnecessary documents from the given branch using the given purge strategy (default strategy is LATEST)\n");
-		buffer.append("\tsnowowl repositoryhealth update [repositoryId_1, ... repositoryId_N] - Computes and updates the health state for the given repisoryId(s). If no repositoryId is given, it computes and updates health states for all available repositories.\n");
-		buffer.append("\tsnowowl repositoryhealth list [repositoryId_1, ... repositoryId_N] - Lists the health state for the given repisoryId(s). If no repositoryId is given, it lists health states for all available repositories.\n");
 		return buffer.toString();
 	}
 
@@ -107,11 +104,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 				return;
 			}
 
-			if (REPOSITORY_HEALTH_COMMAND.equals(cmd)) {
-				handleRepositoryHealthCommand(interpreter);
-				return;
-			}
-			
 			if ("reindex".equals(cmd)) {
 				reindex(interpreter);
 				return;
@@ -138,19 +130,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		}
 	}
 
-	public synchronized void handleRepositoryHealthCommand(CommandInterpreter interpreter) {
-		String command = interpreter.nextArgument();
-		
-		if ("list".equals(command)) {
-			handleListRepositoryHealth(interpreter);
-		} else if ("update".equals(command)) {
-			handleUpdateRepositoryHealth(interpreter);
-		} else { 
-			interpreter.println("One of the repository state commands should be specified:");
-			interpreter.println("\t snowowl repositoryhealth list [repositoryId_1, ... repositoryId_N]");
-			interpreter.println("\t snowowl repositoryhealth update [repositoryId_1, ... repositoryId_N]");
-		}
-	}
 
 	private List<String> resolveArguments(CommandInterpreter interpreter) {
 		List<String> results = Lists.newArrayList();
@@ -163,35 +142,27 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		return results;
 	}
 
-	private void handleListRepositoryHealth(CommandInterpreter interpreter) {
-		RepositoryManager repositoryManager = ApplicationContext.getServiceForClass(RepositoryManager.class);
-
-		Collection<String> repositoryIds = getRepositories(interpreter);
+	private void handleListRepositories(Collection<String> repositoryIds, CommandInterpreter interpreter) {
 		
+		
+		interpreter.println("Repositories:");
+		String nextArgument = interpreter.nextArgument();
+		boolean verbose = !Strings.isNullOrEmpty(nextArgument) && nextArgument.contains("-v");
+			
+		
+		
+		RepositoryManager repositoryManager = ApplicationContext.getServiceForClass(RepositoryManager.class);
 		repositoryIds.stream()
 					.filter(respositoryId -> isValidRepositoryName(respositoryId, interpreter))
 					.map(repositoryId -> repositoryManager.get(repositoryId))
+					.filter(RepositoryMetadata.class::isInstance).map(RepositoryMetadata.class::cast)
 				.forEach(repository -> {
-					interpreter.println(String.format("[%s] has health state: %s", repository.id(), repository.getHealth()));
-				});
-	}
-
-	
-	
-	private void handleUpdateRepositoryHealth(CommandInterpreter interpreter) {
-		
-		RepositoryManager repositoryManager = ApplicationContext.getServiceForClass(RepositoryManager.class);
-		Collection<String> repositoryIds = getRepositories(interpreter);
-		
-		repositoryIds.stream()
-					.filter(respositoryId -> isValidRepositoryName(respositoryId, interpreter))	
-					.map(repositoryId -> repositoryManager.get(repositoryId))
-					.filter(InternalRepository.class::isInstance).map(InternalRepository.class::cast)
-				.forEach(repository -> {
-					Repository.Health oldHealth = repository.getHealth();
-					repository.updateHealth();
-					Repository.Health newHealth = repository.getHealth();
-					interpreter.println(String.format("Repository health is updated for: [%s]. Old state: %s, new state: %s", repository.id(), oldHealth, newHealth));
+					interpreter.println(String.format("\t%s", repository.id()));
+					if (verbose) {
+						interpreter.println(String.format("\t\t Health state: %s", repository.getHealth()));
+						interpreter.println(String.format("\t\t%s Database head timestamp: %s", repository.id(), repository.getHeadTimestampForDatabase()));
+						interpreter.println(String.format("\t\t%s Index head timestamp: %s", repository.id(), repository.getHeadTimestampForIndex()));
+					}
 				});
 	}
 
@@ -295,13 +266,8 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	}
 
 	public synchronized void listRepositories(CommandInterpreter interpreter) {
-		Set<String> uuidKeySet = getRepositoryManager().uuidKeySet();
-		if (!uuidKeySet.isEmpty()) {
-			interpreter.println("Repositories:");
-			for (String repositoryName : uuidKeySet) {
-				interpreter.println(String.format("\t%s", repositoryName));
-			}
-		}
+		Set<String> repositoryIds = getRepositoryManager().uuidKeySet();
+		handleListRepositories(repositoryIds, interpreter);
 	}
 
 	public synchronized void listBranches(CommandInterpreter interpreter) {

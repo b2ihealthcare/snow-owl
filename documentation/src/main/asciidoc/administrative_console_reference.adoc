@@ -539,7 +539,7 @@ Impersonate operation as: info@b2international.com
 
 == Diagnostics and maintenance
 
-`snowowl listrepositories` prints all the repositories in the system.
+`snowowl listrepositories [-v]` prints all the repositories in the system.  By adding '-v' to the command, a more verbose output is printed with additional meta information about the repositories.
 ....
 osgi> snowowl listrepositories
 Repositories:
@@ -588,19 +588,6 @@ osgi>snowowl optimize snomedStore 6
 
 ....
 osgi>snowowl purge snomedStore MAIN/2016-01-31 ALL
-....
-
-
-`snowowl repositoryhealth update [repositoryId_1, ... repositoryId_N]` Computes and updates the health state for the given repisoryId(s). If no repositoryId is given, it computes and updates health states for all available repositories.
-
-....
-osgi>
-....
-
-`snowowl repositoryhealth list [repositoryId_1, ... repositoryId_N]` Lists the health state for the given repisoryId(s). If no repositoryId is given, it lists health states for all available repositories.
-
-....
-osgi>
 ....
 
 == Session management
