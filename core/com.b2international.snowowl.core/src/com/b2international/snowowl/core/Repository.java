@@ -19,6 +19,7 @@ import com.b2international.snowowl.core.events.Notifications;
 import com.b2international.snowowl.core.events.RepositoryEvent;
 import com.b2international.snowowl.eventbus.IEventBus;
 
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 
 /**
@@ -43,7 +44,7 @@ public interface Repository extends ServiceProvider, IDisposableService {
 	/**
 	 * @return an {@link Observable} of {@link RepositoryEvent}s sent by this {@link Repository}.
 	 */
-	default Observable<RepositoryEvent> notifications() {
+	default Flowable<RepositoryEvent> notifications() {
 		return service(Notifications.class)
 				.ofType(RepositoryEvent.class)
 				.filter(notification -> id().equals(notification.getRepositoryId()));
