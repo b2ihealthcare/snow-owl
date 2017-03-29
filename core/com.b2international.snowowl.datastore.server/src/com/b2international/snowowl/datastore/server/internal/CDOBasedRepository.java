@@ -97,7 +97,6 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Ordering;
 import com.google.inject.Provider;
@@ -105,7 +104,7 @@ import com.google.inject.Provider;
 /**
  * @since 4.1
  */
-public final class CDOBasedRepository extends DelegatingServiceProvider implements InternalRepository, CDOCommitInfoHandler, RepositoryMetadata {
+public final class CDOBasedRepository extends DelegatingServiceProvider implements InternalRepository, CDOCommitInfoHandler {
 
 	private static final String REINDEX_DIAGNOSIS_TEMPLATE = "Run reindex with console command to synchronize '%s' repository with its database: 'snowowl reindex %s%s'";
 	private static final String RESTORE_DIAGNOSIS = "Inconsistent database. Shutdown and restore '%s' database and indexes from a backup";
@@ -423,18 +422,6 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		return null;
 	}
 
-	@Override
-	public long getHeadTimestampForDatabase() {
-		List<CDOCommitInfo> cdoCommitInfos = getCDOCommitInfos(IBranchPath.MAIN_BRANCH);
-		return cdoCommitInfos.isEmpty() ? 0 : Iterables.getLast(cdoCommitInfos).getTimeStamp();
-	}
-	
-	@Override
-	public long getHeadTimestampForIndex() {
-		CommitInfos indexCommitInfos = getIndexCommits(IBranchPath.MAIN_BRANCH);
-		return indexCommitInfos.getTotal() == 0 ? 0 : Iterables.getLast(indexCommitInfos).getTimeStamp();
-	}
-	
 	private List<CDOCommitInfo> getCDOCommitInfos(String mainBranchPath) {
 		
 		long baseTimestamp = getBaseTimestamp(getCdoMainBranch());

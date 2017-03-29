@@ -18,7 +18,6 @@ package com.b2international.snowowl.server.console;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +32,6 @@ import com.b2international.index.revision.Purge;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.RepositoryInfo;
-import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
@@ -42,7 +40,6 @@ import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.repository.RepositorySearchRequestBuilder;
 import com.b2international.snowowl.datastore.server.ServerDbUtils;
-import com.b2international.snowowl.datastore.server.internal.RepositoryMetadata;
 import com.b2international.snowowl.datastore.server.reindex.OptimizeRequest;
 import com.b2international.snowowl.datastore.server.reindex.PurgeRequest;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
@@ -69,7 +66,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	private static final String DEFAULT_BRANCH_PREFIX = "|--";
 	private static final String DEFAULT_INDENT = "   ";
 	private static final String LISTBRANCHES_COMMAND = "listbranches";
-	private static final String LISTREPOSITORIES_COMMAND = "listrepositories";
 	private static final String DBCREATEINDEX_COMMAND = "dbcreateindex";
 	private static final String REPOSITORIES_COMMAND = "repositories";
 
@@ -99,11 +95,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		try {
 			if (DBCREATEINDEX_COMMAND.equals(cmd)) {
 				createDbIndex(interpreter);
-				return;
-			}
-
-			if (LISTREPOSITORIES_COMMAND.equals(cmd)) {
-				listRepositories(interpreter);
 				return;
 			}
 
@@ -198,39 +189,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		return results;
 	}
 
-	private void handleListRepositories(Collection<String> repositoryIds, CommandInterpreter interpreter) {
-		
-		
-		interpreter.println("Repositories:");
-		String nextArgument = interpreter.nextArgument();
-		boolean verbose = !Strings.isNullOrEmpty(nextArgument) && nextArgument.contains("-v");
-			
-		
-		
-		RepositoryManager repositoryManager = ApplicationContext.getServiceForClass(RepositoryManager.class);
-		repositoryIds.stream()
-					.filter(respositoryId -> isValidRepositoryName(respositoryId, interpreter))
-					.map(repositoryId -> repositoryManager.get(repositoryId))
-					.filter(RepositoryMetadata.class::isInstance).map(RepositoryMetadata.class::cast)
-				.forEach(repository -> {
-					interpreter.println(String.format("\t%s", repository.id()));
-					if (verbose) {
-						interpreter.println(String.format("\t\t Health state: %s", repository.health()));
-						interpreter.println(String.format("\t\t%s Database head timestamp: %s", repository.id(), repository.getHeadTimestampForDatabase()));
-						interpreter.println(String.format("\t\t%s Index head timestamp: %s", repository.id(), repository.getHeadTimestampForIndex()));
-					}
-				});
-	}
-
-	private Collection<String> getRepositories(CommandInterpreter interpreter) {
-		// remaining arguments are/must be repository ids.
-		Collection<String> repositoryIds = resolveArguments(interpreter);
-		if (repositoryIds.isEmpty()) {
-			repositoryIds = getRepositoryManager().uuidKeySet();
-		}
-		return repositoryIds;
-	}
-	
 	public synchronized void createDbIndex(CommandInterpreter interpreter) {
 		String nsUri = interpreter.nextArgument();
 		if (!Strings.isNullOrEmpty(nsUri)) {
@@ -319,11 +277,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 			.execute(getBus())
 			.getSync();
 		interpreter.println("Index optimization completed.");
-	}
-
-	public synchronized void listRepositories(CommandInterpreter interpreter) {
-		Set<String> repositoryIds = getRepositoryManager().uuidKeySet();
-		handleListRepositories(repositoryIds, interpreter);
 	}
 
 	public synchronized void listBranches(CommandInterpreter interpreter) {
