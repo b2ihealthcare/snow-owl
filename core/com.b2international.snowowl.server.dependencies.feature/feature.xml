@@ -938,14 +938,21 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="io.reactivex.rxjava"
+         id="org.eclipse.xtext.xtext.generator"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.xtext.xtext.generator"
+         id="io.reactivex.rxjava2.rxjava"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.reactivestreams.reactive-streams"
          download-size="0"
          install-size="0"
          version="0.0.0"
