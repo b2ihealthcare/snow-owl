@@ -57,7 +57,7 @@ public interface Repository extends ServiceProvider, IDisposableService {
 	void sendNotification(RepositoryEvent event);
 
 	/**
-	 * @return Returns the {@link Health health} state for this repository. The repository is considered healthy if it is in {@link Health#GREEN} state.
+	 * @returns the {@link Health health} state for this repository. The repository is considered healthy if it is in {@link Health#GREEN} state.
 	 */
 	Health getHealth();
 	
