@@ -35,7 +35,7 @@ import com.google.common.collect.Lists;
  *            - the type of the result
  * @since 5.8
  */
-public class HealthCheckingRequest<C extends ServiceProvider, B> extends DelegatingRequest<C, ServiceProvider, B> {
+public final class HealthCheckingRequest<C extends ServiceProvider, B> extends DelegatingRequest<C, ServiceProvider, B> {
 
 	private static final long serialVersionUID = 1L;
 	
