@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,15 @@ public class SnomedDatastoreActivator implements BundleActivator, IServiceConfig
 	 */
 	public static final String PLUGIN_ID = "com.b2international.snowowl.snomed.datastore"; //$NON-NLS-1$
 	
-	/**Unique repository ID for SNOMED&nbsp;CT ontology.*/
+	/** The repository identifier for this tooling */
 	public static final String REPOSITORY_UUID = "snomedStore";
+	
+	// Resource names
+	public static final String ROOT_RESOURCE_NAME = "SNOMED";
+	public static final String REFSET_ROOT_RESOURCE_NAME = "SNOMED_REFSET";
+	public static final String MRCM_ROOT_RESOURCE_NAME = "MRCM";
+	public static final String META_ROOT_RESOURCE_NAME = "META_SNOMED";
+	public static final String GENERATOR_RESOURCE_NAME = "ogfRoot";
 	
 	private static BundleContext context;
 
