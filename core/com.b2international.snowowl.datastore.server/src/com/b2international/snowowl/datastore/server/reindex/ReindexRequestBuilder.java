@@ -44,7 +44,6 @@ public final class ReindexRequestBuilder extends BaseRequestBuilder<ReindexReque
 
 	@Override
 	public Health[] allowedHealthstates() {
-		// allowing reindexing requests to execute in all health states.
-		return Health.values(); 
+		return new Health[] { Health.GREEN, Health.YELLOW }; 
 	}
 }
