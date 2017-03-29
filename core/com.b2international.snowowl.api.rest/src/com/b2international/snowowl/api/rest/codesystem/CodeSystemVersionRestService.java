@@ -48,7 +48,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 /**
  * @since 1.0
  */
-@Api("Code System Metadata")
+@Api("Code Systems")
 @RestController
 @RequestMapping(
 		value = "/codesystems/{shortName}/versions",
