@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore.request;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.options.OptionsBuilder;
@@ -40,8 +39,6 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	private int offset = 0;
 	private int limit = 50;
 	
-	private Set<String> ids = ImmutableSet.of();
-	private List<SortField> sortFields = ImmutableList.of();
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
 	protected SearchResourceRequestBuilder() {
@@ -83,7 +80,13 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B filterByIds(Collection<String> ids) {
-		this.ids = ImmutableSet.copyOf(ids);
+		for (final String id : ids) {
+			if (Strings.isNullOrEmpty(id)) {
+				throw new BadRequestException("ID filter cannot contain empty values");
+			}
+		}
+
+		addOption(OptionKey.COMPONENT_IDS, ImmutableSet.copyOf(ids));
 		return getSelf();
 	}
 	
@@ -105,7 +108,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B sortBy(List<SortField> sortFields) {
-		this.sortFields = ImmutableList.copyOf(sortFields);
+		addOption(OptionKey.SORT_BY, ImmutableList.copyOf(sortFields));
 		return getSelf();
 	}
 	
@@ -142,20 +145,9 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 		final SearchResourceRequest<C, R> req = createSearch();
 		req.setOffset(offset);
 		req.setLimit(Math.min(limit, MAX_LIMIT - offset));
-		
-		for (final String id : ids) {
-			if (Strings.isNullOrEmpty(id)) {
-				throw new BadRequestException("ID filter cannot contain empty values");
-			}
-		}
-		
-		addOption(OptionKey.COMPONENT_IDS, ids);
-		addOption(OptionKey.SORT_BY, sortFields);
 		req.setOptions(optionsBuilder.build());
-		
 		return req;
 	}
 	
 	protected abstract SearchResourceRequest<C, R> createSearch();
-
 }
