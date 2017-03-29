@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.server.internal;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -35,20 +36,20 @@ import com.google.inject.Provider;
 public final class DefaultRepositoryContext implements RepositoryContext, BranchContextProvider {
 
 	private final ServiceProvider serviceProvider;
-	private final String id;
+	private final RepositoryInfo info;
 
-	DefaultRepositoryContext(ServiceProvider serviceProvider, String id) {
+	DefaultRepositoryContext(ServiceProvider serviceProvider, RepositoryInfo info) {
+		this.info = checkNotNull(info, "info");
 		this.serviceProvider = checkNotNull(serviceProvider, "serviceProvider");
-		this.id = checkNotNull(id, "id");
 	}
 
 	@Override
 	public <T> T service(Class<T> type) {
 		if (EditingContextFactory.class.isAssignableFrom(type)) {
-			return type.cast(service(EditingContextFactoryProvider.class).get(id));
+			return type.cast(service(EditingContextFactoryProvider.class).get(id()));
 		}
 		if (ICDOConnection.class.isAssignableFrom(type)) {
-			return type.cast(service(ICDOConnectionManager.class).getByUuid(id));
+			return type.cast(service(ICDOConnectionManager.class).getByUuid(id()));
 		}
 		if (BranchContextProvider.class.isAssignableFrom(type)) {
 			return type.cast(this);
@@ -68,7 +69,12 @@ public final class DefaultRepositoryContext implements RepositoryContext, Branch
 	
 	@Override
 	public String id() {
-		return id;
+		return info.id();
+	}
+	
+	@Override
+	public Health health() {
+		return info.health();
 	}
 	
 	@Override

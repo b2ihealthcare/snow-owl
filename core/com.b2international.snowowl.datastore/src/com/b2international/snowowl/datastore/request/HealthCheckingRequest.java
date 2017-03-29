@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,15 @@ package com.b2international.snowowl.datastore.request;
 
 import java.util.List;
 
-import com.b2international.snowowl.core.Repository;
-import com.b2international.snowowl.core.Repository.Health;
-import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 
 /**
- * A delegating request that provides repository state assertion for a given allowed {@link Repository.Health health} states, before the request proceeds to executing the delegate.
- * @param <C>
- *            - the required context type for this {@link Request}
+ * A delegating request that provides repository state assertion for a given allowed {@link RepositoryInfo.Health health} states, before the request proceeds to executing the delegate.
  * @param <B>
  *            - the type of the result
  * @since 5.8
@@ -39,31 +34,19 @@ public final class HealthCheckingRequest<B> extends DelegatingRequest<Repository
 
 	private static final long serialVersionUID = 1L;
 	
-	private List<Health> allowedHealthStates;
-	private String repositoryId;
+	private final List<RepositoryInfo.Health> allowedHealthStates;
 
-	protected HealthCheckingRequest(String repositoryId, Request<RepositoryContext, B> next, Repository.Health... healths) {
+	public HealthCheckingRequest(Request<RepositoryContext, B> next, RepositoryInfo.Health... healths) {
 		super(next);
-		this.repositoryId = repositoryId;
-		this.allowedHealthStates = Lists.newArrayList(healths);
+		this.allowedHealthStates = ImmutableList.copyOf(healths);
 	}
 
 	@Override
 	public B execute(RepositoryContext context) {
-		assertRepositoryHealth(context);
-		return next(context.service(RepositoryContextProvider.class).get(repositoryId));
-	}
-
-	private void assertRepositoryHealth(RepositoryContext context) {
-		Repository repository = getRepository(context);
-		Health repositoryHealth = repository.getHealth();
-
-		if (!allowedHealthStates.contains(repositoryHealth)) {
-			throw new BadRequestException("Requests for this repository [{}] are not allowed to execute with health state: {}.", repository.id(), repositoryHealth);
+		if (allowedHealthStates.contains(context.health())) {
+			return next(context);
 		}
+		throw new BadRequestException("Requests for repository '%s' are not allowed to execute with health state '%s'.", context.id(), context.health());
 	}
 
-	private Repository getRepository(RepositoryContext context) {
-		return context.service(RepositoryManager.class).get(repositoryId);
-	}
 }

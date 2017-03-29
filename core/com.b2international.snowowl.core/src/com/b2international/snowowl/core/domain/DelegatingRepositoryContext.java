@@ -35,6 +35,11 @@ public class DelegatingRepositoryContext extends DelegatingServiceProvider imple
 	public final String id() {
 		return getDelegate().id();
 	}
+	
+	@Override
+	public Health health() {
+		return getDelegate().health();
+	}
 
 	@Override
 	protected RepositoryContext getDelegate() {

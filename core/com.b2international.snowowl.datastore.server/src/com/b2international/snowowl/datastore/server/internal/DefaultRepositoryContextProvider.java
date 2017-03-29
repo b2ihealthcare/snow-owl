@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.internal;
 
+import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
@@ -32,7 +34,8 @@ public final class DefaultRepositoryContextProvider implements RepositoryContext
 
 	@Override
 	public RepositoryContext get(String repositoryId) {
-		return new DefaultRepositoryContext(repositories.get(repositoryId), repositoryId);
+		final Repository repository = repositories.get(repositoryId);
+		return new DefaultRepositoryContext(repository, RepositoryInfo.of(repository));
 	}
 
 }
