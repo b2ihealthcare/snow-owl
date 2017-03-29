@@ -87,11 +87,9 @@ public class ServerDbUtils {
 	 * Creates an index for the CDO_CREATED DB column for all tables mapped to the specified package.
 	 * <br>This method, first, tried to drop the existing CDO_CREATED index, if any.
 	 * @param nsUri the unique namespace URI for the package containing all classifiers that are mapped to an ORM backend.
-	 * @param swallowSqlException {@code true} if SQL exception (if any) should not be propagated to caller, if {@code true} all logging above info level
-	 * will be ignored as well. 
 	 * @param otherNsUris additional packages.
 	 */
-	public static void createCdoCreatedIndexOnTables(final ICDORepository repository, final boolean swallowSqlException) {
+	public static void createCdoCreatedIndexOnTables(final ICDORepository repository) {
 
 		Preconditions.checkNotNull(repository, "Repository argument cannot be null.");
 
@@ -118,17 +116,11 @@ public class ServerDbUtils {
 
 				//process namespace URIs
 				for (final String _nsUri : nsUris) {
-
 					final EPackage _package = packageRegistry.getEPackage(_nsUri);
 
 					if (null == _package) {
-
-						if (!swallowSqlException) {
-							LOGGER.warn("Cannot found package in registry for '" + _nsUri + "'.");
-						}
-						
+						LOGGER.warn("Cannot found package in registry for '" + _nsUri + "'.");
 						continue;
-
 					} else {
 
 						for (final EClassifier classifier : _package.getEClassifiers()) {
@@ -138,15 +130,11 @@ public class ServerDbUtils {
 								final EClass eclass = (EClass) classifier;
 
 								if (eclass.isAbstract()) {
-
 									continue; //abstract classes are not mapped
-
 								}
 
 								if (eclass.isInterface()) {
-
 									continue; //interfaces are not mapped
-
 								}
 
 								if (CDOModelUtil.isCorePackage(_package)) {
@@ -154,7 +142,6 @@ public class ServerDbUtils {
 								}
 								
 								final IClassMapping classMapping = dbStore.getMappingStrategy().getClassMapping(eclass);
-
 								for (final IDBTable table : classMapping.getDBTables()) {
 
 									@SuppressWarnings("restriction")
@@ -172,71 +159,43 @@ public class ServerDbUtils {
 										
 										try {
 
-											final String createIndexSql = "CREATE INDEX " + indexName + " ON " + tableName + "(" + createdFieldName + ")";
-											final String dropIndexSql = "DROP INDEX " + indexName + " /*! ON " + tableName + " */";
-
 											connection = repository.getConnection();
 
-											try {
-											
-												//drop index if any
-												dropStatement = JdbcUtils.prepareStatement(connection, dropIndexSql);
-												dropStatement.execute();
-												
-												LOGGER.info("Dropping index '" + indexName + "' from table '" + tableName + "'.");
-												
-											} catch (final SQLException e) {
-												
-												if (!swallowSqlException) {
-													LOGGER.warn("Cannot drop index '" + indexName + "' for table '" + tableName + "'.");
-												}
-												
+											Integer indexCount = JdbcUtils.executeIntQuery(connection, "SELECT COUNT(1) "
+													+ "FROM information_schema.statistics "
+													+ "WHERE TRUE"
+													+ "AND index_schema = ? "
+													+ "AND index_name = ?", connection.getSchema(), indexName); 
+															
+											if (indexCount < 1) {
+												LOGGER.info("Creating index '" + indexName + "' on table '" + tableName + "'.");
+												final String createIndexSql = "CREATE INDEX " + indexName + " ON " + tableName + "(" + createdFieldName + ")";
+												JdbcUtils.executeUpdate(connection, createIndexSql);
 											}
-										
-											createStatement = JdbcUtils.prepareStatement(connection, createIndexSql); 
-											createStatement.execute();
-											
-											LOGGER.info("Creating index '" + indexName + "' on table '" + tableName + "'.");
 											
 										} catch (final SQLException e) {
 
-											if (!swallowSqlException) {
-												LOGGER.error("Cannot create index for " + tableName);
-												throw new SnowowlRuntimeException(e);
-											}
+											LOGGER.error("Cannot create index for " + tableName);
+											throw new SnowowlRuntimeException(e);
 
 										} finally {
-
 											DBUtil.close(connection);
 											DBUtil.close(dropStatement);
 											DBUtil.close(createStatement);
-
 										}
-
 									}
-
 								}
-
 							}
-
 						}
-
 					}
-
 				}
 
 			} finally {
-
-				//release accessor
 				StoreThreadLocal.release();
-
 			}
 
 		} else {
-
 			LOGGER.warn("CDO store is not backed by a object/relational mapper.");
-			return;
-
 		}
 
 		return;
@@ -260,7 +219,7 @@ public class ServerDbUtils {
 
 		Collections3.forEach(repositories, new Procedure<ICDORepository>() {
 			@Override protected void doApply(final ICDORepository repository) {
-				createCdoCreatedIndexOnTables(repository, false);
+				createCdoCreatedIndexOnTables(repository);
 			}
 		});
 	}
