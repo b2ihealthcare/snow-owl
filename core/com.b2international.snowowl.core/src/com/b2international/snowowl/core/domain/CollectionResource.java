@@ -46,6 +46,7 @@ public class CollectionResource<T> implements Serializable, Iterable<T> {
 	 * @return <tt>true</tt> if this {@link CollectionResource} contains no elements
 	 * @since 5.8 
 	 */
+	@JsonIgnore
 	public final boolean isEmpty() {
 		return getItems().isEmpty(); 
 	}
