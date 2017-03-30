@@ -106,8 +106,8 @@ import com.google.inject.Provider;
  */
 public final class CDOBasedRepository extends DelegatingServiceProvider implements InternalRepository, CDOCommitInfoHandler {
 
-	private static final String REINDEX_DIAGNOSIS_TEMPLATE = "Run reindex with console command to synchronize '%s' repository with its database: 'snowowl reindex %s%s'";
-	private static final String RESTORE_DIAGNOSIS = "Inconsistent database. Shutdown and restore '%s' database and indexes from a backup";
+	private static final String REINDEX_DIAGNOSIS_TEMPLATE = "Run reindex to synchronize index with the database. Command: 'snowowl reindex %s%s'.";
+	private static final String RESTORE_DIAGNOSIS = "Inconsistent database and index. Shutdown and restore database and indexes from a backup.";
 
 	private final String toolingId;
 	private final String repositoryId;
@@ -364,7 +364,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 			// empty dataset, OK
 			setHealth(Health.GREEN, null); 
 		} else if (emptyDatabase && !emptyIndex) {
-			setHealth(Health.RED, String.format(RESTORE_DIAGNOSIS, id()));
+			setHealth(Health.RED, RESTORE_DIAGNOSIS);
 		} else if (!emptyDatabase && emptyIndex) {
 			setHealth(Health.RED, String.format(REINDEX_DIAGNOSIS_TEMPLATE, id(), id(), ""));
 		} else if (!emptyDatabase && !emptyIndex) {
@@ -402,10 +402,10 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 					// importers can create batch commits using the same UUID in cdo which overrides subsequent index commits and results in a single index commit at the end
 					final String commitId = CDOCommitInfoUtils.getUuid(nextCdoCommit.getComment());
 					if (!Objects.equals(commitId, indexCommit.getId())) {
-						return String.format(RESTORE_DIAGNOSIS, id());
+						return RESTORE_DIAGNOSIS;
 					}
 				} else if (nextIndexCommitTimestamp < nextCdoCommitTimestamp) {
-					return String.format(RESTORE_DIAGNOSIS, id());
+					return RESTORE_DIAGNOSIS;
 				}
 			} else {
 				// first cdo commit from where reindex should be invoked  
