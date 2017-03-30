@@ -52,6 +52,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -291,6 +292,11 @@ public abstract class CDOCommitInfoUtils {
 	 */
 	public static final class CDOCommitInfoQuery {
 		
+		private static final Collection<String> EXCLUDED_USERS = 
+				ImmutableSet.of(CDOCommitInfoConstants.SYSTEM_USER_ID);
+		
+		private static final Predicate<String> EXCLUDED_USERS_PREDICATE = Predicates.not(Predicates.in(EXCLUDED_USERS));
+	
 		private final ConsumeAllCommitInfoHandler delegateHandler;
 		private final Map<String, IBranchPath> branchPathMap;
 
@@ -298,6 +304,7 @@ public abstract class CDOCommitInfoUtils {
 		private long endTime = CDOBranchPoint.UNSPECIFIED_DATE;
 		private boolean enableGrouping;
 		private Predicate<ICDOConnection> connectionPredicate = Predicates.alwaysTrue();
+		private Predicate<String> excludedUsersPredicate = EXCLUDED_USERS_PREDICATE;
 		private boolean traverseAncestorBranches;
 		
 		/**
@@ -330,6 +337,12 @@ public abstract class CDOCommitInfoUtils {
 		/**Enables or disables commit info grouping.*/
 		public CDOCommitInfoQuery setEnableGrouping(final boolean enableGrouping) {
 			this.enableGrouping = enableGrouping;
+			return this;
+		}
+		
+		/**Specifies the excluded user ID predicate.*/
+		public CDOCommitInfoQuery setExcludedUsersPredicate(final Predicate<String> excludedUsersPredicate) {
+			this.excludedUsersPredicate = Preconditions.checkNotNull(excludedUsersPredicate);
 			return this;
 		}
 		
@@ -384,7 +397,12 @@ public abstract class CDOCommitInfoUtils {
 				final AtomicInteger i = new AtomicInteger();
 				Collections3.forEach(delegateHandler.getInfos(), new Procedure<CDOCommitInfo>() {
 					@Override protected void doApply(final CDOCommitInfo info) {
-						$[i.getAndIncrement()] = info;
+						
+						final String userId = info.getUserID();
+						if (excludedUsersPredicate.apply(userId)) {
+							$[i.getAndIncrement()] = info;
+						}
+						
 					}
 				});
 				
@@ -396,22 +414,26 @@ public abstract class CDOCommitInfoUtils {
 				final Map<String, Pair<CDOCommitInfo, Long>> unsortedInfos = Maps.newHashMapWithExpectedSize(expectedSize);
 				for (final CDOCommitInfo info : delegateHandler.getInfos()) {
 
+					final String userId = info.getUserID();
 					//this should filter out 'logically grouped ones'
 					final CDOCommitInfoWithUuid wrappedInfo = new CDOCommitInfoWithUuid(info);
 					final String uuid = wrappedInfo.getUuid();
 					
-					if (unsortedInfos.containsKey(uuid)) {
-						
-						//replace the visited commit info with the current one if the timestamp is smaller.
-						if (unsortedInfos.get(uuid).getB().longValue() > wrappedInfo.getTimeStamp()) {
+					if (excludedUsersPredicate.apply(userId)) {
+						if (unsortedInfos.containsKey(uuid)) {
+							
+							//replace the visited commit info with the current one if the timestamp is smaller.
+							if (unsortedInfos.get(uuid).getB().longValue() > wrappedInfo.getTimeStamp()) {
+								unsortedInfos.put(uuid, Pair.<CDOCommitInfo, Long>of(wrappedInfo, wrappedInfo.getTimeStamp()));
+							}
+							
+						} else {
+							
 							unsortedInfos.put(uuid, Pair.<CDOCommitInfo, Long>of(wrappedInfo, wrappedInfo.getTimeStamp()));
+							
 						}
-						
-					} else {
-						
-						unsortedInfos.put(uuid, Pair.<CDOCommitInfo, Long>of(wrappedInfo, wrappedInfo.getTimeStamp()));
-						
 					}
+					
 				}
 				
 				//filter out all commit info instances which are associated with the terminology metadata store after grouping
