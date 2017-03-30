@@ -42,6 +42,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -116,7 +117,6 @@ import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedValidati
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
@@ -522,38 +522,32 @@ public final class ImportUtil {
 			@Override
 			public Boolean execute(RevisionSearcher index) throws IOException {
 				final SnomedValidationContext validator = new SnomedValidationContext(index, requestingUserId, configuration, IMPORT_LOGGER, repositoryState);
+				
 				final Set<SnomedValidationDefect> defects = result.getValidationDefects();
 				defects.addAll(validator.validate(subMonitor.newChild(1)));
 				
 				if (!isEmpty(defects)) {
-					// If only header differences exist, continue the import
 					
-					final String message = String.format("Validation encountered %s issue(s).", defects.size());
+					List<String> flattenedDefects = defects.stream()
+						.map( d -> d.getDefects())
+						.flatMap( d -> d.stream())
+						.collect(Collectors.toList());
+					
+					final String message = String.format("Validation encountered %s issue(s).", flattenedDefects.size());
 					LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, message);
-//					
-//					final Map<String, BufferedWriter> defectWriters = newHashMap();
-//					try {
-//						for (SnomedValidationDefect defect : defects) {
-//							final String filePath = defect.getFileName();
-//							final String defectsFile = String.format("d:/%s_%s_defects.txt", configuration.getArchiveFile().getName(), filePath);
-//							if (!defectWriters.containsKey(defectsFile)) {
-//								defectWriters.put(defectsFile, Files.newWriter(new File(defectsFile), Charsets.UTF_8));
-//							}
-//							defect.writeTo(defectWriters.get(defectsFile));
-//						}
-//					} finally {
-//						for (BufferedWriter writer : defectWriters.values()) {
-//							writer.close();
-//						}
-//					}
 					
-					return !Iterables.tryFind(defects, new Predicate<SnomedValidationDefect>() {
-						@Override
-						public boolean apply(SnomedValidationDefect input) {
-							return input.getDefectType().isCritical();
-						}
-					}).isPresent();
+					if (flattenedDefects.size() > 100) {
+						LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "Logging the first hundred errors...");
+					}
+					
+					flattenedDefects
+						.stream()
+						.limit(100) // FIXME only log the first 100 for now
+						.forEach( d -> LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, d));
+					
+					return defects.stream().noneMatch(d -> d.getDefectType().isCritical());
 				}
+				
 				return true;
 			}
 		});
