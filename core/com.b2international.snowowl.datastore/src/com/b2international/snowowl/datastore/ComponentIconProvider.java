@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore;
 import java.io.File;
 
 import com.b2international.snowowl.core.SnowOwlApplication;
-import com.google.common.io.Files;
 
 /**
  * Abstract implementation of the UI independent {@link IComponentIconProvider component icon provider}. 
@@ -44,15 +43,7 @@ public abstract class ComponentIconProvider<K> implements IComponentIconProvider
 	 * @return the file instance describing the folder containing the icons for the components.
 	 */
 	protected File getIconDirectory() {
-		// sometimes in test environment the whole app is not available, just partially
-		if (SnowOwlApplication.INSTANCE.isRunning()){
-			return new File(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory(), getFolderName());
-		} else {
-			// create a tmpDir without any files and delete it on JVM shutdown
-			final File tmpDir = Files.createTempDir();
-			tmpDir.deleteOnExit();
-			return tmpDir;
-		}
+		return new File(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory(), getFolderName());
 	}
 	
 	/**
