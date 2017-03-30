@@ -17,43 +17,42 @@ package com.b2international.snowowl.api.rest;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.junit.Assert.assertNotNull;
+
+import org.hamcrest.CoreMatchers;
+
 import com.jayway.restassured.response.ValidatableResponse;
 
 /**
  * @since 5.8
  */
-public abstract class RepositoryInfoApiAssert {
+public abstract class RepositoryApiAssert {
 
 	private static final String ADMIN = "/admin";
-	private static final String INFO_REPOSITORIES = "/info/repositories";
+	private static final String REPOSITORIES = "/repositories";
 
-	public static ValidatableResponse assertRepositoryInfoForExistingRepository(final String repositoryId) {
-		return assertRepositoryInfoReadWithStatus(repositoryId, 200);
+	public static ValidatableResponse assertRepositoryInfoForExistingRepository(final String repositoryId, final String status) {
+		return assertRepositoryInfoReadWithStatus(repositoryId, status, 200);
 	}
 
 	public static ValidatableResponse assertRepositoryInfoForInvalidRepository(final String repositoryId) {
-		return assertRepositoryInfoReadWithStatus(repositoryId, 404);
+		return assertRepositoryInfoReadWithStatus(repositoryId, null, 404);
 	}
 
 	
-	public static ValidatableResponse assertRepositoryInfoReadWithStatus(final String repositoryId, final int statusCode) {
+	public static ValidatableResponse assertRepositoryInfoReadWithStatus(final String repositoryId, final String health, final int statusCode) {
 		assertNotNull(repositoryId);
 		return givenAuthenticatedRequest(ADMIN)
-				.when().get(INFO_REPOSITORIES + "/{repositoryId}", repositoryId)
-				.then().assertThat().statusCode(statusCode);
+				.when().get(REPOSITORIES + "/{repositoryId}", repositoryId)
+				.then().assertThat()
+					.statusCode(statusCode)
+				.and()
+					.body("health", CoreMatchers.equalTo(health));
 	}
 
 	public static ValidatableResponse assertAllRepositoryInfo() {
 		return givenAuthenticatedRequest(ADMIN)
-				.when().get(INFO_REPOSITORIES)
+				.when().get(REPOSITORIES)
 				.then().assertThat().statusCode(200);
 	}
-	
-	public static ValidatableResponse assertAllRepositoryHealthUpdate() {
-		return givenAuthenticatedRequest(ADMIN)
-				.when().post(INFO_REPOSITORIES)
-				.then().assertThat().statusCode(200);
-	}
-	
 	
 }

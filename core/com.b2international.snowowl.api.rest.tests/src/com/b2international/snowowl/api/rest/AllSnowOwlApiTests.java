@@ -27,7 +27,7 @@ import com.b2international.snowowl.api.japi.codesystem.CodeSystemRequestTest;
 import com.b2international.snowowl.api.japi.commitinfo.CommitInfoRequestTest;
 import com.b2international.snowowl.api.rest.auth.BasicAuthenticationTest;
 import com.b2international.snowowl.api.rest.codesystem.CodeSystemApiTest;
-import com.b2international.snowowl.api.rest.info.RepositoryInfoApiTest;
+import com.b2international.snowowl.api.rest.info.RepositoryApiTest;
 import com.b2international.snowowl.snomed.api.impl.SnomedReleases;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.test.commons.BundleStartRule;
@@ -45,7 +45,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	CodeSystemApiTest.class,
 	CodeSystemRequestTest.class,
 	CommitInfoRequestTest.class,
-	RepositoryInfoApiTest.class
+	RepositoryApiTest.class
 })
 public class AllSnowOwlApiTests {
 	
