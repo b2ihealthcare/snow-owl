@@ -1,6 +1,56 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.8.0
+
+### Added
+- Health Status has been added to Repository instances (https://github.com/b2ihealthcare/snow-owl/pull/138)
+ * Repositories check their health status during the bootstrap process
+ * `RED` state: administrative action is required (restoring content from backup or initiating reindex on the repository). Accessing content is disallowed.
+ * `YELLOW` state: administrative operation (eg. reindex) is in progress, accessing content is allowed, but the content can be incomplete  
+ * `GREEN` state: terminology content is consistent
+- Server Info and Repository API (https://github.com/b2ihealthcare/snow-owl/pull/138)
+ * `GET /snowowl/admin/info` endpoint to retrieve version and diagnostic information of the running server
+ * `GET /snowowl/admin/repositories` endpoint to retrieve all available repositories with their health statuses
+ * `GET /snowowl/admin/repositories/:id` endpoint to retrieve a single repository and its health status
+- Console
+ * `--version` command parameter has been added to `snowowl` command to retrieve the server's version
+ * `snowowl repositories [id]` subcommand has been added to retrieve repository information and health status
+- Sorting support in Java API (https://github.com/b2ihealthcare/snow-owl/pull/140) 
+- Low-level API changes
+ * Support custom repository content initialization for empty repositories during the bootstrap process (usually primary code system entries are created here)
+
+### Changed
+- SNOMED CT RF2 importer changes
+ * Importer is no longer able to create codeSystem as part of the import process, how ever they require that the codeSystem exists before starting the import. 
+- SNOMED CT ECL grammar improvements (https://github.com/b2ihealthcare/snow-owl/pull/137)
+ * Optional `WS` before and after the `PIPE` terminals
+ * Case insensitive keyword support
+ * Fixed parser error when parsing empty ECL expression
+- Branching API improvements (https://github.com/b2ihealthcare/snow-owl/pull/143)
+ * Pagination support has been added to `GET /snowowl/snomed-ct/v2/branches` endpoint
+ * Filter by `parent` property has been added to `GET /snowowl/snomed-ct/v2/branches` endpoint
+ * Filter by `name` property has been addSed to `GET /snowowl/snomed-ct/v2/branches` endpoint
+- `SnomedConcept` expansions 
+ * Removed `form` parameter when expanding `ancestors`/`descendants` of SNOMED CT concepts
+ * Added `statedAncestors`/`statedDescendants` expand parameters to expand concepts referenced via `stated` IS_A relationships
+ * `ancestors`/`descendants` expansion expands concepts referenced via `inferred` IS_A relationships 
+
+### Removed
+- `GET /snowowl/admin/repositories/:id/versions` obsolete endpoint has been removed in favor of `GET /snowowl/admin/codesystem/:id/versions`
+- `snowowl listrepositories` subcommand has been replaced with `snowowl repositories`  
+
+### Dependencies
+- Xtext/Xtend changed from 2.8.4 to 2.11.0 (https://github.com/b2ihealthcare/snow-owl/pull/137)
+- EMF changed from 2.11.0 to 2.12.0 (https://github.com/b2ihealthcare/snow-owl/pull/137)
+- RxJava changed from 1.0.6 to 2.0.7 (https://github.com/b2ihealthcare/snow-owl/pull/141) 
+
+### Bugs
+- Validate SNOMED CT Text Definition files (if present) when import RF2 content 
+- Validate `branchPath` input parameter with given `codeSystemShortName` when running SNOMED CT RF2. It should be either full path or relative to the codesystem's main branch.
+- Fixed issue where files could not be opened after downloading them using the `FileRegistry.download(...)` api (c1088e217e1954952b57e70aec9f0d28f09083af)
+- Skip cdo repository initializer commits when reindexing a repository (b6d1e4f9e2cd170a8516bc2bcf1cda4f6ce6888c)
+
 ## 5.7.4
 
 ### Changed
@@ -26,7 +76,6 @@ All notable changes to this project will be documented in this file.
 - Fixed serialization of ValidationException (62d3d0516b87c62e4841a6d9b0eba6e262e18410)
 - Fixed class loading issue when using BulkRequests
 - Fixed Highlighting.getMatchRegions() bug (e7d449df9843c188700c11591ca7e70755f9f140)
-
 
 ## 5.7.1
 
