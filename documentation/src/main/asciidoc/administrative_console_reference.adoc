@@ -539,11 +539,19 @@ Impersonate operation as: info@b2international.com
 
 == Diagnostics and maintenance
 
-`snowowl listrepositories [-v]` prints all the repositories in the system.  By adding '-v' to the command, a more verbose output is printed with additional meta information about the repositories.
+`snowowl --version` prints the current server version.
 ....
-osgi> snowowl listrepositories
-Repositories:
-	snomedStore
+osgi> snowowl --version
+ 5.8.0
+....
+`snowowl repositories [id]` prints information about all repositories or just a single single repository
+....
+osgi> snowowl repositories
+ ----------------------------------------------------
+ |id              |health          |diagnosis       |
+ ----------------------------------------------------	
+ |snomedStore     |GREEN           |-               |
+ ----------------------------------------------------
 ....
 `snowowl listbranches [repository]` prints all the branches in the system for a repository.
 
@@ -847,82 +855,6 @@ Forcefully released lock with identifier 1.
 --------------------------
 
 To forcefully release all locks, use the command with the `all` argument instead of the identifier.
-
-== Supporting indexes
-
-Supporting indexes store additional data that is referenced across terminology stores, such as previous choices of 
-users, bookmarks, and task metadata. Access to these items cannot be locked, however, a consistent snapshot of their 
-contents can be taken and saved for backup purposes. Snapshots are only kept while the server is running; after a 
-restart, only the latest data will be available. It is advised to release snapshots straight after a successful backup.
-
-NOTE: The provided backup script performs the steps below for all available supporting indexes automatically.
-
-=== Display supporting indexes
-
-To list all available supporting index identifiers, issue:
-
---------------------------
-osgi> index list
- 
-Index service identifier
---------------------------------
-  previous_picks
-  bookmarks
-  tasks
---------------------------------
---------------------------
-
-=== Create snapshot
-
-Consistent snapshots can be referenced by their UUIDs, which is displayed when a new snapshot is created.
-
---------------------------
-osgi> index createSnapshot tasks
-Snapshot '885bded0-5e93-4f20-bdbd-aafd5434a41a' for service 'tasks' has been successfully created.
---------------------------
-
-=== List snapshots
-
-To get the list of currently available snapshots for any supporting index, run:
-
---------------------------
-osgi> index listSnapshots tasks
- 
-Index snapshot identifier
---------------------------------
- 885bded0-5e93-4f20-bdbd-aafd5434a41a
---------------------------------
---------------------------
-
-=== List files in snapshots
-
-To collect all files that make up a particular snapshot, execute the following command:
-
---------------------------
-osgi> index listSnapshotFiles tasks 885bded0-5e93-4f20-bdbd-aafd5434a41a
-
- Files in snapshot '885bded0-5e93-4f20-bdbd-aafd5434a41a'
---------------------------------
- tasks/_1.si
- tasks/_0.si
- tasks/_1.cfs
- tasks/_1.cfe
- tasks/segments_3
- tasks/_0.cfs
- tasks/_0.cfe
---------------------------------
---------------------------
-
-Files are displayed relative to the Snow Owl Server installation's `resources/index` folder.
-
-=== Release created snapshot
-
-To unreference files that might only be in use because a snapshot was taken, and free up disk space, run:
-
---------------------------
-osgi> index releaseSnapshot tasks 885bded0-5e93-4f20-bdbd-aafd5434a41a
-Snapshot 885bded0-5e93-4f20-bdbd-aafd5434a41a has been successfully released.
---------------------------
 
 == Remote jobs
 
