@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snomed-parent</artifactId>
-		<version>5.8.0-SNAPSHOT</version>
+		<version>5.9.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>com.b2international.snowowl.snomed.exporter.server</artifactId>
 	<packaging>eclipse-plugin</packaging>
