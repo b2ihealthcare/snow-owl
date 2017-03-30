@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.8.1
+
+### Bugs
+- Fixed missing internal SNOMED CT ECL package export entry (required by ide and ui plugins)
+- Fixed duplicate repository ID shown in diagnostic messages
+- Fixed existing db index detection when ensuring index on CDO_CREATED columns
+
 ## 5.8.0
 
 ### Added
