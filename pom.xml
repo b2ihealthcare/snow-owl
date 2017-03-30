@@ -16,7 +16,7 @@
 		<!-- Build tool/compiler versions -->
 		<tycho.version>0.23.0</tycho.version>
 		<tycho-extras.version>0.23.0</tycho-extras.version>
-		<xtend.compiler.version>2.8.4</xtend.compiler.version>
+		<xtend.compiler.version>2.11.0</xtend.compiler.version>
 		<!-- Versioning -->
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 		<forceContextQualifier>${maven.build.timestamp}</forceContextQualifier>
