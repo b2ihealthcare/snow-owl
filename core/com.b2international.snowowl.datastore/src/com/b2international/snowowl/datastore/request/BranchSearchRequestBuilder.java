@@ -15,25 +15,40 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import java.util.Collection;
+
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.events.SearchBranchRequest;
+import com.google.common.collect.ImmutableSet;
 
 /**
- * TODO filter them by date, deleted flag, path match etc.
  * @since 4.5
  */
-public final class BranchSearchRequestBuilder extends BaseRequestBuilder<BranchSearchRequestBuilder, RepositoryContext, Branches> implements RepositoryRequestBuilder<Branches> {
+public final class BranchSearchRequestBuilder extends SearchResourceRequestBuilder<BranchSearchRequestBuilder, RepositoryContext, Branches> implements IndexRequestBuilder<Branches> {
 
 	BranchSearchRequestBuilder() {
 		super();
 	}
-
+	
+	public BranchSearchRequestBuilder filterByParent(String parentPath) {
+		return filterByParent(ImmutableSet.of(parentPath));
+	}
+	
+	public BranchSearchRequestBuilder filterByParent(Collection<String> parentPaths) {
+		return addOption(BranchSearchRequest.OptionKey.PARENT, parentPaths);
+	}
+	
+	public BranchSearchRequestBuilder filterByName(String name) {
+		return filterByName(ImmutableSet.of(name));
+	}
+	
+	public BranchSearchRequestBuilder filterByName(Collection<String> names) {
+		return addOption(BranchSearchRequest.OptionKey.NAME, names);
+	}
+	
 	@Override
-	protected Request<RepositoryContext, Branches> doBuild() {
-		return new SearchBranchRequest();
+	protected SearchResourceRequest<RepositoryContext, Branches> createSearch() {
+		return new BranchSearchRequest();
 	}
 	
 }

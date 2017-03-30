@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branch.BranchState;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 
 /**
  * @since 4.1

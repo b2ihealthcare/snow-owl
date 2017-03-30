@@ -17,6 +17,8 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
+
 /**
  * @since 4.1
  */

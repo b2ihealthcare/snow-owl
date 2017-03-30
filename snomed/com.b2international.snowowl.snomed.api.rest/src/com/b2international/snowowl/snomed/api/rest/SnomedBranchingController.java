@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
@@ -42,8 +43,10 @@ import com.b2international.snowowl.snomed.api.rest.domain.CreateBranchRestReques
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
+import com.google.common.collect.ImmutableList;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
@@ -88,11 +91,20 @@ public class SnomedBranchingController extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
 	})
 	@RequestMapping(method=RequestMethod.GET)
-	public DeferredResult<Branches> getBranches() {
+	public DeferredResult<Branches> getBranches(
+			@ApiParam("parent")
+			@RequestParam(value="parent", required=false)
+			final String[] parents,
+			
+			@ApiParam("name")
+			@RequestParam(value="name", required=false)
+			final String[] names) {
 		return DeferredResults.wrap(
 				RepositoryRequests
 					.branching()
 					.prepareSearch()
+					.filterByParent(parents == null ? ImmutableList.of() : ImmutableList.copyOf(parents))
+					.filterByName(names == null ? ImmutableList.of() : ImmutableList.copyOf(names))
 					.build(repositoryId)
 					.execute(bus));
 	}

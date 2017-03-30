@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.branch;
+package com.b2international.snowowl.datastore.internal.branch;
 
 import com.b2international.index.Doc;
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchManager;
 
 
 /**
@@ -26,7 +27,7 @@ import com.b2international.snowowl.core.branch.Branch;
 @Doc(type = "branch")
 public interface InternalBranch extends Branch {
 
-	void setBranchManager(BranchManagerImpl branchManager);
+	void setBranchManager(BranchManager branchManager);
 	
 	InternalBranch withDeleted();
 	

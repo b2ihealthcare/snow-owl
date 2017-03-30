@@ -16,20 +16,22 @@
 package com.b2international.snowowl.datastore.server.internal.branch;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.util.Collection;
 
+import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolderImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchData;
+import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 
@@ -79,8 +81,8 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
     }
 	
     @Override
-	public void setBranchManager(BranchManagerImpl branchManager) {
-		this.branchManager = checkNotNull(branchManager, "branchManager");
+	public void setBranchManager(BranchManager branchManager) {
+		this.branchManager = ClassUtils.checkAndCast(branchManager, BranchManagerImpl.class);
 	}
 	
     @JsonIgnore
