@@ -3,37 +3,22 @@
    <feature url="features/org.eclipse.equinox.sdk_3.9.0.v20140221-1852.jar" id="org.eclipse.equinox.sdk" version="3.9.0.v20140221-1852">
       <category name="Eclipse Runtime"/>
    </feature>
-   <feature url="features/org.eclipse.emf.mwe.core_1.3.11.v201508030321.jar" id="org.eclipse.emf.mwe.core" version="1.3.11.v201508030321">
+   <feature url="features/org.eclipse.emf.mwe2.launcher_2.9.0.v201605261103.jar" id="org.eclipse.emf.mwe2.launcher" version="2.9.0.v201605261103">
       <category name="Modeling"/>
    </feature>
-   <feature url="features/org.eclipse.emf.mwe.doc_1.3.11.v201508030321.jar" id="org.eclipse.emf.mwe.doc" version="1.3.11.v201508030321">
+   <feature url="features/org.eclipse.emf.mwe2.language.sdk_2.9.0.v201605261103.jar" id="org.eclipse.emf.mwe2.language.sdk" version="2.9.0.v201605261103">
       <category name="Modeling"/>
    </feature>
-   <feature url="features/org.eclipse.emf.mwe.sdk_1.3.11.v201508030321.jar" id="org.eclipse.emf.mwe.sdk" version="1.3.11.v201508030321">
+   <feature url="features/org.eclipse.emf.mwe2.runtime.sdk_2.9.0.v201605261103.jar" id="org.eclipse.emf.mwe2.runtime.sdk" version="2.9.0.v201605261103">
       <category name="Modeling"/>
    </feature>
-   <feature url="features/org.eclipse.emf.mwe2.launcher_2.8.1.v201508030411.jar" id="org.eclipse.emf.mwe2.launcher" version="2.8.1.v201508030411">
-      <category name="Modeling"/>
-   </feature>
-   <feature url="features/org.eclipse.emf.mwe2.language.sdk_2.8.1.v201508030411.jar" id="org.eclipse.emf.mwe2.language.sdk" version="2.8.1.v201508030411">
-      <category name="Modeling"/>
-   </feature>
-   <feature url="features/org.eclipse.emf.mwe2.runtime.sdk_2.8.1.v201508030321.jar" id="org.eclipse.emf.mwe2.runtime.sdk" version="2.8.1.v201508030321">
-      <category name="Modeling"/>
-   </feature>
-   <feature url="features/org.eclipse.xtext.runtime_2.8.4.v201508050135.jar" id="org.eclipse.xtext.runtime" version="2.8.4.v201508050135">
+   <feature url="features/org.eclipse.xtext.runtime_2.11.0.v20170201-0242.jar" id="org.eclipse.xtext.runtime" version="2.11.0.v20170201-0242">
       <category name="Xtext"/>
    </feature>
-   <feature url="features/org.eclipse.xtext.runtime.source_2.8.4.v201508050135.jar" id="org.eclipse.xtext.runtime.source" version="2.8.4.v201508050135">
+   <feature url="features/org.eclipse.xtext.xbase_2.11.0.v20170201-0242.jar" id="org.eclipse.xtext.xbase" version="2.11.0.v20170201-0242">
       <category name="Xtext"/>
    </feature>
-   <feature url="features/org.eclipse.xtext.xbase_2.8.4.v201508050135.jar" id="org.eclipse.xtext.xbase" version="2.8.4.v201508050135">
-      <category name="Xtext"/>
-   </feature>
-   <feature url="features/org.eclipse.xtext.xbase.source_2.8.4.v201508050135.jar" id="org.eclipse.xtext.xbase.source" version="2.8.4.v201508050135">
-      <category name="Xtext"/>
-   </feature>
-   <feature url="features/org.eclipse.emf.sdk_2.11.0.v20150601-0402.jar" id="org.eclipse.emf.sdk" version="2.11.0.v20150601-0402">
+   <feature url="features/org.eclipse.emf.sdk_2.12.0.v20160526-0356.jar" id="org.eclipse.emf.sdk" version="2.12.0.v20160526-0356">
       <category name="Modeling"/>
    </feature>
    <feature url="features/org.emfjson.feature_0.10.0.jar" id="org.emfjson.feature" version="0.10.0">
@@ -79,8 +64,8 @@
    <bundle id="ch.qos.logback.classic.source" version="1.0.7.v20121108-1250"/>
    <bundle id="ch.qos.logback.core" version="1.0.7.v20121108-1250"/>
    <bundle id="ch.qos.logback.core.source" version="1.0.7.v20121108-1250"/>
-   <bundle id="ch.qos.logback.slf4j" version="1.0.7.v20121108-1250"/>
-   <bundle id="ch.qos.logback.slf4j.source" version="1.0.7.v20121108-1250"/>
+   <bundle id="ch.qos.logback.slf4j" version="1.0.7.v201505121915"/>
+   <bundle id="ch.qos.logback.slf4j.source" version="1.0.7.v201505121915"/>
    <bundle id="com.google.guava" version="15.0.0.v201403281430"/>
    <bundle id="com.google.guava.source" version="15.0.0.v201403281430"/>
    <bundle id="org.slf4j.api" version="1.7.2.v20121108-1250"/>
@@ -89,12 +74,16 @@
    <bundle id="org.slf4j.log4j.source" version="1.7.2.v20130115-1340"/>
    <bundle id="org.eclipse.xtend" version="1.4.0.v201306110406"/>
    <bundle id="org.eclipse.xpand" version="1.4.0.v201306110406"/>
-   <bundle id="org.eclipse.xtend.lib" version="2.8.4.v201508050135"/>
-   <bundle id="org.eclipse.xtend.lib.source" version="2.8.4.v201508050135"/>
-   <bundle id="org.eclipse.xtend.lib.macro" version="2.8.4.v201508050135"/>
-   <bundle id="org.eclipse.xtend.lib.macro.source" version="2.8.4.v201508050135"/>
-   <bundle id="org.junit" version="4.11.0.v201303080030"/>
-   <bundle id="org.junit.source" version="4.11.0.v201303080030"/>
+   <bundle id="org.eclipse.xtend.lib" version="2.11.0.v20170124-1424"/>
+   <bundle id="org.eclipse.xtend.lib.source" version="2.11.0.v20170124-1424"/>
+   <bundle id="org.eclipse.xtend.lib.macro" version="2.11.0.v20170124-1424"/>
+   <bundle id="org.eclipse.xtend.lib.macro.source" version="2.11.0.v20170124-1424"/>
+   <bundle id="org.eclipse.xtext.testing" version="2.11.0.v20170130-0808"/>
+   <bundle id="org.eclipse.xtext.testing.source" version="2.11.0.v20170130-0808"/>
+   <bundle id="org.eclipse.xtext.xbase.testing" version="2.11.0.v20170131-1210"/>
+   <bundle id="org.eclipse.xtext.xbase.testing.source" version="2.11.0.v20170131-1210"/>
+   <bundle id="org.junit" version="4.12.0.v201504281640"/>
+   <bundle id="org.junit.source" version="4.12.0.v201504281640"/>
    <bundle id="org.apache.commons.beanutils" version="1.8.0.v201205091237"/>
    <bundle id="org.apache.commons.beanutils.source" version="1.8.0.v201205091237"/>
    <bundle id="org.apache.commons.codec" version="1.6.0.v201305230611"/>
@@ -103,8 +92,8 @@
    <bundle id="org.apache.commons.exec.source" version="1.1.0.v201301240602"/>
    <bundle id="org.apache.commons.lang" version="2.6.0.v201404270220"/>
    <bundle id="org.apache.commons.lang.source" version="2.6.0.v201205030909"/>
-   <bundle id="org.apache.xmlbeans" version="2.3.0.v201405241900"/>
-   <bundle id="org.apache.xmlbeans.source" version="2.3.0.v201405241900"/>
+   <bundle id="org.apache.xmlbeans" version="2.3.0.v201605172150"/>
+   <bundle id="org.apache.xmlbeans.source" version="2.3.0.v201605172150"/>
    <bundle id="osgi.enterprise" version="4.2.0.v201108120515"/>
    <bundle id="osgi.enterprise.source" version="4.2.0.v201108120515"/>
    <bundle id="org.dom4j" version="1.6.1.v201312101416"/>
@@ -128,7 +117,8 @@
    <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-csv" version="2.4.5"/>
    <bundle id="com.fasterxml.jackson.module.jackson-module-afterburner" version="2.4.5"/>
    <bundle id="com.healthmarketscience.jackcess" version="1.2.9"/>
-   <bundle id="io.reactivex.rxjava" version="1.0.6"/>
+   <bundle id="io.reactivex.rxjava2.rxjava" version="2.0.7"/>
+   <bundle id="org.reactivestreams.reactive-streams" version="1.0.0.release"/>
    <bundle id="com.mysql.jdbc" version="5.1.25"/>
    <bundle id="javax.persistence" version="2.0.5"/>
    <bundle id="org.assertj.core" version="1.7.1"/>
@@ -136,7 +126,7 @@
    <bundle id="org.mockito.mockito-all" version="1.9.5"/>
    <bundle id="org.yaml.snakeyaml" version="1.12.0"/>
    <bundle id="xstream" version="1.4.7"/>
-   <bundle id="org.apache.el" version="7.0.35.v201312011930"/>
+   <bundle id="org.apache.el" version="7.0.56.v201412180755"/>
    <bundle id="javax.xml" version="1.3.4.v201005080400"/>
    <bundle id="javax.xml.stream" version="1.0.1.v201004272200" />
    <bundle id="org.semanticweb.owl.owlapi" version="3.4.4" />

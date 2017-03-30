@@ -41,5 +41,4 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 	public B execute(final ServiceProvider context) {
 		return next(context.service(RepositoryContextProvider.class).get(repositoryId));
 	}
-	
 }

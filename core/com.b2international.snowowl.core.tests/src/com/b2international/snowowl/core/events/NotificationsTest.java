@@ -26,8 +26,8 @@ import org.junit.Test;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 
-import rx.Subscriber;
-import rx.Subscription;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 
 /**
  * @since 5.7
@@ -74,24 +74,14 @@ public class NotificationsTest {
 	public void unsubscribe() throws Throwable {
 		final AtomicReference<Throwable> error = new AtomicReference<Throwable>();
 		final CountDownLatch testLatch = new CountDownLatch(1);
-		final Subscription subscription = this.notifications.subscribe(new Subscriber<SystemNotification>() {
-			@Override
-			public void onCompleted() {}
-
-			@Override
-			public void onError(Throwable e) {
-				error.set(e);
-			}
-
-			@Override
-			public void onNext(SystemNotification t) {
-				assertTrue("notified more than once", testLatch.getCount() > 0);
-				testLatch.countDown();				
-			}
-		});
+		final Consumer<SystemNotification> onNext = t -> {
+			assertTrue("notified more than once", testLatch.getCount() > 0);
+			testLatch.countDown();				
+		};
+		final Disposable subscription = this.notifications.subscribe(onNext, error::set);
 		new Event1().publish(bus);
 		testLatch.await();
-		subscription.unsubscribe();
+		subscription.dispose();
 		// register a verifier subscriber that should get the message, but the other should not
 		final CountDownLatch verifierLatch = new CountDownLatch(1);
 		this.notifications.subscribe(notification -> {

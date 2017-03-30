@@ -41,7 +41,8 @@ import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.events.Notifications;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.remotejobs.*;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobNotification;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
@@ -66,11 +67,14 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.reasoner.classification.*;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
+import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSettings;
+import com.b2international.snowowl.snomed.reasoner.classification.GetResultResponse;
+import com.b2international.snowowl.snomed.reasoner.classification.PersistChangesResponse;
+import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerService;
 import com.google.common.io.Closeables;
 
-import rx.Subscription;
+import io.reactivex.disposables.Disposable;
 
 /**
  */
@@ -80,7 +84,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 	
 	private ClassificationRunIndex indexService;
 	private ExecutorService executorService;
-	private Subscription remoteJobSubscription;
+	private Disposable remoteJobSubscription;
 
 	@Resource
 	private SnomedBrowserService browserService;
@@ -237,7 +241,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 	@PreDestroy
 	protected void shutdown() {
 		if (null != remoteJobSubscription) {
-			remoteJobSubscription.unsubscribe();
+			remoteJobSubscription.dispose();
 			remoteJobSubscription = null;
 		}
 

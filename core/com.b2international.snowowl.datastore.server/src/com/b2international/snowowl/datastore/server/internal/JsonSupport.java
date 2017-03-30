@@ -19,6 +19,7 @@ import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolder;
 import com.b2international.snowowl.core.MetadataHolderMixin;
 import com.b2international.snowowl.core.MetadataMixin;
+import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.review.ConceptChangesMixin;
 import com.b2international.snowowl.datastore.server.internal.branch.BranchImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.BranchImplMixin;
@@ -26,7 +27,6 @@ import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchImp
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchImplMixin;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOMainBranchImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOMainBranchImplMixin;
-import com.b2international.snowowl.datastore.server.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.server.internal.branch.InternalBranchMixin;
 import com.b2international.snowowl.datastore.server.internal.branch.MainBranchImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.MainBranchImplMixin;

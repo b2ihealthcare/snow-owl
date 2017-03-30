@@ -47,7 +47,6 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.IBranchPoint;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -78,72 +77,6 @@ public abstract class CDOCommitInfoUtils {
 		});
 	}
 	
-	/**
-	 * Returns with the latest commit info representing the most recent change in repository on a specified branch.
-	 * If there are no changes on the given branch, then the most recent change will be returned from the ancestor
-	 * branch before the branch creation time.
-	 * @param repositoryUuid the unique ID of the repository.
-	 * @param branchPath the branch path.
-	 * @return the commit info representing the most recent change.
-	 */
-	public static CDOCommitInfo getLatestCommitInfo(final IBranchPoint branchPoint) {
-		
-		Preconditions.checkNotNull(branchPoint, "Branch point argument cannot be null.");
-		
-		final ICDOConnectionManager connectionManager = ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
-		final String repositoryUuid = branchPoint.getUuid();
-		final IBranchPath branchPath = branchPoint.getBranchPath();
-		
-		final long timestamp = ApplicationContext.getInstance().getService(ICDOBranchActionManager.class).getLastCommitTime(repositoryUuid, branchPath);
-		final ConsumeAllCommitInfoHandler handler = new ConsumeAllCommitInfoHandler();
-		final CDOCommitInfoQuery query;
-		final Iterable<CDOCommitInfo> $;
-		if (Long.MIN_VALUE == timestamp) {
-
-			//commit does not exist on branch
-			//get the latest commit info from the parent branch before the branch base 
-			final ICDOConnection connection = connectionManager.getByUuid(repositoryUuid);
-			final CDOBranch branch = connection.getBranch(branchPath);
-			final long baseTimestamp = branch.getBase().getTimeStamp();
-			final IBranchPath parentPath = branchPath.getParent();
-			
-			query = new CDOCommitInfoQuery(Collections.singletonMap(repositoryUuid, parentPath)).setEndTime(baseTimestamp).setStartTime(CDOBranchPoint.UNSPECIFIED_DATE);
-			getCommitInfos(query, handler);
-			$ = Collections.<CDOCommitInfo>singleton(Iterables.getLast(handler.getInfos()));
-			
-		} else {
-			
-			query = new CDOCommitInfoQuery(Collections.singletonMap(repositoryUuid, branchPath))
-				.setExcludedCommentsPredicate(Predicates.<String>alwaysTrue())
-				.setExcludedUsersPredicate(Predicates.<String>alwaysTrue())
-				.setEndTime(timestamp)
-				.setStartTime(timestamp);
-			
-			getCommitInfos(query, handler);
-			$ = handler.getInfos();
-			
-		}
-
-		if (1 != Iterables.size($)) {
-			
-			final StringBuilder sb = new StringBuilder();
-			sb.append("Expecting single commit info in '");
-			sb.append(repositoryUuid);
-			sb.append("' on '");
-			sb.append(branchPath.getPath());
-			sb.append("' with timestamp: ");
-			sb.append(timestamp);
-			sb.append(". ");
-			sb.append("Got: ");
-			sb.append(StringUtils.toString(handler.getInfos()));
-			throw new IllegalStateException(sb.toString());
-			
-		}
-		
-		return (CDOCommitInfo) Iterables.getFirst($, 0);
-		
-	}
-
 	/**
 	 * Sugar for getting the UUID from the commit info.
 	 * <br>Same as {@code #getUuid(CDOCommitInfo#getComment())}.
@@ -359,12 +292,9 @@ public abstract class CDOCommitInfoUtils {
 	 */
 	public static final class CDOCommitInfoQuery {
 		
-		private static final Collection<String> EXCLUDED_COMMENTS = 
-				ImmutableSet.<String>of(CDOCommitInfoConstants.INITIALIZER_COMMIT_COMMENT);
-		private static final Collection<String> EXCLUDED_USERS = 
-				ImmutableSet.<String>of(CDOCommitInfoConstants.SYSTEM_USER_ID);
+		public static final Collection<String> EXCLUDED_USERS = 
+				ImmutableSet.of(CDOCommitInfoConstants.SYSTEM_USER_ID);
 		
-		private static final Predicate<String> EXCLUDED_COMMENTS_PREDICATE = Predicates.not(Predicates.in(EXCLUDED_COMMENTS));
 		private static final Predicate<String> EXCLUDED_USERS_PREDICATE = Predicates.not(Predicates.in(EXCLUDED_USERS));
 	
 		private final ConsumeAllCommitInfoHandler delegateHandler;
@@ -373,9 +303,7 @@ public abstract class CDOCommitInfoUtils {
 		private long startTime = CDOBranchPoint.UNSPECIFIED_DATE;
 		private long endTime = CDOBranchPoint.UNSPECIFIED_DATE;
 		private boolean enableGrouping;
-		private boolean removeUuidFromComment = true;
 		private Predicate<ICDOConnection> connectionPredicate = Predicates.alwaysTrue();
-		private Predicate<String> excludedCommentsPredicate = EXCLUDED_COMMENTS_PREDICATE;
 		private Predicate<String> excludedUsersPredicate = EXCLUDED_USERS_PREDICATE;
 		private boolean traverseAncestorBranches;
 		
@@ -409,17 +337,6 @@ public abstract class CDOCommitInfoUtils {
 		/**Enables or disables commit info grouping.*/
 		public CDOCommitInfoQuery setEnableGrouping(final boolean enableGrouping) {
 			this.enableGrouping = enableGrouping;
-			return this;
-		}
-		
-		public CDOCommitInfoQuery setRemoveUuidFromComment(final boolean removeUuidFromComment) {
-			this.removeUuidFromComment = removeUuidFromComment;
-			return this;
-		}
-		
-		/**Sets the excluded comments predicate.*/
-		public CDOCommitInfoQuery setExcludedCommentsPredicate(final Predicate<String> excludedCommentsPredicate) {
-			this.excludedCommentsPredicate = Preconditions.checkNotNull(excludedCommentsPredicate);
 			return this;
 		}
 		
@@ -482,14 +399,8 @@ public abstract class CDOCommitInfoUtils {
 					@Override protected void doApply(final CDOCommitInfo info) {
 						
 						final String userId = info.getUserID();
-						final String comment = info.getComment();
-						
-						if (excludedCommentsPredicate.apply(comment) && excludedUsersPredicate.apply(userId)) {
-							if (removeUuidFromComment) {
-								$[i.getAndIncrement()] = removeUuidFromComment(info);
-							} else {
-								$[i.getAndIncrement()] = info;
-							}
+						if (excludedUsersPredicate.apply(userId)) {
+							$[i.getAndIncrement()] = info;
 						}
 						
 					}
@@ -504,13 +415,11 @@ public abstract class CDOCommitInfoUtils {
 				for (final CDOCommitInfo info : delegateHandler.getInfos()) {
 
 					final String userId = info.getUserID();
-					final String comment = info.getComment();
+					//this should filter out 'logically grouped ones'
+					final CDOCommitInfoWithUuid wrappedInfo = new CDOCommitInfoWithUuid(info);
+					final String uuid = wrappedInfo.getUuid();
 					
-					if (excludedCommentsPredicate.apply(comment) && excludedUsersPredicate.apply(userId)) {
-						//this should filter out 'logically grouped ones'
-						final CDOCommitInfoWithUuid wrappedInfo = new CDOCommitInfoWithUuid(info);
-						final String uuid = wrappedInfo.getUuid();
-						
+					if (excludedUsersPredicate.apply(userId)) {
 						if (unsortedInfos.containsKey(uuid)) {
 							
 							//replace the visited commit info with the current one if the timestamp is smaller.
@@ -523,7 +432,6 @@ public abstract class CDOCommitInfoUtils {
 							unsortedInfos.put(uuid, Pair.<CDOCommitInfo, Long>of(wrappedInfo, wrappedInfo.getTimeStamp()));
 							
 						}
-						
 					}
 					
 				}

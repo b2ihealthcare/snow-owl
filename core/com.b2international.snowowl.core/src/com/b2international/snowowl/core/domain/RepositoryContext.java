@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.events.Request;
@@ -24,7 +25,7 @@ import com.b2international.snowowl.core.events.Request;
  *
  * @since 4.5
  */
-public interface RepositoryContext extends ServiceProvider {
+public interface RepositoryContext extends ServiceProvider, RepositoryInfo {
 
 	/**
 	 * Returns the current application configuration object.
@@ -32,12 +33,5 @@ public interface RepositoryContext extends ServiceProvider {
 	 * @return
 	 */
 	SnowOwlConfiguration config();
-
-	/**
-	 * Returns the unique repository identifier.
-	 * 
-	 * @return
-	 */
-	String id();
 
 }

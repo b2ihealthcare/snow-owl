@@ -116,7 +116,11 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.put("commitComment", "Created new concept")
 				.build();
 
-		createComponent(branchPath, SnomedComponentType.CONCEPT, requestBody).statusCode(201);
+		final String locationHeader = createComponent(branchPath, SnomedComponentType.CONCEPT, requestBody).statusCode(201).extract().header("Location");
+		final String conceptId = lastPathSegment(locationHeader);
+		final SnomedConcept concept = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "statedAncestors(direct:true),ancestors(direct:true)").extract().as(SnomedConcept.class);
+		assertEquals(1, concept.getStatedAncestors().getTotal());
+		assertEquals(0, concept.getAncestors().getTotal());
 	}
 
 	@Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.concurrent.CountDownLatch;
 import org.databene.contiperf.PerfTest;
 import org.databene.contiperf.Required;
 import org.databene.contiperf.junit.ContiPerfRule;
+import org.databene.contiperf.junit.ContiPerfRuleExt;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -29,7 +30,7 @@ import org.junit.Test;
 public class EventBusSendPerformanceTest extends AbstractEventBusTest {
 
 	@Rule
-	public ContiPerfRule rule = new ContiPerfRule();
+	public ContiPerfRule rule = new ContiPerfRuleExt();
 
 	@Test
 	@PerfTest(invocations = 10000, threads = 20)

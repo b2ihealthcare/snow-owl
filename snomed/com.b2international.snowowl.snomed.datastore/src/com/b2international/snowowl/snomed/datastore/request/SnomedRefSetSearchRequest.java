@@ -69,8 +69,9 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 			queryBuilder.must(referencedComponentTypes(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, Integer.class)));
 		}
 		
-		final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
+		final Query<SnomedConceptDocument> query = select(SnomedConceptDocument.class)
 				.where(queryBuilder.build())
+				.sortBy(sortBy())
 				.offset(offset())
 				.limit(limit())
 				.build();

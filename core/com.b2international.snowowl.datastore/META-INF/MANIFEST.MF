@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Terminology Datastore
 Bundle-SymbolicName: com.b2international.snowowl.datastore;singleton:=true
-Bundle-Version: 5.7.4
+Bundle-Version: 5.8.0.qualifier
 Bundle-Activator: com.b2international.snowowl.datastore.DatastoreActivator
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
@@ -14,7 +14,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.eclipse.net4j.tcp;bundle-version="[4.1.0,4.1.1)";visibility:=reexport,
  org.eclipse.core.resources;bundle-version="[3.7.0,4.0.0)",
  org.eclipse.core.expressions;bundle-version="3.4.400",
- org.eclipse.xtext.util;bundle-version="[2.8.0,2.9.0)",
+ org.eclipse.xtext.util;bundle-version="[2.11.0,2.13.0)",
  org.eclipse.net4j.db.h2;bundle-version="[4.0.100,4.1.0)",
  xstream;bundle-version="1.4.7";visibility:=reexport,
  com.b2international.snowowl.rpc;visibility:=reexport,
@@ -44,6 +44,7 @@ Export-Package: com.b2international.snowowl.datastore,
  com.b2international.snowowl.datastore.importer,
  com.b2international.snowowl.datastore.index,
  com.b2international.snowowl.datastore.index.diff,
+ com.b2international.snowowl.datastore.internal.branch,
  com.b2international.snowowl.datastore.internal.file,
  com.b2international.snowowl.datastore.lock,
  com.b2international.snowowl.datastore.net4j,
@@ -54,6 +55,8 @@ Export-Package: com.b2international.snowowl.datastore,
  com.b2international.snowowl.datastore.replicate,
  com.b2international.snowowl.datastore.request,
  com.b2international.snowowl.datastore.request.job,
+ com.b2international.snowowl.datastore.request.repository,
+ com.b2international.snowowl.datastore.request.system,
  com.b2international.snowowl.datastore.request.version,
  com.b2international.snowowl.datastore.review,
  com.b2international.snowowl.datastore.serviceconfig,

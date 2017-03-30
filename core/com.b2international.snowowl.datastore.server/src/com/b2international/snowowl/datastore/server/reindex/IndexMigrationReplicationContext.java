@@ -46,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.DelegatingTransaction;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator.SkipBranchException;
@@ -87,6 +88,11 @@ class IndexMigrationReplicationContext implements CDOReplicationContext {
 
 	@Override
 	public void handleCommitInfo(final CDOCommitInfo commitInfo) {
+		// skip commits by CDO_SYSTEM user
+		if (CDOCommitInfoUtils.CDOCommitInfoQuery.EXCLUDED_USERS.contains(commitInfo.getUserID())) {
+			return;
+		}
+		
 		if (failedCommitTimestamp != -1) {
 			skippedCommits++;
 			return;

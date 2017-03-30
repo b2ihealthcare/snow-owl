@@ -1,4 +1,17 @@
 /**
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *  *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.b2international.snowowl.snomed.ecl.ecl.util;
 
@@ -74,6 +87,11 @@ public class EclAdapterFactory extends AdapterFactoryImpl
   protected EclSwitch<Adapter> modelSwitch =
     new EclSwitch<Adapter>()
     {
+      @Override
+      public Adapter caseScript(Script object)
+      {
+        return createScriptAdapter();
+      }
       @Override
       public Adapter caseExpressionConstraint(ExpressionConstraint object)
       {
@@ -305,6 +323,21 @@ public class EclAdapterFactory extends AdapterFactoryImpl
     return modelSwitch.doSwitch((EObject)target);
   }
 
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.Script <em>Script</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.Script
+   * @generated
+   */
+  public Adapter createScriptAdapter()
+  {
+    return null;
+  }
 
   /**
    * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint <em>Expression Constraint</em>}'.

@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import com.b2international.snowowl.datastore.request.repository.RepositoryGetRequestBuilder;
+import com.b2international.snowowl.datastore.request.repository.RepositorySearchRequestBuilder;
+import com.b2international.snowowl.datastore.request.system.ServerInfoGetRequestBuilder;
+
 /**
  * The central class of Snow Owl's terminology independent Java APIs.
  * @since 4.5
@@ -54,6 +58,18 @@ public final class RepositoryRequests {
 	
 	public static RepositoryBulkReadRequestBuilder prepareBulkRead() {
 		return new RepositoryBulkReadRequestBuilder();
+	}
+	
+	public static RepositorySearchRequestBuilder prepareSearch() {
+		return new RepositorySearchRequestBuilder();
+	}
+	
+	public static RepositoryGetRequestBuilder prepareGet(String repositoryId) {
+		return new RepositoryGetRequestBuilder(repositoryId);
+	}
+	
+	public static ServerInfoGetRequestBuilder prepareGetServerInfo() {
+		return new ServerInfoGetRequestBuilder();
 	}
 
 }

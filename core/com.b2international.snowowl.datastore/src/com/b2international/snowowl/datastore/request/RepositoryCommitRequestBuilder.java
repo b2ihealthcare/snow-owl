@@ -29,7 +29,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
  * 
  * @since 4.5
  */
-public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<RepositoryCommitRequestBuilder, BranchContext, CommitResult> {
+public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<RepositoryCommitRequestBuilder, BranchContext, CommitResult> implements AllowedHealthStates {
 
 	private String userId;
 	private String commitComment = "";
@@ -81,10 +81,13 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 	public AsyncRequest<CommitResult> build(String repositoryId, String branch) {
 		return new AsyncRequest<>(
 			new RepositoryRequest<>(repositoryId,
-				new BranchRequest<>(branch,
-					new RevisionIndexReadRequest<CommitResult>(
-						build()
-					)
+				new HealthCheckingRequest<>(
+					new BranchRequest<>(branch,
+						new RevisionIndexReadRequest<CommitResult>(
+							build()
+						)
+					),
+					allowedHealthstates()
 				)
 			)
 		);

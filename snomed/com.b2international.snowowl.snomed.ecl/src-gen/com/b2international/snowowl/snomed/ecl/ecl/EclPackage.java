@@ -1,4 +1,17 @@
 /**
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *  *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.b2international.snowowl.snomed.ecl.ecl;
 
@@ -57,6 +70,34 @@ public interface EclPackage extends EPackage
   EclPackage eINSTANCE = com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl.init();
 
   /**
+   * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ScriptImpl <em>Script</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.ScriptImpl
+   * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getScript()
+   * @generated
+   */
+  int SCRIPT = 0;
+
+  /**
+   * The feature id for the '<em><b>Constraint</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SCRIPT__CONSTRAINT = 0;
+
+  /**
+   * The number of structural features of the '<em>Script</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SCRIPT_FEATURE_COUNT = 1;
+
+  /**
    * The meta object id for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ExpressionConstraintImpl <em>Expression Constraint</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -64,7 +105,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getExpressionConstraint()
    * @generated
    */
-  int EXPRESSION_CONSTRAINT = 0;
+  int EXPRESSION_CONSTRAINT = 1;
 
   /**
    * The number of structural features of the '<em>Expression Constraint</em>' class.
@@ -83,7 +124,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getChildOf()
    * @generated
    */
-  int CHILD_OF = 1;
+  int CHILD_OF = 2;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -111,7 +152,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDescendantOf()
    * @generated
    */
-  int DESCENDANT_OF = 2;
+  int DESCENDANT_OF = 3;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -139,7 +180,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDescendantOrSelfOf()
    * @generated
    */
-  int DESCENDANT_OR_SELF_OF = 3;
+  int DESCENDANT_OR_SELF_OF = 4;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -167,7 +208,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getParentOf()
    * @generated
    */
-  int PARENT_OF = 4;
+  int PARENT_OF = 5;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -195,7 +236,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAncestorOf()
    * @generated
    */
-  int ANCESTOR_OF = 5;
+  int ANCESTOR_OF = 6;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -223,7 +264,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAncestorOrSelfOf()
    * @generated
    */
-  int ANCESTOR_OR_SELF_OF = 6;
+  int ANCESTOR_OR_SELF_OF = 7;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -251,7 +292,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getMemberOf()
    * @generated
    */
-  int MEMBER_OF = 7;
+  int MEMBER_OF = 8;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -279,7 +320,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getConceptReference()
    * @generated
    */
-  int CONCEPT_REFERENCE = 8;
+  int CONCEPT_REFERENCE = 9;
 
   /**
    * The feature id for the '<em><b>Id</b></em>' attribute.
@@ -316,7 +357,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAny()
    * @generated
    */
-  int ANY = 9;
+  int ANY = 10;
 
   /**
    * The number of structural features of the '<em>Any</em>' class.
@@ -335,7 +376,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getRefinement()
    * @generated
    */
-  int REFINEMENT = 10;
+  int REFINEMENT = 11;
 
   /**
    * The number of structural features of the '<em>Refinement</em>' class.
@@ -354,7 +395,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getNestedRefinement()
    * @generated
    */
-  int NESTED_REFINEMENT = 11;
+  int NESTED_REFINEMENT = 12;
 
   /**
    * The feature id for the '<em><b>Nested</b></em>' containment reference.
@@ -382,7 +423,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeGroup()
    * @generated
    */
-  int ATTRIBUTE_GROUP = 12;
+  int ATTRIBUTE_GROUP = 13;
 
   /**
    * The feature id for the '<em><b>Cardinality</b></em>' containment reference.
@@ -419,7 +460,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeConstraint()
    * @generated
    */
-  int ATTRIBUTE_CONSTRAINT = 13;
+  int ATTRIBUTE_CONSTRAINT = 14;
 
   /**
    * The feature id for the '<em><b>Cardinality</b></em>' containment reference.
@@ -474,7 +515,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getCardinality()
    * @generated
    */
-  int CARDINALITY = 14;
+  int CARDINALITY = 15;
 
   /**
    * The feature id for the '<em><b>Min</b></em>' attribute.
@@ -511,7 +552,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getComparison()
    * @generated
    */
-  int COMPARISON = 15;
+  int COMPARISON = 16;
 
   /**
    * The number of structural features of the '<em>Comparison</em>' class.
@@ -530,7 +571,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeComparison()
    * @generated
    */
-  int ATTRIBUTE_COMPARISON = 16;
+  int ATTRIBUTE_COMPARISON = 17;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -558,7 +599,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDataTypeComparison()
    * @generated
    */
-  int DATA_TYPE_COMPARISON = 17;
+  int DATA_TYPE_COMPARISON = 18;
 
   /**
    * The number of structural features of the '<em>Data Type Comparison</em>' class.
@@ -577,7 +618,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeValueEquals()
    * @generated
    */
-  int ATTRIBUTE_VALUE_EQUALS = 18;
+  int ATTRIBUTE_VALUE_EQUALS = 19;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -605,7 +646,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAttributeValueNotEquals()
    * @generated
    */
-  int ATTRIBUTE_VALUE_NOT_EQUALS = 19;
+  int ATTRIBUTE_VALUE_NOT_EQUALS = 20;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -633,7 +674,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getStringValueEquals()
    * @generated
    */
-  int STRING_VALUE_EQUALS = 20;
+  int STRING_VALUE_EQUALS = 21;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -661,7 +702,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getStringValueNotEquals()
    * @generated
    */
-  int STRING_VALUE_NOT_EQUALS = 21;
+  int STRING_VALUE_NOT_EQUALS = 22;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -689,7 +730,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueEquals()
    * @generated
    */
-  int INTEGER_VALUE_EQUALS = 22;
+  int INTEGER_VALUE_EQUALS = 23;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -717,7 +758,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueNotEquals()
    * @generated
    */
-  int INTEGER_VALUE_NOT_EQUALS = 23;
+  int INTEGER_VALUE_NOT_EQUALS = 24;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -745,7 +786,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueGreaterThan()
    * @generated
    */
-  int INTEGER_VALUE_GREATER_THAN = 24;
+  int INTEGER_VALUE_GREATER_THAN = 25;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -773,7 +814,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueLessThan()
    * @generated
    */
-  int INTEGER_VALUE_LESS_THAN = 25;
+  int INTEGER_VALUE_LESS_THAN = 26;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -801,7 +842,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueGreaterThanEquals()
    * @generated
    */
-  int INTEGER_VALUE_GREATER_THAN_EQUALS = 26;
+  int INTEGER_VALUE_GREATER_THAN_EQUALS = 27;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -829,7 +870,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getIntegerValueLessThanEquals()
    * @generated
    */
-  int INTEGER_VALUE_LESS_THAN_EQUALS = 27;
+  int INTEGER_VALUE_LESS_THAN_EQUALS = 28;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -857,7 +898,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueEquals()
    * @generated
    */
-  int DECIMAL_VALUE_EQUALS = 28;
+  int DECIMAL_VALUE_EQUALS = 29;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -885,7 +926,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueNotEquals()
    * @generated
    */
-  int DECIMAL_VALUE_NOT_EQUALS = 29;
+  int DECIMAL_VALUE_NOT_EQUALS = 30;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -913,7 +954,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueGreaterThan()
    * @generated
    */
-  int DECIMAL_VALUE_GREATER_THAN = 30;
+  int DECIMAL_VALUE_GREATER_THAN = 31;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -941,7 +982,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueLessThan()
    * @generated
    */
-  int DECIMAL_VALUE_LESS_THAN = 31;
+  int DECIMAL_VALUE_LESS_THAN = 32;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -969,7 +1010,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueGreaterThanEquals()
    * @generated
    */
-  int DECIMAL_VALUE_GREATER_THAN_EQUALS = 32;
+  int DECIMAL_VALUE_GREATER_THAN_EQUALS = 33;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -997,7 +1038,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDecimalValueLessThanEquals()
    * @generated
    */
-  int DECIMAL_VALUE_LESS_THAN_EQUALS = 33;
+  int DECIMAL_VALUE_LESS_THAN_EQUALS = 34;
 
   /**
    * The feature id for the '<em><b>Value</b></em>' attribute.
@@ -1025,7 +1066,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getNestedExpression()
    * @generated
    */
-  int NESTED_EXPRESSION = 34;
+  int NESTED_EXPRESSION = 35;
 
   /**
    * The feature id for the '<em><b>Nested</b></em>' containment reference.
@@ -1053,7 +1094,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getOrExpressionConstraint()
    * @generated
    */
-  int OR_EXPRESSION_CONSTRAINT = 35;
+  int OR_EXPRESSION_CONSTRAINT = 36;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -1090,7 +1131,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAndExpressionConstraint()
    * @generated
    */
-  int AND_EXPRESSION_CONSTRAINT = 36;
+  int AND_EXPRESSION_CONSTRAINT = 37;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -1127,7 +1168,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getExclusionExpressionConstraint()
    * @generated
    */
-  int EXCLUSION_EXPRESSION_CONSTRAINT = 37;
+  int EXCLUSION_EXPRESSION_CONSTRAINT = 38;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -1164,7 +1205,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getRefinedExpressionConstraint()
    * @generated
    */
-  int REFINED_EXPRESSION_CONSTRAINT = 38;
+  int REFINED_EXPRESSION_CONSTRAINT = 39;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -1201,7 +1242,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getDottedExpressionConstraint()
    * @generated
    */
-  int DOTTED_EXPRESSION_CONSTRAINT = 39;
+  int DOTTED_EXPRESSION_CONSTRAINT = 40;
 
   /**
    * The feature id for the '<em><b>Constraint</b></em>' containment reference.
@@ -1238,7 +1279,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getOrRefinement()
    * @generated
    */
-  int OR_REFINEMENT = 40;
+  int OR_REFINEMENT = 41;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -1275,7 +1316,7 @@ public interface EclPackage extends EPackage
    * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getAndRefinement()
    * @generated
    */
-  int AND_REFINEMENT = 41;
+  int AND_REFINEMENT = 42;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -1304,6 +1345,27 @@ public interface EclPackage extends EPackage
    */
   int AND_REFINEMENT_FEATURE_COUNT = REFINEMENT_FEATURE_COUNT + 2;
 
+
+  /**
+   * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.Script <em>Script</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Script</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.Script
+   * @generated
+   */
+  EClass getScript();
+
+  /**
+   * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.ecl.ecl.Script#getConstraint <em>Constraint</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Constraint</em>'.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.Script#getConstraint()
+   * @see #getScript()
+   * @generated
+   */
+  EReference getScript_Constraint();
 
   /**
    * Returns the meta object for class '{@link com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint <em>Expression Constraint</em>}'.
@@ -2276,6 +2338,24 @@ public interface EclPackage extends EPackage
    */
   interface Literals
   {
+    /**
+     * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ScriptImpl <em>Script</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.ScriptImpl
+     * @see com.b2international.snowowl.snomed.ecl.ecl.impl.EclPackageImpl#getScript()
+     * @generated
+     */
+    EClass SCRIPT = eINSTANCE.getScript();
+
+    /**
+     * The meta object literal for the '<em><b>Constraint</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference SCRIPT__CONSTRAINT = eINSTANCE.getScript_Constraint();
+
     /**
      * The meta object literal for the '{@link com.b2international.snowowl.snomed.ecl.ecl.impl.ExpressionConstraintImpl <em>Expression Constraint</em>}' class.
      * <!-- begin-user-doc -->

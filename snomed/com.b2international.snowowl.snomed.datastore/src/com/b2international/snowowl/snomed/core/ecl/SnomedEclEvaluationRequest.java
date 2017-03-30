@@ -38,6 +38,7 @@ import org.eclipse.xtext.util.PolymorphicDispatcher;
 
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.MatchNone;
 import com.b2international.index.query.Predicate;
 import com.b2international.index.query.StringPredicate;
 import com.b2international.index.query.StringSetPredicate;
@@ -384,6 +385,13 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 */
 	protected Promise<Expression> eval(BranchContext context, final NestedExpression nested) {
 		return evaluate(context, nested.getNested());
+	}
+	
+	/**
+	 * Handles cases when the expression constraint is not available at all. For instance, script is empty.
+	 */
+	protected Promise<Expression> eval(BranchContext context, final Void empty) {
+		return Promise.immediate(MatchNone.INSTANCE);
 	}
 	
 	/*package*/ static <T> Promise<T> throwUnsupported(EObject eObject) {

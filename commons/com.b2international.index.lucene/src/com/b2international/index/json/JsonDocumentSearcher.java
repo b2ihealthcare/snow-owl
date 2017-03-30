@@ -17,6 +17,7 @@ package com.b2international.index.json;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -25,7 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hbase.util.OrderedBytes;
+import org.apache.hadoop.hbase.util.SimplePositionedMutableByteRange;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.search.FieldComparator;
+import org.apache.lucene.search.FieldComparatorSource;
+import org.apache.lucene.search.FieldDoc;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.ScoreDoc;
@@ -33,6 +39,7 @@ import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldDocs;
+import org.apache.lucene.util.BytesRef;
 import org.slf4j.Logger;
 
 import com.b2international.index.Hits;
@@ -42,6 +49,7 @@ import com.b2international.index.LuceneIndexAdmin;
 import com.b2international.index.Searcher;
 import com.b2international.index.WithId;
 import com.b2international.index.WithScore;
+import com.b2international.index.lucene.DelegatingFieldComparator;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.LuceneQueryBuilder;
@@ -56,10 +64,10 @@ import com.b2international.index.util.NumericClassUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 
 /**
@@ -107,62 +115,7 @@ public class JsonDocumentSearcher implements Searcher {
 
 	@Override
 	public <T> Hits<T> search(Query<T> query) throws IOException {
-		if (query.getFields() == null || query.getFields().isEmpty()) {
-			return searchDefault(query);
-		}
-		
-		if (!SortBy.NONE.equals(query.getSortBy())) {
-			throw new IllegalArgumentException("Queries with field selection can't be sorted: " + query.getSortBy()); 
-		}
-		
-		return searchByCollector(query);
-	}
-
-	private <T> Hits<T> searchByCollector(Query<T> query) throws IOException {
 		final QueryProfiler profiler = new QueryProfiler(query, slowLogConfig);
-		try {
-			profiler.start(Phase.QUERY);
-			final Class<T> select = query.getSelect();
-			final DocumentMapping mapping = getDocumentMapping(query);
-			final org.apache.lucene.search.Query lq = toLuceneQuery(mapping, query);
-			
-			final int offset = query.getOffset();
-			int limit = query.getLimit();
-			
-			if (limit < 1) {
-				final int totalHits = searcher.count(lq);
-				return new Hits<>(Collections.emptyList(), offset, limit, totalHits);
-			} else {
-				if (limit == Integer.MAX_VALUE || limit == Integer.MAX_VALUE - 1 /*SearchRequest max value*/) {
-					// if all values required, or clients expect all values to be returned reduce limit to total hits
-					limit = searcher.count(lq);
-				} 
-				int maxDoc = searcher.getIndexReader().maxDoc();
-				if (maxDoc <= 0 || limit < 1) {
-					return new Hits<>(Collections.emptyList(), offset, limit, 0);
-				} else {
-					final Set<String> fields = query.getFields();
-					final List<Map<String, Object>> rawHits = searcher.search(lq, new DocValueCollectorManager(fields, mapping));
-					final List<T> hits = FluentIterable.from(rawHits)
-							.transform(new Function<Map<String, Object>, T>() {
-								@Override
-								public T apply(Map<String, Object> input) {
-									return mapper.convertValue(input, select);
-								}
-							}).toList();
-					return new Hits<>(hits, offset, limit, rawHits.size());
-				}
-			}
-		} finally {
-			profiler.end(Phase.QUERY);
-			profiler.log(log);
-		}
-	}
-
-	private <T> Hits<T> searchDefault(Query<T> query) throws IOException {
-		final QueryProfiler profiler = new QueryProfiler(query, slowLogConfig);
-		final Class<T> select = query.getSelect();
-		final Class<?> from = query.getFrom();
 		final DocumentMapping mapping = getDocumentMapping(query);
 		final org.apache.lucene.search.Query lq = toLuceneQuery(mapping, query);
 		final org.apache.lucene.search.Sort ls = toLuceneSort(mapping, query);
@@ -198,29 +151,11 @@ public class JsonDocumentSearcher implements Searcher {
 				return new Hits<>(Collections.<T>emptyList(), offset, limit, topDocs.totalHits);
 			} else {
 				profiler.start(Phase.FETCH);
-				
-				// if select is a different type, then use that as JsonView on from, otherwise select all props
-				final ObjectReader reader = select != from ? mapper.reader(select).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) : mapper.reader(select);
-				final ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-				final String[] ids = new String[scoreDocs.length - offset];
-				final byte[][] sources = new byte[scoreDocs.length - offset][];
-				
-				for (int i = offset; i < scoreDocs.length; i++) {
-					final Document doc = searcher.doc(scoreDocs[i].doc);
-					sources[i - offset] = doc.getBinaryValue("_source").bytes;
-					ids[i - offset] = JsonDocumentMapping._id().getValue(doc);
-				}
-				
 				final ImmutableList.Builder<T> matches = ImmutableList.builder();
-				for (int i = offset; i < scoreDocs.length; i++) {
-					final T readValue = reader.readValue(sources[i - offset]);
-					if (readValue instanceof WithId) {
-						((WithId) readValue).set_id(ids[i - offset]);
-					}
-					if (query.isWithScores() && readValue instanceof WithScore) {
-						((WithScore) readValue).setScore(scoreDocs[i].score);
-					}
-					matches.add(readValue);
+				if (query.getFields() != null && !query.getFields().isEmpty()) {
+					fetchFieldDocs(query, mapping, offset, topDocs, matches);
+				} else {
+					fetchScoreDocs(query, mapping, offset, topDocs, matches);
 				}
 				profiler.end(Phase.FETCH);
 				return new Hits<>(matches.build(), offset, limit, topDocs.totalHits);
@@ -230,11 +165,94 @@ public class JsonDocumentSearcher implements Searcher {
 		}
 	}
 
+	private <T> void fetchFieldDocs(Query<T> query, DocumentMapping mapping, int offset, TopFieldDocs topDocs, ImmutableList.Builder<T> matches) {
+		ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+		Set<String> fields = query.getFields();
+		
+		for (int i = offset; i < scoreDocs.length; i++) {
+			FieldDoc fieldDoc = (FieldDoc) scoreDocs[i];
+			ImmutableMap.Builder<String, Object> fieldValues = ImmutableMap.builder();
+			
+			for (int j = 0; j < topDocs.fields.length; j++) {
+				SortField sortField = topDocs.fields[j];
+				String key = sortField.getField();
+				if (fields.contains(key)) {
+					Object value = fieldDoc.fields[j];
+					Field mappingField = mapping.getField(key);
+					Class<?> fieldType = mappingField.getType();
+					
+					if (NumericClassUtils.isFloat(fieldType)) {
+						fieldValues.put(key, (Float) value);  
+					} else if (NumericClassUtils.isLong(fieldType)) {
+						fieldValues.put(key, (Long) value);
+					} else if (NumericClassUtils.isInt(fieldType)) {
+						fieldValues.put(key, (Integer) value);
+					} else if (NumericClassUtils.isShort(fieldType)) {
+						fieldValues.put(key, ((Integer) value).shortValue());
+					} else if (NumericClassUtils.isBigDecimal(fieldType)) {
+						BytesRef bytesRef = (BytesRef) value;
+						SimplePositionedMutableByteRange src = new SimplePositionedMutableByteRange(bytesRef.bytes, bytesRef.offset, bytesRef.length);
+						fieldValues.put(key, OrderedBytes.decodeNumericAsBigDecimal(src));
+					} else if (String.class.isAssignableFrom(fieldType)) {
+						BytesRef bytesRef = (BytesRef) value;
+						fieldValues.put(key, bytesRef.utf8ToString());
+					} else {
+						throw new UnsupportedOperationException("Unhandled docValues for field: " + key + " of type: " + fieldType);
+					}
+				}
+			}
+			
+			Map<String, Object> hit = fieldValues.build();
+			if (!hit.keySet().containsAll(fields)) {
+				throw new IllegalStateException(String.format("Missing fields on partially loaded document: %s", Sets.difference(fields, hit.keySet())));
+			}
+			
+			T readValue = mapper.convertValue(hit, query.getSelect());
+			if (query.isWithScores() && readValue instanceof WithScore) {
+				((WithScore) readValue).setScore(fieldDoc.score);
+			}
+			
+			matches.add(readValue);
+		}
+	}
+
+	private <T> void fetchScoreDocs(Query<T> query, DocumentMapping mapping, int offset, TopFieldDocs topDocs, ImmutableList.Builder<T> matches) throws IOException {
+		ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+		Class<T> select = query.getSelect();
+		Class<?> from = query.getFrom();
+
+		// if select is a different type, then use that as JsonView on from, otherwise select all props
+		final ObjectReader reader = select != from 
+				? mapper.reader(select).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) 
+				: mapper.reader(select);
+		
+		final String[] ids = new String[scoreDocs.length - offset];
+		final byte[][] sources = new byte[scoreDocs.length - offset][];
+		
+		for (int i = offset; i < scoreDocs.length; i++) {
+			Document doc = searcher.doc(scoreDocs[i].doc);
+			sources[i - offset] = doc.getBinaryValue("_source").bytes;
+			ids[i - offset] = JsonDocumentMapping._id().getValue(doc);
+		}
+		
+		for (int i = offset; i < scoreDocs.length; i++) {
+			T readValue = reader.readValue(sources[i - offset]);
+			if (readValue instanceof WithId) {
+				((WithId) readValue).set_id(ids[i - offset]);
+			}
+			if (query.isWithScores() && readValue instanceof WithScore) {
+				((WithScore) readValue).setScore(scoreDocs[i].score);
+			}
+			matches.add(readValue);
+		}
+	}
+
 	private DocumentMapping getDocumentMapping(Query<?> query) {
 		if (query.getParentType() != null) {
 			return mappings.getMapping(query.getParentType()).getNestedMapping(query.getFrom());
+		} else {
+			return mappings.getMapping(query.getFrom());
 		}
-		return mappings.getMapping(query.getFrom());
 	}
 
 	private org.apache.lucene.search.Query toLuceneQuery(DocumentMapping mapping, Query<?> query) {
@@ -244,7 +262,7 @@ public class JsonDocumentSearcher implements Searcher {
 	private org.apache.lucene.search.Sort toLuceneSort(DocumentMapping mapping, Query<?> query) {
 		final SortBy sortBy = query.getSortBy();
 		final List<SortBy> items = newArrayList();
-		
+
 		// Unpack the top level multi-sort if present
 		if (sortBy instanceof MultiSortBy) {
 			items.addAll(((MultiSortBy) sortBy).getItems());
@@ -252,42 +270,72 @@ public class JsonDocumentSearcher implements Searcher {
 			items.add(sortBy);
 		}
 		
+		final Set<String> nonSortedFields = query.getFields() == null ? newHashSet() : newHashSet(query.getFields());
 		final List<SortField> convertedItems = newArrayListWithExpectedSize(items.size());
-		for (final SortBy item : items) {
-			if (SortBy.NONE.equals(item)) {
-				convertedItems.add(SortField.FIELD_DOC);
-			} else if (SortBy.SCORE.equals(item)) {
-				convertedItems.add(SortField.FIELD_SCORE);
-			} else if (item instanceof SortByField) {
-				final SortByField fieldItem = (SortByField) item;
-				final String sortField = fieldItem.getField();
-				final Field mappingField = mapping.getField(sortField);
+		
+		for (final SortByField item : Iterables.filter(items, SortByField.class)) {
+            String field = item.getField();
+            SortBy.Order order = item.getOrder();
+            
+			switch (field) {
+            case SortBy.FIELD_DOC:
+                convertedItems.add(new SortField(null, SortField.Type.DOC, order == SortBy.Order.DESC));
+                break;
+            case SortBy.FIELD_SCORE:
+                // XXX: default order for scores is *descending*
+                convertedItems.add(new SortField(null, SortField.Type.SCORE, order == SortBy.Order.ASC));
+                break;
+            default:
+                convertedItems.add(toLuceneSortField(mapping, field, order == SortBy.Order.DESC));
+                nonSortedFields.remove(field);
+            }
+        }
+		
+		for (String nonSortedField : nonSortedFields) {
+			/* 
+			 * Add custom sort fields to the end that won't change the document order, but result in a 
+			 * field access, for which the value can later be retrieved from FieldDocs.
+			 */
+			SortField luceneSortField = toLuceneSortField(mapping, nonSortedField, false);
+			SortField fetchOnlySortField = new SortField(nonSortedField, new FieldComparatorSource() {
+				@Override
+				public FieldComparator<?> newComparator(String fieldname, int numHits, int sortPos, boolean reversed) throws IOException {
+					return new DelegatingFieldComparator(luceneSortField.getComparator(numHits, sortPos)) {
+						@Override public int compare(int slot1, int slot2) { return 0; }
+						@Override public int compareValues(Object first, Object second) { return 0; }
+					};
+				}
+			});
 
-				if (NumericClassUtils.isCollection(mappingField)) {
-					throw new IllegalArgumentException("Can't sort on field collection: " + sortField);
-				}
-				
-				final Class<?> fieldType = mappingField.getType();
-				final boolean reverse = SortBy.Order.DESC.equals(fieldItem.getOrder());
-				
-				if (NumericClassUtils.isLong(fieldType)) {
-					convertedItems.add(new SortField(sortField, Type.LONG, reverse));
-				} else if (NumericClassUtils.isFloat(fieldType)) {
-					convertedItems.add(new SortField(sortField, Type.FLOAT, reverse));
-				} else if (NumericClassUtils.isInt(fieldType) || NumericClassUtils.isShort(fieldType)) {
-					convertedItems.add(new SortField(sortField, Type.INT, reverse));
-				} else if (NumericClassUtils.isBigDecimal(fieldType) || String.class.isAssignableFrom(fieldType)) {
-					// TODO: STRING mode might be faster, but requires SortedDocValueFields
-					convertedItems.add(new SortField(sortField, Type.STRING_VAL, reverse));
-				} else {
-					throw new IllegalArgumentException("Unsupported sort field type: " + fieldType + " for field: " + sortField);
-				}
-			}
+			convertedItems.add(fetchOnlySortField);
 		}
 		
 		return new org.apache.lucene.search.Sort(Iterables.toArray(convertedItems, SortField.class));
 	}
 	
+	private SortField toLuceneSortField(DocumentMapping mapping, String sortField, boolean reverse) {
+		final Field mappingField = mapping.getField(sortField);
+
+		if (NumericClassUtils.isCollection(mappingField)) {
+			throw new IllegalArgumentException("Can't sort on field collection: " + sortField);
+		}
+		
+		final Class<?> fieldType = mappingField.getType();
+		
+		if (NumericClassUtils.isLong(fieldType)) {
+			return new SortField(sortField, Type.LONG, reverse);
+		} else if (NumericClassUtils.isFloat(fieldType)) {
+			return new SortField(sortField, Type.FLOAT, reverse);
+		} else if (NumericClassUtils.isInt(fieldType) || NumericClassUtils.isShort(fieldType)) {
+			return new SortField(sortField, Type.INT, reverse);
+		} else if (NumericClassUtils.isBigDecimal(fieldType) || String.class.isAssignableFrom(fieldType)) {
+			// TODO: STRING mode might be faster, but requires SortedDocValueFields
+			return new SortField(sortField, Type.STRING_VAL, reverse);
+		} else {
+			throw new IllegalArgumentException("Unsupported sort field type: " + fieldType + " for field: " + sortField);
+		}
+	}
+
 	private int numDocsToRetrieve(final int offset, final int limit) {
 		return Ints.min(offset + limit, searcher.getIndexReader().maxDoc());
 	}

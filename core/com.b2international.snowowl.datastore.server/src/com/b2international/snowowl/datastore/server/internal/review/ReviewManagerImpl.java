@@ -64,7 +64,7 @@ import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import com.google.common.collect.ImmutableMap;
 
-import rx.Subscription;
+import io.reactivex.disposables.Disposable;
 
 /**
  * @since 4.2
@@ -170,7 +170,7 @@ public class ReviewManagerImpl implements ReviewManager {
 	private final RevisionIndex revisionIndex;
 	private final IJobChangeListener jobChangeListener = new ReviewJobChangeListener();
 	private final TimerTask cleanupTask = new CleanupTask();
-	private final Subscription notificationSubscription;
+	private final Disposable notificationSubscription;
 
 	private static final long CLEANUP_INTERVAL = TimeUnit.MINUTES.toMillis(1L);
 
@@ -208,7 +208,7 @@ public class ReviewManagerImpl implements ReviewManager {
 	public void dispose() {
 		if (disposed.compareAndSet(false, true)) {
 			cleanupTask.cancel();
-			notificationSubscription.unsubscribe();
+			notificationSubscription.dispose();
 		}
 	}
 	

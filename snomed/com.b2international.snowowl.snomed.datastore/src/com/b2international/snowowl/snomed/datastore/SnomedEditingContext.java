@@ -358,8 +358,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				
 				final Relationship newRelationship = SnomedFactory.eINSTANCE.createRelationship();
 				
-				String namespace = SnomedIdentifiers.create(sourceRelationship.getId()).getNamespace();
-				newRelationship.setId(generateComponentId(ComponentCategory.RELATIONSHIP, namespace));
+				newRelationship.setId(generateComponentId(newRelationship));
 				
 				newRelationship.setSource(concept);
 				newRelationship.setType(sourceRelationship.getType());
@@ -368,7 +367,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				newRelationship.setCharacteristicType(statedRelationshipConcept);
 				newRelationship.setGroup(sourceRelationship.getGroup());
 				newRelationship.setModifier(sourceRelationship.getModifier());
-				newRelationship.setModule(sourceRelationship.getModule());
+				newRelationship.setModule(getDefaultModuleConcept());
 				
 				//copy all inferred concrete domains
 				//relationships can also have concrete domains
@@ -413,7 +412,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			newConcreteDatatype.setActive(true);
 			newConcreteDatatype.setCharacteristicTypeId(SnomedConstants.Concepts.STATED_RELATIONSHIP);
 			newConcreteDatatype.setLabel(sourceConcreteDataType.getLabel());
-			newConcreteDatatype.setModuleId(sourceConcreteDataType.getModuleId());
+			newConcreteDatatype.setModuleId(getDefaultModuleConcept().getId());
 			newConcreteDatatype.setOperatorComponentId(sourceConcreteDataType.getOperatorComponentId());
 			newConcreteDatatype.setReferencedComponentId(sourceConcreteDataType.getReferencedComponentId());
 			newConcreteDatatype.setRefSet(sourceConcreteDataType.getRefSet());
@@ -1614,7 +1613,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
 	@Override
 	protected String getRootResourceName() {
-		return SnomedCDORootResourceNameProvider.ROOT_RESOURCE_NAME;
+		return SnomedDatastoreActivator.ROOT_RESOURCE_NAME;
 	}
 
 	/**

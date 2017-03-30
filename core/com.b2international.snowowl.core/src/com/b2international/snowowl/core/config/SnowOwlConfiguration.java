@@ -44,7 +44,19 @@ public class SnowOwlConfiguration extends Configuration {
 	private String defaultsDirectory = "resources/defaults";
 	
 	private boolean systemUserNeeded = false;
+	
+	private String description = "You Know, for Terminologies";
 
+	@JsonProperty
+	public String getDescription() {
+		return description;
+	}
+	
+	@JsonProperty
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
 	@JsonProperty
 	public String getConfigurationDirectory() {
 		return configurationDirectory;

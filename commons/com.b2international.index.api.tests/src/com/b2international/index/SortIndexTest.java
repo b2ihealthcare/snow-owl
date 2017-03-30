@@ -15,6 +15,7 @@
  */
 package com.b2international.index;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newTreeSet;
 import static org.junit.Assert.assertArrayEquals;
 
@@ -30,6 +31,7 @@ import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.FieldScoreFunction;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
@@ -37,6 +39,7 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 /**
  * @since 5.4
@@ -298,4 +301,79 @@ public class SortIndexTest extends BaseIndexTest {
 		assertArrayEquals(Iterables.toArray(descendingOrdered, Short.class), Iterables.toArray(descendingFields, Short.class));
 	}
 
+	@Test
+	public void sortDocOrder() throws Exception {
+		final List<String> ordered = newArrayList(); 
+		
+		for (int i = 0; i < 20; i++) {
+			String item = null;
+			while (item == null || ordered.contains(item)) {
+				item = RandomStringUtils.randomAlphabetic(10);
+			}
+			ordered.add(item);
+			final Data data = new Data();
+			data.setField1(item); 
+			indexDocument(Integer.toString(i), data);
+		}
+		
+		final Query<Data> ascendingQuery = Query.select(Data.class)
+				.where(Expressions.matchAll())
+				.sortBy(SortBy.DOC)
+				.build();
+		
+		final Hits<Data> ascendingHits = search(ascendingQuery);
+		final List<String> ascendingFields = FluentIterable.from(ascendingHits).transform(data -> data.getField1()).toList();
+		assertArrayEquals(Iterables.toArray(ordered, String.class), Iterables.toArray(ascendingFields, String.class));
+		
+		final Query<Data> descendingQuery = Query.select(Data.class)
+				.where(Expressions.matchAll())
+				.sortBy(SortBy.field(SortBy.FIELD_DOC, Order.DESC))
+				.build();
+		
+		final Hits<Data> descendingHits = search(descendingQuery);
+		final List<String> descendingOrdered = Lists.reverse(ordered);
+		final List<String> descendingFields = FluentIterable.from(descendingHits).transform(data -> data.getField1()).toList();
+		assertArrayEquals(Iterables.toArray(descendingOrdered, String.class), Iterables.toArray(descendingFields, String.class));
+	}
+	
+	@Test
+	public void sortScore() throws Exception {
+		final List<String> ordered = newArrayList(); 
+		
+		for (int i = 0; i < 20; i++) {
+			String item = null;
+			while (item == null || ordered.contains(item)) {
+				item = RandomStringUtils.randomAlphabetic(10);
+			}
+			ordered.add(item);
+			final Data data = new Data();
+			data.setField1(item); 
+			data.setFloatField(100.0f - i);
+			indexDocument(Integer.toString(i), data);
+		}
+		
+		final Query<Data> descendingQuery = Query.select(Data.class)
+				.where(Expressions.customScore(
+						Expressions.matchAll(), 
+						new FieldScoreFunction("floatField")))
+				.withScores(true)
+				.sortBy(SortBy.SCORE)
+				.build();
+		
+		final Hits<Data> descendingHits = search(descendingQuery);
+		final List<String> descendingFields = FluentIterable.from(descendingHits).transform(data -> data.getField1()).toList();
+		assertArrayEquals(Iterables.toArray(ordered, String.class), Iterables.toArray(descendingFields, String.class));
+		
+		final Query<Data> ascendingQuery = Query.select(Data.class)
+				.where(Expressions.customScore(
+						Expressions.matchAll(),  
+						new FieldScoreFunction("floatField")))
+				.sortBy(SortBy.field(SortBy.FIELD_SCORE, Order.ASC))
+				.build();
+		
+		final Hits<Data> ascendingHits = search(ascendingQuery);
+		final List<String> ascendingOrdered = Lists.reverse(ordered);
+		final List<String> ascendingFields = FluentIterable.from(ascendingHits).transform(data -> data.getField1()).toList();
+		assertArrayEquals(Iterables.toArray(ascendingOrdered, String.class), Iterables.toArray(ascendingFields, String.class));
+	}	
 }

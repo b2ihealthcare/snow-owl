@@ -39,6 +39,7 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.b2international.index.query.SortBy;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,6 +47,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 /**
@@ -107,13 +109,18 @@ public final class RemoteJobTracker implements IDisposableService {
 	}
 	
 	public RemoteJobs search(Expression query, int offset, int limit) {
+		return search(query, ImmutableSet.of(), SortBy.DOC, offset, limit); 
+	}
+	
+	public RemoteJobs search(Expression query, Set<String> fields, SortBy sortBy, int offset, int limit) {
 		return index.read(searcher -> {
 			final Hits<RemoteJobEntry> hits = searcher.search(
-					Query.select(RemoteJobEntry.class)
+					Query.selectPartial(RemoteJobEntry.class, fields)
 						.where(Expressions.builder()
 								.must(RemoteJobEntry.Expressions.deleted(false))
 								.must(query)
 								.build())
+						.sortBy(sortBy)
 						.offset(offset)
 						.limit(limit)
 						.build()

@@ -138,11 +138,11 @@ public final class SnomedValidationContext {
 		}
 
 		if (isValidReleaseFile(configuration.getDescriptionsFile())) {
-			releaseFileValidators.add(new SnomedDescriptionValidator(configuration, this));
+			releaseFileValidators.add(new SnomedDescriptionValidator(configuration, this, configuration.getDescriptionsFile()));
 		}
 
 		if (isValidReleaseFile(configuration.getTextDefinitionFile())) {
-			releaseFileValidators.add(new SnomedDescriptionValidator(configuration, this));
+			releaseFileValidators.add(new SnomedDescriptionValidator(configuration, this, configuration.getTextDefinitionFile()));
 		}
 
 		if (isValidReleaseFile(configuration.getRelationshipsFile())) {

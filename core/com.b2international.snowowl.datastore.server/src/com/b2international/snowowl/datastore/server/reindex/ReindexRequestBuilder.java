@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.reindex;
 
+import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -41,4 +42,8 @@ public final class ReindexRequestBuilder extends BaseRequestBuilder<ReindexReque
 		return req;
 	}
 
+	@Override
+	public RepositoryInfo.Health[] allowedHealthstates() {
+		return new RepositoryInfo.Health[] { RepositoryInfo.Health.RED }; 
+	}
 }

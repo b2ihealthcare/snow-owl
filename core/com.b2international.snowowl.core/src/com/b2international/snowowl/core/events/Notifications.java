@@ -15,36 +15,62 @@
  */
 package com.b2international.snowowl.core.events;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.reactivestreams.Subscriber;
+
+import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 
-import rx.Observable;
+import io.reactivex.Flowable;
+import io.reactivex.processors.PublishProcessor;
 
 /**
  * @since 5.7
  */
-public final class Notifications extends Observable<SystemNotification> {
+public final class Notifications extends Flowable<SystemNotification> implements IDisposableService, IHandler<IMessage> {
+
+	private final IEventBus bus;
+	private final ClassLoader classLoader;
+	private final AtomicBoolean disposed = new AtomicBoolean(false);
+	private final PublishProcessor<SystemNotification> processor;
 
 	public Notifications(IEventBus bus, ClassLoader classLoader) {
-		super(subscriber -> {
-			final IHandler<IMessage> handler = new IHandler<IMessage>() {
-				@Override
-				public void handle(IMessage message) {
-					try {
-						if (!subscriber.isUnsubscribed()) {
-							final SystemNotification notification = message.body(SystemNotification.class, classLoader);
-							subscriber.onNext(notification);
-						} else {
-							bus.unregisterHandler(SystemNotification.ADDRESS, this);
-						}
-					} catch (Throwable e) {
-						subscriber.onError(e);
-					}
-				}
-			};
-			bus.registerHandler(SystemNotification.ADDRESS, handler);
-		});
+		super();
+		this.bus = bus;
+		this.classLoader = classLoader;
+		this.processor = PublishProcessor.create();
+		this.bus.registerHandler(SystemNotification.ADDRESS, this);	
+	}
+	
+	@Override
+	public void handle(IMessage message) {
+		try {
+			final SystemNotification notification = message.body(SystemNotification.class, classLoader);
+			processor.onNext(notification);
+		} catch (Throwable e) {
+			processor.onError(e);
+		}
+	}
+
+	@Override
+	protected void subscribeActual(Subscriber<? super SystemNotification> subscriber) {
+		this.processor.subscribe(subscriber);
+	}
+	
+	@Override
+	public boolean isDisposed() {
+		return disposed.get();
+	}
+	
+	@Override
+	public void dispose() {
+		if (disposed.compareAndSet(false, true)) {
+			processor.onComplete();
+			bus.unregisterHandler(SystemNotification.ADDRESS, this);
+		}
 	}
 
 }

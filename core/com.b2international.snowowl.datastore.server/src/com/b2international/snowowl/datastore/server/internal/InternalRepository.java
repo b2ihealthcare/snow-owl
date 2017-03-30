@@ -47,5 +47,8 @@ public interface InternalRepository extends Repository {
 	long getBaseTimestamp(CDOBranch branch);
 
 	long getHeadTimestamp(CDOBranch branch);
+	
+	void setHealth(Health health, String diagnosis);
 
+	void checkHealth();
 }

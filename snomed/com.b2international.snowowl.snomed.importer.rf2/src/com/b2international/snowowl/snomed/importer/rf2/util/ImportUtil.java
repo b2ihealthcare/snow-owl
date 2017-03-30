@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -66,10 +68,10 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
@@ -115,7 +117,6 @@ import com.b2international.snowowl.snomed.importer.rf2.validation.SnomedValidati
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
@@ -140,7 +141,7 @@ public final class ImportUtil {
 		try (SnomedImportContext context = new SnomedImportContext(getIndex())) {
 			return doImportInternal(context, requestingUserId, configuration, monitor); 
 		} catch (Exception e) {
-			throw new ImportException(e);
+			throw new ImportException("Failed to import RF2 release.", e);
 		}
 	}
 	
@@ -183,7 +184,7 @@ public final class ImportUtil {
 		ApiValidation.checkInput(codeSystem);
 		
 		final ImportConfiguration config = new ImportConfiguration(branchPath.getPath());
-		config.setCodeSystem(codeSystem);
+		config.setCodeSystemShortName(codeSystem.getShortName());
 		config.setVersion(contentSubType);
 		config.setCreateVersions(shouldCreateVersions);
 		config.setArchiveFile(releaseArchive);
@@ -216,7 +217,7 @@ public final class ImportUtil {
 			config.setStatedRelationshipsFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, STATED_RELATIONSHIP, contentSubType)));
 			config.setTextDefinitionFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, TEXT_DEFINITION, contentSubType)));
 		} catch (IOException e) {
-			throw new ImportException(e);
+			throw new ImportException("Failed to extract contents of release archive.", e);
 		}
 
 		return doImport(userId, config, monitor);
@@ -271,7 +272,38 @@ public final class ImportUtil {
 	private SnomedImportResult doImportInternal(final SnomedImportContext context, final String requestingUserId, final ImportConfiguration configuration, final IProgressMonitor monitor) {
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Importing release files...", 17);
 		final SnomedImportResult result = new SnomedImportResult();
-		final IBranchPath branchPath = BranchPathUtils.createPath(configuration.getBranchPath());
+		
+		CodeSystemEntry codeSystem = CodeSystemRequests.prepareGetCodeSystem(configuration.getCodeSystemShortName())
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.execute(getEventBus())
+			.getSync();
+		
+		IBranchPath codeSystemPath = BranchPathUtils.createPath(codeSystem.getBranchPath());
+		String importPath = configuration.getBranchPath();
+		final IBranchPath branchPath;
+		
+		if (importPath.startsWith(IBranchPath.MAIN_BRANCH)) {
+			IBranchPath candidate = BranchPathUtils.createPath(importPath);
+			Iterator<IBranchPath> iterator = BranchPathUtils.bottomToTopIterator(candidate);
+			boolean found = false;
+			
+			while (iterator.hasNext()) {
+				candidate = iterator.next();
+				if (codeSystemPath.equals(candidate)) {
+					found = true;
+					break;
+				}
+			}
+			
+			if (!found) {
+				throw new ImportException("Import path %s is not valid for code system %s.", importPath, configuration.getCodeSystemShortName());
+			}
+			
+			branchPath = BranchPathUtils.createPath(importPath); // importPath is absolute
+		} else {
+			branchPath = BranchPathUtils.createPath(codeSystemPath, importPath); // importPath is relative to the code system's work branch
+		}
+		
 		LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import started from RF2 release format.");
 		
 		final RepositoryState repositoryState = getIndex().read(configuration.getBranchPath(), new RevisionIndexRead<RepositoryState>() {
@@ -286,8 +318,6 @@ public final class ImportUtil {
 			return result;
 		}
 		
-		createCodeSystemIfNotExists(configuration.getCodeSystem(), requestingUserId);
-		
 		final Set<URL> patchedRefSetURLs = Sets.newHashSet(configuration.getRefSetUrls());
 		final Set<String> patchedExcludedRefSetIDs = Sets.newHashSet(configuration.getExcludedRefSetIds());
 		final List<Importer> importers = Lists.newArrayList();
@@ -299,8 +329,7 @@ public final class ImportUtil {
 		context.setStagingDirectory(stagingDirectoryRoot);
 		context.setContentSubType(configuration.getVersion());
 		context.setIgnoredRefSetIds(patchedExcludedRefSetIDs);
-		context.setCodeSystemShortName(configuration.getCodeSystem().getShortName());
-		context.setCodeSystemOID(configuration.getCodeSystem().getOid());
+		context.setCodeSystemShortName(configuration.getCodeSystemShortName());
 
 		try {
 
@@ -397,38 +426,14 @@ public final class ImportUtil {
 				}
 			}, lockContext, IOperationLockManager.NO_TIMEOUT, lockTarget);
 		} catch (final OperationLockException | InterruptedException e) {
-			throw new ImportException(e);
+			throw new ImportException("Caught exception while locking repository for import.", e);
 		} catch (final InvocationTargetException e) {
-			throw new ImportException(e.getCause());
+			throw new ImportException("Failed to import RF2 release.", e.getCause());
 		} finally {
 			features.disable(SnomedDatastoreActivator.REPOSITORY_UUID + ".import");
 		}
 		
 		return resultHolder[0];
-	}
-	
-	private void createCodeSystemIfNotExists(final CodeSystem codeSystem, final String userId) {
-		try {
-			CodeSystemRequests
-				.prepareNewCodeSystem()
-				.setBranchPath(codeSystem.getBranchPath())
-				.setName(codeSystem.getName())
-				.setShortName(codeSystem.getShortName())
-				.setLanguage(codeSystem.getPrimaryLanguage())
-				.setLink(codeSystem.getOrganizationLink())
-				.setOid(codeSystem.getOid())
-				.setCitation(codeSystem.getCitation())
-				.setIconPath(codeSystem.getIconPath())
-				.setTerminologyId(codeSystem.getTerminologyId())
-				.setRepositoryUuid(codeSystem.getRepositoryUuid())
-				.setExtensionOf(codeSystem.getExtensionOf())
-				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH, userId, String.format("Created SNOMED CT code system '%s' (OID: %s)",
-					codeSystem.getShortName(), codeSystem.getOid()))
-				.execute(getEventBus())
-				.getSync();
-		} catch (AlreadyExistsException e) {
-			// ignore and continue import
-		}
 	}
 
 	private SnomedImportResult doImportLocked(final String requestingUserId, final ImportConfiguration configuration,
@@ -517,38 +522,32 @@ public final class ImportUtil {
 			@Override
 			public Boolean execute(RevisionSearcher index) throws IOException {
 				final SnomedValidationContext validator = new SnomedValidationContext(index, requestingUserId, configuration, IMPORT_LOGGER, repositoryState);
+				
 				final Set<SnomedValidationDefect> defects = result.getValidationDefects();
 				defects.addAll(validator.validate(subMonitor.newChild(1)));
 				
 				if (!isEmpty(defects)) {
-					// If only header differences exist, continue the import
 					
-					final String message = String.format("Validation encountered %s issue(s).", defects.size());
+					List<String> flattenedDefects = defects.stream()
+						.map( d -> d.getDefects())
+						.flatMap( d -> d.stream())
+						.collect(Collectors.toList());
+					
+					final String message = String.format("Validation encountered %s issue(s).", flattenedDefects.size());
 					LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, message);
-//					
-//					final Map<String, BufferedWriter> defectWriters = newHashMap();
-//					try {
-//						for (SnomedValidationDefect defect : defects) {
-//							final String filePath = defect.getFileName();
-//							final String defectsFile = String.format("d:/%s_%s_defects.txt", configuration.getArchiveFile().getName(), filePath);
-//							if (!defectWriters.containsKey(defectsFile)) {
-//								defectWriters.put(defectsFile, Files.newWriter(new File(defectsFile), Charsets.UTF_8));
-//							}
-//							defect.writeTo(defectWriters.get(defectsFile));
-//						}
-//					} finally {
-//						for (BufferedWriter writer : defectWriters.values()) {
-//							writer.close();
-//						}
-//					}
 					
-					return !Iterables.tryFind(defects, new Predicate<SnomedValidationDefect>() {
-						@Override
-						public boolean apply(SnomedValidationDefect input) {
-							return input.getDefectType().isCritical();
-						}
-					}).isPresent();
+					if (flattenedDefects.size() > 100) {
+						LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "Logging the first hundred errors...");
+					}
+					
+					flattenedDefects
+						.stream()
+						.limit(100) // FIXME only log the first 100 for now
+						.forEach( d -> LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, d));
+					
+					return defects.stream().noneMatch(d -> d.getDefectType().isCritical());
 				}
+				
 				return true;
 			}
 		});

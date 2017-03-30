@@ -17,7 +17,7 @@ package com.b2international.snowowl.terminologyregistry.core.request;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.datastore.request.IndexRequestBuilder;
+import com.b2international.snowowl.datastore.request.RepositoryIndexRequestBuilder;
 import com.b2international.snowowl.datastore.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.request.SearchResourceRequestBuilder;
 
@@ -26,7 +26,7 @@ import com.b2international.snowowl.datastore.request.SearchResourceRequestBuilde
  */
 public final class CodeSystemSearchRequestBuilder 
 		extends SearchResourceRequestBuilder<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystems>
-		implements IndexRequestBuilder<CodeSystems> {
+		implements RepositoryIndexRequestBuilder<CodeSystems> {
 
 	CodeSystemSearchRequestBuilder() {
 		super();

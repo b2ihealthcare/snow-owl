@@ -62,11 +62,12 @@ public interface Branch extends Deletable, MetadataHolder, Serializable {
 		BranchNameValidator DEFAULT = new BranchNameValidatorImpl();
 
 		/**
-		 * Validate a branch name and throw an {@link IllegalArgumentException} if it's invalid.
+		 * Validates a branch name and throws {@link BadRequestException} if not valid.
 		 * 
 		 * @param name
+		 * @throws BadRequestException
 		 */
-		void checkName(String name);
+		void checkName(String name) throws BadRequestException;
 
 		/**
 		 * @since 4.2

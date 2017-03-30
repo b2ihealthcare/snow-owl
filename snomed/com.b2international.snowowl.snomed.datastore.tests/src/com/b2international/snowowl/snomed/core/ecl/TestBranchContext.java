@@ -74,6 +74,11 @@ public final class TestBranchContext extends DelegatingServiceProvider implement
 		return repositoryId;
 	}
 	
+	@Override
+	public Health health() {
+		return Health.GREEN;
+	}
+	
 	public static TestBranchContext.Builder on(String branch) {
 		return new TestBranchContext.Builder(branch);
 	}

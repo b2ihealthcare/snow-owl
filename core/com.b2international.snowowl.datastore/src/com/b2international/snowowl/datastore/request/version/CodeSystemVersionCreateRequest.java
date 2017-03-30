@@ -39,6 +39,7 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -165,7 +166,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, V
 	}
 	
 	void setToolingIds(Collection<String> toolingIds) {
-		this.toolingIds = toolingIds;
+		this.toolingIds = Collections3.toImmutableSet(toolingIds);
 	}
 	
 	void setDescription(String description) {

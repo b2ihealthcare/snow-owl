@@ -1,4 +1,17 @@
 /**
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *  *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.b2international.snowowl.snomed.ecl.ecl.util;
 
@@ -50,7 +63,7 @@ public class EclSwitch<T> extends Switch<T>
    * Checks whether this is a switch for the given package.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @parameter ePackage the package in question.
+   * @param ePackage the package in question.
    * @return whether this is a switch for the given package.
    * @generated
    */
@@ -72,6 +85,13 @@ public class EclSwitch<T> extends Switch<T>
   {
     switch (classifierID)
     {
+      case EclPackage.SCRIPT:
+      {
+        Script script = (Script)theEObject;
+        T result = caseScript(script);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case EclPackage.EXPRESSION_CONSTRAINT:
       {
         ExpressionConstraint expressionConstraint = (ExpressionConstraint)theEObject;
@@ -422,6 +442,22 @@ public class EclSwitch<T> extends Switch<T>
       }
       default: return defaultCase(theEObject);
     }
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Script</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Script</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseScript(Script object)
+  {
+    return null;
   }
 
   /**

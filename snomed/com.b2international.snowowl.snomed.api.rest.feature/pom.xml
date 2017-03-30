@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.b2international.snowowl</groupId>
     <artifactId>snomed-parent</artifactId>
-    <version>5.7.4</version>
+    <version>5.8.0-SNAPSHOT</version>
   </parent>
   <artifactId>com.b2international.snowowl.snomed.api.rest.feature</artifactId>
   <packaging>eclipse-feature</packaging>
