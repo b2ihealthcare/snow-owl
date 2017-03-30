@@ -209,14 +209,22 @@ public abstract class Collections3 {
 				toSetFunction.apply(rightDiff),
 				toSetFunction.apply(intersection));
 	}
-	
-	private Collections3() { /*suppress instantiation*/ }
 
 	public static <T> Set<T> toImmutableSet(Iterable<T> values) {
-		return values != null ? ImmutableSet.copyOf(values) : Collections.<T>emptySet();
+		return values != null ? ImmutableSet.copyOf(values) : Collections.emptySet();
 	}
 	
 	public static <T> List<T> toImmutableList(Iterable<T> values) {
-		return values != null ? ImmutableList.copyOf(values) : Collections.<T>emptyList();
+		return values != null ? ImmutableList.copyOf(values) : Collections.emptyList();
 	}
+
+	public static <T> Set<T> toImmutableSet(T[] values) {
+		return values != null ? ImmutableSet.copyOf(values) : Collections.emptySet();
+	}
+	
+	public static <T> List<T> toImmutableList(T[] values) {
+		return values != null ? ImmutableList.copyOf(values) : Collections.emptyList();
+	}
+	
+	private Collections3() { /*suppress instantiation*/ }
 }
