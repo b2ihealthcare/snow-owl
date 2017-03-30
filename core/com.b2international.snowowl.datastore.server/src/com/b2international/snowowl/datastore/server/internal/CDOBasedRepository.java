@@ -366,7 +366,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		} else if (emptyDatabase && !emptyIndex) {
 			setHealth(Health.RED, RESTORE_DIAGNOSIS);
 		} else if (!emptyDatabase && emptyIndex) {
-			setHealth(Health.RED, String.format(REINDEX_DIAGNOSIS_TEMPLATE, id(), id(), ""));
+			setHealth(Health.RED, String.format(REINDEX_DIAGNOSIS_TEMPLATE, id(), ""));
 		} else if (!emptyDatabase && !emptyIndex) {
 			final String diagnosis = validateCommitConsistency(cdoCommits, indexCommits);
 			if (Strings.isNullOrEmpty(diagnosis)) {
@@ -416,7 +416,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		}
 		
 		if (firstMissingCdoCommitTimestamp != -1) {
-			return String.format(REINDEX_DIAGNOSIS_TEMPLATE, id(), id(), firstMissingCdoCommitTimestamp);
+			return String.format(REINDEX_DIAGNOSIS_TEMPLATE, id(), firstMissingCdoCommitTimestamp);
 		}
 		
 		return null;
