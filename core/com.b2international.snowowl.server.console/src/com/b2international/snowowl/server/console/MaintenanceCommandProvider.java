@@ -143,7 +143,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	}
 
 
-	private static final String COLUMN_FORMAT = "|%16s|%-16s|%-16s|";
+	private static final String COLUMN_FORMAT = "|%-16s|%-16s|%-16s|";
 	
 	private void repositories(CommandInterpreter interpreter) {
 		final String repositoryId = interpreter.nextArgument();
@@ -158,18 +158,18 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		final int maxDiagLength = ImmutableList.copyOf(repositories)
 			.stream()
 			.map(RepositoryInfo::diagnosis)
-			.map(diag -> Strings.isNullOrEmpty(diag) ? "-" : diag)
+			.map(Strings::nullToEmpty)
 			.map(diag -> diag.length())
 			.max(Ints::compare)
 			.orElse(16);
 
-		final int maxLength = maxDiagLength + 36;
+		final int maxLength = Math.max(maxDiagLength + 36, 52);
 		
 		printSeparator(interpreter, maxLength);
 		printHeader(interpreter, "id", "health", Strings.padEnd("diagnosis", maxDiagLength, ' '));
 		printSeparator(interpreter, maxLength);
 		repositories.forEach(repository -> {
-			printLine(interpreter, repository, RepositoryInfo::id, RepositoryInfo::health, RepositoryInfo::diagnosis);
+			printLine(interpreter, repository, RepositoryInfo::id, RepositoryInfo::health, repo -> Strings.isNullOrEmpty(repo.diagnosis()) ? "-" : null);
 			printSeparator(interpreter, maxLength);
 		});
 	}
