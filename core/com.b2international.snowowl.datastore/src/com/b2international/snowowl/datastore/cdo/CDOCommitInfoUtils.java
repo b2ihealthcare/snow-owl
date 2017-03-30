@@ -292,7 +292,7 @@ public abstract class CDOCommitInfoUtils {
 	 */
 	public static final class CDOCommitInfoQuery {
 		
-		private static final Collection<String> EXCLUDED_USERS = 
+		public static final Collection<String> EXCLUDED_USERS = 
 				ImmutableSet.of(CDOCommitInfoConstants.SYSTEM_USER_ID);
 		
 		private static final Predicate<String> EXCLUDED_USERS_PREDICATE = Predicates.not(Predicates.in(EXCLUDED_USERS));
