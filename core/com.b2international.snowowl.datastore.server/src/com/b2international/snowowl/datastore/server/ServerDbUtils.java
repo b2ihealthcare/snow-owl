@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.server;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Set;
@@ -160,14 +161,18 @@ public class ServerDbUtils {
 										try {
 
 											connection = repository.getConnection();
-
-											Integer indexCount = JdbcUtils.executeIntQuery(connection, "SELECT COUNT(1) "
-													+ "FROM information_schema.statistics "
-													+ "WHERE TRUE"
-													+ "AND index_schema = ? "
-													+ "AND index_name = ?", connection.getSchema(), indexName); 
+											boolean indexExists = false;
+											
+											try (ResultSet info = connection.getMetaData().getIndexInfo(connection.getCatalog(), null, tableName, false, false)) {
+												while (info.next()) {
+													if (indexName.equals(info.getString("INDEX_NAME"))) {
+														indexExists = true;
+														break;
+													}
+												}
+											}
 															
-											if (indexCount < 1) {
+											if (!indexExists) {
 												LOGGER.info("Creating index '" + indexName + "' on table '" + tableName + "'.");
 												final String createIndexSql = "CREATE INDEX " + indexName + " ON " + tableName + "(" + createdFieldName + ")";
 												JdbcUtils.executeUpdate(connection, createIndexSql);
