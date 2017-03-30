@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.events.RequestBuilder;
 /**
  * @since 5.7
  */
-public interface RepositoryRequestBuilder<R> extends RequestBuilder<RepositoryContext, R> {
+public interface RepositoryRequestBuilder<R> extends RequestBuilder<RepositoryContext, R>, AllowedHealthStates {
 
 	/**
 	 * Builds a locally or remotely executable {@link AsyncRequest asynchronous request}.
@@ -30,9 +30,11 @@ public interface RepositoryRequestBuilder<R> extends RequestBuilder<RepositoryCo
 	 * @return
 	 */
 	default AsyncRequest<R> build(String repositoryId) {
-		return new AsyncRequest<>(
-			new RepositoryRequest<>(repositoryId, build())
-		);
+		return new AsyncRequest<R>(
+					new RepositoryRequest<R>(repositoryId, 
+						new HealthCheckingRequest<>(build(), allowedHealthstates())
+					)
+				);
 	}
-	
+
 }

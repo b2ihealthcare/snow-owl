@@ -32,6 +32,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -143,8 +144,9 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 		swaggerSpringMvcPlugin.ignoredParameterTypes(Principal.class, Void.class);
 		final TypeResolver resolver = new TypeResolver();
 		swaggerSpringMvcPlugin.genericModelSubstitutes(ResponseEntity.class);
+		swaggerSpringMvcPlugin.genericModelSubstitutes(DeferredResult.class);
 		swaggerSpringMvcPlugin.alternateTypeRules(new AlternateTypeRule(resolver.resolve(UUID.class), resolver.resolve(String.class)));
-
+		
 		return swaggerSpringMvcPlugin;
 	}
 

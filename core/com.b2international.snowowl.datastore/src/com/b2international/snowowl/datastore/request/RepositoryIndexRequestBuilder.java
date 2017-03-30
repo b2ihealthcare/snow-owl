@@ -22,12 +22,15 @@ import com.b2international.snowowl.core.events.RequestBuilder;
 /**
  * @since 5.7
  */
-public interface IndexRequestBuilder<R> extends RequestBuilder<RepositoryContext, R> {
+public interface RepositoryIndexRequestBuilder<R> extends RequestBuilder<RepositoryContext, R>, AllowedHealthStates {
 
 	default AsyncRequest<R> build(String repositoryId) {
 		return new AsyncRequest<>(
 			new RepositoryRequest<>(repositoryId,
-				new IndexReadRequest<>(build())
+				new HealthCheckingRequest<>(
+					new IndexReadRequest<>(build()), 
+					allowedHealthstates()
+				)
 			)
 		);
 	}

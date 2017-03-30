@@ -25,14 +25,7 @@ import io.reactivex.Observable;
 /**
  * @since 4.5
  */
-public interface Repository extends ServiceProvider, IDisposableService {
-
-	/**
-	 * Returns the ID of the repository.
-	 * 
-	 * @return
-	 */
-	String id();
+public interface Repository extends ServiceProvider, IDisposableService, RepositoryInfo {
 
 	/**
 	 * Returns the global singleton {@link IEventBus} to send events to it.

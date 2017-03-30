@@ -13,29 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal;
+package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo;
-import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 
 /**
- * @since 5.7
+ * @since 5.8
  */
-public final class DefaultRepositoryContextProvider implements RepositoryContextProvider {
+public interface AllowedHealthStates {
 
-	private final RepositoryManager repositories;
-
-	public DefaultRepositoryContextProvider(RepositoryManager repositories) {
-		this.repositories = repositories;
+	/**
+	 * Returns an array of {@link Repository.Health Health} statuses in which the delegate request is allowed to execute.
+	 * By Default the array contains only {@link Repository.Health#GREEN}. Which can be overriden in {@link RepositoryRequestBuilder} implementations 
+	 * 	eg.: to allow maintenance related requests to be executed against a non-green {@link Repository}.
+	 * @return an array of {@link Repository.Health} statuses.
+	 */
+	default Repository.Health[] allowedHealthstates() {
+		return new Repository.Health[] { RepositoryInfo.Health.GREEN, RepositoryInfo.Health.YELLOW };
 	}
-
-	@Override
-	public RepositoryContext get(String repositoryId) {
-		final Repository repository = repositories.get(repositoryId);
-		return new DefaultRepositoryContext(repository, RepositoryInfo.of(repository));
-	}
-
+	
 }

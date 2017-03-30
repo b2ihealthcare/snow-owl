@@ -68,6 +68,11 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 		// FIXME hardcoded ID
 		return SnomedDatastoreActivator.REPOSITORY_UUID;
 	}
+	
+	@Override
+	public Health health() {
+		return Health.GREEN;
+	}
 
 	@Override
 	public <T> T service(final Class<T> type) {

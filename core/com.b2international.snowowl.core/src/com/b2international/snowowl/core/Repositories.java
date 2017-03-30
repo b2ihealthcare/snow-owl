@@ -13,26 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core;
 
-import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.AsyncRequest;
-import com.b2international.snowowl.core.events.RequestBuilder;
+import java.util.Collections;
+import java.util.List;
+
+import com.b2international.snowowl.core.domain.CollectionResource;
 
 /**
- * @since 5.7
+ * @since 5.8
  */
-public interface BranchRequestBuilder<R> extends RequestBuilder<BranchContext, R>, AllowedHealthStates {
+public final class Repositories extends CollectionResource<RepositoryInfo> {
 
-	default AsyncRequest<R> build(String repositoryId, String branch) {
-		return new AsyncRequest<>(
-			new RepositoryRequest<>(repositoryId,
-				new HealthCheckingRequest<>(
-					new BranchRequest<>(branch, build()),
-					allowedHealthstates()
-				)
-			)
-		);
+	private static final long serialVersionUID = 1L;
+	
+	public Repositories() {
+		this(Collections.emptyList());
 	}
 	
+	public Repositories(List<RepositoryInfo> items) {
+		super(items);
+	}
+
 }

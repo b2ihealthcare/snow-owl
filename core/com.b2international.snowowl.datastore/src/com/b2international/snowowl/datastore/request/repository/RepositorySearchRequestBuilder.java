@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.terminologyregistry.core.request;
+package com.b2international.snowowl.datastore.request.repository;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.datastore.request.RepositoryIndexRequestBuilder;
+import com.b2international.snowowl.core.Repositories;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.datastore.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.request.SearchResourceRequestBuilder;
+import com.b2international.snowowl.datastore.request.SystemRequestBuilder;
 
 /**
- * @since 4.7
+ * @since 5.8
  */
-public final class CodeSystemSearchRequestBuilder 
-		extends SearchResourceRequestBuilder<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystems>
-		implements RepositoryIndexRequestBuilder<CodeSystems> {
-
-	CodeSystemSearchRequestBuilder() {
-		super();
-	}
+public final class RepositorySearchRequestBuilder extends SearchResourceRequestBuilder<RepositorySearchRequestBuilder, ServiceProvider, Repositories> 
+		implements SystemRequestBuilder<Repositories>  {
 
 	@Override
-	protected SearchResourceRequest<RepositoryContext, CodeSystems> createSearch() {
-		return new CodeSystemSearchRequest();
+	protected SearchResourceRequest<ServiceProvider, Repositories> createSearch() {
+		return new RepositorySearchRequest();
 	}
 
 }

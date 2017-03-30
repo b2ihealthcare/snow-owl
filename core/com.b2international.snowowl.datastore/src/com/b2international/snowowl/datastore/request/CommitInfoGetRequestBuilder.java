@@ -23,7 +23,7 @@ import com.b2international.snowowl.datastore.commitinfo.CommitInfo;
  */
 public final class CommitInfoGetRequestBuilder 
 		extends GetResourceRequestBuilder<CommitInfoGetRequestBuilder, CommitInfoSearchRequestBuilder, RepositoryContext, CommitInfo> 
-		implements IndexRequestBuilder<CommitInfo> {
+		implements RepositoryIndexRequestBuilder<CommitInfo> {
 
 	CommitInfoGetRequestBuilder(String commitId) {
 		super(new CommitInfoGetRequest(commitId));

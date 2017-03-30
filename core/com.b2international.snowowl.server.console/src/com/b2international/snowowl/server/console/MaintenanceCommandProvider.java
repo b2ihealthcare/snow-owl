@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.server.console;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -27,12 +30,15 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.StringUtils;
 import com.b2international.index.revision.Purge;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.Repositories;
+import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.datastore.request.repository.RepositorySearchRequestBuilder;
 import com.b2international.snowowl.datastore.server.ServerDbUtils;
 import com.b2international.snowowl.datastore.server.reindex.OptimizeRequest;
 import com.b2international.snowowl.datastore.server.reindex.PurgeRequest;
@@ -40,12 +46,16 @@ import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequestBuilder;
 import com.b2international.snowowl.datastore.server.reindex.ReindexResult;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 
 /**
@@ -56,19 +66,22 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	private static final String DEFAULT_BRANCH_PREFIX = "|--";
 	private static final String DEFAULT_INDENT = "   ";
 	private static final String LISTBRANCHES_COMMAND = "listbranches";
-	private static final String LISTREPOSITORIES_COMMAND = "listrepositories";
 	private static final String DBCREATEINDEX_COMMAND = "dbcreateindex";
-
+	private static final String REPOSITORIES_COMMAND = "repositories";
+	private static final String VERSION_COMMAND = "--version";
+	
 	@Override
 	public String getHelp() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("---Snow Owl commands---\n");
+		buffer.append("\tsnowowl --version - returns the current version\n");
 		buffer.append("\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namespace URI.\n");
-		buffer.append("\tsnowowl listrepositories - prints all the repositories in the system.\n");
+		buffer.append("\tsnowowl listrepositories - prints all the repositories in the system. \n");
 		buffer.append("\tsnowowl listbranches [repository] [branchPath] - prints all the child branches of the specified branch path in the system for a repository. Branch path is MAIN by default and has to be full path (e.g. MAIN/PROJECT/TASK)\n");
-		buffer.append("\tsnowowl reindex [repositoryId] [failedCommitTimestamp]- reindexes the content for the given repository ID from the given failed commit timestamp (optional, default timestamp is 1 which means no failed commit).\n");
+		buffer.append("\tsnowowl reindex [repositoryId] [failedCommitTimestamp] - reindexes the content for the given repository ID from the given failed commit timestamp (optional, default timestamp is 1 which means no failed commit).\n");
 		buffer.append("\tsnowowl optimize [repositoryId] [maxSegments] - optimizes the underlying index for the repository to have the supplied maximum number of segments (default number is 1)\n");
 		buffer.append("\tsnowowl purge [repositoryId] [branchPath] [ALL|LATEST|HISTORY] - optimizes the underlying index by deleting unnecessary documents from the given branch using the given purge strategy (default strategy is LATEST)\n");
+		buffer.append("\tsnowowl repositories [repositoryId] - prints all currently available repositories and their health statuses");
 		return buffer.toString();
 	}
 
@@ -87,13 +100,19 @@ public class MaintenanceCommandProvider implements CommandProvider {
 				return;
 			}
 
-			if (LISTREPOSITORIES_COMMAND.equals(cmd)) {
-				listRepositories(interpreter);
-				return;
-			}
-
 			if (LISTBRANCHES_COMMAND.equals(cmd)) {
 				listBranches(interpreter);
+				return;
+			}
+			
+			if (REPOSITORIES_COMMAND.equals(cmd)) {
+				repositories(interpreter);
+				return;
+			}
+			
+			if (VERSION_COMMAND.equals(cmd)) {
+				String version = RepositoryRequests.prepareGetServerInfo().buildAsync().execute(getBus()).getSync().version();
+				interpreter.println(version);
 				return;
 			}
 
@@ -121,6 +140,61 @@ public class MaintenanceCommandProvider implements CommandProvider {
 				interpreter.println(ex.getMessage());
 			}
 		}
+	}
+
+
+	private static final String COLUMN_FORMAT = "|%-16s|%-16s|%-16s|";
+	
+	private void repositories(CommandInterpreter interpreter) {
+		final String repositoryId = interpreter.nextArgument();
+		RepositorySearchRequestBuilder req = RepositoryRequests.prepareSearch();
+		if (!Strings.isNullOrEmpty(repositoryId)) {
+			req.one().filterById(repositoryId);
+		} else {
+			req.all();
+		}
+		final Repositories repositories = req.buildAsync().execute(getBus()).getSync();
+		
+		final int maxDiagLength = ImmutableList.copyOf(repositories)
+			.stream()
+			.map(RepositoryInfo::diagnosis)
+			.map(Strings::nullToEmpty)
+			.map(diag -> diag.length())
+			.max(Ints::compare)
+			.orElse(16);
+
+		final int maxLength = Math.max(maxDiagLength + 36, 52);
+		
+		printSeparator(interpreter, maxLength);
+		printHeader(interpreter, "id", "health", Strings.padEnd("diagnosis", maxDiagLength, ' '));
+		printSeparator(interpreter, maxLength);
+		repositories.forEach(repository -> {
+			printLine(interpreter, repository, RepositoryInfo::id, RepositoryInfo::health, repo -> Strings.isNullOrEmpty(repo.diagnosis()) ? "-" : null);
+			printSeparator(interpreter, maxLength);
+		});
+	}
+	
+	private void printHeader(final CommandInterpreter interpreter, Object...columns) {
+		interpreter.println(String.format(COLUMN_FORMAT, columns));
+	}
+	
+	private void printSeparator(final CommandInterpreter interpreter, int length) {
+		interpreter.println(Strings.repeat("-", length));
+	}
+	
+	private <T> void printLine(final CommandInterpreter interpreter, T item, Function<T, Object>...values) {
+		interpreter.println(String.format(COLUMN_FORMAT, newArrayList(values).stream().map(func -> func.apply(item)).toArray()));
+	}
+
+	private List<String> resolveArguments(CommandInterpreter interpreter) {
+		List<String> results = Lists.newArrayList();
+		String argument = interpreter.nextArgument();
+		while(!isNullOrEmpty(argument)) {
+			results.add(argument);
+			argument = interpreter.nextArgument();
+		}
+		
+		return results;
 	}
 
 	public synchronized void createDbIndex(CommandInterpreter interpreter) {
@@ -211,16 +285,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 			.execute(getBus())
 			.getSync();
 		interpreter.println("Index optimization completed.");
-	}
-
-	public synchronized void listRepositories(CommandInterpreter interpreter) {
-		Set<String> uuidKeySet = getRepositoryManager().uuidKeySet();
-		if (!uuidKeySet.isEmpty()) {
-			interpreter.println("Repositories:");
-			for (String repositoryName : uuidKeySet) {
-				interpreter.println(String.format("\t%s", repositoryName));
-			}
-		}
 	}
 
 	public synchronized void listBranches(CommandInterpreter interpreter) {

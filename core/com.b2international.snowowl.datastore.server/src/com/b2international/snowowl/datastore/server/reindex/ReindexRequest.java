@@ -21,6 +21,7 @@ import org.eclipse.emf.cdo.server.StoreThreadLocal;
 import org.eclipse.emf.cdo.spi.server.InternalSession;
 
 import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -63,6 +64,7 @@ public final class ReindexRequest implements Request<RepositoryContext, ReindexR
 		final InternalSession session = cdoRepository.getSessionManager().openSession(null);
 		
 		try {
+			repository.setHealth(Health.YELLOW, "Reindex is in progress...");
 			features.enable(featureFor(context.id()));
 			//set the session on the StoreThreadlocal for later access
 			StoreThreadLocal.setSession(session);
@@ -70,12 +72,14 @@ public final class ReindexRequest implements Request<RepositoryContext, ReindexR
 			//right now index is fully recreated
 			final IndexMigrationReplicationContext replicationContext = new IndexMigrationReplicationContext(context, maxCdoBranchId, failedCommitTimestamp - 1, session);
 			cdoRepository.replicate(replicationContext);
+			// update repository state after the re-indexing
 			return new ReindexResult(replicationContext.getFailedCommitTimestamp(),
 					replicationContext.getProcessedCommits(), replicationContext.getSkippedCommits(), replicationContext.getException());
 		} finally {
 			features.disable(featureFor(context.id()));
 			StoreThreadLocal.release();
 			session.close();
+			repository.checkHealth();
 		}
 	}
 

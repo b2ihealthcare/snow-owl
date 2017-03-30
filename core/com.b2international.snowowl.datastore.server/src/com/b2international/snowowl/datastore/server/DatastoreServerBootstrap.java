@@ -28,6 +28,8 @@ import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -75,7 +77,7 @@ import com.google.common.base.Stopwatch;
 @ModuleConfig(fieldName = "reviewManager", type = ReviewConfiguration.class)
 public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment {
 
-	private static final Logger LOG = LoggerFactory.getLogger(DatastoreServerBootstrap.class);
+	private static final Logger LOG = LoggerFactory.getLogger("core");
 	
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
@@ -192,10 +194,15 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		RepositoryConfiguration repositoryConfig = configuration.getModuleConfig(RepositoryConfiguration.class);
 		final ICDORepositoryManager cdoRepositoryManager = env.service(ICDORepositoryManager.class);
 		for (String repositoryId : cdoRepositoryManager.uuidKeySet()) {
-			repositories
+			Repository repo = repositories
 				.prepareCreate(repositoryId, cdoRepositoryManager.getByUuid(repositoryId).getSnowOwlTerminologyComponentId())
 				.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
 				.build(env);
+			if (repo.health() == Health.GREEN) {
+				LOG.info("Started repository '{}' with status '{}'", repo.id(), repo.health());
+			} else {
+				LOG.warn("Started repository '{}' with status '{}'. Diagnosis: {}.", repo.id(), repo.health(), repo.diagnosis());
+			}
 		}
 		
 		LOG.debug("<<< Branch and review services registered. [{}]", branchStopwatch);

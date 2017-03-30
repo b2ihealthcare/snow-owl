@@ -1,6 +1,6 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- *
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,25 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.domain;
+package com.b2international.snowowl.datastore.request.repository;
 
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.request.GetResourceRequestBuilder;
+import com.b2international.snowowl.datastore.request.SystemRequestBuilder;
 
 /**
- * Execution context for {@link Request requests} targeting a branch in a single repository.
- *
- * @since 4.5
+ * @since 5.8
  */
-public interface RepositoryContext extends ServiceProvider, RepositoryInfo {
+public final class RepositoryGetRequestBuilder
+		extends GetResourceRequestBuilder<RepositoryGetRequestBuilder, RepositorySearchRequestBuilder, ServiceProvider, RepositoryInfo>
+		implements SystemRequestBuilder<RepositoryInfo> {
 
-	/**
-	 * Returns the current application configuration object.
-	 * 
-	 * @return
-	 */
-	SnowOwlConfiguration config();
+	public RepositoryGetRequestBuilder(String repositoryId) {
+		super(new RepositoryGetRequest(repositoryId));
+	}
 
 }

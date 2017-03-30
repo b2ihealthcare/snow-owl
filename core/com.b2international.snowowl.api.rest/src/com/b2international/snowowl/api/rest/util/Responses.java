@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,17 +31,29 @@ import org.springframework.http.ResponseEntity;
 public class Responses {
 
 	private Responses() {
+		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}
 
 	/**
 	 * Creates a {@link ResponseBuilder} with the HTTP status code CREATED.
 	 * 
 	 * @param location
-	 *            - the Location header value to find the created resource.
+	 *            the Location header value to find the created resource
 	 * @return
 	 */
 	public static final ResponseBuilder created(URI location) {
 		return status(HttpStatus.CREATED).location(location);
+	}
+
+	/**
+	 * Creates a {@link ResponseBuilder} with the HTTP status code ACCEPTED.
+	 * 
+	 * @param location
+	 *            the Location header value to find/poll the resource describing current status of the asynchronous request, or the end result
+	 * @return
+	 */
+	public static ResponseBuilder accepted(URI location) {
+		return status(HttpStatus.ACCEPTED).location(location);
 	}
 
 	/**
@@ -52,18 +64,27 @@ public class Responses {
 	public static final ResponseBuilder ok() {
 		return status(HttpStatus.OK);
 	}
+	
+	/**
+	 * Creates a {@link ResponseBuilder} with the HTTP status code NO_CONTENT.
+	 * 
+	 * @return
+	 */
+	public static ResponseBuilder noContent() {
+		return status(HttpStatus.NO_CONTENT);
+	}
 
 	/**
 	 * Creates a {@link ResponseBuilder} with the HTTP status code NOT_MODIFIED.
 	 * 
-	 * @param the
+	 * @param tag
 	 *            - HTTP ETag value associated with the not modified response.
 	 * @return
 	 */
 	public static final ResponseBuilder notModified(String tag) {
 		return status(HttpStatus.NOT_MODIFIED);
 	}
-
+	
 	/**
 	 * Creates a {@link ResponseBuilder} with the given HTTP status code.
 	 * 
