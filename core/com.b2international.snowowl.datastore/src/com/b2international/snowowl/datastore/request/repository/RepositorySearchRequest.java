@@ -40,10 +40,11 @@ class RepositorySearchRequest extends SearchResourceRequest<ServiceProvider, Rep
 
 	@Override
 	protected Repositories doExecute(ServiceProvider context) throws IOException {
+		final Collection<String> ids = getCollection(SearchResourceRequest.OptionKey.COMPONENT_IDS, String.class);
 		final Collection<RepositoryInfo> repositories = context.service(RepositoryManager.class)
 				.repositories()
 				.stream()
-				.filter(repository -> ids().isEmpty() ? true : ids().contains(repository.id()))
+				.filter(repository -> ids.isEmpty() ? true : ids.contains(repository.id()))
 				.map(RepositoryInfo::of)
 				.collect(Collectors.toList());
 		return new Repositories(ImmutableList.copyOf(repositories));

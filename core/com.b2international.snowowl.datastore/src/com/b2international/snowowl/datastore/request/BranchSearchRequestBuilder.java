@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * @since 4.5
  */
-public final class BranchSearchRequestBuilder extends SearchResourceRequestBuilder<BranchSearchRequestBuilder, RepositoryContext, Branches> implements IndexRequestBuilder<Branches> {
+public final class BranchSearchRequestBuilder extends SearchResourceRequestBuilder<BranchSearchRequestBuilder, RepositoryContext, Branches> implements RepositoryIndexRequestBuilder<Branches> {
 
 	BranchSearchRequestBuilder() {
 		super();
