@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -48,8 +49,8 @@ public class SnomedDescriptionValidator extends AbstractSnomedValidator {
 	private final Set<String> typeConceptNotExist = Sets.newHashSet();
 	private final Set<String> caseSignificanceConceptNotExist = Sets.newHashSet();
 
-	public SnomedDescriptionValidator(final ImportConfiguration configuration, final SnomedValidationContext context) throws IOException {
-		super(configuration, configuration.toURL(configuration.getDescriptionsFile()), ComponentImportType.DESCRIPTION, context, SnomedRf2Headers.DESCRIPTION_HEADER);
+	public SnomedDescriptionValidator(final ImportConfiguration configuration, final SnomedValidationContext context, File descriptionFile) throws IOException {
+		super(configuration, configuration.toURL(descriptionFile), ComponentImportType.DESCRIPTION, context, SnomedRf2Headers.DESCRIPTION_HEADER);
 	}
 
 	@Override
