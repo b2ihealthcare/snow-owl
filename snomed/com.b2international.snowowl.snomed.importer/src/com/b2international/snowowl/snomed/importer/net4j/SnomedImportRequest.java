@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,10 @@ import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.io.IOUtil;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
-import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
- * 
+ * The client-side Net4J request for SNOMED CT imports.
  */
 public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResult> {
 
@@ -69,18 +68,9 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 				out.writeString(excludedId);
 			}
 			
-			final CodeSystem codeSystem = importConfiguration.getCodeSystem();
-			out.writeUTF(codeSystem.getBranchPath());
-			out.writeUTF(codeSystem.getCitation());
-			out.writeUTF(codeSystem.getExtensionOf());
-			out.writeUTF(codeSystem.getIconPath());
-			out.writeUTF(codeSystem.getName());
-			out.writeUTF(codeSystem.getOid());
-			out.writeUTF(codeSystem.getOrganizationLink());
-			out.writeUTF(codeSystem.getPrimaryLanguage());
-			out.writeUTF(codeSystem.getShortName());
+			out.writeUTF(importConfiguration.getCodeSystemShortName());
 			
-			monitor.worked();
+			monitor.worked(); // 1
 			
 			writeComponent(out, importConfiguration.getConceptsFile(), monitor.fork());
 			writeComponent(out, importConfiguration.getDescriptionsFile(), monitor.fork());
@@ -88,12 +78,12 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 			writeComponent(out, importConfiguration.getRelationshipsFile(), monitor.fork());
 			writeComponent(out, importConfiguration.getStatedRelationshipsFile(), monitor.fork());
 			writeComponent(out, importConfiguration.getDescriptionType(), monitor.fork());
-			writeComponent(out, importConfiguration.getLanguageRefSetFile(), monitor.fork());
+			writeComponent(out, importConfiguration.getLanguageRefSetFile(), monitor.fork()); // + 7
 			
 			out.writeInt(importConfiguration.getRefSetUrls().size());
 			
 			for (final URL refSetUrl : importConfiguration.getRefSetUrls()) {
-				writeFile(out, importConfiguration, refSetUrl, monitor.fork());
+				writeFile(out, importConfiguration, refSetUrl, monitor.fork()); // + getRefSetUrls().size()
 			}
 			
 		} finally {

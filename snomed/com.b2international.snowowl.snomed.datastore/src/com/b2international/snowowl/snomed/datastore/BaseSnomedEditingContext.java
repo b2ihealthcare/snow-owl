@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public abstract class BaseSnomedEditingContext extends CDOEditingContext {
 	
 	@Override
 	protected String getMetaRootResourceName() {
-		return SnomedCDORootResourceNameProvider.META_ROOT_RESOURCE_NAME;
+		return SnomedDatastoreActivator.META_ROOT_RESOURCE_NAME;
 	}
 	
 }

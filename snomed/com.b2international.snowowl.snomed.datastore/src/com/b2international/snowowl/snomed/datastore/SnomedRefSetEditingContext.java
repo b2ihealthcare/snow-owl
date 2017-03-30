@@ -898,7 +898,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 */
 	@Override
 	protected String getRootResourceName() {
-		return SnomedCDORootResourceNameProvider.REFSET_ROOT_RESOURCE_NAME;
+		return SnomedDatastoreActivator.REFSET_ROOT_RESOURCE_NAME;
 	}
 	
 	/*returns with the 'special field' ID of a reference set member:

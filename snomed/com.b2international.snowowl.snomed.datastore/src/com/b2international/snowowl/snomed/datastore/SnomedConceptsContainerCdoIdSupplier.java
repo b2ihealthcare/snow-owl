@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.datastore;
 
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
-import static com.b2international.snowowl.snomed.datastore.SnomedCDORootResourceNameProvider.GENERATOR_RESOURCE_NAME;
+import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.GENERATOR_RESOURCE_NAME;
 import static org.eclipse.emf.cdo.common.id.CDOID.NULL;
 
 import org.eclipse.emf.cdo.common.id.CDOID;

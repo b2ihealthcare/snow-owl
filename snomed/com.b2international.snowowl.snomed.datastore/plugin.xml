@@ -395,12 +395,6 @@
       </provider>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.cdoRootResourceNameProvider">
-      <provider
-            class="com.b2international.snowowl.snomed.datastore.SnomedCDORootResourceNameProvider">
-      </provider>
-   </extension>
-   <extension
          point="com.b2international.snowowl.core.bootstrapFragments">
       <bootstrapFragment
             class="com.b2international.snowowl.snomed.datastore.internal.boot.SnomedCoreBootstrap">

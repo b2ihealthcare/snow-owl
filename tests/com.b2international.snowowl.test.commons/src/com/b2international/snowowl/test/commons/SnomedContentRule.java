@@ -26,12 +26,16 @@ import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
 /**
  * JUnit test rule to import SNOMED CT content during automated tests.
@@ -59,8 +63,8 @@ public class SnomedContentRule extends ExternalResource {
 	@Override
 	protected void before() throws Throwable {
 		checkBranch();
-		new ImportUtil().doImport(codeSystem, "info@b2international.com", contentType, branchPath, importArchive, true,
-				new ConsoleProgressMonitor());
+		createCodeSystemIfNotExist();
+		new ImportUtil().doImport(codeSystem, "info@b2international.com", contentType, branchPath, importArchive, true, new ConsoleProgressMonitor());
 	}
 
 	private void checkBranch() {
@@ -77,4 +81,34 @@ public class SnomedContentRule extends ExternalResource {
 		}
 	}
 
+	private void createCodeSystemIfNotExist() {
+		if (!SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME.equals(codeSystem.getShortName())) {
+			final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
+			
+			CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
+				.filterById(codeSystem.getShortName())
+				.setLimit(0)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.execute(eventBus)
+				.getSync();
+			
+			if (codeSystems.getTotal() < 1) {
+				CodeSystemRequests.prepareNewCodeSystem()
+					.setBranchPath(codeSystem.getBranchPath())
+					.setCitation(codeSystem.getCitation())
+					.setExtensionOf(codeSystem.getExtensionOf())
+					.setIconPath(codeSystem.getIconPath())
+					.setLanguage(codeSystem.getPrimaryLanguage())
+					.setLink(codeSystem.getOrganizationLink())
+					.setName(codeSystem.getName())
+					.setOid(codeSystem.getOid())
+					.setRepositoryUuid(codeSystem.getRepositoryUuid())
+					.setShortName(codeSystem.getShortName())
+					.setTerminologyId(codeSystem.getTerminologyId())
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH, "info@b2international.com", String.format("Create code system %s", codeSystem.getShortName()))
+					.execute(eventBus)
+					.getSync();
+			}
+		}
+	}
 }

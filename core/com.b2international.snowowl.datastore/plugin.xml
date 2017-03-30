@@ -10,7 +10,6 @@
    <extension-point id="versioningManager" name="versioningManager" schema="schema/versioningManager.exsd"/>
    <extension-point id="nodeTransformer" name="nodeTransformer" schema="schema/nodeTransformer.exsd"/>
    <extension-point id="contentAvailabilityInfoProvider" name="Content Availability Info Provider" schema="schema/contentAvailabilityInfoProvider.exsd"/>
-   <extension-point id="cdoRootResourceNameProvider" name="CDO root resource" schema="schema/cdoRootResourceNameProvider.exsd"/>
    <extension-point id="mappingProvider" name="mappingProvider" schema="schema/mappingProvider.exsd"/>
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">

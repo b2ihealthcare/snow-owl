@@ -1613,7 +1613,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
 	@Override
 	protected String getRootResourceName() {
-		return SnomedCDORootResourceNameProvider.ROOT_RESOURCE_NAME;
+		return SnomedDatastoreActivator.ROOT_RESOURCE_NAME;
 	}
 
 	/**

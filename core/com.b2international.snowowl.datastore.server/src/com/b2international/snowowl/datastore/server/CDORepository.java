@@ -169,11 +169,6 @@ import com.google.common.base.Preconditions;
 	}
 
 	@Override
-	protected void doAfterActivate() throws Exception {
-		RepositoryInitializerManager.INSTANCE.getInitializer(getUuid()).initialize();
-	}
-
-	@Override
 	protected void doDeactivate() throws Exception {
 		LifecycleUtil.deactivate(repository);
 	}

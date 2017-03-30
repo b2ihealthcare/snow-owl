@@ -7,6 +7,7 @@ Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
- com.google.guava
+ com.google.guava,
+ com.b2international.commons
 Export-Package: com.b2international.snowowl.importer
 Import-Package: org.slf4j;version="1.7.2"

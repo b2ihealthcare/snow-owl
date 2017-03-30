@@ -15,52 +15,14 @@
  */
 package com.b2international.snowowl.importer;
 
+import com.b2international.commons.exceptions.FormattedRuntimeException;
+
 /**
  * General runtime exception for reporting import related errors. 
- *
  */
-public class ImportException extends RuntimeException {
+public class ImportException extends FormattedRuntimeException {
 
-	private static final long serialVersionUID = -768895127608732041L;
-
-	/**
-	 * Creates an import exception instance with no detail message or cause.
-	 */
-	public ImportException() {
-		super();
-	}
-
-	/**
-	 * Creates an import exception instance with the given detail message and
-	 * cause.
-	 * 
-	 * @param message
-	 *            the exception message
-	 *            
-	 * @param cause
-	 *            the causing {@link Throwable}
-	 */
-	public ImportException(final String message, final Throwable cause) {
-		super(message, cause);
-	}
-
-	/**
-	 * Creates an import exception instance with the given detail message.
-	 * 
-	 * @param message
-	 *            the exception message
-	 */
-	public ImportException(final String message) {
-		super(message);
-	}
-
-	/**
-	 * Creates an import exception with the given cause.
-	 * 
-	 * @param cause
-	 *            the causing {@link Throwable}
-	 */
-	public ImportException(final Throwable cause) {
-		super(cause);
+	public ImportException(String template, Object... args) {
+		super(template, args);
 	}
 }
