@@ -16,33 +16,36 @@
 grammar com.b2international.snowowl.snomed.ecl.Ecl hidden(WS, ML_COMMENT, SL_COMMENT)
 
 generate ecl "http://www.b2international.com/snowowl/snomed/Ecl"
-
 import 'http://www.eclipse.org/emf/2002/Ecore' as ecore
+
+Script:
+	{Script} (constraint=ExpressionConstraint)?;
 
 ExpressionConstraint:
 	OrExpressionConstraint;
 
 OrExpressionConstraint returns ExpressionConstraint:
-	AndExpressionConstraint ({OrExpressionConstraint.left=current} OR right=AndExpressionConstraint)*;
-	
+	AndExpressionConstraint ({OrExpressionConstraint.left=current} 'OR' right=AndExpressionConstraint)*;
+
 AndExpressionConstraint returns ExpressionConstraint:
-	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} AndOperator right=ExclusionExpressionConstraint)*;
-	
+	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} ('AND' | ',')
+	right=ExclusionExpressionConstraint)*;
+
 ExclusionExpressionConstraint returns ExpressionConstraint:
-	RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=RefinedExpressionConstraint)?;
-	
+	RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} 'MINUS' right=RefinedExpressionConstraint)?;
+
 RefinedExpressionConstraint returns ExpressionConstraint:
 	DottedExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?;
-	
+
 DottedExpressionConstraint returns ExpressionConstraint:
 	SimpleExpressionConstraint ({DottedExpressionConstraint.constraint=current} DOT attribute=Attribute)*;
 
 SimpleExpressionConstraint returns ExpressionConstraint:
 	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | FocusConcept;
-	
+
 FocusConcept returns ExpressionConstraint:
 	MemberOf | ConceptReference | Any | NestedExpression;
-	
+
 ChildOf:
 	LT_EM constraint=FocusConcept;
 
@@ -54,10 +57,10 @@ DescendantOrSelfOf:
 
 ParentOf:
 	GT_EM constraint=FocusConcept;
-	
+
 AncestorOf:
 	GT constraint=FocusConcept;
-	
+
 AncestorOrSelfOf:
 	DBL_GT constraint=FocusConcept;
 
@@ -65,53 +68,53 @@ MemberOf:
 	CARET constraint=(ConceptReference | Any);
 
 ConceptReference:
-	id=SnomedIdentifier (PIPE term=Term PIPE)?;
-	
-Any: 
+	id=SnomedIdentifier (term=TERM_STRING)?;
+
+Any:
 	WILDCARD {Any};
 
 Refinement:
 	OrRefinement;
 
 OrRefinement returns Refinement:
-	AndRefinement -> ({OrRefinement.left=current} OR right=AndRefinement)*;
+	AndRefinement -> ({OrRefinement.left=current} 'OR' right=AndRefinement)*;
 
 AndRefinement returns Refinement:
-	SubRefinement -> ({AndRefinement.left=current} AndOperator right=SubRefinement)*;
-	
+	SubRefinement -> ({AndRefinement.left=current} ('AND' | ',') right=SubRefinement)*;
+
 SubRefinement returns Refinement:
 	AttributeConstraint | AttributeGroup | NestedRefinement;
-	
+
 NestedRefinement:
 	ROUND_OPEN nested=Refinement ROUND_CLOSE;
-	
+
 AttributeGroup:
 	(cardinality=Cardinality)? CURLY_OPEN refinement=AttributeSet CURLY_CLOSE;
-	
+
 AttributeSet returns Refinement:
 	OrAttributeSet;
-	
+
 OrAttributeSet returns Refinement:
-	AndAttributeSet ({OrRefinement.left=current} OR right=AndAttributeSet)*;
-	
+	AndAttributeSet ({OrRefinement.left=current} 'OR' right=AndAttributeSet)*;
+
 AndAttributeSet returns Refinement:
-	SubAttributeSet ({AndRefinement.left=current} AndOperator right=SubAttributeSet)*;
-	
+	SubAttributeSet ({AndRefinement.left=current} ('AND' | ',') right=SubAttributeSet)*;
+
 SubAttributeSet returns Refinement:
 	AttributeConstraint | NestedAttributeSet;
-	
+
 NestedAttributeSet returns NestedRefinement:
 	ROUND_OPEN nested=AttributeSet ROUND_CLOSE;
-	
+
 AttributeConstraint:
 	(cardinality=Cardinality)? (reversed?=REVERSED)? attribute=Attribute comparison=Comparison;
-	
+
 Attribute returns ExpressionConstraint:
 	AttributeDescendantOf | AttributeDescendantOrSelfOf | ConceptReference | Any;
 
 AttributeDescendantOf returns DescendantOf:
 	LT constraint=(ConceptReference | Any);
-	
+
 AttributeDescendantOrSelfOf returns DescendantOrSelfOf:
 	DBL_LT constraint=(ConceptReference | Any);
 
@@ -120,12 +123,12 @@ Cardinality:
 
 Comparison:
 	AttributeComparison | DataTypeComparison;
-	
+
 AttributeComparison:
 	AttributeValueEquals | AttributeValueNotEquals;
 
 DataTypeComparison:
-	StringValueEquals 
+	StringValueEquals
 	| StringValueNotEquals
 	| IntegerValueEquals
 	| IntegerValueNotEquals
@@ -138,142 +141,179 @@ DataTypeComparison:
 	| DecimalValueGreaterThan
 	| DecimalValueGreaterThanEquals
 	| DecimalValueLessThan
-	| DecimalValueLessThanEquals
-;
+	| DecimalValueLessThanEquals;
 
 AttributeValueEquals:
 	EQUAL constraint=SimpleExpressionConstraint;
 
 AttributeValueNotEquals:
 	NOT_EQUAL constraint=SimpleExpressionConstraint;
-	
+
 StringValueEquals:
 	EQUAL value=STRING;
-	
+
 StringValueNotEquals:
 	NOT_EQUAL value=STRING;
-	
+
 IntegerValueEquals:
 	EQUAL HASH value=Integer;
-	
+
 IntegerValueNotEquals:
 	NOT_EQUAL HASH value=Integer;
-	
+
 IntegerValueGreaterThan:
 	GT HASH value=Integer;
 
 IntegerValueLessThan:
 	LT HASH value=Integer;
-	
+
 IntegerValueGreaterThanEquals:
 	GTE HASH value=Integer;
-	
+
 IntegerValueLessThanEquals:
 	LTE HASH value=Integer;
-	
+
 DecimalValueEquals:
 	EQUAL HASH value=Decimal;
-	
+
 DecimalValueNotEquals:
 	NOT_EQUAL HASH value=Decimal;
-	
+
 DecimalValueGreaterThan:
 	GT HASH value=Decimal;
 
 DecimalValueLessThan:
 	LT HASH value=Decimal;
-	
+
 DecimalValueGreaterThanEquals:
 	GTE HASH value=Decimal;
-	
+
 DecimalValueLessThanEquals:
-	LTE HASH value=Decimal;	
-	
+	LTE HASH value=Decimal;
+
 NestedExpression:
 	ROUND_OPEN nested=ExpressionConstraint ROUND_CLOSE;
 
-// hidden grammar rules
-SnomedIdentifier 	hidden() : DIGIT_NONZERO (DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)(DIGIT_NONZERO|ZERO)+;
-Term 				hidden() : (TermCharacter)+ (WS+ (TermCharacter)+)*;
-TermCharacter 		hidden() : LT|GT
-								|DBL_LT|DBL_GT
-								|LT_EM|GT_EM
-								|GTE|LTE
-								|AND|OR|NOT|MINUS
-								|ZERO|DIGIT_NONZERO
-								|LETTER|CARET
-								|EQUAL|NOT_EQUAL|PLUS
-								|CURLY_OPEN|CURLY_CLOSE
-								|ROUND_OPEN|ROUND_CLOSE
-								|SQUARE_OPEN|SQUARE_CLOSE
-								|DOT|COLON|COMMA
-								|REVERSED|TO
-								|WILDCARD|HASH|DASH
-								|OTHER_CHARACTER;
-NonNegativeInteger returns ecore::EInt
-					hidden() : ZERO | DIGIT_NONZERO (DIGIT_NONZERO|ZERO)*;
-MaxValue 		   returns ecore::EInt
-					hidden() : NonNegativeInteger | WILDCARD;
-AndOperator			hidden() : AND | COMMA;
-Integer 		   returns ecore::EInt 
-					hidden(): (PLUS | DASH)? NonNegativeInteger;
-Decimal			   returns ecore::EBigDecimal
-					hidden() : (PLUS | DASH)? NonNegativeDecimal; 
-NonNegativeDecimal returns ecore::EBigDecimal
-					hidden() : NonNegativeInteger DOT (DIGIT_NONZERO|ZERO)*;
+	// hidden grammar rules
+SnomedIdentifier hidden():
+	DIGIT_NONZERO (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO) (DIGIT_NONZERO | ZERO)
+	(DIGIT_NONZERO | ZERO)+;
 
-// ---TERMINALS---
+NonNegativeInteger returns ecore::EInt hidden():
+	ZERO | DIGIT_NONZERO (DIGIT_NONZERO | ZERO)*;
 
-// ECL terminals
-terminal REVERSED				: 'R';
-terminal TO						: '..';
+MaxValue returns ecore::EInt hidden():
+	NonNegativeInteger | WILDCARD;
 
-// bool operators
-terminal AND 					: 'AND';
-terminal OR 					: 'OR';
-terminal MINUS					: 'MINUS';
+Integer returns ecore::EInt hidden():
+	(PLUS | DASH)? NonNegativeInteger;
 
-// numeric terminals
-terminal ZERO 					: '0';
-terminal DIGIT_NONZERO  		: '1'..'9';
+Decimal returns ecore::EBigDecimal hidden():
+	(PLUS | DASH)? NonNegativeDecimal;
 
-// character terminals
-terminal LETTER					: ('a'..'z' | 'A'..'Z');
-terminal PIPE 					: '|';
-terminal COLON 					: ':';
-terminal CURLY_OPEN 			: '{';
-terminal CURLY_CLOSE			: '}';
-terminal COMMA					: ',';
-terminal ROUND_OPEN 			: '(';
-terminal ROUND_CLOSE 			: ')';
-terminal SQUARE_OPEN 			: '[';
-terminal SQUARE_CLOSE 			: ']';
-terminal PLUS 					: '+';
-terminal DASH 					: '-';
-terminal CARET 					: '^';
-terminal NOT 					: '!';
-terminal DOT					: '.';
-terminal WILDCARD 				: '*';
-terminal EQUAL					: '=';
-terminal NOT_EQUAL				: '!=';
-terminal LT						: '<';
-terminal GT						: '>';
-terminal DBL_LT					: '<<';
-terminal DBL_GT					: '>>';
-terminal LT_EM					: '<!';
-terminal GT_EM					: '>!';
-terminal GTE					: '>=';
-terminal LTE					: '<=';
-terminal HASH					: '#';
+NonNegativeDecimal returns ecore::EBigDecimal hidden():
+	NonNegativeInteger DOT (DIGIT_NONZERO | ZERO)*;
 
-// comment terminals
-terminal WS 					: (' '|'\t'|'\n'|'\r');
-terminal ML_COMMENT				: '/*' -> '*/';
-terminal SL_COMMENT 			: '//' !('\n'|'\r')* ('\r'? '\n')?;
+	// ---TERMINALS---
+terminal TERM_STRING:
+	"|" (!("|"))* "|";
 
-// misc
-terminal OTHER_CHARACTER		: !'|';
-terminal STRING	: 
-			'"' ( '\\' . /* 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' */ | !('\\'|'"') )* '"' |
-			"'" ( '\\' . /* 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' */ | !('\\'|"'") )* "'"
-		; 
+terminal REVERSED:
+	'R';
+
+	// ECL terminals
+terminal TO:
+	'..';
+
+	// numeric terminals
+terminal ZERO:
+	'0';
+
+terminal DIGIT_NONZERO:
+	'1'..'9';
+
+terminal COLON:
+	':';
+
+terminal CURLY_OPEN:
+	'{';
+
+terminal CURLY_CLOSE:
+	'}';
+
+terminal ROUND_OPEN:
+	'(';
+
+terminal ROUND_CLOSE:
+	')';
+
+terminal SQUARE_OPEN:
+	'[';
+
+terminal SQUARE_CLOSE:
+	']';
+
+terminal PLUS:
+	'+';
+
+terminal DASH:
+	'-';
+
+terminal CARET:
+	'^';
+
+terminal NOT:
+	'!';
+
+terminal DOT:
+	'.';
+
+terminal WILDCARD:
+	'*';
+
+terminal EQUAL:
+	'=';
+
+terminal NOT_EQUAL:
+	'!=';
+
+terminal LT:
+	'<';
+
+terminal GT:
+	'>';
+
+terminal DBL_LT:
+	'<<';
+
+terminal DBL_GT:
+	'>>';
+
+terminal LT_EM:
+	'<!';
+
+terminal GT_EM:
+	'>!';
+
+terminal GTE:
+	'>=';
+
+terminal LTE:
+	'<=';
+
+terminal HASH:
+	'#';
+
+	// comment terminals
+terminal WS:
+	(' ' | '\t' | '\n' | '\r');
+
+terminal ML_COMMENT:
+	'/*'->'*/';
+
+terminal SL_COMMENT:
+	'//' !('\n' | '\r')* ('\r'? '\n')?;
+
+terminal STRING:
+	'"' ('\\' . /* 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' */ | !('\\' | '"'))* '"' |
+	"'" ('\\' . /* 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' */ | !('\\' | "'"))* "'"; 

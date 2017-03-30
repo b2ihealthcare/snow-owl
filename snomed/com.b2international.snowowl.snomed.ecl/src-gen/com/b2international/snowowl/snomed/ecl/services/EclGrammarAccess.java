@@ -24,6 +24,7 @@ import org.eclipse.xtext.Assignment;
 import org.eclipse.xtext.Grammar;
 import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.Group;
+import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.ParserRule;
 import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.TerminalRule;
@@ -33,6 +34,29 @@ import org.eclipse.xtext.service.GrammarProvider;
 @Singleton
 public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	
+	public class ScriptElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.Script");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Action cScriptAction_0 = (Action)cGroup.eContents().get(0);
+		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cConstraintExpressionConstraintParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
+		
+		//Script:
+		//	{Script} constraint=ExpressionConstraint?;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//{Script} constraint=ExpressionConstraint?
+		public Group getGroup() { return cGroup; }
+		
+		//{Script}
+		public Action getScriptAction_0() { return cScriptAction_0; }
+		
+		//constraint=ExpressionConstraint?
+		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
+		
+		//ExpressionConstraint
+		public RuleCall getConstraintExpressionConstraintParserRuleCall_1_0() { return cConstraintExpressionConstraintParserRuleCall_1_0; }
+	}
 	public class ExpressionConstraintElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
 		private final RuleCall cOrExpressionConstraintParserRuleCall = (RuleCall)rule.eContents().get(1);
@@ -50,28 +74,28 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cAndExpressionConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Action cOrExpressionConstraintLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
-		private final RuleCall cORTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
+		private final Keyword cORKeyword_1_1 = (Keyword)cGroup_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
 		private final RuleCall cRightAndExpressionConstraintParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
 		//OrExpressionConstraint ExpressionConstraint:
-		//	AndExpressionConstraint ({OrExpressionConstraint.left=current} OR right=AndExpressionConstraint)*;
+		//	AndExpressionConstraint ({OrExpressionConstraint.left=current} 'OR' right=AndExpressionConstraint)*;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//AndExpressionConstraint ({OrExpressionConstraint.left=current} OR right=AndExpressionConstraint)*
+		//AndExpressionConstraint ({OrExpressionConstraint.left=current} 'OR' right=AndExpressionConstraint)*
 		public Group getGroup() { return cGroup; }
 		
 		//AndExpressionConstraint
 		public RuleCall getAndExpressionConstraintParserRuleCall_0() { return cAndExpressionConstraintParserRuleCall_0; }
 		
-		//({OrExpressionConstraint.left=current} OR right=AndExpressionConstraint)*
+		//({OrExpressionConstraint.left=current} 'OR' right=AndExpressionConstraint)*
 		public Group getGroup_1() { return cGroup_1; }
 		
 		//{OrExpressionConstraint.left=current}
 		public Action getOrExpressionConstraintLeftAction_1_0() { return cOrExpressionConstraintLeftAction_1_0; }
 		
-		//OR
-		public RuleCall getORTerminalRuleCall_1_1() { return cORTerminalRuleCall_1_1; }
+		//'OR'
+		public Keyword getORKeyword_1_1() { return cORKeyword_1_1; }
 		
 		//right=AndExpressionConstraint
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
@@ -85,29 +109,38 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cExclusionExpressionConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Action cAndExpressionConstraintLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
-		private final RuleCall cAndOperatorParserRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
+		private final Alternatives cAlternatives_1_1 = (Alternatives)cGroup_1.eContents().get(1);
+		private final Keyword cANDKeyword_1_1_0 = (Keyword)cAlternatives_1_1.eContents().get(0);
+		private final Keyword cCommaKeyword_1_1_1 = (Keyword)cAlternatives_1_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
 		private final RuleCall cRightExclusionExpressionConstraintParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
 		//AndExpressionConstraint ExpressionConstraint:
-		//	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} AndOperator
+		//	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} ('AND' | ',')
 		//	right=ExclusionExpressionConstraint)*;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} AndOperator right=ExclusionExpressionConstraint)*
+		//ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} ('AND' | ',')
+		//right=ExclusionExpressionConstraint)*
 		public Group getGroup() { return cGroup; }
 		
 		//ExclusionExpressionConstraint
 		public RuleCall getExclusionExpressionConstraintParserRuleCall_0() { return cExclusionExpressionConstraintParserRuleCall_0; }
 		
-		//({AndExpressionConstraint.left=current} AndOperator right=ExclusionExpressionConstraint)*
+		//({AndExpressionConstraint.left=current} ('AND' | ',') right=ExclusionExpressionConstraint)*
 		public Group getGroup_1() { return cGroup_1; }
 		
 		//{AndExpressionConstraint.left=current}
 		public Action getAndExpressionConstraintLeftAction_1_0() { return cAndExpressionConstraintLeftAction_1_0; }
 		
-		//AndOperator
-		public RuleCall getAndOperatorParserRuleCall_1_1() { return cAndOperatorParserRuleCall_1_1; }
+		//'AND' | ','
+		public Alternatives getAlternatives_1_1() { return cAlternatives_1_1; }
+		
+		//'AND'
+		public Keyword getANDKeyword_1_1_0() { return cANDKeyword_1_1_0; }
+		
+		//','
+		public Keyword getCommaKeyword_1_1_1() { return cCommaKeyword_1_1_1; }
 		
 		//right=ExclusionExpressionConstraint
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
@@ -121,28 +154,28 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cRefinedExpressionConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Action cExclusionExpressionConstraintLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
-		private final RuleCall cMINUSTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
+		private final Keyword cMINUSKeyword_1_1 = (Keyword)cGroup_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
 		private final RuleCall cRightRefinedExpressionConstraintParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
 		//ExclusionExpressionConstraint ExpressionConstraint:
-		//	RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=RefinedExpressionConstraint)?;
+		//	RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} 'MINUS' right=RefinedExpressionConstraint)?;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=RefinedExpressionConstraint)?
+		//RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} 'MINUS' right=RefinedExpressionConstraint)?
 		public Group getGroup() { return cGroup; }
 		
 		//RefinedExpressionConstraint
 		public RuleCall getRefinedExpressionConstraintParserRuleCall_0() { return cRefinedExpressionConstraintParserRuleCall_0; }
 		
-		//({ExclusionExpressionConstraint.left=current} MINUS right=RefinedExpressionConstraint)?
+		//({ExclusionExpressionConstraint.left=current} 'MINUS' right=RefinedExpressionConstraint)?
 		public Group getGroup_1() { return cGroup_1; }
 		
 		//{ExclusionExpressionConstraint.left=current}
 		public Action getExclusionExpressionConstraintLeftAction_1_0() { return cExclusionExpressionConstraintLeftAction_1_0; }
 		
-		//MINUS
-		public RuleCall getMINUSTerminalRuleCall_1_1() { return cMINUSTerminalRuleCall_1_1; }
+		//'MINUS'
+		public Keyword getMINUSKeyword_1_1() { return cMINUSKeyword_1_1; }
 		
 		//right=RefinedExpressionConstraint
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
@@ -460,17 +493,14 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final Assignment cIdAssignment_0 = (Assignment)cGroup.eContents().get(0);
 		private final RuleCall cIdSnomedIdentifierParserRuleCall_0_0 = (RuleCall)cIdAssignment_0.eContents().get(0);
-		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
-		private final RuleCall cPIPETerminalRuleCall_1_0 = (RuleCall)cGroup_1.eContents().get(0);
-		private final Assignment cTermAssignment_1_1 = (Assignment)cGroup_1.eContents().get(1);
-		private final RuleCall cTermTermParserRuleCall_1_1_0 = (RuleCall)cTermAssignment_1_1.eContents().get(0);
-		private final RuleCall cPIPETerminalRuleCall_1_2 = (RuleCall)cGroup_1.eContents().get(2);
+		private final Assignment cTermAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cTermTERM_STRINGTerminalRuleCall_1_0 = (RuleCall)cTermAssignment_1.eContents().get(0);
 		
 		//ConceptReference:
-		//	id=SnomedIdentifier (PIPE term=Term PIPE)?;
+		//	id=SnomedIdentifier term=TERM_STRING?;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//id=SnomedIdentifier (PIPE term=Term PIPE)?
+		//id=SnomedIdentifier term=TERM_STRING?
 		public Group getGroup() { return cGroup; }
 		
 		//id=SnomedIdentifier
@@ -479,20 +509,11 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		//SnomedIdentifier
 		public RuleCall getIdSnomedIdentifierParserRuleCall_0_0() { return cIdSnomedIdentifierParserRuleCall_0_0; }
 		
-		//(PIPE term=Term PIPE)?
-		public Group getGroup_1() { return cGroup_1; }
+		//term=TERM_STRING?
+		public Assignment getTermAssignment_1() { return cTermAssignment_1; }
 		
-		//PIPE
-		public RuleCall getPIPETerminalRuleCall_1_0() { return cPIPETerminalRuleCall_1_0; }
-		
-		//term=Term
-		public Assignment getTermAssignment_1_1() { return cTermAssignment_1_1; }
-		
-		//Term
-		public RuleCall getTermTermParserRuleCall_1_1_0() { return cTermTermParserRuleCall_1_1_0; }
-		
-		//PIPE
-		public RuleCall getPIPETerminalRuleCall_1_2() { return cPIPETerminalRuleCall_1_2; }
+		//TERM_STRING
+		public RuleCall getTermTERM_STRINGTerminalRuleCall_1_0() { return cTermTERM_STRINGTerminalRuleCall_1_0; }
 	}
 	public class AnyElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.Any");
@@ -531,31 +552,31 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Group cGroup_1_0 = (Group)cGroup_1.eContents().get(0);
 		private final Action cOrRefinementLeftAction_1_0_0 = (Action)cGroup_1_0.eContents().get(0);
-		private final RuleCall cORTerminalRuleCall_1_0_1 = (RuleCall)cGroup_1_0.eContents().get(1);
+		private final Keyword cORKeyword_1_0_1 = (Keyword)cGroup_1_0.eContents().get(1);
 		private final Assignment cRightAssignment_1_0_2 = (Assignment)cGroup_1_0.eContents().get(2);
 		private final RuleCall cRightAndRefinementParserRuleCall_1_0_2_0 = (RuleCall)cRightAssignment_1_0_2.eContents().get(0);
 		
 		//OrRefinement Refinement:
-		//	AndRefinement -> ({OrRefinement.left=current} OR right=AndRefinement)*;
+		//	AndRefinement -> ({OrRefinement.left=current} 'OR' right=AndRefinement)*;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//AndRefinement -> ({OrRefinement.left=current} OR right=AndRefinement)*
+		//AndRefinement -> ({OrRefinement.left=current} 'OR' right=AndRefinement)*
 		public Group getGroup() { return cGroup; }
 		
 		//AndRefinement
 		public RuleCall getAndRefinementParserRuleCall_0() { return cAndRefinementParserRuleCall_0; }
 		
-		//-> ({OrRefinement.left=current} OR right=AndRefinement)*
+		//-> ({OrRefinement.left=current} 'OR' right=AndRefinement)*
 		public Group getGroup_1() { return cGroup_1; }
 		
-		//{OrRefinement.left=current} OR right=AndRefinement
+		//{OrRefinement.left=current} 'OR' right=AndRefinement
 		public Group getGroup_1_0() { return cGroup_1_0; }
 		
 		//{OrRefinement.left=current}
 		public Action getOrRefinementLeftAction_1_0_0() { return cOrRefinementLeftAction_1_0_0; }
 		
-		//OR
-		public RuleCall getORTerminalRuleCall_1_0_1() { return cORTerminalRuleCall_1_0_1; }
+		//'OR'
+		public Keyword getORKeyword_1_0_1() { return cORKeyword_1_0_1; }
 		
 		//right=AndRefinement
 		public Assignment getRightAssignment_1_0_2() { return cRightAssignment_1_0_2; }
@@ -570,31 +591,39 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Group cGroup_1_0 = (Group)cGroup_1.eContents().get(0);
 		private final Action cAndRefinementLeftAction_1_0_0 = (Action)cGroup_1_0.eContents().get(0);
-		private final RuleCall cAndOperatorParserRuleCall_1_0_1 = (RuleCall)cGroup_1_0.eContents().get(1);
+		private final Alternatives cAlternatives_1_0_1 = (Alternatives)cGroup_1_0.eContents().get(1);
+		private final Keyword cANDKeyword_1_0_1_0 = (Keyword)cAlternatives_1_0_1.eContents().get(0);
+		private final Keyword cCommaKeyword_1_0_1_1 = (Keyword)cAlternatives_1_0_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_0_2 = (Assignment)cGroup_1_0.eContents().get(2);
 		private final RuleCall cRightSubRefinementParserRuleCall_1_0_2_0 = (RuleCall)cRightAssignment_1_0_2.eContents().get(0);
 		
 		//AndRefinement Refinement:
-		//	SubRefinement -> ({AndRefinement.left=current} AndOperator right=SubRefinement)*;
+		//	SubRefinement -> ({AndRefinement.left=current} ('AND' | ',') right=SubRefinement)*;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//SubRefinement -> ({AndRefinement.left=current} AndOperator right=SubRefinement)*
+		//SubRefinement -> ({AndRefinement.left=current} ('AND' | ',') right=SubRefinement)*
 		public Group getGroup() { return cGroup; }
 		
 		//SubRefinement
 		public RuleCall getSubRefinementParserRuleCall_0() { return cSubRefinementParserRuleCall_0; }
 		
-		//-> ({AndRefinement.left=current} AndOperator right=SubRefinement)*
+		//-> ({AndRefinement.left=current} ('AND' | ',') right=SubRefinement)*
 		public Group getGroup_1() { return cGroup_1; }
 		
-		//{AndRefinement.left=current} AndOperator right=SubRefinement
+		//{AndRefinement.left=current} ('AND' | ',') right=SubRefinement
 		public Group getGroup_1_0() { return cGroup_1_0; }
 		
 		//{AndRefinement.left=current}
 		public Action getAndRefinementLeftAction_1_0_0() { return cAndRefinementLeftAction_1_0_0; }
 		
-		//AndOperator
-		public RuleCall getAndOperatorParserRuleCall_1_0_1() { return cAndOperatorParserRuleCall_1_0_1; }
+		//'AND' | ','
+		public Alternatives getAlternatives_1_0_1() { return cAlternatives_1_0_1; }
+		
+		//'AND'
+		public Keyword getANDKeyword_1_0_1_0() { return cANDKeyword_1_0_1_0; }
+		
+		//','
+		public Keyword getCommaKeyword_1_0_1_1() { return cCommaKeyword_1_0_1_1; }
 		
 		//right=SubRefinement
 		public Assignment getRightAssignment_1_0_2() { return cRightAssignment_1_0_2; }
@@ -704,28 +733,28 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cAndAttributeSetParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Action cOrRefinementLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
-		private final RuleCall cORTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
+		private final Keyword cORKeyword_1_1 = (Keyword)cGroup_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
 		private final RuleCall cRightAndAttributeSetParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
 		//OrAttributeSet Refinement:
-		//	AndAttributeSet ({OrRefinement.left=current} OR right=AndAttributeSet)*;
+		//	AndAttributeSet ({OrRefinement.left=current} 'OR' right=AndAttributeSet)*;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//AndAttributeSet ({OrRefinement.left=current} OR right=AndAttributeSet)*
+		//AndAttributeSet ({OrRefinement.left=current} 'OR' right=AndAttributeSet)*
 		public Group getGroup() { return cGroup; }
 		
 		//AndAttributeSet
 		public RuleCall getAndAttributeSetParserRuleCall_0() { return cAndAttributeSetParserRuleCall_0; }
 		
-		//({OrRefinement.left=current} OR right=AndAttributeSet)*
+		//({OrRefinement.left=current} 'OR' right=AndAttributeSet)*
 		public Group getGroup_1() { return cGroup_1; }
 		
 		//{OrRefinement.left=current}
 		public Action getOrRefinementLeftAction_1_0() { return cOrRefinementLeftAction_1_0; }
 		
-		//OR
-		public RuleCall getORTerminalRuleCall_1_1() { return cORTerminalRuleCall_1_1; }
+		//'OR'
+		public Keyword getORKeyword_1_1() { return cORKeyword_1_1; }
 		
 		//right=AndAttributeSet
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
@@ -739,28 +768,36 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cSubAttributeSetParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Action cAndRefinementLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
-		private final RuleCall cAndOperatorParserRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
+		private final Alternatives cAlternatives_1_1 = (Alternatives)cGroup_1.eContents().get(1);
+		private final Keyword cANDKeyword_1_1_0 = (Keyword)cAlternatives_1_1.eContents().get(0);
+		private final Keyword cCommaKeyword_1_1_1 = (Keyword)cAlternatives_1_1.eContents().get(1);
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
 		private final RuleCall cRightSubAttributeSetParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
 		//AndAttributeSet Refinement:
-		//	SubAttributeSet ({AndRefinement.left=current} AndOperator right=SubAttributeSet)*;
+		//	SubAttributeSet ({AndRefinement.left=current} ('AND' | ',') right=SubAttributeSet)*;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//SubAttributeSet ({AndRefinement.left=current} AndOperator right=SubAttributeSet)*
+		//SubAttributeSet ({AndRefinement.left=current} ('AND' | ',') right=SubAttributeSet)*
 		public Group getGroup() { return cGroup; }
 		
 		//SubAttributeSet
 		public RuleCall getSubAttributeSetParserRuleCall_0() { return cSubAttributeSetParserRuleCall_0; }
 		
-		//({AndRefinement.left=current} AndOperator right=SubAttributeSet)*
+		//({AndRefinement.left=current} ('AND' | ',') right=SubAttributeSet)*
 		public Group getGroup_1() { return cGroup_1; }
 		
 		//{AndRefinement.left=current}
 		public Action getAndRefinementLeftAction_1_0() { return cAndRefinementLeftAction_1_0; }
 		
-		//AndOperator
-		public RuleCall getAndOperatorParserRuleCall_1_1() { return cAndOperatorParserRuleCall_1_1; }
+		//'AND' | ','
+		public Alternatives getAlternatives_1_1() { return cAlternatives_1_1; }
+		
+		//'AND'
+		public Keyword getANDKeyword_1_1_0() { return cANDKeyword_1_1_0; }
+		
+		//','
+		public Keyword getCommaKeyword_1_1_1() { return cCommaKeyword_1_1_1; }
 		
 		//right=SubAttributeSet
 		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
@@ -1627,196 +1664,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		//ZERO
 		public RuleCall getZEROTerminalRuleCall_5_1() { return cZEROTerminalRuleCall_5_1; }
 	}
-	public class TermElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.Term");
-		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cTermCharacterParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
-		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
-		private final RuleCall cWSTerminalRuleCall_1_0 = (RuleCall)cGroup_1.eContents().get(0);
-		private final RuleCall cTermCharacterParserRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
-		
-		//Term hidden():
-		//	TermCharacter+ (WS+ TermCharacter+)*;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//TermCharacter+ (WS+ TermCharacter+)*
-		public Group getGroup() { return cGroup; }
-		
-		//TermCharacter+
-		public RuleCall getTermCharacterParserRuleCall_0() { return cTermCharacterParserRuleCall_0; }
-		
-		//(WS+ TermCharacter+)*
-		public Group getGroup_1() { return cGroup_1; }
-		
-		//WS+
-		public RuleCall getWSTerminalRuleCall_1_0() { return cWSTerminalRuleCall_1_0; }
-		
-		//TermCharacter+
-		public RuleCall getTermCharacterParserRuleCall_1_1() { return cTermCharacterParserRuleCall_1_1; }
-	}
-	public class TermCharacterElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.TermCharacter");
-		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
-		private final RuleCall cLTTerminalRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final RuleCall cGTTerminalRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
-		private final RuleCall cDBL_LTTerminalRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
-		private final RuleCall cDBL_GTTerminalRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
-		private final RuleCall cLT_EMTerminalRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
-		private final RuleCall cGT_EMTerminalRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
-		private final RuleCall cGTETerminalRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
-		private final RuleCall cLTETerminalRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
-		private final RuleCall cANDTerminalRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
-		private final RuleCall cORTerminalRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
-		private final RuleCall cNOTTerminalRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
-		private final RuleCall cMINUSTerminalRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
-		private final RuleCall cZEROTerminalRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
-		private final RuleCall cDIGIT_NONZEROTerminalRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
-		private final RuleCall cLETTERTerminalRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
-		private final RuleCall cCARETTerminalRuleCall_15 = (RuleCall)cAlternatives.eContents().get(15);
-		private final RuleCall cEQUALTerminalRuleCall_16 = (RuleCall)cAlternatives.eContents().get(16);
-		private final RuleCall cNOT_EQUALTerminalRuleCall_17 = (RuleCall)cAlternatives.eContents().get(17);
-		private final RuleCall cPLUSTerminalRuleCall_18 = (RuleCall)cAlternatives.eContents().get(18);
-		private final RuleCall cCURLY_OPENTerminalRuleCall_19 = (RuleCall)cAlternatives.eContents().get(19);
-		private final RuleCall cCURLY_CLOSETerminalRuleCall_20 = (RuleCall)cAlternatives.eContents().get(20);
-		private final RuleCall cROUND_OPENTerminalRuleCall_21 = (RuleCall)cAlternatives.eContents().get(21);
-		private final RuleCall cROUND_CLOSETerminalRuleCall_22 = (RuleCall)cAlternatives.eContents().get(22);
-		private final RuleCall cSQUARE_OPENTerminalRuleCall_23 = (RuleCall)cAlternatives.eContents().get(23);
-		private final RuleCall cSQUARE_CLOSETerminalRuleCall_24 = (RuleCall)cAlternatives.eContents().get(24);
-		private final RuleCall cDOTTerminalRuleCall_25 = (RuleCall)cAlternatives.eContents().get(25);
-		private final RuleCall cCOLONTerminalRuleCall_26 = (RuleCall)cAlternatives.eContents().get(26);
-		private final RuleCall cCOMMATerminalRuleCall_27 = (RuleCall)cAlternatives.eContents().get(27);
-		private final RuleCall cREVERSEDTerminalRuleCall_28 = (RuleCall)cAlternatives.eContents().get(28);
-		private final RuleCall cTOTerminalRuleCall_29 = (RuleCall)cAlternatives.eContents().get(29);
-		private final RuleCall cWILDCARDTerminalRuleCall_30 = (RuleCall)cAlternatives.eContents().get(30);
-		private final RuleCall cHASHTerminalRuleCall_31 = (RuleCall)cAlternatives.eContents().get(31);
-		private final RuleCall cDASHTerminalRuleCall_32 = (RuleCall)cAlternatives.eContents().get(32);
-		private final RuleCall cOTHER_CHARACTERTerminalRuleCall_33 = (RuleCall)cAlternatives.eContents().get(33);
-		
-		//TermCharacter hidden():
-		//	LT | GT
-		//	| DBL_LT | DBL_GT
-		//	| LT_EM | GT_EM
-		//	| GTE | LTE
-		//	| AND | OR | NOT | MINUS
-		//	| ZERO | DIGIT_NONZERO
-		//	| LETTER | CARET
-		//	| EQUAL | NOT_EQUAL | PLUS
-		//	| CURLY_OPEN | CURLY_CLOSE
-		//	| ROUND_OPEN | ROUND_CLOSE
-		//	| SQUARE_OPEN | SQUARE_CLOSE
-		//	| DOT | COLON | COMMA
-		//	| REVERSED | TO
-		//	| WILDCARD | HASH | DASH
-		//	| OTHER_CHARACTER;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//LT | GT | DBL_LT | DBL_GT | LT_EM | GT_EM | GTE | LTE | AND | OR | NOT | MINUS | ZERO | DIGIT_NONZERO | LETTER | CARET |
-		//EQUAL | NOT_EQUAL | PLUS | CURLY_OPEN | CURLY_CLOSE | ROUND_OPEN | ROUND_CLOSE | SQUARE_OPEN | SQUARE_CLOSE | DOT |
-		//COLON | COMMA | REVERSED | TO | WILDCARD | HASH | DASH | OTHER_CHARACTER
-		public Alternatives getAlternatives() { return cAlternatives; }
-		
-		//LT
-		public RuleCall getLTTerminalRuleCall_0() { return cLTTerminalRuleCall_0; }
-		
-		//GT
-		public RuleCall getGTTerminalRuleCall_1() { return cGTTerminalRuleCall_1; }
-		
-		//DBL_LT
-		public RuleCall getDBL_LTTerminalRuleCall_2() { return cDBL_LTTerminalRuleCall_2; }
-		
-		//DBL_GT
-		public RuleCall getDBL_GTTerminalRuleCall_3() { return cDBL_GTTerminalRuleCall_3; }
-		
-		//LT_EM
-		public RuleCall getLT_EMTerminalRuleCall_4() { return cLT_EMTerminalRuleCall_4; }
-		
-		//GT_EM
-		public RuleCall getGT_EMTerminalRuleCall_5() { return cGT_EMTerminalRuleCall_5; }
-		
-		//GTE
-		public RuleCall getGTETerminalRuleCall_6() { return cGTETerminalRuleCall_6; }
-		
-		//LTE
-		public RuleCall getLTETerminalRuleCall_7() { return cLTETerminalRuleCall_7; }
-		
-		//AND
-		public RuleCall getANDTerminalRuleCall_8() { return cANDTerminalRuleCall_8; }
-		
-		//OR
-		public RuleCall getORTerminalRuleCall_9() { return cORTerminalRuleCall_9; }
-		
-		//NOT
-		public RuleCall getNOTTerminalRuleCall_10() { return cNOTTerminalRuleCall_10; }
-		
-		//MINUS
-		public RuleCall getMINUSTerminalRuleCall_11() { return cMINUSTerminalRuleCall_11; }
-		
-		//ZERO
-		public RuleCall getZEROTerminalRuleCall_12() { return cZEROTerminalRuleCall_12; }
-		
-		//DIGIT_NONZERO
-		public RuleCall getDIGIT_NONZEROTerminalRuleCall_13() { return cDIGIT_NONZEROTerminalRuleCall_13; }
-		
-		//LETTER
-		public RuleCall getLETTERTerminalRuleCall_14() { return cLETTERTerminalRuleCall_14; }
-		
-		//CARET
-		public RuleCall getCARETTerminalRuleCall_15() { return cCARETTerminalRuleCall_15; }
-		
-		//EQUAL
-		public RuleCall getEQUALTerminalRuleCall_16() { return cEQUALTerminalRuleCall_16; }
-		
-		//NOT_EQUAL
-		public RuleCall getNOT_EQUALTerminalRuleCall_17() { return cNOT_EQUALTerminalRuleCall_17; }
-		
-		//PLUS
-		public RuleCall getPLUSTerminalRuleCall_18() { return cPLUSTerminalRuleCall_18; }
-		
-		//CURLY_OPEN
-		public RuleCall getCURLY_OPENTerminalRuleCall_19() { return cCURLY_OPENTerminalRuleCall_19; }
-		
-		//CURLY_CLOSE
-		public RuleCall getCURLY_CLOSETerminalRuleCall_20() { return cCURLY_CLOSETerminalRuleCall_20; }
-		
-		//ROUND_OPEN
-		public RuleCall getROUND_OPENTerminalRuleCall_21() { return cROUND_OPENTerminalRuleCall_21; }
-		
-		//ROUND_CLOSE
-		public RuleCall getROUND_CLOSETerminalRuleCall_22() { return cROUND_CLOSETerminalRuleCall_22; }
-		
-		//SQUARE_OPEN
-		public RuleCall getSQUARE_OPENTerminalRuleCall_23() { return cSQUARE_OPENTerminalRuleCall_23; }
-		
-		//SQUARE_CLOSE
-		public RuleCall getSQUARE_CLOSETerminalRuleCall_24() { return cSQUARE_CLOSETerminalRuleCall_24; }
-		
-		//DOT
-		public RuleCall getDOTTerminalRuleCall_25() { return cDOTTerminalRuleCall_25; }
-		
-		//COLON
-		public RuleCall getCOLONTerminalRuleCall_26() { return cCOLONTerminalRuleCall_26; }
-		
-		//COMMA
-		public RuleCall getCOMMATerminalRuleCall_27() { return cCOMMATerminalRuleCall_27; }
-		
-		//REVERSED
-		public RuleCall getREVERSEDTerminalRuleCall_28() { return cREVERSEDTerminalRuleCall_28; }
-		
-		//TO
-		public RuleCall getTOTerminalRuleCall_29() { return cTOTerminalRuleCall_29; }
-		
-		//WILDCARD
-		public RuleCall getWILDCARDTerminalRuleCall_30() { return cWILDCARDTerminalRuleCall_30; }
-		
-		//HASH
-		public RuleCall getHASHTerminalRuleCall_31() { return cHASHTerminalRuleCall_31; }
-		
-		//DASH
-		public RuleCall getDASHTerminalRuleCall_32() { return cDASHTerminalRuleCall_32; }
-		
-		//OTHER_CHARACTER
-		public RuleCall getOTHER_CHARACTERTerminalRuleCall_33() { return cOTHER_CHARACTERTerminalRuleCall_33; }
-	}
 	public class NonNegativeIntegerElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
@@ -1870,25 +1717,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		
 		//WILDCARD
 		public RuleCall getWILDCARDTerminalRuleCall_1() { return cWILDCARDTerminalRuleCall_1; }
-	}
-	public class AndOperatorElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.AndOperator");
-		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
-		private final RuleCall cANDTerminalRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final RuleCall cCOMMATerminalRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
-		
-		//AndOperator hidden():
-		//	AND | COMMA;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//AND | COMMA
-		public Alternatives getAlternatives() { return cAlternatives; }
-		
-		//AND
-		public RuleCall getANDTerminalRuleCall_0() { return cANDTerminalRuleCall_0; }
-		
-		//COMMA
-		public RuleCall getCOMMATerminalRuleCall_1() { return cCOMMATerminalRuleCall_1; }
 	}
 	public class IntegerElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.Integer");
@@ -1977,6 +1805,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	
+	private final ScriptElements pScript;
 	private final ExpressionConstraintElements pExpressionConstraint;
 	private final OrExpressionConstraintElements pOrExpressionConstraint;
 	private final AndExpressionConstraintElements pAndExpressionConstraint;
@@ -2031,27 +1860,19 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final DecimalValueLessThanEqualsElements pDecimalValueLessThanEquals;
 	private final NestedExpressionElements pNestedExpression;
 	private final SnomedIdentifierElements pSnomedIdentifier;
-	private final TermElements pTerm;
-	private final TermCharacterElements pTermCharacter;
 	private final NonNegativeIntegerElements pNonNegativeInteger;
 	private final MaxValueElements pMaxValue;
-	private final AndOperatorElements pAndOperator;
 	private final IntegerElements pInteger;
 	private final DecimalElements pDecimal;
 	private final NonNegativeDecimalElements pNonNegativeDecimal;
+	private final TerminalRule tTERM_STRING;
 	private final TerminalRule tREVERSED;
 	private final TerminalRule tTO;
-	private final TerminalRule tAND;
-	private final TerminalRule tOR;
-	private final TerminalRule tMINUS;
 	private final TerminalRule tZERO;
 	private final TerminalRule tDIGIT_NONZERO;
-	private final TerminalRule tLETTER;
-	private final TerminalRule tPIPE;
 	private final TerminalRule tCOLON;
 	private final TerminalRule tCURLY_OPEN;
 	private final TerminalRule tCURLY_CLOSE;
-	private final TerminalRule tCOMMA;
 	private final TerminalRule tROUND_OPEN;
 	private final TerminalRule tROUND_CLOSE;
 	private final TerminalRule tSQUARE_OPEN;
@@ -2076,7 +1897,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final TerminalRule tWS;
 	private final TerminalRule tML_COMMENT;
 	private final TerminalRule tSL_COMMENT;
-	private final TerminalRule tOTHER_CHARACTER;
 	private final TerminalRule tSTRING;
 	
 	private final Grammar grammar;
@@ -2084,6 +1904,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	@Inject
 	public EclGrammarAccess(GrammarProvider grammarProvider) {
 		this.grammar = internalFindGrammar(grammarProvider);
+		this.pScript = new ScriptElements();
 		this.pExpressionConstraint = new ExpressionConstraintElements();
 		this.pOrExpressionConstraint = new OrExpressionConstraintElements();
 		this.pAndExpressionConstraint = new AndExpressionConstraintElements();
@@ -2138,27 +1959,19 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pDecimalValueLessThanEquals = new DecimalValueLessThanEqualsElements();
 		this.pNestedExpression = new NestedExpressionElements();
 		this.pSnomedIdentifier = new SnomedIdentifierElements();
-		this.pTerm = new TermElements();
-		this.pTermCharacter = new TermCharacterElements();
 		this.pNonNegativeInteger = new NonNegativeIntegerElements();
 		this.pMaxValue = new MaxValueElements();
-		this.pAndOperator = new AndOperatorElements();
 		this.pInteger = new IntegerElements();
 		this.pDecimal = new DecimalElements();
 		this.pNonNegativeDecimal = new NonNegativeDecimalElements();
+		this.tTERM_STRING = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.TERM_STRING");
 		this.tREVERSED = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.REVERSED");
 		this.tTO = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.TO");
-		this.tAND = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.AND");
-		this.tOR = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.OR");
-		this.tMINUS = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.MINUS");
 		this.tZERO = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.ZERO");
 		this.tDIGIT_NONZERO = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.DIGIT_NONZERO");
-		this.tLETTER = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.LETTER");
-		this.tPIPE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.PIPE");
 		this.tCOLON = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.COLON");
 		this.tCURLY_OPEN = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.CURLY_OPEN");
 		this.tCURLY_CLOSE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.CURLY_CLOSE");
-		this.tCOMMA = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.COMMA");
 		this.tROUND_OPEN = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.ROUND_OPEN");
 		this.tROUND_CLOSE = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.ROUND_CLOSE");
 		this.tSQUARE_OPEN = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.SQUARE_OPEN");
@@ -2183,7 +1996,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.tWS = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.WS");
 		this.tML_COMMENT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.ML_COMMENT");
 		this.tSL_COMMENT = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.SL_COMMENT");
-		this.tOTHER_CHARACTER = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.OTHER_CHARACTER");
 		this.tSTRING = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.STRING");
 	}
 	
@@ -2210,6 +2022,16 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	
 
 	
+	//Script:
+	//	{Script} constraint=ExpressionConstraint?;
+	public ScriptElements getScriptAccess() {
+		return pScript;
+	}
+	
+	public ParserRule getScriptRule() {
+		return getScriptAccess().getRule();
+	}
+	
 	//ExpressionConstraint:
 	//	OrExpressionConstraint;
 	public ExpressionConstraintElements getExpressionConstraintAccess() {
@@ -2221,7 +2043,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//OrExpressionConstraint ExpressionConstraint:
-	//	AndExpressionConstraint ({OrExpressionConstraint.left=current} OR right=AndExpressionConstraint)*;
+	//	AndExpressionConstraint ({OrExpressionConstraint.left=current} 'OR' right=AndExpressionConstraint)*;
 	public OrExpressionConstraintElements getOrExpressionConstraintAccess() {
 		return pOrExpressionConstraint;
 	}
@@ -2231,7 +2053,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//AndExpressionConstraint ExpressionConstraint:
-	//	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} AndOperator
+	//	ExclusionExpressionConstraint ({AndExpressionConstraint.left=current} ('AND' | ',')
 	//	right=ExclusionExpressionConstraint)*;
 	public AndExpressionConstraintElements getAndExpressionConstraintAccess() {
 		return pAndExpressionConstraint;
@@ -2242,7 +2064,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//ExclusionExpressionConstraint ExpressionConstraint:
-	//	RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} MINUS right=RefinedExpressionConstraint)?;
+	//	RefinedExpressionConstraint ({ExclusionExpressionConstraint.left=current} 'MINUS' right=RefinedExpressionConstraint)?;
 	public ExclusionExpressionConstraintElements getExclusionExpressionConstraintAccess() {
 		return pExclusionExpressionConstraint;
 	}
@@ -2362,7 +2184,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//ConceptReference:
-	//	id=SnomedIdentifier (PIPE term=Term PIPE)?;
+	//	id=SnomedIdentifier term=TERM_STRING?;
 	public ConceptReferenceElements getConceptReferenceAccess() {
 		return pConceptReference;
 	}
@@ -2392,7 +2214,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//OrRefinement Refinement:
-	//	AndRefinement -> ({OrRefinement.left=current} OR right=AndRefinement)*;
+	//	AndRefinement -> ({OrRefinement.left=current} 'OR' right=AndRefinement)*;
 	public OrRefinementElements getOrRefinementAccess() {
 		return pOrRefinement;
 	}
@@ -2402,7 +2224,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//AndRefinement Refinement:
-	//	SubRefinement -> ({AndRefinement.left=current} AndOperator right=SubRefinement)*;
+	//	SubRefinement -> ({AndRefinement.left=current} ('AND' | ',') right=SubRefinement)*;
 	public AndRefinementElements getAndRefinementAccess() {
 		return pAndRefinement;
 	}
@@ -2452,7 +2274,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//OrAttributeSet Refinement:
-	//	AndAttributeSet ({OrRefinement.left=current} OR right=AndAttributeSet)*;
+	//	AndAttributeSet ({OrRefinement.left=current} 'OR' right=AndAttributeSet)*;
 	public OrAttributeSetElements getOrAttributeSetAccess() {
 		return pOrAttributeSet;
 	}
@@ -2462,7 +2284,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//AndAttributeSet Refinement:
-	//	SubAttributeSet ({AndRefinement.left=current} AndOperator right=SubAttributeSet)*;
+	//	SubAttributeSet ({AndRefinement.left=current} ('AND' | ',') right=SubAttributeSet)*;
 	public AndAttributeSetElements getAndAttributeSetAccess() {
 		return pAndAttributeSet;
 	}
@@ -2766,40 +2588,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return getSnomedIdentifierAccess().getRule();
 	}
 	
-	//Term hidden():
-	//	TermCharacter+ (WS+ TermCharacter+)*;
-	public TermElements getTermAccess() {
-		return pTerm;
-	}
-	
-	public ParserRule getTermRule() {
-		return getTermAccess().getRule();
-	}
-	
-	//TermCharacter hidden():
-	//	LT | GT
-	//	| DBL_LT | DBL_GT
-	//	| LT_EM | GT_EM
-	//	| GTE | LTE
-	//	| AND | OR | NOT | MINUS
-	//	| ZERO | DIGIT_NONZERO
-	//	| LETTER | CARET
-	//	| EQUAL | NOT_EQUAL | PLUS
-	//	| CURLY_OPEN | CURLY_CLOSE
-	//	| ROUND_OPEN | ROUND_CLOSE
-	//	| SQUARE_OPEN | SQUARE_CLOSE
-	//	| DOT | COLON | COMMA
-	//	| REVERSED | TO
-	//	| WILDCARD | HASH | DASH
-	//	| OTHER_CHARACTER;
-	public TermCharacterElements getTermCharacterAccess() {
-		return pTermCharacter;
-	}
-	
-	public ParserRule getTermCharacterRule() {
-		return getTermCharacterAccess().getRule();
-	}
-	
 	//NonNegativeInteger ecore::EInt hidden():
 	//	ZERO | DIGIT_NONZERO (DIGIT_NONZERO | ZERO)*;
 	public NonNegativeIntegerElements getNonNegativeIntegerAccess() {
@@ -2818,16 +2606,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public ParserRule getMaxValueRule() {
 		return getMaxValueAccess().getRule();
-	}
-	
-	//AndOperator hidden():
-	//	AND | COMMA;
-	public AndOperatorElements getAndOperatorAccess() {
-		return pAndOperator;
-	}
-	
-	public ParserRule getAndOperatorRule() {
-		return getAndOperatorAccess().getRule();
 	}
 	
 	//Integer ecore::EInt hidden():
@@ -2860,6 +2638,12 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return getNonNegativeDecimalAccess().getRule();
 	}
 	
+	//terminal TERM_STRING:
+	//	"|" !"|"* "|";
+	public TerminalRule getTERM_STRINGRule() {
+		return tTERM_STRING;
+	}
+	
 	//terminal REVERSED:
 	//	'R';
 	public TerminalRule getREVERSEDRule() {
@@ -2872,24 +2656,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return tTO;
 	}
 	
-	//terminal AND:
-	//	'AND';
-	public TerminalRule getANDRule() {
-		return tAND;
-	}
-	
-	//terminal OR:
-	//	'OR';
-	public TerminalRule getORRule() {
-		return tOR;
-	}
-	
-	//terminal MINUS:
-	//	'MINUS';
-	public TerminalRule getMINUSRule() {
-		return tMINUS;
-	}
-	
 	//terminal ZERO:
 	//	'0';
 	public TerminalRule getZERORule() {
@@ -2900,18 +2666,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	//	'1'..'9';
 	public TerminalRule getDIGIT_NONZERORule() {
 		return tDIGIT_NONZERO;
-	}
-	
-	//terminal LETTER:
-	//	'a'..'z' | 'A'..'Z';
-	public TerminalRule getLETTERRule() {
-		return tLETTER;
-	}
-	
-	//terminal PIPE:
-	//	'|';
-	public TerminalRule getPIPERule() {
-		return tPIPE;
 	}
 	
 	//terminal COLON:
@@ -2930,12 +2684,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	//	'}';
 	public TerminalRule getCURLY_CLOSERule() {
 		return tCURLY_CLOSE;
-	}
-	
-	//terminal COMMA:
-	//	',';
-	public TerminalRule getCOMMARule() {
-		return tCOMMA;
 	}
 	
 	//terminal ROUND_OPEN:
@@ -3080,12 +2828,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	//	'//' !('\n' | '\r')* ('\r'? '\n')?;
 	public TerminalRule getSL_COMMENTRule() {
 		return tSL_COMMENT;
-	}
-	
-	//terminal OTHER_CHARACTER:
-	//	!'|';
-	public TerminalRule getOTHER_CHARACTERRule() {
-		return tOTHER_CHARACTER;
 	}
 	
 	//terminal STRING:

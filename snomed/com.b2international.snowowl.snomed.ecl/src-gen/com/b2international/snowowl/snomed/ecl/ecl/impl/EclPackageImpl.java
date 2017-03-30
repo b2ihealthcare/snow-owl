@@ -57,6 +57,7 @@ import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
 import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
 import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Refinement;
+import com.b2international.snowowl.snomed.ecl.ecl.Script;
 import com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
 
@@ -75,6 +76,13 @@ import org.eclipse.emf.ecore.impl.EPackageImpl;
  */
 public class EclPackageImpl extends EPackageImpl implements EclPackage
 {
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass scriptEClass = null;
+
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -430,6 +438,26 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     // Update the registry and return the package
     EPackage.Registry.INSTANCE.put(EclPackage.eNS_URI, theEclPackage);
     return theEclPackage;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getScript()
+  {
+    return scriptEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getScript_Constraint()
+  {
+    return (EReference)scriptEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -1362,6 +1390,9 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     isCreated = true;
 
     // Create classes and their features
+    scriptEClass = createEClass(SCRIPT);
+    createEReference(scriptEClass, SCRIPT__CONSTRAINT);
+
     expressionConstraintEClass = createEClass(EXPRESSION_CONSTRAINT);
 
     childOfEClass = createEClass(CHILD_OF);
@@ -1564,6 +1595,9 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     andRefinementEClass.getESuperTypes().add(this.getRefinement());
 
     // Initialize classes and features; add operations and parameters
+    initEClass(scriptEClass, Script.class, "Script", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getScript_Constraint(), this.getExpressionConstraint(), null, "constraint", null, 0, 1, Script.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
     initEClass(expressionConstraintEClass, ExpressionConstraint.class, "ExpressionConstraint", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(childOfEClass, ChildOf.class, "ChildOf", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);

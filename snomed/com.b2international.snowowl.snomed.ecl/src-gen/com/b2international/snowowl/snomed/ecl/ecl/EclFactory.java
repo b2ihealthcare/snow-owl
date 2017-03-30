@@ -36,6 +36,15 @@ public interface EclFactory extends EFactory
   EclFactory eINSTANCE = com.b2international.snowowl.snomed.ecl.ecl.impl.EclFactoryImpl.init();
 
   /**
+   * Returns a new object of class '<em>Script</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Script</em>'.
+   * @generated
+   */
+  Script createScript();
+
+  /**
    * Returns a new object of class '<em>Expression Constraint</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

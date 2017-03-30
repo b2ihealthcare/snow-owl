@@ -34,10 +34,11 @@ import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.validation.Issue;
 
 import com.b2international.commons.Pair;
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.SyntaxException;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
-import com.google.common.base.Strings;
+import com.b2international.snowowl.snomed.ecl.ecl.Script;
 
 /**
  * @since 5.4
@@ -54,8 +55,10 @@ public class DefaultEclParser implements EclParser {
 	
 	@Override
 	public ExpressionConstraint parse(String expression) {
-		if (Strings.isNullOrEmpty(expression)) {
-			throw new BadRequestException("Expression should be specified");
+		if (expression == null) {
+			throw new BadRequestException("Expression cannot be null.");
+		} else if (StringUtils.isEmpty(expression)) {
+			return null;
 		} else {
 			try (final StringReader reader = new StringReader(expression)) {
 				final IParseResult parseResult = eclParser.parse(reader);
@@ -67,9 +70,9 @@ public class DefaultEclParser implements EclParser {
 					}
 					throw new SyntaxException("ECL", errors);
 				} else {
-					final ExpressionConstraint ecl = (ExpressionConstraint) parseResult.getRootASTElement();
+					final Script script = (Script) parseResult.getRootASTElement();
 					final Resource resource = new ResourceImpl();
-					resource.getContents().add(ecl);
+					resource.getContents().add(script);
 					final List<Issue> issues = validator.validate(resource, CheckMode.ALL, CancelIndicator.NullImpl);
 					if (!issues.isEmpty()) {
 						final Map<Pair<Integer, Integer>, String> errors = newHashMap();
@@ -82,7 +85,7 @@ public class DefaultEclParser implements EclParser {
 							throw new SyntaxException("ECL", errors);
 						}
 					}
-					return ecl;
+					return script.getConstraint();
 				}
 			}
 		}

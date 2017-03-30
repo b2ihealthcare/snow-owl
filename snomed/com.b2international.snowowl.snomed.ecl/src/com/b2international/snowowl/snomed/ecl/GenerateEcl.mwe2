@@ -44,7 +44,7 @@ Workflow {
                 baseName = "com.b2international.snowowl.snomed.ecl"
                 rootPath = rootPath
                 runtimeTest = {
-                    enabled = false
+                    enabled = true
                 }
                 eclipsePlugin = {
                     enabled = false
@@ -63,7 +63,14 @@ Workflow {
         language = StandardLanguage {
             name = "com.b2international.snowowl.snomed.ecl.Ecl"
             fileExtensions = "ecl"
-
+            // The antlr parser generator fragment.
+            parserGenerator = org.eclipse.xtext.xtext.generator.parser.antlr.XtextAntlrGeneratorFragment2 auto-inject {
+              options = {
+                  backtrack = true
+                  ignoreCase = true
+                  classSplitting = true
+              }
+            }
             serializer = {
                 generateStub = false
             }
