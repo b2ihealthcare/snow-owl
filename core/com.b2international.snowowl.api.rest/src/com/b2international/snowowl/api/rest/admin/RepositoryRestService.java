@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.api.rest.admin;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -69,7 +67,7 @@ public class RepositoryRestService extends AbstractAdminRestService {
 	public @ResponseBody DeferredResult<Repositories> getRepositories(
 			@ApiParam
 			@RequestParam(value="id", required=false)
-			List<String> idFilter) {
+			String[] idFilter) {
 		return DeferredResults.wrap(RepositoryRequests.prepareSearch()
 				.all()
 				.filterByIds(Collections3.toImmutableSet(idFilter))
