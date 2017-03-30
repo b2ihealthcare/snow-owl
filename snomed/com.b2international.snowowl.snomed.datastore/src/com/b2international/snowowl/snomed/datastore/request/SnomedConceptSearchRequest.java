@@ -297,7 +297,7 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 			.filterByActive(true)
 			.filterByTerm(term)
 			.filterByLanguageRefSetIds(languageRefSetIds())
-			.setFields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID);
+			.setFields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID);
 			
 		applyIdFilter(requestBuilder, (rb, ids) -> rb.filterByConceptId(ids));
 		
