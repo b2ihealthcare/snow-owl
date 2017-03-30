@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.domain;
 import java.text.MessageFormat;
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.google.common.base.Strings;
 
 /**
  * Enumerates allowed acceptability values and maps them to concept identifiers.
@@ -57,10 +58,14 @@ public enum Acceptability {
 	 * 
 	 * @param conceptId the concept identifier to look for
 	 * 
-	 * @return the resolved {@link Acceptability}
+	 * @return the resolved {@link Acceptability}, or {@code null} if {@code conceptId} is null or empty
 	 * @throws IllegalArgumentException if no acceptability value matches the specified concept identifier
 	 */
 	public static Acceptability getByConceptId(final String conceptId) {
+		if (Strings.isNullOrEmpty(conceptId)) {
+			return null;
+		}
+
 		for (final Acceptability candidate : values()) {
 			if (candidate.getConceptId().equals(conceptId)) {
 				return candidate;
