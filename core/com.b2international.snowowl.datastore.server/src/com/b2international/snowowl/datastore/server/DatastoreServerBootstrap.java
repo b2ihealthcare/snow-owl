@@ -56,6 +56,7 @@ import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryCo
 import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryManager;
 import com.b2international.snowowl.datastore.server.internal.ExtensionBasedEditingContextFactoryProvider;
 import com.b2international.snowowl.datastore.server.internal.ExtensionBasedRepositoryClassLoaderProviderRegistry;
+import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.server.session.LogListener;
@@ -148,9 +149,9 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		
 		if (env.isEmbedded() || env.isServer()) {
 			initializeJobSupport(env, configuration);
-			initializeRepositories(configuration, env);
 			initializeRequestSupport(env, configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers());
-			initializeContent();
+			initializeRepositories(configuration, env);
+			initializeContent(env);
 		}
 	}
 	
@@ -208,9 +209,14 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		LOG.debug("<<< Branch and review services registered. [{}]", branchStopwatch);
 	}
 	
-	private void initializeContent() {
-		for (ICDORepository	repository : CDORepositoryManager.getInstance()) {
-			RepositoryInitializerRegistry.INSTANCE.getInitializer(repository.getUuid()).initialize(repository);
+	private void initializeContent(Environment env) {
+		final RepositoryManager repositories = env.service(RepositoryManager.class);
+		for (Repository	repository : repositories.repositories()) {
+			final String repositoryId = repository.id();
+			if (repository.health() == Health.GREEN) {
+				final ICDORepository cdoRepository = ((InternalRepository) repository).getCdoRepository(); 
+				RepositoryInitializerRegistry.INSTANCE.getInitializer(repositoryId).initialize(cdoRepository);
+			}
 		}
 	}
 
