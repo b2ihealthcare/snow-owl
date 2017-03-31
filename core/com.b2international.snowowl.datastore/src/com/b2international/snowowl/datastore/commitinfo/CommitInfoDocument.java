@@ -26,6 +26,7 @@ import java.util.Collection;
 import com.b2international.index.Analyzed;
 import com.b2international.index.Doc;
 import com.b2international.index.WithId;
+import com.b2international.index.WithScore;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -37,7 +38,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  */
 @Doc
 @JsonDeserialize(builder = CommitInfoDocument.Builder.class)
-public final class CommitInfoDocument implements WithId {
+public final class CommitInfoDocument implements WithId, WithScore {
 
 	public static Builder builder() {
 		return new Builder();
@@ -131,7 +132,9 @@ public final class CommitInfoDocument implements WithId {
 	@Analyzed
 	private final String comment;
 	private final long timeStamp;
-
+	
+	private float score = 0.0f;
+	
 	private CommitInfoDocument(
 			final String id,
 			final String branch,
@@ -156,6 +159,17 @@ public final class CommitInfoDocument implements WithId {
 		return checkNotNull(_id);
 	}
 	
+	@Override
+	public void setScore(float score) {
+		this.score = score;
+	}
+
+	@Override
+	@JsonIgnore
+	public float getScore() {
+		return score;
+	}
+
 	public String getBranch() {
 		return branch;
 	}
