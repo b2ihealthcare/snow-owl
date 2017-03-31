@@ -16,8 +16,6 @@
 package com.b2international.snowowl.datastore;
 
 import static com.b2international.index.query.Expressions.exactMatch;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Strings.nullToEmpty;
 
 import java.util.Objects;
 
@@ -171,9 +169,9 @@ public class CodeSystemVersionEntry implements ICodeSystemVersion {
 		this.effectiveDate = effectiveDate;
 		this.latestUpdateDate = latestUpdateDate;
 		this.codeSystemShortName = codeSystemShortName;
-		this.repositoryUuid = checkNotNull(repositoryUuid, "repositoryUuid");
-		this.description = nullToEmpty(description);
-		this.versionId = checkNotNull(versionId, "versionId");
+		this.repositoryUuid = repositoryUuid;
+		this.description = description;
+		this.versionId = versionId;
 		this.parentBranchPath = parentBranchPath;
 		this.patched = patched;
 		this.storageKey = storageKey;
