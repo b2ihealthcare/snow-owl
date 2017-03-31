@@ -307,4 +307,27 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		assertNull(hits.getHits().get(1).getField1());
 	}
 
+	
+	@Test
+	public void selectPartialSingleIntField() throws Exception {
+		final Data data1 = new Data();
+		data1.setIntField(64); 
+		data1.setField1("field1_1");
+		indexDocument(KEY1, data1);
+		
+		final Data data2 = new Data();
+		data2.setIntField(16); 
+		data2.setField1("field1_2");
+		indexDocument(KEY2, data2);
+		
+		final Query<Integer> query = Query.selectPartial(Integer.class, Data.class, ImmutableSet.of("intField"))
+				.where(Expressions.matchAll())
+				.build();
+		
+		final Hits<Integer> hits = search(query);
+		
+		checkHits(hits, 0, DEFAULT_LIMIT, 2, 2);
+		assertEquals(data1.getIntField(), hits.getHits().get(0).intValue());
+		assertEquals(data2.getIntField(), hits.getHits().get(1).intValue());
+	}
 }

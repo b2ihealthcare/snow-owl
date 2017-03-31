@@ -197,7 +197,7 @@ public class JsonDocumentSearcher implements Searcher {
 						BytesRef bytesRef = (BytesRef) value;
 						fieldValues.put(key, bytesRef.utf8ToString());
 					} else {
-						throw new UnsupportedOperationException("Unhandled docValues for field: " + key + " of type: " + fieldType);
+						throw new UnsupportedOperationException("Unhandled field value for field: " + key + " of type: " + fieldType);
 					}
 				}
 			}
@@ -207,8 +207,24 @@ public class JsonDocumentSearcher implements Searcher {
 				throw new IllegalStateException(String.format("Missing fields on partially loaded document: %s", Sets.difference(fields, hit.keySet())));
 			}
 			
-			T readValue = mapper.convertValue(hit, query.getSelect());
-			if (query.isWithScores() && readValue instanceof WithScore) {
+			T readValue = null;
+			
+			if (fields.size() == 1) {
+				Object singleValue = Iterables.getOnlyElement(hit.values());
+				if (query.getSelect().isAssignableFrom(singleValue.getClass())) {
+					readValue = (T) singleValue;
+				}
+			}
+			
+			if (readValue == null) {
+				readValue = mapper.convertValue(hit, query.getSelect());
+			}
+			
+			if (query.isWithScores()) {
+				/* 
+				 * When a query is asking for scores to be returned, the object should support 
+				 * recording it by implementing WithScore.
+				 */
 				((WithScore) readValue).setScore(fieldDoc.score);
 			}
 			
@@ -240,7 +256,7 @@ public class JsonDocumentSearcher implements Searcher {
 			if (readValue instanceof WithId) {
 				((WithId) readValue).set_id(ids[i - offset]);
 			}
-			if (query.isWithScores() && readValue instanceof WithScore) {
+			if (query.isWithScores()) {
 				((WithScore) readValue).setScore(scoreDocs[i].score);
 			}
 			matches.add(readValue);
