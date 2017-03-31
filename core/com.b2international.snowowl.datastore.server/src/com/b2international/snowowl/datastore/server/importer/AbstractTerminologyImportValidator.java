@@ -20,8 +20,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.Set;
 
 import org.apache.poi.ss.usermodel.Row;
@@ -31,7 +29,9 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.datastore.importer.TerminologyImportType;
 import com.b2international.snowowl.datastore.importer.TerminologyImportValidationDefect;
 import com.b2international.snowowl.datastore.importer.TerminologyImportValidationDefect.DefectType;
+import com.google.common.base.Function;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -113,13 +113,16 @@ public abstract class AbstractTerminologyImportValidator<T extends CDOObject> {
 	 * @return true if duplicates found
 	 */
 	protected void validateDuplicateFields(final String sheetName, final Set<Row> rows, final int uniqueColumn) {
-		Set<String> fieldSet = rows.stream().map(new Function<Row, String>() {
+		
+		Set<String> fieldSet = Sets.newHashSet(Iterables.transform(rows, new Function<Row, String>() {
 
 			@Override
 			public String apply(Row row) {
 				return ExcelUtilities.extractContentAsString(row.getCell(uniqueColumn));
 			}
-		}).collect(Collectors.<String>toSet());
+		}));
+		
+		
 		
 		if(rows.size() > fieldSet.size()) {
 			addDefect(sheetName, DefectType.DUPLICATE, String.format("Spreadsheet %s, has duplicated fields in column %s.", sheetName, uniqueColumn));
