@@ -168,7 +168,7 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 
 	private List<SnomedConceptDocument> getDefaultTopLevelConcepts(final String branch) {
 		final SnomedConcept root = SnomedRequests.prepareGetConcept(Concepts.ROOT_CONCEPT)
-				.setExpand(String.format("pt(),descendants(form:\"%s\",direct:true,expand(pt()))", getForm()))
+				.setExpand(String.format("pt(),%s(form:\"%s\",direct:true,expand(pt()))", Trees.STATED_FORM.equals(getForm()) ? "statedDescendants" : "descendants"))
 				.setLocales(getLocales())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())

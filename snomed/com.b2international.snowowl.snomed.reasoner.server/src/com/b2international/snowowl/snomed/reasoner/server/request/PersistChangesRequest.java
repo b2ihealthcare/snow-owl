@@ -203,14 +203,14 @@ public class PersistChangesRequest implements Request<ServiceProvider, ApiError>
 	private boolean isSubTypeOfSMP(IBranchPath branchPath, String subTypeId) {
 		if (statedDescendantsOfSmp == null) {
 			statedDescendantsOfSmp = SnomedRequests.prepareGetConcept(Concepts.GENERATED_SINGAPORE_MEDICINAL_PRODUCT)
-					.setExpand("descendants(limit:"+Integer.MAX_VALUE+",direct:false,form:\"stated\")")
+					.setExpand("statedDescendants(limit:"+Integer.MAX_VALUE+",direct:false)")
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.then(new Function<SnomedConcept, LongSet>() {
 						@Override
 						public LongSet apply(SnomedConcept input) {
-							LongSet descendantIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(input.getDescendants().getTotal());
-							for (SnomedConcept descendant : input.getDescendants()) {
+							LongSet descendantIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(input.getStatedDescendants().getTotal());
+							for (SnomedConcept descendant : input.getStatedDescendants()) {
 								descendantIds.add(Long.parseLong(descendant.getId()));
 							}
 							return descendantIds;
