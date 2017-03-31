@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.8.2
+
+### Changes
+- Field selection now supports single fields as well (049578f483150fb566ec2c92b9e2b1659e40dccb)
+
+### Bugs
+- Fix missing SNOMED CT icons after importing RF2 files (388c13b34f4194f759239506c2e8f09a1d4cfb5e)
+
 ## 5.8.1
 
 ### Bugs
