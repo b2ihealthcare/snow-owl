@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore.index;
 
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -164,8 +163,8 @@ public abstract class RevisionDocument extends Revision implements IIndexEntry, 
 	private float score = 0.0f;
 	
 	protected RevisionDocument(final String id, final String label, String iconId) {
-		this.id = checkNotNull(id, "id");
-		this.label = checkNotNull(label, "label");
+		this.id = id;
+		this.label = label;
 		this.iconId = iconId;
 	}
 	

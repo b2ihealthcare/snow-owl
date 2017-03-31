@@ -35,7 +35,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
 @Doc(type = "job")
@@ -202,13 +201,6 @@ public final class RemoteJobEntry implements Serializable {
 			final boolean deleted,
 			final Object result,
 			final Map<String, Object> parameters) {
-		
-		Preconditions.checkNotNull(id, "Remote job identifier may not be null.");
-		Preconditions.checkNotNull(description, "Description may not be null.");
-		Preconditions.checkNotNull(user, "Requesting user identifier not be null.");
-		Preconditions.checkNotNull(scheduleDate, "Scheduling date may not be null.");
-		Preconditions.checkNotNull(state, "Remote job state may not be null.");
-		
 		this.id = id;
 		this.description = description;
 		this.user = user;

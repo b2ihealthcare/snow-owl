@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.snor;
 
 import static com.b2international.index.query.Expressions.matchAny;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
@@ -48,8 +47,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
-import com.google.common.base.Strings;
 import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -290,18 +289,18 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 			
 			switch (type) {
 			case DESCRIPTION:
-				doc.descriptionTypeId = checkNotNull(descriptionTypeId, "descriptionTypeId");
+				doc.descriptionTypeId = descriptionTypeId;
 				break;
 			case DATATYPE:
-				doc.dataType = checkNotNull(dataType, "dataType");
-				doc.dataTypeLabel = checkNotNull(dataTypeLabel, "dataTypeLabel");
-				doc.dataTypeName = checkNotNull(dataTypeName, "dataTypeName");
+				doc.dataType = dataType;
+				doc.dataTypeLabel = dataTypeLabel;
+				doc.dataTypeName = dataTypeName;
 				break;
 			case RELATIONSHIP:
-				doc.groupRule = checkNotNull(groupRule, "groupRule");
-				doc.characteristicTypeExpression = checkNotNull(characteristicTypeExpression, "characteristicTypeExpression");
-				doc.relationshipTypeExpression = checkNotNull(relationshipTypeExpression, "relationshipTypeExpression");
-				doc.relationshipValueExpression = checkNotNull(relationshipValueExpression, "relationshipValueExpression");
+				doc.groupRule = groupRule;
+				doc.characteristicTypeExpression = characteristicTypeExpression;
+				doc.relationshipTypeExpression = relationshipTypeExpression;
+				doc.relationshipValueExpression = relationshipValueExpression;
 				break;
 			default: throw new NotImplementedException("Unsupported predicate type '%s'", type);
 			}
@@ -399,13 +398,16 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	private SnomedConstraintDocument(final String id, final String domain, final PredicateType type, final int minCardinality,
 			final int maxCardinality) {
 		super(id, createLabel(id, type), null);
-		this.domain = checkNotNull(domain, "domain");
-		this.type = checkNotNull(type, "type");
+		this.domain = domain;
+		this.type = type;
 		this.minCardinality = minCardinality;
 		this.maxCardinality = maxCardinality;
 	}
 
 	private static String createLabel(String storageKey, PredicateType type) {
+		if (Strings.isNullOrEmpty(storageKey))  {
+			return null;
+		}
 		return Objects.toStringHelper(SnomedConstraintDocument.class).add("id", storageKey).add("type", type).toString();
 	}
 
