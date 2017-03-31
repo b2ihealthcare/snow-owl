@@ -356,7 +356,6 @@ public class SortIndexTest extends BaseIndexTest {
 				.where(Expressions.customScore(
 						Expressions.matchAll(), 
 						new FieldScoreFunction("floatField")))
-				.withScores(true)
 				.sortBy(SortBy.SCORE)
 				.build();
 		
