@@ -146,7 +146,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					.filterByIds(ImmutableSet.of(
 							Concepts.MODULE_ROOT,
 							Concepts.REFSET_ATTRIBUTE))
-					.setExpand("pt(),descendants(limit:100,form:\"inferred\",direct:false,expand(pt(),parentIds(),ancestorIds()))")
+					.setExpand("pt(),descendants(limit:100,direct:false,expand(pt()))")
 					.setLocales(languageSetting.getLanguagePreference())
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 					.execute(bus)
