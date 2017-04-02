@@ -17,32 +17,31 @@ package com.b2international.snowowl.core.events;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.reactivestreams.Subscriber;
-
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 
-import io.reactivex.Flowable;
-import io.reactivex.processors.PublishProcessor;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.subjects.PublishSubject;
 
 /**
  * @since 5.7
  */
-public final class Notifications extends Flowable<SystemNotification> implements IDisposableService, IHandler<IMessage> {
+public final class Notifications extends Observable<SystemNotification> implements IDisposableService, IHandler<IMessage> {
 
 	private final IEventBus bus;
 	private final ClassLoader classLoader;
 	private final AtomicBoolean disposed = new AtomicBoolean(false);
-	private final PublishProcessor<SystemNotification> processor;
+	private final PublishSubject<SystemNotification> processor;
 
 	public Notifications(IEventBus bus, ClassLoader classLoader) {
 		super();
 		this.bus = bus;
 		this.classLoader = classLoader;
-		this.processor = PublishProcessor.create();
-		this.bus.registerHandler(SystemNotification.ADDRESS, this);	
+		this.processor = PublishSubject.create();
+		this.bus.registerHandler(SystemNotification.ADDRESS, this);
 	}
 	
 	@Override
@@ -56,7 +55,7 @@ public final class Notifications extends Flowable<SystemNotification> implements
 	}
 
 	@Override
-	protected void subscribeActual(Subscriber<? super SystemNotification> subscriber) {
+	protected void subscribeActual(Observer<? super SystemNotification> subscriber) {
 		this.processor.subscribe(subscriber);
 	}
 	
