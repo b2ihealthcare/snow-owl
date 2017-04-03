@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.8.3
+
+### Bugs
+- Initialize repositories only in GREEN health state (3bb706585d92ecc90336f62b6fc4530392486464)
+- Fix expansion of `statedDescendants` when persisting classification results (b9de8620ca59f728adaeb82c3100b09f40737304)
+- Fix missing backpressure exception when using `Notifications` event stream (ce022786e59c1ad14c8dc5877c076158c053fae6)
+
 ## 5.8.2
 
 ### Changes
