@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.server.core.feature"
       label="Snow Owl Common Server Core"
-      version="5.8.2"
+      version="5.8.3"
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
