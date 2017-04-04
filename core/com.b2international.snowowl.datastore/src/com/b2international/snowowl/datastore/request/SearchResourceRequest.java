@@ -67,12 +67,12 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	/**
 	 * Special field name for sorting based on the document's natural occurrence (document order). 
 	 */
-	public static final String DOC = SortBy.FIELD_DOC;
+	public static final SortField DOC = new SortField(SortBy.FIELD_DOC, true);
 	
 	/**
 	 * Special field name for sorting based on the document score (relevance).
 	 */
-	public static final String SCORE = SortBy.FIELD_SCORE;
+	public static final SortField SCORE = new SortField(SortBy.FIELD_SCORE, false);
 	
 	public static class SortField implements Serializable {
 		private final String field;
