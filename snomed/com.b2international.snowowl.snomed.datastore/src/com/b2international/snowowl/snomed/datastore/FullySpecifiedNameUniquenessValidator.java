@@ -26,6 +26,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.validation.ComponentValidationStatus;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -67,6 +68,7 @@ public class FullySpecifiedNameUniquenessValidator implements IValidator {
 				.filterByActive(true)
 				.filterByTerm(fsn)
 				.filterByType(Concepts.FULLY_SPECIFIED_NAME)
+				.sortBy(SearchResourceRequest.SCORE)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getEventBus())
 				.getSync();

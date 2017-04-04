@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.datastore.request.SearchResourceRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
@@ -84,6 +85,7 @@ public class SnomedRefSetAutoMapper {
 						.filterByAncestor(topLevelConceptId)
 						.withSearchProfile(userId)
 						.withDoi()
+						.sortBy(SearchResourceRequest.SCORE)
 						.setExpand("pt()");
 				
 				for (int limit = 1; limit < SEARCHER_STEP_LIMIT; limit *= SEARCHER_STEP_INCREMENT_MULTIPLIER) {
