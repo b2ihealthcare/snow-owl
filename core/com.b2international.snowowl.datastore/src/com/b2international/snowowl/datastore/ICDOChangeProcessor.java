@@ -61,12 +61,6 @@ public interface ICDOChangeProcessor {
 	String getName();
 
 	/**
-	 * Returns true if this processor had any changes to process.
-	 * @return
-	 */
-	boolean hadChangesToProcess();
-
-	/**
 	 * After commit operation to do any cleanup necessary.
 	 */
 	void afterCommit();
@@ -77,10 +71,6 @@ public interface ICDOChangeProcessor {
 		}
 		
 		@Override public void process(final ICDOCommitChangeSet commitChangeSet) throws SnowowlServiceException {
-		}
-		
-		@Override public boolean hadChangesToProcess() {
-			return false;
 		}
 		
 		@Override public String getName() {
