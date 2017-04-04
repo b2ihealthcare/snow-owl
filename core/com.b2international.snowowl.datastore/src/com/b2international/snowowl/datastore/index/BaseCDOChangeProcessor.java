@@ -276,11 +276,6 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 		return String.format("%s.changeProcessor", index.name());
 	}
 
-	@Override
-	public final boolean hadChangesToProcess() {
-		return !commitChangeSet.isEmpty();
-	}
-
 	@SuppressWarnings("restriction")
 	private void checkAndSetCodeSystemLastUpdateTime(final CDOObject component) {
 		final CodeSystemVersion version = (CodeSystemVersion) component;

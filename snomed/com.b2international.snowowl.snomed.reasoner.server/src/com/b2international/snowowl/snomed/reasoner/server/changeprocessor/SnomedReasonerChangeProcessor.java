@@ -244,11 +244,6 @@ public class SnomedReasonerChangeProcessor implements ICDOChangeProcessor {
 	}
 
 	@Override
-	public boolean hadChangesToProcess() {
-		return !changes.isEmpty();
-	}
-
-	@Override
 	public void rollback() throws SnowowlServiceException {
 		changes.clear();
 	}

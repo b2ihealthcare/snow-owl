@@ -207,16 +207,14 @@ public class DelegateCDOServerChangeManager {
 						try {
 							MetricsThreadLocal.set(metrics);
 							// commit if anything had changed
-							if (processor.hadChangesToProcess()) {
-								final IndexCommitChangeSet indexCommitChangeSet = processor.commit();
+							final IndexCommitChangeSet indexCommitChangeSet = processor.commit();
 
-								// log changes
-								logUserActivity(commitChangeSet, indexCommitChangeSet);
-								
-								// Add to set of change processors that committed changes successfully
-								committedChangeProcessors.add(processor);
-								indexCommitChangeSets.add(indexCommitChangeSet);
-							}
+							// log changes
+							logUserActivity(commitChangeSet, indexCommitChangeSet);
+							
+							// Add to set of change processors that committed changes successfully
+							committedChangeProcessors.add(processor);
+							indexCommitChangeSets.add(indexCommitChangeSet);
 							
 							return Status.OK_STATUS;
 						} catch (final SnowowlServiceException e) {

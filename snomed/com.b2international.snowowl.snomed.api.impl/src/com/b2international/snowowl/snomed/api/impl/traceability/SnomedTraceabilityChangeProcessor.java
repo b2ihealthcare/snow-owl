@@ -197,11 +197,6 @@ public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 		return SpecialUserStore.SYSTEM_USER_NAME.equals(commitChangeSet.getUserId());
 	}
 	
-	@Override
-	public boolean hadChangesToProcess() {
-		return !entry.getChanges().isEmpty() || isSystemCommit();
-	}
-	
 	private void processAddition(CDOObject newComponent) {
 		final EClass eClass = newComponent.eClass();
 
