@@ -55,6 +55,9 @@ import com.jayway.restassured.response.ValidatableResponse;
  */
 public abstract class SnomedRestFixtures {
 
+	public static final String DEFAULT_TERM = "Description term";
+	public static final String DEFAULT_LANGUAGE_CODE = "en";
+
 	public static String createNewConcept(IBranchPath conceptPath) {
 		return createNewConcept(conceptPath, Concepts.ROOT_CONCEPT);
 	}
@@ -85,7 +88,7 @@ public abstract class SnomedRestFixtures {
 				.put("moduleId", moduleId)
 				.put("typeId", Concepts.SYNONYM)
 				.put("term", "PT of concept")
-				.put("languageCode", "en")
+				.put("languageCode", DEFAULT_LANGUAGE_CODE)
 				.put("acceptability", acceptabilityMap)
 				.build();
 
@@ -93,7 +96,7 @@ public abstract class SnomedRestFixtures {
 				.put("moduleId", moduleId)
 				.put("typeId", Concepts.FULLY_SPECIFIED_NAME)
 				.put("term", "FSN of concept")
-				.put("languageCode", "en")
+				.put("languageCode", DEFAULT_LANGUAGE_CODE)
 				.put("acceptability", acceptabilityMap)
 				.build();
 
@@ -169,7 +172,7 @@ public abstract class SnomedRestFixtures {
 	public static Builder<String, Object> createDescriptionRequestBody(String conceptId, String typeId, String moduleId, 
 			Map<String, Acceptability> acceptabilityMap,
 			CaseSignificance caseSignificance) {
-		return createDescriptionRequestBody(conceptId, typeId, moduleId, acceptabilityMap, caseSignificance, "en");
+		return createDescriptionRequestBody(conceptId, typeId, moduleId, acceptabilityMap, caseSignificance, DEFAULT_LANGUAGE_CODE);
 	}
 
 	private static Builder<String, Object> createDescriptionRequestBody(String conceptId, String typeId, String moduleId, Map<String, Acceptability> acceptabilityMap,
@@ -178,7 +181,7 @@ public abstract class SnomedRestFixtures {
 				.put("conceptId", conceptId)
 				.put("moduleId", moduleId)
 				.put("typeId", typeId)
-				.put("term", "Description term")
+				.put("term", DEFAULT_TERM)
 				.put("languageCode", languageCode)
 				.put("acceptability", acceptabilityMap)
 				.put("caseSignificance", caseSignificance);
