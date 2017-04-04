@@ -1,6 +1,16 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.8.5
+
+### Changes
+- Allow editing immutable properties on unreleased SNOMED CT components (0e1444b9bac543c1cf5c22e90823c4ea42edd077)
+  * `typeId`, `destinationId` on SNOMED CT Relationships
+  * `typeId`, `term`, `languageCode` on SNOMED CT Descriptions
+
+### Bugs
+- Always create commit info document when processing a CDO commit (03e85d11b12c236ada328f8cce6e289558573bfc)
+
 ## 5.8.4
 
 ### Bugs
