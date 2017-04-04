@@ -28,6 +28,8 @@ public class SnomedRelationshipRestUpdate extends AbstractSnomedComponentRestUpd
 	private Integer unionGroup;
 	private CharacteristicType characteristicType;
 	private RelationshipModifier modifier;
+	private String destinationId;
+	private String typeId;
 
 	public Integer getGroup() {
 		return group;
@@ -59,6 +61,22 @@ public class SnomedRelationshipRestUpdate extends AbstractSnomedComponentRestUpd
 
 	public void setModifier(final RelationshipModifier modifier) {
 		this.modifier = modifier;
+	}
+	
+	public String getDestinationId() {
+		return destinationId;
+	}
+	
+	public void setDestinationId(String destinationId) {
+		this.destinationId = destinationId;
+	}
+	
+	public String getTypeId() {
+		return typeId;
+	}
+	
+	public void setTypeId(String typeId) {
+		this.typeId = typeId;
 	}
 
 }

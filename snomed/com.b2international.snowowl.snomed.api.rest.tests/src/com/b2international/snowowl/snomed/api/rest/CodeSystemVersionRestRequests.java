@@ -15,10 +15,17 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TimeZone;
 
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.google.common.collect.ImmutableMap;
@@ -112,6 +119,11 @@ public abstract class CodeSystemVersionRestRequests {
 
 	public static String getNextAvailableEffectiveDateAsString(String shortName) {
 		return Dates.formatByGmt(getNextAvailableEffectiveDate(shortName), DateFormats.SHORT);
+	}
+	
+	public static void createCodeSystemAndVersion(final IBranchPath branchPath, String codeSystemShortName, String versionId, String effectiveTime) {
+		createCodeSystem(branchPath, codeSystemShortName).statusCode(201);
+		createVersion(codeSystemShortName, versionId, effectiveTime).statusCode(201);
 	}
 
 	private CodeSystemVersionRestRequests() {

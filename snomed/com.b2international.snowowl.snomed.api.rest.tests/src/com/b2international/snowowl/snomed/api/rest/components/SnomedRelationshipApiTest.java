@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.api.rest.components;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createCodeSystemAndVersion;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranchRecursively;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
@@ -40,6 +41,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
@@ -343,5 +345,67 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 			getComponent(b, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
 		}
 	}
+	
+	@Test
+	public void updateUnreleasedRelationshipTypeId() throws Exception {
+		String relationshipId = createNewRelationship(branchPath);
+		Map<?, ?> update = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_TYPE_ID, Concepts.DEFINING_RELATIONSHIP /*part of is the initial type*/)
+				.put("commitComment", "Updated unreleased relationship typeId")
+				.build();
 
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, update)
+			.statusCode(204);
+		
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
+			.statusCode(200)
+			.body(SnomedRf2Headers.FIELD_TYPE_ID, equalTo(Concepts.DEFINING_RELATIONSHIP));
+	}
+	
+	@Test
+	public void updateUnreleasedRelationshipDestinationId() throws Exception {
+		String relationshipId = createNewRelationship(branchPath);
+		Map<?, ?> update = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_DESTINATION_ID, Concepts.MODULE_ROOT)
+				.put("commitComment", "Updated unreleased relationship destinationId")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, update)
+			.statusCode(204);
+		
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
+			.statusCode(200)
+			.body(SnomedRf2Headers.FIELD_DESTINATION_ID, equalTo(Concepts.MODULE_ROOT));
+	}
+	
+	@Test
+	public void updateReleasedRelationshipTypeId() throws Exception {
+		String relationshipId = createNewRelationship(branchPath);
+		Map<?, ?> update = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_TYPE_ID, Concepts.DEFINING_RELATIONSHIP /*part of is the initial type*/)
+				.put("commitComment", "Updated unreleased relationship typeId")
+				.build();
+
+		// release component
+		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELREL-TYPEID", "v1", "20170301");
+		
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, update)
+			.statusCode(400);
+	}
+	
+	@Test
+	public void updateReleasedRelationshipDestinationId() throws Exception {
+		String relationshipId = createNewRelationship(branchPath);
+		Map<?, ?> update = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_DESTINATION_ID, Concepts.MODULE_ROOT)
+				.put("commitComment", "Updated unreleased relationship destinationId")
+				.build();
+
+		// release component
+		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELREL-DESTID", "v1", "20170301");
+		
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, update)
+			.statusCode(400);
+	}
+	
 }

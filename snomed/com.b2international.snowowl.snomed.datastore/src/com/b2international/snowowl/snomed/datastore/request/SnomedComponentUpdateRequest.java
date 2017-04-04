@@ -19,6 +19,7 @@ import java.util.List;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.snomed.Component;
@@ -95,4 +96,11 @@ public abstract class SnomedComponentUpdateRequest implements Request<Transactio
 			return false;
 		}
 	}
+	
+	protected void checkUpdateOnReleased(Component component, String field, Object value) {
+		if (component.isReleased()) {
+			throw new BadRequestException("Cannot update '%s' to '%s' on released %s '%s'", field, value, component.eClass().getName(), component.getId());
+		}
+	}
+	
 }

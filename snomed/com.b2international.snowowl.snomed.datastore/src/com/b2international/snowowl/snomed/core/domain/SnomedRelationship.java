@@ -210,6 +210,8 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 				.setModifier(getModifier())
 				.setModuleId(getModuleId())
 				.setUnionGroup(getUnionGroup())
+				.setTypeId(getTypeId())
+				.setDestinationId(getDestinationId())
 				.build();
 	}
 	

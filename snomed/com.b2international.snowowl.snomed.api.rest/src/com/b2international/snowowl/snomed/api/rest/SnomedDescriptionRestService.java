@@ -258,6 +258,9 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			.setInactivationIndicator(update.getInactivationIndicator())
 			.setCaseSignificance(update.getCaseSignificance())
 			.setAcceptability(update.getAcceptability())
+			.setTypeId(update.getTypeId())
+			.setTerm(update.getTerm())
+			.setLanguageCode(update.getLanguageCode())
 			.build(repositoryId, branchPath, userId, commitComment)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);

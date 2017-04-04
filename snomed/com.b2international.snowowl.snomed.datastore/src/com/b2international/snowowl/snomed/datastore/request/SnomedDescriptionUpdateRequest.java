@@ -27,12 +27,12 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
@@ -47,6 +47,10 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 	private Map<String, Acceptability> acceptability;
 	private DescriptionInactivationIndicator inactivationIndicator;
 	private Multimap<AssociationType, String> associationTargets;
+	
+	private String term;
+	private String typeId;
+	private String languageCode;
 	
 	SnomedDescriptionUpdateRequest(String componentId) {
 		super(componentId);
@@ -68,6 +72,18 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		this.inactivationIndicator = inactivationIndicator;
 	}
 	
+	void setLanguageCode(String languageCode) {
+		this.languageCode = languageCode;
+	}
+	
+	void setTerm(String term) {
+		this.term = term;
+	}
+	
+	void setTypeId(String typeId) {
+		this.typeId = typeId;
+	}
+	
 	@Override
 	public Boolean execute(TransactionContext context) {
 		final Description description = context.lookup(getComponentId(), Description.class);
@@ -75,6 +91,9 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		boolean changed = false;
 		changed |= updateModule(context, description);
 		changed |= updateCaseSignificance(context, description, caseSignificance);
+		changed |= updateTypeId(context, description);
+		changed |= updateTerm(context, description);
+		changed |= updateLanguageCode(context, description);
 		changed |= processInactivation(context, description);
 
 		// XXX: acceptability and association changes do not push the effective time forward on the description
@@ -90,7 +109,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 					final IEventBus bus = context.service(IEventBus.class);
 					final SnomedDescription releasedDescription = SnomedRequests
 						.prepareGetDescription(getComponentId())
-						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
+						.build(context.id(), branchPath)
 						.execute(bus)
 						.getSync();
 	
@@ -210,4 +229,46 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 			return false;
 		}
 	}
+	
+	private boolean updateTypeId(final TransactionContext context, final Description description) {
+		if (null == typeId) {
+			return false;
+		}
+		
+		if (!description.getType().getId().equals(typeId)) {
+			checkUpdateOnReleased(description, SnomedRf2Headers.FIELD_TYPE_ID, typeId);
+			description.setType(context.lookup(typeId, Concept.class));
+			return true;
+		}
+		
+		return false;
+	}
+	
+	private boolean updateTerm(final TransactionContext context, final Description description) {
+		if (null == term) {
+			return false;
+		}
+		
+		if (!description.getTerm().equals(term)) {
+			checkUpdateOnReleased(description, SnomedRf2Headers.FIELD_TERM, term);
+			description.setTerm(term);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	private boolean updateLanguageCode(final TransactionContext context, final Description description) {
+		if (null == languageCode) {
+			return false;
+		}
+		
+		if (!description.getLanguageCode().equals(languageCode)) {
+			checkUpdateOnReleased(description, SnomedRf2Headers.FIELD_LANGUAGE_CODE, languageCode);
+			description.setLanguageCode(languageCode);
+			return true;
+		}
+		return false;
+	}
+	
 }
