@@ -16,23 +16,26 @@
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.Pair;
 import com.google.common.base.Preconditions;
 
 /**
  * @since 4.6
  */
-public class Taxonomy {
+public final class Taxonomy {
 	
 	private final ISnomedTaxonomyBuilder newTaxonomy;
 	private final ISnomedTaxonomyBuilder oldTaxonomy;
-	private final Pair<LongSet, LongSet> diff;
+	private final LongSet newEdges;
+	private final LongSet changedEdges;
+	private final LongSet detachedEdges;
 
-	public Taxonomy(ISnomedTaxonomyBuilder newTaxonomy, ISnomedTaxonomyBuilder oldTaxonomy, Pair<LongSet, LongSet> diff) {
+	public Taxonomy(ISnomedTaxonomyBuilder newTaxonomy, ISnomedTaxonomyBuilder oldTaxonomy, LongSet newEdges, LongSet changedEdges, LongSet detachedEdges) {
 		this.newTaxonomy = newTaxonomy;
 		Preconditions.checkState(!newTaxonomy.isDirty(), "Builder for representing the new state of the taxonomy has dirty state.");
 		this.oldTaxonomy = oldTaxonomy;
-		this.diff = diff;
+		this.newEdges = newEdges;
+		this.changedEdges = changedEdges;
+		this.detachedEdges = detachedEdges;
 	}
 	
 	public ISnomedTaxonomyBuilder getNewTaxonomy() {
@@ -42,9 +45,17 @@ public class Taxonomy {
 	public ISnomedTaxonomyBuilder getOldTaxonomy() {
 		return oldTaxonomy;
 	}
+
+	public LongSet getNewEdges() {
+		return newEdges;
+	}
 	
-	public Pair<LongSet, LongSet> getDifference() {
-		return diff;
+	public LongSet getChangedEdges() {
+		return changedEdges;
+	}
+	
+	public LongSet getDetachedEdges() {
+		return detachedEdges;
 	}
 
 }

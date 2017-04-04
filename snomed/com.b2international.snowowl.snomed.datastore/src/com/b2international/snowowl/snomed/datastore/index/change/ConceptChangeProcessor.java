@@ -16,9 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.index.change;
 
 import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
-import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -42,8 +40,6 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.Pair;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
@@ -62,7 +58,6 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.update.IconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdater;
@@ -254,15 +249,17 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 
 		// collect dirty concepts due to change in hierarchy
 		dirtyConceptIds.addAll(referringRefSets.keySet());
-		dirtyConceptIds.addAll(getAffectedConcepts(searcher, commitChangeSet, inferredTaxonomy));
-		dirtyConceptIds.addAll(getAffectedConcepts(searcher, commitChangeSet, statedTaxonomy));
+//		dirtyConceptIds.addAll(getAffectedConcepts(searcher, commitChangeSet, inferredTaxonomy));
+//		dirtyConceptIds.addAll(getAffectedConcepts(searcher, commitChangeSet, statedTaxonomy));
 		
 		// collect inferred taxonomy changes
-		dirtyConceptIds.addAll(registerConceptAndDescendants(inferredTaxonomy.getDifference().getA(), inferredTaxonomy.getNewTaxonomy()));
-		dirtyConceptIds.addAll(registerConceptAndDescendants(inferredTaxonomy.getDifference().getB(), inferredTaxonomy.getOldTaxonomy()));
+		dirtyConceptIds.addAll(registerConceptAndDescendants(inferredTaxonomy.getNewEdges(), inferredTaxonomy.getNewTaxonomy()));
+		dirtyConceptIds.addAll(registerConceptAndDescendants(inferredTaxonomy.getChangedEdges(), inferredTaxonomy.getNewTaxonomy()));
+		dirtyConceptIds.addAll(registerConceptAndDescendants(inferredTaxonomy.getDetachedEdges(), inferredTaxonomy.getOldTaxonomy()));
 		// collect stated taxonomy changes
-		dirtyConceptIds.addAll(registerConceptAndDescendants(statedTaxonomy.getDifference().getA(), statedTaxonomy.getNewTaxonomy()));
-		dirtyConceptIds.addAll(registerConceptAndDescendants(statedTaxonomy.getDifference().getB(), statedTaxonomy.getOldTaxonomy()));
+		dirtyConceptIds.addAll(registerConceptAndDescendants(statedTaxonomy.getNewEdges(), statedTaxonomy.getNewTaxonomy()));
+		dirtyConceptIds.addAll(registerConceptAndDescendants(statedTaxonomy.getChangedEdges(), statedTaxonomy.getNewTaxonomy()));
+		dirtyConceptIds.addAll(registerConceptAndDescendants(statedTaxonomy.getDetachedEdges(), statedTaxonomy.getOldTaxonomy()));
 
 		// collect detached reference sets where the concept itself hasn't been detached
 		Collection<CDOID> detachedRefSets = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET);
@@ -299,68 +296,67 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		return ids;
 	}
 
-	private Collection<String> getAffectedConcepts(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, Taxonomy taxonomy) throws IOException {
-		final Set<String> iconIdUpdates = newHashSet();
-		final ISnomedTaxonomyBuilder newTaxonomy = taxonomy.getNewTaxonomy();
-		final ISnomedTaxonomyBuilder oldTaxonomy = taxonomy.getOldTaxonomy();
-		final Pair<LongSet, LongSet> diff = taxonomy.getDifference();
-		// process new/reactivated relationships
-		final LongIterator it = diff.getA().iterator();
-		while (it.hasNext()) {
-			final String relationshipId = Long.toString(it.next());
-			final String sourceNodeId = newTaxonomy.getSourceNodeId(relationshipId);
-			iconIdUpdates.add(sourceNodeId);
-			// add all descendants
-			iconIdUpdates.addAll(LongSets.toStringSet(newTaxonomy.getAllDescendantNodeIds(sourceNodeId)));
-		}
-		
-		// process detached/inactivated relationships
-		final LongIterator detachedIt = diff.getB().iterator();
-		final Map<String, String> oldSourceConceptIconIds = getSourceConceptIconIds(searcher, oldTaxonomy, diff.getB());
-		while (detachedIt.hasNext()) {
-			final String relationshipId = Long.toString(detachedIt.next());
-			final String sourceNodeId = oldTaxonomy.getSourceNodeId(relationshipId);
-			// if concept still exists a relationship became inactive or deleted
-			if (newTaxonomy.containsNode(sourceNodeId)) {
-				final LongSet allAncestorNodeIds = newTaxonomy.getAllAncestorNodeIds(sourceNodeId);
-				final String oldIconId = oldSourceConceptIconIds.get(sourceNodeId);
-				if (!allAncestorNodeIds.contains(Long.parseLong(oldIconId))) {
-					iconIdUpdates.add(sourceNodeId);
-					// add all descendants
-					iconIdUpdates.addAll(LongSets.toStringSet(newTaxonomy.getAllDescendantNodeIds(sourceNodeId)));
-				}
-			} else {
-				iconIdUpdates.add(sourceNodeId);
-				iconIdUpdates.addAll(LongSets.toStringSet(oldTaxonomy.getAllDescendantNodeIds(sourceNodeId)));
-			}
-		}
-		
-		return iconIdUpdates;
-	}
-	
-	private Map<String, String> getSourceConceptIconIds(RevisionSearcher searcher, ISnomedTaxonomyBuilder oldTaxonomy, LongSet detachedRelationshipIds) throws IOException {
-		final LongIterator it = detachedRelationshipIds.iterator();
-		final Collection<String> sourceNodeIds = newHashSetWithExpectedSize(detachedRelationshipIds.size());
-		while (it.hasNext()) {
-			final String relationshipId = Long.toString(it.next());
-			sourceNodeIds.add(oldTaxonomy.getSourceNodeId(relationshipId)); 
-		}
-		
-		if (sourceNodeIds.isEmpty()) {
-			return Collections.emptyMap();
-		} else {
-			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
-					.where(SnomedDocument.Expressions.ids(sourceNodeIds))
-					.limit(sourceNodeIds.size())
-					.build();
-			final Hits<SnomedConceptDocument> hits = searcher.search(query);
-			final Map<String, String> iconsByIds = newHashMapWithExpectedSize(hits.getTotal());
-			for (SnomedConceptDocument hit : hits) {
-				iconsByIds.put(hit.getId(), hit.getIconId());
-			}
-			return iconsByIds;
-		}
- 	}
+//	private Collection<String> getAffectedConcepts(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, Taxonomy taxonomy) throws IOException {
+//		final Set<String> affectedConceptIds = newHashSet();
+//		final ISnomedTaxonomyBuilder newTaxonomy = taxonomy.getNewTaxonomy();
+//		final ISnomedTaxonomyBuilder oldTaxonomy = taxonomy.getOldTaxonomy();
+//		// process new/reactivated relationships
+//		final LongIterator it = taxonomy.getNewEdges().iterator();
+//		while (it.hasNext()) {
+//			final String relationshipId = Long.toString(it.next());
+//			final String sourceNodeId = newTaxonomy.getSourceNodeId(relationshipId);
+//			affectedConceptIds.add(sourceNodeId);
+//			// add all descendants
+//			affectedConceptIds.addAll(LongSets.toStringSet(newTaxonomy.getAllDescendantNodeIds(sourceNodeId)));
+//		}
+//		
+//		// process detached/inactivated relationships
+//		final LongIterator detachedIt = taxonomy.getDetachedEdges().iterator();
+//		final Map<String, String> oldSourceConceptIconIds = getSourceConceptIconIds(searcher, oldTaxonomy, taxonomy.getDetachedEdges());
+//		while (detachedIt.hasNext()) {
+//			final String relationshipId = Long.toString(detachedIt.next());
+//			final String sourceNodeId = oldTaxonomy.getSourceNodeId(relationshipId);
+//			// if concept still exists a relationship became inactive or deleted
+//			if (newTaxonomy.containsNode(sourceNodeId)) {
+//				final LongSet allAncestorNodeIds = newTaxonomy.getAllAncestorNodeIds(sourceNodeId);
+//				final String oldIconId = oldSourceConceptIconIds.get(sourceNodeId);
+//				if (!allAncestorNodeIds.contains(Long.parseLong(oldIconId))) {
+//					affectedConceptIds.add(sourceNodeId);
+//					// add all descendants
+//					affectedConceptIds.addAll(LongSets.toStringSet(newTaxonomy.getAllDescendantNodeIds(sourceNodeId)));
+//				}
+//			} else {
+//				affectedConceptIds.add(sourceNodeId);
+//				affectedConceptIds.addAll(LongSets.toStringSet(oldTaxonomy.getAllDescendantNodeIds(sourceNodeId)));
+//			}
+//		}
+//		
+//		return affectedConceptIds;
+//	}
+//	
+//	private Map<String, String> getSourceConceptIconIds(RevisionSearcher searcher, ISnomedTaxonomyBuilder oldTaxonomy, LongSet detachedRelationshipIds) throws IOException {
+//		final LongIterator it = detachedRelationshipIds.iterator();
+//		final Collection<String> sourceNodeIds = newHashSetWithExpectedSize(detachedRelationshipIds.size());
+//		while (it.hasNext()) {
+//			final String relationshipId = Long.toString(it.next());
+//			sourceNodeIds.add(oldTaxonomy.getSourceNodeId(relationshipId)); 
+//		}
+//		
+//		if (sourceNodeIds.isEmpty()) {
+//			return Collections.emptyMap();
+//		} else {
+//			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
+//					.where(SnomedDocument.Expressions.ids(sourceNodeIds))
+//					.limit(sourceNodeIds.size())
+//					.build();
+//			final Hits<SnomedConceptDocument> hits = searcher.search(query);
+//			final Map<String, String> iconsByIds = newHashMapWithExpectedSize(hits.getTotal());
+//			for (SnomedConceptDocument hit : hits) {
+//				iconsByIds.put(hit.getId(), hit.getIconId());
+//			}
+//			return iconsByIds;
+//		}
+// 	}
 
 	/**
 	 * @since 4.3

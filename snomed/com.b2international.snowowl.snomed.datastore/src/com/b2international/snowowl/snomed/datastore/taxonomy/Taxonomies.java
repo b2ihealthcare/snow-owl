@@ -22,10 +22,12 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRel
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.typeId;
 
 import java.io.IOException;
+import java.util.Arrays;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.Pair;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
@@ -74,8 +76,27 @@ public final class Taxonomies {
 			newTaxonomy.setCheckCycles(checkCycles);
 			oldTaxonomy.build();
 			new SnomedTaxonomyUpdateRunnable(searcher, commitChangeSet, newTaxonomy, characteristicTypeId).run();
-			final Pair<LongSet, LongSet> diff = newTaxonomy.difference(oldTaxonomy);
-			return new Taxonomy(newTaxonomy, oldTaxonomy, diff);
+			final LongSet newKeys = newTaxonomy.getEdges().keySet();
+			final LongSet oldKeys = oldTaxonomy.getEdges().keySet();
+			
+			// new edges
+			final LongSet newEdges = LongSets.difference(newKeys, oldKeys);
+			// changed edges
+			final LongIterator pcEdges = LongSets.intersection(newKeys, oldKeys).iterator();
+			final LongSet changedEdges = PrimitiveSets.newLongOpenHashSet();
+			while (pcEdges.hasNext()) {
+				final long nextEdge = pcEdges.next();
+				long[] oldValue = oldTaxonomy.getEdges().get(nextEdge);
+				long[] newValue = newTaxonomy.getEdges().get(nextEdge);
+				if (!Arrays.equals(oldValue, newValue)) {
+					changedEdges.add(nextEdge);
+				}
+			}
+			
+			// detached edges
+			final LongSet detachedEdges = LongSets.difference(oldKeys, newKeys);
+			
+			return new Taxonomy(newTaxonomy, oldTaxonomy, newEdges, changedEdges, detachedEdges);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);
 		}
