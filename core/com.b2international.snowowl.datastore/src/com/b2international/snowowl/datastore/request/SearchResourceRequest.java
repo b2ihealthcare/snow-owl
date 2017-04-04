@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.request;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -73,7 +74,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	 */
 	public static final String SCORE = SortBy.FIELD_SCORE;
 	
-	public static class SortField {
+	public static class SortField implements Serializable {
 		private final String field;
 		private final boolean ascending;
 		
