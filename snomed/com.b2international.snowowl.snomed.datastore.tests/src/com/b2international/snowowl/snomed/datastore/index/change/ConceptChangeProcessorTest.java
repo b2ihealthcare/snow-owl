@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.index.change;
 
 import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
+import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -59,7 +60,7 @@ import com.google.common.collect.Iterables;
  */
 public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 
-	private Collection<String> availableImages = ImmutableSet.of(Concepts.ROOT_CONCEPT);
+	private Collection<String> availableImages = newHashSet(Concepts.ROOT_CONCEPT, Concepts.MODULE_ROOT, Concepts.NAMESPACE_ROOT);
 	private LongSet statedChangedConceptIds = PrimitiveSets.newLongOpenHashSet();
 	private LongSet inferredChangedConceptIds = PrimitiveSets.newLongOpenHashSet();
 	
@@ -98,6 +99,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		statedChangedConceptIds.add(rootConceptId);
 		
 		final Concept concept = createConcept(generateConceptId());
+		availableImages.add(concept.getId());
 		registerNew(concept);
 		
 		final Relationship relationship = createStatedRelationship(concept.getId(), Concepts.IS_A, Concepts.ROOT_CONCEPT);
@@ -107,6 +109,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept)
+				.iconId(concept.getId())
 				.statedParents(PrimitiveSets.newLongOpenHashSet(rootConceptId))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build();
@@ -149,6 +152,47 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 	}
 	
 	@Test
+	public void updateStatedRelationshipDestination() throws Exception {
+		// index the ROOT concept as existing concept
+		final long rootConceptId = Long.parseLong(Concepts.ROOT_CONCEPT);
+		final Concept concept1 = createConcept(generateConceptId());
+		final Concept concept2 = createConcept(Concepts.NAMESPACE_ROOT);
+		
+		final long concept1Id = Long.parseLong(concept1.getId());
+		final long concept2Id = Long.parseLong(concept2.getId());
+		
+		statedChangedConceptIds.add(rootConceptId);
+		statedChangedConceptIds.add(concept1Id);
+		statedChangedConceptIds.add(concept2Id);
+		
+		final Relationship statedRelationship = createStatedRelationship(concept1.getId(), Concepts.IS_A, Concepts.ROOT_CONCEPT);
+		concept1.getOutboundRelationships().add(statedRelationship);
+		
+		indexRevision(MAIN, nextStorageKey(), SnomedRelationshipIndexEntry.builder(statedRelationship).build());
+		indexRevision(MAIN, nextStorageKey(), doc(concept1)
+				.statedParents(PrimitiveSets.newLongOpenHashSet(rootConceptId))
+				.build());
+		indexRevision(MAIN, nextStorageKey(), doc(concept2).build());
+		
+		// change destination from ROOT to concept 2
+		statedRelationship.setDestination(concept2);
+		registerDirty(statedRelationship);
+
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(concept1)
+				.iconId(Concepts.NAMESPACE_ROOT)
+				.statedParents(PrimitiveSets.newLongOpenHashSet(concept2Id))
+				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.build();
+		assertEquals(1, processor.getChangedMappings().size());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
 	public void deleteLeafConcept() throws Exception {
 		final String conceptId = generateConceptId();
 		final Concept concept = createConcept(conceptId);
@@ -164,13 +208,16 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void deleteConceptWithOneStatedChild() throws Exception {
+		final long namespaceRootLong = Long.parseLong(Concepts.NAMESPACE_ROOT);
 		// given a parent concept and child concept
 		final String parentId = generateConceptId();
+		availableImages.add(parentId);
 		final String childId = generateConceptId();
 		final Concept parentConcept = createConcept(parentId);
 		final Concept childConcept = createConcept(childId);
 		// and a stated relationship between the two
 		final Relationship childToParentIsa = createStatedRelationship(childId, Concepts.IS_A, parentId);
+		final Relationship childToAnotherConceptIsa = createStatedRelationship(childId, Concepts.IS_A, Concepts.NAMESPACE_ROOT);
 		
 		final long parentIdLong = Long.parseLong(parentId);
 		final long childIdLong = Long.parseLong(childId);
@@ -183,8 +230,9 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build());
 		
-		// index a single relationship between the two IDs to indicate parent-child relations in the index
+		// index existing stated relationships
 		indexRevision(MAIN, CDOIDUtil.getLong(childToParentIsa.cdoID()), SnomedRelationshipIndexEntry.builder(childToParentIsa).build());
+		indexRevision(MAIN, CDOIDUtil.getLong(childToAnotherConceptIsa.cdoID()), SnomedRelationshipIndexEntry.builder(childToAnotherConceptIsa).build());
 		
 		// register child concept as existing concept in view, so it can be loaded via CDO
 		registerExistingObject(childConcept);
@@ -195,6 +243,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		statedChangedConceptIds.add(parentIdLong);
 		statedChangedConceptIds.add(childIdLong);
+		statedChangedConceptIds.add(namespaceRootLong);
 		
 		final ConceptChangeProcessor processor = process();
 		
@@ -204,7 +253,11 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		// and the child concept needs to be reindexed as child of the invisible ROOT ID
 		assertEquals(1, processor.getChangedMappings().size());
 		final Revision newChildRevision = Iterables.getOnlyElement(processor.getChangedMappings().values());
-		final SnomedConceptDocument expectedChildRevision = doc(childConcept).build();
+		final SnomedConceptDocument expectedChildRevision = doc(childConcept)
+				.iconId(Concepts.NAMESPACE_ROOT)
+				.statedParents(PrimitiveSets.newLongOpenHashSet(namespaceRootLong))
+				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.build();
 		assertDocEquals(expectedChildRevision, newChildRevision);
 		
 		// no new mappings were registered

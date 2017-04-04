@@ -18,10 +18,12 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 import java.util.Collection;
 import java.util.Set;
 
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.google.common.collect.Sets;
+import com.google.common.primitives.Longs;
 
 /**
  * @since 4.3
@@ -67,13 +69,15 @@ public class IconIdUpdater {
 	
 	private String getParentFrom(final String conceptId, ISnomedTaxonomyBuilder taxonomyBuilder, final Set<String> visitedNodes) {
 		if (visitedNodes.add(conceptId)) {
-			if (taxonomyBuilder.getAncestorNodeIds(conceptId).size() == 0) {
-				return null;
-			}
 			if (this.availableImages.contains(conceptId)) {
 				return conceptId;
 			}
-			return getParentFrom(Long.toString(taxonomyBuilder.getAncestorNodeIds(conceptId).iterator().next()), taxonomyBuilder, visitedNodes);
+			final LongSet ancestorNodeIds = taxonomyBuilder.getAncestorNodeIds(conceptId);
+			if (ancestorNodeIds.size() == 0) {
+				return null;
+			}
+			final long minConceptId = Longs.min(ancestorNodeIds.toArray());
+			return getParentFrom(Long.toString(minConceptId), taxonomyBuilder, visitedNodes);
 		} else {
 			// if we reached an already visited node, then skip and return null
 			return null;
