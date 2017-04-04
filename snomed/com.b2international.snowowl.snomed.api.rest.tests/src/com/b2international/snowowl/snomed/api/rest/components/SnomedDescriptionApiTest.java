@@ -56,6 +56,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
@@ -625,6 +626,10 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 				.build();
 
 		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(400);
+		
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
+			.statusCode(200)
+			.body(SnomedRf2Headers.FIELD_TYPE_ID, equalTo(Concepts.SYNONYM));
 	}
 	
 	@Test
@@ -639,6 +644,10 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-TERM", "v1", "20170301");
 
 		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(400);
+		
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
+			.statusCode(200)
+			.body(SnomedRf2Headers.FIELD_TERM, equalTo(SnomedRestFixtures.DEFAULT_TERM));
 	}
 	
 	@Test
@@ -653,6 +662,9 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-LANGCODE", "v1", "20170301");
 		
 		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(400);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
+			.statusCode(200)
+			.body(SnomedRf2Headers.FIELD_LANGUAGE_CODE, equalTo(SnomedRestFixtures.DEFAULT_LANGUAGE_CODE));	
 	}
 
 }

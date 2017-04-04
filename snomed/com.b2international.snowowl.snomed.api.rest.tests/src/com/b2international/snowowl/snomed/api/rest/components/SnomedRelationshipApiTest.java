@@ -391,6 +391,10 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, update)
 			.statusCode(400);
+		
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
+			.statusCode(200)
+			.body(SnomedRf2Headers.FIELD_TYPE_ID, equalTo(Concepts.PART_OF));
 	}
 	
 	@Test
@@ -406,6 +410,10 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, update)
 			.statusCode(400);
+		
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
+			.statusCode(200)
+			.body(SnomedRf2Headers.FIELD_DESTINATION_ID, equalTo(Concepts.NAMESPACE_ROOT));
 	}
 	
 }
