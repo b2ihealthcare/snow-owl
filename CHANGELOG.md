@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.8.4
+
+### Bugs
+- Fix serialization issue of SortField when using it in SearchRequests (e733dbec3edb831d6fba4974ff9ea8a04832f50f)
+
 ## 5.8.3
 
 ### Bugs
