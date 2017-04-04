@@ -27,6 +27,8 @@ public final class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComp
 	private Integer group;
 	private Integer unionGroup;
 	private RelationshipModifier modifier;
+	private String destinationId;
+	private String typeId;
 
 	SnomedRelationshipUpdateRequestBuilder(String componentId) {
 		super(componentId);
@@ -52,6 +54,16 @@ public final class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComp
 		return getSelf();
 	}
 	
+	public SnomedRelationshipUpdateRequestBuilder setDestinationId(String destinationId) {
+		this.destinationId = destinationId;
+		return getSelf();
+	}
+	
+	public SnomedRelationshipUpdateRequestBuilder setTypeId(String typeId) {
+		this.typeId = typeId;
+		return getSelf();
+	}
+	
 	@Override
 	protected SnomedRelationshipUpdateRequest create(String componentId) {
 		return new SnomedRelationshipUpdateRequest(componentId);
@@ -64,6 +76,8 @@ public final class SnomedRelationshipUpdateRequestBuilder extends BaseSnomedComp
 		req.setGroup(group);
 		req.setUnionGroup(unionGroup);
 		req.setModifier(modifier);
+		req.setDestinationId(destinationId);
+		req.setTypeId(typeId);
 	}
 
 }

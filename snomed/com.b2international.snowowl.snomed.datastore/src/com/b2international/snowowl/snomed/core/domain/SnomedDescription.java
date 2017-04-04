@@ -194,6 +194,9 @@ public final class SnomedDescription extends SnomedCoreComponent {
 			.setCaseSignificance(getCaseSignificance())
 			.setInactivationIndicator(getInactivationIndicator())
 			.setModuleId(getModuleId())
+			.setTypeId(getTypeId())
+			.setTerm(getTerm())
+			.setLanguageCode(getLanguageCode())
 			.build();
 	}
 

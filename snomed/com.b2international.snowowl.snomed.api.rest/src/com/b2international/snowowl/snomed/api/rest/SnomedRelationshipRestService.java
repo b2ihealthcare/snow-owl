@@ -270,6 +270,8 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			.setGroup(update.getGroup())
 			.setUnionGroup(update.getUnionGroup())
 			.setModifier(update.getModifier())
+			.setTypeId(update.getTypeId())
+			.setDestinationId(update.getDestinationId())
 			.build(repositoryId, branchPath, userId, commitComment)
 			.execute(bus)
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MILLISECONDS);

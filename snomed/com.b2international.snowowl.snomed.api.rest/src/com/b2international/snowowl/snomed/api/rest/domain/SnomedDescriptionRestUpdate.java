@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,9 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 	private Map<String, Acceptability> acceptability;
 	private DescriptionInactivationIndicator inactivationIndicator;
 	private Multimap<AssociationType, String> associationTargets;
+	private String typeId;
+	private String term;
+	private String languageCode;
 
 	public CaseSignificance getCaseSignificance() {
 		return caseSignificance;
@@ -48,6 +51,18 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 	public Multimap<AssociationType, String> getAssociationTargets() {
 		return associationTargets;
 	}
+	
+	public String getLanguageCode() {
+		return languageCode;
+	}
+
+	public String getTerm() {
+		return term;
+	}
+	
+	public String getTypeId() {
+		return typeId;
+	}
 
 	public void setCaseSignificance(final CaseSignificance caseSignificance) {
 		this.caseSignificance = caseSignificance;
@@ -63,6 +78,18 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 	
 	public void setAssociationTargets(Multimap<AssociationType, String> associationTargets) {
 		this.associationTargets = associationTargets;
+	}
+	
+	public void setLanguageCode(String languageCode) {
+		this.languageCode = languageCode;
+	}
+	
+	public void setTerm(String term) {
+		this.term = term;
+	}
+	
+	public void setTypeId(String typeId) {
+		this.typeId = typeId;
 	}
 
 }

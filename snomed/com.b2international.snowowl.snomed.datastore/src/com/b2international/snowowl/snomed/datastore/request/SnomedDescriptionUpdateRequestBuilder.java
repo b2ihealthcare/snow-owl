@@ -32,6 +32,9 @@ public final class SnomedDescriptionUpdateRequestBuilder extends BaseSnomedCompo
 	private Multimap<AssociationType, String> associationTargets;
 	private CaseSignificance caseSignificance;
 	private DescriptionInactivationIndicator inactivationIndicator;
+	private String languageCode;
+	private String typeId;
+	private String term;
 
 	SnomedDescriptionUpdateRequestBuilder(String componentId) {
 		super(componentId);
@@ -57,6 +60,21 @@ public final class SnomedDescriptionUpdateRequestBuilder extends BaseSnomedCompo
 		return getSelf();
 	}
 	
+	public SnomedDescriptionUpdateRequestBuilder setTypeId(String typeId) {
+		this.typeId = typeId;
+		return getSelf();
+	}
+	
+	public SnomedDescriptionUpdateRequestBuilder setTerm(String term) {
+		this.term = term;
+		return getSelf();
+	}
+	
+	public SnomedDescriptionUpdateRequestBuilder setLanguageCode(String languageCode) {
+		this.languageCode = languageCode;
+		return getSelf();
+	}
+	
 	@Override
 	protected SnomedDescriptionUpdateRequest create(String componentId) {
 		return new SnomedDescriptionUpdateRequest(componentId);
@@ -69,6 +87,9 @@ public final class SnomedDescriptionUpdateRequestBuilder extends BaseSnomedCompo
 		req.setAssociationTargets(associationTargets);
 		req.setCaseSignificance(caseSignificance);
 		req.setInactivationIndicator(inactivationIndicator);
+		req.setLanguageCode(languageCode);
+		req.setTypeId(typeId);
+		req.setTerm(term);
 	}
 	
 }

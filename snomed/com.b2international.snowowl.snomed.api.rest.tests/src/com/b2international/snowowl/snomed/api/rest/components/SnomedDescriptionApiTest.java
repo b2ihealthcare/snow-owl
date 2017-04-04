@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.api.rest.components;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createCodeSystemAndVersion;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranchRecursively;
@@ -32,7 +33,12 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.ina
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.endsWith;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -51,7 +57,12 @@ import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.*;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.AssociationType;
+import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -557,6 +568,91 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		.get("/{path}/descriptions", branchPath)
 		.then()
 		.statusCode(200);
+	}
+	
+	@Test
+	public void updateUnreleasedDescriptionTypeId() throws Exception {
+		String descriptionId = createNewDescription(branchPath);
+		Map<?, ?> update = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_TYPE_ID, Concepts.TEXT_DEFINITION)
+				.put("commitComment", "Update unreleased description type")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
+			.statusCode(200)
+			.body(SnomedRf2Headers.FIELD_TYPE_ID, equalTo(Concepts.TEXT_DEFINITION));
+	}
+	
+	@Test
+	public void updateUnreleasedDescriptionTerm() throws Exception {
+		String descriptionId = createNewDescription(branchPath);
+		Map<?, ?> update = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_TERM, "updatedUnreleasedDescriptionTerm")
+				.put("commitComment", "Update unreleased description term")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
+			.statusCode(200)
+			.body(SnomedRf2Headers.FIELD_TERM, equalTo("updatedUnreleasedDescriptionTerm"));
+	}
+	
+	@Test
+	public void updateUnreleasedDescriptionLanguageCode() throws Exception {
+		String descriptionId = createNewDescription(branchPath);
+		Map<?, ?> update = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_LANGUAGE_CODE, "hu")
+				.put("commitComment", "Update unreleased description languageCode")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
+			.statusCode(200)
+			.body(SnomedRf2Headers.FIELD_LANGUAGE_CODE, equalTo("hu"));
+	}
+	
+	@Test
+	public void updateReleasedDescriptionTypeId() throws Exception {
+		String descriptionId = createNewDescription(branchPath);
+		
+		// release component
+		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-TYPEID", "v1", "20170301");
+		
+		Map<?, ?> update = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_TYPE_ID, Concepts.TEXT_DEFINITION)
+				.put("commitComment", "Update unreleased description type")
+				.build();
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(400);
+	}
+	
+	@Test
+	public void updateReleasedDescriptionTerm() throws Exception {
+		String descriptionId = createNewDescription(branchPath);
+		Map<?, ?> update = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_TERM, "updatedUnreleasedDescriptionTerm")
+				.put("commitComment", "Update unreleased description term")
+				.build();
+		
+		// release component
+		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-TERM", "v1", "20170301");
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(400);
+	}
+	
+	@Test
+	public void updateReleasedDescriptionLanguageCode() throws Exception {
+		String descriptionId = createNewDescription(branchPath);
+		Map<?, ?> update = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_LANGUAGE_CODE, "hu")
+				.put("commitComment", "Update unreleased description languageCode")
+				.build();
+
+		// release component
+		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-LANGCODE", "v1", "20170301");
+		
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(400);
 	}
 
 }
