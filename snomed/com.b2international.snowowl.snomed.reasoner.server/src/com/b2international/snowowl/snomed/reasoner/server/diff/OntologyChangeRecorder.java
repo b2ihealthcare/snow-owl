@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Nature;
 
 /**
@@ -29,14 +30,14 @@ import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Na
  */
 public class OntologyChangeRecorder<T extends Serializable> extends OntologyChangeProcessor<T> {
 	
-	public static <T extends Serializable> OntologyChangeRecorder<T> create(final List<OntologyChange<T>> changes) {
-		return new OntologyChangeRecorder<T>(changes);
+	public static <T extends Serializable> OntologyChangeRecorder<T> create(final List<OntologyChange<T>> changes, final NamespaceAndMolduleAssigner assigner) {
+		return new OntologyChangeRecorder<T>(changes, assigner);
 	}
 	
 	private final List<OntologyChange<T>> changes;
 	
-	public OntologyChangeRecorder(final List<OntologyChange<T>> changes) {
-		super(new SourceConceptNamespaceAndModuleAssigner());
+	public OntologyChangeRecorder(final List<OntologyChange<T>> changes, final NamespaceAndMolduleAssigner assigner) {
+		super(assigner);
 		this.changes = changes;
 	}
 
