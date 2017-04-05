@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.8.6
+
+### Changes
+- Description preferred acceptability update no longer update acceptabilities of other description (5f012c30a8346bc4905bafa92d9920ce9525dc3a)
+
+### Bugs
+- Fix concept document indexing when changing destination of a relationship in place (4a0ab3a5bcb9b5108785b799f86a1258f88c65e9)
+
 ## 5.8.5
 
 ### Changes
