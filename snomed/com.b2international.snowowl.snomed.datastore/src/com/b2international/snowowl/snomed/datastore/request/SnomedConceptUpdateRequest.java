@@ -152,14 +152,16 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 				if (concept.isReleased()) {
 					long start = new Date().getTime();
 					final String branchPath = getLatestReleaseBranch(context);
-					final SnomedConcept releasedConcept = SnomedRequests.prepareGetConcept(getComponentId())
-							.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
-							.execute(context.service(IEventBus.class))
-							.getSync();
-					if (!isDifferentToPreviousRelease(concept, releasedConcept)) {
-						concept.setEffectiveTime(releasedConcept.getEffectiveTime());
+					if (!Strings.isNullOrEmpty(branchPath)) {
+						final SnomedConcept releasedConcept = SnomedRequests.prepareGetConcept(getComponentId())
+								.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
+								.execute(context.service(IEventBus.class))
+								.getSync();
+						if (!isDifferentToPreviousRelease(concept, releasedConcept)) {
+							concept.setEffectiveTime(releasedConcept.getEffectiveTime());
+						}
+						LOGGER.trace("Previous version comparison took {}", new Date().getTime() - start);
 					}
-					LOGGER.info("Previous version comparison took {}", new Date().getTime() - start);
 				}
 			}
 		}

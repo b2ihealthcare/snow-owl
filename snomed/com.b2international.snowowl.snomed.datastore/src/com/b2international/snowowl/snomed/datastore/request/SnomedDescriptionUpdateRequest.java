@@ -33,6 +33,7 @@ import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
@@ -106,17 +107,19 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 				if (description.isReleased()) {
 					long start = new Date().getTime();
 					final String branchPath = getLatestReleaseBranch(context);
-					final IEventBus bus = context.service(IEventBus.class);
-					final SnomedDescription releasedDescription = SnomedRequests
-						.prepareGetDescription(getComponentId())
-						.build(context.id(), branchPath)
-						.execute(bus)
-						.getSync();
-	
-					if (!isDifferentToPreviousRelease(description, releasedDescription)) {
-						description.setEffectiveTime(releasedDescription.getEffectiveTime());
+					if (!Strings.isNullOrEmpty(branchPath)) {
+						final IEventBus bus = context.service(IEventBus.class);
+						final SnomedDescription releasedDescription = SnomedRequests
+								.prepareGetDescription(getComponentId())
+								.build(context.id(), branchPath)
+								.execute(bus)
+								.getSync();
+						
+						if (!isDifferentToPreviousRelease(description, releasedDescription)) {
+							description.setEffectiveTime(releasedDescription.getEffectiveTime());
+						}
+						LOGGER.info("Previous version comparison took {}", new Date().getTime() - start);
 					}
-					LOGGER.info("Previous version comparison took {}", new Date().getTime() - start);
 				}
 			}
 		}

@@ -31,6 +31,7 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.5
@@ -101,15 +102,17 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 				if (relationship.isReleased()) {
 					long start = new Date().getTime();
 					final String branchPath = getLatestReleaseBranch(context);
-					final SnomedRelationship releasedRelationship = SnomedRequests.prepareGetRelationship(getComponentId())
-							.build(context.id(), branchPath)
-							.execute(context.service(IEventBus.class))
-							.getSync();
-	
-					if (!isDifferentToPreviousRelease(relationship, releasedRelationship)) {
-						relationship.setEffectiveTime(releasedRelationship.getEffectiveTime());
+					if (!Strings.isNullOrEmpty(branchPath)) {
+						final SnomedRelationship releasedRelationship = SnomedRequests.prepareGetRelationship(getComponentId())
+								.build(context.id(), branchPath)
+								.execute(context.service(IEventBus.class))
+								.getSync();
+						
+						if (!isDifferentToPreviousRelease(relationship, releasedRelationship)) {
+							relationship.setEffectiveTime(releasedRelationship.getEffectiveTime());
+						}
+						LOGGER.info("Previous version comparison took {}", new Date().getTime() - start);
 					}
-					LOGGER.info("Previous version comparison took {}", new Date().getTime() - start);
 				}
 			}
 		}

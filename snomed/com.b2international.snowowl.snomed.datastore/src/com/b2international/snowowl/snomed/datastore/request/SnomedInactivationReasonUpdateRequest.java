@@ -20,13 +20,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
-import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Inactivatable;
@@ -93,11 +90,7 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 	private final Function<TransactionContext, String> referenceBranchFunction = CacheBuilder.newBuilder().build(new CacheLoader<TransactionContext, String>() {
 		@Override
 		public String load(final TransactionContext context) throws Exception {
-			final TerminologyRegistryService registryService = context.service(TerminologyRegistryService.class);
-			final List<ICodeSystemVersion> allVersions = registryService.getAllVersion().get(context.id());
-			final ICodeSystemVersion systemVersion = allVersions.get(1);
-			final IBranchPath branchPath = ICodeSystemVersion.TO_BRANCH_PATH_FUNC.apply(systemVersion);
-			return branchPath.getPath();
+			return SnomedComponentUpdateRequest.getLatestReleaseBranch(context);
 		}
 	});
 

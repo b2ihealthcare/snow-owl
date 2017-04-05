@@ -58,11 +58,7 @@ final class SnomedDescriptionAcceptabilityUpdateRequest implements Request<Trans
 	private final Function<TransactionContext, String> referenceBranchFunction = CacheBuilder.newBuilder().build(new CacheLoader<TransactionContext, String>() {
 		@Override
 		public String load(TransactionContext context) throws Exception {
-			final TerminologyRegistryService registryService = context.service(TerminologyRegistryService.class);
-			final List<ICodeSystemVersion> allVersions = registryService.getAllVersion().get(context.id());
-			final ICodeSystemVersion systemVersion = allVersions.get(1);
-			final IBranchPath branchPath = ICodeSystemVersion.TO_BRANCH_PATH_FUNC.apply(systemVersion);
-			return branchPath.getPath();
+			return SnomedComponentUpdateRequest.getLatestReleaseBranch(context);
 		}
 	});
 	
