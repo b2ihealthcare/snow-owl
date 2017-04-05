@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Nature;
 
 /**
@@ -29,24 +30,25 @@ import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Na
  */
 public class OntologyChangeRecorder<T extends Serializable> extends OntologyChangeProcessor<T> {
 	
-	public static <T extends Serializable> OntologyChangeRecorder<T> create(final List<OntologyChange<T>> changes) {
-		return new OntologyChangeRecorder<T>(changes);
+	public static <T extends Serializable> OntologyChangeRecorder<T> create(final List<OntologyChange<T>> changes, final NamespaceAndMolduleAssigner assigner) {
+		return new OntologyChangeRecorder<T>(changes, assigner);
 	}
 	
 	private final List<OntologyChange<T>> changes;
 	
-	public OntologyChangeRecorder(final List<OntologyChange<T>> changes) {
+	public OntologyChangeRecorder(final List<OntologyChange<T>> changes, final NamespaceAndMolduleAssigner assigner) {
+		super(assigner);
 		this.changes = changes;
 	}
 
 	@Override
-	protected void handleAddedSubject(final long conceptId, final T addedSubject) {
-		changes.add(new OntologyChange<T>(Nature.ADD, conceptId, addedSubject));
+	protected void handleAddedSubject(final String conceptId, final T addedSubject) {
+		changes.add(new OntologyChange<T>(Nature.ADD, Long.valueOf(conceptId), addedSubject));
 	}
 	
 	@Override
-	protected void handleRemovedSubject(final long conceptId, final T removedSubject) {
-		changes.add(new OntologyChange<T>(Nature.REMOVE, conceptId, removedSubject));
+	protected void handleRemovedSubject(final String conceptId, final T removedSubject) {
+		changes.add(new OntologyChange<T>(Nature.REMOVE, Long.valueOf(conceptId), removedSubject));
 	}
 	
 	public void finish() {

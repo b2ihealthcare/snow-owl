@@ -56,6 +56,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.classification.EquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange;
@@ -79,16 +80,18 @@ public class PersistChangesRequest implements Request<ServiceProvider, ApiError>
 	@JsonProperty
 	private final String classificationId;
 	private final String userId;
+	private final NamespaceAndMolduleAssigner namespaceAndModuleAssigner;
 
 	private ReasonerTaxonomy taxonomy;
 	private DatastoreLockContext lockContext;
 	private IOperationLockTarget lockTarget;
 	private LongSet statedDescendantsOfSmp;
 
-	public PersistChangesRequest(String classificationId, ReasonerTaxonomy taxonomy, String userId) {
+	public PersistChangesRequest(String classificationId, ReasonerTaxonomy taxonomy, String userId, NamespaceAndMolduleAssigner namespaceAndModuleAssigner) {
 		this.classificationId = classificationId;
 		this.taxonomy = taxonomy;
 		this.userId = userId;
+		this.namespaceAndModuleAssigner = namespaceAndModuleAssigner;
 	}
 
 	@Override
@@ -156,15 +159,15 @@ public class PersistChangesRequest implements Request<ServiceProvider, ApiError>
 			});
 
 			RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
-			RelationshipPersister relationshipAddPersister = new RelationshipPersister(editingContext, OntologyChange.Nature.ADD);
-			RelationshipPersister relationshipRemovePersister = new RelationshipPersister(editingContext, OntologyChange.Nature.REMOVE);
+			RelationshipPersister relationshipAddPersister = new RelationshipPersister(editingContext, OntologyChange.Nature.ADD, namespaceAndModuleAssigner);
+			RelationshipPersister relationshipRemovePersister = new RelationshipPersister(editingContext, OntologyChange.Nature.REMOVE, namespaceAndModuleAssigner);
 
 			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipAddPersister);
 			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipRemovePersister);
 
 			ConceptConcreteDomainNormalFormGenerator conceptConcreteDomainGenerator = new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
-			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.ADD));
-			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.REMOVE));
+			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.ADD, namespaceAndModuleAssigner));
+			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.REMOVE, namespaceAndModuleAssigner));
 
 			List<LongSet> equivalenciesToFix = Lists.newArrayList();
 

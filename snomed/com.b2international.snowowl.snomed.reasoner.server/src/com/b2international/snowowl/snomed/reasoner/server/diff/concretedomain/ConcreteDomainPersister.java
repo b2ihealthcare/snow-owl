@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain;
 
+import java.util.Set;
+
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
@@ -22,6 +24,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Nature;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
@@ -32,18 +35,17 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRef
  */
 public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDomainFragment> {
 
-	private final SnomedRefSetEditingContext refSetEditingContext;
-	private final Concept moduleConcept;
 	private final Nature nature;
+	private final SnomedRefSetEditingContext refSetEditingContext;
 	
-	public ConcreteDomainPersister(final SnomedEditingContext context, final Nature nature) {
+	public ConcreteDomainPersister(final SnomedEditingContext context, final Nature nature, NamespaceAndMolduleAssigner namespaceAndModuleAssigner) {
+		super(namespaceAndModuleAssigner);
 		this.nature = nature;
 		this.refSetEditingContext = context.getRefSetEditingContext();
-		this.moduleConcept = context.getDefaultModuleConcept();
 	}
-
+	
 	@Override
-	protected void handleRemovedSubject(final long conceptId, final ConcreteDomainFragment removedEntry) {
+	protected void handleRemovedSubject(final String conceptId, final ConcreteDomainFragment removedEntry) {
 		
 		if (!Nature.REMOVE.equals(nature)) {
 			return;
@@ -54,17 +56,22 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 	}
 	
 	@Override
-	protected void handleAddedSubject(final long conceptId, final ConcreteDomainFragment addedEntry) {
+	protected void beforeHandleAddedSubjects(Set<String> conceptIds) {
+		//pre-allocate namespaces for the new concrete domains per each concept
+		getRelationshipNamespaceAssigner().allocateConcreteDomainModules(conceptIds, refSetEditingContext.getSnomedEditingContext());
+	}
+	
+	@Override
+	protected void handleAddedSubject(final String conceptId, final ConcreteDomainFragment addedEntry) {
 		
 		if (!Nature.ADD.equals(nature)) {
 			return;
 		}
-
-		final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet = refSetEditingContext.lookup(Long.toString(addedEntry.getRefSetId()), SnomedConcreteDataTypeRefSet.class);
 		
-		final String referencedComponentId = Long.toString(conceptId);
+		final Concept moduleConcept = getRelationshipNamespaceAssigner().getConcreteDomainModule(conceptId, refSetEditingContext.getBranchPath());
+		final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet = refSetEditingContext.lookup(Long.toString(addedEntry.getRefSetId()), SnomedConcreteDataTypeRefSet.class);
 		final SnomedConcreteDataTypeRefSetMember refSetMember = refSetEditingContext.createConcreteDataTypeRefSetMember(
-				referencedComponentId,
+				conceptId,
 				nullIfUnset(addedEntry.getUomId()),
 				Concepts.CD_EQUAL,
 				SnomedRefSetUtil.deserializeValue(addedEntry.getDataType(), addedEntry.getValue()), 
@@ -73,7 +80,7 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 				moduleConcept.getId(), 
 				concreteDataTypeRefSet);
 		
-		final Concept referencedComponent = refSetEditingContext.lookup(referencedComponentId, Concept.class);
+		final Concept referencedComponent = refSetEditingContext.lookup(conceptId, Concept.class);
 		referencedComponent.getConcreteDomainRefSetMembers().add(refSetMember);
 	}
 
