@@ -27,7 +27,37 @@ public interface SnomedIdentifier extends Serializable {
 
 	public long getItemId();
 
+	/**
+	 * Returns the namespace of this identifier which is a seven digit number allocated by the IHTSDO to an organization that is permitted to maintain a SNOMED CT Extension.
+	 * The namespace identifier forms part of the SCTID allocated every component that originated as part of an Extension to prevent collision between SCTIDs issued by different organizations.
+	 * The namespace-identifier indicates the provenance of each SNOMED CT component .
+     * <br>
+     * <br>
+     * Note: For short format SCTIDs, which are used for components that originate in the International Release 
+     * do not include a namespace-identifier. In this case the partition identifier provides sufficient information about the origin of the component.
+	 * @return namespace of this identifier
+	 */
 	public String getNamespace();
+	
+	/**
+	 * Returns true if the identifiers namespace matches the passed in namespace
+	 * @param namespace
+	 * @return true if the namespace matches
+	 */
+	public boolean isNamespace(String namespace);
+	
+	/**
+	 * Returns true if the identifiers namespace matches the passed in namespace
+	 * @param namespace
+	 * @return true if the namespace matches
+	 */
+	public boolean isNamespace(long namespace);
+
+	/**
+	 * Returns true if this identifier has a namespace. International components do not have namespaces.
+	 * @return
+	 */
+	public boolean hasNamespace();
 
 	/** 
 	 * The first digit of the partition identifier. Possible values are:

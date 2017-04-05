@@ -26,6 +26,7 @@ import com.google.common.base.Strings;
  */
 public final class SnomedIdentifierImpl implements SnomedIdentifier {
 
+	private static final long serialVersionUID = 1L;
 	private String id;
 	private long itemId;
 	private String namespace;
@@ -41,14 +42,40 @@ public final class SnomedIdentifierImpl implements SnomedIdentifier {
 		this.checkDigit = checkDigit;
 	}
 
+	@Override
 	public long getItemId() {
 		return itemId;
 	}
 
+	@Override
 	public String getNamespace() {
 		return namespace;
 	}
+	
+	@Override
+	public boolean isNamespace(String namespace) {
+		if (namespace == null & this.namespace == null) {
+			return true;
+		}
+		
+		if (this.namespace == null) {
+			return false;
+		}
+		
+		return this.namespace.equals(namespace);
+	}
 
+	@Override
+	public boolean isNamespace(long namespace) {
+		return isNamespace(String.valueOf(namespace));
+	}
+	
+	@Override
+	public boolean hasNamespace() {
+		return namespace != null;
+	}
+
+	@Override
 	public int getFormatIdentifier() {
 		return formatIdentifier;
 	}
@@ -57,10 +84,12 @@ public final class SnomedIdentifierImpl implements SnomedIdentifier {
 		return componentIdentifier;
 	}
 
+	@Override
 	public int getCheckDigit() {
 		return checkDigit;
 	}
 
+	@Override
 	public ComponentCategory getComponentCategory() {
 		return ComponentCategory.getByOrdinal(getComponentIdentifier());
 	}
