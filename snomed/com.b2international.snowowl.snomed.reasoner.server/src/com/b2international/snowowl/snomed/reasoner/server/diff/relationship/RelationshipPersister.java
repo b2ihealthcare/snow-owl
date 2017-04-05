@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.reasoner.server.diff.relationship;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
@@ -30,14 +31,13 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Nature;
 import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
+import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Nature;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 /**
@@ -87,16 +87,10 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 	}
 	
 	@Override
-	protected void handleAddedSubjects(Multimap<String, StatementFragment> conceptIdToRelationshipsMap) {
-		
-		//pre-allocate namespaces for the new properties per each concept
-		getRelationshipNamespaceAllocator().allocateRelationshipNamespacesAndModules(conceptIdToRelationshipsMap, context);
-		
-		for (Map.Entry<String, StatementFragment> entry : conceptIdToRelationshipsMap.entries()) {
-			handleAddedSubject(entry.getKey(), entry.getValue());
-		}
+	protected void beforeHandleAddedSubjects(Set<String> conceptIds) {
+		//pre-allocate namespaces for the new relationships per each concept
+		getRelationshipNamespaceAssigner().allocateRelationshipNamespacesAndModules(conceptIds, context);
 	}
-	
 	
 	@Override
 	protected void handleAddedSubject(final String sourceConceptId, final StatementFragment addedEntry) {
@@ -105,11 +99,11 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 			return;
 		}
 
-		final String namespace = getRelationshipNamespaceAllocator().getRelationshipNamespace(sourceConceptId, context.getBranchPath());
+		final String namespace = getRelationshipNamespaceAssigner().getRelationshipNamespace(sourceConceptId, context.getBranchPath());
 		
 		
 		final Concept sourceConcept = conceptLookupService.getComponent(sourceConceptId, transaction);
-		final Concept module = getRelationshipNamespaceAllocator().getRelationshipModule(sourceConceptId, context.getBranchPath());
+		final Concept module = getRelationshipNamespaceAssigner().getRelationshipModule(sourceConceptId, context.getBranchPath());
 		
 		final Concept typeConcept;
 		final long typeId = addedEntry.getTypeId();

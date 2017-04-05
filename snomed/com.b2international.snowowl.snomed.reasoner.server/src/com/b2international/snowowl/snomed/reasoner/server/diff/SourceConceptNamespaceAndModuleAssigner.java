@@ -25,11 +25,9 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 
 /**
  * Simple assigner that allocates the namespaces and modules for relationships and concrete domains
@@ -74,8 +72,7 @@ public class SourceConceptNamespaceAndModuleAssigner implements NamespaceAndMold
 	}
 
 	@Override
-	public void allocateRelationshipNamespacesAndModules(Multimap<String, StatementFragment> conceptIdToPropertiesMap,
-			final SnomedEditingContext editingContext) {
+	public void allocateRelationshipNamespacesAndModules(Set<String> conceptIds, final SnomedEditingContext editingContext) {
 
 		//default module is the fall back
 		relationshipDefaultModuleConcept = editingContext.getDefaultModuleConcept();
@@ -83,7 +80,6 @@ public class SourceConceptNamespaceAndModuleAssigner implements NamespaceAndMold
 		SnomedConceptLookupService conceptLookupService = new SnomedConceptLookupService();
 
 		// find the SDD_Ext concepts first as it is the fastest
-		Set<String> conceptIds = conceptIdToPropertiesMap.keySet();
 		for (String conceptId : conceptIds) {
 
 			Concept concept = conceptLookupService.getComponent(conceptId, editingContext.getTransaction());
@@ -92,7 +88,7 @@ public class SourceConceptNamespaceAndModuleAssigner implements NamespaceAndMold
 	}
 
 	@Override
-	public void allocateConcreateDomainModules(Multimap<String, StatementFragment> conceptIdToConcreteDomainMap, final SnomedEditingContext editingContext) {
+	public void allocateConcreateDomainModules(Set<String> conceptIds, final SnomedEditingContext editingContext) {
 		
 		//default module is the fall back
 		cdDefaultModuleConcept = editingContext.getDefaultModuleConcept();
@@ -100,7 +96,6 @@ public class SourceConceptNamespaceAndModuleAssigner implements NamespaceAndMold
 		SnomedConceptLookupService conceptLookupService = new SnomedConceptLookupService();
 		
 		// find the SDD_Ext concepts first as it is the fastest
-		Set<String> conceptIds = conceptIdToConcreteDomainMap.keySet();
 		for (String conceptId : conceptIds) {
 
 			Concept concept = conceptLookupService.getComponent(conceptId, editingContext.getTransaction());

@@ -15,11 +15,11 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server;
 
+import java.util.Set;
+
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.google.common.collect.Multimap;
 
 /**
  * Allocator to create Id namespaces and module concepts to inferred SNOMED CT properties
@@ -34,10 +34,10 @@ public interface NamespaceAndMolduleAssigner {
 	 * of the passed in map.  The allocated namespaces and modules can be later distributed by the 
 	 * {@link #allocateRelationshipNamespace(String)} and {@link #allocateRelationshipModule(String)} methods respectively.
 	 * 
-	 * @param Map with concept id as a key and multiple relationships as values
+	* @param Set of concept ids
 	 * @param the active snomed editing context
 	 */
-	public void allocateRelationshipNamespacesAndModules(final Multimap<String, StatementFragment> conceptIdToRelationshipsMap, final SnomedEditingContext context);
+	public void allocateRelationshipNamespacesAndModules(final Set<String> conceptIds, final SnomedEditingContext context);
 
 	/**
 	 * Returns a namespace to be assigned to a relationship based on its source concept id and branch path where it is located.
@@ -62,10 +62,10 @@ public interface NamespaceAndMolduleAssigner {
 	 * of the passed in map.  
 	 * The allocated modules can be later distributed by the {@link #allocateConcreateDomainModule(String)} method.
 	 * 
-	 * @param Map with concept id as a key and multiple relationships as values
+	 * @param Set of concept ids
 	 * @param the active snomed editing context
 	 */
-	public void allocateConcreateDomainModules(final Multimap<String, StatementFragment> conceptIdToRelationshipsMap, final SnomedEditingContext context);
+	public void allocateConcreateDomainModules(final Set<String> conceptIds, final SnomedEditingContext context);
 
 	/**
 	 * Returns a module concept to be assigned to a concrete domain based on its source concept id and branch path where it is located.

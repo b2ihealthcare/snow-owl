@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.reasoner.server.diff;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -42,11 +42,12 @@ import com.google.common.collect.Sets;
  */
 public abstract class OntologyChangeProcessor<T extends Serializable> {
 	
-	private NamespaceAndMolduleAssigner relationshipNamespaceAllocator;
+	private NamespaceAndMolduleAssigner relationshipNamespaceAssigner;
+	protected Multimap<String, T> newPropertiesMultiMap = HashMultimap.create(); 
 
-	public OntologyChangeProcessor(NamespaceAndMolduleAssigner relationshipNamespaceAllocator) {
-		Preconditions.checkNotNull(relationshipNamespaceAllocator);
-		this.relationshipNamespaceAllocator = relationshipNamespaceAllocator;
+	public OntologyChangeProcessor(NamespaceAndMolduleAssigner relationshipNamespaceAssigner) {
+		Preconditions.checkNotNull(relationshipNamespaceAssigner);
+		this.relationshipNamespaceAssigner = relationshipNamespaceAssigner;
 	}
 	
 	public void apply(final long conceptId, final Collection<T> oldCollection, final Collection<T> newCollection, final Ordering<T> ordering) {
@@ -78,7 +79,6 @@ public abstract class OntologyChangeProcessor<T extends Serializable> {
 		}
 		
 		//collect the inferred properties per concept
-		Multimap<String, T> newPropertiesMultiMap = HashMultimap.create(); 
 		for (final T newMini : sortedNew) {
 
 			if (subMonitor.isCanceled()) {
@@ -91,7 +91,7 @@ public abstract class OntologyChangeProcessor<T extends Serializable> {
 			
 			subMonitor.worked(1);
 		}
-		handleAddedSubjects(newPropertiesMultiMap);
+		handleAddedSubjects(newPropertiesMultiMap.keySet());
 	}
 	
 	public void apply(final Collection<OntologyChange<T>> changes, final IProgressMonitor monitor) {
@@ -119,12 +119,12 @@ public abstract class OntologyChangeProcessor<T extends Serializable> {
 		}
 	}
 	
-	/**
+	/**assigner
 	 * Returns the relationship namespace and module allocator assigned to this change processor.
 	 * @return
 	 */
-	protected NamespaceAndMolduleAssigner getRelationshipNamespaceAllocator() {
-		return relationshipNamespaceAllocator;
+	protected NamespaceAndMolduleAssigner getRelationshipNamespaceAssigner() {
+		return relationshipNamespaceAssigner;
 	}
 
 	/**
@@ -132,12 +132,21 @@ public abstract class OntologyChangeProcessor<T extends Serializable> {
 	 * Subclasses can overwrite to add custom behavior before handling the new properties for each concept.
 	 * @param properties multi map
 	 */
-	protected void handleAddedSubjects(Multimap<String, T> propertiesMultiMap) {
-		for (Map.Entry<String, T> entry : propertiesMultiMap.entries()) {
-			handleAddedSubject(entry.getKey(), entry.getValue());
+	protected void handleAddedSubjects(Set<String> keySet) {
+		
+		beforeHandleAddedSubjects(keySet);
+		
+		for (String key : keySet) {
+			Collection<T> values = newPropertiesMultiMap.get(key);
+			for (T fragment : values) {
+				handleAddedSubject(key, fragment);
+			}
 		}
 	}
 	
+	protected void beforeHandleAddedSubjects(Set<String> keySet) {
+		//subclasses should override
+	}
 
 	protected void handleRemovedSubject(final String conceptId, final T removedSubject) {
 		// Subclasses should override		
