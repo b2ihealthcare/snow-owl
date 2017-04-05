@@ -26,6 +26,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestReq
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.updateComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.bulkUpdateMembers;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.changeToAcceptable;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createDescriptionRequestBody;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewDescription;
@@ -402,8 +403,10 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void updateAcceptabilityWithAddition() throws Exception {
+		changeToAcceptable(branchPath, Concepts.ROOT_CONCEPT, Concepts.REFSET_LANGUAGE_TYPE_UK);
 		String descriptionId = createNewDescription(branchPath, Concepts.ROOT_CONCEPT, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
 
+		changeToAcceptable(branchPath, Concepts.ROOT_CONCEPT, Concepts.REFSET_LANGUAGE_TYPE_US);
 		Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("acceptability", ImmutableMap.of(
 						Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, 
@@ -426,6 +429,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void updateAcceptabilityWithRemove() throws Exception {
+		changeToAcceptable(branchPath, Concepts.ROOT_CONCEPT, Concepts.REFSET_LANGUAGE_TYPE_US);
 		String descriptionId = createNewDescription(branchPath, Concepts.ROOT_CONCEPT, Concepts.SYNONYM, ImmutableMap.<String, Acceptability>of(
 				Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, 
 				Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED));
