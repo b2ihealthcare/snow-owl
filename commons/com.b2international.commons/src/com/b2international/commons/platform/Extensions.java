@@ -20,6 +20,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -28,6 +30,9 @@ import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.Platform;
 
 import com.b2international.commons.ClassUtils;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Sets;
 
 /**
  * Useful utility methods when working with {@link IExtension}s, {@link IExtensionPoint}s and {@link IConfigurationElement}s.
@@ -49,6 +54,67 @@ public class Extensions {
 	 */
 	public static final <T> Collection<T> getExtensions(final String extensionPoint, final Class<T> type) {
 		return getExtensions(extensionPoint, "class", type);
+	}
+	
+	/**
+	 * Returns the instance of an 'class' extension that has the highest-priority.
+	 * @param extensionPoint
+	 * @param type
+	 * @return extension instance
+	 */
+	public static <T> T getFirstPriorityExtension(final String extensionPoint, final Class<T> type) {
+		checkNotNull(extensionPoint, "extensionPoint");
+		checkNotNull(type, "type");
+		
+		final String priorityAttributeName = "priority";
+		
+		final IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(extensionPoint);
+		
+		List<IConfigurationElement> elementList = FluentIterable.from(Sets.newHashSet(elements)).filter(new Predicate<IConfigurationElement>() {
+
+			@Override
+			public boolean apply(IConfigurationElement element) {
+				return hasAttributeOf(element, "class");
+			}
+		}).filter(new Predicate<IConfigurationElement>() {
+
+			@Override
+			public boolean apply(IConfigurationElement element) {
+				return hasAttributeOf(element, priorityAttributeName);
+			}
+		}).filter(new Predicate<IConfigurationElement>() {
+
+			@Override
+			public boolean apply(IConfigurationElement element) {
+				
+				try {
+					Integer.valueOf(element.getAttribute(priorityAttributeName));
+					return true;
+				} catch (Exception e) {
+					return false;
+				}
+			}
+		}).toSortedList(new Comparator<IConfigurationElement>() {
+
+			@Override
+			public int compare(IConfigurationElement ce1, IConfigurationElement ce2) {
+				int priority1 = Integer.valueOf(ce1.getAttribute(priorityAttributeName));
+				int priority2 = Integer.valueOf(ce2.getAttribute(priorityAttributeName));
+				
+				return Integer.valueOf(priority1).compareTo(Integer.valueOf(priority2));
+			}
+		}).reverse(); //highest-priority first
+		
+		if (!elementList.isEmpty()) {
+			IConfigurationElement firstElement = elementList.get(0);
+			try {
+				return instantiate(firstElement, "class", type);
+			} catch (CoreException e) {
+				throw new RuntimeException(String.format("Exception happened when creating element from %s bundle's extension: %s", firstElement
+						.getContributor().getName(), extensionPoint));
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -109,5 +175,6 @@ public class Extensions {
 			final String attributeName) {
 		return newHashSet(element.getAttributeNames()).contains(attributeName);
 	}
+	
 
 }
