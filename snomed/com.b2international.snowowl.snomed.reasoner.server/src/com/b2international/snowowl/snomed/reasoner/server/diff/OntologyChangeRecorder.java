@@ -36,17 +36,18 @@ public class OntologyChangeRecorder<T extends Serializable> extends OntologyChan
 	private final List<OntologyChange<T>> changes;
 	
 	public OntologyChangeRecorder(final List<OntologyChange<T>> changes) {
+		super(new SourceConceptNamespaceAndModuleAssigner());
 		this.changes = changes;
 	}
 
 	@Override
-	protected void handleAddedSubject(final long conceptId, final T addedSubject) {
-		changes.add(new OntologyChange<T>(Nature.ADD, conceptId, addedSubject));
+	protected void handleAddedSubject(final String conceptId, final T addedSubject) {
+		changes.add(new OntologyChange<T>(Nature.ADD, Long.valueOf(conceptId), addedSubject));
 	}
 	
 	@Override
-	protected void handleRemovedSubject(final long conceptId, final T removedSubject) {
-		changes.add(new OntologyChange<T>(Nature.REMOVE, conceptId, removedSubject));
+	protected void handleRemovedSubject(final String conceptId, final T removedSubject) {
+		changes.add(new OntologyChange<T>(Nature.REMOVE, Long.valueOf(conceptId), removedSubject));
 	}
 	
 	public void finish() {

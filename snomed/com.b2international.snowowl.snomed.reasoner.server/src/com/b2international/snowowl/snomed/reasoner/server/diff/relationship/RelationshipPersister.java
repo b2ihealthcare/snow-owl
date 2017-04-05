@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,14 +29,15 @@ import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Nature;
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 /**
@@ -56,7 +57,9 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 	
 	private final Collection<String> relationshipIds = Sets.newHashSet();
 	
-	public RelationshipPersister(final SnomedEditingContext context, final Nature nature) {
+	public RelationshipPersister(final SnomedEditingContext context, final Nature nature, final NamespaceAndMolduleAssigner relationshipNamespaceAllocator) {
+		
+		super(relationshipNamespaceAllocator);
 		this.context = context;
 		this.nature = nature;
 		
@@ -71,9 +74,9 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 		
 		relationshipTypeConcepts = Maps.newHashMap();
 	}
-
+	
 	@Override
-	protected void handleRemovedSubject(final long conceptId, final StatementFragment removedEntry) {
+	protected void handleRemovedSubject(final String conceptId, final StatementFragment removedEntry) {
 
 		if (!Nature.REMOVE.equals(nature)) {
 			return;
@@ -84,16 +87,29 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 	}
 	
 	@Override
-	protected void handleAddedSubject(final long conceptId, final StatementFragment addedEntry) {
+	protected void handleAddedSubjects(Multimap<String, StatementFragment> conceptIdToRelationshipsMap) {
+		
+		//pre-allocate namespaces for the new properties per each concept
+		getRelationshipNamespaceAllocator().allocateRelationshipNamespacesAndModules(conceptIdToRelationshipsMap, context);
+		
+		for (Map.Entry<String, StatementFragment> entry : conceptIdToRelationshipsMap.entries()) {
+			handleAddedSubject(entry.getKey(), entry.getValue());
+		}
+	}
+	
+	
+	@Override
+	protected void handleAddedSubject(final String sourceConceptId, final StatementFragment addedEntry) {
 
 		if (!Nature.ADD.equals(nature)) {
 			return;
 		}
 
-		final String sourceConceptId = Long.toString(conceptId);
+		final String namespace = getRelationshipNamespaceAllocator().getRelationshipNamespace(sourceConceptId, context.getBranchPath());
+		
+		
 		final Concept sourceConcept = conceptLookupService.getComponent(sourceConceptId, transaction);
-		final String namespace = SnomedIdentifiers.create(sourceConceptId).getNamespace();
-		final Concept module = sourceConcept.getModule();
+		final Concept module = getRelationshipNamespaceAllocator().getRelationshipModule(sourceConceptId, context.getBranchPath());
 		
 		final Concept typeConcept;
 		final long typeId = addedEntry.getTypeId();

@@ -98,6 +98,7 @@ import com.b2international.snowowl.snomed.reasoner.classification.entry.Relation
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.model.LongConcepts;
 import com.b2international.snowowl.snomed.reasoner.preferences.IReasonerPreferencesService;
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
@@ -179,6 +180,8 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	};
 	
 	private final RemoteJobResultRegistry<ReasonerTaxonomy> taxonomyResultRegistry;
+	
+	private final NamespaceAndMolduleAssigner relationshipNamespaceAllocator = null;
 	
 	public SnomedReasonerServerService(final int maximumReasonerCount, final int maximumReasonerResultsToKeep) {
 		super(maximumReasonerCount);
@@ -297,15 +300,15 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		final ImmutableList.Builder<RelationshipChangeEntry> relationshipBuilder = ImmutableList.builder();
 		final ImmutableList.Builder<IConcreteDomainChangeEntry> concreteDomainBuilder = ImmutableList.builder();
 	
-		new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder).collectNormalFormChanges(null, new OntologyChangeProcessor<StatementFragment>() {
+		new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder).collectNormalFormChanges(null, new OntologyChangeProcessor<StatementFragment>(relationshipNamespaceAllocator) {
 			@Override 
-			protected void handleAddedSubject(final long conceptId, final StatementFragment addedSubject) {
-				registerEntry(conceptId, addedSubject, Nature.INFERRED);
+			protected void handleAddedSubject(final String conceptId, final StatementFragment addedSubject) {
+				registerEntry(Long.valueOf(conceptId), addedSubject, Nature.INFERRED);
 			}
 			
 			@Override 
-			protected void handleRemovedSubject(final long conceptId, final StatementFragment removedSubject) {
-				registerEntry(conceptId, removedSubject, Nature.REDUNDANT);
+			protected void handleRemovedSubject(final String conceptId, final StatementFragment removedSubject) {
+				registerEntry(Long.valueOf(conceptId), removedSubject, Nature.REDUNDANT);
 			}
 	
 			private void registerEntry(final long conceptId, final StatementFragment subject, final Nature changeNature) {
@@ -355,15 +358,15 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 			}
 		});
 		
-		new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder).collectNormalFormChanges(null, new OntologyChangeProcessor<ConcreteDomainFragment>() {
+		new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder).collectNormalFormChanges(null, new OntologyChangeProcessor<ConcreteDomainFragment>(relationshipNamespaceAllocator) {
 			@Override 
-			protected void handleAddedSubject(final long conceptId, final ConcreteDomainFragment addedSubject) {
-				registerEntry(conceptId, addedSubject, Nature.INFERRED);
+			protected void handleAddedSubject(final String conceptId, final ConcreteDomainFragment addedSubject) {
+				registerEntry(Long.valueOf(conceptId), addedSubject, Nature.INFERRED);
 			}
 			
 			@Override 
-			protected void handleRemovedSubject(final long conceptId, final ConcreteDomainFragment removedSubject) {
-				registerEntry(conceptId, removedSubject, Nature.REDUNDANT);
+			protected void handleRemovedSubject(final String conceptId, final ConcreteDomainFragment removedSubject) {
+				registerEntry(Long.valueOf(conceptId), removedSubject, Nature.REDUNDANT);
 			}
 	
 			private void registerEntry(final long conceptId, final ConcreteDomainFragment subject, final Nature changeNature) {

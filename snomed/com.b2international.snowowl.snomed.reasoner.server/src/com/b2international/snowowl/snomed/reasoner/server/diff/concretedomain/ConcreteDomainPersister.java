@@ -29,6 +29,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Nature;
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
@@ -45,7 +46,8 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 	private final SnomedRefSetLookupService refSetLookupService;
 	private final Nature nature;
 	
-	public ConcreteDomainPersister(final SnomedEditingContext context, final Nature nature) {
+	public ConcreteDomainPersister(final SnomedEditingContext context, final Nature nature, NamespaceAndMolduleAssigner relationshipNamespaceAllocator) {
+		super(relationshipNamespaceAllocator);
 		this.nature = nature;
 		
 		refSetEditingContext = context.getRefSetEditingContext();
@@ -56,7 +58,7 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 	}
 
 	@Override
-	protected void handleRemovedSubject(final long conceptId, final ConcreteDomainFragment removedEntry) {
+	protected void handleRemovedSubject(final String conceptId, final ConcreteDomainFragment removedEntry) {
 		
 		if (!Nature.REMOVE.equals(nature)) {
 			return;
@@ -67,7 +69,7 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 	}
 	
 	@Override
-	protected void handleAddedSubject(final long conceptId, final ConcreteDomainFragment addedEntry) {
+	protected void handleAddedSubject(final String conceptId, final ConcreteDomainFragment addedEntry) {
 		
 		if (!Nature.ADD.equals(nature)) {
 			return;
@@ -76,7 +78,7 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 		final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet = (SnomedConcreteDataTypeRefSet) refSetLookupService.getComponent(
 				Long.toString(addedEntry.getRefSetId()), cdoTransaction);
 		
-		final ComponentIdentifierPair<String> componentPair = ComponentIdentifierPair.create(SnomedTerminologyComponentConstants.CONCEPT, Long.toString(conceptId));
+		final ComponentIdentifierPair<String> componentPair = ComponentIdentifierPair.create(SnomedTerminologyComponentConstants.CONCEPT, conceptId);
 		final SnomedConcreteDataTypeRefSetMember refSetMember = refSetEditingContext.createConcreteDataTypeRefSetMember(
 				componentPair,
 				nullIfUnset(addedEntry.getUomId()),

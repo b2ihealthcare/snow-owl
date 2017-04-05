@@ -18,13 +18,18 @@ package com.b2international.snowowl.snomed.reasoner.server.diff;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.Map;
 import java.util.TreeSet;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
@@ -36,7 +41,14 @@ import com.google.common.collect.Sets;
  * 
  */
 public abstract class OntologyChangeProcessor<T extends Serializable> {
+	
+	private NamespaceAndMolduleAssigner relationshipNamespaceAllocator;
 
+	public OntologyChangeProcessor(NamespaceAndMolduleAssigner relationshipNamespaceAllocator) {
+		Preconditions.checkNotNull(relationshipNamespaceAllocator);
+		this.relationshipNamespaceAllocator = relationshipNamespaceAllocator;
+	}
+	
 	public void apply(final long conceptId, final Collection<T> oldCollection, final Collection<T> newCollection, final Ordering<T> ordering) {
 		apply(conceptId, oldCollection, newCollection, ordering, null);
 	}
@@ -59,12 +71,14 @@ public abstract class OntologyChangeProcessor<T extends Serializable> {
 			final int idx = ordering.binarySearch(sortedNew, oldSubject);
 			
 			if (idx < 0 || !uniqueOlds.add(oldSubject)) {
-				handleRemovedSubject(conceptId, oldSubject);
+				handleRemovedSubject(String.valueOf(conceptId), oldSubject);
 			}
 			
 			subMonitor.worked(1);
 		}
 		
+		//collect the inferred properties per concept
+		Multimap<String, T> newPropertiesMultiMap = HashMultimap.create(); 
 		for (final T newMini : sortedNew) {
 
 			if (subMonitor.isCanceled()) {
@@ -72,11 +86,12 @@ public abstract class OntologyChangeProcessor<T extends Serializable> {
 			}
 			
 			if (ordering.binarySearch(sortedOld, newMini) < 0) {
-				handleAddedSubject(conceptId, newMini);
+				newPropertiesMultiMap.put(String.valueOf(conceptId), newMini);
 			}
 			
 			subMonitor.worked(1);
 		}
+		handleAddedSubjects(newPropertiesMultiMap);
 	}
 	
 	public void apply(final Collection<OntologyChange<T>> changes, final IProgressMonitor monitor) {
@@ -91,10 +106,10 @@ public abstract class OntologyChangeProcessor<T extends Serializable> {
 			final long conceptId = change.getConceptId();
 			switch (change.getNature()) {
 				case ADD:
-					handleAddedSubject(conceptId, change.getSubject());
+					handleAddedSubject(String.valueOf(conceptId), change.getSubject());
 					break;
 				case REMOVE:
-					handleRemovedSubject(conceptId, change.getSubject());
+					handleRemovedSubject(String.valueOf(conceptId), change.getSubject());
 					break;
 				default:
 					throw new IllegalStateException(MessageFormat.format("Unexpected change nature {0}.", change.getNature()));
@@ -103,12 +118,32 @@ public abstract class OntologyChangeProcessor<T extends Serializable> {
 			subMonitor.worked(1);
 		}
 	}
+	
+	/**
+	 * Returns the relationship namespace and module allocator assigned to this change processor.
+	 * @return
+	 */
+	protected NamespaceAndMolduleAssigner getRelationshipNamespaceAllocator() {
+		return relationshipNamespaceAllocator;
+	}
 
-	protected void handleRemovedSubject(final long conceptId, final T removedSubject) {
+	/**
+	 * Handles the concept id to new inferred properties map.
+	 * Subclasses can overwrite to add custom behavior before handling the new properties for each concept.
+	 * @param properties multi map
+	 */
+	protected void handleAddedSubjects(Multimap<String, T> propertiesMultiMap) {
+		for (Map.Entry<String, T> entry : propertiesMultiMap.entries()) {
+			handleAddedSubject(entry.getKey(), entry.getValue());
+		}
+	}
+	
+
+	protected void handleRemovedSubject(final String conceptId, final T removedSubject) {
 		// Subclasses should override		
 	}
 
-	protected void handleAddedSubject(final long conceptId, final T addedSubject) {
+	protected void handleAddedSubject(final String conceptId, final T addedSubject) {
 		// Subclasses should override
 	}
 }
