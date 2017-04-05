@@ -62,7 +62,7 @@ public class SourceConceptNamespaceAndModuleAssigner implements NamespaceAndMold
 	}
 
 	@Override
-	public Concept getConcreateDomainModule(String sourceConceptId, IBranchPath branchPath) {
+	public Concept getConcreteDomainModule(String sourceConceptId, IBranchPath branchPath) {
 		
 		if (!conceptIdToConcreteDomainModuleMap.containsKey(sourceConceptId)) {
 			LOGGER.warn("Could not find the conceptId '{}' in the allocated module map.", sourceConceptId);
@@ -88,7 +88,7 @@ public class SourceConceptNamespaceAndModuleAssigner implements NamespaceAndMold
 	}
 
 	@Override
-	public void allocateConcreateDomainModules(Set<String> conceptIds, final SnomedEditingContext editingContext) {
+	public void allocateConcreteDomainModules(Set<String> conceptIds, final SnomedEditingContext editingContext) {
 		
 		//default module is the fall back
 		cdDefaultModuleConcept = editingContext.getDefaultModuleConcept();

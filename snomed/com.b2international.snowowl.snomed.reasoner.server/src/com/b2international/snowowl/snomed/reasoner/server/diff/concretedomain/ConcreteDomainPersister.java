@@ -68,7 +68,7 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 	@Override
 	protected void beforeHandleAddedSubjects(Set<String> conceptIds) {
 		//pre-allocate namespaces for the new concrete domains per each concept
-		getRelationshipNamespaceAssigner().allocateConcreateDomainModules(conceptIds, context);
+		getRelationshipNamespaceAssigner().allocateConcreteDomainModules(conceptIds, context);
 	}
 	
 	@Override
@@ -78,7 +78,7 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 			return;
 		}
 		
-		final Concept moduleConcept = getRelationshipNamespaceAssigner().getConcreateDomainModule(conceptId, context.getBranchPath());
+		final Concept moduleConcept = getRelationshipNamespaceAssigner().getConcreteDomainModule(conceptId, context.getBranchPath());
 
 		final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet = (SnomedConcreteDataTypeRefSet) refSetLookupService.getComponent(
 				Long.toString(addedEntry.getRefSetId()), context.getTransaction());

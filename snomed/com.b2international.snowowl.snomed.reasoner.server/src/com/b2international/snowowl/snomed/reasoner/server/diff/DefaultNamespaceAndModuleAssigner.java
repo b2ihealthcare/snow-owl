@@ -42,7 +42,7 @@ public class DefaultNamespaceAndModuleAssigner implements NamespaceAndMolduleAss
 	}
 
 	@Override
-	public Concept getConcreateDomainModule(String sourceConceptId, IBranchPath branchPath) {
+	public Concept getConcreteDomainModule(String sourceConceptId, IBranchPath branchPath) {
 		return defaultConcreteDomainModuleConcept;
 	}
 
@@ -53,7 +53,7 @@ public class DefaultNamespaceAndModuleAssigner implements NamespaceAndMolduleAss
 	}
 
 	@Override
-	public void allocateConcreateDomainModules(Set<String> conceptIds, final SnomedEditingContext editingContext) {
+	public void allocateConcreteDomainModules(Set<String> conceptIds, final SnomedEditingContext editingContext) {
 		
 		defaultConcreteDomainModuleConcept = editingContext.getDefaultModuleConcept();
 	}

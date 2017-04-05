@@ -30,8 +30,8 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 public interface NamespaceAndMolduleAssigner {
 
 	/**
-	 * Pre-allocate namespaces and modules for the new relationships of each concept represented by the String key
-	 * of the passed in map.  The allocated namespaces and modules can be later distributed by the 
+	 * Pre-allocate namespaces and modules for the new relationships of each concept passed in as a set of concept ids.
+	 * The allocated namespaces and modules can be later distributed by the 
 	 * {@link #allocateRelationshipNamespace(String)} and {@link #allocateRelationshipModule(String)} methods respectively.
 	 * 
 	* @param Set of concept ids
@@ -58,14 +58,13 @@ public interface NamespaceAndMolduleAssigner {
 	public Concept getRelationshipModule(final String sourceConcept, final IBranchPath branchPath);
 	
 	/**
-	 * Pre-allocate  modules for the new concrete domains of each concept represented by the String key
-	 * of the passed in map.  
+	 * Pre-allocate  modules for the new concrete domains of each concept passed in as a set of concept ids.
 	 * The allocated modules can be later distributed by the {@link #allocateConcreateDomainModule(String)} method.
 	 * 
 	 * @param Set of concept ids
 	 * @param the active snomed editing context
 	 */
-	public void allocateConcreateDomainModules(final Set<String> conceptIds, final SnomedEditingContext context);
+	public void allocateConcreteDomainModules(final Set<String> conceptIds, final SnomedEditingContext context);
 
 	/**
 	 * Returns a module concept to be assigned to a concrete domain based on its source concept id and branch path where it is located.
@@ -74,7 +73,7 @@ public interface NamespaceAndMolduleAssigner {
 	 * 
 	 * @return module concept id for the concrete domain
 	 */
-	public Concept getConcreateDomainModule(final String sourceConceptId, final IBranchPath branchPath);
+	public Concept getConcreteDomainModule(final String sourceConceptId, final IBranchPath branchPath);
 
 
 }
