@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.api.admin;
 
-import java.util.List;
-
 import com.b2international.snowowl.api.admin.exception.LockException;
 import com.b2international.snowowl.api.admin.exception.RepositoryNotFoundException;
 
@@ -25,13 +23,6 @@ import com.b2international.snowowl.api.admin.exception.RepositoryNotFoundExcepti
  * preventing further modifications while the backup takes place.
  */
 public interface IRepositoryService {
-
-	/**
-	 * Retrieves the unique identifier of each running repository that stores terminology content.
-	 * 
-	 * @return a list of repository identifiers, in alphabetical order (never {@code null})
-	 */
-	List<String> getRepositoryUuids();
 
 	/**
 	 * Places a global lock, which prevents other users from making changes to any of the repositories while a backup is
@@ -76,16 +67,5 @@ public interface IRepositoryService {
 	 *                                     not held)
 	 */
 	void unlockRepository(String repositoryUuid);
-
-	/**
-	 * Retrieves all version identifiers for the specified repository.
-	 * 
-	 * @param repositoryUuid a unique identifier pointing to a particular repository (may not be {@code null})
-	 * 
-	 * @return a list of repository version identifiers, in alphabetical order (never {@code null})
-	 * 
-	 * @throws RepositoryNotFoundException if the specified repository UUID does not correspond to any repository
-	 */
-	List<String> getRepositoryVersionIds(String repositoryUuid);
 
 }

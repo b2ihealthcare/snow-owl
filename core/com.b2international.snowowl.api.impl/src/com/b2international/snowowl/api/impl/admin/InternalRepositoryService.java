@@ -20,10 +20,4 @@ import com.b2international.snowowl.api.admin.IRepositoryService;
 /**
  */
 public interface InternalRepositoryService extends IRepositoryService {
-
-	/**
-	 * @param repositoryUuid
-	 * @param repositoryVersionId
-	 */
-	void checkValidRepositoryAndVersionId(final String repositoryUuid, final String repositoryVersionId);
 }

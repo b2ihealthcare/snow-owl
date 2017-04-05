@@ -19,18 +19,14 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.text.MessageFormat;
-import java.util.List;
-import java.util.Set;
 
 import com.b2international.snowowl.api.admin.exception.LockConflictException;
 import com.b2international.snowowl.api.admin.exception.LockException;
 import com.b2international.snowowl.api.admin.exception.RepositoryNotFoundException;
-import com.b2international.snowowl.api.admin.exception.RepositoryVersionNotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.users.SpecialUserStore;
-import com.b2international.snowowl.datastore.CodeSystemService;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
-import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.AllRepositoriesLockTarget;
@@ -39,10 +35,6 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryLockTarget;
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Ordering;
 
 /**
  */
@@ -52,50 +44,13 @@ public class RepositoryServiceImpl implements InternalRepositoryService {
 		return ApplicationContext.getServiceForClass(IDatastoreOperationLockManager.class);
 	}
 	
-	private static final Function<ICodeSystemVersion, String> EXTRACT_VERSION_ID = new Function<ICodeSystemVersion, String>() { 
-		@Override public String apply(final ICodeSystemVersion input) {
-			return input.getVersionId();
-		}
-	};
-
-	private static ICDORepositoryManager getRepositoryManager() {
-		return ApplicationContext.getServiceForClass(ICDORepositoryManager.class);
-	}
-
-	private static CodeSystemService getCodeSystemService() {
-		return ApplicationContext.getServiceForClass(CodeSystemService.class);
-	}
-
 	protected void checkValidRepositoryUuid(final String repositoryUuid) {
 		checkNotNull(repositoryUuid, "Repository identifier may not be null.");
 
-		if (!getRepositoryUuids().contains(repositoryUuid)) {
+		final Repository repository = ApplicationContext.getServiceForClass(RepositoryManager.class).get(repositoryUuid);
+		if (repository == null) {
 			throw new RepositoryNotFoundException(repositoryUuid);
 		}
-	}
-
-	@Override
-	public void checkValidRepositoryAndVersionId(final String repositoryUuid, final String repositoryVersionId) {
-		checkNotNull(repositoryVersionId, "Repository version identifier may not be null.");
-
-		if (!getRepositoryVersionIds(repositoryUuid).contains(repositoryVersionId)) {
-			throw new RepositoryVersionNotFoundException(repositoryVersionId);
-		}
-	}
-
-	@Override
-	public List<String> getRepositoryUuids() {
-		final Set<String> uuids = getRepositoryManager().uuidKeySet();
-		return Ordering.natural().immutableSortedCopy(uuids);
-	}
-
-	@Override
-	public List<String> getRepositoryVersionIds(final String repositoryUuid) {
-		checkValidRepositoryUuid(repositoryUuid);
-
-		final List<ICodeSystemVersion> allTagsWithHead = getCodeSystemService().getAllTagsWithHead(repositoryUuid);
-		final List<String> versionStrings = Lists.transform(allTagsWithHead, EXTRACT_VERSION_ID);
-		return ImmutableList.copyOf(versionStrings);
 	}
 
 	@Override
