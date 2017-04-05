@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension-point id="namespaceAssigner" name="NamespaceAssigner" schema="schema/namespaceassigner.exsd"/>
    <extension
          point="com.b2international.snowowl.datastore.changeProcessorFactory">
       <changeProcessorFactory
@@ -23,5 +24,12 @@
 		        class="com.b2international.snowowl.snomed.reasoner.server.net4j.SnomedOntologyServerProtocol$Factory"
 		        id="com.b2international.snowowl.snomed.reasoner.server.net4j.SnomedReasonerServerProtocol$Factory">
       </protocolFactory>
+   </extension>
+   <extension
+         point="com.b2international.snowowl.snomed.reasoner.server.namespaceAssigner">
+      <assigner
+            class="com.b2international.snowowl.snomed.reasoner.server.diff.DefaultNamespaceAndModuleAssigner"
+            priority="10">
+      </assigner>
    </extension>
 </plugin>
