@@ -21,6 +21,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestReq
 import static com.b2international.snowowl.snomed.api.rest.SnomedMergingRestRequests.createMerge;
 import static com.b2international.snowowl.snomed.api.rest.SnomedMergingRestRequests.waitForMergeJob;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
+import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.util.List;
@@ -37,6 +38,8 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
@@ -373,6 +376,30 @@ public abstract class SnomedRestFixtures {
 				.build();
 
 		updateComponent(conceptPath, SnomedComponentType.CONCEPT, conceptId, conceptUpdateRequest).statusCode(204);
+	}
+
+	public static void changeToAcceptable(IBranchPath conceptPath, String conceptId, String languageRefSetId) {
+		SnomedConcept concept = getComponent(conceptPath, SnomedComponentType.CONCEPT, conceptId, "descriptions()")
+				.statusCode(200)
+				.extract()
+				.as(SnomedConcept.class);
+		
+		for (SnomedDescription description : concept.getDescriptions()) {
+			if (description.isActive() 
+					&& description.getTypeId().equals(Concepts.SYNONYM)
+					&& Acceptability.PREFERRED.equals(description.getAcceptabilityMap().get(languageRefSetId))) {
+				
+				Map<String, Acceptability> newAcceptabilityMap = newHashMap(description.getAcceptabilityMap());
+				newAcceptabilityMap.put(languageRefSetId, Acceptability.ACCEPTABLE);
+				
+				Map<?, ?> requestBody = ImmutableMap.builder()
+						.put("acceptability", newAcceptabilityMap)
+						.put("commitComment", String.format("Updated description acceptability on previous PT %s", description.getId()))
+						.build();
+				
+				updateComponent(conceptPath, SnomedComponentType.DESCRIPTION, description.getId(), requestBody).statusCode(204);
+			}
+		}
 	}
 
 	public static void changeRelationshipGroup(IBranchPath relationshipPath, String relationshipId) {

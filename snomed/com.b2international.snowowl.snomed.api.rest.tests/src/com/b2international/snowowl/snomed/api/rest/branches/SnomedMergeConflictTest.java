@@ -542,8 +542,10 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
+		changeToAcceptable(branchPath, Concepts.ROOT_CONCEPT, Concepts.REFSET_LANGUAGE_TYPE_UK);
 		createNewDescription(branchPath, Concepts.ROOT_CONCEPT, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
 
+		changeToAcceptable(a, Concepts.ROOT_CONCEPT, Concepts.REFSET_LANGUAGE_TYPE_UK);
 		String descriptionId = createNewDescription(a, Concepts.ROOT_CONCEPT, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
 		List<String> memberIds = getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200)
 				.extract().body()
