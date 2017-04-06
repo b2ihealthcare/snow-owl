@@ -2,30 +2,28 @@
 
 == Introduction
 
-This document lists the required set of software components necessary to run Snow Owl Server on the x86_64 platform. 
+This document lists the required set of software components necessary to run Snow Owl on the x86_64 platform. 
 Components and the corresponding files to download are listed in the sections below.
 
 == Components
 
 === Operating system
 
-Snow Owl Server requires a *CentOS* or *Red Hat Enterprise Linux Server (RHEL)* release *6* installation. As of
-2015-07-17, the latest available release for CentOS is http://wiki.centos.org/Manuals/ReleaseNotes/CentOS6.6[version 6.6].
-We recommend starting with a minimal install using the ISO image named `CentOS-6.6-x86_64-minimal.iso` and adding packages
-later, as required.
+Snow Owl requires a *CentOS* or *Red Hat Enterprise Linux Server (RHEL)* release *6*, or *Ubuntu 14.04* installation. As of
+2017-04-06, the latest available release for CentOS is http://wiki.centos.org/Manuals/ReleaseNotes/CentOS6.8[version 6.8].
+We recommend starting with a minimal install and adding packages later, as required.
 
-=== Database server software
+=== Database
 
-Terminology contents are persisted using the *5.6* series of *MySQL Community Server*, downloadable from 
+Terminology contents are persisted using the *5.7* series of *MySQL Community Server*, downloadable from 
 http://dev.mysql.com/downloads/repo/yum/[MySQL's yum repository]. Select "`Red Hat Enterprise Linux / Oracle Linux 6 
-(Architecture independent), RPM package`" with name `mysql-community-release-el6-5.noarch.rpm` for download.
+(Architecture independent), RPM package`" for download.
 
 === JDK
 
-Snow Owl Server uses version *7* of the *Java SE Development Kit*; note that runtime checks in the core server component 
-prevent it from starting on JDK 8. An installable archive of Critical Patch Update *79* can be downloaded from the 
-http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html[JDK7 download page]. Select the 
-"`Linux x64`" edition named `jdk-7u79-linux-x64.rpm`.
+Snow Owl uses version *8 update 121* of the *Java SE Development Kit*; An installable archive can be downloaded from the 
+http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html[JDK8 download page]. Select the 
+"`Linux x64`" edition.
 
 === LDAP
 
@@ -38,24 +36,3 @@ Browsing and managing ApacheDS instances can be done through the *Apache Directo
 installing the latest release from the corresponding 
 http://directory.apache.org/studio/download-old-versions.html[Downloads Old Versions] page on Apache's website. Download
 `Apache Directory Studio 2.0.0-M7` for a version compatible with the M12 release of the server.
-
-=== Task tracking
-
-When using Snow Owl's desktop client, terminology editing tasks can be tracked using *Bugzilla* version *3.6*. (Recent 
-versions are not guaranteed to work correctly with client integration.) The archived download of Bugzilla can be found 
-at https://ftp.mozilla.org/pub/mozilla.org/webtools/archived/bugzilla-3.6.13.tar.gz.
-
-NOTE: Bugzilla requires Perl modules not included in CentOS repositories. See the 
-https://fedoraproject.org/wiki/EPEL#How_can_I_use_these_extra_packages.3F[usage instructions] for the Extra Packages 
-for Enterprise Linux (*EPEL*) project for adding the required yum repository.
-
-=== Reasoners
-
-Depending on the complexity of the ontology, you may need to use the FaCT{plus}{plus} reasoner, which relies on a native
-library component to increase performance. A customized version of FaCT{plus}{plus} exists for Snow Owl, which requires
-version *2.12* from the *GNU C Library (glibc)* to be present, which is already included in the OS distributions
-described above.
-
-Note that the downloadable release of the same reasoner is based on a different (newer) glibc version, which makes it 
-unsuitable for use within Snow Owl on CentOS/RHEL 6.
-
