@@ -34,22 +34,14 @@ This section goes through the required installation steps to get a production re
 ||Supported Platforms|Supported Version(s)|Notes
 
 .^|Operating systems .^|Linux .^|CentOS (RHEL) 6.8 or Ubuntu 14.04 LTS
-|
-- We recommend starting with a minimal install and adding packages later, as required.
-
-- B2i Healthcare only officially supports Snow Owl running on 64-bit derivatives of x86 hardware. 
-
+| We recommend starting with a minimal install and adding packages later, as required. B2i Healthcare only officially supports Snow Owl running on 64-bit derivatives of x86 hardware. 
 .^|Java .^|Oracle JDK .^|1.8.0 update 121|An installable archive can be downloaded from the 
 http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html[JDK8 download page]. Select the 
 "`Linux x64`" edition.
 .^|Database .^|MySQL .^|5.7 |Terminology contents are persisted using a MySQL database, downloadable from http://dev.mysql.com/downloads/repo/yum/[MySQL's yum repository]
-.^|LDAP .^|ApacheDS .^|2.0.M12|
-- Authentication and authorization of browsers, terminology editors, reviewers and administrators is performed through an LDAP server. 
-
-- The package to install can be located by following the download link after `ApacheDS 2.0.0-M12` on the http://directory.apache.org/apacheds/download-old-versions.html[Download Old Versions] page.
-The file to download is `apacheds-2.0.0-M12-x86_64.rpm`.
-
-- Browsing and managing ApacheDS instances can be done through the *Apache Directory Studio* application. We recommend  installing the latest release from the corresponding  http://directory.apache.org/studio/download-old-versions.html[Downloads Old Versions] page on Apache's website. Download `Apache Directory Studio 2.0.0-M7` for a version compatible with the M12 release of the server.
+.^|LDAP .^|ApacheDS .^|2.0.M12| Authentication and authorization of browsers, terminology editors, reviewers and administrators is performed through an LDAP server. 
+The package to install can be located by following the download link after `ApacheDS 2.0.0-M12` on the http://directory.apache.org/apacheds/download-old-versions.html[Download Old Versions] page. The file to download is `apacheds-2.0.0-M12-x86_64.rpm`.
+Browsing and managing ApacheDS instances can be done through the *Apache Directory Studio* application. We recommend  installing the latest release from the corresponding  http://directory.apache.org/studio/download-old-versions.html[Downloads Old Versions] page on Apache's website. Download `Apache Directory Studio 2.0.0-M7` for a version compatible with the M12 release of the server.
 |=======================
 
 == Installing

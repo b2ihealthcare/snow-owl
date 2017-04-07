@@ -14,9 +14,9 @@
 	<properties>
 		<siteOutputDirectory>${project.build.directory}/site/${project.version}</siteOutputDirectory>
 		<scmPubCheckoutDirectory>${user.home}/git/snow-owl-gh-pages</scmPubCheckoutDirectory>
-		<asciidoctor.version>1.5.4</asciidoctor.version>
-		<asciidoctorj.pdf.version>1.5.0-alpha.11</asciidoctorj.pdf.version>
-		<asciidoctor.maven.plugin.version>1.5.3</asciidoctor.maven.plugin.version>
+		<asciidoctor.version>1.5.5</asciidoctor.version>
+		<asciidoctorj.pdf.version>1.5.0-alpha.14</asciidoctorj.pdf.version>
+		<asciidoctor.maven.plugin.version>1.5.5</asciidoctor.maven.plugin.version>
 	</properties>
 
 	<build>

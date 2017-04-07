@@ -291,7 +291,7 @@ snomed:
 
 == SNOMED CT Component Identifier Configuration
 
-Snow Owl's SNOMED CT identifier service an be configured to be either using the built-in or IHTSDO's external Component Identifier Service (CIS).  The configuration needs to be placed within the *snomed/ids* section.
+Snow Owl's SNOMED CT identifier service can be configured to be either using the built-in service or SNOMED International's external Component Identifier Service (CIS). The configuration needs to be placed within the *snomed/ids* section.
 If omitted, then default configuration will be used, which is the built-in (embedded) service based on the index store allocating ids in a sequential fashion.
 
 [cols="3*", options="header"]
