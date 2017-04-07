@@ -67,10 +67,10 @@ public abstract class AbstractDirectoryManager implements IDirectoryManager {
 		// Don't bother wrapping the parents in a read-only instance
 		final Directory parentDirectory = openLuceneDirectory(branchPath.parent(), false);
 		final Set<String> visibleFiles = Sets.newHashSet();
-		
+		List<IndexCommit> listCommits = DirectoryReader.listCommits(parentDirectory);
 		// Make files in index commits for ancestors visible as well
 		for (BranchPath ancestorPath = branchPath; !ancestorPath.isMain(); ancestorPath = ancestorPath.parent()) {
-			final IndexCommit ancestorCommit = getParentCommit(parentDirectory, ancestorPath);
+			final IndexCommit ancestorCommit = getParentCommit(ancestorPath, listCommits);
 			/* 
 			 * XXX: .del files are not incremental. If they were, we could start by adding files 
 			 * referenced in the immediate parent commit, and check that ancestors are only contributing 
@@ -91,8 +91,8 @@ public abstract class AbstractDirectoryManager implements IDirectoryManager {
 
 	protected abstract Directory openWritableLuceneDirectory(final File folderForBranchPath) throws IOException;
 
-	private IndexCommit getParentCommit(final Directory parentDirectory, final BranchPath branchPath) throws IOException {
-		final List<IndexCommit> indexCommits = Lists.<IndexCommit>reverse(DirectoryReader.listCommits(parentDirectory));
+	private IndexCommit getParentCommit(final BranchPath branchPath, List<IndexCommit> listCommits) throws IOException {
+		final List<IndexCommit> indexCommits = Lists.<IndexCommit>reverse(listCommits);
 		final String path = branchPath.path();
 
 		for (final IndexCommit indexCommit : indexCommits) {
