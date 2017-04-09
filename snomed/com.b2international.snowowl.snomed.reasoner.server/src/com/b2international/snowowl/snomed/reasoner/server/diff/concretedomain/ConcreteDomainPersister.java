@@ -15,10 +15,8 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain;
 
-import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
@@ -64,9 +62,9 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 
 		final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet = refSetEditingContext.lookup(Long.toString(addedEntry.getRefSetId()), SnomedConcreteDataTypeRefSet.class);
 		
-		final ComponentIdentifierPair<String> componentPair = ComponentIdentifierPair.create(SnomedTerminologyComponentConstants.CONCEPT, Long.toString(conceptId));
+		final String referencedComponentId = Long.toString(conceptId);
 		final SnomedConcreteDataTypeRefSetMember refSetMember = refSetEditingContext.createConcreteDataTypeRefSetMember(
-				componentPair,
+				referencedComponentId,
 				nullIfUnset(addedEntry.getUomId()),
 				Concepts.CD_EQUAL,
 				SnomedRefSetUtil.deserializeValue(addedEntry.getDataType(), addedEntry.getValue()), 
@@ -75,7 +73,7 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 				moduleConcept.getId(), 
 				concreteDataTypeRefSet);
 		
-		final Concept referencedComponent = refSetEditingContext.lookup(componentPair.getComponentId(), Concept.class);
+		final Concept referencedComponent = refSetEditingContext.lookup(referencedComponentId, Concept.class);
 		referencedComponent.getConcreteDomainRefSetMembers().add(refSetMember);
 	}
 

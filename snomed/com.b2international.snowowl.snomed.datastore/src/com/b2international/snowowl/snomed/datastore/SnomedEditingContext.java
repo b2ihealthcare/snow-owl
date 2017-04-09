@@ -70,7 +70,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.ComponentIdentifierPair;
+import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -223,171 +223,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return newConcept;
 	}
 	
-	/**
-	 * Build a new child concept. All description will be replicated from the parent concept.
-	 * No NON IS_A relationship will be copied from the parent concept. One and only IS_A relationship will be created with parent concept destination.
-	 * @param editingContext the editing concept with an underlying audit CDO view for SNOMED&nbsp;CT concept creation. 
-	 * @param parentConcept the parent of the new concept.
-	 * @param conceptId the unique ID of the concept. Can be {@code null}. If {@code null}, then the ID will be generated via the specified editing context.
-	 * @param parentIds 
-	 * @return the new concept.
-	 */
-	public Concept buildConceptByProximalParents(final String focusConceptId, @Nullable final String conceptId, Set<String> parentIds) {
-		
-		final Concept focusConcept = lookup(focusConceptId, Concept.class);
-		
-		Concept concept = SnomedFactory.eINSTANCE.createConcept();
-		
-		//set concept properties
-		if (null == conceptId) {
-			concept.setId(generateComponentId(concept));
-		} else {
-			concept.setId(conceptId);
-		}
-		concept.setActive(true);
-		concept.setDefinitionStatus(focusConcept.getDefinitionStatus());
-		concept.setModule(getDefaultModuleConcept());
-		
-		final SnomedStructuralRefSet languageRefSet = getLanguageRefSet();
-	
-		for (final Description description : focusConcept.getDescriptions()) {
-			
-			if (!description.isActive()) {
-				continue;
-			}
-			
-			final Description newDescription = buildDefaultDescription(description.getTerm(), description.getType().getId());
-			concept.getDescriptions().add(newDescription);
-			final ComponentIdentifierPair<String> acceptabilityPair;
-			
-			//preferred acceptability if FSN or PT
-			if (isPreferred(description, languageRefSet.getIdentifierId()) || FULLY_SPECIFIED_NAME.equals(newDescription.getType().getId())) {
-				acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
-			} else {
-				acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE);
-			}
-	
-			//create language reference set membership
-			final ComponentIdentifierPair<String> referencedComponentPair = SnomedRefSetEditingContext.createDescriptionTypePair(newDescription.getId());
-			final SnomedLanguageRefSetMember member = getRefSetEditingContext().createLanguageRefSetMember(
-					referencedComponentPair, 
-					acceptabilityPair, 
-					getDefaultModuleConcept().getId(), 
-					languageRefSet);
-			
-			newDescription.getLanguageRefSetMembers().add(member);
-		}
-		
-		for (String parentId : parentIds) {
-			final Concept parentConcept = lookup(parentId, Concept.class);
-			buildDefaultIsARelationship(parentConcept, concept);
-		}
-		
-		add(concept);
-		concept.eAdapters().add(new ConceptParentAdapter(parentIds));
-		return concept;
-	}
-	
-	/**
-	 * Builds a draft child concepts where the parents are proximal primitives of the selected concept.
-	 * @param selectedConceptId
-	 * @param id new concept id
-	 * @param proximalPrimitiveParents
-	 * @return the new concept
-	 */
-	public Concept buildConceptByProximalPrimitiveParents(final String selectedConceptId, final String conceptId, final Set<String> proximalPrimitiveParentIds) {
-		
-		Preconditions.checkNotNull(proximalPrimitiveParentIds, "Proximal primitive parents is null.");
-		final Concept selectedConcept = lookup(selectedConceptId, Concept.class);
-		
-		Concept concept = SnomedFactory.eINSTANCE.createConcept();
-		
-		//set concept properties
-		if (null == conceptId) {
-			concept.setId(generateComponentId(concept));
-		} else {
-			concept.setId(conceptId);
-		}
-		concept.setActive(true);
-		concept.setDefinitionStatus(selectedConcept.getDefinitionStatus());
-		concept.setModule(getDefaultModuleConcept());
-		
-		final SnomedStructuralRefSet languageRefSet = getLanguageRefSet();
-	
-		for (final Description description : selectedConcept.getDescriptions()) {
-			
-			if (!description.isActive()) {
-				continue;
-			}
-			
-			final Description newDescription = buildDefaultDescription(description.getTerm(), description.getType().getId());
-			concept.getDescriptions().add(newDescription);
-			final ComponentIdentifierPair<String> acceptabilityPair;
-			
-			//preferred acceptability if FSN or PT
-			if (isPreferred(description, languageRefSet.getIdentifierId()) || FULLY_SPECIFIED_NAME.equals(newDescription.getType().getId())) {
-				acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
-			} else {
-				acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE);
-			}
-	
-			//create language reference set membership
-			final ComponentIdentifierPair<String> referencedComponentPair = SnomedRefSetEditingContext.createDescriptionTypePair(newDescription.getId());
-			final SnomedLanguageRefSetMember member = getRefSetEditingContext().createLanguageRefSetMember(
-					referencedComponentPair, 
-					acceptabilityPair, 
-					getDefaultModuleConcept().getId(), 
-					languageRefSet);
-			
-			newDescription.getLanguageRefSetMembers().add(member);
-		}
-		
-		
-		final Concept statedRelationshipConcept = lookup(SnomedConstants.Concepts.STATED_RELATIONSHIP, Concept.class);
-		
-		//copy all inferred 
-		for (final Relationship sourceRelationship : selectedConcept.getOutboundRelationships()) {
-			
-			if (!sourceRelationship.isActive()) {
-				continue;
-			}
-			
-			//Copy inferred non IS-A relationships
-			if (!IS_A.equals(sourceRelationship.getType().getId()) 
-					&& (sourceRelationship.getCharacteristicType().getId().equals(SnomedConstants.Concepts.INFERRED_RELATIONSHIP))) {
-				
-				final Relationship newRelationship = SnomedFactory.eINSTANCE.createRelationship();
-				
-				newRelationship.setId(generateComponentId(newRelationship));
-				
-				newRelationship.setSource(concept);
-				newRelationship.setType(sourceRelationship.getType());
-				newRelationship.setDestination(sourceRelationship.getDestination());
-				newRelationship.setActive(true);
-				newRelationship.setCharacteristicType(statedRelationshipConcept);
-				newRelationship.setGroup(sourceRelationship.getGroup());
-				newRelationship.setModifier(sourceRelationship.getModifier());
-				newRelationship.setModule(getDefaultModuleConcept());
-				
-				//copy all inferred concrete domains
-				//relationships can also have concrete domains
-				copyInferredConcreteDomainMembers(sourceRelationship, newRelationship);
-				concept.getOutboundRelationships().add(newRelationship);
-			}
-		}
-		
-		copyInferredConcreteDomainMembers(selectedConcept, concept);
-		
-		//hook the concept to the potentially multiple proximate primitive parents
-		for (String parentId : proximalPrimitiveParentIds) {
-			final Concept parentConcept = lookup(parentId, Concept.class);
-			buildDefaultIsARelationship(parentConcept, concept);
-		}
-		add(concept);
-		concept.eAdapters().add(new ConceptParentAdapter(proximalPrimitiveParentIds));
-		return concept;
-	}
-
 	/**
 	 * @param concreteDomainRefSetMembers
 	 * @param targetSnomedComponent 
@@ -730,11 +565,10 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		final SnomedStructuralRefSet languageRefSet = getLanguageRefSet();
 		for (final Description description : concept.getDescriptions()) {
 			if (description.isActive()) { //this point all description should be active
-				final ComponentIdentifierPair<String> acceptabilityPair;
-				acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
+				final String acceptabilityId = REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED;
 				//create language reference set membership
-				final ComponentIdentifierPair<String> referencedComponentPair = SnomedRefSetEditingContext.createDescriptionTypePair(description.getId());
-				final SnomedLanguageRefSetMember member = getRefSetEditingContext().createLanguageRefSetMember(referencedComponentPair, acceptabilityPair, moduleConcept.getId(), languageRefSet);
+				final String referencedComponentId = description.getId();
+				final SnomedLanguageRefSetMember member = getRefSetEditingContext().createLanguageRefSetMember(referencedComponentId, acceptabilityId, moduleConcept.getId(), languageRefSet);
 				description.getLanguageRefSetMembers().add(member);
 			}
 		}

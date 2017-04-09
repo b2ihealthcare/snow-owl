@@ -21,10 +21,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -79,24 +77,23 @@ public class SnomedRefSetCloner {
 		List<SnomedRefSetMember> newMembers = Lists.newArrayList();
 		
 		for (SnomedReferenceSetMember originalMember : originalMembers) {
-			final ComponentIdentifierPair<String> identifierPair = ComponentIdentifierPair.create(cloneRefSet.getReferencedComponentType(), originalMember.getReferencedComponent().getId());
+			final String referencedComponentId = originalMember.getReferencedComponent().getId();
 			SnomedRefSetMember newRefSetMember;
 			switch (originalRefSetType) {
 			case ATTRIBUTE_VALUE:
 				final String valueId = (String) originalMember.getProperties().get(SnomedRf2Headers.FIELD_VALUE_ID);
-				ComponentIdentifierPair<String> specialFieldPair = ComponentIdentifierPair.create(SnomedTerminologyComponentConstants.CONCEPT, valueId);
-				newRefSetMember = editingContext.createAttributeValueRefSetMember(identifierPair, specialFieldPair, originalMember.getModuleId(), cloneRefSet);
+				newRefSetMember = editingContext.createAttributeValueRefSetMember(referencedComponentId, valueId, originalMember.getModuleId(), cloneRefSet);
 				break;
 			case QUERY:
 				final String query = (String) originalMember.getProperties().get(SnomedRf2Headers.FIELD_QUERY);
-				newRefSetMember = editingContext.createQueryRefSetMember(identifierPair, query, originalMember.getModuleId(), cloneRefSet);
+				newRefSetMember = editingContext.createQueryRefSetMember(referencedComponentId, query, originalMember.getModuleId(), cloneRefSet);
 				break;
 			case SIMPLE:
-				newRefSetMember = editingContext.createSimpleTypeRefSetMember(identifierPair, originalMember.getModuleId(), cloneRefSet);
+				newRefSetMember = editingContext.createSimpleTypeRefSetMember(referencedComponentId, originalMember.getModuleId(), cloneRefSet);
 				break;
 			case COMPLEX_MAP:
 				String mapTargetId = (String) originalMember.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET);
-				SnomedComplexMapRefSetMember newComplexMapRefSetMember = editingContext.createComplexMapRefSetMember(identifierPair, mapTargetId, originalMember.getModuleId(), (SnomedMappingRefSet) cloneRefSet);
+				SnomedComplexMapRefSetMember newComplexMapRefSetMember = editingContext.createComplexMapRefSetMember(referencedComponentId, mapTargetId, originalMember.getModuleId(), (SnomedMappingRefSet) cloneRefSet);
 				newComplexMapRefSetMember.setCorrelationId((String) originalMember.getProperties().get(Fields.CORRELATION_ID));
 				newComplexMapRefSetMember.setMapAdvice((String) originalMember.getProperties().get(Fields.MAP_ADVICE));
 				newComplexMapRefSetMember.setMapGroup((Integer) originalMember.getProperties().get(Fields.MAP_GROUP));
@@ -106,7 +103,7 @@ public class SnomedRefSetCloner {
 				break;
 			case SIMPLE_MAP:
 				mapTargetId = (String) originalMember.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET);
-				newRefSetMember = editingContext.createSimpleMapRefSetMember(identifierPair, mapTargetId, originalMember.getModuleId(), (SnomedMappingRefSet) cloneRefSet);
+				newRefSetMember = editingContext.createSimpleMapRefSetMember(referencedComponentId, mapTargetId, originalMember.getModuleId(), (SnomedMappingRefSet) cloneRefSet);
 				break;
 			default:
 				throw new RuntimeException("Unhandled reference set type: " + originalRefSetType); 

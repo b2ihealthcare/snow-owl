@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.ComponentIdentifierPair;
+import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.scripting.services.api.IAuthoringService;
@@ -78,7 +78,7 @@ public enum AuthoringService implements IAuthoringService {
 		final ComponentType componentType = ComponentType.RELATIONSHIP;
 
 		final SnomedConcreteDataTypeRefSetMember member = checkNotNull(context.createConcreteDataTypeRefSetMember(
-				componentType.getComponentIdentifierPair(Long.valueOf(relationship.getId())), 
+				relationship.getId(), 
 				concreteDomainAttributeType, 
 				value,
 				characteristicTypeId,
@@ -111,7 +111,7 @@ public enum AuthoringService implements IAuthoringService {
 		final ComponentType componentType = ComponentType.RELATIONSHIP;
 		
 		final SnomedConcreteDataTypeRefSetMember member = checkNotNull(context.createConcreteDataTypeRefSetMember(
-				componentType.getComponentIdentifierPair(Long.valueOf(relationship.getId())),
+				relationship.getId(),
 				uomId, 
 				operatorId,
 				value,
@@ -147,7 +147,9 @@ public enum AuthoringService implements IAuthoringService {
 		final ComponentType componentType = ComponentType.CONCEPT;
 
 		final SnomedConcreteDataTypeRefSetMember member = checkNotNull(context.createConcreteDataTypeRefSetMember(
-				componentType.getComponentIdentifierPair(Long.valueOf(concept.getId())), concreteDomainAttributeType, value, 
+				concept.getId(), 
+				concreteDomainAttributeType, 
+				value, 
 				characteristicTypeId, concreteDomainAttributeName,
 				moduleId, refSet), "Error while creating concrete domain for " + componentType + ": " + concept.getId()
 				+ " with value " + value);
@@ -234,7 +236,7 @@ public enum AuthoringService implements IAuthoringService {
 
 			@Nonnull
 			@Override
-			public ComponentIdentifierPair<String> getComponentIdentifierPair(final long componentId) {
+			public ComponentIdentifier getComponentIdentifierPair(final long componentId) {
 				return checkNotNull(SnomedRefSetEditingContext.createConceptTypePair(String.valueOf(componentId)),
 						"SNOMED CT concept identifier pair was null. ID: " + componentId);
 			}
@@ -249,7 +251,7 @@ public enum AuthoringService implements IAuthoringService {
 
 			@Nonnull
 			@Override
-			public ComponentIdentifierPair<String> getComponentIdentifierPair(final long componentId) {
+			public ComponentIdentifier getComponentIdentifierPair(final long componentId) {
 				return checkNotNull(SnomedRefSetEditingContext.createRelationshipTypePair(String.valueOf(componentId)),
 						"SNOMED CT relationship identifier pair was null. ID: " + componentId);
 			}
@@ -294,7 +296,7 @@ public enum AuthoringService implements IAuthoringService {
 		 *            the unique ID of the SNOMED&nbsp;CT component.
 		 * @return the identifier pair instance.
 		 */
-		ComponentIdentifierPair<String> getComponentIdentifierPair(final long componentId);
+		ComponentIdentifier getComponentIdentifierPair(final long componentId);
 	}
 
 }
