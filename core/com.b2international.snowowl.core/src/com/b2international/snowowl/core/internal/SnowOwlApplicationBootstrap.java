@@ -29,7 +29,6 @@ import com.b2international.snowowl.core.events.metrics.MetricsConfiguration;
 import com.b2international.snowowl.core.events.metrics.MetricsProvider;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.login.LoginConfiguration;
-import com.b2international.snowowl.core.markers.MarkerManager;
 import com.b2international.snowowl.core.setup.BootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
@@ -43,9 +42,6 @@ public class SnowOwlApplicationBootstrap implements BootstrapFragment {
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) {
 		final PreferencesService preferences = env.preferences(); 
-		
-		final MarkerManager markerManager = new MarkerManager();
-		env.services().registerService(MarkerManager.class, markerManager);
 		
 		final ClientPreferences cdoClientConfiguration = new ClientPreferences(preferences);
 		env.services().registerService(ClientPreferences.class, cdoClientConfiguration);
