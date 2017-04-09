@@ -26,8 +26,15 @@ import java.util.NoSuchElementException;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.*;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.NumericRangeQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TotalHitCountCollector;
 
 import com.b2international.index.compat.SingleDirectoryIndexImpl;
 import com.b2international.index.lucene.Fields;
@@ -38,11 +45,20 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.server.domain.StorageRef;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.api.domain.classification.*;
+import com.b2international.snowowl.snomed.api.domain.classification.ChangeNature;
+import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
+import com.b2international.snowowl.snomed.api.domain.classification.IClassificationRun;
+import com.b2international.snowowl.snomed.api.domain.classification.IEquivalentConcept;
+import com.b2international.snowowl.snomed.api.domain.classification.IEquivalentConceptSet;
+import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChange;
+import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChangeList;
 import com.b2international.snowowl.snomed.api.exception.ClassificationRunNotFoundException;
-import com.b2international.snowowl.snomed.api.impl.domain.classification.*;
+import com.b2international.snowowl.snomed.api.impl.domain.classification.ClassificationRun;
+import com.b2international.snowowl.snomed.api.impl.domain.classification.EquivalentConcept;
+import com.b2international.snowowl.snomed.api.impl.domain.classification.EquivalentConceptSet;
+import com.b2international.snowowl.snomed.api.impl.domain.classification.RelationshipChange;
+import com.b2international.snowowl.snomed.api.impl.domain.classification.RelationshipChangeList;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -261,19 +277,19 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		for (final AbstractEquivalenceSet equivalenceSet : equivalenceSets) {
 
 			final List<IEquivalentConcept> convertedEquivalentConcepts = newArrayList();
-			for (final SnomedConcept equivalentEntry : equivalenceSet.getConcepts()) {
-				addEquivalentConcept(convertedEquivalentConcepts, equivalentEntry);
+			for (final String equivalentId : equivalenceSet.getConceptIds()) {
+				addEquivalentConcept(convertedEquivalentConcepts, equivalentId);
 			}
 
 			if (equivalenceSet instanceof EquivalenceSet) {
-				addEquivalentConcept(convertedEquivalentConcepts, ((EquivalenceSet) equivalenceSet).getSuggestedConcept());
+				addEquivalentConcept(convertedEquivalentConcepts, ((EquivalenceSet) equivalenceSet).getSuggestedConceptId());
 			}
 			
 			final EquivalentConceptSet convertedEquivalenceSet = new EquivalentConceptSet();
 			convertedEquivalenceSet.setUnsatisfiable(equivalenceSet.isUnsatisfiable());
 			convertedEquivalenceSet.setEquivalentConcepts(convertedEquivalentConcepts);
 
-			indexResult(id, branchPath, userId, creationDate, EquivalentConceptSet.class, equivalenceSet.getConcepts().get(0).getId(), convertedEquivalenceSet);
+			indexResult(id, branchPath, userId, creationDate, EquivalentConceptSet.class, equivalenceSet.getConceptIds().get(0), convertedEquivalenceSet);
 		}
 
 		for (final RelationshipChangeEntry relationshipChange : changes.getRelationshipEntries()) {
@@ -310,9 +326,9 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		return classificationIssueFlags;
 	}
 
-	private void addEquivalentConcept(final List<IEquivalentConcept> convertedEquivalentConcepts, final SnomedConcept equivalentEntry) {
+	private void addEquivalentConcept(final List<IEquivalentConcept> convertedEquivalentConcepts, final String equivalentId) {
 		final EquivalentConcept convertedConcept = new EquivalentConcept();
-		convertedConcept.setId(equivalentEntry.getId());
+		convertedConcept.setId(equivalentId);
 		convertedEquivalentConcepts.add(convertedConcept);
 	}
 

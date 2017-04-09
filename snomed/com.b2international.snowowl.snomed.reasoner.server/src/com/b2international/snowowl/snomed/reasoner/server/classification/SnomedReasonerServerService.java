@@ -17,12 +17,13 @@ package com.b2international.snowowl.snomed.reasoner.server.classification;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.net4j.CDONet4jSession;
@@ -42,7 +43,6 @@ import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.IServiceChangeListener;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -52,17 +52,27 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.reasoner.classification.*;
+import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
-import com.b2international.snowowl.snomed.reasoner.classification.entry.*;
+import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSettings;
+import com.b2international.snowowl.snomed.reasoner.classification.EquivalenceSet;
+import com.b2international.snowowl.snomed.reasoner.classification.GetEquivalentConceptsResponse;
+import com.b2international.snowowl.snomed.reasoner.classification.GetResultResponse;
+import com.b2international.snowowl.snomed.reasoner.classification.GetResultResponseChanges;
+import com.b2international.snowowl.snomed.reasoner.classification.PersistChangesResponse;
+import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerService;
+import com.b2international.snowowl.snomed.reasoner.classification.UnsatisfiableSet;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.AbstractChangeEntry.Nature;
+import com.b2international.snowowl.snomed.reasoner.classification.entry.ChangeConcept;
+import com.b2international.snowowl.snomed.reasoner.classification.entry.ConceptConcreteDomainChangeEntry;
+import com.b2international.snowowl.snomed.reasoner.classification.entry.ConcreteDomainElement;
+import com.b2international.snowowl.snomed.reasoner.classification.entry.IConcreteDomainChangeEntry;
+import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipChangeEntry;
+import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.model.LongConcepts;
 import com.b2international.snowowl.snomed.reasoner.preferences.IReasonerPreferencesService;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
@@ -72,23 +82,13 @@ import com.b2international.snowowl.snomed.reasoner.server.request.SnomedReasoner
 import com.google.common.base.Function;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Ordering;
-import com.google.common.primitives.Longs;
 
 /**
  * Manages reasoners that operate on the OWL representation of a SNOMED&nbsp;CT repository branch path. 
  */
 public class SnomedReasonerServerService extends CollectingService<Reasoner, ClassificationSettings> implements SnomedReasonerService, IDisposableService {
 
-	private static final Ordering<SnomedConcept> STORAGE_KEY_ORDERING = Ordering.from(new Comparator<SnomedConcept>() {
-		@Override
-		public int compare(SnomedConcept o1, SnomedConcept o2) {
-			return Longs.compare(o1.getStorageKey(), o2.getStorageKey());
-		}
-	}).nullsLast();
-	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedReasonerServerService.class);
 	
 	private final IListener invalidationListener = new IListener() {
@@ -415,55 +415,21 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	}
 
 	private List<AbstractEquivalenceSet> doGetEquivalentConcepts(ReasonerTaxonomy taxonomy) {
-		IBranchPath branchPath = taxonomy.getBranchPath();
 		List<AbstractEquivalenceSet> results = newArrayList();
 		
 		LongSet unsatisfiableConceptIds = taxonomy.getUnsatisfiableConceptIds();
 		if (!unsatisfiableConceptIds.isEmpty()) {
-			List<SnomedConcept> unsatisfiableEntries = convertIdsToIndexEntries(branchPath, unsatisfiableConceptIds);
-			results.add(new UnsatisfiableSet(unsatisfiableEntries));
+			results.add(new UnsatisfiableSet(LongSets.toStringList(unsatisfiableConceptIds)));
 		}
 		
 		List<LongSet> equivalentConceptSets = taxonomy.getEquivalentConceptIds();
 		for (LongSet equivalentConceptSet : equivalentConceptSets) {
-			List<SnomedConcept> equivalentEntries = convertIdsToIndexEntries(branchPath, equivalentConceptSet);
-			SnomedConcept suggestedConcept = equivalentEntries.remove(0);
-			results.add(new EquivalenceSet(suggestedConcept, equivalentEntries));
+			List<String> equivalentIds = LongSets.toStringList(equivalentConceptSet);
+			String suggestedConcept = equivalentIds.remove(0);
+			results.add(new EquivalenceSet(suggestedConcept, equivalentIds));
 		}
 		
 		return results;
-	}
-
-	private List<SnomedConcept> convertIdsToIndexEntries(IBranchPath branchPath, LongSet conceptIds) { 
-		Set<String> conceptIdFilter = LongSets.toStringSet(conceptIds);
-		SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
-				.filterByIds(conceptIdFilter)
-				.setLimit(conceptIds.size())
-				.setExpand("pt()")
-				.setLocales(ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference())
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-				.execute(ApplicationContext.getInstance().getService(IEventBus.class))
-				.getSync();
-		Map<String, SnomedConcept> existingConcepts = FluentIterable.from(concepts).uniqueIndex(IComponent.ID_FUNCTION);
-		List<SnomedConcept> convertedSet = newArrayListWithExpectedSize(conceptIdFilter.size());
-		for (String conceptId : conceptIdFilter) {
-			SnomedConcept concept = existingConcepts.get(conceptId);
-			if (null == concept) {
-				SnomedConcept fakeConcept = new SnomedConcept();
-				fakeConcept.setId(conceptId);
-				fakeConcept.setIconId(Concepts.ROOT_CONCEPT);
-				fakeConcept.setModuleId(Concepts.MODULE_ROOT);
-				SnomedDescription pt = new SnomedDescription();
-				pt.setTerm(conceptId + " (unresolved)");
-				fakeConcept.setPt(pt);
-				convertedSet.add(fakeConcept);
-			} else {
-				convertedSet.add(concept);
-			}
-		}
-		
-		Collections.sort(convertedSet, STORAGE_KEY_ORDERING);
-		return convertedSet;
 	}
 
 	@Override 

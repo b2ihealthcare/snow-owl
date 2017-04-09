@@ -21,7 +21,6 @@ import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSettings;
@@ -68,8 +67,8 @@ public class EquivalencyChecker extends ClassifyOperation<LongKeyLongMap> {
 				continue;
 			}
 
-			SnomedConcept suggestedConcept = ((EquivalenceSet) equivalenceSet).getSuggestedConcept();
-			registerEquivalentConcepts(suggestedConcept, equivalenceSet.getConcepts(), equivalentConceptMap, conceptIdsToCheck);
+			String suggestedConceptId = ((EquivalenceSet) equivalenceSet).getSuggestedConceptId();
+			registerEquivalentConcepts(suggestedConceptId, equivalenceSet.getConceptIds(), equivalentConceptMap, conceptIdsToCheck);
 		}
 	}
 
@@ -84,23 +83,20 @@ public class EquivalencyChecker extends ClassifyOperation<LongKeyLongMap> {
 		return conceptIds;
 	}
 
-	private void registerEquivalentConcepts(SnomedConcept suggestedConcept, 
-			List<SnomedConcept> equivalentConcepts,
+	private void registerEquivalentConcepts(String suggestedConceptId, 
+			List<String> equivalentConceptIds,
 			LongKeyLongMap equivalentConceptMap, 
 			LongSet conceptIdsToCheck) {
 
-		long replacementConceptId = getConceptId(suggestedConcept);
+		long replacementConceptId = Long.parseLong(suggestedConceptId);
 		boolean registerAll = conceptIdsToCheck.isEmpty();
 
-		for (SnomedConcept equivalentConcept : equivalentConcepts) {
-			long equivalentConceptId = getConceptId(equivalentConcept);
+		for (String equivalentConcept : equivalentConceptIds) {
+			long equivalentConceptId = Long.parseLong(equivalentConcept);
 			if (registerAll || conceptIdsToCheck.contains(equivalentConceptId)) {
 				equivalentConceptMap.put(equivalentConceptId, replacementConceptId);
 			}
 		}
 	}
 
-	private Long getConceptId(SnomedConcept conceptIndexEntry) {
-		return Long.valueOf(conceptIndexEntry.getId());
-	}
 }
