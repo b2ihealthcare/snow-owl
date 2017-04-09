@@ -24,6 +24,7 @@ import java.util.Set;
 
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionWriter;
+import com.b2international.snowowl.core.ComponentIdentifier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -39,17 +40,17 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 	private final Multimap<Class<?>, String> rawDeletions;
 	private final Map<Long, Revision> revisionMappings;
 	private final Multimap<Class<? extends Revision>, Long> revisionDeletions;
-	private final Collection<String> newComponents;
-	private final Collection<String> changedComponents;
-	private final Collection<String> deletedComponents;
+	private final Collection<ComponentIdentifier> newComponents;
+	private final Collection<ComponentIdentifier> changedComponents;
+	private final Collection<ComponentIdentifier> deletedComponents;
 
 	private ImmutableIndexCommitChangeSet(final Map<String, Object> rawMappings, 
 			final Multimap<Class<?>, String> rawDeletions, 
 			final Map<Long, Revision> revisionMappings,
 			final Multimap<Class<? extends Revision>, Long> revisionDeletions,
-			final Collection<String> newComponents,
-			final Collection<String> changedComponents,
-			final Collection<String> deletedComponents) {
+			final Collection<ComponentIdentifier> newComponents,
+			final Collection<ComponentIdentifier> changedComponents,
+			final Collection<ComponentIdentifier> deletedComponents) {
 		this.rawMappings = rawMappings;
 		this.rawDeletions = rawDeletions;
 		this.revisionMappings = revisionMappings;
@@ -68,17 +69,17 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 	}
 	
 	@Override
-	public Collection<String> getNewComponents() {
+	public Collection<ComponentIdentifier> getNewComponents() {
 		return newComponents;
 	}
 	
 	@Override
-	public Collection<String> getChangedComponents() {
+	public Collection<ComponentIdentifier> getChangedComponents() {
 		return changedComponents;
 	}
 	
 	@Override
-	public Collection<String> getDeletedComponents() {
+	public Collection<ComponentIdentifier> getDeletedComponents() {
 		return deletedComponents;
 	}
 	
@@ -168,9 +169,9 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 		private final ImmutableMultimap.Builder<Class<?>, String> rawDeletions = ImmutableMultimap.builder();
 		private final ImmutableMap.Builder<Long, Revision> revisionMappings = ImmutableMap.builder();
 		private final ImmutableMultimap.Builder<Class<? extends Revision>, Long> revisionDeletions = ImmutableMultimap.builder();
-		private final ImmutableSet.Builder<String> newComponents = ImmutableSet.builder();
-		private final ImmutableSet.Builder<String> changedComponents = ImmutableSet.builder();
-		private final ImmutableSet.Builder<String> deletedComponents = ImmutableSet.builder();
+		private final ImmutableSet.Builder<ComponentIdentifier> newComponents = ImmutableSet.builder();
+		private final ImmutableSet.Builder<ComponentIdentifier> changedComponents = ImmutableSet.builder();
+		private final ImmutableSet.Builder<ComponentIdentifier> deletedComponents = ImmutableSet.builder();
 
 		private Builder() {
 		}
@@ -186,17 +187,17 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 			return this;
 		}
 		
-		public Builder putNewComponents(String newComponent) {
+		public Builder putNewComponents(ComponentIdentifier newComponent) {
 			this.newComponents.add(newComponent);
 			return this;
 		}
 		
-		public Builder putChangedComponents(String changedComponent) {
+		public Builder putChangedComponents(ComponentIdentifier changedComponent) {
 			this.changedComponents.add(changedComponent);
 			return this;
 		}
 		
-		public Builder putDeletedComponents(String deletedComponent) {
+		public Builder putDeletedComponents(ComponentIdentifier deletedComponent) {
 			this.deletedComponents.add(deletedComponent);
 			return this;
 		}

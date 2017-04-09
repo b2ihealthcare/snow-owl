@@ -37,18 +37,27 @@ import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.BaseCDOChangeProcessor;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
-import com.b2international.snowowl.snomed.datastore.index.change.*;
+import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessor;
+import com.b2international.snowowl.snomed.datastore.index.change.ConstraintChangeProcessor;
+import com.b2international.snowowl.snomed.datastore.index.change.DescriptionChangeProcessor;
+import com.b2international.snowowl.snomed.datastore.index.change.RefSetMemberChangeProcessor;
+import com.b2international.snowowl.snomed.datastore.index.change.RelationshipChangeProcessor;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.google.common.collect.ImmutableList;
@@ -166,6 +175,22 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 		}
 		
 		prepareTaxonomyBuilders(commitChangeSet, index, statedConceptIds, inferredConceptIds);	
+	}
+	
+	@Override
+	protected short getTerminologyComponentId(RevisionDocument revision) {
+		if (revision instanceof SnomedConceptDocument) {
+			return SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
+		} else if (revision instanceof SnomedDescriptionIndexEntry) {
+			return SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
+		} else if (revision instanceof SnomedRelationshipIndexEntry) {
+			return SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
+		} else if (revision instanceof SnomedConstraintDocument) {
+			return SnomedTerminologyComponentConstants.PREDICATE_TYPE_ID;
+		} else if (revision instanceof SnomedRefSetMemberIndexEntry) {
+			return SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
+		}
+		throw new UnsupportedOperationException("Unsupported revision document: " + revision);
 	}
 	
 	@Override
