@@ -65,6 +65,11 @@ public final class TestBranchContext extends DelegatingServiceProvider implement
 	}
 	
 	@Override
+	public String branchPath() {
+		return branch.path();
+	}
+	
+	@Override
 	public SnowOwlConfiguration config() {
 		return service(SnowOwlConfiguration.class);
 	}

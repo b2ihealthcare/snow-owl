@@ -32,6 +32,11 @@ public class DelegatingBranchContext extends DelegatingRepositoryContext impleme
 	}
 	
 	@Override
+	public String branchPath() {
+		return getDelegate().branchPath();
+	}
+	
+	@Override
 	protected BranchContext getDelegate() {
 		return (BranchContext) super.getDelegate();
 	}

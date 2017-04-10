@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -48,23 +49,26 @@ public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext,
 	@Override
 	public B execute(RepositoryContext context) {
 		final Branch branch = ensureAvailability(context);
-		return next(context.service(BranchContextProvider.class).get(context, branch));
+		return next(context.service(BranchContextProvider.class).get(context, branch, branchPath));
 	}
 	
 	private Branch ensureAvailability(RepositoryContext context) {
 		final BranchManager branchManager = context.service(BranchManager.class);
 		final ICDOConnectionManager connectionManager = context.service(ICDOConnectionManager.class);
 		
-		final Branch branch = branchManager.getBranch(branchPath);
+		final String branchWithoutBaseRef = branchPath.endsWith(RevisionIndex.BASE_REF_CHAR) 
+				? branchPath.substring(0, branchPath.length() - 1)
+				: branchPath;
+		final Branch branch = branchManager.getBranch(branchWithoutBaseRef);
 
 		if (branch.isDeleted()) {
-			throw new BadRequestException("Branch '%s' has been deleted and cannot accept further modifications.", branchPath);
+			throw new BadRequestException("Branch '%s' has been deleted and cannot accept further modifications.", branchWithoutBaseRef);
 		}
 		
 		final ICDOConnection connection = connectionManager.getByUuid(context.id());
 		final CDOBranch cdoBranch = connection.getBranch(branch.branchPath());
 		if (cdoBranch == null) {
-			throw new NotFoundException("Branch", branchPath);
+			throw new NotFoundException("Branch", branchWithoutBaseRef);
 		}
 		
 		return branch;

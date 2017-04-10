@@ -59,6 +59,11 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 	}
 
 	@Override
+	public String branchPath() {
+		return this.editingContext.getBranch();
+	}
+	
+	@Override
 	public SnowOwlConfiguration config() {
 		return SnowOwlApplication.INSTANCE.getConfiguration();
 	}

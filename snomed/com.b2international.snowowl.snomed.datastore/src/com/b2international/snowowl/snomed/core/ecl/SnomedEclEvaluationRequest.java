@@ -440,7 +440,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 				return SnomedRequests.prepareSearchConcept()
 						.filterByIds(ids)
 						.setLimit(ids.size())
-						.build(context.id(), context.branch().path())
+						.build(context.id(), context.branchPath())
 						.execute(context.service(IEventBus.class));
 			}
 		};
