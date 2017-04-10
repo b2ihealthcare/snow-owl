@@ -69,7 +69,19 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	
 	@Override
 	public <T> T read(final String branchPath, final RevisionIndexRead<T> read) {
-		return read(getBranch(branchPath), read);
+		if (branchPath.endsWith(BASE_REF_CHAR)) {
+			final String branchPathWithoutBaseRef = branchPath.substring(0, branchPath.length() - 1);
+			if (RevisionBranch.MAIN_PATH.equals(branchPathWithoutBaseRef)) {
+				throw new IllegalArgumentException("Cannot query base of MAIN branch");
+			}
+			final RevisionBranch parent = getParentBranch(branchPathWithoutBaseRef);
+			final RevisionBranch branch = getBranch(branchPathWithoutBaseRef);
+			final Set<Integer> commonPath = Sets.intersection(branch.segments(), parent.segments());
+			final RevisionBranch baseOfBranch = new RevisionBranch(parent.path(), Ordering.natural().max(commonPath), commonPath);
+			return read(baseOfBranch, read);
+		} else {
+			return read(getBranch(branchPath), read);
+		}
 	}
 	
 	@Override
@@ -84,6 +96,9 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	
 	@Override
 	public <T> T write(final String branchPath, final long commitTimestamp, final RevisionIndexWrite<T> write) {
+		if (branchPath.endsWith(BASE_REF_CHAR)) {
+			throw new IllegalArgumentException(String.format("It is illegal to modify a branch's base point (%s).", branchPath));
+		}
 		return index.write(new IndexWrite<T>() {
 			@Override
 			public T execute(Writer index) throws IOException {
@@ -110,9 +125,10 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 			public RevisionCompare execute(Searcher searcher) throws IOException {
 				final Set<Integer> commonPath = Sets.intersection(compare.segments(), base.segments());
 				final Set<Integer> segmentsToCompare = Sets.difference(compare.segments(), base.segments());
+				final RevisionBranch baseOfCompareBranch = new RevisionBranch(base.path(), Ordering.natural().max(commonPath), commonPath);
 				
 				final Set<Class<? extends Revision>> typesToCompare = getRevisionTypes();
-				final Builder result = RevisionCompare.builder(DefaultRevisionIndex.this, new RevisionBranch(base.path(), Ordering.natural().max(commonPath), commonPath), compare);
+				final Builder result = RevisionCompare.builder(DefaultRevisionIndex.this, baseOfCompareBranch, compare);
 				
 				final Multimap<Class<? extends Revision>, Revision.Views.StorageKeyAndHash> newAndChangedComponents = ArrayListMultimap.create();
 				final Multimap<Class<? extends Revision>, Revision.Views.StorageKeyAndHash> deletedAndChangedComponents = ArrayListMultimap.create();
