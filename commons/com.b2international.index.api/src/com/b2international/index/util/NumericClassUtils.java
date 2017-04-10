@@ -62,7 +62,16 @@ public class NumericClassUtils {
 	 *         {@link PrimitiveCollection}, <code>false</code> otherwise
 	 */
 	public static boolean isCollection(final Field field) {
-		final Class<?> fieldType = field.getType();
+		return isCollection(field.getType());
+	}
+	
+	/**
+	 * @param fieldType the document mapping field's type to test
+	 * @return <code>true</code> if the field's type is either the same as, or
+	 *         is a subtype of {@link Collection} or
+	 *         {@link PrimitiveCollection}, <code>false</code> otherwise
+	 */
+	public static boolean isCollection(final Class<?> fieldType) {
 		return Collection.class.isAssignableFrom(fieldType) || PrimitiveCollection.class.isAssignableFrom(fieldType);
 	}
 

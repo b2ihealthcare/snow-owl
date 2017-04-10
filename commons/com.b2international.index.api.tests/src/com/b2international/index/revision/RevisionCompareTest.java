@@ -15,14 +15,14 @@
  */
 package com.b2international.index.revision;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
 
 import org.junit.Test;
 
-import com.b2international.index.revision.BaseRevisionIndexTest;
-import com.b2international.index.revision.RevisionCompare;
 import com.b2international.index.revision.RevisionFixtures.Data;
 import com.google.common.collect.ImmutableSet;
 
@@ -140,6 +140,20 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 		assertTrue(compare.getNewComponents().isEmpty());
 		assertTrue(compare.getChangedComponents().isEmpty());
 		assertTrue(compare.getDeletedComponents().isEmpty());
+	}
+	
+	@Test
+	public void compareBranchWithRevertedChanges() throws Exception {
+		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
+		final String branch = createBranch(MAIN, "a");
+		// change storageKey1 component then revert the change
+		indexRevision(branch, STORAGE_KEY1, new Data("field1", "field2Changed"));
+		indexRevision(branch, STORAGE_KEY1, new Data("field1", "field2"));
+		
+		final RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getNewComponents()).isEmpty();
+		assertThat(compare.getChangedComponents()).isEmpty();
+		assertThat(compare.getDeletedComponents()).isEmpty();
 	}
 	
 }

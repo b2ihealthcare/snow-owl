@@ -16,17 +16,14 @@
 package com.b2international.index.revision;
 
 import static com.b2international.index.query.Expressions.matchAnyInt;
-import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
-import com.b2international.collections.PrimitiveSets;
-import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongSet;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
@@ -39,6 +36,10 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionCompare.Builder;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
@@ -113,61 +114,59 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 				final Set<Class<? extends Revision>> typesToCompare = getRevisionTypes();
 				final Builder result = RevisionCompare.builder(DefaultRevisionIndex.this, new RevisionBranch(base.path(), Ordering.natural().max(commonPath), commonPath), compare);
 				
-				final Map<Class<? extends Revision>, LongSet> newAndChangedComponents = newHashMap();
-				final Map<Class<? extends Revision>, LongSet> deletedAndChangedComponents = newHashMap();
+				final Multimap<Class<? extends Revision>, Revision.Views.StorageKeyAndHash> newAndChangedComponents = ArrayListMultimap.create();
+				final Multimap<Class<? extends Revision>, Revision.Views.StorageKeyAndHash> deletedAndChangedComponents = ArrayListMultimap.create();
 				
 				// query all registered revision types for new, changed and deleted components
 				for (Class<? extends Revision> typeToCompare : typesToCompare) {
-					final Query<Revision.Views.StorageKeyOnly> newAndChangedQuery = Query
-							.selectPartial(Revision.Views.StorageKeyOnly.class, typeToCompare)
+					final Query<Revision.Views.StorageKeyAndHash> newAndChangedQuery = Query
+							.selectPartial(Revision.Views.StorageKeyAndHash.class, typeToCompare, ImmutableSet.of(Revision.STORAGE_KEY, DocumentMapping._HASH))
 							.where(Revision.branchSegmentFilter(segmentsToCompare))
 							.limit(Integer.MAX_VALUE)
 							.build();
-					final Hits<Revision.Views.StorageKeyOnly> newAndChangedHits = searcher.search(newAndChangedQuery);
-					final LongSet newAndChangedKeys = PrimitiveSets.newLongOpenHashSet();
-					for (Revision.Views.StorageKeyOnly newOrChangedHit : newAndChangedHits) {
-						newAndChangedKeys.add(newOrChangedHit.getStorageKey());
+					final Hits<Revision.Views.StorageKeyAndHash> newAndChangedHits = searcher.search(newAndChangedQuery);
+					for (Revision.Views.StorageKeyAndHash newOrChangedHit : newAndChangedHits) {
+						newAndChangedComponents.put(typeToCompare, newOrChangedHit);
 					}
-					newAndChangedComponents.put(typeToCompare, newAndChangedKeys);
 					
 					// any revision counts as changed or deleted which has segmentID in the common path, but replaced in the compared path
-					final Query<Revision.Views.StorageKeyOnly> deletedAndChangedQuery = Query
-							.selectPartial(Revision.Views.StorageKeyOnly.class, typeToCompare)
+					final Query<Revision.Views.StorageKeyAndHash> deletedAndChangedQuery = Query
+							.selectPartial(Revision.Views.StorageKeyAndHash.class, typeToCompare, ImmutableSet.of(Revision.STORAGE_KEY, DocumentMapping._HASH))
 							.where(Expressions.builder()
 									.must(matchAnyInt(Revision.SEGMENT_ID, commonPath))
 									.must(matchAnyInt(Revision.REPLACED_INS, segmentsToCompare))
 									.build())
 							.limit(Integer.MAX_VALUE)
 							.build();
-					final Hits<Revision.Views.StorageKeyOnly> deletedAndChangedHits = searcher.search(deletedAndChangedQuery);
-					final LongSet deletedAndChangedKeys = PrimitiveSets.newLongOpenHashSet();
-					for (Revision.Views.StorageKeyOnly deletedOrChangedHit : deletedAndChangedHits) {
-						deletedAndChangedKeys.add(deletedOrChangedHit.getStorageKey());
+					final Hits<Revision.Views.StorageKeyAndHash> deletedAndChangedHits = searcher.search(deletedAndChangedQuery);
+					for (Revision.Views.StorageKeyAndHash deletedOrChanged : deletedAndChangedHits) {
+						deletedAndChangedComponents.put(typeToCompare, deletedOrChanged);
 					}
-					deletedAndChangedComponents.put(typeToCompare, deletedAndChangedKeys);
 				}
 				
 				for (Class<? extends Revision> typeToCompare : typesToCompare) {
-					final LongSet newAndChangedKeys = newAndChangedComponents.get(typeToCompare);
-					final LongSet deletedAndChangedKeys = deletedAndChangedComponents.get(typeToCompare);
-					LongIterator newAndChangedIterator = newAndChangedKeys.iterator();
-					while (newAndChangedIterator.hasNext()) {
-						final long newOrChangedKey = newAndChangedIterator.next();
-						if (deletedAndChangedKeys.contains(newOrChangedKey)) {
+					final Map<Long, Revision.Views.StorageKeyAndHash> newAndChangedHitsByStorageKey = Maps.uniqueIndex(newAndChangedComponents.get(typeToCompare), Revision.Views.StorageKeyAndHash::getStorageKey);
+					final Map<Long, Revision.Views.StorageKeyAndHash> deletedAndChangedHitsByStorageKey = Maps.uniqueIndex(deletedAndChangedComponents.get(typeToCompare), Revision.Views.StorageKeyAndHash::getStorageKey);
+					
+					for (Long newOrChangedStorageKey : newAndChangedHitsByStorageKey.keySet()) {
+						if (deletedAndChangedHitsByStorageKey.keySet().contains(newOrChangedStorageKey)) {
 							// CHANGED
-							result.changedRevision(typeToCompare, newOrChangedKey);
+							// check that the hash of the two documents changed since then, if it did, then register as changed, otherwise skip
+							final String newOrChangedHash = newAndChangedHitsByStorageKey.get(newOrChangedStorageKey)._hash();
+							final String deletedOrChangedHash = deletedAndChangedHitsByStorageKey.get(newOrChangedStorageKey)._hash();
+							if (!Objects.equals(newOrChangedHash, deletedOrChangedHash)) {
+								result.changedRevision(typeToCompare, newOrChangedStorageKey);
+							}
 						} else {
 							// NEW
-							result.newRevision(typeToCompare, newOrChangedKey);
+							result.newRevision(typeToCompare, newOrChangedStorageKey);
 						}
 					}
 					
-					LongIterator deletedAndChangedIterator = deletedAndChangedKeys.iterator();
-					while (deletedAndChangedIterator.hasNext()) {
-						final long deletedOrChangedKey = deletedAndChangedIterator.next();
-						if (!newAndChangedKeys.contains(deletedOrChangedKey)) {
+					for (Long deletedOrChangedStorageKey : deletedAndChangedHitsByStorageKey.keySet()) {
+						if (!newAndChangedHitsByStorageKey.keySet().contains(deletedOrChangedStorageKey)) {
 							// DELETED
-							result.deletedRevision(typeToCompare, deletedOrChangedKey);
+							result.deletedRevision(typeToCompare, deletedOrChangedStorageKey);
 						}
 					}
 				}
