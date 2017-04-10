@@ -21,6 +21,7 @@ import java.util.Map;
 
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionWriter;
+import com.b2international.snowowl.core.ComponentIdentifier;
 import com.google.common.collect.Multimap;
 
 /**
@@ -35,17 +36,17 @@ public class DelegatingIndexCommitChangeSet implements IndexCommitChangeSet {
 	}
 
 	@Override
-	public Collection<String> getNewComponents() {
+	public Collection<ComponentIdentifier> getNewComponents() {
 		return delegate.getNewComponents();
 	}
 
 	@Override
-	public Collection<String> getChangedComponents() {
+	public Collection<ComponentIdentifier> getChangedComponents() {
 		return delegate.getChangedComponents();
 	}
 
 	@Override
-	public Collection<String> getDeletedComponents() {
+	public Collection<ComponentIdentifier> getDeletedComponents() {
 		return delegate.getDeletedComponents();
 	}
 

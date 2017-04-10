@@ -27,7 +27,6 @@ import java.util.function.Predicate;
 import org.eclipse.core.runtime.SubMonitor;
 
 import com.b2international.index.query.Expression;
-import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.importer.ImportAction;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.snomed.Concept;
@@ -152,14 +151,14 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 					//here we assume active descriptions.
 					//one FSN and one synonym as PT
 					
-					final ComponentIdentifierPair<String> referencedComponentPair = SnomedRefSetEditingContext.createDescriptionTypePair(description.getId());
-					final ComponentIdentifierPair<String> acceptabilityPair = SnomedRefSetEditingContext.createConceptTypePair(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
+					final String referencedComponentId = description.getId();
+					final String acceptabilityId = Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED;
 					final String moduleId = identifierConcept.getModule().getId();
 					
 					//set language type reference set member to the description
 					description.getLanguageRefSetMembers().add(editingContext.getRefSetEditingContext().createLanguageRefSetMember(
-							referencedComponentPair, 
-							acceptabilityPair, 
+							referencedComponentId, 
+							acceptabilityId, 
 							moduleId, 
 							(SnomedStructuralRefSet) languageRefSet));
 					

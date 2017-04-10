@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.events;
 import java.util.Collection;
 
 import com.b2international.commons.collections.Collections3;
+import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.events.RepositoryEvent;
 
 /**
@@ -32,9 +33,9 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 	private final long commitTimestamp;
 	private final String userId;
 	private final String comment;
-	private final Collection<String> newComponents;
-	private final Collection<String> changedComponents;
-	private final Collection<String> deletedComponents;
+	private final Collection<ComponentIdentifier> newComponents;
+	private final Collection<ComponentIdentifier> changedComponents;
+	private final Collection<ComponentIdentifier> deletedComponents;
 
 
 	public RepositoryCommitNotification(final String repositoryId,
@@ -43,9 +44,9 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 			final long commitTimestamp,
 			final String userId,
 			final String comment,
-			final Collection<String> newComponents, 
-			final Collection<String> changedComponents, 
-			final Collection<String> deletedComponents) {
+			final Collection<ComponentIdentifier> newComponents, 
+			final Collection<ComponentIdentifier> changedComponents, 
+			final Collection<ComponentIdentifier> deletedComponents) {
 		super(repositoryId);
 		this.commitId = commitId;
 		this.branchPath = branchPath;
@@ -77,15 +78,15 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 		return comment;
 	}
 	
-	public Collection<String> getNewComponents() {
+	public Collection<ComponentIdentifier> getNewComponents() {
 		return newComponents;
 	}
 	
-	public Collection<String> getChangedComponents() {
+	public Collection<ComponentIdentifier> getChangedComponents() {
 		return changedComponents;
 	}
 	
-	public Collection<String> getDeletedComponents() {
+	public Collection<ComponentIdentifier> getDeletedComponents() {
 		return deletedComponents;
 	}
 	

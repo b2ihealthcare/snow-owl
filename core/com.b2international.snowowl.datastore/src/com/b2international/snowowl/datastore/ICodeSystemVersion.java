@@ -167,6 +167,10 @@ public interface ICodeSystemVersion extends Serializable {
 	/**Comparator for comparing {@link ICodeSystemVersion versions} via {@link ICodeSystemVersion#getEffectiveDate() effective date}s.*/
 	Comparator<ICodeSystemVersion> VERSION_EFFECTIVE_DATE_COMPARATOR = new CodeSystemVersionDateComparator(GET_EFFECTIVE_DATE_FUNC);
 
+	/**
+	 * Unique terminology component identifier for versions.
+	 */
+	short TERMINOLOGY_COMPONENT_ID = 2;
 	
 	static class CodeSystemVersionDateComparator implements Comparator<ICodeSystemVersion> {
 		
