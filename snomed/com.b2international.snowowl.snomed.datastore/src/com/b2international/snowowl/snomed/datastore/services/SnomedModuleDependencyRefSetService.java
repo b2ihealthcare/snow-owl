@@ -36,7 +36,6 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.Revision;
-import com.b2international.index.revision.Revision.Views.StorageKeyOnly;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
@@ -55,6 +54,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRef
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 /**
@@ -117,17 +117,17 @@ public class SnomedModuleDependencyRefSetService {
 	
 	private LongSet getPublishedModuleDependencyMembers(IBranchPath branchPath, String moduleId, RevisionSearcher searcher) throws IOException {
 		final Expression expression = createPublishedMembersQueryExpression(moduleId);
-		final Query<Revision.Views.StorageKeyOnly> query = Query
-				.selectPartial(Revision.Views.StorageKeyOnly.class, SnomedRefSetMemberIndexEntry.class)
+		final Query<Long> query = Query
+				.selectPartial(Long.class, SnomedRefSetMemberIndexEntry.class, ImmutableSet.of(Revision.STORAGE_KEY))
 				.where(expression)
 				.limit(Integer.MAX_VALUE)
 				.build();
 		
-		final Hits<StorageKeyOnly> hits = searcher.search(query);
+		final Hits<Long> hits = searcher.search(query);
 		final LongSet storageKeys = PrimitiveSets.newLongOpenHashSet();
 		
-		for (final StorageKeyOnly storageKey : hits) {
-			storageKeys.add(storageKey.getStorageKey());
+		for (final Long storageKey : hits) {
+			storageKeys.add(storageKey);
 		}
 		
 		return storageKeys;
