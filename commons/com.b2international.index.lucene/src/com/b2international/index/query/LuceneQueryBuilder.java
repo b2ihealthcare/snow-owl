@@ -169,9 +169,9 @@ public final class LuceneQueryBuilder {
 		if (func instanceof DualScoreFunction) {
 			final DualScoreFunction<?, ?> f = (DualScoreFunction<?, ?>) func;
 			final String firstFieldName = f.getFirst();
-			final Class<?> firstFieldType = mapping.getField(firstFieldName).getType();
+			final Class<?> firstFieldType = mapping.getFieldType(firstFieldName);
 			final String secondFieldName = f.getSecond();
-			final Class<?> secondFieldType = mapping.getField(secondFieldName).getType();
+			final Class<?> secondFieldType = mapping.getFieldType(secondFieldName);
 			// only this combination is supported at the moment
 			if (String.class == firstFieldType && float.class == secondFieldType) {
 				final DualScoreFunction<String, Float> function = (DualScoreFunction<String, Float>) func;
@@ -191,7 +191,7 @@ public final class LuceneQueryBuilder {
 			}
 		} else if (func instanceof FieldScoreFunction) {
 			final String field = ((FieldScoreFunction) func).getField();
-			final Class<?> fieldType = mapping.getField(field).getType();
+			final Class<?> fieldType = mapping.getFieldType(field);
 			if (fieldType == float.class || fieldType == Float.class) {
 				return new FloatFieldSource(field); 
 			}
