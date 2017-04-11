@@ -130,23 +130,23 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 				final Set<Class<? extends Revision>> typesToCompare = getRevisionTypes();
 				final Builder result = RevisionCompare.builder(DefaultRevisionIndex.this, baseOfCompareBranch, compare);
 				
-				final Multimap<Class<? extends Revision>, Revision.Views.StorageKeyAndHash> newAndChangedComponents = ArrayListMultimap.create();
-				final Multimap<Class<? extends Revision>, Revision.Views.StorageKeyAndHash> deletedAndChangedComponents = ArrayListMultimap.create();
+				final Multimap<Class<? extends Revision>, Revision.Views.StorageKeyAndHash> newOrChangedRevisions = ArrayListMultimap.create();
+				final Multimap<Class<? extends Revision>, Revision.Views.StorageKeyAndHash> deletedOrChangedRevisions = ArrayListMultimap.create();
 				
 				// query all registered revision types for new, changed and deleted components
 				for (Class<? extends Revision> typeToCompare : typesToCompare) {
-					final Query<Revision.Views.StorageKeyAndHash> newAndChangedQuery = Query
+					final Query<Revision.Views.StorageKeyAndHash> newOrChangedQuery = Query
 							.selectPartial(Revision.Views.StorageKeyAndHash.class, typeToCompare, ImmutableSet.of(Revision.STORAGE_KEY, DocumentMapping._HASH))
 							.where(Revision.branchSegmentFilter(segmentsToCompare))
 							.limit(Integer.MAX_VALUE)
 							.build();
-					final Hits<Revision.Views.StorageKeyAndHash> newAndChangedHits = searcher.search(newAndChangedQuery);
-					for (Revision.Views.StorageKeyAndHash newOrChangedHit : newAndChangedHits) {
-						newAndChangedComponents.put(typeToCompare, newOrChangedHit);
+					final Hits<Revision.Views.StorageKeyAndHash> newOrChangedHits = searcher.search(newOrChangedQuery);
+					for (Revision.Views.StorageKeyAndHash newOrChangedHit : newOrChangedHits) {
+						newOrChangedRevisions.put(typeToCompare, newOrChangedHit);
 					}
 					
 					// any revision counts as changed or deleted which has segmentID in the common path, but replaced in the compared path
-					final Query<Revision.Views.StorageKeyAndHash> deletedAndChangedQuery = Query
+					final Query<Revision.Views.StorageKeyAndHash> deletedOrChangedQuery = Query
 							.selectPartial(Revision.Views.StorageKeyAndHash.class, typeToCompare, ImmutableSet.of(Revision.STORAGE_KEY, DocumentMapping._HASH))
 							.where(Expressions.builder()
 									.must(matchAnyInt(Revision.SEGMENT_ID, commonPath))
@@ -154,22 +154,22 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 									.build())
 							.limit(Integer.MAX_VALUE)
 							.build();
-					final Hits<Revision.Views.StorageKeyAndHash> deletedAndChangedHits = searcher.search(deletedAndChangedQuery);
-					for (Revision.Views.StorageKeyAndHash deletedOrChanged : deletedAndChangedHits) {
-						deletedAndChangedComponents.put(typeToCompare, deletedOrChanged);
+					final Hits<Revision.Views.StorageKeyAndHash> deletedOrChangedHits = searcher.search(deletedOrChangedQuery);
+					for (Revision.Views.StorageKeyAndHash deletedOrChanged : deletedOrChangedHits) {
+						deletedOrChangedRevisions.put(typeToCompare, deletedOrChanged);
 					}
 				}
 				
 				for (Class<? extends Revision> typeToCompare : typesToCompare) {
-					final Map<Long, Revision.Views.StorageKeyAndHash> newAndChangedHitsByStorageKey = Maps.uniqueIndex(newAndChangedComponents.get(typeToCompare), Revision.Views.StorageKeyAndHash::getStorageKey);
-					final Map<Long, Revision.Views.StorageKeyAndHash> deletedAndChangedHitsByStorageKey = Maps.uniqueIndex(deletedAndChangedComponents.get(typeToCompare), Revision.Views.StorageKeyAndHash::getStorageKey);
+					final Map<Long, Revision.Views.StorageKeyAndHash> newOrChangedRevisionsByStorageKey = Maps.uniqueIndex(newOrChangedRevisions.get(typeToCompare), Revision.Views.StorageKeyAndHash::getStorageKey);
+					final Map<Long, Revision.Views.StorageKeyAndHash> deletedOrChangedRevisionsByStorageKey = Maps.uniqueIndex(deletedOrChangedRevisions.get(typeToCompare), Revision.Views.StorageKeyAndHash::getStorageKey);
 					
-					for (Long newOrChangedStorageKey : newAndChangedHitsByStorageKey.keySet()) {
-						if (deletedAndChangedHitsByStorageKey.keySet().contains(newOrChangedStorageKey)) {
+					for (Long newOrChangedStorageKey : newOrChangedRevisionsByStorageKey.keySet()) {
+						if (deletedOrChangedRevisionsByStorageKey.keySet().contains(newOrChangedStorageKey)) {
 							// CHANGED
 							// check that the hash of the two documents changed since then, if it did, then register as changed, otherwise skip
-							final String newOrChangedHash = newAndChangedHitsByStorageKey.get(newOrChangedStorageKey)._hash();
-							final String deletedOrChangedHash = deletedAndChangedHitsByStorageKey.get(newOrChangedStorageKey)._hash();
+							final String newOrChangedHash = newOrChangedRevisionsByStorageKey.get(newOrChangedStorageKey)._hash();
+							final String deletedOrChangedHash = deletedOrChangedRevisionsByStorageKey.get(newOrChangedStorageKey)._hash();
 							if (!Objects.equals(newOrChangedHash, deletedOrChangedHash)) {
 								result.changedRevision(typeToCompare, newOrChangedStorageKey);
 							}
@@ -179,8 +179,8 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 						}
 					}
 					
-					for (Long deletedOrChangedStorageKey : deletedAndChangedHitsByStorageKey.keySet()) {
-						if (!newAndChangedHitsByStorageKey.keySet().contains(deletedOrChangedStorageKey)) {
+					for (Long deletedOrChangedStorageKey : deletedOrChangedRevisionsByStorageKey.keySet()) {
+						if (!newOrChangedRevisionsByStorageKey.keySet().contains(deletedOrChangedStorageKey)) {
 							// DELETED
 							result.deletedRevision(typeToCompare, deletedOrChangedStorageKey);
 						}
