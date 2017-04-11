@@ -209,7 +209,7 @@ public final class Index implements Operation {
 			final Field field = mapping.getField(name);
 			final Class<?> fieldType = NumericClassUtils.unwrapCollectionType(field);
 			
-			if (docValues && NumericClassUtils.isCollection(fieldType)) {
+			if (docValues && NumericClassUtils.isCollection(field)) {
 				throw new IllegalStateException("Docvalues can not be indexed for a collection of type: " + fieldType + " for field: " + name);
 			}
 			
