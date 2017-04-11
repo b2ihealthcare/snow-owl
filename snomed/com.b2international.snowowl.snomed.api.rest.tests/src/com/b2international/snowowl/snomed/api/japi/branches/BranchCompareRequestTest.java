@@ -15,49 +15,171 @@
  */
 package com.b2international.snowowl.snomed.api.japi.branches;
 
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
+import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Set;
+
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.datastore.request.Branching;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.compare.CompareResult;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.TestMethodNameRule;
 
 /**
  * @since 5.9
  */
 public class BranchCompareRequestTest {
 
+	@Rule
+	public final TestMethodNameRule methodName = new TestMethodNameRule();
+	
 	private static final String REPOSITORY_ID = SnomedDatastoreActivator.REPOSITORY_UUID;
 	
 	private IEventBus bus;
+	private String branchPath;
 	
 	@Before
 	public void setup() {
 		bus = ApplicationContext.getInstance().getService(IEventBus.class);
+		branchPath = createBranch(Branch.MAIN_PATH, methodName.get()).path();
 	}
-	
+
 	@Test
 	public void compareEmptyBranchWithoutBase() throws Exception {
-		final Branching branches = RepositoryRequests.branching();
-		final Branch branchA = branches.prepareCreate()
-			.setParent(Branch.MAIN_PATH)
-			.setName("compareEmptyBranchWithoutBase")
-			.build(REPOSITORY_ID)
-			.execute(bus)
-			.getSync();
+		final CompareResult compareResult = compare(null, branchPath);
 		
-		final CompareResult compareResult = branches.prepareCompare().setCompare(branchA.path()).build(REPOSITORY_ID).execute(bus).getSync();
-		assertThat(compareResult.getCompareBranch()).isEqualTo(branchA.path());
+		assertThat(compareResult.getCompareBranch()).isEqualTo(branchPath);
 		assertThat(compareResult.getBaseBranch()).isEqualTo(Branch.MAIN_PATH);
 		assertThat(compareResult.getNewComponents()).isEmpty();
 		assertThat(compareResult.getChangedComponents()).isEmpty();
 		assertThat(compareResult.getDeletedComponents()).isEmpty();
+	}
+	
+	@Test
+	public void compareEmptyBranchWithBase() throws Exception {
+		final CompareResult compareResult = compare(Branch.MAIN_PATH, branchPath);
+		
+		assertThat(compareResult.getCompareBranch()).isEqualTo(branchPath);
+		assertThat(compareResult.getBaseBranch()).isEqualTo(Branch.MAIN_PATH);
+		assertThat(compareResult.getNewComponents()).isEmpty();
+		assertThat(compareResult.getChangedComponents()).isEmpty();
+		assertThat(compareResult.getDeletedComponents()).isEmpty();
+	}
+
+	@Test
+	public void compareBranchWithNewComponents() throws Exception {
+		final IBranchPath branch = BranchPathUtils.createPath(branchPath);
+		final String newConceptId = createNewConcept(branch);
+		
+		final SnomedConcept concept = getComponent(branch, SnomedComponentType.CONCEPT, newConceptId, "descriptions(expand(members())),relationships()")
+			.extract().as(SnomedConcept.class);
+		final Set<ComponentIdentifier> newIds = newHashSet();
+		newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, concept.getId()));
+		for (SnomedDescription description : concept.getDescriptions()) {
+			newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description.getId()));
+			for (SnomedReferenceSetMember member : description.getMembers()) {
+				newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, member.getId()));
+			}
+		}
+		for (SnomedRelationship relationship : concept.getRelationships()) {
+			newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId()));
+		}
+		
+		final CompareResult compare = compare(null, branchPath);
+		assertThat(compare.getNewComponents()).containsAll(newIds);
+		assertThat(compare.getChangedComponents()).doesNotContainAnyElementsOf(newIds);
+		assertThat(compare.getDeletedComponents()).isEmpty();
+	}
+	
+	@Test
+	public void compareBranchWithChangedComponents() throws Exception {
+		final IBranchPath branch = BranchPathUtils.createPath(branchPath);
+		final String newConceptId = createNewConcept(branch);
+		final SnomedConcept concept = getComponent(branch, SnomedComponentType.CONCEPT, newConceptId).extract().as(SnomedConcept.class);
+		
+		final String taskBranchPath = createBranch(branchPath, "taskBranch").path();
+		
+		SnomedRequests.prepareUpdateConcept(concept.getId())
+			.setModuleId(Concepts.MODULE_SCT_MODEL_COMPONENT)
+			.build(REPOSITORY_ID, taskBranchPath, "info@b2international.com", "Change module ID")
+			.execute(bus)
+			.getSync();
+		
+		// compare task branch and its parent
+		final CompareResult compare = compare(branchPath, taskBranchPath);
+		assertThat(compare.getNewComponents()).isEmpty();
+		assertThat(compare.getChangedComponents()).contains(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, newConceptId));
+		assertThat(compare.getDeletedComponents()).isEmpty();
+	}
+	
+	@Test
+	public void compareBranchWithDeletedComponents() throws Exception {
+		final IBranchPath branch = BranchPathUtils.createPath(branchPath);
+		final String newConceptId = createNewConcept(branch);
+		final SnomedConcept concept = getComponent(branch, SnomedComponentType.CONCEPT, newConceptId, "descriptions(expand(members())),relationships()").extract().as(SnomedConcept.class);
+		
+		final Set<ComponentIdentifier> deletedIds = newHashSet();
+		deletedIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, concept.getId()));
+		for (SnomedDescription description : concept.getDescriptions()) {
+			deletedIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description.getId()));
+			for (SnomedReferenceSetMember member : description.getMembers()) {
+				deletedIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, member.getId()));
+			}
+		}
+		for (SnomedRelationship relationship : concept.getRelationships()) {
+			deletedIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId()));
+		}
+		
+		final String taskBranchPath = createBranch(branchPath, "taskBranch").path();
+		
+		SnomedRequests.prepareDeleteConcept(concept.getId())
+			.build(REPOSITORY_ID, taskBranchPath, "info@b2international.com", "Delete concept on task branch")
+			.execute(bus)
+			.getSync();
+		
+		// compare task branch and its parent
+		final CompareResult compare = compare(branchPath, taskBranchPath);
+		assertThat(compare.getNewComponents()).isEmpty();
+		assertThat(compare.getChangedComponents()).isEmpty();
+		assertThat(compare.getDeletedComponents()).containsAll(deletedIds);
+	}
+	
+	private CompareResult compare(String base, String compare) {
+		return RepositoryRequests.branching().prepareCompare()
+				.setBase(base)
+				.setCompare(compare)
+				.build(REPOSITORY_ID)
+				.execute(bus)
+				.getSync();
+	}
+	
+	private Branch createBranch(String parent, String name) {
+		return RepositoryRequests.branching().prepareCreate()
+				.setParent(parent)
+				.setName(name)
+				.build(REPOSITORY_ID)
+				.execute(bus)
+				.getSync();
 	}
 	
 }
