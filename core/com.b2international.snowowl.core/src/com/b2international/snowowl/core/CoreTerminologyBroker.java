@@ -258,24 +258,43 @@ public class CoreTerminologyBroker {
 	public String getTerminologyComponentId(final Object object) {
 		Preconditions.checkNotNull(object, "Object argument cannot be null.");
 
-		String terminologyComponentId = CLASS_TO_ID_CACHE.get(object.getClass());
-		if (null != terminologyComponentId) {
-			return terminologyComponentId;
-		} else if (object instanceof ExtendedComponent) {
+		if (object instanceof ExtendedComponent) {
 			return getTerminologyComponentId(((ExtendedComponent) object).getTerminologyComponentId());
 		} else if (object instanceof ITerminologyComponentIdProvider) {
 			return ((ITerminologyComponentIdProvider) object).getTerminologyComponentId();
+		} else {
+			return getTerminologyComponentId(object.getClass());
 		}
+	}
 
+	/**
+	 * Returns the terminology component identifier associated with the given terminology component representation class.
+	 * @param terminologyComponentClass
+	 * @return
+	 */
+	public String getTerminologyComponentId(final Class<?> terminologyComponentClass) {
+		String terminologyComponentId = CLASS_TO_ID_CACHE.get(terminologyComponentClass);
+		if (terminologyComponentId != null) {
+			return terminologyComponentId;
+		}
 		for (final IConfigurationElement element : Platform.getExtensionRegistry().getConfigurationElementsFor(REPRESENTATION_EXTENSION_POINT_ID)) {
 			final String representationClass = element.getAttribute(CLASS_ATTRIBUTE);
-			if (ClassUtils.isClassAssignableFrom(object.getClass(), representationClass)) {
+			if (ClassUtils.isClassAssignableFrom(terminologyComponentClass, representationClass)) {
 				terminologyComponentId = element.getAttribute(TERMINOLOGY_COMPONENT_ID_ATTRIBUTE);
-				CLASS_TO_ID_CACHE.put(object.getClass(), terminologyComponentId);
+				CLASS_TO_ID_CACHE.put(terminologyComponentClass, terminologyComponentId);
 				return terminologyComponentId;
 			}
 		}
-		throw new IllegalArgumentException("No terminology component extension has been registered for the passed in object: " + object.getClass());
+		throw new IllegalArgumentException("No terminology component extension has been registered for: " + terminologyComponentClass);
+	}
+	
+	/**
+	 * Returns the short value of the terminology component identifier associated with the given terminology component representation class.
+	 * @param terminologyComponentClass
+	 * @return
+	 */
+	public short getTerminologyComponentIdShort(Class<?> terminologyComponentClass) {
+		return getTerminologyComponentIdAsShort(getTerminologyComponentId(terminologyComponentClass));
 	}
 
 	public short getTerminologyComponentIdAsShort(final Object object) {
@@ -778,5 +797,5 @@ public class CoreTerminologyBroker {
 		return (ISearchResultProvider<String, IComponent<String>>) createExecutableExtension(getTerminologyComponentLevelConfigurationElement(terminologyComponentId,
 				SEARCH_RESULT_PROVIDER_EXTENSION_POINT_ID));
 	}
-	
+
 }

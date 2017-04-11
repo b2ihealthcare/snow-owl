@@ -46,7 +46,7 @@ public final class RevisionIndexReadRequest<B> extends DelegatingRequest<BranchC
 	
 	@Override
 	public B execute(final BranchContext context) {
-		return context.service(RevisionIndex.class).read(context.branch().path(), new RevisionIndexRead<B>() {
+		return context.service(RevisionIndex.class).read(context.branchPath(), new RevisionIndexRead<B>() {
 			@Override
 			public B execute(RevisionSearcher index) throws IOException {
 				try {

@@ -141,7 +141,7 @@ public final class RevisionCompare {
 		return deletedComponents;
 	}
 	
-	public <T extends Revision> Hits<T> searchNew(final Query<T> query) {
+	public <T> Hits<T> searchNew(final Query<T> query) {
 		return index.read(compare, new RevisionIndexRead<Hits<T>>() {
 			@Override
 			public Hits<T> execute(RevisionSearcher searcher) throws IOException {
@@ -150,7 +150,7 @@ public final class RevisionCompare {
 		});
 	}
 	
-	public <T extends Revision> Hits<T> searchChanged(final Query<T> query) {
+	public <T> Hits<T> searchChanged(final Query<T> query) {
 		return index.read(compare, new RevisionIndexRead<Hits<T>>() {
 			@Override
 			public Hits<T> execute(RevisionSearcher searcher) throws IOException {
@@ -159,7 +159,7 @@ public final class RevisionCompare {
 		});
 	}
 	
-	public <T extends Revision> Hits<T> searchDeleted(final Query<T> query) {
+	public <T> Hits<T> searchDeleted(final Query<T> query) {
 		return index.read(base, new RevisionIndexRead<Hits<T>>() {
 			@Override
 			public Hits<T> execute(RevisionSearcher searcher) throws IOException {
@@ -168,7 +168,7 @@ public final class RevisionCompare {
 		});
 	}
 	
-	private <T extends Revision> Query<T> rewrite(Query<T> query, Map<Class<? extends Revision>, LongSet> storageKeysByType) {
+	private <T> Query<T> rewrite(Query<T> query, Map<Class<? extends Revision>, LongSet> storageKeysByType) {
 		if (query.getParentType() != null) {
 			throw new UnsupportedOperationException("Nested query are not supported");
 		}
@@ -178,7 +178,7 @@ public final class RevisionCompare {
 		while (queryStorageKeys.hasNext()) {
 			storageKeys.add(queryStorageKeys.next());
 		}
-		return Query.selectPartial(query.getSelect(), query.getFrom())
+		return Query.selectPartial(query.getSelect(), query.getFrom(), query.getFields())
 				.where(Expressions.builder()
 						.must(query.getWhere())
 						.must(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys))

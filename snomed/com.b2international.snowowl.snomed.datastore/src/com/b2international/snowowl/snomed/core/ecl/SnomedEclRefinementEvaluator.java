@@ -534,7 +534,7 @@ final class SnomedEclRefinementEvaluator {
 			.filterByReferencedComponent(referencedComponents)
 			.filterByRefSetType(Collections.singleton(SnomedRefSetType.CONCRETE_DATA_TYPE))
 			.filterByProps(propFilter)
-			.build(context.id(), context.branch().path())
+			.build(context.id(), context.branchPath())
 			.execute(context.service(IEventBus.class));
 	}
 
@@ -646,7 +646,7 @@ final class SnomedEclRefinementEvaluator {
 		}
 		
 		return req
-				.build(context.id(), context.branch().path())
+				.build(context.id(), context.branchPath())
 				.execute(context.service(IEventBus.class))
 				.then(new Function<SnomedRelationships, Collection<Property>>() {
 					@Override

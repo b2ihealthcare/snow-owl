@@ -44,4 +44,8 @@ public class JsonDocumentMapping {
 		return _type().createTermsFilter(Collections.singleton(type));
 	}
 
+	public static IndexField<String> _hash() {
+		return Fields.searchOnlyStringField(DocumentMapping._HASH);
+	}
+
 }

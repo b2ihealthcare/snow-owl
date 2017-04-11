@@ -29,8 +29,8 @@ import com.b2international.snowowl.datastore.server.EditingContextFactory;
  */
 public class CDOBranchContext extends DefaultBranchContext implements TransactionContextProvider {
 	
-	CDOBranchContext(RepositoryContext context, Branch branch) {
-		super(context, branch);
+	CDOBranchContext(RepositoryContext context, Branch branch, String branchPath) {
+		super(context, branch, branchPath);
 	}
 	
 	@Override

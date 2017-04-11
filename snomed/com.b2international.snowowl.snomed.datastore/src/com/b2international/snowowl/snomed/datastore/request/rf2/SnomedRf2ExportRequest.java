@@ -179,7 +179,7 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 		final ContentSubType contentSubType = convertType(releaseType);
 		
 		Branch branch = RepositoryRequests.branching()
-			.prepareGet(context.branch().path())
+			.prepareGet(context.branchPath())
 			.build()
 			.execute(context);
 				

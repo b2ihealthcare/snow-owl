@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import com.b2international.snowowl.datastore.request.compare.BranchCompareRequestBuilder;
+
 /**
  * Central branching class with access to branching features.
  * 
@@ -51,4 +53,9 @@ public final class Branching {
 	public BranchUpdateRequestBuilder prepareUpdate(String branchPath) {
 		return new BranchUpdateRequestBuilder(branchPath);
 	}
+	
+	public BranchCompareRequestBuilder prepareCompare() {
+		return new BranchCompareRequestBuilder();
+	}
+	
 }

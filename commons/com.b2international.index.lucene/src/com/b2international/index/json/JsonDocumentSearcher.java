@@ -20,7 +20,6 @@ import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -47,9 +46,11 @@ import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
 import com.b2international.index.LuceneIndexAdmin;
 import com.b2international.index.Searcher;
+import com.b2international.index.WithHash;
 import com.b2international.index.WithId;
 import com.b2international.index.WithScore;
 import com.b2international.index.lucene.DelegatingFieldComparator;
+import com.b2international.index.lucene.IndexField;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.LuceneQueryBuilder;
@@ -178,8 +179,8 @@ public class JsonDocumentSearcher implements Searcher {
 				String key = sortField.getField();
 				if (fields.contains(key)) {
 					Object value = fieldDoc.fields[j];
-					Field mappingField = mapping.getField(key);
-					Class<?> fieldType = mappingField.getType();
+
+					Class<?> fieldType = mapping.getFieldType(key);
 					
 					if (NumericClassUtils.isFloat(fieldType)) {
 						fieldValues.put(key, (Float) value);  
@@ -236,7 +237,8 @@ public class JsonDocumentSearcher implements Searcher {
 		ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 		Class<T> select = query.getSelect();
 		Class<?> from = query.getFrom();
-
+		final boolean isWithHash = WithHash.class.isAssignableFrom(select);
+		
 		// if select is a different type, then use that as JsonView on from, otherwise select all props
 		final ObjectReader reader = select != from 
 				? mapper.reader(select).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) 
@@ -244,17 +246,34 @@ public class JsonDocumentSearcher implements Searcher {
 		
 		final String[] ids = new String[scoreDocs.length - offset];
 		final byte[][] sources = new byte[scoreDocs.length - offset][];
+		final String[] hashes;
+		if (isWithHash) {
+			hashes = new String[scoreDocs.length - offset];
+		} else {
+			hashes = null;
+		}
+		
+		final IndexField<String> _id = JsonDocumentMapping._id();
+		final IndexField<String> _hash = JsonDocumentMapping._hash();
 		
 		for (int i = offset; i < scoreDocs.length; i++) {
 			Document doc = searcher.doc(scoreDocs[i].doc);
-			sources[i - offset] = doc.getBinaryValue("_source").bytes;
-			ids[i - offset] = JsonDocumentMapping._id().getValue(doc);
+			final int arrayIdx = i - offset;
+			sources[arrayIdx] = doc.getBinaryValue("_source").bytes;
+			ids[arrayIdx] = _id.getValue(doc);
+			if (isWithHash) {
+				hashes[arrayIdx] = _hash.getValue(doc);
+			}
 		}
 		
 		for (int i = offset; i < scoreDocs.length; i++) {
-			T readValue = reader.readValue(sources[i - offset]);
+			final int arrayIdx = i - offset;
+			T readValue = reader.readValue(sources[arrayIdx]);
 			if (readValue instanceof WithId) {
-				((WithId) readValue).set_id(ids[i - offset]);
+				((WithId) readValue).set_id(ids[arrayIdx]);
+			}
+			if (isWithHash) {
+				((WithHash) readValue).set_hash(hashes[arrayIdx]);
 			}
 			if (query.isWithScores()) {
 				((WithScore) readValue).setScore(scoreDocs[i].score);
@@ -330,13 +349,11 @@ public class JsonDocumentSearcher implements Searcher {
 	}
 	
 	private SortField toLuceneSortField(DocumentMapping mapping, String sortField, boolean reverse) {
-		final Field mappingField = mapping.getField(sortField);
+		final Class<?> fieldType = mapping.getFieldType(sortField);
 
-		if (NumericClassUtils.isCollection(mappingField)) {
+		if (NumericClassUtils.isCollection(fieldType)) {
 			throw new IllegalArgumentException("Can't sort on field collection: " + sortField);
 		}
-		
-		final Class<?> fieldType = mappingField.getType();
 		
 		if (NumericClassUtils.isLong(fieldType)) {
 			return new SortField(sortField, Type.LONG, reverse);
