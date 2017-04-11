@@ -11,7 +11,8 @@ Require-Bundle: org.junit;bundle-version="4.11.0",
  com.b2international.snowowl.api.rest,
  com.b2international.snowowl.snomed.datastore,
  com.b2international.snowowl.snomed.api,
- com.b2international.snowowl.snomed.api.rest
+ com.b2international.snowowl.snomed.api.rest,
+ org.assertj.core;bundle-version="1.7.1"
 Import-Package: com.b2international.snowowl.api.impl.codesystem.domain,
  com.b2international.snowowl.datastore.server.internal.branch,
  com.b2international.snowowl.datastore.server.snomed.merge,

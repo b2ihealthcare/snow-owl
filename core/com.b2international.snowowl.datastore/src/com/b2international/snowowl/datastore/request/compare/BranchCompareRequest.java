@@ -25,6 +25,7 @@ import com.b2international.index.revision.RevisionCompare;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -56,16 +57,20 @@ final class BranchCompareRequest implements Request<com.b2international.snowowl.
 	public CompareResult execute(RepositoryContext context) {
 		final RevisionIndex index = context.service(RevisionIndex.class);
 		final CoreTerminologyBroker terminologyBroker = context.service(CoreTerminologyBroker.class);
-		final long compareHeadTimestamp = context.service(BranchManager.class).getBranch(compareBranch).headTimestamp();
+		final Branch branchToCompare = context.service(BranchManager.class).getBranch(compareBranch);
+		final long compareHeadTimestamp = branchToCompare.headTimestamp();
 		
 		final RevisionCompare compare;
+		final String baseBranchPath;
 		if (baseBranch != null) {
-			compare = index.compare(baseBranch, compareBranch); 
+			compare = index.compare(baseBranch, compareBranch);
+			baseBranchPath = baseBranch;
 		} else {
 			compare = index.compare(compareBranch);
+			baseBranchPath = branchToCompare.parentPath();
 		}
 		
-		final CompareResult.Builder result = CompareResult.builder(baseBranch, compareBranch, compareHeadTimestamp);
+		final CompareResult.Builder result = CompareResult.builder(baseBranchPath, compareBranch, compareHeadTimestamp);
 		
 		for (Class<? extends Revision> revisionType : compare.getNewRevisionTypes()) {
 			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
