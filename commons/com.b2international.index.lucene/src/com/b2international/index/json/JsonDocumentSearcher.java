@@ -237,6 +237,7 @@ public class JsonDocumentSearcher implements Searcher {
 		ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 		Class<T> select = query.getSelect();
 		Class<?> from = query.getFrom();
+		final boolean isWithId = WithId.class.isAssignableFrom(select);
 		final boolean isWithHash = WithHash.class.isAssignableFrom(select);
 		
 		// if select is a different type, then use that as JsonView on from, otherwise select all props
@@ -244,14 +245,9 @@ public class JsonDocumentSearcher implements Searcher {
 				? mapper.reader(select).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) 
 				: mapper.reader(select);
 		
-		final String[] ids = new String[scoreDocs.length - offset];
 		final byte[][] sources = new byte[scoreDocs.length - offset][];
-		final String[] hashes;
-		if (isWithHash) {
-			hashes = new String[scoreDocs.length - offset];
-		} else {
-			hashes = null;
-		}
+		final String[] ids = isWithId ? new String[scoreDocs.length - offset] : null; 
+		final String[] hashes = isWithHash ? new String[scoreDocs.length - offset] : null;
 		
 		final IndexField<String> _id = JsonDocumentMapping._id();
 		final IndexField<String> _hash = JsonDocumentMapping._hash();
@@ -260,7 +256,9 @@ public class JsonDocumentSearcher implements Searcher {
 			Document doc = searcher.doc(scoreDocs[i].doc);
 			final int arrayIdx = i - offset;
 			sources[arrayIdx] = doc.getBinaryValue("_source").bytes;
-			ids[arrayIdx] = _id.getValue(doc);
+			if (isWithId) {
+				ids[arrayIdx] = _id.getValue(doc);
+			}
 			if (isWithHash) {
 				hashes[arrayIdx] = _hash.getValue(doc);
 			}
@@ -269,7 +267,7 @@ public class JsonDocumentSearcher implements Searcher {
 		for (int i = offset; i < scoreDocs.length; i++) {
 			final int arrayIdx = i - offset;
 			T readValue = reader.readValue(sources[arrayIdx]);
-			if (readValue instanceof WithId) {
+			if (isWithId) {
 				((WithId) readValue).set_id(ids[arrayIdx]);
 			}
 			if (isWithHash) {
