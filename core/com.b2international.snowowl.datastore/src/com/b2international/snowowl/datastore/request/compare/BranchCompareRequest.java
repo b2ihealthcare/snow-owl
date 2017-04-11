@@ -30,52 +30,55 @@ import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 5.9
  */
-final class BranchCompareRequest implements Request<com.b2international.snowowl.core.domain.RepositoryContext, CompareResult> {
+final class BranchCompareRequest implements Request<RepositoryContext, CompareResult> {
 
-	private String baseBranch;
+	@JsonProperty
+	private String base;
 	
 	@NotEmpty
-	private String compareBranch;
+	@JsonProperty
+	private String compare;
 	
 	BranchCompareRequest() {
 	}
 	
 	void setBaseBranch(String baseBranch) {
-		this.baseBranch = baseBranch;
+		this.base = baseBranch;
 	}
 	
 	void setCompareBranch(String compareBranch) {
-		this.compareBranch = compareBranch;
+		this.compare = compareBranch;
 	}
 	
 	@Override
 	public CompareResult execute(RepositoryContext context) {
 		final RevisionIndex index = context.service(RevisionIndex.class);
 		final CoreTerminologyBroker terminologyBroker = context.service(CoreTerminologyBroker.class);
-		final Branch branchToCompare = context.service(BranchManager.class).getBranch(compareBranch);
+		final Branch branchToCompare = context.service(BranchManager.class).getBranch(compare);
 		final long compareHeadTimestamp = branchToCompare.headTimestamp();
 		
-		final RevisionCompare compare;
+		final RevisionCompare compareResult;
 		final String baseBranchPath;
-		if (baseBranch != null) {
-			compare = index.compare(baseBranch, compareBranch);
-			baseBranchPath = baseBranch;
+		if (base != null) {
+			compareResult = index.compare(base, compare);
+			baseBranchPath = base;
 		} else {
-			compare = index.compare(compareBranch);
+			compareResult = index.compare(compare);
 			baseBranchPath = branchToCompare.parentPath();
 		}
 		
-		final CompareResult.Builder result = CompareResult.builder(baseBranchPath, compareBranch, compareHeadTimestamp);
+		final CompareResult.Builder result = CompareResult.builder(baseBranchPath, compare, compareHeadTimestamp);
 		
-		for (Class<? extends Revision> revisionType : compare.getNewRevisionTypes()) {
+		for (Class<? extends Revision> revisionType : compareResult.getNewRevisionTypes()) {
 			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
 			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
-				final Hits<String> hits = compare.searchNew(createMatchAllReturnIdsQuery(revisionType));
+				final Hits<String> hits = compareResult.searchNew(createMatchAllReturnIdsQuery(revisionType));
 				hits.getHits()
 					.stream()
 					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
@@ -83,25 +86,25 @@ final class BranchCompareRequest implements Request<com.b2international.snowowl.
 			}
 		}
 
-		for (Class<? extends Revision> revisionType : compare.getChangedRevisionTypes()) {
+		for (Class<? extends Revision> revisionType : compareResult.getChangedRevisionTypes()) {
 			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
 			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
-				final Hits<String> hits = compare.searchChanged(createMatchAllReturnIdsQuery(revisionType));
+				final Hits<String> hits = compareResult.searchChanged(createMatchAllReturnIdsQuery(revisionType));
 				hits.getHits()
 					.stream()
 					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
-					.forEach(result::putNewComponent);
+					.forEach(result::putChangedComponent);
 			}
 		}
 
-		for (Class<? extends Revision> revisionType : compare.getDeletedRevisionTypes()) {
+		for (Class<? extends Revision> revisionType : compareResult.getDeletedRevisionTypes()) {
 			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
 			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
-				final Hits<String> hits = compare.searchDeleted(createMatchAllReturnIdsQuery(revisionType));
+				final Hits<String> hits = compareResult.searchDeleted(createMatchAllReturnIdsQuery(revisionType));
 				hits.getHits()
 					.stream()
 					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
-					.forEach(result::putNewComponent);
+					.forEach(result::putDeletedComponent);
 			}
 		}
 		
