@@ -1519,15 +1519,20 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 		String term = "";
 		switch (referencedComponentType) {
 			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
-				ISnomedConcept concept = SnomedRequests.prepareGetConcept().setComponentId(referencedComponentId).setExpand("pt()").build(branchPath.getPath()).executeSync(eventBus);
+				ISnomedConcept concept = SnomedRequests.prepareGetConcept()
+											.setComponentId(referencedComponentId)
+											.setExpand("pt()")
+											.setLocales(languagePreference)
+											.build(branchPath.getPath()).executeSync(eventBus);
 				term = concept.getPt().getTerm();
 				break;
 				
 			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
 				ISnomedDescription description = SnomedRequests.prepareGetDescription()
-						.setComponentId(member.getReferencedComponent().getId())
-					.build(branchPath.getPath())
-					.executeSync(eventBus);
+													.setComponentId(member.getReferencedComponent().getId())
+													.setLocales(languagePreference)
+													.build(branchPath.getPath())
+													.executeSync(eventBus);
 				
 				term = description.getTerm();
 				break;
