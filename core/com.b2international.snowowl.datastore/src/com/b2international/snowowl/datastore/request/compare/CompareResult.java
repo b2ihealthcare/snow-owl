@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -69,13 +71,14 @@ public final class CompareResult implements Serializable {
 	private final Collection<ComponentIdentifier> changedComponents;
 	private final Collection<ComponentIdentifier> deletedComponents;
 	
+	@JsonCreator
 	private CompareResult(
-			String baseBranch, 
-			String compareBranch, 
-			long compareHeadTimestamp,
-			Collection<ComponentIdentifier> newComponents,
-			Collection<ComponentIdentifier> changedComponents,
-			Collection<ComponentIdentifier> deletedComponents) {
+			@JsonProperty("baseBranch") String baseBranch, 
+			@JsonProperty("compareBranch") String compareBranch, 
+			@JsonProperty("compareHeadTimestamp") long compareHeadTimestamp,
+			@JsonProperty("newComponents") Collection<ComponentIdentifier> newComponents,
+			@JsonProperty("changedComponents") Collection<ComponentIdentifier> changedComponents,
+			@JsonProperty("deletedComponents") Collection<ComponentIdentifier> deletedComponents) {
 		this.baseBranch = baseBranch;
 		this.compareBranch = compareBranch;
 		this.compareHeadTimestamp = compareHeadTimestamp;

@@ -20,6 +20,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.cre
 import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -30,9 +31,13 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.compare.CompareResult;
+import com.b2international.snowowl.datastore.request.job.JobRequests;
+import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
@@ -88,29 +93,14 @@ public class BranchCompareRequestTest {
 
 	@Test
 	public void compareBranchWithNewComponents() throws Exception {
-		final IBranchPath branch = BranchPathUtils.createPath(branchPath);
-		final String newConceptId = createNewConcept(branch);
-		
-		final SnomedConcept concept = getComponent(branch, SnomedComponentType.CONCEPT, newConceptId, "descriptions(expand(members())),relationships()")
-			.extract().as(SnomedConcept.class);
-		final Set<ComponentIdentifier> newIds = newHashSet();
-		newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, concept.getId()));
-		for (SnomedDescription description : concept.getDescriptions()) {
-			newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description.getId()));
-			for (SnomedReferenceSetMember member : description.getMembers()) {
-				newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, member.getId()));
-			}
-		}
-		for (SnomedRelationship relationship : concept.getRelationships()) {
-			newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId()));
-		}
+		final Set<ComponentIdentifier> newIds = prepareBranchWithNewChanges(branchPath);
 		
 		final CompareResult compare = compare(null, branchPath);
 		assertThat(compare.getNewComponents()).containsAll(newIds);
 		assertThat(compare.getChangedComponents()).doesNotContainAnyElementsOf(newIds);
 		assertThat(compare.getDeletedComponents()).isEmpty();
 	}
-	
+
 	@Test
 	public void compareBranchWithChangedComponents() throws Exception {
 		final IBranchPath branch = BranchPathUtils.createPath(branchPath);
@@ -134,25 +124,16 @@ public class BranchCompareRequestTest {
 	
 	@Test
 	public void compareBranchWithDeletedComponents() throws Exception {
-		final IBranchPath branch = BranchPathUtils.createPath(branchPath);
-		final String newConceptId = createNewConcept(branch);
-		final SnomedConcept concept = getComponent(branch, SnomedComponentType.CONCEPT, newConceptId, "descriptions(expand(members())),relationships()").extract().as(SnomedConcept.class);
-		
-		final Set<ComponentIdentifier> deletedIds = newHashSet();
-		deletedIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, concept.getId()));
-		for (SnomedDescription description : concept.getDescriptions()) {
-			deletedIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description.getId()));
-			for (SnomedReferenceSetMember member : description.getMembers()) {
-				deletedIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, member.getId()));
-			}
-		}
-		for (SnomedRelationship relationship : concept.getRelationships()) {
-			deletedIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId()));
-		}
+		final Set<ComponentIdentifier> deletedIds = prepareBranchWithNewChanges(branchPath);
 		
 		final String taskBranchPath = createBranch(branchPath, "taskBranch").path();
 		
-		SnomedRequests.prepareDeleteConcept(concept.getId())
+		final ComponentIdentifier concept = deletedIds.stream()
+				.filter(ci -> ci.getTerminologyComponentId() == SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+				.findFirst()
+				.get();
+		
+		SnomedRequests.prepareDeleteConcept(concept.getComponentId())
 			.build(REPOSITORY_ID, taskBranchPath, "info@b2international.com", "Delete concept on task branch")
 			.execute(bus)
 			.getSync();
@@ -164,13 +145,51 @@ public class BranchCompareRequestTest {
 		assertThat(compare.getDeletedComponents()).containsAll(deletedIds);
 	}
 	
+	@Test
+	public void remoteJobSupportEmptyCompare() throws Exception {
+		final CompareResult compareResult = compareOnJob(Branch.MAIN_PATH, branchPath);
+		
+		assertThat(compareResult.getCompareBranch()).isEqualTo(branchPath);
+		assertThat(compareResult.getBaseBranch()).isEqualTo(Branch.MAIN_PATH);
+		assertThat(compareResult.getNewComponents()).isEmpty();
+		assertThat(compareResult.getChangedComponents()).isEmpty();
+		assertThat(compareResult.getDeletedComponents()).isEmpty();
+	}
+
+	@Test
+	public void remoteJobSupportCompareWithContent() throws Exception {
+		final Set<ComponentIdentifier> newIds = prepareBranchWithNewChanges(branchPath);
+		
+		final CompareResult compare = compareOnJob(null, branchPath);
+		assertThat(compare.getNewComponents()).containsAll(newIds);
+		assertThat(compare.getChangedComponents()).doesNotContainAnyElementsOf(newIds);
+		assertThat(compare.getDeletedComponents()).isEmpty();
+	}
+	
+	private RemoteJobEntry waitDone(final String jobId) throws InterruptedException {
+		RemoteJobEntry entry = null;
+		do {
+			Thread.sleep(100);
+			entry = get(jobId);
+		} while (!entry.isDone());
+		return entry;
+	}
+
+	private RemoteJobEntry get(final String jobId) {
+		return JobRequests.prepareGet(jobId).buildAsync().execute(bus).getSync();
+	}
+	
 	private CompareResult compare(String base, String compare) {
+		return prepareCompare(base, compare)
+				.execute(bus)
+				.getSync();
+	}
+
+	private AsyncRequest<CompareResult> prepareCompare(String base, String compare) {
 		return RepositoryRequests.branching().prepareCompare()
 				.setBase(base)
 				.setCompare(compare)
-				.build(REPOSITORY_ID)
-				.execute(bus)
-				.getSync();
+				.build(REPOSITORY_ID);
 	}
 	
 	private Branch createBranch(String parent, String name) {
@@ -180,6 +199,40 @@ public class BranchCompareRequestTest {
 				.build(REPOSITORY_ID)
 				.execute(bus)
 				.getSync();
+	}
+	
+	private Set<ComponentIdentifier> prepareBranchWithNewChanges(String branchPath) {
+		final IBranchPath branch = BranchPathUtils.createPath(branchPath);
+		final String newConceptId = createNewConcept(branch);
+		
+		final SnomedConcept concept = getComponent(branch, SnomedComponentType.CONCEPT, newConceptId, "descriptions(expand(members())),relationships()")
+			.extract().as(SnomedConcept.class);
+		final Set<ComponentIdentifier> newIds = newHashSet();
+		newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, concept.getId()));
+		for (SnomedDescription description : concept.getDescriptions()) {
+			newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description.getId()));
+			for (SnomedReferenceSetMember member : description.getMembers()) {
+				newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, member.getId()));
+			}
+		}
+		for (SnomedRelationship relationship : concept.getRelationships()) {
+			newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId()));
+		}
+		return newIds;
+	}
+	
+	private CompareResult compareOnJob(String base, String compare) throws InterruptedException {
+		final String compareJobId = JobRequests.prepareSchedule()
+			.setRequest(prepareCompare(base, compare).getRequest())
+			.setUser("test@b2i.sg")
+			.setDescription(String.format("Comparing %s changes", branchPath))
+			.buildAsync()
+			.execute(bus)
+			.getSync();
+		
+		final RemoteJobEntry job = waitDone(compareJobId);
+		
+ 		return JsonSupport.getDefaultObjectMapper().convertValue(job.getResultAs(Map.class), CompareResult.class);
 	}
 	
 }

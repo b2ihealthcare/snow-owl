@@ -15,11 +15,13 @@
  */
 package com.b2international.snowowl.core;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
@@ -45,6 +47,13 @@ public final class ComponentIdentifier implements Serializable {
 		return UNKOWN;
 	}  
 
+	@JsonCreator
+	public static ComponentIdentifier valueOf(String componentIdentifier) {
+		final String[] parts = componentIdentifier.split("/");
+		checkArgument(parts.length == 2, "ComponentIdentifier should consist of two parts, a short type id and String component id (was: %s)", componentIdentifier);
+		return of(Short.valueOf(parts[0]), parts[1]);
+	}
+	
 	public static ComponentIdentifier of(short terminologyComponentId, String componentId) {
 		return new ComponentIdentifier(terminologyComponentId, componentId);
 	}
