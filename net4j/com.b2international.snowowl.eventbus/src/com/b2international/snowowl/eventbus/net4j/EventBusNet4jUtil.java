@@ -34,14 +34,14 @@ public class EventBusNet4jUtil {
 	 * network.
 	 * 
 	 * @param container
-	 * @param b 
+	 * @param gzip - to enable gzip compression on the protocol or not
 	 */
-	public static final void prepareContainer(IManagedContainer container, boolean gzipEnabled) {
+	public static final void prepareContainer(IManagedContainer container, boolean gzip) {
 		container.registerFactory(new EventBusProtocol.ClientFactory());
 		container.registerFactory(new EventBusProtocol.ServerFactory());
 		container.registerFactory(new EventBus.Factory());
 		container.addPostProcessor(new EventBusProtocolInjector());
-		if (gzipEnabled) {
+		if (gzip) {
 			container.addPostProcessor(new GZIPStreamWrapperInjector(EventBusConstants.PROTOCOL_NAME));
 		}
 	}
