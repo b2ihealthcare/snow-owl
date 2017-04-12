@@ -85,9 +85,9 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		final IManagedContainer container = env.container();
 		final RpcConfiguration rpcConfig = configuration.getModuleConfig(RpcConfiguration.class);
 		LOG.debug("Preparing RPC communication with config {}", rpcConfig);
-		RpcUtil.prepareContainer(container, rpcConfig);
+		RpcUtil.prepareContainer(container, rpcConfig, configuration.isGzip());
 		LOG.debug("Preparing EventBus communication");
-		EventBusNet4jUtil.prepareContainer(container);
+		EventBusNet4jUtil.prepareContainer(container, configuration.isGzip());
 		env.services().registerService(IEventBus.class, EventBusNet4jUtil.getBus(container));
 		LOG.debug("Preparing JSON support");
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
