@@ -194,7 +194,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		}
 		
 		LOGGER.info("Initialized SNOMED CT reasoner server with maximum of {} reasoner(s) instances and {} result(s) to keep.", maximumReasonerCount, maximumReasonerResultsToKeep);
-		LOGGER.info("Reasoner service will use the {} class for relationship/concrete domain namespace and module assignement.", namespaceAndModuleAssigner.getClass().getSimpleName());
+		LOGGER.info("Reasoner service will use the {} class for relationship/concrete domain namespace and module assignment.", namespaceAndModuleAssigner.getClass().getSimpleName());
 	}
 
 	public void registerListeners() {
