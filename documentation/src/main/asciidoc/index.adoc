@@ -5,10 +5,8 @@ B2i Healthcare <support@b2i.sg>
 :toclevels: 4
 :leveloffset: 1
 
-include::software_requirements.adoc[]
+include::introduction.adoc[]
 include::installation_guide.adoc[]
-include::configuration_guide.adoc[]
 include::administration_guide.adoc[]
 include::administrative_console_reference.adoc[]
-include::administrative_rest_reference.adoc[]
-include::snomed_extension_management.adoc[]
+include::configuration_reference.adoc[]

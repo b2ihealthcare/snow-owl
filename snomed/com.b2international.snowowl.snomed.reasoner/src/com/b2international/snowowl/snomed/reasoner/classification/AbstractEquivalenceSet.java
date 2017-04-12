@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.reasoner.classification;
 import java.io.Serializable;
 import java.util.List;
 
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
@@ -29,17 +28,17 @@ public abstract class AbstractEquivalenceSet implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	protected final List<SnomedConcept> concepts;
+	private final List<String> conceptIds;
 
-	protected AbstractEquivalenceSet(final List<SnomedConcept> concepts) {
-		this.concepts = concepts;
+	protected AbstractEquivalenceSet(final List<String> conceptIds) {
+		this.conceptIds = conceptIds;
 	}
 
 	/**
 	 * @return a list of {@link SnomedConceptDocument} objects participating in this equivalence set
 	 */
-	public List<SnomedConcept> getConcepts() {
-		return concepts;
+	public List<String> getConceptIds() {
+		return conceptIds;
 	}
 
 	/**

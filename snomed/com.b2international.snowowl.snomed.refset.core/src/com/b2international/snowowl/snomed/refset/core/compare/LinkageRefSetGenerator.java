@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -231,8 +230,7 @@ public class LinkageRefSetGenerator {
 
 		@Override
 		public SnomedRefSetMember apply(SnomedRelationship input) {
-			return editingContext.createSimpleTypeRefSetMember(ComponentIdentifierPair.create(
-					SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, input.getId()), moduleId, refSet);
+			return editingContext.createSimpleTypeRefSetMember(input.getId(), moduleId, refSet);
 		}
 	}
 

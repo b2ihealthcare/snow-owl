@@ -34,17 +34,15 @@ import org.eclipse.emf.spi.cdo.FSMUtil;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.ComponentIdentifierPair;
+import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CdoViewComponentTextProvider;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
@@ -55,7 +53,6 @@ import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
@@ -176,24 +173,24 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		return new SnomedEditingContext(branchPath).getRefSetEditingContext();
 	}
 	
-	public static ComponentIdentifierPair<String> createDescriptionTypePair(final String descriptionId) {
-		return ComponentIdentifierPair.<String>create(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, descriptionId);
+	public static ComponentIdentifier createDescriptionTypePair(final String descriptionId) {
+		return ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, descriptionId);
 	}
 
-	public static ComponentIdentifierPair<String> createRefSetTypePair(final String refSetId) {
-		return ComponentIdentifierPair.<String>create(SnomedTerminologyComponentConstants.REFSET_NUMBER, refSetId);
+	public static ComponentIdentifier createRefSetTypePair(final String refSetId) {
+		return ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_NUMBER, refSetId);
 	}
 
-	public static ComponentIdentifierPair<String> createConceptTypePair(final String conceptId) {
-		return ComponentIdentifierPair.<String>create(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, conceptId);
+	public static ComponentIdentifier createConceptTypePair(final String conceptId) {
+		return ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, conceptId);
 	}
 	
-	public static ComponentIdentifierPair<String> createRelationshipTypePair(final String relationshipId) {
-		return ComponentIdentifierPair.<String>create(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId);
+	public static ComponentIdentifier createRelationshipTypePair(final String relationshipId) {
+		return ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId);
 	}
 	
-	public static ComponentIdentifierPair<String> createUnspecifiedTypePair(final String id) {
-		return ComponentIdentifierPair.<String>create(CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, id);
+	public static ComponentIdentifier createUnspecifiedTypePair(final String id) {
+		return ComponentIdentifier.of(CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, id);
 	}
 
 	// should be only called from SnomedEditingContext constructor
@@ -379,12 +376,12 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * 
 	 * @return the populated reference set member instance
 	 */
-	public SnomedRefSetMember createSimpleTypeRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
+	public SnomedRefSetMember createSimpleTypeRefSetMember(final String referencedComponentId, 
 			final String moduleId, 
 			final SnomedRegularRefSet regularRefSet) {
 		
 		final SnomedRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedRefSetMember();
-		initializeRefSetMember(member, referencedComponentPair, moduleId, regularRefSet);
+		initializeRefSetMember(member, referencedComponentId, moduleId, regularRefSet);
 		return member;
 	}
 
@@ -401,11 +398,11 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * 
 	 * @return the populated reference set member instance
 	 */
-	public SnomedSimpleMapRefSetMember createSimpleMapRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
+	public SnomedSimpleMapRefSetMember createSimpleMapRefSetMember(final String referencedComponentId, 
 			final String mapTargetComponentId,
 			final String moduleId,
 			final SnomedMappingRefSet refSet) {
-		return createSimpleMapRefSetMember(referencedComponentPair, mapTargetComponentId, null, moduleId, refSet);
+		return createSimpleMapRefSetMember(referencedComponentId, mapTargetComponentId, null, moduleId, refSet);
 	}
 
 	/**
@@ -422,13 +419,13 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * 
 	 * @return the populated reference set member instance
 	 */
-	private SnomedSimpleMapRefSetMember createSimpleMapRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
+	private SnomedSimpleMapRefSetMember createSimpleMapRefSetMember(final String referencedComponentId, 
 			final String mapTargetComponentId,
 			@Nullable final String mapTargetDescription,
 			final String moduleId,
 			final SnomedMappingRefSet refSet) {
 		final SnomedSimpleMapRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedSimpleMapRefSetMember();
-		initializeRefSetMember(member, referencedComponentPair, moduleId, refSet);
+		initializeRefSetMember(member, referencedComponentId, moduleId, refSet);
 		if (mapTargetDescription != null) {
 			member.setMapTargetComponentDescription(mapTargetDescription);
 		}
@@ -444,20 +441,20 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * <p>
 	 * The correlation ID set for this reference set member is {@link Concepts#REFSET_CORRELATION_NOT_SPECIFIED}.
 	 * 
-	 * @param referencedComponentPair the component identifier - terminology identifier pair for the referenced component
+	 * @param referencedComponentId the component identifier - terminology identifier pair for the referenced component
 	 * @param mapTargetPair the component identifier - terminology identifier pair for the map target
 	 * @param moduleId the module ID for the reference set member
 	 * @param refSet the parent reference set
 	 * 
 	 * @return the populated reference set member instance
 	 */
-	public SnomedComplexMapRefSetMember createComplexMapRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
+	public SnomedComplexMapRefSetMember createComplexMapRefSetMember(final String referencedComponentId, 
 			final String mapTargetComponentId, 
 			final String moduleId,
 			final SnomedMappingRefSet mappingRefSet) {
 		
 		final SnomedComplexMapRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedComplexMapRefSetMember();
-		initializeRefSetMember(member, referencedComponentPair, moduleId, mappingRefSet);
+		initializeRefSetMember(member, referencedComponentId, moduleId, mappingRefSet);
 		initializeMapTarget(member, mapTargetComponentId);
 		member.setCorrelationId(Concepts.REFSET_CORRELATION_NOT_SPECIFIED);
 		return member;
@@ -475,7 +472,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * Note that the member's parent reference set feature will be initialized, but the member itself will <i>not</i> be
 	 * added to the reference set's members list.
 	 * 
-	 * @param referencedComponentPair the component identifier - terminology identifier pair for the referenced component
+	 * @param referencedComponentId the component identifier - terminology identifier pair for the referenced component
 	 * @param type the concrete domain of the reference set member
 	 * @param value the value of the reference set member
 	 * @param label the label of the reference set member
@@ -484,7 +481,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * 
 	 * @return the populated reference set member instance
 	 */
-	public SnomedConcreteDataTypeRefSetMember createConcreteDataTypeRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
+	public SnomedConcreteDataTypeRefSetMember createConcreteDataTypeRefSetMember(final String referencedComponentId, 
 			DataType type, 
 			final Object value,
 			final String characteristicTypeId,
@@ -493,7 +490,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 			final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet) {
 		
 		final SnomedConcreteDataTypeRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedConcreteDataTypeRefSetMember();
-		initializeRefSetMember(member, referencedComponentPair, moduleId, concreteDataTypeRefSet);
+		initializeRefSetMember(member, referencedComponentId, moduleId, concreteDataTypeRefSet);
 		member.setSerializedValue(SnomedRefSetUtil.serializeValue(type, value));
 		member.setLabel(label);
 		member.setOperatorComponentId(Concepts.CD_EQUAL);
@@ -507,97 +504,54 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * Note that the member's parent reference set feature will be initialized, but the member itself will <i>not</i> be
 	 * added to the reference set's members list.
 	 * 
-	 * @param referencedComponentPair the component identifier - terminology identifier pair for the referenced component
+	 * @param referencedComponentId the component identifier - terminology identifier pair for the referenced component
 	 * @param uomComponentId the unit of measurement component identifier
 	 * @param operatorComponentId the comparison operator component identifier
 	 * @param value the value of the reference set member
-	 * @param attrLabel the label of the concrete domain. Can be {@code null}. If {@code null}, the label is specified by the referenced component.
+	 * @param attrLabel the label of the concrete domain.
 	 * @param moduleId the module ID for the reference set member
 	 * @param concreteDataTypeRefSet the parent reference set
 	 * 
 	 * @return the populated reference set member instance
 	 */
-	public SnomedConcreteDataTypeRefSetMember createConcreteDataTypeRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
+	public SnomedConcreteDataTypeRefSetMember createConcreteDataTypeRefSetMember(final String referencedComponentId, 
 			final String uomComponentId, 
 			final String operatorComponentId, 
 			final Object value,
 			final String characteristicTypeId,
-			@Nullable final String attrLabel, 
+			final String attrLabel, 
 			final String moduleId,
 			final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet) {
 		
 		final SnomedConcreteDataTypeRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedConcreteDataTypeRefSetMember();
-		initializeRefSetMember(member, referencedComponentPair, moduleId, concreteDataTypeRefSet);
+		initializeRefSetMember(member, referencedComponentId, moduleId, concreteDataTypeRefSet);
 		member.setSerializedValue(SnomedRefSetUtil.serializeValue(SnomedRefSetUtil.getByClass(value.getClass()), value));
 		member.setUomComponentId(uomComponentId);
 		member.setCharacteristicTypeId(characteristicTypeId);
 		member.setOperatorComponentId(operatorComponentId);
-		member.setLabel(getConcreteDomainLabel(referencedComponentPair, attrLabel));
+		member.setLabel(checkNotNull(attrLabel, "Attribute Label must be specified."));
 		
 		return member; 
 	}
 
-	private String getConcreteDomainLabel(final ComponentIdentifierPair<String> referencedComponentPair, final String attrLabel) {
-		
-		if (null != attrLabel) {
-			return attrLabel;
-		}
-		
-		// No label given up front, extract label from referenced component. Use regular name providers if the referenced component is not a relationship
-		if (!SnomedTerminologyComponentConstants.RELATIONSHIP.equals(referencedComponentPair.getTerminologyComponentId())) {
-			final IComponentNameProvider nameProvider = getNameProvider(referencedComponentPair);
-			return nameProvider.getComponentLabel(BranchPathUtils.createPath(transaction), referencedComponentPair.getComponentId());
-		}			
-			
-		// Look up relationship
-		final String relationshipId = referencedComponentPair.getComponentId();
-		
-		// Try to retrieve from the lightweight store first
-		final SnomedRelationship relationshipMini = Iterables.getOnlyElement(SnomedRequests.prepareSearchRelationship()
-				.setLimit(1)
-				.filterById(relationshipId)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.getSync(), null);
-		
-		if (null == relationshipMini) {
-			// Retrieve from CDO if it does not exist in local lightweight store
-			Relationship relationship = getSnomedEditingContext().lookup(relationshipId, Relationship.class);
-			
-			// If not persisted yet, try to get it from the transaction
-			if (null == relationship) {
-				for (final Relationship newRelationship : ComponentUtils2.getNewObjects(transaction, Relationship.class)) {
-					if (newRelationship.getId().equals(relationshipId)) {
-						relationship = newRelationship;
-						break;
-					}
-				}
-			}
-			
-			return transactionTextProvider.getText(relationship.getType().getId());
-		}
-			
-		return transactionTextProvider.getText(relationshipMini.getTypeId());
-	}
-	
 	/**
 	 * Creates a new SNOMED CT <i>description type</i> reference set member with the specified arguments.
 	 * <p>
 	 * Note that the member's parent reference set feature will be initialized, but the member itself will <i>not</i> be
 	 * added to the reference set's members list.
 	 * 
-	 * @param referencedComponentPair the component identifier - terminology identifier pair for the referenced component
+	 * @param referencedComponentId the component identifier - terminology identifier pair for the referenced component
 	 * @param moduleId the module ID for the reference set member
 	 * @param regularRefSet the parent reference set
 	 * 
 	 * @return the populated reference set member instance
 	 */
-	public SnomedDescriptionTypeRefSetMember createDescriptionTypeRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
+	public SnomedDescriptionTypeRefSetMember createDescriptionTypeRefSetMember(final String referencedComponentId, 
 			final String moduleId, 
 			final SnomedRegularRefSet regularRefSet) {
 		
 		final SnomedDescriptionTypeRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedDescriptionTypeRefSetMember();
-		initializeRefSetMember(member, referencedComponentPair, moduleId, regularRefSet);
+		initializeRefSetMember(member, referencedComponentId, moduleId, regularRefSet);
 		return member;
 	}
 	
@@ -607,20 +561,20 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * Note that the member's parent reference set feature will be initialized, but the member itself will <i>not</i> be
 	 * added to the reference set's members list.
 	 * 
-	 * @param referencedComponentPair the component identifier - terminology identifier pair for the referenced component
+	 * @param referencedComponentId the component identifier - terminology identifier pair for the referenced component
 	 * @param query the query this reference set member represents
 	 * @param moduleId the module ID for the reference set member
 	 * @param regularRefSet the parent reference set
 	 * 
 	 * @return the populated reference set member instance
 	 */
-	public SnomedQueryRefSetMember createQueryRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
+	public SnomedQueryRefSetMember createQueryRefSetMember(final String referencedComponentId, 
 			@Nullable final String query, 
 			final String moduleId,
 			final SnomedRegularRefSet regularRefSet) {
 		
 		final SnomedQueryRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedQueryRefSetMember();
-		initializeRefSetMember(member, referencedComponentPair, moduleId, regularRefSet);
+		initializeRefSetMember(member, referencedComponentId, moduleId, regularRefSet);
 		
 		if (null != query) {
 			member.setQuery(query);
@@ -635,7 +589,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * Note that the member's parent reference set feature will be initialized, but the member itself will <i>not</i> be
 	 * added to the reference set's members list.
 	 * 
-	 * @param referencedComponentPair the component identifier - terminology identifier pair for the referenced component
+	 * @param referencedComponentId the component identifier - terminology identifier pair for the referenced component
 	 * @param acceptabilityPair the component identifier - terminology identifier pair for the acceptability of this reference set member
 	 * @param moduleId the module ID for the reference set member
 	 * @param languageRefSet the parent reference set
@@ -643,16 +597,16 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * @return the populated reference set member instance
 	 * @deprecated - use {@link SnomedComponents#newLanguageMember()} instead
 	 */
-	public SnomedLanguageRefSetMember createLanguageRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
-			@Nullable final ComponentIdentifierPair<String> acceptabilityPair, 
+	public SnomedLanguageRefSetMember createLanguageRefSetMember(final String referencedComponentId, 
+			@Nullable final String acceptabilityId, 
 			final String moduleId,
 			final SnomedStructuralRefSet languageRefSet) {
 		
 		final SnomedLanguageRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedLanguageRefSetMember();
-		initializeRefSetMember(member, referencedComponentPair, moduleId, languageRefSet);
+		initializeRefSetMember(member, referencedComponentId, moduleId, languageRefSet);
 		
-		if (null != acceptabilityPair) {
-			member.setAcceptabilityId(acceptabilityPair.getComponentId());
+		if (null != acceptabilityId) {
+			member.setAcceptabilityId(acceptabilityId);
 		}
 		
 		return member;
@@ -664,7 +618,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * Note that the member's parent reference set feature will be initialized, but the member itself will <i>not</i> be
 	 * added to the reference set's members list.
 	 * 
-	 * @param referencedComponentPair the component identifier - terminology identifier pair for the referenced component
+	 * @param referencedComponentId the component identifier - terminology identifier pair for the referenced component
 	 * @param valueComponentPair the component identifier - terminology identifier pair for the value of this reference set member
 	 * @param moduleId the module ID for the reference set member
 	 * @param refSet the parent reference set
@@ -672,16 +626,16 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * @return the populated reference set member instance
 	 * @deprecated - use {@link SnomedComponents#newAttributeValueMember()} instead
 	 */
-	public SnomedAttributeValueRefSetMember createAttributeValueRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
-			@Nullable final ComponentIdentifierPair<String> valueComponentPair, 
+	public SnomedAttributeValueRefSetMember createAttributeValueRefSetMember(final String referencedComponentId, 
+			@Nullable final String valueId, 
 			final String moduleId,
 			final SnomedRefSet refSet) {
 		
 		final SnomedAttributeValueRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedAttributeValueRefSetMember();
-		initializeRefSetMember(member, referencedComponentPair, moduleId, refSet);
+		initializeRefSetMember(member, referencedComponentId, moduleId, refSet);
 		
-		if (null != valueComponentPair) {
-			member.setValueId(valueComponentPair.getComponentId());
+		if (null != valueId) {
+			member.setValueId(valueId);
 		}
 		
 		return member;
@@ -693,37 +647,37 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * Note that the member's parent reference set feature will be initialized, but the member itself will <i>not</i> be
 	 * added to the reference set's members list.
 	 * 
-	 * @param referencedComponentPair the component identifier - terminology identifier pair for the referenced component
-	 * @param targetComponentPair the component identifier - terminology identifier pair for the association target of this reference set member
+	 * @param referencedComponentId the component identifier - terminology identifier pair for the referenced component
+	 * @param targetComponentId the component identifier - terminology identifier pair for the association target of this reference set member
 	 * @param moduleId the module ID for the reference set member
 	 * @param structuralRefSet the parent reference set
 	 * 
 	 * @return the populated reference set member instance
 	 * @deprecated - use {@link SnomedComponents#newAssociationMember()} instead
 	 */
-	public SnomedAssociationRefSetMember createAssociationRefSetMember(final ComponentIdentifierPair<String> referencedComponentPair, 
-			@Nullable final ComponentIdentifierPair<String> targetComponentPair, 
+	public SnomedAssociationRefSetMember createAssociationRefSetMember(final String referencedComponentId, 
+			@Nullable final String targetComponentId, 
 			final String moduleId,
 			final SnomedStructuralRefSet structuralRefSet) {
 		
 		final SnomedAssociationRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedAssociationRefSetMember();
-		initializeRefSetMember(member, referencedComponentPair, moduleId, structuralRefSet);
+		initializeRefSetMember(member, referencedComponentId, moduleId, structuralRefSet);
 
-		if (null != targetComponentPair) {
-			member.setTargetComponentId(targetComponentPair.getComponentId());
+		if (null != targetComponentId) {
+			member.setTargetComponentId(targetComponentId);
 		}
 		
 		return member;
 	}
 
-	private SnomedRefSetMember initializeRefSetMember(final SnomedRefSetMember member, ComponentIdentifierPair<String> referencedComponentPair, final String moduleId, final SnomedRefSet refSet) {
+	private SnomedRefSetMember initializeRefSetMember(final SnomedRefSetMember member, String referencedComponentId, final String moduleId, final SnomedRefSet refSet) {
 		
 		// Set all common fields for a reference set member. Effective time is left unset, released flag defaults to false
 		member.setActive(true);
 		member.setModuleId(moduleId);
 		member.setUuid(UUID.randomUUID().toString());
 		member.setRefSet(refSet);
-		member.setReferencedComponentId(referencedComponentPair.getComponentId());
+		member.setReferencedComponentId(referencedComponentId);
 		
 		return member;
 	}
@@ -995,10 +949,9 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		final SnomedStructuralRefSet languageRefSet = getLanguageRefSet();
 		for (final Description description : identifier.getDescriptions()) {
 			if (description.isActive()) { //this point all description should be active
-				final ComponentIdentifierPair<String> acceptabilityPair = createConceptTypePair(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
 				//create language reference set membership
-				final ComponentIdentifierPair<String> referencedComponentPair = SnomedRefSetEditingContext.createDescriptionTypePair(description.getId());
-				final SnomedLanguageRefSetMember member = createLanguageRefSetMember(referencedComponentPair, acceptabilityPair, context.getDefaultModuleConcept().getId(), languageRefSet);
+				final ComponentIdentifier referencedComponentPair = SnomedRefSetEditingContext.createDescriptionTypePair(description.getId());
+				final SnomedLanguageRefSetMember member = createLanguageRefSetMember(referencedComponentPair.getComponentId(), Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED, context.getDefaultModuleConcept().getId(), languageRefSet);
 				description.getLanguageRefSetMembers().add(member);
 			}
 		}
@@ -1014,8 +967,4 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		return CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(terminologyComponentId);
 	}
 
-	private IComponentNameProvider getNameProvider(final ComponentIdentifierPair<String> referencedComponentPair) {
-		return CoreTerminologyBroker.getInstance().getNameProviderFactory(referencedComponentPair.getTerminologyComponentId()).getNameProvider();
-	}
-	
 }

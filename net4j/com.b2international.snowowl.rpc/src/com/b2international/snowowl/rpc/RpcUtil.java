@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.rpc;
 
+import org.eclipse.net4j.signal.wrapping.GZIPStreamWrapperInjector;
 import org.eclipse.net4j.util.container.IManagedContainer;
 import org.eclipse.net4j.util.container.IPluginContainer;
 import org.eclipse.spi.net4j.ClientProtocolFactory;
@@ -65,10 +66,13 @@ public class RpcUtil {
 	 * 
 	 * @param container
 	 */
-	public static void prepareContainer(final IManagedContainer container, RpcConfiguration configuration) {
+	public static void prepareContainer(final IManagedContainer container, RpcConfiguration configuration, boolean gzip) {
 		container.registerFactory(new RpcProtocol.ClientFactory(configuration));
 		container.registerFactory(new RpcProtocol.ServerFactory(configuration));
 		container.registerFactory(new RpcSessionImpl.Factory());
 		container.addPostProcessor(new RpcServerProtocolInjector());
+		if (gzip) {
+			container.addPostProcessor(new GZIPStreamWrapperInjector(RpcProtocolConstants.TYPE));
+		}
 	}
 }

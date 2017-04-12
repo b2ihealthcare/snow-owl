@@ -21,6 +21,7 @@ import java.util.Map;
 
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionWriter;
+import com.b2international.snowowl.core.ComponentIdentifier;
 import com.google.common.collect.Multimap;
 
 /**
@@ -28,11 +29,11 @@ import com.google.common.collect.Multimap;
  */
 public interface IndexCommitChangeSet {
 
-	Collection<String> getNewComponents();
+	Collection<ComponentIdentifier> getNewComponents();
 
-	Collection<String> getChangedComponents();
+	Collection<ComponentIdentifier> getChangedComponents();
 
-	Collection<String> getDeletedComponents();
+	Collection<ComponentIdentifier> getDeletedComponents();
 
 	Map<String, Object> getRawMappings();
 

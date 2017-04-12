@@ -48,6 +48,7 @@ public final class DocumentMapping {
 	public static final String _ID = "_id";
 	public static final String _UID = "_uid";
 	public static final String _TYPE = "_type";
+	public static final String _HASH = "_hash";
 
 	private static final Function<? super Field, String> GET_NAME = new Function<Field, String>() {
 		@Override
@@ -152,6 +153,13 @@ public final class DocumentMapping {
 	public Field getField(String name) {
 		checkArgument(fieldMap.containsKey(name), "Missing field '%s' on mapping of '%s'", name, type);
 		return fieldMap.get(name);
+	}
+	
+	public Class<?> getFieldType(String key) {
+		if (DocumentMapping._HASH.equals(key)) {
+			return String.class;
+		}
+		return getField(key).getType();
 	}
 	
 	public Collection<Field> getFields() {

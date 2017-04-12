@@ -40,12 +40,14 @@ import org.apache.lucene.util.BytesRef;
 import com.b2international.index.Searcher;
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.revision.Revision;
 import com.b2international.index.util.NumericClassUtils;
 import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.hash.Hashing;
 
 /**
  * @since 4.7
@@ -165,6 +167,14 @@ public final class Index implements Operation {
 			final JsonNode value = field.getValue();
 			addToDoc(doc, name, value, mapping, true);
 		}
+		
+		// add a hash of the object after processed all props (required for revision compare)
+		// modify the original _source JSON by removing Revision props completely, so that the hash function produces consistent hashes
+		final String content = node.remove(Revision.REV_FIELDS).toString();
+		final String _hash = Hashing.sha1().hashUnencodedChars(content).toString();
+		JsonDocumentMapping._hash().addTo(doc, _hash);
+		Fields.stringDocValuesField(DocumentMapping._HASH).addTo(doc, _hash);
+		
 		return doc;
 	}
 

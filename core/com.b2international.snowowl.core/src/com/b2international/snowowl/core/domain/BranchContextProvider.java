@@ -22,6 +22,6 @@ import com.b2international.snowowl.core.branch.Branch;
  */
 public interface BranchContextProvider {
 
-	BranchContext get(RepositoryContext context, Branch branch);
+	BranchContext get(RepositoryContext context, Branch branch, String branchPath);
 	
 }

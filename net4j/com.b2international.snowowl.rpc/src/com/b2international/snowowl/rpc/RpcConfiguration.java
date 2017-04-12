@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,12 @@
 package com.b2international.snowowl.rpc;
 
 
-
 /**
  * Represents the configuration settings of the RPC protocol.
  * 
  */
 public class RpcConfiguration {
 
-	private boolean compressed = false;
 	private boolean logging = false;
 	
 	/**
@@ -40,20 +38,6 @@ public class RpcConfiguration {
 		this.logging = logging;
 	}
 	
-	/**
-	 * @return <code>true</code> if compression is enabled, <code>false</code> otherwise
-	 */
-	public boolean isCompressed() {
-		return compressed;
-	}
-	
-	/**
-	 * @param compressed
-	 */
-	public void setCompressed(boolean compressed) {
-		this.compressed = compressed;
-	}
-	
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
@@ -61,10 +45,6 @@ public class RpcConfiguration {
 		builder.append("logging");
 		builder.append("=");
 		builder.append(isLogging());
-		builder.append(",");
-		builder.append("compressed");
-		builder.append("=");
-		builder.append(isCompressed());
 		builder.append("}");
 		return builder.toString();
 	}

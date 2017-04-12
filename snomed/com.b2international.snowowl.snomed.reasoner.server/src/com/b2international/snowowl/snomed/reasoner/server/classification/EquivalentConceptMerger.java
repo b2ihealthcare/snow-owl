@@ -301,7 +301,7 @@ public class EquivalentConceptMerger {
 				if (!hasMapping(branchPath, simpleMapMember.getRefSetIdentifierId(), id, simpleMapMember.getMapTargetComponentId())) {
 					
 					final SnomedSimpleMapRefSetMember newMember = refSetEditingContext.createSimpleMapRefSetMember(
-							SnomedRefSetEditingContext.createConceptTypePair(id), 
+							id, 
 							simpleMapMember.getMapTargetComponentId(),
 							simpleMapMember.getModuleId(),
 							(SnomedMappingRefSet) simpleMapMember.getRefSet());

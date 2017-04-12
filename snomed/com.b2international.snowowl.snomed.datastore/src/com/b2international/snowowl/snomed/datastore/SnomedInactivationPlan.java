@@ -31,7 +31,6 @@ import org.eclipse.emf.cdo.CDOObject;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Component;
@@ -335,8 +334,8 @@ public class SnomedInactivationPlan {
 	private SnomedAttributeValueRefSetMember createDescriptionInactivationMember(final CDOObject component) {
 		
 		return context.getRefSetEditingContext().createAttributeValueRefSetMember(
-				getReferencedComponentIdentifierPair(component), 
-				SnomedRefSetEditingContext.createConceptTypePair(Concepts.CONCEPT_NON_CURRENT), 
+				getReferencedComponentId(component), 
+				Concepts.CONCEPT_NON_CURRENT, 
 				moduleId,
 				context.lookup(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR, SnomedRefSet.class));
 	}
@@ -345,8 +344,8 @@ public class SnomedInactivationPlan {
 	private SnomedAttributeValueRefSetMember createConceptInactivationMember(final CDOObject component, final InactivationReason reason) {
 		
 		return context.getRefSetEditingContext().createAttributeValueRefSetMember(
-				getReferencedComponentIdentifierPair(component), 
-				SnomedRefSetEditingContext.createConceptTypePair(reason.getInactivationReasonConceptId()), 
+				getReferencedComponentId(component), 
+				reason.getInactivationReasonConceptId(), 
 				moduleId,
 				context.lookup(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR, SnomedRefSet.class));
 	}
@@ -365,19 +364,19 @@ public class SnomedInactivationPlan {
 	private SnomedAssociationRefSetMember createAssociationMember(final CDOObject component, final String targetComponentId, final InactivationReason reason) {
 
 		return context.getRefSetEditingContext().createAssociationRefSetMember(
-				getReferencedComponentIdentifierPair(component), 
-				SnomedRefSetEditingContext.createConceptTypePair(targetComponentId), 
+				getReferencedComponentId(component), 
+				targetComponentId, 
 				moduleId, 
 				getHistoricalRefSet(reason));
 	}
 	
 	/*creates a SNOMED CT concept type of description type component identifier pair based on the specified argument.*/
-	private ComponentIdentifierPair<String> getReferencedComponentIdentifierPair(final CDOObject component) {
+	private String getReferencedComponentId(final CDOObject component) {
 		
 		if (component instanceof Concept) {
-			return SnomedRefSetEditingContext.createConceptTypePair(((Concept) component).getId());
+			return ((Concept) component).getId();
 		} else if (component instanceof Description) {
-			return SnomedRefSetEditingContext.createDescriptionTypePair(((Description) component).getId());	
+			return ((Description) component).getId();	
 		}
 		
 		throw new IllegalArgumentException("Component argument must be either a SNOMED CT concept or a SNOMED CT description. Was a " + component);

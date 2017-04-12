@@ -47,6 +47,8 @@ public class SnowOwlConfiguration extends Configuration {
 	
 	private String description = "You Know, for Terminologies";
 
+	private boolean gzip = true;
+
 	@JsonProperty
 	public String getDescription() {
 		return description;
@@ -95,6 +97,16 @@ public class SnowOwlConfiguration extends Configuration {
 	@JsonProperty("systemUser")
 	public void setSystemUserNeeded(boolean systemUserNeeded) {
 		this.systemUserNeeded = systemUserNeeded;
+	}
+	
+	@JsonProperty
+	public boolean isGzip() {
+		return gzip;
+	}
+	
+	@JsonProperty
+	public void setGzip(boolean gzip) {
+		this.gzip = gzip;
 	}
 	
 	/**

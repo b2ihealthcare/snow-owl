@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Lucene impementation of Index API
 Bundle-SymbolicName: com.b2international.index.lucene;singleton:=true
-Bundle-Version: 5.8.6
+Bundle-Version: 5.9.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Fragment-Host: com.b2international.index.api

@@ -1,6 +1,27 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.9.0
+
+### Breaking changes
+- Datasets create before 5.9.0 require a **full reindex** in case you would like to use the new branch compare API (or you are using the old review-based compare feature). 
+
+### Added
+- New branch compare Java API (https://github.com/b2ihealthcare/snow-owl/pull/145)
+- Index documents now store a `_hash` field. The value is computed from the semantic content of the document using `SHA-1` (requires reindex).
+
+### Changed
+- Classification Java API now returns only SNOMED CT concept identifiers
+- Include component type in commit notification's new/changed/deleted buckets (470f4e99e42d7c2c1c2e4159ea2003bc51c7aa08)
+- Include version and codesystem changes in commit notification events
+- Enable gzip compression by default on all Net4j protocols (https://github.com/b2ihealthcare/snow-owl/pull/146)
+
+### Removed
+- `compression` configuration option from RPC
+
+### Bugs
+- Branch compare now skips unchanged components even if they had changed, but got reverted to their original form in the meantime (fixed as part of https://github.com/b2ihealthcare/snow-owl/pull/145)
+
 ## 5.8.6
 
 ### Changes

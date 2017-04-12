@@ -23,7 +23,7 @@ import java.util.TreeSet;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.ecore.EObject;
 
-import com.b2international.snowowl.core.ComponentIdentifierPair;
+import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
@@ -35,7 +35,7 @@ import com.google.common.collect.Sets;
  */
 public class ComponentDeletionPlan {
 	//keep terminology component identifier and component identifier identifying the deleted objects
-	private final Set<ComponentIdentifierPair<String>> deletedComponents = Sets.newHashSet();
+	private final Set<ComponentIdentifier> deletedComponents = Sets.newHashSet();
 
 	// keep deletedItems sorted by type for nicer display to the user
 	private final Set<CDOObject> deletedItems = new TreeSet<CDOObject>(ComponentUtils2.CDO_OBJECT_COMPARATOR);
@@ -50,7 +50,7 @@ public class ComponentDeletionPlan {
 
 	private void internalMarkForDeletion(final Collection<? extends CDOObject> items) {
 		for (final EObject object : items) {
-			final ComponentIdentifierPair<String> pair = createIdentifierPair(object);
+			final ComponentIdentifier pair = createIdentifierPair(object);
 			if (null == pair) {
 				continue;
 			}
@@ -59,24 +59,20 @@ public class ComponentDeletionPlan {
 		deletedItems.addAll(items);
 	}
 
-	private ComponentIdentifierPair<String> createIdentifierPair(final Object object) {
+	private ComponentIdentifier createIdentifierPair(final Object object) {
 		final IComponent<?> component = CoreTerminologyBroker.getInstance().adapt(object);
 		if (null == component) {
 			return null;
 		}
-		final String terminologyComponentId = getTerminolgyComponentId(object);
-		return createIdentifierPair(component, terminologyComponentId);
+		final short terminologyComponentId = getTerminolgyComponentId(object);
+		return ComponentIdentifier.of(terminologyComponentId, String.valueOf(component.getId()));
 	}
 
-	private ComponentIdentifierPair<String> createIdentifierPair(final IComponent<?> component, final String terminologyComponentId) {
-		return ComponentIdentifierPair.<String> create(terminologyComponentId, String.valueOf(component.getId()));
+	private short getTerminolgyComponentId(final Object object) {
+		return CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(object);
 	}
 
-	private String getTerminolgyComponentId(final Object object) {
-		return CoreTerminologyBroker.getInstance().getTerminologyComponentId(object);
-	}
-
-	public Set<ComponentIdentifierPair<String>> getDeletedComponents() {
+	public Set<ComponentIdentifier> getDeletedComponents() {
 		return deletedComponents;
 	}
 
@@ -85,10 +81,10 @@ public class ComponentDeletionPlan {
 	}
 
 	/**
-	 * Returns with a copy of the deleted components represented as {@link ComponentIdentifierPair identifier pair} instances.
+	 * Returns with a copy of the deleted components represented as {@link ComponentIdentifier identifier pair} instances.
 	 * @return a set of component identifier pairs. Generally another representation of the components marked for deletion.
 	 */
-	public Set<ComponentIdentifierPair<String>> getDeletedComponentIdentifiers() {
+	public Set<ComponentIdentifier> getDeletedComponentIdentifiers() {
 		return Collections.unmodifiableSet(deletedComponents);
 	}
 }

@@ -18,8 +18,6 @@ package com.b2international.snowowl.snomed.reasoner.classification;
 import java.io.Serializable;
 import java.util.List;
 
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-
 /**
  * Represents unsatisfiable equivalence sets (holding concepts equivalent to {@code owl:Nothing}).
  */
@@ -31,8 +29,8 @@ public class UnsatisfiableSet extends AbstractEquivalenceSet implements Serializ
 	 * Creates a new unsatisfiable equivalence set with the specified arguments.
 	 * @param unsatisfiableConcepts the list containing unsatisfiable concepts
 	 */
-	public UnsatisfiableSet(final List<SnomedConcept> unsatisfiableConcepts) {
-		super(unsatisfiableConcepts);
+	public UnsatisfiableSet(final List<String> unsatisfiableConceptIds) {
+		super(unsatisfiableConceptIds);
 	}
 
 	/*

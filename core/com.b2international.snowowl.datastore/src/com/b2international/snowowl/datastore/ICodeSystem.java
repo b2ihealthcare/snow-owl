@@ -25,6 +25,11 @@ import javax.annotation.Nullable;
 public interface ICodeSystem extends Serializable {
 
 	/**
+	 * Unique terminology component identifier for code systems.
+	 */
+	short TERMINOLOGY_COMPONENT_ID = 1;
+
+	/**
 	 * Returns the code system OID. Can be {@code null}.
 	 * @return the OID.
 	 */

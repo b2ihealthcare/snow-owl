@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Semantic Engine for Simplified Expression AST
 Bundle-SymbolicName: com.b2international.snowowl.snomed.semanticengine.simpleast
-Bundle-Version: 5.8.6
+Bundle-Version: 5.9.0.qualifier
 Bundle-Activator: com.b2international.snowowl.semanticengine.simpleast.SemanticEngineActivator
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",

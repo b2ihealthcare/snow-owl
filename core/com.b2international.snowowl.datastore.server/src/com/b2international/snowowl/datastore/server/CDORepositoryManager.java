@@ -215,8 +215,7 @@ import com.google.common.net.HostAndPort;
 		//read extension points first, then create managed items 
 		super.doBeforeActivate();
 		
-		final RepositoryConfiguration configuration = getRepositoryConfiguration();
-		if (configuration.isCompressed()) {
+		if (getSnowOwlConfiguration().isGzip()) {
 			IPluginContainer.INSTANCE.addPostProcessor(new GZIPStreamWrapperInjector(CDOProtocolConstants.PROTOCOL_NAME));
 		}
 		
@@ -230,7 +229,7 @@ import com.google.common.net.HostAndPort;
 		
 		LifecycleUtil.activate(IPluginContainer.INSTANCE);
 		
-		final HostAndPort hostAndPort = configuration.getHostAndPort();
+		final HostAndPort hostAndPort = getRepositoryConfiguration().getHostAndPort();
 		// open port in server environments
 		if (SnowOwlApplication.INSTANCE.getEnviroment().isServer()) {
 			TCPUtil.getAcceptor(IPluginContainer.INSTANCE, hostAndPort.toString()); // Start the TCP transport
@@ -241,7 +240,11 @@ import com.google.common.net.HostAndPort;
 	}
 	
 	private RepositoryConfiguration getRepositoryConfiguration() {
-		return ApplicationContext.getInstance().getServiceChecked(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class);
+		return getSnowOwlConfiguration().getModuleConfig(RepositoryConfiguration.class);
+	}
+
+	private SnowOwlConfiguration getSnowOwlConfiguration() {
+		return ApplicationContext.getInstance().getServiceChecked(SnowOwlConfiguration.class);
 	}
 	
 	@Override

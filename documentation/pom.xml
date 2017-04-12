@@ -5,18 +5,18 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snowowl-parent</artifactId>
-		<version>5.8.6</version>
+		<version>5.9.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>documentation</artifactId>
-	<packaging>eclipse-plugin</packaging>
+	<packaging>pom</packaging>
 
 	<properties>
 		<siteOutputDirectory>${project.build.directory}/site/${project.version}</siteOutputDirectory>
 		<scmPubCheckoutDirectory>${user.home}/git/snow-owl-gh-pages</scmPubCheckoutDirectory>
-		<asciidoctor.version>1.5.4</asciidoctor.version>
-		<asciidoctorj.pdf.version>1.5.0-alpha.11</asciidoctorj.pdf.version>
-		<asciidoctor.maven.plugin.version>1.5.3</asciidoctor.maven.plugin.version>
+		<asciidoctor.version>1.5.5</asciidoctor.version>
+		<asciidoctorj.pdf.version>1.5.0-alpha.14</asciidoctorj.pdf.version>
+		<asciidoctor.maven.plugin.version>1.5.5</asciidoctor.maven.plugin.version>
 	</properties>
 
 	<build>
@@ -174,34 +174,34 @@
                     </dependency>
 				</dependencies>
 			</plugin>
-			<plugin>
-			   	<groupId>org.apache.maven.plugins</groupId>
-			   	<artifactId>maven-scm-publish-plugin</artifactId>
-			   	<version>1.1</version>
-			   	<executions>
-			   		<execution>
-            			<id>publish-docs</id>
-            			<phase>verify</phase>
-			            <goals>
-			              	<goal>publish-scm</goal>
-			            </goals>
-			            <configuration>
-					       	<checkoutDirectory>${scmPubCheckoutDirectory}</checkoutDirectory>
-					       	<checkinComment>Publishing Docs for Snow Owl ${project.version}</checkinComment>
-					        <content>${project.build.directory}/site</content>
-					        <ignorePathsToDelete>
-					        	<!-- Deletes files only from the current doc versions and the SNAPSHOT suffixed version when releasing -->
-					        	<ignorePathsToDelete>%regex[^(?!${project.version}).*$]</ignorePathsToDelete>
-					        </ignorePathsToDelete>
-					        <serverId>github</serverId>
-					        <dryRun>true</dryRun>
-					        <pubScmUrl>scm:git:https://github.com/b2ihealthcare/snow-owl.git</pubScmUrl>
-					        <scmBranch>gh-pages</scmBranch>
-					        <tryUpdate>true</tryUpdate>
-					    </configuration>
-          			</execution>
-			   	</executions>
-			</plugin>
+<!-- 			<plugin> -->
+<!-- 			   	<groupId>org.apache.maven.plugins</groupId> -->
+<!-- 			   	<artifactId>maven-scm-publish-plugin</artifactId> -->
+<!-- 			   	<version>1.1</version> -->
+<!-- 			   	<executions> -->
+<!-- 			   		<execution> -->
+<!--             			<id>publish-docs</id> -->
+<!--             			<phase>verify</phase> -->
+<!-- 			            <goals> -->
+<!-- 			              	<goal>publish-scm</goal> -->
+<!-- 			            </goals> -->
+<!-- 			            <configuration> -->
+<!-- 					       	<checkoutDirectory>${scmPubCheckoutDirectory}</checkoutDirectory> -->
+<!-- 					       	<checkinComment>Publishing Docs for Snow Owl ${project.version}</checkinComment> -->
+<!-- 					        <content>${project.build.directory}/site</content> -->
+<!-- 					        <ignorePathsToDelete> -->
+<!-- 					        	Deletes files only from the current doc versions and the SNAPSHOT suffixed version when releasing -->
+<!-- 					        	<ignorePathsToDelete>%regex[^(?!${project.version}).*$]</ignorePathsToDelete> -->
+<!-- 					        </ignorePathsToDelete> -->
+<!-- 					        <serverId>github</serverId> -->
+<!-- 					        <dryRun>true</dryRun> -->
+<!-- 					        <pubScmUrl>scm:git:https://github.com/b2ihealthcare/snow-owl.git</pubScmUrl> -->
+<!-- 					        <scmBranch>gh-pages</scmBranch> -->
+<!-- 					        <tryUpdate>true</tryUpdate> -->
+<!-- 					    </configuration> -->
+<!--           			</execution> -->
+<!-- 			   	</executions> -->
+<!-- 			</plugin> -->
 		</plugins>
 	</build>
 </project>

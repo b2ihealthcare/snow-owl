@@ -1,8 +1,7 @@
+
 = Console command reference
 
-== Introduction
-
-This documents lists commands available to the system administrator when connecting to the OSGi console of a running 
+This section lists commands available to the system administrator when connecting to the OSGi console of a running 
 Snow Owl Server instance using telnet or SSH. Instructions for setting up the console can be found in the section 
 titled "`OSGi console`" of the Configuration guide.
 
@@ -11,8 +10,6 @@ appear in the service log, located at `serviceability/logs/log.log` in the Snow 
 export/import logs in folder `serviceability/logs/snowowl`.
 
 == General
-
-=== Getting help
 
 To get a quick overview of all available commands, type `help` into the console:
 
@@ -39,27 +36,28 @@ shutdown - shut down the kernel
 --------------------------
 
 The displayed list of commands are a mixture of application-specific and framework-specific operations; the following 
-categories provide functionality related to the terminology server itself:
+categories provide functionality related to Snow Owl Server itself:
 
-* Local code system datastore commands -- `localcodesystem`
-* LOINC datastore commands -- `loinc`
-* Mapping Set datastore commands -- `mappingset`
-* Scripting Commands -- `script`
+* Diagnostic and Maintenance commands -- `snowowl`
+* Terminology Registry commands -- `terminologyregistry`
+* Session Management commands -- `session`
+* Scripting commands -- `script`
+* SNOMED CT Importer commands -- `sctimport`
+* SNOMED CT OWL Ontology commands -- `ontology`
 * MRCM commands -- `mrcm`
-* Terminology registry commands -- `terminologyregistry`
-* SNOMED CT OWL ontology commands -- `ontology`
-* SNOMED CT importer commands -- `sctimport`
-* Value Domain datastore commands -- `valueset`
-* Diagnostic and maintenance commands -- `snowowl`
-* Session management commands -- `session`
 
 To narrow the command list down to a certain category, type the category name given above:
 
 --------------------------
-osgi> localcodesystem
---- Local code system datastore commands ---
-       localcodesystem exportXL local_codesystems_excelfile_path - Exports local code...
-       localcodesystem importXL local_codesystems_excelfile_path clear_database - ...
+---Snow Owl commands---
+	snowowl --version - returns the current version
+	snowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namespace URI.
+	snowowl listrepositories - prints all the repositories in the system. 
+	snowowl listbranches [repository] [branchPath] - prints all the child branches of the specified branch path in the system for a repository. Branch path is MAIN by default and has to be full path (e.g. MAIN/PROJECT/TASK)
+	snowowl reindex [repositoryId] [failedCommitTimestamp] - reindexes the content for the given repository ID from the given failed commit timestamp (optional, default timestamp is 1 which means no failed commit).
+	snowowl optimize [repositoryId] [maxSegments] - optimizes the underlying index for the repository to have the supplied maximum number of segments (default number is 1)
+	snowowl purge [repositoryId] [branchPath] [ALL|LATEST|HISTORY] - optimizes the underlying index by deleting unnecessary documents from the given branch using the given purge strategy (default strategy is LATEST)
+	snowowl repositories [repositoryId] - prints all currently available repositories and their health statuses
 --------------------------
 
 === Disconnecting from the console
@@ -74,125 +72,11 @@ Disconnect from console? (y/n; default=y) y
 Connection closed by foreign host.
 --------------------------
 
-== Local code systems
+== Available commands
 
-=== Import local code systems from a spreadsheet
+=== Scripting
 
-`localcodesystem importXL` imports local code system content from the specified Excel spreadsheet (with `.xls` or 
-`.xlsx` extension). Required arguments are the spreadsheet path and the merge mode, expressed as an integer with three 
-possible values:
-
-[sidebar]
---
-[start=0]
-. "`clear`" -- all existing local terminology entries are removed from the terminology store first, then the contents 
-of the spreadsheet are added;
-. "`merge`" -- if the terminology store already contains a local terminology to be imported, metadata groups and local 
-codes with the same identifiers will be unaffected, while new incoming elements (ex.: local codes, metadata keywords) 
-are going to be added to the existing local terminology
-. "`replace`" -- similar to merge, but when an existing local terminology is encountered, the existing content will 
-be replaced by the spreadsheet's related content.
---
-
-The administrator is also required to provide a user identifier; the given user ID will be displayed in the commit log 
-as the importing user.
-
---------------------------
-osgi> localcodesystem importXL /path/to/local_code_systems.xlsx 0
-Impersonate operation as: info@b2international.com
-
-... - Importing local code systems from excel file: /path/to/local_code_systems.xlsx
-...
-... - Clearing index data... 
-... - Clearing index data successfully finished. 
-... - Converted local code system ABCD with 9 codes. 
-...
-... - Updating terminology metadata.  
-...
---------------------------
-
-=== Export local code systems to a spreadsheet
-
-`localcodesystem exportXL` will generate an Excel file in XLSX format, in which all local terminology metadata and 
-codes will be presented on different worksheets. The only required argument is a destination path; the exported file 
-will be added to this location on the server.
-
---------------------------
-osgi> localcodesystem exportXL /path/to/exported_spreadsheet.xlsx
-
-... - Exporting Local Code Systems to Excel started. Server-side file: /path/to/exported_spreadsheet.xlsx
-...
-... - Finished exporting Local Code Systems to Excel. 
---------------------------
-
-== LOINC
-
-=== Import LOINC vocabulary from a release archive
-
-`loinc import` replaces existing LOINC terminology store content with the concepts and multi-axial hierarchy given 
-in the specified input `.zip` archive. This command also requires a user identifier to be entered, which will be 
-presented as the importing user in the commit information view.
-
---------------------------
-osgi> loinc import /path/to/loinc_archive.zip
-Impersonate operation as: info@b2international.com
-
-... - LOINC import: 0% 
-... - Processed LOINC multi-axial hieararchy lines: 0 
-... - Processed LOINC multi-axial hieararchy lines: 10000 
-... - LOINC import: 1% 
-... 
-... - Set children for number of beans: 1000 
-... - Set children for number of beans: 2000 
-... - LOINC import: 10% 
-... - Set children for number of beans: 3000 
-... 
-... - Processed and normalized the LOINC hierarchy file: 76675 entries. 
-... - Processed LOINC table rows: 10000 
-... - LOINC import: 16% 
-... - Processed LOINC table rows: 20000 
-... 
-... - Processed the LOINC table file: 71464 lines. 
-... - Processed 10000 skeleton components. 
-... 
-... - Processed the total of 76675 skeleton components. 
-... 
-... - Processed 50000 concepts with hierarchy info. 
-... 
-... - Processed 76675 concepts with hierarchy info. 
-... - Commit notification received for user info@b2international.com. 
-... - Clearing index data... 
-... - Clearing index data successfully finished. 
-...
-... - LOINC import: 96% 
-... - Processed 40000 index entries. 
-... - LOINC import: 97% 
-...
-... - LOINC import: 100% 
-... - LOINC import completed.
---------------------------
-
-== Mapping sets
-
-=== Import mapping sets from a spreadsheet
-
-`mappingset import` allows the administrator to import one or more mapping sets from the specified spreadsheet; the 
-command also requires a merge setting (given as an integer). The selection and meaning of merge options are the same 
-as the ones given in <<Import local code systems from a spreadsheet>>.
-
---------------------------
-osgi> mappingset import /path/to/mapping_sets.xlsx 1
-Impersonate operation as: info@b2international.com
-
-... - Importing mapping sets from excel file: /path/to/mapping_sets.xlsx 
-... - Processed excel sheet 1. First spreadsheet for mapping set 
-... - Branch: MAIN Event: MappingSet:  new components added: 12 
-... - Commit notification received for user info@b2international.com.
---------------------------
-
-== Scripting
-
-=== Execute Groovy script
+==== Execute Groovy script
 
 `script run` parses and executes the specified Groovy script. Services will be provided by the running server instance,
 similarly to the Groovy editing environment within the Snow Owl client.
@@ -219,9 +103,9 @@ ID          Label
 442218004   Red blood cell folate borderline high
 --------------------------
 
-== Machine-Readable Concept Model
+=== Machine-Readable Concept Model
 
-=== Import MRCM rules from XMI file
+==== Import MRCM rules from XMI file
 
 `mrcm import` reads and applies rules from the specified source file. Note that as with regular editing of MRCM rules, 
 only SNOMED CT concept and reference set editors opened after the import will display their output with the changes 
@@ -243,7 +127,7 @@ Impersonate operation as: info@b2international.com
 ... - MRCM rule import successfully finished. 
 --------------------------
 
-=== Export MRCM rules to an XMI file
+==== Export MRCM rules to an XMI file
 
 `mrcm export` creates a file named `mrcm_{timestamp}.xmi` in the directory given by the administrator. The command 
 requires a user identifier which will be recorded in the user audit log.
@@ -257,9 +141,9 @@ Impersonate operation as: info@b2international.com
 ... - MRCM rule export successfully finished. 
 --------------------------
 
-== Terminology registry
+=== Terminology registry
 
-=== List all imported terminologies
+==== List all imported terminologies
 
 `terminologyregistry listall` displays information about terminologies and terminology extensions imported into the running server instance, 
 including individual local code systems.
@@ -267,17 +151,18 @@ including individual local code systems.
 --------------------------
 osgi> terminologyregistry listall
 
-Name: ABC Local Test Dictionary short name: ABCD OID: 9.8.7.6.54321 organization: http://localhost/abcd language: ENG last version: 0.1
-Name: International Classification of Diseases short name: ICD-10 OID: 2.16.840.1.113883.6.3 organization: http://www.who.int/classifications/icd/en/ language: ENG last version: 1
-Name: Logical Observation Identifiers Names and Codes short name: LOINC OID: 2.16.840.1.113883.6.1 organization: http://loinc.org language: ENG last version: 2
-Name: Anatomical Therapeutic Chemical Classification System short name: ATC OID: 2.16.840.1.113883.6.73 organization: http://www.who.int/classifications/atcddd/en/ language: ENG last version: 1
-Name: Australian Modification of the International Classification of Diseases short name: ICD-10-AM OID: 2.16.840.1.113883.6.135 organization: http://sydney.edu.au/health-sciences/ncch/about.shtml language: ENG last version: 1
-Name: Systematized Nomenclature of Medicine Clinical Terms International Version short name: SNOMEDCT OID: 2.16.840.1.113883.6.96 organization: http://www.ihtsdo.org language: ENG last version: 2013-07-31
+Name: SNOMED CT
+Short name: SNOMEDCT
+Code System OID: 2.16.840.1.113883.6.96
+Maintaining organization link: http://www.snomed.org
+Language: ENG
+Last version: 0
+Current branch path: MAIN
 --------------------------
 
-== SNOMED CT OWL ontology (reasoner)
+=== SNOMED CT OWL Ontology (reasoner)
 
-=== Display available reasoners
+==== Display available reasoners
 
 To list the available reasoners and the preferred one (marked with an `*` symbol) one has to perform the following:
 
@@ -291,7 +176,7 @@ osgi> ontology list
    4 FaCT++ [version: 1.6.2] (uk.ac.manchester.cs.owl.factplusplus.factplusplus-factory)
 --------------------------
 
-=== Change the active reasoner
+==== Change the active reasoner
 
 To change the preferred reasoner on the server (in our case from `MORe A` to `FaCT++`), use the following command:
 
@@ -307,7 +192,7 @@ osgi> ontology select 4
  
 Note that this setting does not affect ongoing computations if they were started using a different reasoner.
 
-=== Checking status of available reasoners
+==== Checking status of available reasoners
 
 The command checks the presence and availability of all reasoners available on the server side. In case of the 
 response below, all reasoners are available.
@@ -347,9 +232,9 @@ com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerException: Couldn
 ...
 --------------------------
 
-== SNOMED CT ==
+=== SNOMED CT
 
-=== Import reference sets in RF2 format from a release text file
+==== Import reference sets in RF2 format from a release text file
 
 Use `sctimport rf2_refset` to import one or more reference sets from an RF2 text file. All RF2 import modes (`FULL`, 
 `SNAPSHOT` and `DELTA`) are available; certain reference set members can be excluded from being imported based on 
@@ -418,7 +303,7 @@ Finishing simple type reference set member import: 100% [0ms]
 
 Note that messages related to not being able to create or drop database indexes are not an indication of a failed import process.
 
-=== Import reference sets in DSV format
+==== Import reference sets in DSV format
 
 `sctimport dsv_refset` imports a single reference set from text files in Delimiter Separated Values (DSV) format. The syntax is as follows:
 
@@ -480,64 +365,7 @@ Importing Interesting Reference Set...
 All concepts were imported.
 --------------------------
 
-== Value Domain
-
-=== Import value domains from a UMLS SVS XML file
-
-`valueset import` works with value domain terminology content and also supports the three merge modes mentioned at 
-the local code system import command. The administrator will be prompted for an importing user identifier, which is 
-required for identification in the commit information view.
-
-The two required arguments are the absolute path of the source XML file, and the selected merge mode (represented 
-by an integer in the range of 0..2).
-
-[source%nowrap]
---------------------------
-osgi> valueset import /path/to/svs_import_file.xml 0
-Impersonate operation as: info@b2international.com
-
-[2013-12-12 16:50:04.660] [Worker-11] INFO  c.b.s.d.s.i.AbstractTerminologyImportJob - Importing value domains from UMLS file /path/to/svs_import_file.xml. 
-[2013-12-12 16:50:04.660] User: info@b2international.com Event: Importing value domains from UMLS file /path/to/svs_import_file.xml. 
-[2013-12-12 16:50:04.660] [Worker-11] INFO  c.b.s.d.s.i.AbstractTerminologyImportJob - Deleting existing value domains from database... 
-[2013-12-12 16:50:04.660] User: info@b2international.com Event: Deleting existing value domains from database... 
-[2013-12-12 16:50:04.755] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionBeforeCommitting() start 
-[2013-12-12 16:50:04.755] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionBeforeCommitting() lock acquired for BranchPath{Path='MAIN'} 
-[2013-12-12 16:50:04.776] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionBeforeCommitting() end 
-[2013-12-12 16:50:04.785] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionAfterCommitted() start 
-[2013-12-12 16:50:04.787] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionAfterCommitted() end 
-[2013-12-12 16:50:04.787] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionAfterCommitted() lock released for BranchPath{Path='MAIN'} 
-[2013-12-12 16:50:04.956] [Worker-11] INFO  c.b.s.d.PostStoreUpdateManager - Commit notification received for user info@b2international.com. 
-[2013-12-12 16:50:05.083] [Worker-11] INFO  c.b.s.d.s.i.AbstractTerminologyImportJob - Processed value domain Hospital Measures-Joint Commission Mental Disorders. 
-[2013-12-12 16:50:05.083] User: info@b2international.com Event: Processed value domain Hospital Measures-Joint Commission Mental Disorders. 
-[2013-12-12 16:50:05.141] [Worker-11] INFO  c.b.s.d.s.i.AbstractTerminologyImportJob - Processed value domain Hospital Measures-Comfort Measures Only Intervention. 
-[2013-12-12 16:50:05.141] User: info@b2international.com Event: Processed value domain Hospital Measures-Comfort Measures Only Intervention. 
-...
-[2013-12-12 16:50:15.075] [Worker-11] INFO  c.b.s.d.s.i.AbstractTerminologyImportJob - Processed value domain Ethnicity. 
-[2013-12-12 16:50:15.075] User: info@b2international.com Event: Processed value domain Ethnicity. 
-[2013-12-12 16:50:17.352] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionBeforeCommitting() start 
-[2013-12-12 16:50:17.352] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionBeforeCommitting() lock acquired for BranchPath{Path='MAIN'} 
-[2013-12-12 16:50:28.973] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionBeforeCommitting() end 
-[2013-12-12 16:50:39.420] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionAfterCommitted() start 
-[2013-12-12 16:50:40.085] User: info@b2international.com Branch: MAIN Event: ValueSetFolder:  new components added: 131646 
-[2013-12-12 16:50:40.086] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionAfterCommitted() end 
-[2013-12-12 16:50:40.086] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionAfterCommitted() lock released for BranchPath{Path='MAIN'} 
-[2013-12-12 16:50:40.965] [Worker-11] INFO  c.b.s.d.PostStoreUpdateManager - Commit notification received for user info@b2international.com. 
-[2013-12-12 16:50:41.005] [Worker-11] INFO  c.b.s.d.s.i.AbstractTerminologyImportJob - Commited value domains. 
-[2013-12-12 16:50:41.005] User: info@b2international.com Event: Commited value domains. 
-[2013-12-12 16:50:41.009] [Worker-11] INFO  c.b.s.v.d.s.i.ValueSetIndexInitializerJob - Clearing indexes for value domain import... 
-[2013-12-12 16:50:41.009] User: web Event: Clearing indexes for value domain import... 
-[2013-12-12 16:50:41.020] [Worker-11] INFO  c.b.s.v.d.s.i.ValueSetIndexInitializerJob - Cleared indexes for value domain import 
-[2013-12-12 16:50:41.020] User: web Event: Cleared indexes for value domain import 
-[2013-12-12 16:50:41.023] [Worker-11] INFO  c.b.s.v.d.s.i.ValueSetIndexInitializerJob - Processed 2 value domain member index entries. 
-[2013-12-12 16:50:41.023] User: web Event: Processed 2 value domain member index entries. 
-...
-[2013-12-12 16:50:56.176] [Worker-11] INFO  c.b.s.v.d.s.i.ValueSetIndexInitializerJob - Processed 20 index entries for folders. 
-[2013-12-12 16:50:56.176] User: web Event: Processed 20 index entries for folders. 
-[2013-12-12 16:50:58.125] [Worker-11] INFO  c.b.s.d.s.i.AbstractTerminologyImportJob - Completed importing value domains from UMLS file /path/to/svs_import_file.xml. 
-[2013-12-12 16:50:58.125] User: info@b2international.com Event: Completed importing value domains from UMLS file /path/to/svs_import_file.xml.
---------------------------
-
-== Diagnostics and maintenance
+=== Diagnostics and maintenance
 
 `snowowl --version` prints the current server version.
 ....
@@ -598,9 +426,9 @@ osgi>snowowl optimize snomedStore 6
 osgi>snowowl purge snomedStore MAIN/2016-01-31 ALL
 ....
 
-== Session management
+=== Session management
 
-=== Display connected users and session identifiers
+==== Display connected users and session identifiers
 
 To list all connected users (and the unique session ID), run the following OSGi command:
 
@@ -613,7 +441,7 @@ User: zstorok@b2international.com | session ID: 5
 User: apeteri@b2international.com | session ID: 6
 --------------------------
 
-=== Send message to users
+==== Send message to users
 
 To send message to all connected users, use the following command:
 
@@ -638,7 +466,7 @@ Message sent to obali@b2international.com
 Message sent to zstorok@b2international.com
 --------------------------
 
-=== Restrict user logins
+==== Restrict user logins
 
 Administrator may restrict non-administrator user log in to the sever with the following:
 
@@ -674,7 +502,7 @@ osgi> session login status
 Non-administrative logins are currently enabled.
 --------------------------
 
-=== Disconnect users
+==== Disconnect users
 
 To disconnect a subset of connected users from the server, the following command should be performed:
 
@@ -695,9 +523,9 @@ administrator task is the following:
 * Notify users about the upcoming system admin operation
 * Disconnect all users
 
-== Repository management
+=== Repository management
 
-=== Display terminology repositories
+==== Display terminology repositories
 
 To list all available repositories and their identifiers, one should execute the following command:
 
@@ -716,7 +544,7 @@ osgi> session repositories
    ICD-10-AM Store [ID: icd10amStore]
 --------------------------
 
-=== Display currently held locks
+==== Display currently held locks
 
 To view a table of acquired locks, their targets and owners, execute the command:
 
@@ -766,7 +594,7 @@ on the same or overlapping areas will not be able to complete until the lock is 
 The "Lvl" column indicates the "nesting" count of a granted lock; when someone holds a lock, they can lock the same 
 area multiple times. Ownership is only released when the level decreases to 0.
 
-=== Lock and release areas of terminology stores
+==== Lock and release areas of terminology stores
 
 To lock all terminology stores simultaneously, issue the following command:
 
@@ -834,7 +662,7 @@ NOTE: Regular save operations try to get the lock for their target repository an
 has already taken over an area by using the commands above, a dialog will be displayed when the 
 user tries to save after approx. 5 seconds of waiting for the lock to be granted.
 
-=== Forcefully unlock stuck locks
+==== Forcefully unlock stuck locks
 
 If an operation gets stuck, or otherwise fails to release locks for which the System user is not the owner, other 
 users may be blocked indefinitely as a result. To resolve the situation, one can forcefully unlock such locks 
@@ -856,14 +684,14 @@ Forcefully released lock with identifier 1.
 
 To forcefully release all locks, use the command with the `all` argument instead of the identifier.
 
-== Remote jobs
+=== Remote jobs
 
 Remote jobs are long-running operations intended to be executed on the server; the requesting user's client need not 
 be kept open while the job is active. The result of these computations can be checked immediately, or at a later time, 
 if the results are still available for review. The administration console provides two commands for listing currently 
 running remote jobs, and requesting cancellation of these items.
 
-=== Display remote jobs
+==== Display remote jobs
 
 To list all currently scheduled, running, or finished remote jobs, type:
 
@@ -882,7 +710,7 @@ osgi> remotejobs list
 (Note that identifiers in the first column can change at any time if, for example, the initiator of the task removes 
 a completed job from their list.)
 
-=== Cancel remote job
+==== Cancel remote job
 
 To signal a remote job that it should finish its work at the closest possible occasion without completing it fully, 
 use the following command with the identifier from the list displayed above. If `remotejobs list` was not invoked earlier, 

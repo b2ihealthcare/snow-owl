@@ -1,12 +1,10 @@
-= Administration guide
+= Administration
 
-== Introduction
-
-This document covers administrative and maintenance tasks in Snow Owl Server.
+This section covers administrative and maintenance tasks in Snow Owl Server.
 
 == Startup and shutdown
 
-Scripts for starting and stopping a Snow Owl Server instance are located in `/opt/snowowl-community_{version}/bin/*.sh`
+Scripts for starting and stopping a Snow Owl Server instance are located in `/opt/snowowl-{edition}_{version}/bin/*.sh`
 files. Change the active user to `snowowl` when starting the server:
 
 --------------------------
@@ -26,14 +24,14 @@ You can follow the startup sequence by inspecting `serviceability/logs/log.log`:
 --------------------------
 # tail -f serviceability/logs/log.log
 ...
-[2015-07-24 02:50:12.753] INFO  start-signalling-2 WE0001I Started web bundle [...]
-[2015-07-24 02:50:12.756] INFO  start-signalling-2 DE0005I Started bundle [...]
-[2015-07-24 02:50:12.756] INFO  start-signalling-2 Thread context class loader [...]
-[2015-07-24 02:50:12.757] INFO  start-signalling-2 DE0005I Started plan 'osgi_server.plan' version '1.0.0'.
+[2017-01-24 02:50:12.753] INFO  start-signalling-2 WE0001I Started web bundle [...]
+[2017-01-24 02:50:12.756] INFO  start-signalling-2 DE0005I Started bundle [...]
+[2017-01-24 02:50:12.756] INFO  start-signalling-2 Thread context class loader [...]
+[2017-01-24 02:50:12.757] INFO  start-signalling-2 DE0005I Started plan 'osgi_server.plan' version '1.0.0'.
 --------------------------
 
-Snow Owl Server finishes the startup procedure after displaying the lines from above. You can connect with a
-telnet client to the server and check that everything is working properly:
+Snow Owl Server finishes the startup procedure after displaying the lines from above. You can verify that everything is working properly by 
+checking the server's version, the available databases and their health states via the OSGi console: 
 
 --------------------------
 # yum install telnet // <1>
@@ -43,25 +41,31 @@ Trying ::1...
 Connected to localhost.
 Escape character is '^]'.
 
-osgi> snowowl checkservices
-Checking core services...
-[...]
-Core services are registered properly and available for use.
+osgi> snowowl --version // <2>
+5.8.6
+
+osgi> snowowl repositories
+----------------------------------------------------
+|id              |health          |diagnosis       |
+----------------------------------------------------
+|snomedStore     |GREEN           |-               |
+----------------------------------------------------
 
 osgi> disconnect
 Disconnect from console? (y/n; default=y) y
 Connection closed by foreign host.
 --------------------------
 <1> Install the client first (if not already present)
+<2> Should always print the currently running server's version
 
 The server can be stopped cleanly by running `bin/shutdown.sh`:
 
 --------------------------
-# cd /opt/snowowl-community_{version}
+# cd /opt/snowowl-{edition}_{version}
 # bin/shutdown.sh
 --------------------------
 
-== Importing content from a release archive
+== Importing SNOMED CT content
 
 To import a `SnomedCT_Release_XXX_xxxxxxxx.zip` release archive, the file must be present in the Snow Owl Server host file system, which we will refer to as {import_archive}.
 
@@ -148,92 +152,6 @@ need to ensure that during these processes no other users should be connected to
 disconnect all clients from the server and how to ensure that no one else, but the administrator is the only connected user while
 performing any import/export operations.
 
-=== List of single administrator operations
-
-[cols="4,2,1,1", options="header"]
-|===
-|Name
-|Console command
-|Snow Owl UI
-|Admin console
-
-|ATC import from ClaML
-|
-|✔
-|
-
-|ICD-10 import from ClaML
-|
-|✔
-|
-
-|ICD-10-AM import from .zip archive
-|
-|✔
-|
-
-|Local Code System import from Excel spreadsheet
-|`localcodesystem importXL`
-|✔
-|✔
-
-|LOINC import from .zip archive
-|`loinc import`
-|✔
-|✔
-
-|Mapping set import from Excel spreadsheet
-|`mappingset import`
-|✔
-|✔
-
-|SNOMED CT release import from RF2 files
-|`sctimport rf2_release`
-|✔ (zip only)
-|✔
-
-|SNOMED CT reference set import from RF2 file
-|`sctimport rf2_refset`
-|✔
-|✔
-
-|SNOMED CT reference set import from delimiter-separated file (includes RF1 subset files)
-|`sctimport dsv_refset`
-|✔
-|✔
-
-|Value domain import from Excel spreadsheet
-|
-|✔
-|
-
-|Value domain import from UMLS SVS XML file
-|`valueset import`
-|✔
-|✔
-
-|Import MRCM rules from XMI file
-|`mrcm import`
-|
-|✔
-
-|Export MRCM rules to XMI file
-|`mrcm export`
-|
-|✔
-|===
-
-=== List of operations that can be executed by regular users
-
-* ATC export to ClaML
-* Local Code System export to Excel spreadsheet
-* Mapping set export to Excel spreadsheet
-* SNOMED CT core components export to OWL 2
-* SNOMED CT reference set export to RF1 and RF2
-* SNOMED CT reference set export to Delimiter-Separated Values text file
-* Value domain export to Excel spreadsheet
-* Value domain export to UMLS SVS XML file
-
 === Steps to perform single admin operations
 
 Checking the connected users from the OSGi server console, to list all connected users one should perform the following command:
@@ -308,16 +226,13 @@ Enabled non-administrative logins.
 Snow Owl Server will ask for a user identifier for server-side import operations in the following cases:
 
 * SNOMED CT RF2 import
-* Local code system import from Excel
-* LOINC import from release archive
-* Mapping set import
-* Value domain import
+* SNOMED CT MRCM import
 
 The user identifier will be used for associating commits to the terminology repository with a user in the commit information view.
 
-=== Taking backups
+== Taking backups
 
-==== "Hot" backups
+=== "Hot" backups
 
 The example shell script `snowowl_hot_backup_mysql.sh` exercises all functionality mentioned above, and produces a .zip
 archive containing database dumps and copies of index folders in the directory it is started from. Please update the variable
@@ -379,33 +294,8 @@ with a year-month-date suffix in /var/log/snowowl-backup):
 and mailed to the snowowl-backup user's mailbox. The destination can be changed by uncommenting the MAILTO parameter
 and setting it to a different address.)
 
-==== "Cold" backups
+=== "Cold" backups
 
 When the server is shut down, the above mentioned REST service for enumerating store content and getting exclusive
 write locks for the repositories is not available, so a separate script, `snowowl_cold_backup_mysql.sh` is being provided for this case.
 
-==== Backing up and restoring data in the issue tracker
-
-A detailed list of steps are available at the Move Installation page of Mozilla Wiki (which describes moving the installation from
-one machine to another, but can also be applied for backup and restore on the same server). The important parts to take note of
-are the commands used for dumping the SQL database:
-
---------------------------
-$ mysqldump -u(username) -p(password) bugs > bugzilla-backup.sql
---------------------------
-
-Reloading the SQL dump later requires the database to be cleared and recreated from the MySQL console:
-
---------------------------
-mysql> DROP DATABASE bugs;
-mysql> CREATE DATABASE bugs DEFAULT CHARSET utf8;
---------------------------
-
-Applying the dump goes as follows:
-
---------------------------
-$ mysql -u (username) -p(password) bugs < /path/to/bugzilla-backup.sql
---------------------------
-
-In addition to the contents of the database, the `data` directory and the `localconfig` file from Bugzilla's
-installation directory should also be preserved.

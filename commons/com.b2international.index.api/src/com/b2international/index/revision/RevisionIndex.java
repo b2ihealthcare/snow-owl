@@ -24,6 +24,11 @@ import com.b2international.index.admin.IndexAdmin;
 public interface RevisionIndex extends Administrable<IndexAdmin> {
 
 	/**
+	 * A single character that when put at the end of a branchPath argument indicates that the search should execute the query from the perspective of the branch's base point (like ignoring all changes on the branch). 
+	 */
+	String BASE_REF_CHAR = "^";
+	
+	/**
 	 * Returns the name of the index.
 	 * 
 	 * @return

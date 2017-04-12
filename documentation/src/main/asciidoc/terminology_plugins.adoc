@@ -1,0 +1,172 @@
+== Local code systems
+
+=== Import local code systems from a spreadsheet
+
+`localcodesystem importXL` imports local code system content from the specified Excel spreadsheet (with `.xls` or 
+`.xlsx` extension). Required arguments are the spreadsheet path and the merge mode, expressed as an integer with three 
+possible values:
+
+[sidebar]
+--
+[start=0]
+. "`clear`" -- all existing local terminology entries are removed from the terminology store first, then the contents 
+of the spreadsheet are added;
+. "`merge`" -- if the terminology store already contains a local terminology to be imported, metadata groups and local 
+codes with the same identifiers will be unaffected, while new incoming elements (ex.: local codes, metadata keywords) 
+are going to be added to the existing local terminology
+. "`replace`" -- similar to merge, but when an existing local terminology is encountered, the existing content will 
+be replaced by the spreadsheet's related content.
+--
+
+The administrator is also required to provide a user identifier; the given user ID will be displayed in the commit log 
+as the importing user.
+
+--------------------------
+osgi> localcodesystem importXL /path/to/local_code_systems.xlsx 0
+Impersonate operation as: info@b2international.com
+
+... - Importing local code systems from excel file: /path/to/local_code_systems.xlsx
+...
+... - Clearing index data... 
+... - Clearing index data successfully finished. 
+... - Converted local code system ABCD with 9 codes. 
+...
+... - Updating terminology metadata.  
+...
+--------------------------
+
+=== Export local code systems to a spreadsheet
+
+`localcodesystem exportXL` will generate an Excel file in XLSX format, in which all local terminology metadata and 
+codes will be presented on different worksheets. The only required argument is a destination path; the exported file 
+will be added to this location on the server.
+
+--------------------------
+osgi> localcodesystem exportXL /path/to/exported_spreadsheet.xlsx
+
+... - Exporting Local Code Systems to Excel started. Server-side file: /path/to/exported_spreadsheet.xlsx
+...
+... - Finished exporting Local Code Systems to Excel. 
+--------------------------
+
+== LOINC
+
+=== Import LOINC vocabulary from a release archive
+
+`loinc import` replaces existing LOINC terminology store content with the concepts and multi-axial hierarchy given 
+in the specified input `.zip` archive. This command also requires a user identifier to be entered, which will be 
+presented as the importing user in the commit information view.
+
+--------------------------
+osgi> loinc import /path/to/loinc_archive.zip
+Impersonate operation as: info@b2international.com
+
+... - LOINC import: 0% 
+... - Processed LOINC multi-axial hieararchy lines: 0 
+... - Processed LOINC multi-axial hieararchy lines: 10000 
+... - LOINC import: 1% 
+... 
+... - Set children for number of beans: 1000 
+... - Set children for number of beans: 2000 
+... - LOINC import: 10% 
+... - Set children for number of beans: 3000 
+... 
+... - Processed and normalized the LOINC hierarchy file: 76675 entries. 
+... - Processed LOINC table rows: 10000 
+... - LOINC import: 16% 
+... - Processed LOINC table rows: 20000 
+... 
+... - Processed the LOINC table file: 71464 lines. 
+... - Processed 10000 skeleton components. 
+... 
+... - Processed the total of 76675 skeleton components. 
+... 
+... - Processed 50000 concepts with hierarchy info. 
+... 
+... - Processed 76675 concepts with hierarchy info. 
+... - Commit notification received for user info@b2international.com. 
+... - Clearing index data... 
+... - Clearing index data successfully finished. 
+...
+... - LOINC import: 96% 
+... - Processed 40000 index entries. 
+... - LOINC import: 97% 
+...
+... - LOINC import: 100% 
+... - LOINC import completed.
+--------------------------
+
+== Mapping sets
+
+=== Import mapping sets from a spreadsheet
+
+`mappingset import` allows the administrator to import one or more mapping sets from the specified spreadsheet; the 
+command also requires a merge setting (given as an integer). The selection and meaning of merge options are the same 
+as the ones given in <<Import local code systems from a spreadsheet>>.
+
+--------------------------
+osgi> mappingset import /path/to/mapping_sets.xlsx 1
+Impersonate operation as: info@b2international.com
+
+... - Importing mapping sets from excel file: /path/to/mapping_sets.xlsx 
+... - Processed excel sheet 1. First spreadsheet for mapping set 
+... - Branch: MAIN Event: MappingSet:  new components added: 12 
+... - Commit notification received for user info@b2international.com.
+--------------------------
+
+== Value Domain
+
+=== Import value domains from a UMLS SVS XML file
+
+`valueset import` works with value domain terminology content and also supports the three merge modes mentioned at 
+the local code system import command. The administrator will be prompted for an importing user identifier, which is 
+required for identification in the commit information view.
+
+The two required arguments are the absolute path of the source XML file, and the selected merge mode (represented 
+by an integer in the range of 0..2).
+
+[source%nowrap]
+--------------------------
+osgi> valueset import /path/to/svs_import_file.xml 0
+Impersonate operation as: info@b2international.com
+
+[2013-12-12 16:50:04.660] [Worker-11] INFO  c.b.s.d.s.i.AbstractTerminologyImportJob - Importing value domains from UMLS file /path/to/svs_import_file.xml. 
+[2013-12-12 16:50:04.660] User: info@b2international.com Event: Importing value domains from UMLS file /path/to/svs_import_file.xml. 
+[2013-12-12 16:50:04.660] [Worker-11] INFO  c.b.s.d.s.i.AbstractTerminologyImportJob - Deleting existing value domains from database... 
+[2013-12-12 16:50:04.660] User: info@b2international.com Event: Deleting existing value domains from database... 
+[2013-12-12 16:50:04.755] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionBeforeCommitting() start 
+[2013-12-12 16:50:04.755] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionBeforeCommitting() lock acquired for BranchPath{Path='MAIN'} 
+[2013-12-12 16:50:04.776] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionBeforeCommitting() end 
+[2013-12-12 16:50:04.785] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionAfterCommitted() start 
+[2013-12-12 16:50:04.787] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionAfterCommitted() end 
+[2013-12-12 16:50:04.787] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionAfterCommitted() lock released for BranchPath{Path='MAIN'} 
+[2013-12-12 16:50:04.956] [Worker-11] INFO  c.b.s.d.PostStoreUpdateManager - Commit notification received for user info@b2international.com. 
+[2013-12-12 16:50:05.083] [Worker-11] INFO  c.b.s.d.s.i.AbstractTerminologyImportJob - Processed value domain Hospital Measures-Joint Commission Mental Disorders. 
+[2013-12-12 16:50:05.083] User: info@b2international.com Event: Processed value domain Hospital Measures-Joint Commission Mental Disorders. 
+[2013-12-12 16:50:05.141] [Worker-11] INFO  c.b.s.d.s.i.AbstractTerminologyImportJob - Processed value domain Hospital Measures-Comfort Measures Only Intervention. 
+[2013-12-12 16:50:05.141] User: info@b2international.com Event: Processed value domain Hospital Measures-Comfort Measures Only Intervention. 
+...
+[2013-12-12 16:50:15.075] [Worker-11] INFO  c.b.s.d.s.i.AbstractTerminologyImportJob - Processed value domain Ethnicity. 
+[2013-12-12 16:50:15.075] User: info@b2international.com Event: Processed value domain Ethnicity. 
+[2013-12-12 16:50:17.352] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionBeforeCommitting() start 
+[2013-12-12 16:50:17.352] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionBeforeCommitting() lock acquired for BranchPath{Path='MAIN'} 
+[2013-12-12 16:50:28.973] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionBeforeCommitting() end 
+[2013-12-12 16:50:39.420] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionAfterCommitted() start 
+[2013-12-12 16:50:40.085] User: info@b2international.com Branch: MAIN Event: ValueSetFolder:  new components added: 131646 
+[2013-12-12 16:50:40.086] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionAfterCommitted() end 
+[2013-12-12 16:50:40.086] [Worker-11] INFO  c.b.s.d.s.CDOServerChangeManager - handleTransactionAfterCommitted() lock released for BranchPath{Path='MAIN'} 
+[2013-12-12 16:50:40.965] [Worker-11] INFO  c.b.s.d.PostStoreUpdateManager - Commit notification received for user info@b2international.com. 
+[2013-12-12 16:50:41.005] [Worker-11] INFO  c.b.s.d.s.i.AbstractTerminologyImportJob - Commited value domains. 
+[2013-12-12 16:50:41.005] User: info@b2international.com Event: Commited value domains. 
+[2013-12-12 16:50:41.009] [Worker-11] INFO  c.b.s.v.d.s.i.ValueSetIndexInitializerJob - Clearing indexes for value domain import... 
+[2013-12-12 16:50:41.009] User: web Event: Clearing indexes for value domain import... 
+[2013-12-12 16:50:41.020] [Worker-11] INFO  c.b.s.v.d.s.i.ValueSetIndexInitializerJob - Cleared indexes for value domain import 
+[2013-12-12 16:50:41.020] User: web Event: Cleared indexes for value domain import 
+[2013-12-12 16:50:41.023] [Worker-11] INFO  c.b.s.v.d.s.i.ValueSetIndexInitializerJob - Processed 2 value domain member index entries. 
+[2013-12-12 16:50:41.023] User: web Event: Processed 2 value domain member index entries. 
+...
+[2013-12-12 16:50:56.176] [Worker-11] INFO  c.b.s.v.d.s.i.ValueSetIndexInitializerJob - Processed 20 index entries for folders. 
+[2013-12-12 16:50:56.176] User: web Event: Processed 20 index entries for folders. 
+[2013-12-12 16:50:58.125] [Worker-11] INFO  c.b.s.d.s.i.AbstractTerminologyImportJob - Completed importing value domains from UMLS file /path/to/svs_import_file.xml. 
+[2013-12-12 16:50:58.125] User: info@b2international.com Event: Completed importing value domains from UMLS file /path/to/svs_import_file.xml.
+--------------------------

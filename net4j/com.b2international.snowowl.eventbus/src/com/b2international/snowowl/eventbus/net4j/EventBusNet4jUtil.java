@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.eventbus.net4j;
 
+import org.eclipse.net4j.signal.wrapping.GZIPStreamWrapperInjector;
 import org.eclipse.net4j.util.container.IManagedContainer;
 import org.eclipse.spi.net4j.ClientProtocolFactory;
 
@@ -33,12 +34,16 @@ public class EventBusNet4jUtil {
 	 * network.
 	 * 
 	 * @param container
+	 * @param gzip - to enable gzip compression on the protocol or not
 	 */
-	public static final void prepareContainer(IManagedContainer container) {
+	public static final void prepareContainer(IManagedContainer container, boolean gzip) {
 		container.registerFactory(new EventBusProtocol.ClientFactory());
 		container.registerFactory(new EventBusProtocol.ServerFactory());
 		container.registerFactory(new EventBus.Factory());
 		container.addPostProcessor(new EventBusProtocolInjector());
+		if (gzip) {
+			container.addPostProcessor(new GZIPStreamWrapperInjector(EventBusConstants.PROTOCOL_NAME));
+		}
 	}
 
 	/**

@@ -83,11 +83,12 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		final IManagedContainer container = env.container();
+		final boolean gzip = configuration.isGzip();
 		final RpcConfiguration rpcConfig = configuration.getModuleConfig(RpcConfiguration.class);
-		LOG.debug("Preparing RPC communication with config {}", rpcConfig);
-		RpcUtil.prepareContainer(container, rpcConfig);
-		LOG.debug("Preparing EventBus communication");
-		EventBusNet4jUtil.prepareContainer(container);
+		LOG.debug("Preparing RPC communication (config={},gzip={})", rpcConfig, gzip);
+		RpcUtil.prepareContainer(container, rpcConfig, gzip);
+		LOG.debug("Preparing EventBus communication (gzip={})", gzip);
+		EventBusNet4jUtil.prepareContainer(container, gzip);
 		env.services().registerService(IEventBus.class, EventBusNet4jUtil.getBus(container));
 		LOG.debug("Preparing JSON support");
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
