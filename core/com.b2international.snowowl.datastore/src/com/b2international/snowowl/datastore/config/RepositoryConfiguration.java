@@ -36,8 +36,6 @@ import com.google.common.net.HostAndPort;
  */
 public class RepositoryConfiguration extends ConnectionPoolConfiguration {
 	
-	private boolean compressed = false;
-
 	@NotEmpty
 	private String host = "0.0.0.0";
 
@@ -61,27 +59,6 @@ public class RepositoryConfiguration extends ConnectionPoolConfiguration {
 
 	private boolean revisionCacheEnabled = true;
 	
-	/**
-	 * Returns whether the communication used by the persistance layer is done
-	 * in a compressed way or not.
-	 * 
-	 * @return
-	 */
-	@JsonProperty
-	public boolean isCompressed() {
-		return compressed;
-	}
-
-	/**
-	 * Set to enable compressed data transfer in the persistance layer.
-	 * 
-	 * @param compressed
-	 */
-	@JsonProperty
-	public void setCompressed(boolean compressed) {
-		this.compressed = compressed;
-	}
-
 	/**
 	 * @return the host
 	 */

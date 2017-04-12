@@ -32,7 +32,6 @@ import org.eclipse.net4j.util.container.IManagedContainer;
 import org.eclipse.net4j.util.event.IEvent;
 import org.eclipse.net4j.util.event.IListener;
 import org.eclipse.net4j.util.factory.ProductCreationException;
-import org.eclipse.net4j.util.io.GZIPStreamWrapper;
 import org.eclipse.spi.net4j.ClientProtocolFactory;
 import org.eclipse.spi.net4j.ServerProtocolFactory;
 
@@ -79,9 +78,6 @@ public class RpcProtocol extends SignalProtocol<RpcSession> {
 		
 		if (!skipInitialization) { 
 			initializeRegistry(); 
-		}
-		if (configuration.isCompressed()) {
-			addStreamWrapper(new GZIPStreamWrapper());
 		}
 
 		addListener(signalListener);

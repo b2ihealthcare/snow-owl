@@ -59,7 +59,7 @@ public abstract class AbstractRpcTest<T, U extends T> {
 		
 		Net4jUtil.prepareContainer(container);
 		JVMUtil.prepareContainer(container);
-		RpcUtil.prepareContainer(container, new RpcConfiguration());
+		RpcUtil.prepareContainer(container, new RpcConfiguration(), false);
 		
 		JVMUtil.getAcceptor(container, JVM_DESCRIPTION);
 	}

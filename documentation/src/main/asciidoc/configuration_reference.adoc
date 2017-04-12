@@ -200,16 +200,11 @@ NOTE: Changing these settings is not recommended and currently unsupported in pr
 |logging
 |`false`
 |`true`, `false`, `ON`, `OFF` - enable or disable verbose logging during RPC communication
-
-|compressed
-|`false`
-|`true`, `false`, `ON`, `OFF` - enable or disable GZIP compression of the communication.
 |===
 
 --------------------------
 rpc:
   logging: true
-  compressed: false
 --------------------------
 
 == Metrics
