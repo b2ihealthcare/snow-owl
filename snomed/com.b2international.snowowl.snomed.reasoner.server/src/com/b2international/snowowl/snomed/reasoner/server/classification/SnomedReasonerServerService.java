@@ -188,17 +188,13 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		super(maximumReasonerCount);
 		this.taxonomyResultRegistry = new RemoteJobResultRegistry<ReasonerTaxonomy>(maximumReasonerResultsToKeep);
 		
-		loadNamespaceAndModuleAssigner();
-		
-		LOGGER.info("Initialized SNOMED CT reasoner server with maximum of {} reasoner(s) instances and {} result(s) to keep.", maximumReasonerCount, maximumReasonerResultsToKeep);
-		LOGGER.info("Reasoner service will use the {} class for relationship/concrete domain namespace and module assignement.", namespaceAndModuleAssigner.getClass().getSimpleName());
-	}
-
-	private void loadNamespaceAndModuleAssigner() {
 		namespaceAndModuleAssigner = Extensions.getFirstPriorityExtension("com.b2international.snowowl.snomed.reasoner.server.namespaceAssigner", NamespaceAndMolduleAssigner.class);
 		if (namespaceAndModuleAssigner == null) {
 			throw new NullPointerException("Could not find a namespace and module allocator in the extension registry");
 		}
+		
+		LOGGER.info("Initialized SNOMED CT reasoner server with maximum of {} reasoner(s) instances and {} result(s) to keep.", maximumReasonerCount, maximumReasonerResultsToKeep);
+		LOGGER.info("Reasoner service will use the {} class for relationship/concrete domain namespace and module assignement.", namespaceAndModuleAssigner.getClass().getSimpleName());
 	}
 
 	public void registerListeners() {
@@ -537,7 +533,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		sb.append("Persisting ontology changes on ");
 		sb.append(branchPath.getPath());
 		
-		final Job remoteJob = new PersistChangesRemoteJob(sb.toString(), taxonomy, branchPath, userId);
+		final Job remoteJob = new PersistChangesRemoteJob(sb.toString(), taxonomy, branchPath, userId, namespaceAndModuleAssigner);
 		remoteJob.setRule(new ReasonerRemoteJobKey(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath));
 		RemoteJobUtils.configureProperties(remoteJob, userId, null, persistenceId);
 		

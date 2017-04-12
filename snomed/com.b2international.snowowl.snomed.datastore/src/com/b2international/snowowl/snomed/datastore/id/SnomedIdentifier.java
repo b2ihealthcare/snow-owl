@@ -44,7 +44,7 @@ public interface SnomedIdentifier extends Serializable {
 	 * @param namespace
 	 * @return true if the namespace matches
 	 */
-	public boolean isNamespace(String namespace);
+	public boolean equalsNamespace(String namespace);
 	
 	/**
 	 * Returns true if the identifiers namespace matches the passed in namespace

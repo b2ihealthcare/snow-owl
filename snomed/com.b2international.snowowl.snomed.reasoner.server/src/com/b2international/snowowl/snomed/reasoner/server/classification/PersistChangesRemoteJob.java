@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 
+import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
@@ -71,6 +72,8 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 
 	private DatastoreLockContext lockContext;
 	private IOperationLockTarget lockTarget;
+	
+	private NamespaceAndMolduleAssigner namespaceAndModuleAssigner;
 
 	/**
 	 * @param name
@@ -78,11 +81,12 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 	 * @param branchPath
 	 * @param userId
 	 */
-	public PersistChangesRemoteJob(String name, ReasonerTaxonomy taxonomy, IBranchPath branchPath, String userId) {
+	public PersistChangesRemoteJob(String name, ReasonerTaxonomy taxonomy, IBranchPath branchPath, String userId, final NamespaceAndMolduleAssigner namespaceAndModuleAssigner) {
 		super(name);
 		this.taxonomy = taxonomy;
 		this.branchPath = branchPath;
 		this.userId = userId;
+		this.namespaceAndModuleAssigner = namespaceAndModuleAssigner;
 	}
 
 	private static IDatastoreOperationLockManager getLockManager() {
@@ -131,9 +135,6 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 
 	private IStatus persistChanges(final IProgressMonitor monitor) throws CommitException {
 
-		//TODO: get this is a service or something
-		NamespaceAndMolduleAssigner allocator = new SourceConceptNamespaceAndModuleAssigner();
-		
 		if (null == taxonomy) {
 			throw new IllegalStateException("Tried to run the same persist changes job twice.");
 		}
@@ -147,15 +148,15 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 			final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, Type.REASONER);
 
 			final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
-			final RelationshipPersister relationshipAddPersister = new RelationshipPersister(editingContext, OntologyChange.Nature.ADD, allocator);
-			final RelationshipPersister relationshipRemovePersister = new RelationshipPersister(editingContext, OntologyChange.Nature.REMOVE, allocator);
+			final RelationshipPersister relationshipAddPersister = new RelationshipPersister(editingContext, OntologyChange.Nature.ADD, namespaceAndModuleAssigner);
+			final RelationshipPersister relationshipRemovePersister = new RelationshipPersister(editingContext, OntologyChange.Nature.REMOVE, namespaceAndModuleAssigner);
 			
 			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipAddPersister);
 			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipRemovePersister);
 			
 			final ConceptConcreteDomainNormalFormGenerator conceptConcreteDomainGenerator = new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
-			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.ADD, allocator));
-			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.REMOVE, allocator));
+			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.ADD, namespaceAndModuleAssigner));
+			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.REMOVE, namespaceAndModuleAssigner));
 
 			final List<LongSet> equivalenciesToFix = Lists.newArrayList();
 

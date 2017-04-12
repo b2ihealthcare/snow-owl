@@ -53,7 +53,7 @@ public final class SnomedIdentifierImpl implements SnomedIdentifier {
 	}
 	
 	@Override
-	public boolean isNamespace(String namespace) {
+	public boolean equalsNamespace(String namespace) {
 		if (namespace == null & this.namespace == null) {
 			return true;
 		}
@@ -67,7 +67,7 @@ public final class SnomedIdentifierImpl implements SnomedIdentifier {
 
 	@Override
 	public boolean isNamespace(long namespace) {
-		return isNamespace(String.valueOf(namespace));
+		return equalsNamespace(String.valueOf(namespace));
 	}
 	
 	@Override
