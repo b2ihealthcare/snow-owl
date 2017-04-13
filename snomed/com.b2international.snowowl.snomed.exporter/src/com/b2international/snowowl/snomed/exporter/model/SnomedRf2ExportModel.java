@@ -142,7 +142,12 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		singleRefSetExport = !refSetIds.isEmpty();
 		coreComponentsToExport = !singleRefSetExport;
 		releaseType = ContentSubType.SNAPSHOT;
-		settings = Sets.newHashSet();
+		
+		if (refSetId !=null) {
+			settings = Sets.newHashSet(SnomedExporterUtil.createSetting(refSetId));
+		} else {
+			settings = Sets.newHashSet();
+		}
 		refSetsToExport = true;
 		modulesToExport = Sets.newHashSet();
 		final ICDOConnection connection = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).get(SnomedPackage.eINSTANCE);

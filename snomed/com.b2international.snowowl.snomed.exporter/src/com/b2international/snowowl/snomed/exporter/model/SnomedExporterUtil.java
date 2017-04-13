@@ -63,7 +63,7 @@ public final class SnomedExporterUtil {
 	}
 	
 	/*creates and returns with a new map setting instance for the RF1 publication.*/
-	private static SnomedMapSetSetting createSetting(final String refSetId) {
+	public static SnomedMapSetSetting createSetting(final String refSetId) {
 		if (Concepts.ICD_O_REFERENCE_SET_ID.equals(refSetId))
 			return (SnomedMapSetSetting) SnomedMapSetSetting.ICD_O_SETTING;
 		else if (Concepts.ICD_9_CM_REFERENCE_SET_ID.equals(refSetId))
