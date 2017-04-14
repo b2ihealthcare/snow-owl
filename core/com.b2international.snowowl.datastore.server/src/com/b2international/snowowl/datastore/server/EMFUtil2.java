@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.datastore.server;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Set;
 
@@ -24,6 +27,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.ecore.xmi.impl.XMLResourceImpl;
 
 public abstract class EMFUtil2 {
 
@@ -55,4 +59,21 @@ public abstract class EMFUtil2 {
 			}
 		}
 	}
+	
+	/**
+	 * Returns the XMI representation of the passed-in eObject.
+	 * @param eObject
+	 * @return the XMI representation of the eObject
+	 * @throws IOException 
+	 */
+	public static String getXMIString(EObject eObject) throws IOException {
+		
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		Resource resource = new XMLResourceImpl();
+		resource.getContents().add(EcoreUtil.copy(eObject));
+		resource.save(os, null);
+		return new String(os.toByteArray(), StandardCharsets.UTF_8);
+	}
+	
+	
 }
