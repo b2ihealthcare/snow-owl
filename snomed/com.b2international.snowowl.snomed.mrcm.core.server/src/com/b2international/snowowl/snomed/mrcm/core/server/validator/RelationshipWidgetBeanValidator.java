@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.mrcm.core.server.validator;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -66,7 +67,8 @@ public class RelationshipWidgetBeanValidator implements ModeledWidgetBeanValidat
 		
 		for (final RelationshipGroupWidgetBean group : Iterables.filter(groups, RelationshipGroupWidgetBean.class)) {
 
-			final List<ModeledWidgetBean> relationships = group.getElements();
+			//creating a new collection instance to avoid ConcurrentModificationException
+			final List<ModeledWidgetBean> relationships = new ArrayList<ModeledWidgetBean>(group.getElements());
 
 			for (final RelationshipWidgetBean relationshipWidgetBean : Iterables.filter(relationships, RelationshipWidgetBean.class)) {
 				if (!relationshipWidgetBean.isValid()) {
