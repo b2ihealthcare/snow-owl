@@ -200,7 +200,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.build();
 
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, inactivationBody).statusCode(204);
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2).statusCode(200)
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, "inactivationProperties()").statusCode(200)
 		.body("active", equalTo(false))
 		.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.toString()))
 		.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), hasItem(conceptId1));
@@ -213,7 +213,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		reactivateConcept(branchPath, conceptId2);
 
 		// Verify that the concept is active again, it has two active descriptions, no association targets, no indicator
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2).statusCode(200)
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, "inactivationProperties()").statusCode(200)
 		.body("active", equalTo(true))
 		.body("inactivationIndicator", nullValue())
 		.body("associationTargets", nullValue());
@@ -267,7 +267,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.build();
 
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, inactivationRequestBody).statusCode(204);
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2).statusCode(200)
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, "inactivationProperties()").statusCode(200)
 		.body("active", equalTo(false))
 		.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.toString()))
 		.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), hasItem(conceptId1));
@@ -283,7 +283,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, updateRequestBody).statusCode(204);
 
 		// Verify association target and inactivation indicator update
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2).statusCode(200)
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, "inactivationProperties()").statusCode(200)
 		.body("active", equalTo(false))
 		.body("inactivationIndicator", equalTo(InactivationIndicator.AMBIGUOUS.toString()))
 		.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), nullValue())
@@ -306,7 +306,8 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.build();
 
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, inactivationRequestBody).statusCode(204);
-		Collection<String> memberIds = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, "members()").statusCode(200)
+		Collection<String> memberIds = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, 
+				"members()", "inactivationProperties()").statusCode(200)
 				.body("active", equalTo(false))
 				.body("inactivationIndicator", equalTo(InactivationIndicator.DUPLICATE.toString()))
 				.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), hasItem(conceptId1))
@@ -325,7 +326,8 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.build();
 
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, updateRequestBody).statusCode(204);
-		Collection<String> updatedMemberIds = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, "members()").statusCode(200)
+		Collection<String> updatedMemberIds = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId2, 
+				"members()", "inactivationProperties()").statusCode(200)
 				.body("active", equalTo(false))
 				.body("inactivationIndicator", equalTo(InactivationIndicator.AMBIGUOUS.toString()))
 				.body("associationTargets." + AssociationType.POSSIBLY_EQUIVALENT_TO.name(), allOf(hasItem(conceptId3), hasItem(conceptId1)))

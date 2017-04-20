@@ -35,7 +35,26 @@ import com.google.common.collect.Multimap;
  */
 public final class SnomedConcept extends SnomedCoreComponent implements DefinitionStatusProvider {
 
-	public static final String EXPAND_REFSET = "referenceSet";
+	/**
+	 * Enumerates expandable property keys.
+	 * 
+	 * @since 5.10
+	 */
+	public static final class Expand {
+
+		public static final String REFERENCE_SET = "referenceSet";
+		public static final String INACTIVATION_PROPERTIES = "inactivationProperties";
+		public static final String REFERRING_MEMBERS = "members";
+		public static final String STATED_ANCESTORS = "statedAncestors";
+		public static final String ANCESTORS = "ancestors";
+		public static final String STATED_DESCENDANTS = "statedDescendants";
+		public static final String DESCENDANTS = "descendants";
+		public static final String RELATIONSHIPS = "relationships";
+		public static final String DESCRIPTIONS = "descriptions";
+		public static final String FULLY_SPECIFIED_NAME = "fsn";
+		public static final String PREFERRED_TERM = "pt";
+
+	}
 	
 	/**
 	 * Helper function to get ancestors of a given {@link SnomedConcept}.
