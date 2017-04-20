@@ -110,12 +110,14 @@
    <bundle id="com.codahale.metrics.json" version="3.0.2"/>
    <bundle id="com.codahale.metrics.healthchecks" version="3.0.2"/>
    <bundle id="com.codahale.metrics.servlet" version="3.0.2"/>
-   <bundle id="com.fasterxml.jackson.core.jackson-annotations" version="2.4.5"/>
-   <bundle id="com.fasterxml.jackson.core.jackson-core" version="2.4.5"/>
-   <bundle id="com.fasterxml.jackson.core.jackson-databind" version="2.4.5"/>
-   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-yaml" version="2.4.5"/>
-   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-csv" version="2.4.5"/>
-   <bundle id="com.fasterxml.jackson.module.jackson-module-afterburner" version="2.4.5"/>
+   <bundle id="com.fasterxml.jackson.core.jackson-annotations" version="2.6.6"/>
+   <bundle id="com.fasterxml.jackson.core.jackson-core" version="2.6.6"/>
+   <bundle id="com.fasterxml.jackson.core.jackson-databind" version="2.6.6"/>
+   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-yaml" version="2.6.6"/>
+   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-csv" version="2.6.6"/>
+   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-smile" version="2.6.6"/>
+   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-csv" version="2.6.6"/>
+   <bundle id="com.fasterxml.jackson.module.jackson-module-afterburner" version="2.6.6"/>
    <bundle id="com.healthmarketscience.jackcess" version="1.2.9"/>
    <bundle id="io.reactivex.rxjava2.rxjava" version="2.0.7"/>
    <bundle id="org.reactivestreams.reactive-streams" version="1.0.0.release"/>
