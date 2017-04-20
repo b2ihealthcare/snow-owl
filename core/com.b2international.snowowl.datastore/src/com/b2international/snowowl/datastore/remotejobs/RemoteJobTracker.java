@@ -276,7 +276,14 @@ public final class RemoteJobTracker implements IDisposableService {
 				} else {
 					newState = RemoteJobState.FAILED;
 				}
-				update(jobId, RemoteJobEntry.WITH_DONE, ImmutableMap.of("result", response, "state", newState, "finishDate", finishDate));
+				
+				ImmutableMap.Builder<String, Object> params = ImmutableMap.builder();
+				if (response != null) {
+					params.put("result", response);
+				}
+				params.put("state", newState);
+				params.put("finishDate", finishDate);
+				update(jobId, RemoteJobEntry.WITH_DONE, params.build());
 			}
 		}
 		
