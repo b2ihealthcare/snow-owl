@@ -492,7 +492,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		
 		IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
 
-		fsnDescriptions = SnomedRequests.prepareSearchDescription()
+		ptDescriptions = SnomedRequests.prepareSearchDescription()
 			.filterByConceptId(memberConceptIds)
 			.filterByActive(true)
 			.filterByType("<<" + Concepts.SYNONYM)
