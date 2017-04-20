@@ -34,6 +34,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.1
@@ -130,12 +131,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	@Override
 	public final void update(final Metadata metadata) {
 		if (!metadata().equals(metadata)) {
-			branchManager.commit(branchManager.update(getClass(), path(), new Function<InternalBranch, InternalBranch>() {
-				@Override
-				public InternalBranch apply(InternalBranch input) {
-					return input.withMetadata(metadata);
-				}
-			}));
+			branchManager.commit(branchManager.update(getClass(), path(), InternalBranch.WITH_METADATA, ImmutableMap.of("metadata", metadata)));
 			branchManager.sendChangeEvent(path());
 		}
 	}

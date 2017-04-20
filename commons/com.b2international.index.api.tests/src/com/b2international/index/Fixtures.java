@@ -25,6 +25,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
 
@@ -334,6 +335,7 @@ public class Fixtures {
 	@Doc
 	public static class DataWithMap {
 		
+		@JsonIgnore
 		Map<String, Object> properties;
 
 		@JsonCreator

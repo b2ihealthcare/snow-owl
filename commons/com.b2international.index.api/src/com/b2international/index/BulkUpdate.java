@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,10 @@
  */
 package com.b2international.index;
 
+import java.util.Collections;
+import java.util.Map;
+
 import com.b2international.index.query.Expression;
-import com.google.common.base.Function;
 
 /**
  * @since 5.0
@@ -25,14 +27,20 @@ public final class BulkUpdate<T> {
 	
 	private final Class<? extends T> type;
 	private final Expression filter;
-	private final Function<T, T> update;
-	private final IdProvider<? super T> idProvider;
+	private final String script;
+	private final String idField;
+	private final Map<String, Object> params;
 	
-	public BulkUpdate(Class<? extends T> type, Expression filter, IdProvider<? super T> idProvider, Function<T, T> func) {
+	public BulkUpdate(Class<? extends T> type, Expression filter, String idField, String script) {
+		this(type, filter, idField, script, Collections.emptyMap());
+	}
+	
+	public BulkUpdate(Class<? extends T> type, Expression filter, String idField, String script, Map<String, Object> params) {
 		this.type = type;
 		this.filter = filter;
-		this.idProvider = idProvider;
-		this.update = func;
+		this.idField = idField;
+		this.script = script;
+		this.params = params;
 	}
 	
 	public Class<? extends T> getType() {
@@ -43,12 +51,16 @@ public final class BulkUpdate<T> {
 		return filter;
 	}
 	
-	public Function<T, T> getUpdate() {
-		return update;
+	public String getScript() {
+		return script;
+	}
+
+	public String getIdField() {
+		return idField;
 	}
 	
-	public IdProvider<? super T> getIdProvider() {
-		return idProvider;
+	public Map<String, Object> getParams() {
+		return params;
 	}
 
 }

@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
+import com.b2international.index.Script;
 import com.b2international.index.WithHash;
 import com.b2international.index.WithId;
 import com.b2international.index.mapping.DocumentMapping;
@@ -39,6 +40,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * @since 4.7
  */
+@Script(name=Revision.UPDATE_REPLACED_INS, script="ctx._source.replacedIns += params.segmentId")
 public abstract class Revision implements WithId {
 
 	public static class Views {
@@ -90,6 +92,9 @@ public abstract class Revision implements WithId {
 	public static final String COMMIT_TIMESTAMP = "commitTimestamp";
 	public static final String SEGMENT_ID = "segmentId";
 	public static final String REPLACED_INS = "replacedIns";
+	
+	// scripts
+	public static final String UPDATE_REPLACED_INS = "updateReplacedIns";
 	
 	/**
 	 * Revision fields that should not be part of any hash value.

@@ -17,7 +17,9 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEFAULTS;
 import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
@@ -56,7 +58,6 @@ import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Futures;
@@ -222,19 +223,8 @@ public class CDOBranchManagerTest {
 	public void updateMetadata() throws Exception {
 		final InternalBranch branchA = (InternalBranch) main.createChild("a", new MetadataImpl(ImmutableMap.<String, Object>of("test", 0)));
 		final long commitTimestamp = clock.getTimeStamp();
-		final IndexWrite<Void> timestampUpdate = manager.update(branchA.getClass(), branchA.path(), new Function<InternalBranch, InternalBranch>() {
-			@Override
-			public InternalBranch apply(InternalBranch input) {
-				return input.withHeadTimestamp(commitTimestamp);
-			}
-		});
-		
-		final IndexWrite<Void> metadataUpdate = manager.update(branchA.getClass(), branchA.path(), new Function<InternalBranch, InternalBranch>() {
-			@Override
-			public InternalBranch apply(InternalBranch input) {
-				return input.withMetadata(new MetadataImpl(ImmutableMap.<String, Object>of("test", 1)));
-			}
-		});
+		final IndexWrite<Void> timestampUpdate = manager.update(branchA.getClass(), branchA.path(), InternalBranch.WITH_HEADTIMESTAMP, ImmutableMap.of("headTimestamp", commitTimestamp));
+		final IndexWrite<Void> metadataUpdate = manager.update(branchA.getClass(), branchA.path(), InternalBranch.WITH_METADATA, ImmutableMap.of("metadata", new MetadataImpl(ImmutableMap.<String, Object>of("test", 1))));
 		final Collection<IndexWrite<Void>> parallelUpdates = ImmutableList.of(timestampUpdate, metadataUpdate);
 		
 		final CyclicBarrier barrier = new CyclicBarrier(parallelUpdates.size());

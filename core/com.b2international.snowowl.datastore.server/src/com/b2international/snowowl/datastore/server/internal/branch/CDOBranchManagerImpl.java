@@ -56,7 +56,7 @@ import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
-import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -203,12 +203,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
     }
 
 	private IndexWrite<Void> prepareReplace(Class<? extends InternalBranch> type, final String path, final InternalBranch value) {
-		return update(type, path, new Function<InternalBranch, InternalBranch>() {
-			@Override
-			public InternalBranch apply(InternalBranch input) {
-				return value;
-			}
-		});
+		return update(type, path, InternalBranch.REPLACE, ImmutableMap.of("replace", value));
 	}
 	
 	private IndexWrite<Void> prepareDelete(final Class<? extends InternalBranch> type, final String path) {
@@ -308,12 +303,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 				// the "new" child branch
 				final CDOBranchImpl childBranch = new CDOBranchImpl(name, parentPath, baseTimestamp, headTimestamp, metadata, cdoBranchId, nextTwoSegments.getA(), Collections.singleton(nextTwoSegments.getA()), parentSegments);
 				create(childBranch).execute(index);
-				update(parentBranchClass, parentPath, new Function<InternalBranch, InternalBranch>() {
-					@Override
-					public InternalBranch apply(InternalBranch input) {
-						return ((InternalCDOBasedBranch) input).withSegmentId(nextTwoSegments.getB());
-					}
-				}).execute(index);
+				update(parentBranchClass, parentPath, InternalCDOBasedBranch.WITH_SEGMENTID, ImmutableMap.of("segmentId", nextTwoSegments.getB())).execute(index);
 				return childBranch;
 			}
 		});

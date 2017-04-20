@@ -17,13 +17,17 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 
 import java.util.Collection;
 
+import com.b2international.index.Script;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 
 /**
  * @since 4.1
  */
+@Script(name=InternalCDOBasedBranch.WITH_SEGMENTID, script="ctx._source.segmentId = params.segmentId;ctx._source.segmentIds += params.segmentId")
 public interface InternalCDOBasedBranch extends InternalBranch {
 	
+	String WITH_SEGMENTID = "withSegmentId";
+
 	int cdoBranchId();
 	
 	int segmentId();

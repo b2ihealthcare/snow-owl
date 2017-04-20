@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.internal.branch;
 
 import com.b2international.index.Doc;
+import com.b2international.index.Script;
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
@@ -25,7 +26,16 @@ import com.b2international.snowowl.core.branch.BranchManager;
  * @since 4.1
  */
 @Doc(type = "branch")
+@Script(name=InternalBranch.WITH_HEADTIMESTAMP, script="ctx._source.headTimestamp = params.headTimestamp")
+@Script(name=InternalBranch.WITH_DELETED, script="ctx._source.deleted = true")
+@Script(name=InternalBranch.WITH_METADATA, script="ctx._source.metadata = params.metadata")
+@Script(name=InternalBranch.REPLACE, script="ctx._source = params.replace")
 public interface InternalBranch extends Branch {
+
+	String WITH_HEADTIMESTAMP = "withHeadTimestamp";
+	String WITH_DELETED = "withDeleted";
+	String WITH_METADATA = "withMetadata";
+	String REPLACE = "replace";
 
 	void setBranchManager(BranchManager branchManager);
 	

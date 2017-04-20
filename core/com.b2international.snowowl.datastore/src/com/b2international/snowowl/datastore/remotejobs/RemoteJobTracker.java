@@ -44,7 +44,6 @@ import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -138,7 +137,7 @@ public final class RemoteJobTracker implements IDisposableService {
 		final RemoteJobEntry job = get(jobId);
 		if (job != null && !job.isCancelled()) {
 			LOG.trace("Cancelling job {}", jobId);
-			update(jobId, current -> RemoteJobEntry.from(current).state(RemoteJobState.CANCEL_REQUESTED).build());
+			update(jobId, RemoteJobEntry.WITH_STATE, ImmutableMap.of("state", RemoteJobState.CANCEL_REQUESTED));
 			Job.getJobManager().cancel(SingleRemoteJobFamily.create(jobId));
 		}
 	}
@@ -162,9 +161,8 @@ public final class RemoteJobTracker implements IDisposableService {
 			// if the job still running or scheduled, then mark it deleted and the done handler will delete it
 			LOG.trace("Deleting jobs {}", remoteJobsToDelete);
 			writer.removeAll(ImmutableMap.of(RemoteJobEntry.class, remoteJobsToDelete));
-			final Function<RemoteJobEntry, RemoteJobEntry> setDeletedToTrue = current -> RemoteJobEntry.from(current).deleted(true).build();
 			LOG.trace("Marking deletable jobs {}", remoteJobsToCancel);
-			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, Expressions.matchAny(DocumentMapping._ID, remoteJobsToCancel), RemoteJobEntry::getId, setDeletedToTrue));
+			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, Expressions.matchAny(DocumentMapping._ID, remoteJobsToCancel), RemoteJobEntry.Fields.ID, RemoteJobEntry.WITH_DELETED));
 			writer.commit();
 			return null;
 		});
@@ -182,9 +180,9 @@ public final class RemoteJobTracker implements IDisposableService {
 		notifyAdded(jobId);
 	}
 	
-	private void update(String jobId, Function<RemoteJobEntry, RemoteJobEntry> mutator) {
+	private void update(String jobId, String script, Map<String, Object> params) {
 		index.write(writer -> {
-			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, DocumentMapping.matchId(jobId), RemoteJobEntry::getId, mutator));
+			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, DocumentMapping.matchId(jobId), RemoteJobEntry.Fields.ID, script, params));
 			writer.commit();
 			return null;
 		});
@@ -218,7 +216,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	}
 	
 	IProgressMonitor createMonitor(String jobId, IProgressMonitor monitor) {
-		return new RemoteJobProgressMonitor(monitor, percentComplete -> update(jobId, current -> RemoteJobEntry.from(current).completionLevel(percentComplete).build()));
+		return new RemoteJobProgressMonitor(monitor, percentComplete -> update(jobId, RemoteJobEntry.WITH_COMPLETION_LEVEL, ImmutableMap.of("completionLevel", percentComplete)));
 	}
 	
 	private class RemoteJobChangeAdapter extends JobChangeAdapter {
@@ -253,12 +251,7 @@ public final class RemoteJobTracker implements IDisposableService {
 				final String jobId = job.getId();
 				final Date startDate = new Date();
 				LOG.trace("Running job {}", jobId);
-				update(jobId, current -> {
-					return RemoteJobEntry.from(current)
-							.state(RemoteJobState.RUNNING)
-							.startDate(startDate)
-							.build();
-				});
+				update(jobId, RemoteJobEntry.WITH_RUNNING, ImmutableMap.of("state", RemoteJobState.RUNNING, "startDate", startDate));
 			}
 		}
 		
@@ -283,13 +276,7 @@ public final class RemoteJobTracker implements IDisposableService {
 				} else {
 					newState = RemoteJobState.FAILED;
 				}
-				update(jobId, current -> {
-					return RemoteJobEntry.from(current)
-							.result(response)
-							.finishDate(finishDate)
-							.state(newState)
-							.build();
-				});
+				update(jobId, RemoteJobEntry.WITH_DONE, ImmutableMap.of("result", response, "state", newState, "finishDate", finishDate));
 			}
 		}
 		

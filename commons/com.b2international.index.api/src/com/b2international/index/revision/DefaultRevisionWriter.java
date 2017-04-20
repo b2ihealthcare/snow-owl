@@ -17,22 +17,19 @@ package com.b2international.index.revision;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.UUID;
 
 import com.b2international.index.BulkUpdate;
-import com.b2international.index.IdProvider;
 import com.b2international.index.Writer;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
@@ -99,16 +96,7 @@ public class DefaultRevisionWriter implements RevisionWriter {
 							.must(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeysToUpdate))
 							.must(Revision.branchFilter(branch))
 							.build();
-				final BulkUpdate<Revision> update = new BulkUpdate<Revision>(type, filter, IdProvider.WITH_ID, new Function<Revision, Revision>() {
-					@Override
-					public Revision apply(Revision rev) {
-						// register this revision as replaced in this segment
-						final Set<Integer> replacedIns = newHashSet(rev.getReplacedIns());
-						replacedIns.add(branch.segmentId());
-						rev.setReplacedIns(replacedIns);
-						return rev;
-					}
-				});
+				final BulkUpdate<Revision> update = new BulkUpdate<Revision>(type, filter, DocumentMapping._ID, Revision.UPDATE_REPLACED_INS, ImmutableMap.of("segmentId", branch.segmentId()));
 				index.bulkUpdate(update);
 			}
 		}
