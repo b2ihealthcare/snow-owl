@@ -649,11 +649,9 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 			}
 		}
 		
-		// Remove remaining active relationships because they were removed from the widget bean tree
+		// Remove remaining relationships because they were removed from the widget bean tree
 		for (final Relationship remainingRelationship : currentRelationships) {
-			if (remainingRelationship.isActive()) {
-				SnomedModelExtensions.removeOrDeactivate(remainingRelationship);
-			}
+			SnomedModelExtensions.removeOrDeactivate(remainingRelationship);
 		}
 	}
 
