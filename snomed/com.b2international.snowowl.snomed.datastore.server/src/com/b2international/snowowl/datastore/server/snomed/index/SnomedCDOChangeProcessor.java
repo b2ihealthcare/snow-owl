@@ -58,7 +58,6 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
-import com.b2international.commons.StringUtils;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -467,19 +466,13 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		LOGGER.info("Updating indexes...");
 
 		final List<BytesRef> deletedStorageKeys = newArrayList();
-		final Collection<String> releasableComponentIds = newHashSet();
 		
 		for (ChangeSetProcessor<SnomedDocumentBuilder> processor : changeSetProcessors) {
 			for (Long storageKey : processor.getDeletedStorageKeys()) {
 				LOGGER.trace("Deleting document {}", storageKey);
 				index.delete(branchPath, storageKey);
 				deletedStorageKeys.add(LongIndexField._toBytesRef(storageKey));
-				releasableComponentIds.addAll(getReleasableComponentIds(processor, storageKey));
 			}
-		}
-		
-		if (!releasableComponentIds.isEmpty()) {
-			getIdentifierService().release(releasableComponentIds);
 		}
 		
 		final LongList deletedComponentIds;
@@ -581,49 +574,6 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 		
 		LOGGER.info("Processing and updating index changes successfully finished.");
-	}
-
-	private Collection<String> getReleasableComponentIds(final ChangeSetProcessor<SnomedDocumentBuilder> processor, final Long storageKey) {
-		final Collection<String> releasableComponentIds = newHashSet();
-
-		if (releaseSupported(processor)) {
-			final String componentId = getComponentId(storageKey);
-			if (releasable(componentId)) {
-				releasableComponentIds.add(componentId);
-			}
-		}
-
-		return releasableComponentIds;
-	}
-
-	private boolean releaseSupported(final ChangeSetProcessor<SnomedDocumentBuilder> processor) {
-		return processor instanceof ConceptChangeProcessor || processor instanceof DescriptionChangeProcessor || processor instanceof RelationshipChangeProcessor;
-	}
-
-	private boolean releasable(final String id) {
-		IBranchPath currentBranchPath = getBranchPath();
-
-		while (!StringUtils.isEmpty(currentBranchPath.getParentPath())) {
-			currentBranchPath = currentBranchPath.getParent();
-
-			final int hitCount = index.getTotalHitCount(currentBranchPath, SnomedMappings.newQuery().id(id).matchAll());
-			if (hitCount > 0) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	private String getComponentId(final Long storageKey) {
-		return index.executeReadTransaction(branchPath, new IndexRead<String>() {
-			@Override
-			public String execute(IndexSearcher index) throws IOException {
-				TopDocs topDocs = index.search(SnomedMappings.newQuery().storageKey(storageKey).matchAll(), 1);
-				Document doc = index.doc(topDocs.scoreDocs[0].doc, SnomedMappings.fieldsToLoad().id().build());
-				return SnomedMappings.id().getValueAsString(doc);
-			}
-		});
 	}
 
 	/**
