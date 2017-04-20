@@ -33,7 +33,6 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -52,6 +51,8 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
     private final long baseTimestamp;
     private final long headTimestamp;
     private final boolean deleted;
+
+    private String _id;
     
     protected BranchImpl(String name, String parentPath, long baseTimestamp, Metadata metadata) {
     	this(name, parentPath, baseTimestamp, baseTimestamp, metadata);
@@ -79,6 +80,16 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
     
     protected final Object writeReplace() {
     	return new BranchData(name(), parentPath(), baseTimestamp(), headTimestamp(), state(), isDeleted(), metadata());
+    }
+    
+    @Override
+    public String _id() {
+    	return _id;
+    }
+    
+    @Override
+    public void set_id(String _id) {
+    	this._id = _id;
     }
 	
     @Override

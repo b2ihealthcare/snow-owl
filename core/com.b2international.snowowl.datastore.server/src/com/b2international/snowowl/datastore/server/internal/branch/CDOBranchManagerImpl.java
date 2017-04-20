@@ -21,6 +21,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -56,6 +57,7 @@ import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -70,6 +72,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 
 	private final InternalRepository repository;
 	private final AtomicInteger segmentIds = new AtomicInteger(0);
+	private final ObjectMapper mapper;
 	
     public CDOBranchManagerImpl(final InternalRepository repository) {
         super(repository.getIndex());
@@ -91,6 +94,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 			}
 		}
 		segmentIds.set(maxExistingSegment+1);
+		this.mapper = repository.service(ObjectMapper.class);
     }
     
     private synchronized Pair<Integer, Integer> nextTwoSegments() {
@@ -203,7 +207,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
     }
 
 	private IndexWrite<Void> prepareReplace(Class<? extends InternalBranch> type, final String path, final InternalBranch value) {
-		return update(type, path, InternalBranch.REPLACE, ImmutableMap.of("replace", value));
+		return update(type, path, InternalBranch.REPLACE, ImmutableMap.of("replace", mapper.convertValue(value, Map.class)));
 	}
 	
 	private IndexWrite<Void> prepareDelete(final Class<? extends InternalBranch> type, final String path) {

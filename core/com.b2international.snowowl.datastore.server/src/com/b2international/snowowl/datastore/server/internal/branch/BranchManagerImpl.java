@@ -289,7 +289,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return new IndexWrite<Void>() {
 			@Override
 			public Void execute(Writer index) throws IOException {
-				index.bulkUpdate(new BulkUpdate<>(branchType, DocumentMapping.matchId(path), "path", mutator, params));
+				index.bulkUpdate(new BulkUpdate<>(branchType, DocumentMapping.matchId(path), DocumentMapping._ID, mutator, params));
 				return null;
 			}
 		};
