@@ -39,7 +39,7 @@ Import-Package: com.b2international.commons,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Web-ContextPath: /snowowl/admin
-Require-Bundle: com.google.guava;bundle-version="[15.0.0,16.0.0)",
+Require-Bundle: com.google.guava;bundle-version="[18.0.0,19.0.0)",
  org.eclipse.equinox.security;bundle-version="1.1.100",
  com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.4.5",
  com.fasterxml.jackson.core.jackson-core;bundle-version="2.4.5",

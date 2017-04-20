@@ -66,8 +66,8 @@
    <bundle id="ch.qos.logback.core.source" version="1.0.7.v20121108-1250"/>
    <bundle id="ch.qos.logback.slf4j" version="1.0.7.v201505121915"/>
    <bundle id="ch.qos.logback.slf4j.source" version="1.0.7.v201505121915"/>
-   <bundle id="com.google.guava" version="15.0.0.v201403281430"/>
-   <bundle id="com.google.guava.source" version="15.0.0.v201403281430"/>
+   <bundle id="com.google.guava" version="18.0.0"/>
+   <bundle id="com.google.guava.source" version="18.0.0"/>
    <bundle id="org.slf4j.api" version="1.7.2.v20121108-1250"/>
    <bundle id="org.slf4j.api.source" version="1.7.2.v20121108-1250"/>
    <bundle id="org.slf4j.log4j" version="1.7.2.v20130115-1340"/>

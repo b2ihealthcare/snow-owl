@@ -10,7 +10,7 @@ Require-Bundle: com.fasterxml.jackson.core.jackson-annotations;bundle-version="2
  com.fasterxml.jackson.core.jackson-databind;bundle-version="2.4.5";visibility:=reexport,
  com.fasterxml.jackson.module.jackson-module-afterburner;bundle-version="2.4.5";visibility:=reexport,
  com.b2international.collections.api,
- com.google.guava;bundle-version="[15.0.0,16.0.0)"
+ com.google.guava;bundle-version="[18.0.0,19.0.0)"
 Export-Package: com.b2international.index,
  com.b2international.index.admin,
  com.b2international.index.mapping,

@@ -167,5 +167,5 @@ Export-Package: com.b2international.index.analyzer,
  org.apache.lucene.util.packed,
  org.tartarus.snowball,
  org.tartarus.snowball.ext
-Require-Bundle: com.google.guava;bundle-version="[15.0.0,16.0.0)",
+Require-Bundle: com.google.guava;bundle-version="[18.0.0,19.0.0)",
  com.b2international.collections.api

@@ -164,7 +164,11 @@ public abstract class AbstractSnomedValidator {
 		} catch (final IOException e) {
 			throw new ImportException(MessageFormat.format("Couldn''t read row from {0} release file.", releaseFileName), e);
 		} finally {
-			Closeables.closeQuietly(closer);
+			try {
+				Closeables.close(closer, true);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 			monitor.worked(1);
 		}
 	}

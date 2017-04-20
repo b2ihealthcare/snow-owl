@@ -19,6 +19,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
@@ -78,6 +79,11 @@ public abstract class SnomedCoreComponent extends SnomedComponent {
 	    		return ((SnomedCoreComponent) value).getId();
 	    	}
 	    	throw new IllegalArgumentException("Unsupported value: " + value);
+	    }
+
+	    @Override
+		public JavaType typeFromId(DatabindContext context, String type) {
+	    	return typeFromId(type);
 	    }
 
 	    @Override

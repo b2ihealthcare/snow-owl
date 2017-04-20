@@ -124,8 +124,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
-import com.google.common.io.InputSupplier;
 import com.google.common.primitives.Longs;
 
 /**
@@ -226,12 +226,12 @@ public final class ImportUtil {
 	private File createTemporaryFile(final File tmpDir, final ZipFile archive, final String entryPath) throws IOException {
 		if (!Strings.isNullOrEmpty(entryPath)) {
 			final File file = new File(tmpDir, String.format("%s.%s", Files.getNameWithoutExtension(entryPath), Files.getFileExtension(entryPath)));
-			Files.copy(new InputSupplier<InputStream>() {
+			new ByteSource() {
 				@Override
-				public InputStream getInput() throws IOException {
+				public InputStream openStream() throws IOException {
 					return archive.getInputStream(archive.getEntry(entryPath));
 				}
-			}, file);
+			}.copyTo(Files.asByteSink(file));
 			return file;
 		}
 		return new File("");

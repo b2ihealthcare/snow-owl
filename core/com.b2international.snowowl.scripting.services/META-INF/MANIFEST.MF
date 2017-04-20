@@ -9,7 +9,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: org.slf4j;version="1.7.2"
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
- com.google.guava;bundle-version="[15.0.0,16.0.0)",
+ com.google.guava;bundle-version="[18.0.0,19.0.0)",
  com.b2international.snowowl.snomed.datastore,
  com.b2international.snowowl.snomed.dsl,
  com.b2international.snowowl.snomed.escg,

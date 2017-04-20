@@ -252,7 +252,11 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 		
 		if (null != indexService) {
 			ApplicationContext.getInstance().getServiceChecked(SingleDirectoryIndexManager.class).unregisterIndex(indexService);
-			Closeables.closeQuietly(indexService);
+			try {
+				Closeables.close(indexService, true);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 			indexService = null;
 		}
 		

@@ -48,7 +48,8 @@ import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.io.InputSupplier;
+import com.google.common.io.ByteSource;
+import com.google.common.io.Files;
 
 public final class FileUtils {
 
@@ -112,20 +113,17 @@ public final class FileUtils {
 		checkNotNull(is, "is");
 
 		try {
-			final InputSupplier<InputStream> isSupplier = new InputSupplier<InputStream>() {
-				@Override
-				public InputStream getInput() throws IOException {
-					return is;
-				}
-			};
-
 			final File tmpDirectory = com.google.common.io.Files.createTempDir();
 			final File tmpFile = new File(tmpDirectory, isEmpty(fileName) ? randomUUID().toString() : fileName);
 			tmpFile.deleteOnExit();
 
-			com.google.common.io.Files.copy(isSupplier, tmpFile);
+			new ByteSource() {
+				@Override
+				public InputStream openStream() throws IOException {
+					return is;
+				}
+			}.copyTo(Files.asByteSink(tmpFile));
 			return tmpFile;
-
 		} catch (final IOException e) {
 			LOGGER.error("Error while creating temporary file from input stream with file name: " + fileName, e);
 			return null;
