@@ -175,9 +175,6 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 
 			return OK_STATUS;
 		} catch (CommitException e) {
-			if (editingContext != null) {
-				editingContext.releaseIds();
-			}
 			throw e;
 		} finally {
 			if (editingContext != null) {
