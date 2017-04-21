@@ -1,30 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-analyzers-common-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-backward-codecs-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-codecs-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-core-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-facet-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-grouping-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-highlighter-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-join-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-memory-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-queries-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-queryparser-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-suggest-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/delete-by-query-2.3.3.jar" sourcepath="lib/delete-by-query-2.3.3-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/groovy-2.4.6-indy.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lang-groovy-2.3.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/reindex-2.3.3.jar" sourcepath="lib/reindex-2.3.3-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jna-4.1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/HdrHistogram-2.1.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.8.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-spatial-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/securesm-1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-2.3.3.jar" sourcepath="lib/elasticsearch-2.3.3-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/hppc-0.7.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jsr166e-1.1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/t-digest-3.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>

@@ -72,7 +72,6 @@ Export-Package: com.b2international.snowowl.datastore,
  com.b2international.snowowl.terminologymetadata.validation,
  com.b2international.snowowl.terminologyregistry.core.builder,
  com.b2international.snowowl.terminologyregistry.core.request
-Import-Package: com.b2international.index.compat,
- org.apache.log4j;version="1.2.15",
+Import-Package: org.apache.log4j;version="1.2.15",
  org.slf4j;version="1.7.2"
 Bundle-ActivationPolicy: lazy
