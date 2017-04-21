@@ -46,7 +46,7 @@ abstract public class DataTypeUtils {
 		
 		final Iterable<SnomedConstraintDocument> applicablePredicates = Iterables.filter(predicates, new Predicate<SnomedConstraintDocument>() {
 			@Override public boolean apply(final SnomedConstraintDocument predicateMini) {
-				return PredicateType.DATATYPE.equals(predicateMini.getType()) && dataTypeName.equals(predicateMini.getDataTypeName());
+				return PredicateType.DATATYPE.equals(predicateMini.getPredicateType()) && dataTypeName.equals(predicateMini.getDataTypeName());
 			}
 		});
 		

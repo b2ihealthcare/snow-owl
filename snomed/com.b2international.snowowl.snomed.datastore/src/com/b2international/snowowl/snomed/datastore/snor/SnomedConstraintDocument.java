@@ -153,15 +153,15 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	}
 	
 	public static Builder descriptionBuilder() {
-		return new Builder().type(PredicateType.DESCRIPTION);
+		return new Builder().predicateType(PredicateType.DESCRIPTION);
 	}
 	
 	public static Builder relationshipBuilder() {
-		return new Builder().type(PredicateType.RELATIONSHIP);
+		return new Builder().predicateType(PredicateType.RELATIONSHIP);
 	}
 	
 	public static Builder dataTypeBuilder() {
-		return new Builder().type(PredicateType.DATATYPE);
+		return new Builder().predicateType(PredicateType.DATATYPE);
 	}
 
 	/**
@@ -170,7 +170,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	@JsonPOJOBuilder(withPrefix="")
 	public static final class Builder extends RevisionDocumentBuilder<Builder> {
 
-		private PredicateType type;
+		private PredicateType predicateType;
 		private String domain;
 		private int minCardinality;
 		private int maxCardinality;
@@ -191,8 +191,8 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		Builder() {
 		}
 
-		Builder type(PredicateType type) {
-			this.type = type;
+		Builder predicateType(PredicateType predicateType) {
+			this.predicateType = predicateType;
 			return getSelf();
 		}
 
@@ -276,7 +276,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		}
 
 		public SnomedConstraintDocument build() {
-			final SnomedConstraintDocument doc = new SnomedConstraintDocument(id, domain, type, minCardinality, maxCardinality);
+			final SnomedConstraintDocument doc = new SnomedConstraintDocument(id, domain, predicateType, minCardinality, maxCardinality);
 			
 			doc.selfIds = Collections3.toImmutableSet(selfIds);
 			doc.descendantIds = Collections3.toImmutableSet(descendantIds);
@@ -287,7 +287,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 			doc.setReplacedIns(replacedIns);
 			doc.setSegmentId(segmentId);
 			
-			switch (type) {
+			switch (predicateType) {
 			case DESCRIPTION:
 				doc.descriptionTypeId = descriptionTypeId;
 				break;
@@ -302,7 +302,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 				doc.relationshipTypeExpression = relationshipTypeExpression;
 				doc.relationshipValueExpression = relationshipValueExpression;
 				break;
-			default: throw new NotImplementedException("Unsupported predicate type '%s'", type);
+			default: throw new NotImplementedException("Unsupported predicate type '%s'", predicateType);
 			}
 			return doc;
 		}
@@ -353,7 +353,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	}
 
 	/** Type of the predicate. Cannot be {@code null}. */
-	private final PredicateType type;
+	private final PredicateType predicateType;
 	/** The unique ID of the description type SNOMED&nbsp;CT concept. Can be {@code null}. */
 	private String descriptionTypeId;
 	/** The humane readable name of the concrete domain data type. E.g.: {@code Vitamin} or {@code Clinically significant}. */
@@ -399,7 +399,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 			final int maxCardinality) {
 		super(id, createLabel(id, type), null);
 		this.domain = domain;
-		this.type = type;
+		this.predicateType = type;
 		this.minCardinality = minCardinality;
 		this.maxCardinality = maxCardinality;
 	}
@@ -417,8 +417,8 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	 * @return the predicate type.
 	 * @see PredicateType.
 	 */
-	public PredicateType getType() {
-		return type;
+	public PredicateType getPredicateType() {
+		return predicateType;
 	}
 
 	/**
@@ -576,7 +576,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	@Override
 	protected ToStringHelper doToString() {
 		return super.doToString()
-				.add("type", type)
+				.add("type", predicateType)
 				.add("descriptionTypeId", descriptionTypeId)
 				.add("dataTypeLabel", dataTypeLabel)
 				.add("dataTypeName", dataTypeName)

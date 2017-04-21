@@ -45,7 +45,7 @@ final class SnomedConstraintConverter extends BaseResourceConverter<SnomedConstr
 	@Override
 	protected SnomedConstraint toResource(SnomedConstraintDocument entry) {
 		final SnomedConstraint constraint;
-		switch (entry.getType()) {
+		switch (entry.getPredicateType()) {
 		case DATATYPE:
 			final SnomedConcreteDomainConstraint cConstraint = new SnomedConcreteDomainConstraint();
 			cConstraint.setCharacteristicTypeExpresion(entry.getCharacteristicTypeExpression());
@@ -66,7 +66,7 @@ final class SnomedConstraintConverter extends BaseResourceConverter<SnomedConstr
 			rConstraint.setGroupRule(entry.getGroupRule());
 			constraint = rConstraint;
 			break;
-		default: throw new UnsupportedOperationException("Unsupported MRCM constraint: " + entry.getType());
+		default: throw new UnsupportedOperationException("Unsupported MRCM constraint: " + entry.getPredicateType());
 		}
 		constraint.setId(entry.getId());
 		constraint.setStorageKey(entry.getStorageKey());
