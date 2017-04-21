@@ -22,14 +22,13 @@ import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.CustomScoreQuery;
+import org.apache.lucene.queries.TermsQuery;
 import org.apache.lucene.queries.function.FunctionQuery;
 import org.apache.lucene.queries.function.FunctionValues;
 import org.apache.lucene.queries.function.ValueSource;
@@ -56,6 +55,7 @@ import org.apache.lucene.search.join.QueryBitSetProducer;
 import org.apache.lucene.search.join.ScoreMode;
 import org.apache.lucene.search.join.ToChildBlockJoinQuery;
 import org.apache.lucene.search.join.ToParentBlockJoinQuery;
+import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.QueryBuilder;
 import org.apache.lucene.util.automaton.LevenshteinAutomata;
 
@@ -373,11 +373,11 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(DecimalSetPredicate predicate) {
-		final Collection<String> terms = newHashSetWithExpectedSize(predicate.values().size());
+		final Collection<BytesRef> terms = newHashSetWithExpectedSize(predicate.values().size());
 		for (BigDecimal decimal : predicate.values()) {
-			terms.add(DecimalUtils.encode(decimal));
+			terms.add(new BytesRef(DecimalUtils.encode(decimal)));
 		}
-		final Query filter = Fields.stringField(predicate.getField()).createTermsFilter(terms);
+		final Query filter = new TermsQuery(predicate.getField(), terms);
 		deque.push(filter);
 	}
 	
@@ -397,12 +397,7 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(DecimalPredicate predicate) {
-		final Set<BigDecimal> vals = Collections.singleton(predicate.getArgument());
-		final Collection<String> terms = newHashSetWithExpectedSize(vals.size());
-		for (BigDecimal decimal : vals) {
-			terms.add(DecimalUtils.encode(decimal));
-		}
-		final Query filter = Fields.stringField(predicate.getField()).createTermsFilter(terms);
+		final Query filter = Fields.stringField(predicate.getField()).toQuery(DecimalUtils.encode(predicate.getArgument()));
 		deque.push(filter);
 	}
 
