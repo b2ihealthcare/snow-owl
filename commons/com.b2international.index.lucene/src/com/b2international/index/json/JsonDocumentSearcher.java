@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.hbase.util.OrderedBytes;
-import org.apache.hadoop.hbase.util.SimplePositionedMutableByteRange;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.FieldComparator;
 import org.apache.lucene.search.FieldComparatorSource;
@@ -62,6 +60,7 @@ import com.b2international.index.query.SortBy.MultiSortBy;
 import com.b2international.index.query.SortBy.SortByField;
 import com.b2international.index.query.slowlog.QueryProfiler;
 import com.b2international.index.query.slowlog.SlowLogConfig;
+import com.b2international.index.util.DecimalUtils;
 import com.b2international.index.util.NumericClassUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -250,9 +249,8 @@ public class JsonDocumentSearcher implements Searcher {
 					} else if (NumericClassUtils.isShort(fieldType)) {
 						fieldValues.put(key, ((Integer) value).shortValue());
 					} else if (NumericClassUtils.isBigDecimal(fieldType)) {
-						BytesRef bytesRef = (BytesRef) value;
-						SimplePositionedMutableByteRange src = new SimplePositionedMutableByteRange(bytesRef.bytes, bytesRef.offset, bytesRef.length);
-						fieldValues.put(key, OrderedBytes.decodeNumericAsBigDecimal(src));
+						final BytesRef val = (BytesRef) value;
+						fieldValues.put(key, DecimalUtils.decode(val.bytes, val.offset, val.length));
 					} else if (String.class.isAssignableFrom(fieldType)) {
 						BytesRef bytesRef = (BytesRef) value;
 						fieldValues.put(key, bytesRef.utf8ToString());

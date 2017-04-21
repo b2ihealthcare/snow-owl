@@ -24,9 +24,6 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import org.apache.hadoop.hbase.util.Order;
-import org.apache.hadoop.hbase.util.OrderedBytes;
-import org.apache.hadoop.hbase.util.SimplePositionedMutableByteRange;
 import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
@@ -41,6 +38,7 @@ import com.b2international.index.Searcher;
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Revision;
+import com.b2international.index.util.DecimalUtils;
 import com.b2international.index.util.NumericClassUtils;
 import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -54,7 +52,6 @@ import com.google.common.hash.Hashing;
  */
 public final class Index implements Operation {
 
-	public static final int PRECISION = 1 + 18 + 8; // according to OrderedBytes 
 	private final String key;
 	private byte[] source;
 
@@ -220,13 +217,11 @@ public final class Index implements Operation {
 			} else if (NumericClassUtils.isInt(fieldType) || NumericClassUtils.isShort(fieldType)) {
 				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
 			} else if (NumericClassUtils.isBigDecimal(fieldType)) {
-				final SimplePositionedMutableByteRange dst = new SimplePositionedMutableByteRange(PRECISION);
-				final int writtenBytes = OrderedBytes.encodeNumeric(dst, node.decimalValue(), Order.ASCENDING);
-				final BytesRef term = new BytesRef(dst.getBytes(), 0, writtenBytes);
+				final String term = DecimalUtils.encode(node.decimalValue());
 				final StringField termField = new StringField(name, term, Store.NO);
 				doc.add(termField);
 				if (docValues) {
-					doc.add(new BinaryDocValuesField(name, term));
+					doc.add(new BinaryDocValuesField(name, new BytesRef(term)));
 				}
 			} else if (NumericClassUtils.isDate(fieldType)) {
 				Fields.searchOnlyLongField(name).addTo(doc, node.longValue());

@@ -27,13 +27,9 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.hadoop.hbase.util.Order;
-import org.apache.hadoop.hbase.util.OrderedBytes;
-import org.apache.hadoop.hbase.util.SimplePositionedMutableByteRange;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.CustomScoreQuery;
-import org.apache.lucene.queries.TermsQuery;
 import org.apache.lucene.queries.function.FunctionQuery;
 import org.apache.lucene.queries.function.FunctionValues;
 import org.apache.lucene.queries.function.ValueSource;
@@ -59,7 +55,6 @@ import org.apache.lucene.search.join.QueryBitSetProducer;
 import org.apache.lucene.search.join.ScoreMode;
 import org.apache.lucene.search.join.ToChildBlockJoinQuery;
 import org.apache.lucene.search.join.ToParentBlockJoinQuery;
-import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.QueryBuilder;
 import org.apache.lucene.util.automaton.LevenshteinAutomata;
 
@@ -67,11 +62,11 @@ import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.AnalyzerImpls;
 import com.b2international.index.compat.Highlighting;
 import com.b2international.index.compat.TextConstants;
-import com.b2international.index.json.Index;
 import com.b2international.index.json.JsonDocumentMapping;
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.TextPredicate.MatchType;
+import com.b2international.index.util.DecimalUtils;
 import com.google.common.collect.Queues;
 
 /**
@@ -339,11 +334,11 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(DecimalSetPredicate predicate) {
-		final Collection<BytesRef> terms = newHashSetWithExpectedSize(predicate.values().size());
+		final Collection<String> terms = newHashSetWithExpectedSize(predicate.values().size());
 		for (BigDecimal decimal : predicate.values()) {
-			terms.add(encode(decimal));
+			terms.add(DecimalUtils.encode(decimal));
 		}
-		final Query filter = new TermsQuery(predicate.getField(), terms);
+		final Query filter = Fields.stringField(predicate.getField()).createTermsFilter(terms);
 		deque.push(filter);
 	}
 	
@@ -364,11 +359,11 @@ public final class LuceneQueryBuilder {
 	
 	private void visit(DecimalPredicate predicate) {
 		final Set<BigDecimal> vals = Collections.singleton(predicate.getArgument());
-		final Collection<BytesRef> terms = newHashSetWithExpectedSize(vals.size());
+		final Collection<String> terms = newHashSetWithExpectedSize(vals.size());
 		for (BigDecimal decimal : vals) {
-			terms.add(encode(decimal));
+			terms.add(DecimalUtils.encode(decimal));
 		}
-		final Query filter = new TermsQuery(predicate.getField(), terms);
+		final Query filter = Fields.stringField(predicate.getField()).createTermsFilter(terms);
 		deque.push(filter);
 	}
 
@@ -388,9 +383,9 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(DecimalRangePredicate range) {
-		final BytesRef lower = range.lower() == null ? null : encode(range.lower());
-		final BytesRef upper = range.upper() == null ? null : encode(range.upper());
-		final Query filter = new TermRangeQuery(range.getField(), lower, upper, range.isIncludeLower(), range.isIncludeUpper());
+		final String lower = range.lower() == null ? null : DecimalUtils.encode(range.lower());
+		final String upper = range.upper() == null ? null : DecimalUtils.encode(range.upper());
+		final Query filter = TermRangeQuery.newStringRange(range.getField(), lower, upper, range.isIncludeLower(), range.isIncludeUpper());
 		deque.push(filter);
 	}
 	
@@ -406,12 +401,6 @@ public final class LuceneQueryBuilder {
 	private void visit(BoostPredicate boost) {
 		visit(boost.expression());
 		deque.push(new BoostQuery(deque.pop(), boost.boost()));
-	}
-	
-	private BytesRef encode(BigDecimal val) {
-		final SimplePositionedMutableByteRange dst = new SimplePositionedMutableByteRange(Index.PRECISION);
-		final int writtenBytes = OrderedBytes.encodeNumeric(dst, val, Order.ASCENDING);
-		return new BytesRef(dst.getBytes(), 0, writtenBytes);
 	}
 	
 }

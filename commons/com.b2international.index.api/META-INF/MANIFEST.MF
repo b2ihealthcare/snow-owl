@@ -5,12 +5,7 @@ Bundle-SymbolicName: com.b2international.index.api;singleton:=true
 Bundle-Version: 5.10.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Require-Bundle: com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.4.5";visibility:=reexport,
- com.fasterxml.jackson.core.jackson-core;bundle-version="2.4.5";visibility:=reexport,
- com.fasterxml.jackson.core.jackson-databind;bundle-version="2.4.5";visibility:=reexport,
- com.fasterxml.jackson.module.jackson-module-afterburner;bundle-version="2.4.5";visibility:=reexport,
- com.b2international.collections.api,
- com.google.guava;bundle-version="[18.0.0,19.0.0)"
+Require-Bundle: com.b2international.commons;visibility:=reexport
 Export-Package: com.b2international.index,
  com.b2international.index.admin,
  com.b2international.index.mapping,
