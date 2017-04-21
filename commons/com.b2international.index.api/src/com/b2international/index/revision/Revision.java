@@ -17,6 +17,7 @@ package com.b2international.index.revision;
 
 import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAnyInt;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collection;
@@ -67,7 +68,7 @@ public abstract class Revision implements WithId {
 			@JsonCreator
 			public StorageKeyAndHash(@JsonProperty(Revision.STORAGE_KEY) long storageKey, @JsonProperty(DocumentMapping._HASH) String _hash) {
 				this.storageKey = storageKey;
-				this._hash = _hash;
+				this._hash = checkNotNull(_hash, "No hash value present on document");
 			}
 			
 			public long getStorageKey() {
