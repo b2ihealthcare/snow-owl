@@ -17,6 +17,7 @@ package com.b2international.index;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.After;
@@ -87,6 +88,17 @@ public abstract class BaseIndexTest {
 			@Override
 			public Void execute(Writer index) throws IOException {
 				index.put(key, doc);
+				index.commit();
+				return null;
+			}
+		});
+	}
+	
+	protected final <T> void indexDocuments(final Map<String, T> docs) {
+		index().write(new IndexWrite<Void>() {
+			@Override
+			public Void execute(Writer index) throws IOException {
+				index.putAll(docs);
 				index.commit();
 				return null;
 			}
