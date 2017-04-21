@@ -17,7 +17,6 @@ package com.b2international.index;
 
 import java.io.File;
 import java.util.Map;
-import java.util.UUID;
 
 import com.b2international.index.admin.EsLocalIndexAdmin;
 import com.b2international.index.mapping.Mappings;
@@ -30,9 +29,10 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 
 	@Override
 	public IndexClient createClient(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {
-		final Object dir = settings.containsKey(IndexClientFactory.DIRECTORY) ? settings.get(IndexClientFactory.DIRECTORY) : new File("target/" + UUID.randomUUID().toString());
+		final Object dir = settings.containsKey(IndexClientFactory.DIRECTORY) ? settings.get(IndexClientFactory.DIRECTORY) : new File("target");
 		final File directory = dir instanceof File ? (File) dir : new File((String) dir);
-		return new EsIndexClient(new EsLocalIndexAdmin(directory, name, mappings, settings), mapper);
+		final EmbeddedNode node = EmbeddedNode.getInstance(directory);
+		return new EsIndexClient(new EsLocalIndexAdmin(node, name, mappings, settings), mapper);
 	}
 
 	

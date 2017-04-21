@@ -35,6 +35,7 @@ public class RevisionFixtures {
 	@Doc
 	public static class Data extends Revision {
 		
+		@Analyzed
 		private String field1;
 		private String field2;
 

@@ -22,6 +22,7 @@ import java.util.ServiceLoader;
 import com.b2international.index.decimal.DecimalModule;
 import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
  * @since 4.7
@@ -54,7 +55,9 @@ public class Indexes {
 	}
 	
 	private static ObjectMapper configure(ObjectMapper mapper) {
-		return mapper.copy().registerModule(new DecimalModule());
+		return mapper.copy()
+				.registerModule(new DecimalModule())
+				.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 	}
 	
 }

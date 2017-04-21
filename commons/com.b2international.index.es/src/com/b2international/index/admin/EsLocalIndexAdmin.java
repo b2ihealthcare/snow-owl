@@ -18,32 +18,27 @@ package com.b2international.index.admin;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.io.File;
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.Map;
 
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.cluster.service.PendingClusterTask;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.settings.Settings.Builder;
-import org.elasticsearch.index.reindex.ReindexPlugin;
-import org.elasticsearch.node.Node;
-import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
-import org.elasticsearch.script.groovy.GroovyPlugin;
+import org.elasticsearch.common.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.FileUtils;
+import com.b2international.index.EmbeddedNode;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.slowlog.SlowLogConfig;
 import com.b2international.index.util.NumericClassUtils;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimap;
+import com.google.common.primitives.Ints;
 import com.google.common.primitives.Primitives;
 
 /**
@@ -51,60 +46,25 @@ import com.google.common.primitives.Primitives;
  */
 public class EsLocalIndexAdmin implements EsIndexAdmin {
 
-	private static final int PENDING_CLUSTER_TASKS_RETRY_INTERVAL = 100;
-	
-	private final File directory;
 	private final String name;
 	private final Mappings mappings;
 	private final Map<String, Object> settings;
 	private final Logger log;
-	private final Node esNode;
+	private final EmbeddedNode node;
 
-	public EsLocalIndexAdmin(File directory, String name, Mappings mappings, Map<String, Object> settings) {
-		this.directory = directory;
-		this.name = name;
+	public EsLocalIndexAdmin(EmbeddedNode node, String name, Mappings mappings, Map<String, Object> settings) {
+		this.node = node;
+		this.name = name.toLowerCase();
 		this.mappings = mappings;
 		this.settings = newHashMap(settings);
-		this.log = LoggerFactory.getLogger(String.format("index.%s", name));
+		this.log = LoggerFactory.getLogger(String.format("index.%s", this.name));
+
+		// init slow log config
+		new SlowLogConfig(this.settings);
 		
-		if (!this.settings.containsKey(IndexClientFactory.SLOW_LOG_KEY)) {
-			this.settings.put(IndexClientFactory.SLOW_LOG_KEY, new SlowLogConfig(this.settings));
+		if (!this.settings.containsKey(IndexClientFactory.RESULT_WINDOW_KEY)) {
+			this.settings.put(IndexClientFactory.RESULT_WINDOW_KEY, IndexClientFactory.DEFAULT_RESULT_WINDOW);
 		}
-		
-		final Builder esSettings = Settings.builder();
-		// disable es refresh, we will do it manually on each commit
-		esSettings.put("refresh_interval", "-1");
-		// configure es home directory
-		esSettings.put("path.home", directory.getAbsolutePath());
-		esSettings.put("node.name", name);
-		esSettings.put("index.translog.flush_threshold_period", "30m");
-		esSettings.put("index.number_of_shards", 1);
-		esSettings.put("index.number_of_replicas", 0);
-		esSettings.put("cluster.name", name);
-		esSettings.put("node.client", false);
-		esSettings.put("node.local", true);
-		esSettings.put("script.inline", true);
-		esSettings.put("script.indexed", true);
-		
-		this.esNode = new EmbeddedNode(esSettings.build(), GroovyPlugin.class, ReindexPlugin.class, DeleteByQueryPlugin.class);
-		this.esNode.start();
-		awaitPendingTasks();
-		log.info("Index is up and running.");
-	}
-	
-	private void awaitPendingTasks() {
-		int pendingTaskCount = 0;
-		do {
-			log.info("Waiting for pending cluster tasks to finish.");
-			List<PendingClusterTask> pendingTasks = client().admin().cluster().preparePendingClusterTasks().get()
-					.getPendingTasks();
-			pendingTaskCount = pendingTasks.size();
-			try {
-				Thread.sleep(PENDING_CLUSTER_TASKS_RETRY_INTERVAL);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
-		} while (pendingTaskCount > 0);
 	}
 	
 	@Override
@@ -123,15 +83,21 @@ public class EsLocalIndexAdmin implements EsIndexAdmin {
 		final CreateIndexRequestBuilder req = client().admin().indices().prepareCreate(name);
 		
 		// add mappings
-		for (DocumentMapping mapping : mappings.getMappings()) {
+		final Multimap<String, Map<String, Object>> esMappings = HashMultimap.create();
+ 		for (DocumentMapping mapping : mappings.getMappings()) {
 			final String type = mapping.typeAsString();
 			Map<String, Object> typeMapping = ImmutableMap.of(type, toProperties(mapping));
+			esMappings.put(type, typeMapping);
+ 		}
+ 		
+		for (String type : esMappings.keySet()) {
+			final Map<String, Object> typeMapping = esMappings.get(type).stream().sorted((m1, m2) -> -1 * Ints.compare(m1.toString().length(), m2.toString().length())).findFirst().get();
 			req.addMapping(type, typeMapping);
 		}
-		
+
 		CreateIndexResponse response = req.get();
 		checkState(response.isAcknowledged(), "Failed to create index %s", name);
-		awaitPendingTasks();
+		node.awaitPendingTasks();
 	}
 
 	private Map<String, Object> toProperties(DocumentMapping mapping) {
@@ -141,8 +107,8 @@ public class EsLocalIndexAdmin implements EsIndexAdmin {
 			if (DocumentMapping._ID.equals(property)) continue;
 			final Class<?> fieldType = NumericClassUtils.unwrapCollectionType(field);
 			
-			if (Map.class.isAssignableFrom(fieldType)) {
-				// allow dynamic mappings for dynamic objects like field using Map
+			if (Map.class.isAssignableFrom(fieldType) || Object.class == fieldType) {
+				// allow dynamic mappings for dynamic objects like field using Map or Object
 				continue;
 			} else if (mapping.isNestedMapping(fieldType)) {
 				// this is a nested document type create a nested mapping
@@ -151,12 +117,15 @@ public class EsLocalIndexAdmin implements EsIndexAdmin {
 				prop.putAll(toProperties(mapping.getNestedMapping(fieldType)));
 				properties.put(property, prop);
 			} else {
-				final Map<String, Object> prop = newHashMap();
-				prop.put("type", toEsType(fieldType));
-				if (!mapping.isAnalyzed(field.getName())) {
-					prop.put("index", "not_analyzed");
+				final String esType = toEsType(fieldType);
+				if (!Strings.isNullOrEmpty(esType)) {
+					final Map<String, Object> prop = newHashMap();
+					prop.put("type", esType);
+					if (!mapping.isAnalyzed(field.getName())) {
+						prop.put("index", "not_analyzed");
+					}
+					properties.put(property, prop);
 				}
-				properties.put(property, prop);
 			}
 		}
 		return ImmutableMap.of("properties", properties);
@@ -167,24 +136,22 @@ public class EsLocalIndexAdmin implements EsIndexAdmin {
 			return "string";
 		} else if (NumericClassUtils.isFloat(fieldType)) {
 			return "float";
-		} else if (NumericClassUtils.isInt(fieldType)) {
+		} else if (Enum.class.isAssignableFrom(fieldType) || NumericClassUtils.isInt(fieldType)) {
 			return "integer";
 		} else if (NumericClassUtils.isShort(fieldType)) {
 			return "short";
-		} else if (NumericClassUtils.isLong(fieldType)) {
+		} else if (NumericClassUtils.isDate(fieldType) || NumericClassUtils.isLong(fieldType)) {
 			return "long";
 		} else if (Boolean.class.isAssignableFrom(Primitives.wrap(fieldType))) {
 			return "boolean";
 		}
-		throw new UnsupportedOperationException("Unsupported mapping of primitive type: " + fieldType);
+		return null;
 	}
 
 	@Override
 	public void delete() {
 		DeleteIndexResponse response = client().admin().indices().prepareDelete(name).get();
 		checkState(response.isAcknowledged(), "Failed to delete index %s", name);
-		close();
-		FileUtils.deleteDirectory(directory);
 	}
 
 	@Override
@@ -209,8 +176,7 @@ public class EsLocalIndexAdmin implements EsIndexAdmin {
 
 	@Override
 	public void close() {
-		client().close();
-		this.esNode.close();
+		// nothing to do, ES will close itself on shutdown hook
 	}
 
 	@Override
@@ -220,7 +186,7 @@ public class EsLocalIndexAdmin implements EsIndexAdmin {
 	
 	@Override
 	public Client client() {
-		return esNode.client();
+		return node.client();
 	}
 
 }

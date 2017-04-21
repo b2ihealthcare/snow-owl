@@ -51,7 +51,7 @@ public interface IndexClientFactory {
 	/**
 	 * Configuration key to specify the maximum number of documents to retrieve in a single call from the index.
 	 */
-	String RESULT_WINDOW_KEY = "resultWindow";
+	String RESULT_WINDOW_KEY = "max_result_window";
 
 	/**
 	 * The default commit interval is 15 seconds.

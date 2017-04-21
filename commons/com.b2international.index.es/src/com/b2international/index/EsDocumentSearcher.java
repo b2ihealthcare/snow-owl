@@ -24,6 +24,8 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortBuilders;
@@ -40,7 +42,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
+import com.google.common.primitives.Ints;
 import com.google.common.primitives.Primitives;
 
 /**
@@ -50,10 +54,12 @@ public class EsDocumentSearcher implements Searcher {
 
 	private final EsIndexAdmin admin;
 	private final ObjectMapper mapper;
+	private final int resultWindow;
 
 	public EsDocumentSearcher(EsIndexAdmin admin, ObjectMapper mapper) {
 		this.admin = admin;
 		this.mapper = mapper;
+		this.resultWindow = Integer.parseInt((String) admin.settings().get(IndexClientFactory.RESULT_WINDOW_KEY));
 	}
 
 	@Override
@@ -83,12 +89,22 @@ public class EsDocumentSearcher implements Searcher {
 
 		final Client client = admin.client();
 		final DocumentMapping mapping = admin.mappings().getDocumentMapping(query);
+		
+		// Restrict variables to the theoretical maximum
+		int offset = query.getOffset();
+		final int limit = query.getLimit();
+		final int toRead = Ints.min(limit, resultWindow);
+		
+		final TimeValue scrollTime = TimeValue.timeValueSeconds(60);
+		
+		final QueryBuilder esQuery = new EsQueryBuilder(mapping).build(query.getWhere());
+		
 		final SearchRequestBuilder req = client.prepareSearch(admin.name())
 			.setRouting(mapping.typeAsString())
 			.setTypes(mapping.typeAsString())
-			.setFrom(query.getOffset())
-			.setSize(query.getLimit())
-			.setQuery(new EsQueryBuilder(mapping).build(query.getWhere()));
+			.setSize(toRead)
+			.setScroll(scrollTime)
+			.setQuery(esQuery);
 		
 		if (query.getFields().isEmpty()) {
 			req.setFetchSource(true);
@@ -98,30 +114,64 @@ public class EsDocumentSearcher implements Searcher {
 		
 		addSort(req, query.getSortBy());
 		
-		final SearchResponse response = req.get();
-		final SearchHits hits = response.getHits();
+		SearchResponse response = req.get();
+		final Builder<SearchHits> allHits = ImmutableList.builder();
+		final int totalHits = (int) response.getHits().getTotalHits();
+
+		int numDocsToFetch = query.getOffset() + query.getLimit();
+		numDocsToFetch -= response.getHits().getHits().length;
+		allHits.add(response.getHits());
+		
+		if (numDocsToFetch <= 0) {
+			// quickly cancel the scroll to free up resources
+			client.prepareClearScroll().addScrollId(response.getScrollId()).get();
+		} else {
+			while (numDocsToFetch > 0) {
+				response = client.prepareSearchScroll(response.getScrollId())
+					.setScroll(scrollTime)
+					.get();
+				final int fetchedHits = response.getHits().getHits().length;
+				if (fetchedHits == 0) {
+					break;
+				}
+				numDocsToFetch -= fetchedHits;
+				allHits.add(response.getHits());
+			}
+		}
+		
 		final ImmutableList.Builder<T> result = ImmutableList.builder();
 		
 		final ObjectReader reader = select != from 
-				? mapper.reader(select).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) 
-				: mapper.reader(select);
+				? mapper.readerFor(select).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) 
+				: mapper.readerFor(select);
 		
-		for (SearchHit hit : hits) {
-			final T value;
-			if (Primitives.isWrapperType(query.getSelect()) || String.class.isAssignableFrom(query.getSelect())) {
-				value = (T) hit.getSource().get(Iterables.getOnlyElement(query.getFields()));
-			} else {
-				value = reader.readValue(hit.source());
+		int remainingLimit = query.getLimit();
+		outer: for (SearchHits hits : allHits.build()) {
+			for (SearchHit hit : hits) {
+				if (offset != 0) {
+					offset--;
+					continue;
+				}
+				final T value;
+				if (Primitives.isWrapperType(query.getSelect()) || String.class.isAssignableFrom(query.getSelect())) {
+					value = (T) hit.getSource().get(Iterables.getOnlyElement(query.getFields()));
+				} else {
+					value = reader.readValue(hit.source());
+				}
+				if (value instanceof WithId) {
+					((WithId) value).set_id(hit.getId());
+				}
+				if (value instanceof WithScore) {
+					((WithScore) value).setScore(hit.getScore());
+				}
+				result.add(value);
+				remainingLimit--;
+				if (remainingLimit == 0) {
+					break outer;
+				}
 			}
-			if (value instanceof WithId) {
-				((WithId) value).set_id(hit.getId());
-			}
-			if (value instanceof WithScore) {
-				((WithScore) value).setScore(hit.getScore());
-			}
-			result.add(value);
 		}
-		return new Hits<T>(result.build(), query.getOffset(), query.getLimit(), (int) hits.getTotalHits());
+		return new Hits<T>(result.build(), offset, limit, totalHits);
 	}
 
 	private void addSort(SearchRequestBuilder req, SortBy sortBy) {
