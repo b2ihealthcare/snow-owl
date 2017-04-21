@@ -32,6 +32,8 @@ import org.elasticsearch.index.query.QueryStringQueryBuilder.Operator;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.analyzer.ComponentTermAnalyzer;
+import com.b2international.index.compat.Highlighting;
+import com.b2international.index.compat.TextConstants;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.b2international.index.util.DecimalUtils;
@@ -48,6 +50,8 @@ public final class EsQueryBuilder {
 	private final Deque<QueryBuilder> deque = Queues.newLinkedBlockingDeque();
 	private final DocumentMapping mapping;
 	private final String path;
+	
+	private boolean needsScoring;
 	
 	public EsQueryBuilder(DocumentMapping mapping) {
 		this(mapping, "");
@@ -67,7 +71,15 @@ public final class EsQueryBuilder {
 		// always filter by type
 		visit(expression);
 		if (deque.size() == 1) {
-			return deque.pop();
+			QueryBuilder queryBuilder = deque.pop();
+			if (!needsScoring) {
+				return QueryBuilders.boolQuery()
+					.disableCoord(true)
+					.must(QueryBuilders.matchAllQuery())
+					.filter(queryBuilder);
+			} else {
+				return queryBuilder;
+			}
 		} else {
 			throw newIllegalStateException();
 		}
@@ -177,8 +189,13 @@ public final class EsQueryBuilder {
 		// first add the mustClauses, then the mustNotClauses, if there are no mustClauses but mustNot ones then add a match all before
 		for (Expression must : bool.mustClauses()) {
 			// visit the item and immediately pop the deque item back
-			visit(must);
-			query.must(deque.pop());
+			final EsQueryBuilder innerQueryBuilder = new EsQueryBuilder(mapping);
+			innerQueryBuilder.visit(must);
+			if (innerQueryBuilder.needsScoring) {
+				query.must(innerQueryBuilder.deque.pop());
+			} else {
+				query.filter(innerQueryBuilder.deque.pop());
+			}
 		}
 		
 		for (Expression mustNot : bool.mustNotClauses()) {
@@ -262,6 +279,8 @@ public final class EsQueryBuilder {
 		}
 		if (query == null) {
 			query = MATCH_NONE;
+		} else {
+			needsScoring = true;
 		}
 		deque.push(query);
 	}
