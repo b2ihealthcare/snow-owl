@@ -20,21 +20,12 @@ import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermFilter;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.BytesRef;
 
 public enum EmptyIndexField implements IndexField<Object> {
 	
 	INSTANCE;
-	
-	@Override
-	public TermFilter toTermFilter(Object value) {
-		throw new UnsupportedOperationException();
-	}
 	
 	@Override
 	public Term toTerm(Object value) {
@@ -42,12 +33,17 @@ public enum EmptyIndexField implements IndexField<Object> {
 	}
 	
 	@Override
-	public TermQuery toQuery(Object value) {
+	public Query toQuery(Object value) {
 		throw new UnsupportedOperationException();
 	}
 	
 	@Override
-	public PrefixQuery toExistsQuery() {
+	public Query toQuery(Iterable<Object> values) {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public Query toExistsQuery() {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -86,17 +82,7 @@ public enum EmptyIndexField implements IndexField<Object> {
 	}
 	
 	@Override
-	public Filter createTermsFilter(Iterable<Object> values) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
 	public Sort createSort() {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public Filter createBytesRefFilter(Iterable<BytesRef> bytesRefs) {
 		throw new UnsupportedOperationException();
 	}
 	

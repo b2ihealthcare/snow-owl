@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,10 @@
 package com.b2international.index.lucene;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Lists.newArrayList;
-
-import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.LongField;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.queries.TermsFilter;
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.BytesRefBuilder;
@@ -33,7 +28,6 @@ import org.apache.lucene.util.NumericUtils;
 import com.b2international.collections.PrimitiveLists;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
-import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 
@@ -57,7 +51,9 @@ public class LongIndexField extends IndexFieldBase<Long> implements LongCollecti
 
 	@Override
 	protected BytesRef toBytesRef(Long value) {
-		return _toBytesRef(value);
+		final BytesRefBuilder bytesRef = new BytesRefBuilder();
+		NumericUtils.longToPrefixCoded(value, 0, bytesRef);
+		return bytesRef.toBytesRef();
 	}
 	
 	@Override
@@ -92,34 +88,6 @@ public class LongIndexField extends IndexFieldBase<Long> implements LongCollecti
 		for (final IndexableField field : fields) {
 			longIds.add(getValue(field));
 		}
-	}
-	
-	public final Filter createTermsFilter(LongCollection values) {
-		if (values == null || values.isEmpty()) {
-			return new MatchNoDocsFilter(); 
-		} else {
-			// Converted BytesRef values should be unique, but TermsFilter requires a writable list for sorting
-			final LongSet uniqueValues = PrimitiveSets.newLongOpenHashSet(values);
-
-			final List<BytesRef> uniqueBytesRefs = newArrayList();
-			final LongIterator iter = uniqueValues.iterator();
-			while (iter.hasNext()) {
-				uniqueBytesRefs.add(toBytesRef(iter.next()));
-			}
-			
-			return new TermsFilter(fieldName(), uniqueBytesRefs);
-		}
-	}
-
-	/**
-	 * @param value
-	 * @return
-	 * @deprecated - if possible don't use this API, use {@link Fields} or {@link #LongIndexField(String) constructor} instead
-	 */
-	public static BytesRef _toBytesRef(Long value) {
-		final BytesRefBuilder bytesRef = new BytesRefBuilder();
-		NumericUtils.longToPrefixCoded(value, 0, bytesRef);
-		return bytesRef.toBytesRef();
 	}
 
 }

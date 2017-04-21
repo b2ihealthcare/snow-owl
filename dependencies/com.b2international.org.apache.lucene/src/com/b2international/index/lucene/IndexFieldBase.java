@@ -16,30 +16,30 @@
 package com.b2international.index.lucene;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newTreeSet;
 
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermFilter;
-import org.apache.lucene.queries.TermsFilter;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.queries.TermsQuery;
+import org.apache.lucene.search.MatchNoDocsQuery;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.util.BytesRef;
 
 import com.google.common.base.Functions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 /**
@@ -109,23 +109,31 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 	}
 	
 	@Override
-	public final TermQuery toQuery(T value) {
+	public final Query toQuery(T value) {
 		return new TermQuery(toTerm(value));
 	}
 	
 	@Override
-	public final PrefixQuery toExistsQuery() {
-		return new PrefixQuery(new Term(fieldName()));
+	public final Query toQuery(Iterable<T> values) {
+		if (values == null || Iterables.isEmpty(values)) {
+			return new MatchNoDocsQuery(); 
+		} else {
+			final SortedSet<BytesRef> uniqueBytesRefs = newTreeSet();
+			for (T value : values) {
+				uniqueBytesRefs.add(toBytesRef(value));
+			}
+			return new TermsQuery(fieldName(), uniqueBytesRefs);
+		}
+	}
+	
+	@Override
+	public final Query toExistsQuery() {
+		return new TermRangeQuery(fieldName(), null, null, true, true);
 	}
 	
 	@Override
 	public final Term toTerm(T value) {
 		return new Term(fieldName(), toBytesRef(value));
-	}
-	
-	@Override
-	public final TermFilter toTermFilter(T value) {
-		return new TermFilter(toTerm(value));
 	}
 
 	@Override
@@ -149,33 +157,5 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 	@Override
 	public final Sort createSort() {
 		return new Sort(new SortField(fieldName(), getSortFieldType()));
-	}
-	
-	@Override
-	public final Filter createTermsFilter(final Iterable<T> values) {
-		if (values == null || Iterables.isEmpty(values)) {
-			return new MatchNoDocsFilter(); 
-		} else {
-			// Converted BytesRef values should be unique, but TermsFilter requires a writable list for sorting
-			final Set<T> uniqueValues = ImmutableSet.copyOf(values);
-
-			final List<BytesRef> uniqueBytesRefs = newArrayList();
-			for (T value : uniqueValues) {
-				uniqueBytesRefs.add(toBytesRef(value));
-			}
-			
-			return new TermsFilter(fieldName(), uniqueBytesRefs);
-		}
-	}
-
-	@Override
-	public final Filter createBytesRefFilter(final Iterable<BytesRef> bytesRefs) {
-		if (bytesRefs == null || Iterables.isEmpty(bytesRefs)) {
-			return new MatchNoDocsFilter();
-		} else {
-			// BytesRef values should be unique, but TermsFilter requires a writable list for sorting
-			final List<BytesRef> uniqueBytesRefs = newArrayList(ImmutableSet.copyOf(bytesRefs));
-			return new TermsFilter(fieldName(), newArrayList(uniqueBytesRefs));
-		}
 	}
 }

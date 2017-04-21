@@ -174,6 +174,7 @@ public final class LuceneQueryBuilder {
 			final Class<?> secondFieldType = mapping.getFieldType(secondFieldName);
 			// only this combination is supported at the moment
 			if (String.class == firstFieldType && float.class == secondFieldType) {
+				@SuppressWarnings("unchecked") 
 				final DualScoreFunction<String, Float> function = (DualScoreFunction<String, Float>) func;
 				return new DualFloatFunction(new BytesRefFieldSource(firstFieldName), new FloatFieldSource(secondFieldName)) {
 					@Override
@@ -200,7 +201,7 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(BooleanPredicate predicate) {
-		deque.push(Fields.boolField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument())));
+		deque.push(Fields.boolField(predicate.getField()).toQuery(predicate.getArgument()));
 	}
 	
 	private void visit(BoolExpression bool) {
@@ -236,9 +237,9 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(NestedPredicate predicate) {
-		final Query parentFilter = JsonDocumentMapping.filterByType(mapping.typeAsString());
+		final Query parentFilter = JsonDocumentMapping.matchType(mapping.typeAsString());
 		final DocumentMapping nestedMapping = mapping.getNestedMapping(predicate.getField());
-		final Query childFilter = JsonDocumentMapping.filterByType(nestedMapping.typeAsString());
+		final Query childFilter = JsonDocumentMapping.matchType(nestedMapping.typeAsString());
 		final Query innerQuery = new LuceneQueryBuilder(nestedMapping).build(predicate.getExpression());
 		final Query childQuery = new BooleanQuery.Builder()
 										.add(innerQuery, Occur.MUST)
@@ -257,7 +258,7 @@ public final class LuceneQueryBuilder {
 		checkArgument(parentMapping.type() == parentType, "Unexpected parent type. %s vs. %s", parentMapping.type(), parentType);
 		final Query parentQuery = new LuceneQueryBuilder(parentMapping).build(parentExpression);
 		
-		final Query parentFilter = JsonDocumentMapping.filterByType(parentMapping.typeAsString());
+		final Query parentFilter = JsonDocumentMapping.matchType(parentMapping.typeAsString());
 		
 		final Query toChildQuery = new ToChildBlockJoinQuery(parentQuery, new QueryBitSetProducer(parentFilter));
 		deque.push(toChildQuery);
@@ -319,22 +320,22 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(StringPredicate predicate) {
-		final Query filter = Fields.stringField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
+		final Query filter = Fields.stringField(predicate.getField()).toQuery(predicate.getArgument());
 		deque.push(filter);
 	}
 	
 	private void visit(StringSetPredicate predicate) {
-		final Query filter = Fields.stringField(predicate.getField()).createTermsFilter(predicate.values());
+		final Query filter = Fields.stringField(predicate.getField()).toQuery(predicate.values());
 		deque.push(filter);
 	}
 	
 	private void visit(IntSetPredicate predicate) {
-		final Query filter = Fields.intField(predicate.getField()).createTermsFilter(predicate.values());
+		final Query filter = Fields.intField(predicate.getField()).toQuery(predicate.values());
 		deque.push(filter);
 	}
 	
 	private void visit(LongSetPredicate predicate) {
-		final Query filter = Fields.longField(predicate.getField()).createTermsFilter(predicate.values());
+		final Query filter = Fields.longField(predicate.getField()).toQuery(predicate.values());
 		deque.push(filter);
 	}
 	
@@ -353,12 +354,12 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(IntPredicate predicate) {
-		final Query filter = Fields.intField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
+		final Query filter = Fields.intField(predicate.getField()).toQuery(predicate.getArgument());
 		deque.push(filter);
 	}
 	
 	private void visit(LongPredicate predicate) {
-		final Query filter = Fields.longField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
+		final Query filter = Fields.longField(predicate.getField()).toQuery(predicate.getArgument());
 		deque.push(filter);
 	}
 	
