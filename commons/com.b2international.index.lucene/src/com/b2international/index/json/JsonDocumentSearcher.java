@@ -156,7 +156,7 @@ public class JsonDocumentSearcher implements Searcher {
 				}
 				
 				// Found a live document; check if it is also in the expected type term's postings
-				typePostingsEnum = typeEnum.postings(typePostingsEnum);
+				typePostingsEnum = typeEnum.postings(typePostingsEnum, PostingsEnum.NONE);
 				int typeDoc = typePostingsEnum.advance(idDoc);
 
 				if (typeDoc == idDoc) {
