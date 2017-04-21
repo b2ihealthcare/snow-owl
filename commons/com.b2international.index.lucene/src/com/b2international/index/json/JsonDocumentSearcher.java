@@ -60,7 +60,6 @@ import com.b2international.index.query.SortBy.MultiSortBy;
 import com.b2international.index.query.SortBy.SortByField;
 import com.b2international.index.query.slowlog.QueryProfiler;
 import com.b2international.index.query.slowlog.SlowLogConfig;
-import com.b2international.index.util.DecimalUtils;
 import com.b2international.index.util.NumericClassUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -120,7 +119,7 @@ public class JsonDocumentSearcher implements Searcher {
 	@Override
 	public <T> Hits<T> search(Query<T> query) throws IOException {
 		final QueryProfiler profiler = new QueryProfiler(query, slowLogConfig);
-		final DocumentMapping mapping = getDocumentMapping(query);
+		final DocumentMapping mapping = mappings.getDocumentMapping(query);
 		final int offset = query.getOffset();
 		final int limit = query.getLimit();
 		
@@ -329,14 +328,6 @@ public class JsonDocumentSearcher implements Searcher {
 				((WithScore) readValue).setScore(scoreDocs[i].score);
 			}
 			matches.add(readValue);
-		}
-	}
-
-	private DocumentMapping getDocumentMapping(Query<?> query) {
-		if (query.getParentType() != null) {
-			return mappings.getMapping(query.getParentType()).getNestedMapping(query.getFrom());
-		} else {
-			return mappings.getMapping(query.getFrom());
 		}
 	}
 
