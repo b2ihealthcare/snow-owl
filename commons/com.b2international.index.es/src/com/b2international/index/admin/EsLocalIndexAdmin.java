@@ -74,12 +74,14 @@ public class EsLocalIndexAdmin implements EsIndexAdmin {
 
 	@Override
 	public boolean exists() {
-		return false;
-//		return client().admin().indices().prepareGetIndex().setIndices(name);
+		return client().admin().indices().prepareExists(name).get().isExists();
 	}
 
 	@Override
 	public void create() {
+		if (exists()) {
+			return;
+		}
 		final CreateIndexRequestBuilder req = client().admin().indices().prepareCreate(name);
 		
 		// add mappings
@@ -132,11 +134,11 @@ public class EsLocalIndexAdmin implements EsIndexAdmin {
 	}
 
 	private String toEsType(Class<?> fieldType) {
-		if (NumericClassUtils.isBigDecimal(fieldType) || String.class.isAssignableFrom(fieldType)) {
+		if (Enum.class.isAssignableFrom(fieldType) || NumericClassUtils.isBigDecimal(fieldType) || String.class.isAssignableFrom(fieldType)) {
 			return "string";
 		} else if (NumericClassUtils.isFloat(fieldType)) {
 			return "float";
-		} else if (Enum.class.isAssignableFrom(fieldType) || NumericClassUtils.isInt(fieldType)) {
+		} else if (NumericClassUtils.isInt(fieldType)) {
 			return "integer";
 		} else if (NumericClassUtils.isShort(fieldType)) {
 			return "short";
@@ -150,8 +152,10 @@ public class EsLocalIndexAdmin implements EsIndexAdmin {
 
 	@Override
 	public void delete() {
-		DeleteIndexResponse response = client().admin().indices().prepareDelete(name).get();
-		checkState(response.isAcknowledged(), "Failed to delete index %s", name);
+		if (exists()) {
+			DeleteIndexResponse response = client().admin().indices().prepareDelete(name).get();
+			checkState(response.isAcknowledged(), "Failed to delete index %s", name);
+		}
 	}
 
 	@Override

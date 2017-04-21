@@ -15,11 +15,20 @@
  */
 package com.b2international.snowowl.datastore.setup;
 
+import java.util.Map;
+
+import com.b2international.index.IndexClientFactory;
+import com.b2international.index.query.slowlog.SlowLogConfig;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
+import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.core.setup.ModuleConfigs;
+import com.b2international.snowowl.datastore.config.IndexConfiguration;
+import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.rpc.RpcConfiguration;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 3.4
@@ -29,4 +38,42 @@ import com.b2international.snowowl.rpc.RpcConfiguration;
 		@ModuleConfig(fieldName = "rpc", type = RpcConfiguration.class)
 })
 public class RepositoryBootstrap extends DefaultBootstrapFragment {
+	
+	@Override
+	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
+		final IndexSettings indexSettings = new IndexSettings();
+		indexSettings.putAll(initIndexSettings(env));
+		env.services().registerService(IndexSettings.class, indexSettings);
+	}
+	
+	private Map<String, Object> initIndexSettings(Environment env) {
+		final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
+		builder.put(IndexClientFactory.DIRECTORY, env.getDataDirectory().toPath().resolve("indexes").toString());
+		
+		final IndexConfiguration config = env.service(SnowOwlConfiguration.class)
+				.getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();
+		
+		builder.put(IndexClientFactory.COMMIT_INTERVAL_KEY, config.getCommitInterval());
+		builder.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, config.getTranslogSyncInterval());
+		
+		final SlowLogConfig slowLog = createSlowLogConfig(config);
+		builder.put(IndexClientFactory.SLOW_LOG_KEY, slowLog);
+		
+		return builder.build();
+	}
+
+	private SlowLogConfig createSlowLogConfig(final IndexConfiguration config) {
+		final ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder();
+		builder.put(SlowLogConfig.FETCH_DEBUG_THRESHOLD, config.getFetchDebugThreshold());
+		builder.put(SlowLogConfig.FETCH_INFO_THRESHOLD, config.getFetchInfoThreshold());
+		builder.put(SlowLogConfig.FETCH_TRACE_THRESHOLD, config.getFetchTraceThreshold());
+		builder.put(SlowLogConfig.FETCH_WARN_THRESHOLD, config.getFetchWarnThreshold());
+		builder.put(SlowLogConfig.QUERY_DEBUG_THRESHOLD, config.getQueryDebugThreshold());
+		builder.put(SlowLogConfig.QUERY_INFO_THRESHOLD, config.getQueryInfoThreshold());
+		builder.put(SlowLogConfig.QUERY_TRACE_THRESHOLD, config.getQueryTraceThreshold());
+		builder.put(SlowLogConfig.QUERY_WARN_THRESHOLD, config.getQueryWarnThreshold());
+		
+		return new SlowLogConfig(builder.build());
+	}
+	
 }

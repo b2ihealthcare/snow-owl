@@ -29,9 +29,10 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 
 	@Override
 	public IndexClient createClient(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {
-		final Object dir = settings.containsKey(IndexClientFactory.DIRECTORY) ? settings.get(IndexClientFactory.DIRECTORY) : new File("target");
+		final boolean persistent = settings.containsKey(IndexClientFactory.DIRECTORY);
+		final Object dir = persistent ? settings.get(IndexClientFactory.DIRECTORY) : new File("target");
 		final File directory = dir instanceof File ? (File) dir : new File((String) dir);
-		final EmbeddedNode node = EmbeddedNode.getInstance(directory);
+		final EmbeddedNode node = EmbeddedNode.getInstance(directory, persistent);
 		return new EsIndexClient(new EsLocalIndexAdmin(node, name, mappings, settings), mapper);
 	}
 

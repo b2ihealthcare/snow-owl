@@ -20,16 +20,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.index.Index;
-import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.index.Indexes;
+import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.cis.CisSnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.gen.SequentialItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierService;
@@ -89,7 +91,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 			final Provider<Index> indexProvider = new Provider<Index>() {
 				@Override
 				public Index get() {
-					return env.service(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(Index.class);
+					return Indexes.createIndex("snomedids", env.service(ObjectMapper.class), new Mappings(SctId.class), env.service(IndexSettings.class));
 				}
 			};
 			LOGGER.info("Snow Owl is configured to use embedded identifier service.");

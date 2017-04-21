@@ -59,7 +59,7 @@ public class EsDocumentSearcher implements Searcher {
 	public EsDocumentSearcher(EsIndexAdmin admin, ObjectMapper mapper) {
 		this.admin = admin;
 		this.mapper = mapper;
-		this.resultWindow = Integer.parseInt((String) admin.settings().get(IndexClientFactory.RESULT_WINDOW_KEY));
+		this.resultWindow = IndexClientFactory.DEFAULT_RESULT_WINDOW;
 	}
 
 	@Override
@@ -162,7 +162,7 @@ public class EsDocumentSearcher implements Searcher {
 					((WithId) value).set_id(hit.getId());
 				}
 				if (value instanceof WithScore) {
-					((WithScore) value).setScore(hit.getScore());
+					((WithScore) value).setScore(Float.isNaN(hit.getScore()) ? 0.0f : hit.getScore());
 				}
 				result.add(value);
 				remainingLimit--;

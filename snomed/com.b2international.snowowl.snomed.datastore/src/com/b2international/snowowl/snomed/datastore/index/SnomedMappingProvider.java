@@ -40,7 +40,6 @@ public class SnomedMappingProvider implements MappingProvider {
 				.add(SnomedRelationshipIndexEntry.class)
 				.add(SnomedRefSetMemberIndexEntry.class)
 				.add(SnomedConstraintDocument.class)
-				.add(SctId.class)
 				.build();
 	}
 

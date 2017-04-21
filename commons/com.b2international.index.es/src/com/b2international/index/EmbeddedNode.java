@@ -33,6 +33,8 @@ import org.elasticsearch.script.groovy.GroovyPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.FileUtils;
+
 /**
  * @since 5.10
  */
@@ -44,7 +46,7 @@ public final class EmbeddedNode extends Node {
 	
 	private static EmbeddedNode INSTANCE;
 	
-	static EmbeddedNode getInstance(File directory) {
+	static EmbeddedNode getInstance(File directory, boolean persistent) {
 		if (INSTANCE == null) {
 			synchronized (EmbeddedNode.class) {
 				if (INSTANCE == null) {
@@ -54,7 +56,9 @@ public final class EmbeddedNode extends Node {
 					// disable es refresh, we will do it manually on each commit
 					esSettings.put("refresh_interval", "-1");
 					// configure es home directory
-					esSettings.put("path.home", directory.toPath().resolve(CLUSTER_NAME).toString());
+					final String esHome = directory.toPath().resolve(CLUSTER_NAME).toString();
+					LOG.info("homedir {}", esHome);
+					esSettings.put("path.home", esHome);
 					esSettings.put("cluster.name", CLUSTER_NAME);
 					esSettings.put("node.name", CLUSTER_NAME);
 					esSettings.put("index.translog.flush_threshold_period", "30m");
@@ -68,6 +72,17 @@ public final class EmbeddedNode extends Node {
 					INSTANCE = new EmbeddedNode(esSettings.build(), GroovyPlugin.class, ReindexPlugin.class, DeleteByQueryPlugin.class);
 					INSTANCE.start();
 					INSTANCE.awaitPendingTasks();
+					Runtime.getRuntime().addShutdownHook(new Thread() {
+						@Override
+						public void run() {
+							INSTANCE.awaitPendingTasks();
+							INSTANCE.client().close();
+							INSTANCE.close();
+							if (persistent) {
+								FileUtils.deleteDirectory(directory);
+							}
+						}
+					});
 					LOG.info("Index is up and running.");
 				}
 			}
