@@ -43,6 +43,7 @@ import org.apache.lucene.queries.function.valuesource.FloatFieldSource;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser.Operator;
+import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BoostQuery;
@@ -84,6 +85,11 @@ public final class LuceneQueryBuilder {
 	private final Deque<Query> deque = Queues.newLinkedBlockingDeque();
 	private final DocumentMapping mapping;
 	
+	/**
+	 * Set to {@code true} if at least one predicate is seen that affects query scoring.
+	 */
+	private boolean needsScoring;
+	
 	public LuceneQueryBuilder(DocumentMapping mapping) {
 		this.mapping = checkNotNull(mapping, "mapping");
 	}
@@ -94,10 +100,31 @@ public final class LuceneQueryBuilder {
 	
 	public org.apache.lucene.search.Query build(Expression expression) {
 		checkNotNull(expression, "expression");
-		// always filter by type
-		visit(Expressions.builder().must(mapping.matchType()).must(expression).build());
+		visit(expression);
+		
 		if (deque.size() == 1) {
-			return deque.pop();
+			Query convertedQuery = deque.pop();
+			BooleanQuery.Builder builder = new BooleanQuery.Builder();
+			
+			if (convertedQuery instanceof BooleanQuery) {
+				BooleanQuery booleanQuery = (BooleanQuery) convertedQuery;
+				
+				for (BooleanClause clause : booleanQuery.clauses()) {
+					builder.add(clause);
+				}
+				builder.setDisableCoord(booleanQuery.isCoordDisabled());
+				builder.setMinimumNumberShouldMatch(booleanQuery.getMinimumNumberShouldMatch());
+			} else {
+				if (needsScoring) {
+					builder.add(convertedQuery, Occur.MUST);
+				} else {
+					builder.add(new MatchAllDocsQuery(), Occur.MUST);
+					builder.add(convertedQuery, Occur.FILTER);
+				}
+				builder.setDisableCoord(true);
+			}
+			builder.add(JsonDocumentMapping.matchType(mapping.typeAsString()), Occur.FILTER);
+			return builder.build();
 		} else {
 			throw newIllegalStateException();
 		}
@@ -162,6 +189,7 @@ public final class LuceneQueryBuilder {
 		final Query innerQuery = deque.pop();
 		final CustomScoreQuery query = new CustomScoreQuery(new ConstantScoreQuery(innerQuery), new FunctionQuery(visit(expression.func())));
 		query.setStrict(expression.isStrict());
+		needsScoring = true;
 		deque.push(query);
 	}
 	
@@ -210,8 +238,14 @@ public final class LuceneQueryBuilder {
 		// first add the mustClauses, then the mustNotClauses, if there are no mustClauses but mustNot ones then add a match all before
 		for (Expression must : bool.mustClauses()) {
 			// visit the item and immediately pop the deque item back
-			visit(must);
-			query.add(deque.pop(), Occur.MUST);
+			LuceneQueryBuilder innerQueryBuilder = new LuceneQueryBuilder(mapping);
+			innerQueryBuilder.visit(must);
+			
+			if (innerQueryBuilder.needsScoring) {
+				query.add(innerQueryBuilder.deque.pop(), Occur.MUST);
+			} else {
+				query.add(innerQueryBuilder.deque.pop(), Occur.FILTER);
+			}
 		}
 		
 		for (Expression mustNot : bool.mustNotClauses()) {
@@ -313,9 +347,13 @@ public final class LuceneQueryBuilder {
 			break;
 		default: throw new UnsupportedOperationException("Unexpected text match type: " + type);
 		}
+		
 		if (query == null) {
 			query = new MatchNoDocsQuery();
+		} else {
+			needsScoring = true;
 		}
+		
 		deque.push(query);	
 	}
 	
