@@ -155,7 +155,7 @@ public class EsDocumentWriter implements Writer {
 		}
 		
 		// refresh the index, so all changes picked up properly
-		admin.client().admin().indices().prepareRefresh(admin.name()).get();
+		admin.refresh();
 	}
 
 	@Override

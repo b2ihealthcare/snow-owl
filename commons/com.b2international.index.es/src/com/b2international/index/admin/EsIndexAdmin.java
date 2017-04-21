@@ -17,13 +17,13 @@ package com.b2international.index.admin;
 
 import org.elasticsearch.client.Client;
 
-import com.b2international.index.admin.IndexAdmin;
-
 /**
  * @since 5.10
  */
 public interface EsIndexAdmin extends IndexAdmin {
 
 	Client client();
-	
+
+	void refresh();
+
 }

@@ -192,5 +192,11 @@ public class EsLocalIndexAdmin implements EsIndexAdmin {
 	public Client client() {
 		return node.client();
 	}
-
+	
+	@Override
+	public void refresh() {
+		client().admin().indices().prepareRefresh(name).get();
+		node.awaitPendingTasks();
+	}
+	
 }
