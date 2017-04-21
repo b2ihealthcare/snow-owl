@@ -26,11 +26,9 @@ import java.util.UUID;
 
 import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FloatDocValuesField;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.util.BytesRef;
 
@@ -38,7 +36,6 @@ import com.b2international.index.Searcher;
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Revision;
-import com.b2international.index.util.DecimalUtils;
 import com.b2international.index.util.NumericClassUtils;
 import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -217,12 +214,7 @@ public final class Index implements Operation {
 			} else if (NumericClassUtils.isInt(fieldType) || NumericClassUtils.isShort(fieldType)) {
 				Fields.searchOnlyIntField(name).addTo(doc, node.intValue());
 			} else if (NumericClassUtils.isBigDecimal(fieldType)) {
-				final String term = DecimalUtils.encode(node.decimalValue());
-				final StringField termField = new StringField(name, term, Store.NO);
-				doc.add(termField);
-				if (docValues) {
-					doc.add(new BinaryDocValuesField(name, new BytesRef(term)));
-				}
+				throw new UnsupportedOperationException("BigDecimal should be encoded to a ordered Base64 String value");
 			} else if (NumericClassUtils.isDate(fieldType)) {
 				Fields.searchOnlyLongField(name).addTo(doc, node.longValue());
 			} else {

@@ -248,10 +248,7 @@ public class JsonDocumentSearcher implements Searcher {
 						fieldValues.put(key, (Integer) value);
 					} else if (NumericClassUtils.isShort(fieldType)) {
 						fieldValues.put(key, ((Integer) value).shortValue());
-					} else if (NumericClassUtils.isBigDecimal(fieldType)) {
-						final BytesRef val = (BytesRef) value;
-						fieldValues.put(key, DecimalUtils.decode(val.bytes, val.offset, val.length));
-					} else if (String.class.isAssignableFrom(fieldType)) {
+					} else if (NumericClassUtils.isBigDecimal(fieldType) || String.class.isAssignableFrom(fieldType)) {
 						BytesRef bytesRef = (BytesRef) value;
 						fieldValues.put(key, bytesRef.utf8ToString());
 					} else {

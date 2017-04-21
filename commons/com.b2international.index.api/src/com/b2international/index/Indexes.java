@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.ServiceLoader;
 
+import com.b2international.index.decimal.DecimalModule;
 import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -37,11 +38,11 @@ public class Indexes {
 	}
 	
 	public static IndexClient createIndexClient(String name, ObjectMapper mapper, Mappings mappings) {
-		return FACTORIES.iterator().next().createClient(name, mapper, mappings, Collections.<String, Object>emptyMap());
+		return FACTORIES.iterator().next().createClient(name, configure(mapper), mappings, Collections.<String, Object>emptyMap());
 	}
 	
 	public static IndexClient createIndexClient(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {
-		return FACTORIES.iterator().next().createClient(name, mapper, mappings, settings);
+		return FACTORIES.iterator().next().createClient(name, configure(mapper), mappings, settings);
 	}
 	
 	public static Index createIndex(String name, ObjectMapper mapper, Mappings mappings) {
@@ -50,6 +51,10 @@ public class Indexes {
 	
 	public static Index createIndex(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {
 		return new DefaultIndex(createIndexClient(name, mapper, mappings, settings));
+	}
+	
+	private static ObjectMapper configure(ObjectMapper mapper) {
+		return mapper.copy().registerModule(new DecimalModule());
 	}
 	
 }

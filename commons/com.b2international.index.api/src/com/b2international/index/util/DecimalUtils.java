@@ -35,12 +35,11 @@ public final class DecimalUtils {
 	private DecimalUtils() {
 	}
 	
-	public static final class DecimalSerializer {
-		
-	}
-	
 	// Convert to keyword-safe representation that preserves ordering
 	public static String encode(BigDecimal val) {
+		if (val == null) {
+			return null;
+		}
 		final SimplePositionedMutableByteRange dst = new SimplePositionedMutableByteRange(PRECISION);
 		final int writtenBytes = OrderedBytes.encodeNumeric(dst, val, Order.ASCENDING);
 		
@@ -52,6 +51,9 @@ public final class DecimalUtils {
 	}
 
 	public static BigDecimal decode(String val) {
+		if (val == null) {
+			return null;
+		}
 		final byte[] rawBytes;
 		try {
 			// Convert from keyword-safe representation to raw bytes
