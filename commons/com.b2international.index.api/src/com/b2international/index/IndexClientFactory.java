@@ -47,6 +47,11 @@ public interface IndexClientFactory {
 	 * Configuration key to specify slow log related configuration.
 	 */
 	String SLOW_LOG_KEY = "slowlog";
+	
+	/**
+	 * Configuration key to specify the maximum number of documents to retrieve in a single call from the index.
+	 */
+	String RESULT_WINDOW_KEY = "resultWindow";
 
 	/**
 	 * The default commit interval is 15 seconds.
@@ -54,6 +59,11 @@ public interface IndexClientFactory {
 	long DEFAULT_COMMIT_INTERVAL = TimeUnit.SECONDS.toMillis(15L);
 	
 	long DEFAULT_TRANSLOG_SYNC_INTERVAL = TimeUnit.SECONDS.toMillis(5L);
+	
+	/**
+	 * The default result window (~10k items)
+	 */
+	int DEFAULT_RESULT_WINDOW = 10_099;
 
 	/**
 	 * Create a new {@link IndexClient} with the given name.

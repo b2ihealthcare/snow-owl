@@ -108,6 +108,10 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 		if (!this.settings.containsKey(IndexClientFactory.SLOW_LOG_KEY)) {
 			this.settings.put(IndexClientFactory.SLOW_LOG_KEY, new SlowLogConfig(this.settings));
 		}
+		
+		if (!this.settings.containsKey(IndexClientFactory.RESULT_WINDOW_KEY)) {
+			this.settings.put(IndexClientFactory.RESULT_WINDOW_KEY, IndexClientFactory.DEFAULT_RESULT_WINDOW);
+		}
 	}
 	
 	private void ensureOpen() {

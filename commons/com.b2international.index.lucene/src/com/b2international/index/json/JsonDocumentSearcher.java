@@ -15,6 +15,7 @@
  */
 package com.b2international.index.json;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
@@ -81,6 +82,7 @@ public class JsonDocumentSearcher implements Searcher {
 	private final Mappings mappings;
 	private final ReferenceManager<IndexSearcher> searchers;
 	private final SlowLogConfig slowLogConfig;
+	private final int resultWindow;
 	private final Logger log;
 
 	public JsonDocumentSearcher(LuceneIndexAdmin admin, ObjectMapper mapper) {
@@ -89,6 +91,8 @@ public class JsonDocumentSearcher implements Searcher {
 		this.mappings = admin.mappings();
 		this.searchers = admin.getManager();
 		this.slowLogConfig = (SlowLogConfig) admin.settings().get(IndexClientFactory.SLOW_LOG_KEY);
+		this.resultWindow = (int) admin.settings().get(IndexClientFactory.RESULT_WINDOW_KEY);
+
 		try {
 			searcher = searchers.acquire();
 		} catch (IOException e) {
@@ -118,33 +122,13 @@ public class JsonDocumentSearcher implements Searcher {
 	public <T> Hits<T> search(Query<T> query) throws IOException {
 		final QueryProfiler profiler = new QueryProfiler(query, slowLogConfig);
 		final DocumentMapping mapping = getDocumentMapping(query);
-		final org.apache.lucene.search.Query lq = toLuceneQuery(mapping, query);
-		final org.apache.lucene.search.Sort ls = toLuceneSort(mapping, query);
-		
 		final int offset = query.getOffset();
-		int limit = query.getLimit();
+		final int limit = query.getLimit();
+		
 		try {
 			// QUERY PHASE
 			profiler.start(Phase.QUERY);
-			
-			final TopFieldDocs topDocs;
-			if (limit < 1) {
-				final int totalHits = searcher.count(lq);
-				topDocs = new TopFieldDocs(totalHits, null, null, 0);
-			} else {
-				if (limit == Integer.MAX_VALUE || limit == Integer.MAX_VALUE - 1 /*SearchRequest max value*/) {
-					// if all values required, or clients expect all values to be returned
-					// use collector instead of TopDocs, TODO bring back DocSourceCollector to life
-					// reduce limit to max. total hits
-					limit = searcher.count(lq);
-				} 
-				int maxDoc = searcher.getIndexReader().maxDoc();
-				if (maxDoc <= 0 || limit < 1) {
-					topDocs = new TopFieldDocs(0, null, null, 0);
-				} else {
-					topDocs = searcher.search(lq, numDocsToRetrieve(offset, limit), ls, query.isWithScores(), false);
-				}
-			}
+			final TopFieldDocs topDocs = getTopDocs(query, mapping, offset, limit);
 			profiler.end(Phase.QUERY);
 			
 			// FETCH PHASE
@@ -154,9 +138,9 @@ public class JsonDocumentSearcher implements Searcher {
 				profiler.start(Phase.FETCH);
 				final ImmutableList.Builder<T> matches = ImmutableList.builder();
 				if (query.getFields() != null && !query.getFields().isEmpty()) {
-					fetchFieldDocs(query, mapping, offset, topDocs, matches);
+					fetchFieldDocs(query, mapping, topDocs, matches);
 				} else {
-					fetchScoreDocs(query, mapping, offset, topDocs, matches);
+					fetchScoreDocs(query, mapping, topDocs, matches);
 				}
 				profiler.end(Phase.FETCH);
 				return new Hits<>(matches.build(), offset, limit, topDocs.totalHits);
@@ -166,11 +150,86 @@ public class JsonDocumentSearcher implements Searcher {
 		}
 	}
 
-	private <T> void fetchFieldDocs(Query<T> query, DocumentMapping mapping, int offset, TopFieldDocs topDocs, ImmutableList.Builder<T> matches) {
+	private <T> TopFieldDocs getTopDocs(Query<T> query, final DocumentMapping mapping, final int offset, final int limit) throws IOException {
+		final org.apache.lucene.search.Query lq = toLuceneQuery(mapping, query);
+		final org.apache.lucene.search.Sort ls = toLuceneSort(mapping, query);
+		
+		if (limit < 1) {
+			// The request is only interested in the query hit count
+			final int totalHits = searcher.count(lq);
+			return new TopFieldDocs(totalHits, null, null, 0);
+		}
+		
+		int numDocs = searcher.getIndexReader().numDocs();
+		if (numDocs <= 0) {
+			// We don't have any live documents to query
+			return new TopFieldDocs(0, null, null, 0);
+		}
+		
+		// Restrict variables to the theoretical maximum
+		int toRead = Ints.min(limit, numDocs);
+		int toSkip = Ints.min(offset, numDocs);
+				
+		// Skip over hits in the "offset" range, in "resultWindow"-sized hops
+		FieldDoc after = null;
+		TopFieldDocs windowTopDocs;
+		boolean checkAllSkipped = true;
+		
+		while (toSkip > 0) {
+			int numHits = Ints.min(toSkip, resultWindow);
+			windowTopDocs = searcher.searchAfter(after, lq, numHits, ls, false, false);
+			
+			// Skipping past all results? Needs to be checked in the first iteration only
+			if (checkAllSkipped) {
+				if (toSkip >= windowTopDocs.totalHits) {
+					return new TopFieldDocs(windowTopDocs.totalHits, null, null, 0);
+				} else {
+					checkAllSkipped = false;
+				}
+			}
+			
+			checkState (windowTopDocs.scoreDocs.length == numHits);
+			
+			toSkip -= windowTopDocs.scoreDocs.length;
+			after = (FieldDoc) windowTopDocs.scoreDocs[windowTopDocs.scoreDocs.length - 1];
+		}
+				
+		checkState(toSkip == 0);
+		
+		// Peek ahead, get total hits
+		windowTopDocs = searcher.searchAfter(after, lq, 1, ls, false, false);
+				
+		if (windowTopDocs.scoreDocs.length < 1) {
+			// We will not even have one relevant document to read in the final part; exit early
+			return new TopFieldDocs(windowTopDocs.totalHits, null, null, 0);
+		}
+		
+		// Restrict "toRead" again, then read the relevant topDocs in "resultWindow" hops
+		toRead = Ints.min(toRead, windowTopDocs.totalHits - offset);
+		TopFieldDocs topDocs = new TopFieldDocs(windowTopDocs.totalHits, new FieldDoc[toRead], ls.getSort(), 0);
+				
+		while (toRead > 0) {
+			int numHits = Ints.min(toRead, resultWindow);
+			windowTopDocs = searcher.searchAfter(after, lq, numHits, ls, query.isWithScores(), false);
+			
+			checkState (windowTopDocs.scoreDocs.length == numHits);
+			
+			System.arraycopy(windowTopDocs.scoreDocs, 0, 
+					topDocs.scoreDocs, topDocs.scoreDocs.length - toRead, 
+					windowTopDocs.scoreDocs.length);
+			
+			toRead -= windowTopDocs.scoreDocs.length;
+			after = (FieldDoc) windowTopDocs.scoreDocs[windowTopDocs.scoreDocs.length - 1];
+		}
+				
+		return topDocs;
+	}
+
+	private <T> void fetchFieldDocs(Query<T> query, DocumentMapping mapping, TopFieldDocs topDocs, ImmutableList.Builder<T> matches) {
 		ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 		Set<String> fields = query.getFields();
 		
-		for (int i = offset; i < scoreDocs.length; i++) {
+		for (int i = 0; i < scoreDocs.length; i++) {
 			FieldDoc fieldDoc = (FieldDoc) scoreDocs[i];
 			ImmutableMap.Builder<String, Object> fieldValues = ImmutableMap.builder();
 			
@@ -233,7 +292,7 @@ public class JsonDocumentSearcher implements Searcher {
 		}
 	}
 
-	private <T> void fetchScoreDocs(Query<T> query, DocumentMapping mapping, int offset, TopFieldDocs topDocs, ImmutableList.Builder<T> matches) throws IOException {
+	private <T> void fetchScoreDocs(Query<T> query, DocumentMapping mapping, TopFieldDocs topDocs, ImmutableList.Builder<T> matches) throws IOException {
 		ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 		Class<T> select = query.getSelect();
 		Class<?> from = query.getFrom();
@@ -245,33 +304,31 @@ public class JsonDocumentSearcher implements Searcher {
 				? mapper.reader(select).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) 
 				: mapper.reader(select);
 		
-		final byte[][] sources = new byte[scoreDocs.length - offset][];
-		final String[] ids = isWithId ? new String[scoreDocs.length - offset] : null; 
-		final String[] hashes = isWithHash ? new String[scoreDocs.length - offset] : null;
+		final byte[][] sources = new byte[scoreDocs.length][];
+		final String[] ids = isWithId ? new String[scoreDocs.length] : null; 
+		final String[] hashes = isWithHash ? new String[scoreDocs.length] : null;
 		
 		final IndexField<String> _id = JsonDocumentMapping._id();
 		final IndexField<String> _hash = JsonDocumentMapping._hash();
 		
-		for (int i = offset; i < scoreDocs.length; i++) {
+		for (int i = 0; i < scoreDocs.length; i++) {
 			Document doc = searcher.doc(scoreDocs[i].doc);
-			final int arrayIdx = i - offset;
-			sources[arrayIdx] = doc.getBinaryValue("_source").bytes;
+			sources[i] = doc.getBinaryValue("_source").bytes;
 			if (isWithId) {
-				ids[arrayIdx] = _id.getValue(doc);
+				ids[i] = _id.getValue(doc);
 			}
 			if (isWithHash) {
-				hashes[arrayIdx] = _hash.getValue(doc);
+				hashes[i] = _hash.getValue(doc);
 			}
 		}
 		
-		for (int i = offset; i < scoreDocs.length; i++) {
-			final int arrayIdx = i - offset;
-			T readValue = reader.readValue(sources[arrayIdx]);
+		for (int i = 0; i < scoreDocs.length; i++) {
+			T readValue = reader.readValue(sources[i]);
 			if (isWithId) {
-				((WithId) readValue).set_id(ids[arrayIdx]);
+				((WithId) readValue).set_id(ids[i]);
 			}
 			if (isWithHash) {
-				((WithHash) readValue).set_hash(hashes[arrayIdx]);
+				((WithHash) readValue).set_hash(hashes[i]);
 			}
 			if (query.isWithScores()) {
 				((WithScore) readValue).setScore(scoreDocs[i].score);
@@ -365,10 +422,6 @@ public class JsonDocumentSearcher implements Searcher {
 		} else {
 			throw new IllegalArgumentException("Unsupported sort field type: " + fieldType + " for field: " + sortField);
 		}
-	}
-
-	private int numDocsToRetrieve(final int offset, final int limit) {
-		return Ints.min(offset + limit, searcher.getIndexReader().maxDoc());
 	}
 
 	private static boolean isEmpty(TopDocs docs) {
