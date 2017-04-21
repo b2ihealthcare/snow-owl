@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
@@ -49,6 +50,7 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		assertEquals(parent, getRevision(MAIN, NestedData.class, STORAGE_KEY1));
 	}
 
+	@Ignore("We don't support this anymore")
 	@Test
 	public void nestedDocumentOfDeletedRevisionShouldNotBeAccessible() throws Exception {
 		indexNestedDocument();
@@ -95,6 +97,7 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		assertThat(matches).containsOnly(parent1);
 	}
 	
+	@Ignore("We don't support this anymore")
 	@Test
 	public void searchNestedDocumentWithParentQuery() throws Exception {
 		indexNestedDocument();
