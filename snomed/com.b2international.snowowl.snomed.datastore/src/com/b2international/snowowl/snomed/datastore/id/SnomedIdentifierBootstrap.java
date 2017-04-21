@@ -39,7 +39,6 @@ import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdent
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.UniqueInStoreReservation;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Provider;
 
 /**
  * @since 4.5
@@ -88,15 +87,11 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 
 		switch (conf.getStrategy()) {
 		case EMBEDDED:
-			final Provider<Index> indexProvider = new Provider<Index>() {
-				@Override
-				public Index get() {
-					return Indexes.createIndex("snomedids", env.service(ObjectMapper.class), new Mappings(SctId.class), env.service(IndexSettings.class));
-				}
-			};
+			final Index index = Indexes.createIndex("snomedids", env.service(ObjectMapper.class), new Mappings(SctId.class), env.service(IndexSettings.class));
+			index.admin().create();
 			LOGGER.info("Snow Owl is configured to use embedded identifier service.");
-			final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(indexProvider, reservationService); 
-			identifierService = new DefaultSnomedIdentifierService(indexProvider, generationStrategy, reservationService, conf);
+			final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(index, reservationService); 
+			identifierService = new DefaultSnomedIdentifierService(index, generationStrategy, reservationService, conf);
 			break;
 		case CIS:
 			final ObjectMapper mapper = new ObjectMapper();

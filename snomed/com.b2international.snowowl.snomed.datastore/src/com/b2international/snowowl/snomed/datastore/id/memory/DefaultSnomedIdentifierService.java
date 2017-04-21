@@ -22,6 +22,7 @@ import static com.google.common.collect.Sets.newLinkedHashSet;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.emf.cdo.spi.server.Store;
 import org.slf4j.Logger;
@@ -37,6 +38,7 @@ import com.b2international.index.Writer;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
@@ -61,21 +63,22 @@ import com.google.inject.Provider;
  * 
  * @since 4.5
  */
-public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierService {
+public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierService implements IDisposableService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSnomedIdentifierService.class);
 
-	private final Provider<Index> store;
+	private final Index store;
 	private final ItemIdGenerationStrategy generationStrategy;
+	private final AtomicBoolean disposed = new AtomicBoolean(false);
 
 	/*
 	 * Tests only
 	 */
 	DefaultSnomedIdentifierService(final Provider<Index> store, final ItemIdGenerationStrategy generationStrategy) {
-		this(store, generationStrategy, new SnomedIdentifierReservationServiceImpl(), new SnomedIdentifierConfiguration());
+		this(store.get(), generationStrategy, new SnomedIdentifierReservationServiceImpl(), new SnomedIdentifierConfiguration());
 	}
 	
-	public DefaultSnomedIdentifierService(final Provider<Index> store, final ItemIdGenerationStrategy generationStrategy,
+	public DefaultSnomedIdentifierService(final Index store, final ItemIdGenerationStrategy generationStrategy,
 			final ISnomedIdentiferReservationService reservationService, final SnomedIdentifierConfiguration config) {
 		super(reservationService, config);
 		this.store = store;
@@ -211,7 +214,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 				.limit(componentIds.size())
 				.build();
 		
-		final Hits<SctId> existingIds = store.get().read(index -> index.search(getSctIdsQuery));
+		final Hits<SctId> existingIds = store.read(index -> index.search(getSctIdsQuery));
 		final Map<String, SctId> existingIdsMap = Maps.uniqueIndex(existingIds, SctId::getSctid);
 		
 		if (existingIdsMap.size() == componentIds.size()) {
@@ -316,7 +319,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 	
 	private void putSctIds(final Map<String, SctId> ids) {
-		store.get().write(new IndexWrite<Void>() {
+		store.write(new IndexWrite<Void>() {
 			@Override
 			public Void execute(Writer index) throws IOException {
 				index.putAll(ids);
@@ -327,7 +330,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 	
 	private void removeSctIds(final Set<String> ids) {
-		store.get().write(new IndexWrite<Void>() {
+		store.write(new IndexWrite<Void>() {
 			@Override
 			public Void execute(Writer index) throws IOException {
 				index.removeAll(ImmutableMap.<Class<?>, Set<String>>of(SctId.class, ids));
@@ -338,12 +341,24 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 	
 	private SctId readSctId(final String id) {
-		return store.get().read(new IndexRead<SctId>() {
+		return store.read(new IndexRead<SctId>() {
 			@Override
 			public SctId execute(Searcher index) throws IOException {
 				return index.get(SctId.class, id);
 			}
 		});
+	}
+	
+	@Override
+	public void dispose() {
+		if (disposed.compareAndSet(false, true)) {
+			store.admin().close();
+		}
+	}
+	
+	@Override
+	public boolean isDisposed() {
+		return disposed.get();
 	}
 	
 }
