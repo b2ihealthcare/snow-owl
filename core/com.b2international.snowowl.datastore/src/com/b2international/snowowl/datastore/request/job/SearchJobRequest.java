@@ -44,7 +44,7 @@ final class SearchJobRequest extends SearchResourceRequest<ServiceProvider, Remo
 		addIdFilter(queryBuilder, RemoteJobEntry.Expressions::ids);
 		
 		if (options().containsKey(USER)) {
-			queryBuilder.must(user(options().getString(USER)));
+			queryBuilder.filter(user(options().getString(USER)));
 		}
 		
 		return context.service(RemoteJobTracker.class).search(queryBuilder.build(), fields(), sortBy(), offset(), limit());

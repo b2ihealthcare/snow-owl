@@ -130,52 +130,52 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 				selectedRefSetIds = newArrayList(referenceSetIds);
 			}
 			
-			queryBuilder.must(referenceSetId(selectedRefSetIds));
+			queryBuilder.filter(referenceSetId(selectedRefSetIds));
 		}
 		
 		if (!referencedComponentIds.isEmpty()) {
-			queryBuilder.must(referencedComponentIds(referencedComponentIds));
+			queryBuilder.filter(referencedComponentIds(referencedComponentIds));
 		}
 		
 		if (!refSetTypes.isEmpty()) {
-			queryBuilder.must(refSetTypes(refSetTypes));
+			queryBuilder.filter(refSetTypes(refSetTypes));
 		}
 		
 		if (!propsFilter.isEmpty()) {
 			final Set<String> propKeys = newHashSet(propsFilter.keySet());
 			if (propKeys.remove(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID)) {
-				queryBuilder.must(acceptabilityIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, String.class)));
+				queryBuilder.filter(acceptabilityIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, String.class)));
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) {
-				queryBuilder.must(characteristicTypeIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, String.class)));
+				queryBuilder.filter(characteristicTypeIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, String.class)));
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_CORRELATION_ID)) {
-				queryBuilder.must(correlationIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_CORRELATION_ID, String.class)));
+				queryBuilder.filter(correlationIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_CORRELATION_ID, String.class)));
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT)) {
-				queryBuilder.must(descriptionFormats(propsFilter.getCollection(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, String.class)));
+				queryBuilder.filter(descriptionFormats(propsFilter.getCollection(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, String.class)));
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID)) {
-				queryBuilder.must(mapCategoryIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, String.class)));
+				queryBuilder.filter(mapCategoryIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, String.class)));
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_OPERATOR_ID)) {
-				queryBuilder.must(operatorIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_OPERATOR_ID, String.class)));
+				queryBuilder.filter(operatorIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_OPERATOR_ID, String.class)));
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
-				queryBuilder.must(targetComponents(propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT, String.class)));
+				queryBuilder.filter(targetComponents(propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT, String.class)));
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_UNIT_ID)) {
-				queryBuilder.must(unitIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_UNIT_ID, String.class)));
+				queryBuilder.filter(unitIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_UNIT_ID, String.class)));
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_VALUE_ID)) {
-				queryBuilder.must(valueIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE_ID, String.class)));
+				queryBuilder.filter(valueIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE_ID, String.class)));
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME)) {
 				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, String.class), SnomedRefSetMemberIndexEntry.Expressions::attributeNames);
 			}
 			final Collection<DataType> dataTypes = propsFilter.getCollection(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, DataType.class);
 			if (propKeys.remove(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE)) {
-				queryBuilder.must(dataTypes(dataTypes));
+				queryBuilder.filter(dataTypes(dataTypes));
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_VALUE)) {
 				if (dataTypes.size() != 1)  {
@@ -192,26 +192,26 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 				final Collection<Object> attributeValues = propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE, Object.class);
 				switch (op) {
 				case EQUALS:
-					queryBuilder.must(values(dataType, attributeValues));
+					queryBuilder.filter(values(dataType, attributeValues));
 					break;
 				case NOT_EQUALS:
 					queryBuilder.mustNot(values(dataType, attributeValues));
 					break;
 				case LESS_THAN:
 					checkRangeValue(attributeValues);
-					queryBuilder.must(valueRange(dataType, null, Iterables.getOnlyElement(attributeValues), false, false));
+					queryBuilder.filter(valueRange(dataType, null, Iterables.getOnlyElement(attributeValues), false, false));
 					break;
 				case LESS_THAN_EQUALS:
 					checkRangeValue(attributeValues);
-					queryBuilder.must(valueRange(dataType, null, Iterables.getOnlyElement(attributeValues), false, true));
+					queryBuilder.filter(valueRange(dataType, null, Iterables.getOnlyElement(attributeValues), false, true));
 					break;
 				case GREATER_THAN:
 					checkRangeValue(attributeValues);
-					queryBuilder.must(valueRange(dataType, Iterables.getOnlyElement(attributeValues), null, false, false));
+					queryBuilder.filter(valueRange(dataType, Iterables.getOnlyElement(attributeValues), null, false, false));
 					break;
 				case GREATER_THAN_EQUALS:
 					checkRangeValue(attributeValues);
-					queryBuilder.must(valueRange(dataType, Iterables.getOnlyElement(attributeValues), null, true, false));
+					queryBuilder.filter(valueRange(dataType, Iterables.getOnlyElement(attributeValues), null, true, false));
 					break;
 				default: throw new NotImplementedException("Unsupported concrete domain value operator %s", op);
 				}

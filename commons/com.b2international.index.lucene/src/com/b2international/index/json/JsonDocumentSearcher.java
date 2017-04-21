@@ -27,6 +27,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.LeafReader;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.PostingsEnum;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.FieldComparator;
 import org.apache.lucene.search.FieldComparatorSource;
 import org.apache.lucene.search.FieldDoc;
@@ -35,8 +40,8 @@ import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
-import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldDocs;
+import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 import org.slf4j.Logger;
 
@@ -52,6 +57,7 @@ import com.b2international.index.lucene.DelegatingFieldComparator;
 import com.b2international.index.lucene.IndexField;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.LuceneQueryBuilder;
 import com.b2international.index.query.Phase;
 import com.b2international.index.query.Query;
@@ -66,6 +72,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
@@ -74,6 +81,8 @@ import com.google.common.primitives.Ints;
  * @since 4.7
  */
 public class JsonDocumentSearcher implements Searcher {
+
+	private static final Set<String> SOURCE_ONLY = ImmutableSet.of("_source");
 
 	private final ObjectMapper mapper;
 	private final IndexSearcher searcher;
@@ -105,15 +114,58 @@ public class JsonDocumentSearcher implements Searcher {
 
 	@Override
 	public <T> T get(Class<T> type, String key) throws IOException {
-		final org.apache.lucene.search.Query bq = new LuceneQueryBuilder(mappings.getMapping(type)).build(DocumentMapping.matchId(key));
-		final TopDocs topDocs = searcher.search(bq, 1);
-		if (isEmpty(topDocs)) {
-			return null;
-		} else {
-			final Document doc = searcher.doc(topDocs.scoreDocs[0].doc);
-			final byte[] source = doc.getField("_source").binaryValue().bytes;
-			return mapper.readValue(source, type);
+		final DocumentMapping mapping = mappings.getMapping(type);
+		final String typeAsString = mapping.typeAsString();
+
+		PostingsEnum idPostingsEnum = null;
+		PostingsEnum typePostingsEnum = null;
+		
+		List<LeafReaderContext> leaves = searcher.getIndexReader().leaves();
+		for (LeafReaderContext leafReaderContext : leaves) {
+			LeafReader leafReader = leafReaderContext.reader();
+			
+			// This segment should have indexed terms for fields "_id" and "_type"
+			Terms idTerms = leafReader.terms(DocumentMapping._ID);
+			Terms typeTerms = leafReader.terms(DocumentMapping._TYPE);
+			if (idTerms == null || typeTerms == null) {
+				continue;
+			}
+			
+			// A term for field "_id" with value "key" should exist
+			TermsEnum idEnum = idTerms.iterator();
+			if (!idEnum.seekExact(new BytesRef(key))) {
+				continue;
+			}
+
+			// A term for field "_type" with value "typeAsString" should exist
+			TermsEnum typeEnum = typeTerms.iterator();
+			if (!typeEnum.seekExact(new BytesRef(typeAsString))) {
+				continue;
+			}
+			
+			Bits liveDocs = leafReader.getLiveDocs();
+			idPostingsEnum = idEnum.postings(idPostingsEnum);
+			int idDoc = PostingsEnum.NO_MORE_DOCS;
+			
+			// Now iterate over all documents that had an "_id" field with value "key" 
+			while ((idDoc = idPostingsEnum.nextDoc()) != PostingsEnum.NO_MORE_DOCS) {
+				if (liveDocs != null && !liveDocs.get(idDoc)) {
+					continue;
+				}
+				
+				// Found a live document; check if it is also in the expected type term's postings
+				typePostingsEnum = typeEnum.postings(typePostingsEnum, PostingsEnum.NONE);
+				int typeDoc = typePostingsEnum.advance(idDoc);
+
+				if (typeDoc == idDoc) {
+					Document document = leafReader.document(idDoc, SOURCE_ONLY);
+					BytesRef source = document.getBinaryValue("_source");
+					return mapper.readValue(source.bytes, source.offset, source.length, type);
+				}
+			}
 		}
+
+		return null;
 	}
 
 	@Override
@@ -149,7 +201,7 @@ public class JsonDocumentSearcher implements Searcher {
 	}
 
 	private <T> TopFieldDocs getTopDocs(Query<T> query, final DocumentMapping mapping, final int offset, final int limit) throws IOException {
-		final org.apache.lucene.search.Query lq = toLuceneQuery(mapping, query);
+		final org.apache.lucene.search.Query lq = toLuceneQuery(mapping, query.getWhere());
 		final org.apache.lucene.search.Sort ls = toLuceneSort(mapping, query);
 		
 		if (limit < 1) {
@@ -331,8 +383,8 @@ public class JsonDocumentSearcher implements Searcher {
 		}
 	}
 
-	private org.apache.lucene.search.Query toLuceneQuery(DocumentMapping mapping, Query<?> query) {
-		return new LuceneQueryBuilder(mapping).build(query.getWhere());
+	private org.apache.lucene.search.Query toLuceneQuery(DocumentMapping mapping, Expression where) {
+		return new LuceneQueryBuilder(mapping).build(where);
 	}
 
 	private org.apache.lucene.search.Sort toLuceneSort(DocumentMapping mapping, Query<?> query) {
@@ -408,9 +460,5 @@ public class JsonDocumentSearcher implements Searcher {
 		} else {
 			throw new IllegalArgumentException("Unsupported sort field type: " + fieldType + " for field: " + sortField);
 		}
-	}
-
-	private static boolean isEmpty(TopDocs docs) {
-		return docs == null || docs.scoreDocs == null || docs.scoreDocs.length == 0;
 	}
 }

@@ -152,23 +152,23 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		
 		if (containsKey(OptionKey.DEFINITION_STATUS)) {
 			if (Concepts.PRIMITIVE.equals(getString(OptionKey.DEFINITION_STATUS))) {
-				queryBuilder.must(primitive());
+				queryBuilder.filter(primitive());
 			} else if (Concepts.FULLY_DEFINED.equals(getString(OptionKey.DEFINITION_STATUS))) {
-				queryBuilder.must(defining());
+				queryBuilder.filter(defining());
 			}
 		}
 		
 		if (containsKey(OptionKey.PARENT)) {
-			queryBuilder.must(parents(getCollection(OptionKey.PARENT, String.class)));
+			queryBuilder.filter(parents(getCollection(OptionKey.PARENT, String.class)));
 		}
 		
 		if (containsKey(OptionKey.STATED_PARENT)) {
-			queryBuilder.must(statedParents(getCollection(OptionKey.STATED_PARENT, String.class)));
+			queryBuilder.filter(statedParents(getCollection(OptionKey.STATED_PARENT, String.class)));
 		}
 		
 		if (containsKey(OptionKey.ANCESTOR)) {
 			final Collection<String> ancestorIds = getCollection(OptionKey.ANCESTOR, String.class);
-			queryBuilder.must(Expressions.builder()
+			queryBuilder.filter(Expressions.builder()
 					.should(parents(ancestorIds))
 					.should(ancestors(ancestorIds))
 					.build());
@@ -176,7 +176,7 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		
 		if (containsKey(OptionKey.STATED_ANCESTOR)) {
 			final Collection<String> ancestorIds = getCollection(OptionKey.STATED_ANCESTOR, String.class);
-			queryBuilder.must(Expressions.builder()
+			queryBuilder.filter(Expressions.builder()
 					.should(statedParents(ancestorIds))
 					.should(statedAncestors(ancestorIds))
 					.build());
@@ -187,19 +187,19 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 			try {
 				final IndexQueryQueryEvaluator queryEvaluator = new IndexQueryQueryEvaluator();
 				final Expression escgQuery = queryEvaluator.evaluate(context.service(EscgRewriter.class).parseRewrite(escg));
-				queryBuilder.must(escgQuery);
+				queryBuilder.filter(escgQuery);
 			} catch (final SyntaxErrorException e) {
 				throw new IllegalQueryParameterException(e.getMessage());
 			} catch (EscgParseFailedException e) {
 				final RValue expression = context.service(EscgRewriter.class).parseRewrite(escg);
 				final LongCollection matchingConceptIds = new ConceptIdQueryEvaluator2(searcher).evaluate(expression);
-				queryBuilder.must(RevisionDocument.Expressions.ids(LongSets.toStringSet(matchingConceptIds)));
+				queryBuilder.filter(RevisionDocument.Expressions.ids(LongSets.toStringSet(matchingConceptIds)));
 			}
 		}
 		
 		if (containsKey(OptionKey.ECL)) {
 			final String ecl = getString(OptionKey.ECL);
-			queryBuilder.must(SnomedRequests.prepareEclEvaluation(ecl).build().execute(context).getSync());
+			queryBuilder.filter(SnomedRequests.prepareEclEvaluation(ecl).build().execute(context).getSync());
 		}
 		
 		Expression searchProfileQuery = null;
@@ -213,7 +213,7 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		if (containsKey(OptionKey.TERM)) {
 			final ExpressionBuilder bq = Expressions.builder();
 			// nest current query
-			bq.must(queryBuilder.build());
+			bq.filter(queryBuilder.build());
 			queryBuilder = bq;
 			
 			final String term = getString(OptionKey.TERM);
@@ -232,7 +232,7 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 				return new SnomedConcepts(offset(), limit(), 0);
 			}
 			
-			queryBuilder.must(RevisionDocument.Expressions.ids(conceptScoreMap.keySet()));
+			queryBuilder.filter(RevisionDocument.Expressions.ids(conceptScoreMap.keySet()));
 			
 			final ScoreFunction func = new DualScoreFunction<String, Float>("ConceptScoreMap", Fields.ID, Fields.DOI) {
 				@Override
@@ -285,8 +285,8 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 			return query;
 		} else {
 			return Expressions.builder()
-					.must(searchProfileQuery)
-					.must(query)
+					.filter(searchProfileQuery)
+					.filter(query)
 					.build();
 		}
 	}

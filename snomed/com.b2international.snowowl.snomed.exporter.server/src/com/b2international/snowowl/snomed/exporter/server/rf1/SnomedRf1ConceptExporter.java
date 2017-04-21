@@ -106,9 +106,9 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1CoreExporter<Snom
 			if (!doc.isActive()) {
 				
 				Expression condition = Expressions.builder()
-						.must(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(doc.getId())))
-						.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR)))
-						.must(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
+						.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(doc.getId())))
+						.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR)))
+						.filter(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
 				
 				Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(condition).build();
 							
@@ -122,9 +122,9 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1CoreExporter<Snom
 			}
 			
 			Expression condition = Expressions.builder()
-					.must(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(doc.getId())))
-					.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.CTV3_SIMPLE_MAP_TYPE_REFERENCE_SET_ID)))
-					.must(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(doc.getId())))
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.CTV3_SIMPLE_MAP_TYPE_REFERENCE_SET_ID)))
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
 			
 			Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(condition).build();
 			Hits<SnomedRefSetMemberIndexEntry> snomedRefSetMemberIndexEntrys = getRevisionSearcher().search(query);
@@ -135,9 +135,9 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1CoreExporter<Snom
 			}
 			
 			condition = Expressions.builder()
-					.must(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(doc.getId())))
-					.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.SNOMED_RT_SIMPLE_MAP_TYPE_REFERENCE_SET_ID)))
-					.must(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(doc.getId())))
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.SNOMED_RT_SIMPLE_MAP_TYPE_REFERENCE_SET_ID)))
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
 			
 			query = Query.select(SnomedRefSetMemberIndexEntry.class).where(condition).build();
 			snomedRefSetMemberIndexEntrys = getRevisionSearcher().search(query);

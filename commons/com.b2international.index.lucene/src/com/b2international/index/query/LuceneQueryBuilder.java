@@ -39,6 +39,7 @@ import org.apache.lucene.queries.function.valuesource.FloatFieldSource;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser.Operator;
+import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BoostQuery;
@@ -79,6 +80,11 @@ public final class LuceneQueryBuilder {
 	private final Deque<Query> deque = Queues.newLinkedBlockingDeque();
 	private final DocumentMapping mapping;
 	
+	/**
+	 * Set to {@code true} if at least one predicate is seen that affects query scoring.
+	 */
+	private boolean needsScoring;
+	
 	public LuceneQueryBuilder(DocumentMapping mapping) {
 		this.mapping = checkNotNull(mapping, "mapping");
 	}
@@ -89,10 +95,31 @@ public final class LuceneQueryBuilder {
 	
 	public org.apache.lucene.search.Query build(Expression expression) {
 		checkNotNull(expression, "expression");
-		// always filter by type
-		visit(Expressions.builder().must(mapping.matchType()).must(expression).build());
+		visit(expression);
+		
 		if (deque.size() == 1) {
-			return deque.pop();
+			Query convertedQuery = deque.pop();
+			BooleanQuery.Builder builder = new BooleanQuery.Builder();
+			
+			if (convertedQuery instanceof BooleanQuery) {
+				BooleanQuery booleanQuery = (BooleanQuery) convertedQuery;
+				
+				for (BooleanClause clause : booleanQuery.clauses()) {
+					builder.add(clause);
+				}
+				builder.setDisableCoord(booleanQuery.isCoordDisabled());
+				builder.setMinimumNumberShouldMatch(booleanQuery.getMinimumNumberShouldMatch());
+			} else {
+				if (needsScoring) {
+					builder.add(convertedQuery, Occur.MUST);
+				} else {
+					builder.add(new MatchAllDocsQuery(), Occur.MUST);
+					builder.add(convertedQuery, Occur.FILTER);
+				}
+				builder.setDisableCoord(true);
+			}
+			builder.add(JsonDocumentMapping.matchType(mapping.typeAsString()), Occur.FILTER);
+			return builder.build();
 		} else {
 			throw newIllegalStateException();
 		}
@@ -157,6 +184,7 @@ public final class LuceneQueryBuilder {
 		final Query innerQuery = deque.pop();
 		final CustomScoreQuery query = new CustomScoreQuery(new ConstantScoreQuery(innerQuery), new FunctionQuery(visit(expression.func())));
 		query.setStrict(expression.isStrict());
+		needsScoring = true;
 		deque.push(query);
 	}
 	
@@ -169,6 +197,7 @@ public final class LuceneQueryBuilder {
 			final Class<?> secondFieldType = mapping.getFieldType(secondFieldName);
 			// only this combination is supported at the moment
 			if (String.class == firstFieldType && float.class == secondFieldType) {
+				@SuppressWarnings("unchecked") 
 				final DualScoreFunction<String, Float> function = (DualScoreFunction<String, Float>) func;
 				return new DualFloatFunction(new BytesRefFieldSource(firstFieldName), new FloatFieldSource(secondFieldName)) {
 					@Override
@@ -195,7 +224,7 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(BooleanPredicate predicate) {
-		deque.push(Fields.boolField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument())));
+		deque.push(Fields.boolField(predicate.getField()).toQuery(predicate.getArgument()));
 	}
 	
 	private void visit(BoolExpression bool) {
@@ -204,8 +233,14 @@ public final class LuceneQueryBuilder {
 		// first add the mustClauses, then the mustNotClauses, if there are no mustClauses but mustNot ones then add a match all before
 		for (Expression must : bool.mustClauses()) {
 			// visit the item and immediately pop the deque item back
-			visit(must);
-			query.add(deque.pop(), Occur.MUST);
+			LuceneQueryBuilder innerQueryBuilder = new LuceneQueryBuilder(mapping);
+			innerQueryBuilder.visit(must);
+			
+			if (innerQueryBuilder.needsScoring) {
+				query.add(innerQueryBuilder.deque.pop(), Occur.MUST);
+			} else {
+				query.add(innerQueryBuilder.deque.pop(), Occur.FILTER);
+			}
 		}
 		
 		for (Expression mustNot : bool.mustNotClauses()) {
@@ -231,9 +266,9 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(NestedPredicate predicate) {
-		final Query parentFilter = JsonDocumentMapping.filterByType(mapping.typeAsString());
+		final Query parentFilter = JsonDocumentMapping.matchType(mapping.typeAsString());
 		final DocumentMapping nestedMapping = mapping.getNestedMapping(predicate.getField());
-		final Query childFilter = JsonDocumentMapping.filterByType(nestedMapping.typeAsString());
+		final Query childFilter = JsonDocumentMapping.matchType(nestedMapping.typeAsString());
 		final Query innerQuery = new LuceneQueryBuilder(nestedMapping).build(predicate.getExpression());
 		final Query childQuery = new BooleanQuery.Builder()
 										.add(innerQuery, Occur.MUST)
@@ -252,7 +287,7 @@ public final class LuceneQueryBuilder {
 		checkArgument(parentMapping.type() == parentType, "Unexpected parent type. %s vs. %s", parentMapping.type(), parentType);
 		final Query parentQuery = new LuceneQueryBuilder(parentMapping).build(parentExpression);
 		
-		final Query parentFilter = JsonDocumentMapping.filterByType(parentMapping.typeAsString());
+		final Query parentFilter = JsonDocumentMapping.matchType(parentMapping.typeAsString());
 		
 		final Query toChildQuery = new ToChildBlockJoinQuery(parentQuery, new QueryBitSetProducer(parentFilter));
 		deque.push(toChildQuery);
@@ -307,29 +342,33 @@ public final class LuceneQueryBuilder {
 			break;
 		default: throw new UnsupportedOperationException("Unexpected text match type: " + type);
 		}
+		
 		if (query == null) {
 			query = new MatchNoDocsQuery();
+		} else {
+			needsScoring = true;
 		}
+		
 		deque.push(query);	
 	}
 	
 	private void visit(StringPredicate predicate) {
-		final Query filter = Fields.stringField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
+		final Query filter = Fields.stringField(predicate.getField()).toQuery(predicate.getArgument());
 		deque.push(filter);
 	}
 	
 	private void visit(StringSetPredicate predicate) {
-		final Query filter = Fields.stringField(predicate.getField()).createTermsFilter(predicate.values());
+		final Query filter = Fields.stringField(predicate.getField()).toQuery(predicate.values());
 		deque.push(filter);
 	}
 	
 	private void visit(IntSetPredicate predicate) {
-		final Query filter = Fields.intField(predicate.getField()).createTermsFilter(predicate.values());
+		final Query filter = Fields.intField(predicate.getField()).toQuery(predicate.values());
 		deque.push(filter);
 	}
 	
 	private void visit(LongSetPredicate predicate) {
-		final Query filter = Fields.longField(predicate.getField()).createTermsFilter(predicate.values());
+		final Query filter = Fields.longField(predicate.getField()).toQuery(predicate.values());
 		deque.push(filter);
 	}
 	
@@ -348,12 +387,12 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(IntPredicate predicate) {
-		final Query filter = Fields.intField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
+		final Query filter = Fields.intField(predicate.getField()).toQuery(predicate.getArgument());
 		deque.push(filter);
 	}
 	
 	private void visit(LongPredicate predicate) {
-		final Query filter = Fields.longField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
+		final Query filter = Fields.longField(predicate.getField()).toQuery(predicate.getArgument());
 		deque.push(filter);
 	}
 	

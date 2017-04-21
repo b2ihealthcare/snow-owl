@@ -93,8 +93,8 @@ public class DefaultRevisionWriter implements RevisionWriter {
 			final Collection<Long> storageKeysToUpdate = storageKeysByType.get(type);
 			if (!storageKeysToUpdate.isEmpty()) {
 				final Expression filter = Expressions.builder()
-							.must(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeysToUpdate))
-							.must(Revision.branchFilter(branch))
+							.filter(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeysToUpdate))
+							.filter(Revision.branchFilter(branch))
 							.build();
 				final BulkUpdate<Revision> update = new BulkUpdate<Revision>(type, filter, DocumentMapping._ID, Revision.UPDATE_REPLACED_INS, ImmutableMap.of("segmentId", branch.segmentId()));
 				index.bulkUpdate(update);

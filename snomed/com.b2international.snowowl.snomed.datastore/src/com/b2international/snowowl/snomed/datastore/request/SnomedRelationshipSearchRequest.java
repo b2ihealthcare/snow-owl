@@ -69,11 +69,11 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 		if (containsKey(OptionKey.GROUP_MIN) || containsKey(OptionKey.GROUP_MAX)) {
 			final int from = containsKey(OptionKey.GROUP_MIN) ? get(OptionKey.GROUP_MIN, Integer.class) : 0;
 			final int to = containsKey(OptionKey.GROUP_MAX) ? get(OptionKey.GROUP_MAX, Integer.class) : Integer.MAX_VALUE;
-			queryBuilder.must(group(from, to));
+			queryBuilder.filter(group(from, to));
 		}
 		
 		if (containsKey(OptionKey.UNION_GROUP)) {
-			queryBuilder.must(unionGroup(get(OptionKey.UNION_GROUP, Integer.class)));
+			queryBuilder.filter(unionGroup(get(OptionKey.UNION_GROUP, Integer.class)));
 		}
 		
 		final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(select(SnomedRelationshipIndexEntry.class)

@@ -269,7 +269,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		
 		final Query<SnomedConceptDocument> query = Query.selectPartial(SnomedConceptDocument.class, RevisionDocument.Fields.ID)
 				.where(Expressions.builder()
-						.must(SnomedConceptDocument.Expressions.refSetStorageKeys(detachedRefSetStorageKeys))
+						.filter(SnomedConceptDocument.Expressions.refSetStorageKeys(detachedRefSetStorageKeys))
 						.mustNot(Expressions.matchAnyLong(Revision.STORAGE_KEY, detachedConceptStorageKeys))
 						.build())
 				.limit(detachedRefSets.size())

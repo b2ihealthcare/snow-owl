@@ -93,7 +93,7 @@ public class RevisionTransactionalityTest extends BaseRevisionIndexTest {
 			public Data execute(Searcher index) throws IOException {
 				final Hits<Data> hits = index.search(Query.select(Data.class)
 						// only a single revision exists in segment 0
-						.where(Expressions.builder().must(Expressions.match(Revision.SEGMENT_ID, 0)).build())
+						.where(Expressions.match(Revision.SEGMENT_ID, 0))
 						.limit(2) // query two items so getOnlyElement will throw exception in case of invalid query
 						.build());
 				return Iterables.getOnlyElement(hits);

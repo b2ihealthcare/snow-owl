@@ -47,8 +47,8 @@ public class SnomedLanguageRefSetExporter extends AbstractSnomedRf2CoreExporter<
 	@Override
 	protected void appendExpressionConstraint(ExpressionBuilder builder) {
 		builder
-			.must(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(singleton(SnomedRefSetType.LANGUAGE)))
-			.must(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(LongSets.toStringSet(descriptionIds)));
+			.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(singleton(SnomedRefSetType.LANGUAGE)))
+			.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(LongSets.toStringSet(descriptionIds)));
 	}
 	
 	@Override

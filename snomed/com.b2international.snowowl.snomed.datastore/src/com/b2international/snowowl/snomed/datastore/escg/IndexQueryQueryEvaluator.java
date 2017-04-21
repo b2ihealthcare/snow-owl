@@ -74,21 +74,17 @@ public class IndexQueryQueryEvaluator implements IQueryEvaluator<Expression, com
 				case SELF:
 					return id(conceptId);
 				case ANY_SUBTYPE:
-					return Expressions.builder().must(
-							Expressions.builder()
+					return Expressions.builder()
 								.should(parents(Collections.singleton(conceptId)))
 								.should(ancestors(Collections.singleton(conceptId)))
-								.build())
-							.build();
+								.build();
 					
 				case SELF_AND_ANY_SUBTYPE:
-					return Expressions.builder().must(
-							Expressions.builder()
+					return Expressions.builder()
 								.should(id(conceptId))
 								.should(parents(Collections.singleton(conceptId)))
 								.should(ancestors(Collections.singleton(conceptId)))
-								.build())
-							.build();
+								.build();
 					
 				default:
 					throw new EscgParseFailedException("Unknown concept quantifier type: " + concept.getQuantifier());
@@ -97,23 +93,19 @@ public class IndexQueryQueryEvaluator implements IQueryEvaluator<Expression, com
 			
 		} else if (expression instanceof RefSet) {
 			final String refSetId = ((RefSet) expression).getId();
-			return Expressions.builder().must(
-					Expressions.builder()
+			return Expressions.builder()
 						.should(referringRefSet(refSetId))
 						.should(referringMappingRefSet(refSetId))
-						.build())
-					.build();
+						.build();
 		} else if (expression instanceof SubExpression) {
 			final SubExpression subExpression = (SubExpression) expression;
 			return evaluate(subExpression.getValue());
 		} else if (expression instanceof OrClause) {
 			final OrClause orClause = (OrClause) expression;
-			return Expressions.builder().must(
-					Expressions.builder()
+			return Expressions.builder()
 						.should(evaluate(orClause.getLeft()))
 						.should(evaluate(orClause.getRight()))
-						.build())
-					.build();
+						.build();
 		} else if (expression instanceof AndClause) {
 
 			final AndClause clause = (AndClause) expression;
@@ -126,8 +118,8 @@ public class IndexQueryQueryEvaluator implements IQueryEvaluator<Expression, com
 				return handleAndNot(clause.getRight(), notClause);
 			} else {
 				return Expressions.builder()
-						.must(evaluate(clause.getLeft()))
-						.must(evaluate(clause.getRight()))
+						.filter(evaluate(clause.getLeft()))
+						.filter(evaluate(clause.getRight()))
 						.build();
 			}
 			
@@ -147,7 +139,7 @@ public class IndexQueryQueryEvaluator implements IQueryEvaluator<Expression, com
 			throw new EscgParseFailedException("Cannot AND two NOT clauses yet");
 		}
 		return Expressions.builder()
-				.must(evaluate(notNegated))
+				.filter(evaluate(notNegated))
 				.mustNot(evaluate(negated.getValue()))
 				.build();
 	}

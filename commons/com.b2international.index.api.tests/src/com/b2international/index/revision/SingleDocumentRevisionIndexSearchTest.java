@@ -212,8 +212,8 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 		indexRevision(MAIN, STORAGE_KEY2, second);
 		
 		final Expression expression = Expressions.builder()
-				.must(Expressions.matchRange("from", 2, 3))
-				.must(Expressions.matchRange("to", 3, 4))
+				.filter(Expressions.matchRange("from", 2, 3))
+				.filter(Expressions.matchRange("to", 3, 4))
 				.build();
 		final Query<RangeData> query = Query.select(RangeData.class).where(expression).build();
 		final Iterable<RangeData> matches = search(MAIN, query);

@@ -151,7 +151,7 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 		// module constraint
 		Set<String> modulesToExport = exportContext.getModulesToExport();
 		if (!CompareUtils.isEmpty(modulesToExport)) {
-			builder.must(SnomedDocument.Expressions.modules(modulesToExport));
+			builder.filter(SnomedDocument.Expressions.modules(modulesToExport));
 		}
 		
 		// add whatever else subclasses would add
@@ -164,7 +164,7 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 		
 		if (exportContext.isUnpublishedExport()) {
 			
-			builder.must(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
+			builder.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
 			
 		} else { // DELTA and SNAPSHOT might have effective time constraints, FULL will programmatically have those
 			
@@ -180,7 +180,7 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 			}
 			
 			if (expression != null) {
-				builder.must(expression);
+				builder.filter(expression);
 			}
 			
 		}

@@ -82,9 +82,9 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		public void run() {
 			final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
 					.where(Expressions.builder()
-							.must(active())
-							.must(typeId(Concepts.IS_A))
-							.must(characteristicTypeIds(getAllowedCharacteristicTypes()))
+							.filter(active())
+							.filter(typeId(Concepts.IS_A))
+							.filter(characteristicTypeIds(getAllowedCharacteristicTypes()))
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();
@@ -127,8 +127,8 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		public void run() {
 			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
 					.where(Expressions.builder()
-							.must(active())
-							.must(additionalClause)
+							.filter(active())
+							.filter(additionalClause)
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();
@@ -296,10 +296,10 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		public void run() {
 			final Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
 					.where(Expressions.builder()
-							.must(active())
-							.must(referencedComponentIds(LongSets.toStringSet(componentIds)))
-							.must(refSetTypes(Collections.singleton(SnomedRefSetType.CONCRETE_DATA_TYPE)))
-							.must(characteristicTypeIds(characteristicTypes))
+							.filter(active())
+							.filter(referencedComponentIds(LongSets.toStringSet(componentIds)))
+							.filter(refSetTypes(Collections.singleton(SnomedRefSetType.CONCRETE_DATA_TYPE)))
+							.filter(characteristicTypeIds(characteristicTypes))
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();
@@ -367,8 +367,8 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		private LongKeyMap<Collection<StatementFragment>> getStatements(final Collection<String> characteristicTypes) {
 			final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
 					.where(Expressions.builder()
-							.must(active())
-							.must(characteristicTypeIds(characteristicTypes))
+							.filter(active())
+							.filter(characteristicTypeIds(characteristicTypes))
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();

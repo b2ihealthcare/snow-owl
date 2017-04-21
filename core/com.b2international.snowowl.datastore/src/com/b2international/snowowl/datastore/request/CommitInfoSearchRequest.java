@@ -90,14 +90,14 @@ final class CommitInfoSearchRequest extends SearchResourceRequest<RepositoryCont
 	private void addBranchClause(final ExpressionBuilder builder) {
 		if (containsKey(OptionKey.BRANCH)) {
 			final String branch = getString(OptionKey.BRANCH);
-			builder.must(branch(branch));
+			builder.filter(branch(branch));
 		}
 	}
 
 	private void addUserIdClause(final ExpressionBuilder builder) {
 		if (containsKey(OptionKey.USER_ID)) {
 			final String userId = getString(OptionKey.USER_ID);
-			builder.must(userId(userId));
+			builder.filter(userId(userId));
 		}
 	}
 
@@ -116,7 +116,7 @@ final class CommitInfoSearchRequest extends SearchResourceRequest<RepositoryCont
 	private void addTimeStampClause(final ExpressionBuilder builder) {
 		if (containsKey(OptionKey.TIME_STAMP)) {
 			final Long timeStamp = get(OptionKey.TIME_STAMP, Long.class);
-			builder.must(timeStamp(timeStamp));
+			builder.filter(timeStamp(timeStamp));
 		}
 	}
 

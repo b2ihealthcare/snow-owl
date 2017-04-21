@@ -149,8 +149,8 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 					final Query<Revision.Views.StorageKeyAndHash> deletedOrChangedQuery = Query
 							.selectPartial(Revision.Views.StorageKeyAndHash.class, typeToCompare, ImmutableSet.of(Revision.STORAGE_KEY, DocumentMapping._HASH))
 							.where(Expressions.builder()
-									.must(matchAnyInt(Revision.SEGMENT_ID, commonPath))
-									.must(matchAnyInt(Revision.REPLACED_INS, segmentsToCompare))
+									.filter(matchAnyInt(Revision.SEGMENT_ID, commonPath))
+									.filter(matchAnyInt(Revision.REPLACED_INS, segmentsToCompare))
 									.build())
 							.limit(Integer.MAX_VALUE)
 							.build();
@@ -230,11 +230,11 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 		final Searcher searcher = writer.searcher();
 		final ExpressionBuilder purgeQuery = Expressions.builder();
 		// purge only documents added to the selected branch
-		purgeQuery.must(Expressions.exactMatch(Revision.BRANCH_PATH, branchToPurge));
+		purgeQuery.filter(Expressions.exactMatch(Revision.BRANCH_PATH, branchToPurge));
 		for (Integer segmentToPurge : segmentsToPurge) {
 			purgeQuery.should(Expressions.builder()
-				.must(Expressions.match(Revision.SEGMENT_ID, segmentToPurge))
-				.must(Expressions.match(Revision.REPLACED_INS, segmentToPurge))
+				.filter(Expressions.match(Revision.SEGMENT_ID, segmentToPurge))
+				.filter(Expressions.match(Revision.REPLACED_INS, segmentToPurge))
 				.build());
 		}
 		for (Class<? extends Revision> revisionType : typesToPurge) {
