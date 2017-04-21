@@ -143,7 +143,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 
 	private void addLanguageFilter(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.LANGUAGE)) {
-			queryBuilder.must(languageCodes(getCollection(OptionKey.LANGUAGE, String.class)));
+			queryBuilder.filter(languageCodes(getCollection(OptionKey.LANGUAGE, String.class)));
 		}
 	}
 
@@ -168,6 +168,6 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 			}
 		}
 		
-		queryBuilder.must(languageRefSetExpression.build());
+		queryBuilder.filter(languageRefSetExpression.build());
 	}
 }

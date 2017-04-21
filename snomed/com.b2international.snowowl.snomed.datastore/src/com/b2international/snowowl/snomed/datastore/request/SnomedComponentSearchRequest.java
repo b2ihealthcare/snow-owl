@@ -51,13 +51,13 @@ public abstract class SnomedComponentSearchRequest<R> extends SnomedSearchReques
 					.should(referringMappingRefSetExpression)
 					.build();
 				
-			queryBuilder.must(expression);
+			queryBuilder.filter(expression);
 		}
 	}
 	
 	protected final void addNamespaceFilter(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.NAMESPACE)) {
-			queryBuilder.must(namespace(getString(OptionKey.NAMESPACE)));
+			queryBuilder.filter(namespace(getString(OptionKey.NAMESPACE)));
 		}
 	}
 

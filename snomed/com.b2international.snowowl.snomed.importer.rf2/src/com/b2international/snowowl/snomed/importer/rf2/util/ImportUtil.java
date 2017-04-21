@@ -247,9 +247,9 @@ public final class ImportUtil {
 	private Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> getStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
 		final Query<SnomedRelationshipIndexEntry.Views.StatementWithId> query = Query.selectPartial(SnomedRelationshipIndexEntry.Views.StatementWithId.class, SnomedRelationshipIndexEntry.class)
 				.where(Expressions.builder()
-						.must(SnomedRelationshipIndexEntry.Expressions.active(true))
-						.must(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))
-						.must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(characteristicTypeId))
+						.filter(SnomedRelationshipIndexEntry.Expressions.active(true))
+						.filter(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))
+						.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(characteristicTypeId))
 						.build())
 				.limit(Integer.MAX_VALUE)
 				.build();

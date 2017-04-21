@@ -97,8 +97,8 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 				public SctId execute(final Searcher index) throws IOException {
 					
 					final Expression idsByNamespaceAndType = Expressions.builder()
-							.must(SctId.Expressions.namespace(namespace))
-							.must(SctId.Expressions.partitionId(namespace, category))
+							.filter(SctId.Expressions.namespace(namespace))
+							.filter(SctId.Expressions.partitionId(namespace, category))
 							.build();
 					
 					final Hits<SctId> hits = index.search(Query.select(SctId.class)

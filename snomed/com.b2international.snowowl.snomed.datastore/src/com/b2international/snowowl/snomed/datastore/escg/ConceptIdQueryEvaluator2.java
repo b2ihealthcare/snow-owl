@@ -74,10 +74,10 @@ public class ConceptIdQueryEvaluator2 implements IQueryEvaluator<LongSet, com.b2
 
 			final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
 					.where(Expressions.builder()
-							.must(SnomedRelationshipIndexEntry.Expressions.active())
-							.must(SnomedRelationshipIndexEntry.Expressions.typeIds(LongSets.toStringSet(typeIds)))
-							.must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds(ImmutableSet.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP)))
-							.must(SnomedRelationshipIndexEntry.Expressions.destinationIds(LongSets.toStringSet(destinationIds)))
+							.filter(SnomedRelationshipIndexEntry.Expressions.active())
+							.filter(SnomedRelationshipIndexEntry.Expressions.typeIds(LongSets.toStringSet(typeIds)))
+							.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds(ImmutableSet.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP)))
+							.filter(SnomedRelationshipIndexEntry.Expressions.destinationIds(LongSets.toStringSet(destinationIds)))
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();

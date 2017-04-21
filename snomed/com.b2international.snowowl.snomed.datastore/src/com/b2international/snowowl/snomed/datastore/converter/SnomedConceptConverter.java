@@ -285,7 +285,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		try {
 			
 			final ExpressionBuilder expression = Expressions.builder();
-			expression.must(active());
+			expression.filter(active());
 			final ExpressionBuilder descendantFilter = Expressions.builder();
 			if (stated) {
 				descendantFilter.should(statedParents(conceptIds));
@@ -298,7 +298,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 					descendantFilter.should(ancestors(conceptIds));
 				}
 			}
-			expression.must(descendantFilter.build());
+			expression.filter(descendantFilter.build());
 			
 			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
 					.where(expression.build())

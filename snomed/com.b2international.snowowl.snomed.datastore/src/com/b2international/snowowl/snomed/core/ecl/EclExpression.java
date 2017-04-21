@@ -108,7 +108,7 @@ final class EclExpression {
 					@Override
 					public Expression apply(Expression it) {
 						if (!excludedMatches.isEmpty()) {
-							return Expressions.builder().must(it).mustNot(RevisionDocument.Expressions.ids(excludedMatches)).build();
+							return Expressions.builder().filter(it).mustNot(RevisionDocument.Expressions.ids(excludedMatches)).build();
 						} else {
 							return it;
 						}

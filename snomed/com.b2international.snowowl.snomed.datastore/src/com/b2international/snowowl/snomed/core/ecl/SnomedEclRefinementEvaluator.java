@@ -163,7 +163,7 @@ final class SnomedEclRefinementEvaluator {
 					public Expression apply(List<Object> input) {
 						final Expression left = (Expression) input.get(0);
 						final Expression right = (Expression) input.get(1);
-						return Expressions.builder().must(left).must(right).build();
+						return Expressions.builder().filter(left).filter(right).build();
 					}
 				});
 	}

@@ -101,7 +101,7 @@ public class SnomedRf2DescriptionExporter extends AbstractSnomedRf2CoreExporter<
 	protected void appendExpressionConstraint(ExpressionBuilder builder) {
 		builder
 			.mustNot(SnomedDescriptionIndexEntry.Expressions.type(Concepts.TEXT_DEFINITION))
-			.must(SnomedDescriptionIndexEntry.Expressions.languageCode(getLanguageCode()));
+			.filter(SnomedDescriptionIndexEntry.Expressions.languageCode(getLanguageCode()));
 	}
 	
 	protected String getLanguageCode() {

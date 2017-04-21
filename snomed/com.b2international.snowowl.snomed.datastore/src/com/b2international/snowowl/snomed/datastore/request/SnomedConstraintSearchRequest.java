@@ -71,19 +71,19 @@ final class SnomedConstraintSearchRequest extends SearchResourceRequest<BranchCo
 		addIdFilter(queryBuilder, SnomedConstraintDocument.Expressions::ids);
 		
 		if (containsKey(OptionKey.SELF)) {
-			queryBuilder.must(selfIds(getCollection(OptionKey.SELF, String.class)));
+			queryBuilder.filter(selfIds(getCollection(OptionKey.SELF, String.class)));
 		}
 		
 		if (containsKey(OptionKey.DESCENDANT)) {
-			queryBuilder.must(descendantIds(getCollection(OptionKey.DESCENDANT, String.class)));
+			queryBuilder.filter(descendantIds(getCollection(OptionKey.DESCENDANT, String.class)));
 		}
 
 		if (containsKey(OptionKey.REFSET)) {
-			queryBuilder.must(refSetIds(getCollection(OptionKey.REFSET, String.class)));
+			queryBuilder.filter(refSetIds(getCollection(OptionKey.REFSET, String.class)));
 		}
 		
 		if (containsKey(OptionKey.TYPE)) {
-			queryBuilder.must(types(getCollection(OptionKey.TYPE, PredicateType.class)));
+			queryBuilder.filter(types(getCollection(OptionKey.TYPE, PredicateType.class)));
 		}
 		
 		

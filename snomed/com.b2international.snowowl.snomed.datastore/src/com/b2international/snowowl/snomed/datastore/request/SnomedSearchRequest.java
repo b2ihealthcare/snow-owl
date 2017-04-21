@@ -82,13 +82,13 @@ public abstract class SnomedSearchRequest<R> extends SearchResourceRequest<Branc
 
 	protected final void addModuleClause(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.MODULE)) {
-			queryBuilder.must(SnomedDocument.Expressions.module(getString(OptionKey.MODULE)));
+			queryBuilder.filter(SnomedDocument.Expressions.module(getString(OptionKey.MODULE)));
 		}
 	}
 
 	protected final void addActiveClause(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.ACTIVE)) {
-			queryBuilder.must(SnomedDocument.Expressions.active(getBoolean(OptionKey.ACTIVE)));
+			queryBuilder.filter(SnomedDocument.Expressions.active(getBoolean(OptionKey.ACTIVE)));
 		}
 	}
 	
@@ -96,7 +96,7 @@ public abstract class SnomedSearchRequest<R> extends SearchResourceRequest<Branc
 		if (containsKey(OptionKey.EFFECTIVE_TIME_START) || containsKey(OptionKey.EFFECTIVE_TIME_END)) {
 			final long from = containsKey(OptionKey.EFFECTIVE_TIME_START) ? get(OptionKey.EFFECTIVE_TIME_START, Long.class) : 0;
 			final long to = containsKey(OptionKey.EFFECTIVE_TIME_END) ? get(OptionKey.EFFECTIVE_TIME_END, Long.class) : Long.MAX_VALUE;
-			queryBuilder.must(SnomedDocument.Expressions.effectiveTime(from, to));
+			queryBuilder.filter(SnomedDocument.Expressions.effectiveTime(from, to));
 		}
 	}
 	
@@ -110,7 +110,7 @@ public abstract class SnomedSearchRequest<R> extends SearchResourceRequest<Branc
 				final RValue expression = context.service(EscgRewriter.class).parseRewrite(escg);
 				final LongSet conceptIds = new ConceptIdQueryEvaluator2(context.service(RevisionSearcher.class)).evaluate(expression);
 				final Expression conceptFilter = expressionProvider.apply(conceptIds);
-				queryBuilder.must(conceptFilter);
+				queryBuilder.filter(conceptFilter);
 			} catch (SyntaxErrorException e) {
 				throw new IllegalQueryParameterException(e.getMessage());
 			}
@@ -159,7 +159,7 @@ public abstract class SnomedSearchRequest<R> extends SearchResourceRequest<Branc
 				}
 			}
 		}
-		queryBuilder.must(matchingIdsToExpression.apply(idFilter));
+		queryBuilder.filter(matchingIdsToExpression.apply(idFilter));
 	}
 	
 }

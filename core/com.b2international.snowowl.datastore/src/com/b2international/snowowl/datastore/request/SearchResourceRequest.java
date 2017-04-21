@@ -192,7 +192,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	}
 	
 	protected final ExpressionBuilder addIdFilter(ExpressionBuilder queryBuilder, Function<Collection<String>, Expression> expressionFactory) {
-		return applyIdFilter(queryBuilder, (qb, ids) -> qb.must(expressionFactory.apply(ids)));
+		return applyIdFilter(queryBuilder, (qb, ids) -> qb.filter(expressionFactory.apply(ids)));
 	}
 	
 	protected final SortBy sortBy() {

@@ -178,14 +178,14 @@ public abstract class Revision implements WithId {
 
 	public static Expression branchSegmentFilter(final Integer segment) {
 		return Expressions.builder()
-				.must(match(Revision.SEGMENT_ID, segment))
+				.filter(match(Revision.SEGMENT_ID, segment))
 				.mustNot(match(Revision.REPLACED_INS, segment))
 				.build();
 	}
 	
 	public static Expression branchSegmentFilter(final Set<Integer> segments) {
 		return Expressions.builder()
-				.must(matchAnyInt(Revision.SEGMENT_ID, segments))
+				.filter(matchAnyInt(Revision.SEGMENT_ID, segments))
 				.mustNot(matchAnyInt(Revision.REPLACED_INS, segments))
 				.build();
 	}

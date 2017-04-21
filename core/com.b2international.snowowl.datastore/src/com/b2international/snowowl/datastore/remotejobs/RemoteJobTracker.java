@@ -69,8 +69,8 @@ public final class RemoteJobTracker implements IDisposableService {
 					final Hits<RemoteJobEntry> hits = writer.searcher().search(Query.select(RemoteJobEntry.class)
 							.where(
 								Expressions.builder()
-									.must(RemoteJobEntry.Expressions.deleted(true))
-									.must(RemoteJobEntry.Expressions.done())
+									.filter(RemoteJobEntry.Expressions.deleted(true))
+									.filter(RemoteJobEntry.Expressions.done())
 									.build()
 							)
 							.offset(0)
@@ -117,8 +117,8 @@ public final class RemoteJobTracker implements IDisposableService {
 			final Hits<RemoteJobEntry> hits = searcher.search(
 					Query.selectPartial(RemoteJobEntry.class, fields)
 						.where(Expressions.builder()
-								.must(RemoteJobEntry.Expressions.deleted(false))
-								.must(query)
+								.filter(RemoteJobEntry.Expressions.deleted(false))
+								.filter(query)
 								.build())
 						.sortBy(sortBy)
 						.offset(offset)

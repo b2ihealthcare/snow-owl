@@ -50,7 +50,7 @@ public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRe
 	
 	@Override
 	protected void appendExpressionConstraint(ExpressionBuilder builder) {
-		builder.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(refset.getId()));
+		builder.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(refset.getId()));
 	}
 
 	@Override

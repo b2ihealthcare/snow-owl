@@ -120,9 +120,9 @@ public class SnomedInvalidTaxonomyMergeConflictRule extends AbstractSnomedMergeC
 	private Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> getActiveStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
 		final Query<SnomedRelationshipIndexEntry.Views.StatementWithId> query = Query.selectPartial(SnomedRelationshipIndexEntry.Views.StatementWithId.class, SnomedRelationshipIndexEntry.class)
 				.where(Expressions.builder()
-						.must(SnomedRelationshipIndexEntry.Expressions.active())
-						.must(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))
-						.must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(characteristicTypeId))
+						.filter(SnomedRelationshipIndexEntry.Expressions.active())
+						.filter(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))
+						.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(characteristicTypeId))
 						.build())
 				.limit(Integer.MAX_VALUE)
 				.build();

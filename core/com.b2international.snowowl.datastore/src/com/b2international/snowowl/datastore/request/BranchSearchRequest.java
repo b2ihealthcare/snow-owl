@@ -62,11 +62,11 @@ final class BranchSearchRequest extends SearchResourceRequest<RepositoryContext,
 		addIdFilter(queryBuilder, ids -> Expressions.matchAny("path", ids));
 		
 		if (containsKey(OptionKey.PARENT)) {
-			queryBuilder.must(Expressions.matchAny("parentPath", getCollection(OptionKey.PARENT, String.class)));
+			queryBuilder.filter(Expressions.matchAny("parentPath", getCollection(OptionKey.PARENT, String.class)));
 		}
 		
 		if (containsKey(OptionKey.NAME)) {
-			queryBuilder.must(Expressions.matchAny("name", getCollection(OptionKey.NAME, String.class)));
+			queryBuilder.filter(Expressions.matchAny("name", getCollection(OptionKey.NAME, String.class)));
 		}
 		
 		final Hits<InternalBranch> matches = searcher.search(select(InternalBranch.class)
