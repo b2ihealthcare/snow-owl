@@ -17,10 +17,24 @@ package com.b2international.snowowl.snomed.api.rest.branches;
 
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranch;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.*;
-import static com.b2international.snowowl.snomed.api.rest.SnomedReviewRestRequests.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewDescription;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.inactivateDescription;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.inactivateRelationship;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.merge;
+import static com.b2international.snowowl.snomed.api.rest.SnomedReviewRestRequests.createReview;
+import static com.b2international.snowowl.snomed.api.rest.SnomedReviewRestRequests.deleteReview;
+import static com.b2international.snowowl.snomed.api.rest.SnomedReviewRestRequests.getConceptChanges;
+import static com.b2international.snowowl.snomed.api.rest.SnomedReviewRestRequests.getReview;
+import static com.b2international.snowowl.snomed.api.rest.SnomedReviewRestRequests.getReviewJobId;
+import static com.b2international.snowowl.snomed.api.rest.SnomedReviewRestRequests.waitForReviewJob;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static org.hamcrest.CoreMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
 
 import java.util.Map;
 
@@ -29,6 +43,7 @@ import org.junit.Test;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.ReviewStatus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
@@ -185,12 +200,17 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		String reviewId = getReviewJobId(createReview(a, b));
 		waitForReviewJob(reviewId).body("status", equalTo(ReviewStatus.CURRENT.name()));
 
-		getConceptChanges(reviewId).statusCode(200)
-		.body("id", equalTo(reviewId))
-		.body("newConcepts", hasItems(newConcept1Id, newConcept2Id))
-		.body("changedConcepts", hasItem(Concepts.ROOT_CONCEPT))
-		.body("changedConcepts", not(hasItem(Concepts.NAMESPACE_ROOT)))
-		.body("deletedConcepts", nullValue()); // In this test case we never see c1
+		ConceptChanges changes = getConceptChanges(reviewId).statusCode(200).extract().as(ConceptChanges.class);
+		
+		assertThat(changes.id()).isEqualTo(reviewId);
+		// newConcept2Id has been added after the merge, it should not be visible here
+		assertThat(changes.newConcepts())
+			.containsOnly(newConcept1Id, newConcept2Id);
+		assertThat(changes.changedConcepts())
+			.containsOnly(Concepts.ROOT_CONCEPT)
+			.doesNotContain(Concepts.NAMESPACE_ROOT);
+		assertThat(changes.deletedConcepts())
+			.isEmpty(); // In this test case we never see c1
 	}
 
 	@Test
@@ -217,13 +237,17 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		String reviewId = getReviewJobId(createReview(a, b));
 		waitForReviewJob(reviewId).body("status", equalTo(ReviewStatus.CURRENT.name()));
 
-		getConceptChanges(reviewId).statusCode(200)
-		.body("id", equalTo(reviewId))
-		.body("newConcepts", hasItem(newConcept1Id))
-		.body("newConcepts", not(hasItem(newConcept2Id))) // newConcept2Id has been added after the merge, it should not be visible here
-		.body("changedConcepts", hasItem(Concepts.ROOT_CONCEPT))
-		.body("changedConcepts", not(hasItem(Concepts.NAMESPACE_ROOT)))
-		.body("deletedConcepts", nullValue());
+		final ConceptChanges changes = getConceptChanges(reviewId)
+			.statusCode(200)
+			.extract().as(ConceptChanges.class);
+		
+		assertThat(changes.id()).isEqualTo(reviewId);
+		// newConcept2Id has been added after the merge, it should not be visible here
+		assertThat(changes.newConcepts()).containsOnly(newConcept1Id);
+		assertThat(changes.changedConcepts())
+			.contains(Concepts.ROOT_CONCEPT)
+			.doesNotContain(Concepts.NAMESPACE_ROOT);
+		assertThat(changes.deletedConcepts()).isEmpty();
 	}
 
 	@Test

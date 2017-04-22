@@ -142,7 +142,7 @@ public class ReviewManagerImpl implements ReviewManager {
 						
 							index.removeAll(ImmutableMap.of(
 									ReviewImpl.class, ids,
-									ConceptChangesImpl.class, ids
+									ConceptChanges.class, ids
 									));
 							
 							index.commit();
@@ -377,7 +377,7 @@ public class ReviewManagerImpl implements ReviewManager {
 			}
 		}
 		
-		final ConceptChangesImpl convertedChanges = new ConceptChangesImpl(id, newConcepts, changedConcepts, deletedConcepts);
+		final ConceptChanges convertedChanges = new ConceptChanges(id, newConcepts, changedConcepts, deletedConcepts);
 
 		try {
 			getReview(id);
@@ -415,7 +415,7 @@ public class ReviewManagerImpl implements ReviewManager {
 		final ConceptChanges conceptChanges = store.read(new IndexRead<ConceptChanges>() {
 			@Override
 			public ConceptChanges execute(Searcher index) throws IOException {
-				return index.get(ConceptChangesImpl.class, id);
+				return index.get(ConceptChanges.class, id);
 			}
 		});
 
@@ -432,7 +432,7 @@ public class ReviewManagerImpl implements ReviewManager {
 			public Review execute(Writer index) throws IOException {
 				index.removeAll(ImmutableMap.of(
 						ReviewImpl.class, Collections.singleton(review.id()),
-						ConceptChangesImpl.class, Collections.singleton(review.id())));
+						ConceptChanges.class, Collections.singleton(review.id())));
 				index.commit();
 				return review;
 			}

@@ -87,7 +87,6 @@ import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchMan
 import com.b2international.snowowl.datastore.server.internal.branch.CDOMainBranchImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.InternalCDOBasedBranch;
 import com.b2international.snowowl.datastore.server.internal.merge.MergeServiceImpl;
-import com.b2international.snowowl.datastore.server.internal.review.ConceptChangesImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewManagerImpl;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -217,7 +216,6 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		types.add(Review.class);
 		types.add(ReviewImpl.class);
 		types.add(ConceptChanges.class);
-		types.add(ConceptChangesImpl.class);
 		types.add(CodeSystemEntry.class);
 		types.add(CodeSystemVersionEntry.class);
 		types.addAll(getToolingTypes(toolingId));
