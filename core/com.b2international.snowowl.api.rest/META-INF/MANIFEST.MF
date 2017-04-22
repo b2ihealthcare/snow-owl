@@ -78,8 +78,8 @@ Bundle-ClassPath: .,
  WEB-INF/lib/swagger-core_2.10-1.3.11.jar,
  WEB-INF/lib/swagger-models-0.9.3.jar,
  WEB-INF/lib/swagger-springmvc-0.9.3.jar,
- WEB-INF/lib/jackson-datatype-guava-2.4.5.jar,
- WEB-INF/lib/jackson-jaxrs-json-provider-2.4.5.jar,
- WEB-INF/lib/jackson-module-jaxb-annotations-2.4.5.jar,
- WEB-INF/lib/jackson-module-jsonSchema-2.4.5.jar,
- WEB-INF/lib/jackson-module-scala_2.10-2.4.5.jar
+ WEB-INF/lib/jackson-datatype-guava-2.6.6.jar,
+ WEB-INF/lib/jackson-jaxrs-json-provider-2.6.6.jar,
+ WEB-INF/lib/jackson-module-jaxb-annotations-2.6.6.jar,
+ WEB-INF/lib/jackson-module-jsonSchema-2.6.6.jar,
+ WEB-INF/lib/jackson-module-scala_2.10-2.6.6.jar
