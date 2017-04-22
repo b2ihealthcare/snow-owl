@@ -49,12 +49,14 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.review.BranchState;
-import com.b2international.snowowl.datastore.review.ConceptChanges;
-import com.b2international.snowowl.datastore.review.ConceptChangesMixin;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponent;
-import com.b2international.snowowl.snomed.api.rest.domain.*;
+import com.b2international.snowowl.snomed.api.rest.domain.BranchMixin;
+import com.b2international.snowowl.snomed.api.rest.domain.BranchStateMixin;
+import com.b2international.snowowl.snomed.api.rest.domain.CollectionResourceMixin;
+import com.b2international.snowowl.snomed.api.rest.domain.ISnomedComponentMixin;
+import com.b2international.snowowl.snomed.api.rest.domain.ReviewMixin;
 import com.b2international.snowowl.snomed.api.rest.util.CsvMessageConverter;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -171,20 +173,19 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 	public ObjectMapper objectMapper() {
 		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new GuavaModule());
-		objectMapper.setSerializationInclusion(Include.NON_EMPTY);
+		objectMapper.setSerializationInclusion(Include.NON_NULL);
 		final ISO8601DateFormat df = new ISO8601DateFormat();
 		df.setTimeZone(TimeZone.getTimeZone("UTC"));
 		objectMapper.setDateFormat(df);
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-		objectMapper.addMixInAnnotations(CollectionResource.class, CollectionResourceMixin.class);
-		objectMapper.addMixInAnnotations(SnomedComponent.class, ISnomedComponentMixin.class);
-		objectMapper.addMixInAnnotations(ISnomedBrowserComponent.class, ISnomedComponentMixin.class);
-		objectMapper.addMixInAnnotations(Branch.class, BranchMixin.class);
-		objectMapper.addMixInAnnotations(Metadata.class, MetadataMixin.class);
-		objectMapper.addMixInAnnotations(MetadataHolder.class, MetadataHolderMixin.class);
-		objectMapper.addMixInAnnotations(Review.class, ReviewMixin.class);
-		objectMapper.addMixInAnnotations(BranchState.class, BranchStateMixin.class);
-		objectMapper.addMixInAnnotations(ConceptChanges.class, ConceptChangesMixin.class);
+		objectMapper.addMixIn(CollectionResource.class, CollectionResourceMixin.class);
+		objectMapper.addMixIn(SnomedComponent.class, ISnomedComponentMixin.class);
+		objectMapper.addMixIn(ISnomedBrowserComponent.class, ISnomedComponentMixin.class);
+		objectMapper.addMixIn(Branch.class, BranchMixin.class);
+		objectMapper.addMixIn(Metadata.class, MetadataMixin.class);
+		objectMapper.addMixIn(MetadataHolder.class, MetadataHolderMixin.class);
+		objectMapper.addMixIn(Review.class, ReviewMixin.class);
+		objectMapper.addMixIn(BranchState.class, BranchStateMixin.class);
 		return objectMapper;
 	}
 	
