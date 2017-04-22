@@ -221,8 +221,8 @@ public class ReviewManagerImpl implements ReviewManager {
 				final Hits<ReviewImpl> affectedReviews = index.searcher().search(
 						Query.select(ReviewImpl.class)
 						.where(Expressions.builder()
-								.filter(Expressions.nestedMatch("source", Expressions.exactMatch("path", path)))
-								.filter(Expressions.nestedMatch("target", Expressions.exactMatch("path", path)))
+								.should(Expressions.nestedMatch("source", Expressions.exactMatch("path", path)))
+								.should(Expressions.nestedMatch("target", Expressions.exactMatch("path", path)))
 								.build()
 								)
 						.limit(Integer.MAX_VALUE)
