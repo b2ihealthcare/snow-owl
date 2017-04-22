@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jackson-datatype-guava-2.4.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jackson-jaxrs-json-provider-2.4.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jackson-module-jaxb-annotations-2.4.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jackson-module-jsonSchema-2.4.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jackson-module-scala_2.10-2.4.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jackson-datatype-guava-2.6.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jackson-jaxrs-json-provider-2.6.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jackson-module-jaxb-annotations-2.6.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jackson-module-jsonSchema-2.6.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jackson-module-scala_2.10-2.6.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/aopalliance-1.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/classmate-1.1.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/commons-lang-2.5.jar"/>
