@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 /**
  * @since 4.6
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "id", visible = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "id", visible = true)
 @JsonTypeIdResolver(SnomedCoreComponent.SnomedComponentCategoryResolver.class)
 public abstract class SnomedCoreComponent extends SnomedComponent {
 
