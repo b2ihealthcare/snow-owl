@@ -207,7 +207,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		assertThat(changes.newConcepts())
 			.containsOnly(newConcept1Id, newConcept2Id);
 		assertThat(changes.changedConcepts())
-			.containsOnly(Concepts.ROOT_CONCEPT)
+			.contains(Concepts.ROOT_CONCEPT)
 			.doesNotContain(Concepts.NAMESPACE_ROOT);
 		assertThat(changes.deletedConcepts())
 			.isEmpty(); // In this test case we never see c1
@@ -274,9 +274,6 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		waitForReviewJob(reviewId).body("status", equalTo(ReviewStatus.CURRENT.name()));
 
 		createNewConcept(branchPath);
-
-		// wait 1s before checking review state 
-		Thread.sleep(1000);
 
 		getReview(reviewId).statusCode(200).body("status", equalTo(ReviewStatus.STALE.toString()));		
 	}
