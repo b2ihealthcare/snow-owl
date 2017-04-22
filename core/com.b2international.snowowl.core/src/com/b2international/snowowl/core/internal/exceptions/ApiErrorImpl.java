@@ -28,13 +28,13 @@ public class ApiErrorImpl implements ApiError {
 	private String message;
 	private String developerMessage;
 	private Integer code;
-	private Map<String, Object> additionalInformation;
+	private Map<String, Object> additionalInfo;
 
 	public ApiErrorImpl(String message, String developerMessage, int code, Map<String, Object> additionalInformation) {
 		this.message = message;
 		this.developerMessage = developerMessage;
 		this.code = code;
-		this.additionalInformation = additionalInformation == null ? Collections.<String, Object>emptyMap() : additionalInformation;
+		this.additionalInfo = additionalInformation == null ? Collections.<String, Object>emptyMap() : additionalInformation;
 	}
 	
 	@Override
@@ -54,7 +54,7 @@ public class ApiErrorImpl implements ApiError {
 
 	@Override
 	public Map<String, Object> getAdditionalInfo() {
-		return additionalInformation;
+		return additionalInfo;
 	}
 
 }
