@@ -33,6 +33,7 @@ import org.apache.lucene.search.ReferenceManager;
 import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.util.QueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -162,6 +163,11 @@ final class EsTransactionLogTest {
 
 		@Override
 		public IndexWriter getWriter() {
+			return null;
+		}
+		
+		@Override
+		public QueryBuilder getQueryBuilder() {
 			return null;
 		}
 
