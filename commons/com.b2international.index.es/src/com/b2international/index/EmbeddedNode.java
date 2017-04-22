@@ -18,10 +18,8 @@ package com.b2international.index;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.File;
-import java.util.List;
 
 import org.elasticsearch.Version;
-import org.elasticsearch.cluster.service.PendingClusterTask;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.settings.Settings.Builder;
 import org.elasticsearch.index.reindex.ReindexPlugin;
@@ -34,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.FileUtils;
+import com.b2international.index.admin.AwaitPendingTasks;
 
 /**
  * @since 5.10
@@ -41,12 +40,11 @@ import com.b2international.commons.FileUtils;
 public final class EmbeddedNode extends Node {
 
 	private static final Logger LOG = LoggerFactory.getLogger("elastic.snowowl");
-	private static final int PENDING_CLUSTER_TASKS_RETRY_INTERVAL = 100;
 	private static final String CLUSTER_NAME = "elastic-snowowl";
 	
-	private static EmbeddedNode INSTANCE;
+	private static Node INSTANCE;
 	
-	static EmbeddedNode getInstance(File directory, boolean persistent) {
+	static Node getInstance(File directory, boolean persistent) {
 		if (INSTANCE == null) {
 			synchronized (EmbeddedNode.class) {
 				if (INSTANCE == null) {
@@ -69,13 +67,14 @@ public final class EmbeddedNode extends Node {
 					esSettings.put("script.inline", true);
 					esSettings.put("script.indexed", true);
 					
-					INSTANCE = new EmbeddedNode(esSettings.build(), GroovyPlugin.class, ReindexPlugin.class, DeleteByQueryPlugin.class);
-					INSTANCE.start();
-					INSTANCE.awaitPendingTasks();
+					final Node node = new EmbeddedNode(esSettings.build(), GroovyPlugin.class, ReindexPlugin.class, DeleteByQueryPlugin.class);
+					node.start();
+					AwaitPendingTasks.await(node.client(), LOG);
+					INSTANCE = node;
 					Runtime.getRuntime().addShutdownHook(new Thread() {
 						@Override
 						public void run() {
-							INSTANCE.awaitPendingTasks();
+							AwaitPendingTasks.await(INSTANCE.client(), LOG);
 							INSTANCE.client().close();
 							INSTANCE.close();
 							if (persistent) {
@@ -95,19 +94,4 @@ public final class EmbeddedNode extends Node {
 		super(InternalSettingsPreparer.prepareEnvironment(settings, null), Version.CURRENT, newArrayList(classpathPlugins));
 	}
 	
-	public void awaitPendingTasks() {
-		int pendingTaskCount = 0;
-		do {
-			LOG.info("Waiting for pending cluster tasks to finish.");
-			List<PendingClusterTask> pendingTasks = client().admin().cluster().preparePendingClusterTasks().get()
-					.getPendingTasks();
-			pendingTaskCount = pendingTasks.size();
-			try {
-				Thread.sleep(PENDING_CLUSTER_TASKS_RETRY_INTERVAL);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
-		} while (pendingTaskCount > 0);
-	}
-
 }

@@ -18,7 +18,9 @@ package com.b2international.index;
 import java.io.File;
 import java.util.Map;
 
-import com.b2international.index.admin.EsLocalIndexAdmin;
+import org.elasticsearch.node.Node;
+
+import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -32,8 +34,8 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 		final boolean persistent = settings.containsKey(IndexClientFactory.DIRECTORY);
 		final Object dir = persistent ? settings.get(IndexClientFactory.DIRECTORY) : new File("target");
 		final File directory = dir instanceof File ? (File) dir : new File((String) dir);
-		final EmbeddedNode node = EmbeddedNode.getInstance(directory, persistent);
-		return new EsIndexClient(new EsLocalIndexAdmin(node, name, mappings, settings), mapper);
+		final Node node = EmbeddedNode.getInstance(directory, persistent);
+		return new EsIndexClient(new EsIndexAdmin(node.client(), name, mappings, settings), mapper);
 	}
 
 	
