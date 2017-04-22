@@ -170,7 +170,8 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 							// check that the hash of the two documents changed since then, if it did, then register as changed, otherwise skip
 							final String newOrChangedHash = newOrChangedRevisionsByStorageKey.get(newOrChangedStorageKey)._hash();
 							final String deletedOrChangedHash = deletedOrChangedRevisionsByStorageKey.get(newOrChangedStorageKey)._hash();
-							if (!Objects.equals(newOrChangedHash, deletedOrChangedHash)) {
+							// XXX register documents as changed if they do not have a hash value indexed (certain index implementation might not be able to compute and store it)
+							if ((newOrChangedHash == null && deletedOrChangedHash == null) || !Objects.equals(newOrChangedHash, deletedOrChangedHash)) {
 								result.changedRevision(typeToCompare, newOrChangedStorageKey);
 							}
 						} else {

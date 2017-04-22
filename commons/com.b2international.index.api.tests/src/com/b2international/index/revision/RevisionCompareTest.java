@@ -144,16 +144,18 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void compareBranchWithRevertedChanges() throws Exception {
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
-		final String branch = createBranch(MAIN, "a");
-		// change storageKey1 component then revert the change
-		indexRevision(branch, STORAGE_KEY1, new Data("field1", "field2Changed"));
-		indexRevision(branch, STORAGE_KEY1, new Data("field1", "field2"));
-		
-		final RevisionCompare compare = index().compare(MAIN, branch);
-		assertThat(compare.getNewComponents()).isEmpty();
-		assertThat(compare.getChangedComponents()).isEmpty();
-		assertThat(compare.getDeletedComponents()).isEmpty();
+		if (index().admin().isHashSupported()) {
+			indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
+			final String branch = createBranch(MAIN, "a");
+			// change storageKey1 component then revert the change
+			indexRevision(branch, STORAGE_KEY1, new Data("field1", "field2Changed"));
+			indexRevision(branch, STORAGE_KEY1, new Data("field1", "field2"));
+
+			final RevisionCompare compare = index().compare(MAIN, branch);
+			assertThat(compare.getNewComponents()).isEmpty();
+			assertThat(compare.getChangedComponents()).isEmpty();
+			assertThat(compare.getDeletedComponents()).isEmpty();
+		}
 	}
 	
 }

@@ -68,6 +68,11 @@ public class EsLocalIndexAdmin implements EsIndexAdmin {
 	}
 	
 	@Override
+	public boolean isHashSupported() {
+		return false;
+	}
+	
+	@Override
 	public Logger log() {
 		return log;
 	}
