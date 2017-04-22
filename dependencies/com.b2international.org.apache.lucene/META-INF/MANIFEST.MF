@@ -38,8 +38,7 @@ Import-Package: javax.management,
  org.slf4j.spi;version="1.7.2"
 Bundle-Activator: com.b2international.org.apache.lucene.Activator
 Bundle-ActivationPolicy: lazy
-Export-Package: com.b2international.index.analyzer,
- com.b2international.index.compat,
+Export-Package: com.b2international.index.compat,
  com.b2international.index.lucene,
  org.apache.lucene,
  org.apache.lucene.analysis,

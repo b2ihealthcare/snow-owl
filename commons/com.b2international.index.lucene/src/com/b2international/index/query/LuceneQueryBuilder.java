@@ -57,11 +57,8 @@ import org.apache.lucene.search.join.ToChildBlockJoinQuery;
 import org.apache.lucene.search.join.ToParentBlockJoinQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.QueryBuilder;
-import org.apache.lucene.util.automaton.LevenshteinAutomata;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
-import com.b2international.index.AnalyzerImpls;
-import com.b2international.index.compat.Highlighting;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.index.json.JsonDocumentMapping;
 import com.b2international.index.lucene.Fields;
@@ -79,13 +76,16 @@ public final class LuceneQueryBuilder {
 	
 	private final Deque<Query> deque = Queues.newLinkedBlockingDeque();
 	private final DocumentMapping mapping;
+	private final QueryBuilder luceneQueryBuilder;
 	
 	/**
 	 * Set to {@code true} if at least one predicate is seen that affects query scoring.
 	 */
 	private boolean needsScoring;
+
 	
-	public LuceneQueryBuilder(DocumentMapping mapping) {
+	public LuceneQueryBuilder(DocumentMapping mapping, QueryBuilder luceneQueryBuilder) {
+		this.luceneQueryBuilder = luceneQueryBuilder;
 		this.mapping = checkNotNull(mapping, "mapping");
 	}
 
@@ -233,7 +233,7 @@ public final class LuceneQueryBuilder {
 		// first add the mustClauses, then the mustNotClauses, if there are no mustClauses but mustNot ones then add a match all before
 		for (Expression must : bool.mustClauses()) {
 			// visit the item and immediately pop the deque item back
-			LuceneQueryBuilder innerQueryBuilder = new LuceneQueryBuilder(mapping);
+			LuceneQueryBuilder innerQueryBuilder = new LuceneQueryBuilder(mapping, luceneQueryBuilder);
 			innerQueryBuilder.visit(must);
 			
 			if (innerQueryBuilder.needsScoring) {
@@ -269,7 +269,7 @@ public final class LuceneQueryBuilder {
 		final Query parentFilter = JsonDocumentMapping.matchType(mapping.typeAsString());
 		final DocumentMapping nestedMapping = mapping.getNestedMapping(predicate.getField());
 		final Query childFilter = JsonDocumentMapping.matchType(nestedMapping.typeAsString());
-		final Query innerQuery = new LuceneQueryBuilder(nestedMapping).build(predicate.getExpression());
+		final Query innerQuery = new LuceneQueryBuilder(nestedMapping, luceneQueryBuilder).build(predicate.getExpression());
 		final Query childQuery = new BooleanQuery.Builder()
 										.add(innerQuery, Occur.MUST)
 										.add(childFilter, Occur.FILTER)
@@ -285,7 +285,7 @@ public final class LuceneQueryBuilder {
 		
 		final DocumentMapping parentMapping = mapping.getParent();
 		checkArgument(parentMapping.type() == parentType, "Unexpected parent type. %s vs. %s", parentMapping.type(), parentType);
-		final Query parentQuery = new LuceneQueryBuilder(parentMapping).build(parentExpression);
+		final Query parentQuery = new LuceneQueryBuilder(parentMapping, luceneQueryBuilder).build(parentExpression);
 		
 		final Query parentFilter = JsonDocumentMapping.matchType(parentMapping.typeAsString());
 		
@@ -297,41 +297,28 @@ public final class LuceneQueryBuilder {
 		final String field = predicate.getField();
 		final String term = predicate.term();
 		final MatchType type = predicate.type();
-		final Analyzer analyzer = AnalyzerImpls.getAnalyzer(predicate.analyzer());
 		Query query;
 		switch (type) {
 		case PHRASE:
 			{
-				final QueryBuilder queryBuilder = new QueryBuilder(analyzer);
-				query = queryBuilder.createPhraseQuery(field, term);
+				query = luceneQueryBuilder.createPhraseQuery(field, term);
 			}
 			break;
 		case ALL:
 			{
-				final QueryBuilder queryBuilder = new QueryBuilder(analyzer);
-				query = queryBuilder.createBooleanQuery(field, term, Occur.MUST);
+				query = luceneQueryBuilder.createBooleanQuery(field, term, Occur.MUST);
 			}
 			break;
 		case ANY:
 			{
-				final QueryBuilder queryBuilder = new QueryBuilder(analyzer);
-				query = queryBuilder.createBooleanQuery(field, term, Occur.SHOULD);
+				query = luceneQueryBuilder.createBooleanQuery(field, term, Occur.SHOULD);
 			}
 			break;
 		case FUZZY:
-			query = new FuzzyQuery(new Term(field, term), LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE, 1);
-			break;
-		case ALL_PREFIX:
-			final List<String> prefixes = Highlighting.split(analyzer, term);
-			final BooleanQuery.Builder q = new BooleanQuery.Builder();
-			q.setDisableCoord(true);
-			for (String prefix : prefixes) {
-				q.add(new PrefixQuery(new Term(field, prefix)), Occur.MUST);
-			}
-			query = q.build();
+			query = new FuzzyQuery(new Term(field, term), 1, 1);
 			break;
 		case PARSED:
-			final QueryParser parser = new QueryParser(field, analyzer);
+			final QueryParser parser = new QueryParser(field, luceneQueryBuilder.getAnalyzer());
 			parser.setDefaultOperator(Operator.AND);
 			parser.setAllowLeadingWildcard(true);
 			try {

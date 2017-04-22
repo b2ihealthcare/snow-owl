@@ -15,30 +15,22 @@
  */
 package com.b2international.index.query;
 
-import com.b2international.index.Analyzers;
-
 /**
  * @since 4.7
  */
 public final class TextPredicate extends Predicate {
 
 	public enum MatchType {
-		ALL, ANY, PHRASE, FUZZY, ALL_PREFIX, PARSED
+		ALL, ANY, PHRASE, FUZZY, PARSED
 	}
 	
 	private final String term;
 	private final MatchType type;
-	private final Analyzers analyzer;
 
 	TextPredicate(String field, String term, MatchType type) {
-		this(field, term, type, Analyzers.DEFAULT);
-	}
-	
-	TextPredicate(String field, String term, MatchType type, Analyzers analyzer) {
 		super(field);
 		this.term = term;
 		this.type = type;
-		this.analyzer = analyzer;
 	}
 	
 	public String term() {
@@ -47,10 +39,6 @@ public final class TextPredicate extends Predicate {
 	
 	public MatchType type() {
 		return type;
-	}
-	
-	public Analyzers analyzer() {
-		return analyzer;
 	}
 	
 	@Override

@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 
 import com.b2international.index.Analyzed;
 import com.b2international.index.Analyzers;
@@ -33,13 +34,14 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.util.Reflections;
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableSortedMap;
 
 /**
  * @since 4.7
@@ -48,6 +50,7 @@ public final class DocumentMapping {
 
 	// type path delimiter to differentiate between same nested types in different contexts
 	private static final String DELIMITER = ".";
+	private static final Joiner DELIMITER_JOINER = Joiner.on(DELIMITER);
 	
 	public static final String _ID = "_id";
 	public static final String _UID = "_uid";
@@ -65,7 +68,7 @@ public final class DocumentMapping {
 	private final String typeAsString;
 	private final Map<String, Field> fieldMap;
 	private final Map<Class<?>, DocumentMapping> nestedTypes;
-	private final Map<String, Analyzers> analyzedFields;
+	private final TreeMap<String, Analyzed> analyzedFields;
 	private final DocumentMapping parent;
 	private final Map<String, Script> scripts;
 
@@ -86,16 +89,19 @@ public final class DocumentMapping {
 				}
 			}).uniqueIndex(GET_NAME);
 		
-		final Builder<String, Analyzers> analyzedFields = ImmutableMap.builder();
+		final Builder<String, Analyzed> analyzedFields = ImmutableSortedMap.naturalOrder();
 
 		for (Field field : getFields()) {
-			if (field.isAnnotationPresent(Analyzed.class)) {
-				final Analyzers analyzer = field.getAnnotation(Analyzed.class).analyzer();
-				analyzedFields.put(field.getName(), analyzer);
+			for (Analyzed analyzer : field.getAnnotationsByType(Analyzed.class)) {
+				if (Strings.isNullOrEmpty(analyzer.alias())) {
+					analyzedFields.put(field.getName(), analyzer);
+				} else {
+					analyzedFields.put(DELIMITER_JOINER.join(field.getName(), analyzer.alias()), analyzer);
+				}
 			}
 		}
 		
-		this.analyzedFields = analyzedFields.build();
+		this.analyzedFields = new TreeMap<>(analyzedFields.build());
 				
 		this.nestedTypes = FluentIterable.from(getFields())
 			.transform(new Function<Field, Class<?>>() {
@@ -200,7 +206,7 @@ public final class DocumentMapping {
 		return analyzedFields.containsKey(field);
 	}
 	
-	public Map<String, Analyzers> getAnalyzedFields() {
+	public Map<String, Analyzed> getAnalyzedFields() {
 		return analyzedFields;
 	}
 
@@ -272,6 +278,15 @@ public final class DocumentMapping {
 	public static boolean isNestedDoc(Class<?> fieldType) {
 		final Doc doc = getDocAnnotation(fieldType);
 		return doc == null ? false : doc.nested();
+	}
+
+	public Map<String, Analyzed> getAnalyzers(String fieldName) {
+		return analyzedFields.subMap(fieldName, fieldName + Character.MAX_VALUE);
+	}
+	
+	public Analyzers getSearchAnalyzer(String fieldName) {
+		final Analyzed analyzed = getAnalyzedFields().get(fieldName);
+		return analyzed.searchAnalyzer() == Analyzers.INDEX ? analyzed.analyzer() : analyzed.searchAnalyzer();
 	}
 
 }

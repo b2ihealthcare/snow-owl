@@ -37,7 +37,7 @@ public class Fixtures {
 	@Doc
 	public static class Data {
 
-		@Analyzed
+		@Analyzed(analyzer=Analyzers.CASE_SENSITIVE)
 		private String analyzedField;
 		
 		private String field1;
