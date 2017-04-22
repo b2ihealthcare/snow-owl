@@ -286,7 +286,7 @@ public final class EsQueryBuilder {
 	}
 	
 	private void visit(SingleArgumentPredicate<?> predicate) {
-		deque.push(QueryBuilders.matchQuery(toFieldPath(predicate), predicate.getArgument()));
+		deque.push(QueryBuilders.termQuery(toFieldPath(predicate), predicate.getArgument()));
 	}
 	
 	private void visit(SetPredicate<?> predicate) {
