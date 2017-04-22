@@ -249,9 +249,8 @@ public final class RemoteJobTracker implements IDisposableService {
 			if (event.getJob() instanceof RemoteJob) {
 				final RemoteJob job = (RemoteJob) event.getJob();
 				final String jobId = job.getId();
-				final Date startDate = new Date();
 				LOG.trace("Running job {}", jobId);
-				update(jobId, RemoteJobEntry.WITH_RUNNING, ImmutableMap.of("state", RemoteJobState.RUNNING, "startDate", startDate));
+				update(jobId, RemoteJobEntry.WITH_RUNNING, ImmutableMap.of("state", RemoteJobState.RUNNING, "startDate", System.currentTimeMillis()));
 			}
 		}
 		
@@ -267,7 +266,6 @@ public final class RemoteJobTracker implements IDisposableService {
 				}
 				final IStatus result = job.getResult();
 				final Object response = job.getResponse();
-				final Date finishDate = new Date();
 				final RemoteJobState newState;
 				if (result.isOK()) {
 					newState = RemoteJobState.FINISHED;
@@ -282,7 +280,7 @@ public final class RemoteJobTracker implements IDisposableService {
 					params.put("result", response);
 				}
 				params.put("state", newState);
-				params.put("finishDate", finishDate);
+				params.put("finishDate", System.currentTimeMillis());
 				update(jobId, RemoteJobEntry.WITH_DONE, params.build());
 			}
 		}
