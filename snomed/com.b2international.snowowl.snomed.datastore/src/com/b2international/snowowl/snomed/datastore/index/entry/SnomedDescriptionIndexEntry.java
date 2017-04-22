@@ -18,10 +18,8 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchTextAll;
-import static com.b2international.index.query.Expressions.matchTextAllPrefix;
 import static com.b2international.index.query.Expressions.matchTextFuzzy;
 import static com.b2international.index.query.Expressions.matchTextParsed;
-import static com.b2international.index.query.Expressions.matchTextPhrase;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
@@ -175,15 +173,15 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public static Expression exactTerm(String term) {
-			return matchTextPhrase(Fields.TERM, term);
+			return exactMatch(Fields.TERM+".exact", term);
 		}
 		
 		public static Expression allTermPrefixesPresent(String term) {
-			return matchTextAllPrefix(Fields.TERM, term);
+			return matchTextAll(Fields.TERM + ".prefix", term);
 		}
 		
 		public static Expression allTermsPresent(String term) {
-			return matchTextAll(Fields.TERM, term, Analyzers.NON_BOOKEND);
+			return matchTextAll(Fields.TERM, term);
 		}
 		
 		public static Expression parsedTerm(String term) {
@@ -359,7 +357,9 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	private final String conceptId;
 	private final String languageCode;
 	
-	@Analyzed
+	@Analyzed(analyzer=Analyzers.TOKENIZED)
+	@Analyzed(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
+	@Analyzed(alias="exact", analyzer=Analyzers.EXACT)
 	private final String term;
 	
 	private final String typeId;

@@ -17,7 +17,7 @@ package com.b2international.snowowl.datastore.commitinfo;
 
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.matchTextAllPrefix;
+import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextPhrase;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -109,7 +109,7 @@ public final class CommitInfoDocument implements WithId, WithScore {
 		}
 		
 		public static Expression allCommentPrefixesPresent(final String comment) {
-			return matchTextAllPrefix(Fields.COMMENT, comment);
+			return matchTextAll(Fields.COMMENT+".prefix", comment);
 		}
 		
 		public static Expression timeStamp(final long timeStamp) {
