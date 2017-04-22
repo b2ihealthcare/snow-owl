@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,26 +24,9 @@ import com.b2international.index.compat.TextConstants;
 
 /**
  * A variant of {@link Analyzer} that uses {@link CharMatcherTokenizer} to tokenize incoming text and convert it to lower case,
- * then passes tokens through {@link ASCIIFoldingFilter} to convert any non-ASCII characters to their closest ASCII alternative,
- * and optionally {@link BookendTokenFilter} to add start and end markers.
+ * then passes tokens through {@link ASCIIFoldingFilter} to convert any non-ASCII characters to their closest ASCII alternative.
  */
 public class ComponentTermAnalyzer extends Analyzer {
-
-	/*
-	 * Flag to add artificial marker terms for text start and end -- should be set 
-	 * at indexing time and when looking for exact matches using PhraseQuery.
-	 */
-	private final boolean includeLead;
-	private final boolean includeTrail;
-
-	public ComponentTermAnalyzer() {
-		this(false, false);
-	}
-
-	public ComponentTermAnalyzer(final boolean includeLead, final boolean includeTrail) {
-		this.includeLead = includeLead;
-		this.includeTrail = includeTrail;
-	}
 
 	@Override
 	protected TokenStreamComponents createComponents(final String fieldName) {
@@ -57,6 +40,6 @@ public class ComponentTermAnalyzer extends Analyzer {
 	}
 
 	private TokenFilter createFilterChain(final Tokenizer source) {
-		return new BookendTokenFilter(new ASCIIFoldingFilter(source), includeLead, includeTrail);
+		return new ASCIIFoldingFilter(source);
 	}
 }

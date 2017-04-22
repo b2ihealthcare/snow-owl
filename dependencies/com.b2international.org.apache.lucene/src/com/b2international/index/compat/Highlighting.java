@@ -90,7 +90,7 @@ public class Highlighting {
 		final String lcQuery = queryExpression.toLowerCase();
 		final String lcLabel = sortKeyLabel.toLowerCase();
 		
-		final Analyzer analyzer = new ComponentTermAnalyzer(false, false);
+		final Analyzer analyzer = new ComponentTermAnalyzer();
 		
 		final List<String> filterTokens = split(analyzer, lcQuery);
 		final List<String> labelTokens = split(analyzer, lcLabel);

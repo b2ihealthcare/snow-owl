@@ -20,6 +20,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
+import org.apache.lucene.util.QueryBuilder;
 
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.translog.TransactionLog;
@@ -38,5 +39,7 @@ public interface LuceneIndexAdmin extends IndexAdmin {
 	ReferenceManager<IndexSearcher> getManager();
 	
 	TransactionLog getTransactionlog();
+
+	QueryBuilder getQueryBuilder();
 	
 }

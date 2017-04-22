@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,17 @@
 package com.b2international.index;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @since 4.7
+ * @since 5.10
  */
-@Repeatable(AnalyzedFields.class)
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Analyzed {
-	
-	public String alias() default "";
-	
-	public Analyzers analyzer() default Analyzers.DEFAULT;
-	
-	public Analyzers searchAnalyzer() default Analyzers.INDEX;
+public @interface AnalyzedFields {
+
+	Analyzed[] value() default {};
 	
 }

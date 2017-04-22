@@ -193,7 +193,9 @@ public final class Index implements Operation {
 			break;
 		case STRING:
 			if (mapping.isAnalyzed(name)) {
-				Fields.searchOnlyTextField(name).addTo(doc, node.textValue());
+				for (String analyzedFieldName : mapping.getAnalyzers(name).keySet()) {
+					Fields.searchOnlyTextField(analyzedFieldName).addTo(doc, node.textValue());
+				}
 			} else {
 				Fields.searchOnlyStringField(name).addTo(doc, node.textValue());
 			}

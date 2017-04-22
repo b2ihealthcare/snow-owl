@@ -43,9 +43,11 @@ import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.util.QueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.index.Analyzed;
 import com.b2international.index.AnalyzerImpls;
 import com.b2international.index.Analyzers;
 import com.b2international.index.IndexClientFactory;
@@ -82,6 +84,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	private ExecutorService executor;
 	private TransactionLog tlog;
 	private ReentrantLock lock = new ReentrantLock();
+	private QueryBuilder queryBuilder;
 	
 	protected BaseLuceneIndexAdmin(String name, Mappings mappings) {
 		this(name, mappings, Maps.<String, Object>newHashMap());
@@ -132,6 +135,11 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	}
 	
 	@Override
+	public final QueryBuilder getQueryBuilder() {
+		return queryBuilder;
+	}
+	
+	@Override
 	public TransactionLog getTransactionlog() {
 		return tlog;
 	}
@@ -170,6 +178,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 			closer.register(directory);
 			
 			writer = new IndexWriter(directory, createConfig(false));
+			queryBuilder = new QueryBuilder(getSearchAnalyzer());
 			closer.register(writer);
 			
 			tlog = createTransactionlog(writer.getCommitData());
@@ -228,18 +237,34 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 
 	private IndexWriterConfig createConfig(boolean clean) {
 		// TODO configurable analyzer and options
-		final IndexWriterConfig config = new IndexWriterConfig(getDefaultAnalyzer());
+		final IndexWriterConfig config = new IndexWriterConfig(getIndexAnalyzer());
 		config.setOpenMode(clean ? OpenMode.CREATE : OpenMode.CREATE_OR_APPEND);
 		return config;
 	}
 	
-	private Analyzer getDefaultAnalyzer() {
+	private Analyzer getIndexAnalyzer() {
 		final Map<String, Analyzer> fieldAnalyzers = newHashMap();
 		for (DocumentMapping mapping : mappings.getMappings()) {
-			for (Entry<String, Analyzers> entry : mapping.getAnalyzedFields().entrySet()) {
-				final Analyzers analyzer = entry.getValue();
+			for (Entry<String, Analyzed> entry : mapping.getAnalyzedFields().entrySet()) {
+				final Analyzers analyzer = entry.getValue().analyzer();
 				if (Analyzers.DEFAULT != analyzer) {
 					fieldAnalyzers.put(entry.getKey(), AnalyzerImpls.getAnalyzer(analyzer));
+				}
+			}
+		}
+		return new PerFieldAnalyzerWrapper(AnalyzerImpls.DEFAULT, fieldAnalyzers);
+	}
+	
+	private Analyzer getSearchAnalyzer() {
+		final Map<String, Analyzer> fieldAnalyzers = newHashMap();
+		for (DocumentMapping mapping : mappings.getMappings()) {
+			for (Entry<String, Analyzed> entry : mapping.getAnalyzedFields().entrySet()) {
+				final Analyzers indexAnalyzer = entry.getValue().analyzer();
+				final Analyzers searchAnalyzer = entry.getValue().searchAnalyzer();
+				if (Analyzers.INDEX == searchAnalyzer) {
+					fieldAnalyzers.put(entry.getKey(), AnalyzerImpls.getAnalyzer(indexAnalyzer));
+				} else {
+					fieldAnalyzers.put(entry.getKey(), AnalyzerImpls.getAnalyzer(searchAnalyzer));
 				}
 			}
 		}

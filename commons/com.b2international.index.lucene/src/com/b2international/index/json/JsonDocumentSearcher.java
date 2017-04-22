@@ -45,6 +45,7 @@ import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.QueryBuilder;
 import org.slf4j.Logger;
 
 import com.b2international.index.Hits;
@@ -93,12 +94,14 @@ public class JsonDocumentSearcher implements Searcher {
 	private final SlowLogConfig slowLogConfig;
 	private final int resultWindow;
 	private final Logger log;
+	private final QueryBuilder luceneQueryBuilder;
 
 	public JsonDocumentSearcher(LuceneIndexAdmin admin, ObjectMapper mapper) {
 		this.log = admin.log();
 		this.mapper = mapper;
 		this.mappings = admin.mappings();
 		this.searchers = admin.getManager();
+		this.luceneQueryBuilder = admin.getQueryBuilder();
 		this.slowLogConfig = (SlowLogConfig) admin.settings().get(IndexClientFactory.SLOW_LOG_KEY);
 		this.resultWindow = (int) admin.settings().get(IndexClientFactory.RESULT_WINDOW_KEY);
 
@@ -398,7 +401,7 @@ public class JsonDocumentSearcher implements Searcher {
 	}
 
 	private org.apache.lucene.search.Query toLuceneQuery(DocumentMapping mapping, Expression where) {
-		return new LuceneQueryBuilder(mapping).build(where);
+		return new LuceneQueryBuilder(mapping, luceneQueryBuilder).build(where);
 	}
 
 	private org.apache.lucene.search.Sort toLuceneSort(DocumentMapping mapping, Query<?> query) {
