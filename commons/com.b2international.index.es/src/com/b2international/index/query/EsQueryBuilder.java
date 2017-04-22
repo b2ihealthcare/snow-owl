@@ -223,7 +223,10 @@ public final class EsQueryBuilder {
 	private void visit(NestedPredicate predicate) {
 		final String nestedPath = toFieldPath(predicate);
 		final DocumentMapping nestedMapping = mapping.getNestedMapping(predicate.getField());
-		deque.push(QueryBuilders.nestedQuery(nestedPath, new EsQueryBuilder(nestedMapping, nestedPath).build(predicate.getExpression())));
+		final EsQueryBuilder nestedQueryBuilder = new EsQueryBuilder(nestedMapping, nestedPath);
+		nestedQueryBuilder.visit(predicate.getExpression());
+		final QueryBuilder nestedQuery = nestedQueryBuilder.deque.pop();
+		deque.push(QueryBuilders.nestedQuery(nestedPath, nestedQuery));
 	}
 
 	private String toFieldPath(Predicate predicate) {
