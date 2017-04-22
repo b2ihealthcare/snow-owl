@@ -437,6 +437,12 @@
 				</dependency>
 				<dependency>
 					<groupId>com.fasterxml.jackson.dataformat</groupId>
+					<artifactId>jackson-dataformat-smile</artifactId>
+					<version>${jackson.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>com.fasterxml.jackson.dataformat</groupId>
 					<artifactId>jackson-dataformat-csv</artifactId>
 					<version>${jackson.version}</version>
 					<scope>provided</scope>
@@ -570,8 +576,20 @@
 				<dependency>
 					<groupId>com.google.guava</groupId>
 					<artifactId>guava</artifactId>
-					<version>18.0.0</version>
+					<version>18.0</version>
 					<scope>provided</scope>
+				</dependency>
+				<dependency>
+				    <groupId>com.ning</groupId>
+				    <artifactId>compress-lzf</artifactId>
+				    <version>1.0.4</version>
+				    <scope>provided</scope>
+				</dependency>
+				<dependency>
+				    <groupId>io.netty</groupId>
+				    <artifactId>netty</artifactId>
+				    <version>3.10.5.Final</version>
+				    <scope>provided</scope>
 				</dependency>
 			</dependencies>
 			<repositories>
