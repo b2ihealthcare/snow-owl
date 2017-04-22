@@ -20,6 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.elasticsearch.action.bulk.BulkItemResponse;
+import org.elasticsearch.action.bulk.BulkItemResponse.Failure;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryAction;
@@ -103,6 +105,36 @@ public class EsDocumentWriter implements Writer {
 		}
 		
 		final Client client = admin.client();
+		// apply bulk updates first
+		for (BulkUpdate<?> update : updateOperations) {
+			final DocumentMapping mapping = admin.mappings().getMapping(update.getType());
+			final QueryBuilder query = new EsQueryBuilder(mapping).build(update.getFilter());
+			UpdateByQueryRequestBuilder ubqrb = UpdateByQueryAction.INSTANCE.newRequestBuilder(client);
+
+			final String rawScript = mapping.getScript(update.getScript());
+			org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(rawScript, ScriptType.INLINE, "groovy", ImmutableMap.of("params", update.getParams()));
+
+			ubqrb.source().setIndices(admin.name()).setTypes(mapping.typeAsString()).setRouting(mapping.typeAsString());
+			BulkIndexByScrollResponse r = ubqrb
+			    .script(script)
+			    .filter(query)
+			    .get();
+			checkState(r.getVersionConflicts() == 0, "There were inpossible version conflicts during bulk updates");
+			admin.log().info("Updated {} {} documents with script '{}', params({})", r.getUpdated(), mapping.typeAsString(), update.getScript(), update.getParams());
+			checkState(r.getSearchFailures().isEmpty(), "There were search failure during bulk updates");
+			if (!r.getIndexingFailures().isEmpty()) {
+				Throwable t = null;
+				for (Failure failure : r.getIndexingFailures()) {
+					if (t == null) {
+						t = failure.getCause();
+					}
+					admin.log().error("Index failure during bulk update", failure.getCause());
+				}
+				throw new IllegalStateException("There were indexing failures during bulk updates. See logs for all failures.", t);
+			}
+		}
+		
+		// then bulk indexes
 		if (!indexOperations.isEmpty()) {
 			final BulkRequestBuilder bulk = client.prepareBulk();
 			for (Entry<String, Object> entry : indexOperations.entrySet()) {
@@ -118,44 +150,51 @@ public class EsDocumentWriter implements Writer {
 							.setRouting(mapping.typeAsString()));
 				}
 			}
-			BulkResponse response = bulk.get();
-			for (BulkItemResponse itemResponse : response.getItems()) {
-				checkState(itemResponse.getFailure() == null, "Failed to commit tx to index '%s', %s", admin.name(), itemResponse.getFailureMessage());
+			BulkResponse response = bulk.setRefresh(true).get();
+			if (response.hasFailures()) {
+				for (BulkItemResponse itemResponse : response.getItems()) {
+					checkState(!itemResponse.isFailed(), "Failed to commit tx to index '%s', %s", admin.name(), itemResponse.getFailureMessage());
+				}
 			}
 		}
 	
+		// and deletes last
 		for (Class<?> type : deleteOperations.keySet()) {
 			final DocumentMapping mapping = admin.mappings().getMapping(type);
 			final String typeString = mapping.typeAsString();
-			DeleteByQueryRequestBuilder dbqrb = DeleteByQueryAction.INSTANCE.newRequestBuilder(client);
+			final DeleteByQueryRequestBuilder dbqrb = DeleteByQueryAction.INSTANCE.newRequestBuilder(client);
+			final Collection<String> values = deleteOperations.get(type);
 			final DeleteByQueryResponse response = dbqrb
 					.setIndices(admin.name())
 					.setTypes(typeString)
 					.setRouting(typeString)
-					.setQuery(new EsQueryBuilder(mapping).build(Expressions.matchAny(DocumentMapping._ID, deleteOperations.get(type))))
+					.setQuery(new EsQueryBuilder(mapping).build(Expressions.matchAny(DocumentMapping._ID, values)))
 					.get();
+			checkState(!response.isTimedOut(), "Delete by query request timed out. %s -> %s", mapping.typeAsString(), values);
 			checkState(response.getTotalFailed() == 0, "There were failures executing delete docs by query requests");
-		}
-		
-		// apply bulk updates
-		for (BulkUpdate<?> update : updateOperations) {
-			final DocumentMapping mapping = admin.mappings().getMapping(update.getType());
-			final QueryBuilder query = new EsQueryBuilder(mapping).build(update.getFilter());
-			UpdateByQueryRequestBuilder ubqrb = UpdateByQueryAction.INSTANCE.newRequestBuilder(client);
-
-			final String rawScript = mapping.getScript(update.getScript());
-			org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(rawScript, ScriptType.INLINE, "groovy", ImmutableMap.of("params", update.getParams()));
-
-			ubqrb.source().setIndices(admin.name()).setTypes(mapping.typeAsString()).setRouting(mapping.typeAsString());
-			BulkIndexByScrollResponse r = ubqrb
-			    .script(script)
-			    .filter(query)
-			    .get();
-			checkState(r.getIndexingFailures().isEmpty(), "There were indexing failures during bulk update");
+			checkState(response.getShardFailures().length == 0, "There were shard failure when executing delete by query request.");
 		}
 		
 		// refresh the index, so all changes picked up properly
 		admin.refresh();
+	}
+
+	/*
+	 * Testing only, dumps a text representation of all operations to the console
+	 */
+	private void dumpOps() throws IOException {
+		System.err.println("Added documents:");
+		for (Entry<String, Object> entry : indexOperations.entrySet()) {
+			System.err.format("\t%s -> %s\n", entry.getKey(), mapper.writeValueAsString(entry.getValue()));
+		}
+		System.err.println("Deleted documents: ");
+		for (Class<?> type : deleteOperations.keySet()) {
+			System.err.format("\t%s -> %s\n", admin.mappings().getMapping(type).typeAsString(), deleteOperations.get(type));
+		}
+		System.err.println("Bulk updates: ");
+		for (BulkUpdate<?> update : updateOperations) {
+			System.err.format("\t%s -> %s, %s, %s\n", admin.mappings().getMapping(update.getType()).typeAsString(), update.getFilter(), update.getScript(), update.getParams());
+		}
 	}
 
 	@Override
