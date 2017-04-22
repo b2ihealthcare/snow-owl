@@ -77,7 +77,7 @@ public final class EmbeddedNode extends Node {
 							AwaitPendingTasks.await(INSTANCE.client(), LOG);
 							INSTANCE.client().close();
 							INSTANCE.close();
-							if (persistent) {
+							if (!persistent) {
 								FileUtils.deleteDirectory(directory);
 							}
 						}
