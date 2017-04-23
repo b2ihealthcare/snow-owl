@@ -21,7 +21,6 @@ import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Deque;
-import java.util.List;
 
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -31,8 +30,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder.Operator;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
-import com.b2international.index.analyzer.ComponentTermAnalyzer;
-import com.b2international.index.compat.Highlighting;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.TextPredicate.MatchType;
@@ -245,7 +242,6 @@ public final class EsQueryBuilder {
 		final String field = toFieldPath(predicate);
 		final String term = predicate.term();
 		final MatchType type = predicate.type();
-//		final Analyzer analyzer = AnalyzerImpls.getAnalyzer(predicate.analyzer());
 		QueryBuilder query;
 		switch (type) {
 		case PHRASE:
@@ -265,15 +261,6 @@ public final class EsQueryBuilder {
 			break;
 		case FUZZY:
 			query = QueryBuilders.fuzzyQuery(field, term).fuzziness(Fuzziness.TWO).prefixLength(1);
-			break;
-		case ALL_PREFIX:
-			final List<String> prefixes = Highlighting.split(new ComponentTermAnalyzer(true, true), term);
-			final BoolQueryBuilder q = QueryBuilders.boolQuery();
-			q.disableCoord(true);
-			for (String prefix : prefixes) {
-				q.must(QueryBuilders.prefixQuery(term, prefix));
-			}
-			query = q;
 			break;
 		case PARSED:
 			query = QueryBuilders.queryStringQuery(TextConstants.escape(term)).allowLeadingWildcard(true).defaultOperator(Operator.AND);
