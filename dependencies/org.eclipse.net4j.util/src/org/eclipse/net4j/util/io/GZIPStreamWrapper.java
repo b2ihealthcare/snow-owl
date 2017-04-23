@@ -1,32 +1,54 @@
 /*
- * Copyright (c) 2004 - 2012 Eike Stepper (Berlin, Germany) and others.
+ * Copyright (c) 2007, 2009, 2011-2013, 2015, 2016 Eike Stepper (Berlin, Germany) and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * 
+ *
  * Contributors:
  *    Eike Stepper - initial API and implementation
  */
 package org.eclipse.net4j.util.io;
 
-import org.eclipse.net4j.util.concurrent.ConcurrencyUtil;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
  * @author Eike Stepper
+ * @since 3.6
  */
 public class GZIPStreamWrapper implements IStreamWrapper
 {
+  /**
+   * @since 3.6
+   */
+  public static final int DEFAULT_BUFFER_SIZE = 512;
+
+  /**
+   * @since 3.6
+   */
+  public static final int DEFAULT_COMPRESSION_LEVEL = Deflater.BEST_SPEED;
+
+  private final int bufferSize;
+
+  private final int compressionLevel;
+
   public GZIPStreamWrapper()
   {
+    this(DEFAULT_BUFFER_SIZE, DEFAULT_COMPRESSION_LEVEL);
+  }
+
+  /**
+   * @since 3.6
+   */
+  public GZIPStreamWrapper(int bufferSize, int compressionLevel)
+  {
+    this.bufferSize = bufferSize;
+    this.compressionLevel = compressionLevel;
   }
 
   public GZIPInputStream wrapInputStream(InputStream in) throws IOException
@@ -36,7 +58,7 @@ public class GZIPStreamWrapper implements IStreamWrapper
       return (GZIPInputStream)in;
     }
 
-    return new GZIPInputStream(in);
+    return new GZIPInputStream(in, bufferSize);
   }
 
   public GZIPOutputStream wrapOutputStream(OutputStream out) throws IOException
@@ -46,7 +68,12 @@ public class GZIPStreamWrapper implements IStreamWrapper
       return (GZIPOutputStream)out;
     }
 
-    return new GZIPOutputStream(out);
+    return new GZIPOutputStream(out, bufferSize)
+    {
+      {
+        def.setLevel(compressionLevel);
+      }
+    };
   }
 
   public void finishInputStream(InputStream in) throws IOException
@@ -58,43 +85,4 @@ public class GZIPStreamWrapper implements IStreamWrapper
     ((GZIPOutputStream)out).finish();
   }
 
-  /**
-   * TODO Move or remove me
-   */
-  public static void main(String[] args) throws Exception
-  {
-    final PipedOutputStream pos = new PipedOutputStream();
-    final PipedInputStream pis = new PipedInputStream(pos);
-
-    final GZIPOutputStream gos = new GZIPOutputStream(pos);
-    final byte[] out = "eike".getBytes(); //$NON-NLS-1$
-
-    Thread thread = new Thread()
-    {
-      @Override
-      public void run()
-      {
-        try
-        {
-          GZIPInputStream gis = new GZIPInputStream(pis);
-
-          byte[] in = new byte[out.length];
-          gis.read(in);
-          gis.close();
-        }
-        catch (IOException ex)
-        {
-          throw new IORuntimeException(ex);
-        }
-      }
-    };
-
-    thread.start();
-    ConcurrencyUtil.sleep(1000);
-
-    gos.write(out);
-    gos.close();
-
-    ConcurrencyUtil.sleep(2000);
-  }
 }
