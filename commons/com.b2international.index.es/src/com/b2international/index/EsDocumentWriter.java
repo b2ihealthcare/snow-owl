@@ -37,6 +37,7 @@ import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
 import org.elasticsearch.action.index.IndexRequest.OpType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.BulkIndexByScrollResponse;
 import org.elasticsearch.index.reindex.UpdateByQueryAction;
 import org.elasticsearch.index.reindex.UpdateByQueryRequestBuilder;
@@ -45,7 +46,6 @@ import org.elasticsearch.script.ScriptService.ScriptType;
 import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.EsQueryBuilder;
-import com.b2international.index.query.Expressions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -168,7 +168,7 @@ public class EsDocumentWriter implements Writer {
 					.setIndices(admin.name())
 					.setTypes(typeString)
 					.setRouting(typeString)
-					.setQuery(new EsQueryBuilder(mapping).build(Expressions.matchAny(DocumentMapping._ID, values)))
+					.setQuery(QueryBuilders.idsQuery(mapping.typeAsString()).ids(values))
 					.get();
 			checkState(!response.isTimedOut(), "Delete by query request timed out. %s -> %s", mapping.typeAsString(), values);
 			checkState(response.getTotalFailed() == 0, "There were failures executing delete docs by query requests");

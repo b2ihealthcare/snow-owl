@@ -109,7 +109,11 @@ public class EsDocumentSearcher implements Searcher {
 		if (query.getFields().isEmpty()) {
 			req.setFetchSource(true);
 		} else {
-			req.setFetchSource(query.getFields().toArray(new String[]{}), null);
+			if (query.isDocIdOnly()) {
+				req.setNoFields();
+			} else {
+				req.setFetchSource(query.getFields().toArray(new String[]{}), null);
+			}
 		}
 		
 		addSort(req, query.getSortBy());
@@ -154,7 +158,11 @@ public class EsDocumentSearcher implements Searcher {
 				}
 				final T value;
 				if (Primitives.isWrapperType(query.getSelect()) || String.class.isAssignableFrom(query.getSelect())) {
-					value = (T) hit.getSource().get(Iterables.getOnlyElement(query.getFields()));
+					if (query.isDocIdOnly()) {
+						value = (T) hit.id();
+					} else {
+						value = (T) hit.getSource().get(Iterables.getOnlyElement(query.getFields()));
+					}
 				} else {
 					value = reader.readValue(hit.source());
 				}

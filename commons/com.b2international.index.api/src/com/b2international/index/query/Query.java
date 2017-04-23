@@ -179,4 +179,8 @@ public final class Query<T> {
 		return new DefaultQueryBuilder<T>(select, select, scope);
 	}
 
+	public boolean isDocIdOnly() {
+		return getFields().size() == 1 && getFields().contains(DocumentMapping._ID);
+	}
+
 }
