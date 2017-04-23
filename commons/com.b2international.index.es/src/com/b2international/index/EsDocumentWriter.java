@@ -20,7 +20,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -31,13 +30,9 @@ import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse.Failure;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryAction;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
 import org.elasticsearch.action.index.IndexRequest.OpType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.BulkIndexByScrollResponse;
 import org.elasticsearch.index.reindex.UpdateByQueryAction;
 import org.elasticsearch.index.reindex.UpdateByQueryRequestBuilder;
@@ -114,7 +109,11 @@ public class EsDocumentWriter implements Writer {
 			final String rawScript = mapping.getScript(update.getScript());
 			org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(rawScript, ScriptType.INLINE, "groovy", ImmutableMap.of("params", update.getParams()));
 
-			ubqrb.source().setIndices(admin.name()).setTypes(mapping.typeAsString()).setRouting(mapping.typeAsString());
+			ubqrb.source()
+				.setSize(1000)
+				.setIndices(admin.name())
+				.setTypes(mapping.typeAsString())
+				.setRouting(mapping.typeAsString());
 			BulkIndexByScrollResponse r = ubqrb
 			    .script(script)
 			    .filter(query)
@@ -134,8 +133,8 @@ public class EsDocumentWriter implements Writer {
 			}
 		}
 		
-		// then bulk indexes
-		if (!indexOperations.isEmpty()) {
+		// then bulk indexes/deletes
+		if (!indexOperations.isEmpty() || !deleteOperations.isEmpty()) {
 			final BulkRequestBuilder bulk = client.prepareBulk();
 			for (Entry<String, Object> entry : indexOperations.entrySet()) {
 				final String id = entry.getKey();
@@ -150,33 +149,25 @@ public class EsDocumentWriter implements Writer {
 							.setRouting(mapping.typeAsString()));
 				}
 			}
+			
+			for (Class<?> type : deleteOperations.keySet()) {
+				final DocumentMapping mapping = admin.mappings().getMapping(type);
+				final String typeString = mapping.typeAsString();
+				for (String id : deleteOperations.get(type)) {
+					bulk.add(client.prepareDelete(admin.name(), typeString, id).setRouting(typeString));
+				}
+			}
+			
 			BulkResponse response = bulk.setRefresh(true).get();
 			if (response.hasFailures()) {
 				for (BulkItemResponse itemResponse : response.getItems()) {
 					checkState(!itemResponse.isFailed(), "Failed to commit tx to index '%s', %s", admin.name(), itemResponse.getFailureMessage());
 				}
 			}
+		} else {
+			// refresh the index if there were only updates
+			admin.refresh();
 		}
-	
-		// and deletes last
-		for (Class<?> type : deleteOperations.keySet()) {
-			final DocumentMapping mapping = admin.mappings().getMapping(type);
-			final String typeString = mapping.typeAsString();
-			final DeleteByQueryRequestBuilder dbqrb = DeleteByQueryAction.INSTANCE.newRequestBuilder(client);
-			final Collection<String> values = deleteOperations.get(type);
-			final DeleteByQueryResponse response = dbqrb
-					.setIndices(admin.name())
-					.setTypes(typeString)
-					.setRouting(typeString)
-					.setQuery(QueryBuilders.idsQuery(mapping.typeAsString()).ids(values))
-					.get();
-			checkState(!response.isTimedOut(), "Delete by query request timed out. %s -> %s", mapping.typeAsString(), values);
-			checkState(response.getTotalFailed() == 0, "There were failures executing delete docs by query requests");
-			checkState(response.getShardFailures().length == 0, "There were shard failure when executing delete by query request.");
-		}
-		
-		// refresh the index, so all changes picked up properly
-		admin.refresh();
 	}
 
 	/*
