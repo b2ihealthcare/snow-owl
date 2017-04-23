@@ -49,7 +49,7 @@ import com.google.common.collect.ImmutableSortedMap;
 public final class DocumentMapping {
 
 	// type path delimiter to differentiate between same nested types in different contexts
-	private static final String DELIMITER = ".";
+	public static final String DELIMITER = ".";
 	private static final Joiner DELIMITER_JOINER = Joiner.on(DELIMITER);
 	
 	public static final String _ID = "_id";

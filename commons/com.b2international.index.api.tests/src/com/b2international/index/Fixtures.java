@@ -38,6 +38,7 @@ public class Fixtures {
 	public static class Data {
 
 		@Analyzed(analyzer=Analyzers.CASE_SENSITIVE)
+		@Analyzed(alias="exact", analyzer=Analyzers.EXACT)
 		private String analyzedField;
 		
 		private String field1;

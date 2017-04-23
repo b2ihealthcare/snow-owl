@@ -41,7 +41,6 @@ import com.b2international.index.mapping.Mappings;
 import com.b2international.index.util.NumericClassUtils;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.io.Resources;
 import com.google.common.primitives.Ints;
@@ -155,37 +154,39 @@ public final class EsIndexAdmin implements IndexAdmin {
 						prop.put("index", "not_analyzed");
 					} else {
 						final Map<String, Analyzed> analyzers = mapping.getAnalyzers(property);
-						// single analyzed fields without alias can use the non multi field format
-						if (analyzers.size() == 1) {
-							final Entry<String, Analyzed> analyzer = Iterables.getOnlyElement(analyzers.entrySet());
-							final Analyzed analyzed = analyzer.getValue();
-							if (Strings.isNullOrEmpty(analyzed.alias())) {
-								prop.put("type", esType);
-								prop.put("index", "analyzed");
-								prop.put("analyzer", EsAnalyzers.getAnalyzer(analyzed.analyzer()));
+
+						final Analyzed fieldAnalyzer = analyzers.get(property);
+						prop.put("type", esType);
+						if (fieldAnalyzer != null) {
+							prop.put("index", "analyzed");
+							prop.put("analyzer", EsAnalyzers.getAnalyzer(fieldAnalyzer.analyzer()));
+							if (fieldAnalyzer.searchAnalyzer() != Analyzers.INDEX) {
+								prop.put("search_analyzer", EsAnalyzers.getAnalyzer(fieldAnalyzer.searchAnalyzer()));
+							}
+						} else {
+							prop.put("index", "not_analyzed");
+						}
+						
+						// put extra fields into fields object
+						final Map<String, Object> fields = newHashMapWithExpectedSize(analyzers.size());
+						for (Entry<String, Analyzed> analyzer : analyzers.entrySet()) {
+							final String extraField = analyzer.getKey();
+							final String[] extraFieldParts = extraField.split(DocumentMapping.DELIMITER);
+							if (extraFieldParts.length > 1) {
+								final Analyzed analyzed = analyzer.getValue();
+								final Map<String, Object> fieldProps = newHashMap();
+								fieldProps.put("type", esType);
+								fieldProps.put("index", "analyzed");
+								fieldProps.put("analyzer", EsAnalyzers.getAnalyzer(analyzed.analyzer()));
 								if (analyzed.searchAnalyzer() != Analyzers.INDEX) {
 									prop.put("search_analyzer", EsAnalyzers.getAnalyzer(analyzed.searchAnalyzer()));
 								}
-								properties.put(property, prop);
-								continue;
+								fields.put(extraFieldParts[1], fieldProps);
 							}
 						}
-						
-						// otherwise use the multi field format
-						final Map<String, Object> fields = newHashMapWithExpectedSize(analyzers.size());
-						for (Entry<String, Analyzed> analyzer : analyzers.entrySet()) {
-							final Analyzed analyzed = analyzer.getValue();
-							final Map<String, Object> multiField = newHashMap();
-							multiField.put("type", esType);
-							multiField.put("index", "analyzed");
-							multiField.put("analyzer", EsAnalyzers.getAnalyzer(analyzed.analyzer()));
-							if (analyzed.searchAnalyzer() != Analyzers.INDEX) {
-								prop.put("search_analyzer", EsAnalyzers.getAnalyzer(analyzed.searchAnalyzer()));
-							}
-							fields.put(analyzer.getKey(), multiField);
+						if (!fields.isEmpty()) {
+							prop.put("fields", fields);
 						}
-						prop.put("type", "multfi_field");
-						prop.put("fields", fields);
 					}
 					properties.put(property, prop);
 				}
