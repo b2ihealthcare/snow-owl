@@ -37,6 +37,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionCompare.Builder;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -250,16 +251,14 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 				// partition the total hit number by the current threshold
 				int offset = 0;
 				do {
-					final Hits<Revision.Views.DocIdOnly> revisionsToPurge = searcher.search(Query
-							.selectPartial(Revision.Views.DocIdOnly.class, revisionType)
+					final Hits<String> revisionsToPurge = searcher.search(Query
+							.selectPartial(String.class, revisionType, ImmutableSet.of(DocumentMapping._ID))
 							.where(purgeQuery.build())
 							.offset(offset)
 							.limit(PURGE_LIMIT)
 							.build());
 					
-					for (Revision.Views.DocIdOnly hit : revisionsToPurge) {
-						writer.remove(revisionType, hit._id());
-					}
+					writer.removeAll(ImmutableMap.of(revisionType, newHashSet(revisionsToPurge)));
 					
 					// register processed items in the offset, and check if we reached the limit, if yes break
 					offset += PURGE_LIMIT;

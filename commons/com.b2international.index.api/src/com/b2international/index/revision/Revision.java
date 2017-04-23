@@ -45,21 +45,6 @@ public abstract class Revision implements WithId {
 
 	public static class Views {
 		
-		public static final class DocIdOnly implements WithId {
-			private String _id;
-			
-			@Override
-			public String _id() {
-				return _id;
-			}
-			
-			@Override
-			public void set_id(String _id) {
-				this._id = _id;
-			}
-			
-		}
-		
 		public static final class StorageKeyAndHash implements WithHash {
 			private final long storageKey;
 			private String _hash;

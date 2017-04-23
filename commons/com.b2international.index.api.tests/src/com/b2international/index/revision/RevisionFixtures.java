@@ -18,6 +18,7 @@ package com.b2international.index.revision;
 import java.util.Objects;
 
 import com.b2international.index.Analyzed;
+import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.WithScore;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -35,7 +36,7 @@ public class RevisionFixtures {
 	@Doc
 	public static class Data extends Revision {
 		
-		@Analyzed
+		@Analyzed(analyzer=Analyzers.TOKENIZED)
 		private String field1;
 		private String field2;
 
