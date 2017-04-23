@@ -12,6 +12,7 @@ package org.eclipse.net4j.signal.wrapping;
 
 import org.eclipse.net4j.signal.SignalProtocol;
 import org.eclipse.net4j.util.ObjectUtil;
+import org.eclipse.net4j.util.StringUtil;
 import org.eclipse.net4j.util.container.IElementProcessor;
 import org.eclipse.net4j.util.container.IManagedContainer;
 import org.eclipse.net4j.util.io.IStreamWrapper;
@@ -24,9 +25,9 @@ import org.eclipse.net4j.util.io.IStreamWrapper;
  */
 public class StreamWrapperInjector implements IElementProcessor
 {
-  private String protocolID;
+  private final String protocolID;
 
-  private IStreamWrapper streamWrapper;
+  private final IStreamWrapper streamWrapper;
 
   public StreamWrapperInjector(String protocolID, IStreamWrapper streamWrapper)
   {
@@ -67,7 +68,7 @@ public class StreamWrapperInjector implements IElementProcessor
       return false;
     }
 
-    return ObjectUtil.equals(signalProtocol.getType(), protocolID);
+    return StringUtil.isEmpty(protocolID) || ObjectUtil.equals(signalProtocol.getType(), protocolID);
   }
 
   protected Object inject(IManagedContainer container, String productGroup, String factoryType, String description,

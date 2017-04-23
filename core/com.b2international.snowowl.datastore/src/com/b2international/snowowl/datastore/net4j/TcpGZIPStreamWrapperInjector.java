@@ -15,28 +15,50 @@
  */
 package com.b2international.snowowl.datastore.net4j;
 
+import org.eclipse.net4j.acceptor.IAcceptor;
+import org.eclipse.net4j.channel.IChannelMultiplexer;
+import org.eclipse.net4j.internal.jvm.JVMServerConnector;
+import org.eclipse.net4j.internal.tcp.TCPServerConnector;
 import org.eclipse.net4j.signal.SignalProtocol;
 import org.eclipse.net4j.signal.wrapping.GZIPStreamWrapperInjector;
-import org.eclipse.net4j.tcp.ITCPConnector;
 import org.eclipse.net4j.util.container.IManagedContainer;
+import org.eclipse.spi.net4j.InternalChannelMultiplexer;
 
 /**
  * @since 5.10
  */
 public class TcpGZIPStreamWrapperInjector extends GZIPStreamWrapperInjector {
 
-	public TcpGZIPStreamWrapperInjector(String protocolID) {
+	private final IAcceptor acceptor;
+
+	public TcpGZIPStreamWrapperInjector(String protocolID, IAcceptor acceptor) {
 		super(protocolID);
+		this.acceptor = acceptor;
 	}
-	
+
+	@SuppressWarnings("restriction")
 	@Override
-	protected boolean shouldInject(IManagedContainer container, String productGroup, String factoryType,
-			String description, SignalProtocol<?> protocol) {
-		if (!(protocol.getChannel().getMultiplexer() instanceof ITCPConnector)) {
-			return false;
-		} else {
-			return super.shouldInject(container, productGroup, factoryType, description, protocol);
+	protected boolean shouldInject(IManagedContainer container, String productGroup, String factoryType, String description, SignalProtocol<?> protocol) {
+		if (super.shouldInject(container, productGroup, factoryType, description, protocol))
+		{
+			if (acceptor == null)
+			{
+				return true;
+			}
+
+			IChannelMultiplexer multiplexer = InternalChannelMultiplexer.CONTEXT_MULTIPLEXER.get();
+
+			if (multiplexer instanceof TCPServerConnector)
+			{
+				TCPServerConnector serverConnector = (TCPServerConnector) multiplexer;
+				if (serverConnector.getAcceptor() == acceptor)
+				{
+					return true;
+				}
+			}
 		}
+
+		return false;
 	}
 
 }

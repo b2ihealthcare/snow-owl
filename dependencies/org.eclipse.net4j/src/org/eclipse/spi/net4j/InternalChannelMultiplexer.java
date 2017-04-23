@@ -22,6 +22,11 @@ import org.eclipse.net4j.channel.IChannelMultiplexer;
 public interface InternalChannelMultiplexer extends IChannelMultiplexer, IBufferProvider, ITransportConfigAware
 {
   /**
+   * @since 4.5
+   */
+  public static final ThreadLocal<InternalChannelMultiplexer> CONTEXT_MULTIPLEXER = new ThreadLocal<InternalChannelMultiplexer>();
+	
+  /**
    * @since 4.0
    */
   public static final short RESERVED_CHANNEL = 0;
