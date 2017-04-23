@@ -260,7 +260,7 @@ public final class EsQueryBuilder {
 			}
 			break;
 		case FUZZY:
-			query = QueryBuilders.fuzzyQuery(field, term).fuzziness(Fuzziness.TWO).prefixLength(1);
+			query = QueryBuilders.fuzzyQuery(field, term).fuzziness(Fuzziness.ONE).prefixLength(1);
 			break;
 		case PARSED:
 			query = QueryBuilders.queryStringQuery(TextConstants.escape(term)).allowLeadingWildcard(true).defaultOperator(Operator.AND);
