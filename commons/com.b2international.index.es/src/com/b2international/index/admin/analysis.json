@@ -1,0 +1,112 @@
+{
+  "analyzer": {
+      "tokenized": {
+         "tokenizer": "whitespace",
+         "filter": [
+            "asciifolding",
+            "lowercase",
+            "possessive",
+            "word_splitter",
+            "unique_token"
+         ]
+      },
+      "exact": {
+      	"tokenizer": "keyword",
+      	"filter": [
+      	  "asciifolding",
+      	  "lowercase"
+      	]
+      },
+      "search_stemming": {
+      	"tokenizer" : "whitespace",
+      	"filter" : [
+				"asciifolding",
+				"lowercase",
+				"possessive",
+				"unique_token",
+				"english_stemmer"
+      	]
+      },
+      "stemming": {
+      	"tokenizer" : "whitespace",
+      	"filter" : [
+				"asciifolding",
+				"lowercase",
+				"possessive",
+				"word_splitter",
+				"unique_token",
+				"english_stemmer"
+      	]
+      },
+      "case_sensitive_ascii": {
+      	"tokenizer" : "whitespace",
+      	"filter" : [
+				"asciifolding",
+				"possessive",
+				"word_splitter",
+				"unique_token"
+      	]
+      },
+      "case_sensitive_ascii_exact": {
+      	"tokenizer" : "keyword",
+      	"filter" : [
+				"asciifolding"
+      	]
+      },
+      "case_sensitive": {
+      	"tokenizer" : "whitespace",
+      	"filter" : [
+      		"possessive",
+      		"word_splitter",
+      		"unique_token"
+      	]
+      },
+      "prefix": {
+         "tokenizer": "whitespace",
+         "filter": [
+            "asciifolding",
+            "lowercase",
+            "possessive",
+            "word_splitter",
+            "unique_token",
+            "edge_ngram"
+         ]
+      },
+      "case_sensitive_prefix": {
+         "tokenizer": "whitespace",
+         "filter": [
+            "asciifolding",
+            "possessive",
+            "word_splitter",
+            "unique_token",
+            "edge_ngram"
+         ]
+      }
+   },
+   "filter": {
+      "english_stemmer": {
+         "type": "stemmer",
+         "name": "english"
+      },
+      "edge_ngram": {
+         "type": "edgeNGram",
+         "min_gram": 1,
+         "max_gram": 20
+      },
+      "possessive": {
+      	"type": "stemmer",
+      	"name": "possessive_english"
+      },
+       "word_splitter": {
+          "type": "word_delimiter",
+          "split_on_case_change": "false",
+          "preserve_original": "true",
+          "stem_english_possessive": "false",
+          "type_table": [", => DIGIT", ". => DIGIT"]
+      },
+      "unique_token": {
+      	"type": "unique",
+      	"only_on_same_position": "true"
+      }
+   }
+}

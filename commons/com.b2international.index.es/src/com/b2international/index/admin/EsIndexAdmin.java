@@ -17,24 +17,33 @@ package com.b2international.index.admin;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.Strings;
+import org.elasticsearch.common.settings.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.index.Analyzed;
+import com.b2international.index.Analyzers;
+import com.b2international.index.IndexException;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.util.NumericClassUtils;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.io.Resources;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Primitives;
 
@@ -97,11 +106,23 @@ public final class EsIndexAdmin implements IndexAdmin {
 			req.addMapping(type, typeMapping);
 		}
 
+		try {
+			req.setSettings(createSettings());
+		} catch (IOException e) {
+			throw new IndexException("Couldn't prepare settings for index " + name, e);
+		}
+
 		CreateIndexResponse response = req.get();
 		checkState(response.isAcknowledged(), "Failed to create index %s", name);
 		waitForYellowHealth();
 	}
 
+	private Map<String, Object> createSettings() throws IOException {
+		return ImmutableMap.of("analysis", 
+			Settings.builder().loadFromStream("analysis.json", Resources.getResource(getClass(), "analysis.json").openStream()).build().getAsStructuredMap()
+		);
+	}
+	
 	private void waitForYellowHealth() {
 		client().admin().cluster()
 			.prepareHealth(name())
@@ -129,9 +150,42 @@ public final class EsIndexAdmin implements IndexAdmin {
 				final String esType = toEsType(fieldType);
 				if (!Strings.isNullOrEmpty(esType)) {
 					final Map<String, Object> prop = newHashMap();
-					prop.put("type", esType);
 					if (!mapping.isAnalyzed(field.getName())) {
+						prop.put("type", esType);
 						prop.put("index", "not_analyzed");
+					} else {
+						final Map<String, Analyzed> analyzers = mapping.getAnalyzers(property);
+						// single analyzed fields without alias can use the non multi field format
+						if (analyzers.size() == 1) {
+							final Entry<String, Analyzed> analyzer = Iterables.getOnlyElement(analyzers.entrySet());
+							final Analyzed analyzed = analyzer.getValue();
+							if (Strings.isNullOrEmpty(analyzed.alias())) {
+								prop.put("type", esType);
+								prop.put("index", "analyzed");
+								prop.put("analyzer", EsAnalyzers.getAnalyzer(analyzed.analyzer()));
+								if (analyzed.searchAnalyzer() != Analyzers.INDEX) {
+									prop.put("search_analyzer", EsAnalyzers.getAnalyzer(analyzed.searchAnalyzer()));
+								}
+								properties.put(property, prop);
+								continue;
+							}
+						}
+						
+						// otherwise use the multi field format
+						final Map<String, Object> fields = newHashMapWithExpectedSize(analyzers.size());
+						for (Entry<String, Analyzed> analyzer : analyzers.entrySet()) {
+							final Analyzed analyzed = analyzer.getValue();
+							final Map<String, Object> multiField = newHashMap();
+							multiField.put("type", esType);
+							multiField.put("index", "analyzed");
+							multiField.put("analyzer", EsAnalyzers.getAnalyzer(analyzed.analyzer()));
+							if (analyzed.searchAnalyzer() != Analyzers.INDEX) {
+								prop.put("search_analyzer", EsAnalyzers.getAnalyzer(analyzed.searchAnalyzer()));
+							}
+							fields.put(analyzer.getKey(), multiField);
+						}
+						prop.put("type", "multfi_field");
+						prop.put("fields", fields);
 					}
 					properties.put(property, prop);
 				}
