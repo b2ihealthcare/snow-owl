@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
@@ -171,7 +172,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 						final Map<String, Object> fields = newHashMapWithExpectedSize(analyzers.size());
 						for (Entry<String, Analyzed> analyzer : analyzers.entrySet()) {
 							final String extraField = analyzer.getKey();
-							final String[] extraFieldParts = extraField.split(DocumentMapping.DELIMITER);
+							final String[] extraFieldParts = extraField.split(Pattern.quote(DocumentMapping.DELIMITER));
 							if (extraFieldParts.length > 1) {
 								final Analyzed analyzed = analyzer.getValue();
 								final Map<String, Object> fieldProps = newHashMap();
@@ -179,7 +180,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 								fieldProps.put("index", "analyzed");
 								fieldProps.put("analyzer", EsAnalyzers.getAnalyzer(analyzed.analyzer()));
 								if (analyzed.searchAnalyzer() != Analyzers.INDEX) {
-									prop.put("search_analyzer", EsAnalyzers.getAnalyzer(analyzed.searchAnalyzer()));
+									fieldProps.put("search_analyzer", EsAnalyzers.getAnalyzer(analyzed.searchAnalyzer()));
 								}
 								fields.put(extraFieldParts[1], fieldProps);
 							}
