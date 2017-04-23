@@ -27,7 +27,7 @@ import com.b2international.index.mapping.DocumentMapping;
 public class JsonDocumentMapping {
 
 	public static IndexField<String> _id() {
-		return Fields.stringField(DocumentMapping._ID);
+		return Fields.stringDocValuesField(DocumentMapping._ID);
 	}
 	
 	public static IndexField<String> _uid() {
