@@ -48,7 +48,8 @@ public class RepositoryBootstrap extends DefaultBootstrapFragment {
 	
 	private Map<String, Object> initIndexSettings(Environment env) {
 		final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
-		builder.put(IndexClientFactory.DIRECTORY, env.getDataDirectory().toPath().resolve("indexes").toString());
+		builder.put(IndexClientFactory.DATA_DIRECTORY, env.getDataDirectory().toPath().resolve("indexes").toString());
+		builder.put(IndexClientFactory.CONFIG_DIRECTORY, env.getConfigDirectory().toPath().toString());
 		
 		final IndexConfiguration config = env.service(SnowOwlConfiguration.class)
 				.getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();

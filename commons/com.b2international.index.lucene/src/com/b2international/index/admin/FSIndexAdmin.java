@@ -51,7 +51,7 @@ public final class FSIndexAdmin extends BaseLuceneIndexAdmin {
 	
 	@Override
 	protected TransactionLog createTransactionlog(final Map<String, String> commitData) throws IOException {
-		final Path translogPath = Paths.get((String) settings().get(IndexClientFactory.DIRECTORY)).resolve(name()).resolve("translog");
+		final Path translogPath = Paths.get((String) settings().get(IndexClientFactory.DATA_DIRECTORY)).resolve(name()).resolve("translog");
 		return new EsTransactionLog(name(), translogPath, mapper, mappings(), commitData, log());
 	}
 	

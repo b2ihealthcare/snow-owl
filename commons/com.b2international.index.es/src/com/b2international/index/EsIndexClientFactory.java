@@ -16,6 +16,8 @@
 package com.b2international.index;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import org.elasticsearch.node.Node;
@@ -31,10 +33,12 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 
 	@Override
 	public IndexClient createClient(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {
-		final boolean persistent = settings.containsKey(IndexClientFactory.DIRECTORY);
-		final Object dir = persistent ? settings.get(IndexClientFactory.DIRECTORY) : new File("target");
-		final File directory = dir instanceof File ? (File) dir : new File((String) dir);
-		final Node node = EmbeddedNode.getInstance(directory, persistent);
+		final boolean persistent = settings.containsKey(DATA_DIRECTORY);
+		final Object dir = persistent ? settings.get(DATA_DIRECTORY) : new File("target");
+		final Object configDir = settings.containsKey(CONFIG_DIRECTORY) ? settings.get(CONFIG_DIRECTORY) : Paths.get("target");
+		final File dataDirectory = dir instanceof File ? (File) dir : new File((String) dir);
+		final Path configDirectory = configDir instanceof Path ? (Path) configDir : Paths.get((String) configDir);
+		final Node node = EmbeddedNode.getInstance(configDirectory, dataDirectory, persistent);
 		return new EsIndexClient(new EsIndexAdmin(node.client(), name, mappings, settings), mapper);
 	}
 

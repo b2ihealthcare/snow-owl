@@ -27,29 +27,37 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public interface IndexClientFactory {
 
 	/**
+	 * Configuration key to use when specifying the configuration directory
+	 * where index specific configuration can be found.
+	 */
+	String CONFIG_DIRECTORY = "configDirectory";
+
+	/**
 	 * Configuration key to use when creating file system based index.
 	 */
-	String DIRECTORY = "directory";
+	String DATA_DIRECTORY = "dataDirectory";
 
 	/**
 	 * Configuration key to use to specify the hard commit interval of an index.
 	 */
 	String COMMIT_INTERVAL_KEY = "commitInterval";
-	
+
 	String TRANSLOG_SYNC_INTERVAL_KEY = "translogSyncInterval";
 
 	/**
-	 * Configuration key to specify the slf4j Logger instance to use for the index.
+	 * Configuration key to specify the slf4j Logger instance to use for the
+	 * index.
 	 */
 	String LOG_KEY = "slf4j.logger";
-	
+
 	/**
 	 * Configuration key to specify slow log related configuration.
 	 */
 	String SLOW_LOG_KEY = "slowlog";
-	
+
 	/**
-	 * Configuration key to specify the maximum number of documents to retrieve in a single call from the index.
+	 * Configuration key to specify the maximum number of documents to retrieve
+	 * in a single call from the index.
 	 */
 	String RESULT_WINDOW_KEY = "max_result_window";
 
@@ -57,9 +65,9 @@ public interface IndexClientFactory {
 	 * The default commit interval is 15 seconds.
 	 */
 	long DEFAULT_COMMIT_INTERVAL = TimeUnit.SECONDS.toMillis(15L);
-	
+
 	long DEFAULT_TRANSLOG_SYNC_INTERVAL = TimeUnit.SECONDS.toMillis(5L);
-	
+
 	/**
 	 * The default result window (~10k items)
 	 */

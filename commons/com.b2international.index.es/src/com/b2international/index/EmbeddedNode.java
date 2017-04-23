@@ -18,10 +18,10 @@ package com.b2international.index;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.elasticsearch.Version;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.settings.Settings.Builder;
 import org.elasticsearch.index.reindex.ReindexPlugin;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.internal.InternalSettingsPreparer;
@@ -39,35 +39,18 @@ import com.b2international.index.admin.AwaitPendingTasks;
  */
 public final class EmbeddedNode extends Node {
 
-	private static final Logger LOG = LoggerFactory.getLogger("elastic.snowowl");
+	private static final String CONFIG_FILE = "elasticsearch.yml";
 	private static final String CLUSTER_NAME = "elastic-snowowl";
+	private static final Logger LOG = LoggerFactory.getLogger("elastic.snowowl");
 	
 	private static Node INSTANCE;
 	
-	static Node getInstance(File directory, boolean persistent) {
+	static Node getInstance(Path configPath, File directory, boolean persistent) {
 		if (INSTANCE == null) {
 			synchronized (EmbeddedNode.class) {
 				if (INSTANCE == null) {
-					INSTANCE = null;
-					final Builder esSettings = Settings.builder();
-					esSettings.put(IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.RESULT_WINDOW_KEY);
-					// disable es refresh, we will do it manually on each commit
-					esSettings.put("refresh_interval", "-1");
-					// configure es home directory
-					final String esHome = directory.toPath().resolve(CLUSTER_NAME).toString();
-					LOG.info("homedir {}", esHome);
-					esSettings.put("path.home", esHome);
-					esSettings.put("cluster.name", CLUSTER_NAME);
-					esSettings.put("node.name", CLUSTER_NAME);
-					esSettings.put("index.translog.flush_threshold_period", "30m");
-					esSettings.put("index.number_of_shards", 1);
-					esSettings.put("index.number_of_replicas", 0);
-					esSettings.put("node.client", false);
-					esSettings.put("node.local", true);
-					esSettings.put("script.inline", true);
-					esSettings.put("script.indexed", true);
-					
-					final Node node = new EmbeddedNode(esSettings.build(), GroovyPlugin.class, ReindexPlugin.class, DeleteByQueryPlugin.class);
+					final Settings esSettings = configureSettings(configPath.resolve(CONFIG_FILE), directory);
+					final Node node = new EmbeddedNode(esSettings, GroovyPlugin.class, ReindexPlugin.class, DeleteByQueryPlugin.class);
 					node.start();
 					AwaitPendingTasks.await(node.client(), LOG);
 					INSTANCE = node;
@@ -82,13 +65,46 @@ public final class EmbeddedNode extends Node {
 							}
 						}
 					});
-					LOG.info("Index is up and running.");
+					LOG.info("Embedded elasticsearch is up and running.");
 				}
 			}
 		}
 		return INSTANCE;
 	}
 	
+	private static Settings configureSettings(Path configPath, File directory) {
+		final Settings.Builder esSettings;
+		if (configPath.toFile().exists()) {
+			LOG.info("Loading configuration settings from file {}", configPath);
+			esSettings = Settings.builder().loadFromPath(configPath);
+		} else {
+			esSettings = Settings.builder();
+		}
+
+		putSettingIfAbsent(esSettings, IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW);
+		// disable es refresh, we will do it manually on each commit
+		putSettingIfAbsent(esSettings, "refresh_interval", "-1");
+		// configure es home directory
+		putSettingIfAbsent(esSettings, "path.home", directory.toPath().resolve(CLUSTER_NAME).toString());
+		putSettingIfAbsent(esSettings, "cluster.name", CLUSTER_NAME);
+		putSettingIfAbsent(esSettings, "node.name", CLUSTER_NAME);
+		putSettingIfAbsent(esSettings, "index.number_of_shards", 1);
+		putSettingIfAbsent(esSettings, "index.number_of_replicas", 0);
+		putSettingIfAbsent(esSettings, "script.inline", true);
+		putSettingIfAbsent(esSettings, "script.indexed", true);
+		
+		// local mode if not set
+		putSettingIfAbsent(esSettings, "node.client", false);
+		putSettingIfAbsent(esSettings, "node.local", true);
+		return esSettings.build();
+	}
+	
+	private static void putSettingIfAbsent(Settings.Builder settings, String key, Object value) {
+		if (!settings.internalMap().containsKey(key)) {
+			settings.put(key, value);
+		}
+	}
+
 	@SafeVarargs
 	private EmbeddedNode(Settings settings, Class<? extends Plugin>...classpathPlugins) {
 		super(InternalSettingsPreparer.prepareEnvironment(settings, null), Version.CURRENT, newArrayList(classpathPlugins));
