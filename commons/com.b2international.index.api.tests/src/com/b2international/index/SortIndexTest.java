@@ -97,7 +97,7 @@ public class SortIndexTest extends BaseIndexTest {
 
 	@Test
 	public void sortAnalyzedField() throws Exception {
-		final TreeSet<String> orderedItems = newTreeSet(String::compareToIgnoreCase);
+		final TreeSet<String> orderedItems = newTreeSet();
 		final Map<String, Data> documents = newHashMap(); 
 
 		for (int i = 0; i < NUM_DOCS; i++) {
