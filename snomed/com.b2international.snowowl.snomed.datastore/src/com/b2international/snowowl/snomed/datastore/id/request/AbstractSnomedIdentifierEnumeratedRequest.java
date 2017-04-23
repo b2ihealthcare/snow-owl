@@ -20,14 +20,13 @@ import java.util.Set;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.5
  */
 abstract class AbstractSnomedIdentifierEnumeratedRequest implements Request<RepositoryContext, Boolean> {
 
-	@JsonProperty
+	// NOT @JsonProperty
 	private final Set<String> componentIds;
 
 	AbstractSnomedIdentifierEnumeratedRequest(Set<String> componentIds) {

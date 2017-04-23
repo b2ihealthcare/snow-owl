@@ -24,6 +24,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Collection;
 
 import com.b2international.index.Analyzed;
+import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.WithId;
 import com.b2international.index.WithScore;
@@ -129,7 +130,8 @@ public final class CommitInfoDocument implements WithId, WithScore {
 	
 	private final String branch;
 	private final String userId;
-	@Analyzed
+	@Analyzed(analyzer=Analyzers.TOKENIZED)
+	@Analyzed(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
 	private final String comment;
 	private final long timeStamp;
 	

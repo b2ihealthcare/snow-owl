@@ -175,13 +175,22 @@ public abstract class ChannelMultiplexer extends Container<IChannel> implements 
 
   public InternalChannel inverseOpenChannel(short channelID, String protocolID)
   {
-    IProtocol<?> protocol = createProtocol(protocolID, null);
+	CONTEXT_MULTIPLEXER.set(this);
+	
+	try 
+	{
+      IProtocol<?> protocol = createProtocol(protocolID, null);
 
-    InternalChannel channel = createChannel();
-    initChannel(channel, protocol);
-    channel.setID(channelID);
-    addChannel(channel);
-    return channel;
+      InternalChannel channel = createChannel();
+      initChannel(channel, protocol);
+      channel.setID(channelID);
+      addChannel(channel);
+      return channel;
+	} 
+	finally
+	{
+	  CONTEXT_MULTIPLEXER.remove();
+	}
   }
 
   public void closeChannel(InternalChannel channel) throws ChannelException
