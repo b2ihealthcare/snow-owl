@@ -25,10 +25,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse.Failure;
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkProcessor;
+import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest.OpType;
 import org.elasticsearch.client.Client;
@@ -135,39 +137,62 @@ public class EsDocumentWriter implements Writer {
 		
 		// then bulk indexes/deletes
 		if (!indexOperations.isEmpty() || !deleteOperations.isEmpty()) {
-			final BulkRequestBuilder bulk = client.prepareBulk();
+			final BulkProcessor processor = BulkProcessor.builder(client, new BulkProcessor.Listener() {
+				@Override
+				public void beforeBulk(long executionId, BulkRequest request) {
+					admin.log().debug("Sending bulk request {}", request.numberOfActions());
+				}
+				
+				@Override
+				public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
+					admin.log().error("Failed bulk request", failure);
+				}
+				
+				@Override
+				public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
+					admin.log().debug("Successfully processed bulk request");
+					if (response.hasFailures()) {
+						for (BulkItemResponse itemResponse : response.getItems()) {
+							checkState(!itemResponse.isFailed(), "Failed to commit bulk request in index '%s', %s", admin.name(), itemResponse.getFailureMessage());
+						}
+					}
+				}
+			})
+			.setConcurrentRequests(Math.max(1, Runtime.getRuntime().availableProcessors() / 4))
+			.setBulkActions(5000)
+			.build();
+
 			for (Entry<String, Object> entry : indexOperations.entrySet()) {
 				final String id = entry.getKey();
 				if (!deleteOperations.containsValue(id)) {
 					final Object obj = entry.getValue();
 					final DocumentMapping mapping = admin.mappings().getMapping(obj.getClass());
 					final byte[] _source = mapper.writeValueAsBytes(obj);
-					bulk.add(client
+					processor.add(client
 							.prepareIndex(admin.name(), mapping.typeAsString(), id)
 							.setOpType(OpType.INDEX)
 							.setSource(_source)
-							.setRouting(mapping.typeAsString()));
+							.setRouting(mapping.typeAsString())
+							.request());
 				}
 			}
-			
+
 			for (Class<?> type : deleteOperations.keySet()) {
 				final DocumentMapping mapping = admin.mappings().getMapping(type);
 				final String typeString = mapping.typeAsString();
 				for (String id : deleteOperations.get(type)) {
-					bulk.add(client.prepareDelete(admin.name(), typeString, id).setRouting(typeString));
+					processor.add(client.prepareDelete(admin.name(), typeString, id).setRouting(typeString).request());
 				}
 			}
 			
-			BulkResponse response = bulk.setRefresh(true).get();
-			if (response.hasFailures()) {
-				for (BulkItemResponse itemResponse : response.getItems()) {
-					checkState(!itemResponse.isFailed(), "Failed to commit tx to index '%s', %s", admin.name(), itemResponse.getFailureMessage());
-				}
+			try {
+				processor.awaitClose(5, TimeUnit.MINUTES);
+			} catch (InterruptedException e) {
+				throw new IndexException("Interrupted bulk processing part of the commit", e);
 			}
-		} else {
-			// refresh the index if there were only updates
-			admin.refresh();
 		}
+		// refresh the index if there were only updates
+		admin.refresh();
 	}
 
 	/*
