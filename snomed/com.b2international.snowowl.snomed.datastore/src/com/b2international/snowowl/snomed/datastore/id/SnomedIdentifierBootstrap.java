@@ -89,13 +89,11 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 		case EMBEDDED:
 			final Index index = Indexes.createIndex(SNOMED_IDS_INDEX, env.service(ObjectMapper.class), new Mappings(SctId.class), env.service(IndexSettings.class));
 			index.admin().create();
-			LOGGER.info("Snow Owl is configured to use embedded identifier service.");
 			final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(index, reservationService); 
 			identifierService = new DefaultSnomedIdentifierService(index, generationStrategy, reservationService, conf);
 			break;
 		case CIS:
 			final ObjectMapper mapper = new ObjectMapper();
-			LOGGER.info("Snow Owl is configured to use CIS based identifier service.");
 			identifierService = new CisSnomedIdentifierService(conf, reservationService, mapper);
 			break;
 		default:
@@ -103,6 +101,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 		}
 
 		env.services().registerService(ISnomedIdentifierService.class, identifierService);
+		LOGGER.info("Snow Owl is configured to use {} based identifier service.", conf.getStrategy());
 	}
 
 }
