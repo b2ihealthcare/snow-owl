@@ -159,7 +159,6 @@ public final class EsQueryBuilder {
 	private void visit(BoolExpression bool) {
 		final BoolQueryBuilder query = QueryBuilders.boolQuery();
 		query.disableCoord(true);
-		// first add the mustClauses, then the mustNotClauses, if there are no mustClauses but mustNot ones then add a match all before
 		for (Expression must : bool.mustClauses()) {
 			// visit the item and immediately pop the deque item back
 			final EsQueryBuilder innerQueryBuilder = new EsQueryBuilder(mapping);
