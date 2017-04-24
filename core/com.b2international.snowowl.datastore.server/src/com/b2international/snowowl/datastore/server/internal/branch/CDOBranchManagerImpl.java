@@ -74,7 +74,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 	private final AtomicInteger segmentIds = new AtomicInteger(0);
 	private final ObjectMapper mapper;
 	
-    public CDOBranchManagerImpl(final InternalRepository repository) {
+    public CDOBranchManagerImpl(final InternalRepository repository, ObjectMapper mapper) {
         super(repository.getIndex());
         this.repository = repository;
        	
@@ -94,7 +94,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 			}
 		}
 		segmentIds.set(maxExistingSegment+1);
-		this.mapper = repository.service(ObjectMapper.class);
+		this.mapper = mapper;
     }
     
     private synchronized Pair<Integer, Integer> nextTwoSegments() {

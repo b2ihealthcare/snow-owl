@@ -58,6 +58,7 @@ import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Futures;
@@ -94,11 +95,12 @@ public class CDOBranchManagerTest {
 		when(repository.getCdoBranchManager()).thenReturn(cdoBranchManager);
 		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
 		when(repository.getConflictProcessor()).thenReturn(conflictProcessor);
-		store = Indexes.createIndex(UUID.randomUUID().toString(), JsonSupport.getDefaultObjectMapper(), new Mappings(CDOMainBranchImpl.class, CDOBranchImpl.class, InternalBranch.class));
+		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
+		store = Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(CDOMainBranchImpl.class, CDOBranchImpl.class, InternalBranch.class));
 		store.admin().create();
 		when(repository.getIndex()).thenReturn(store);
 		
-		manager = new CDOBranchManagerImpl(repository);
+		manager = new CDOBranchManagerImpl(repository, mapper);
 		main = (CDOMainBranchImpl) manager.getMainBranch();
 		
 		context = mock(ServiceProvider.class);

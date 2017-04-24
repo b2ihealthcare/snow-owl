@@ -199,7 +199,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 	}
 	
 	private void initializeBranchingSupport(int mergeMaxResults) {
-		final CDOBranchManagerImpl branchManager = new CDOBranchManagerImpl(this);
+		final CDOBranchManagerImpl branchManager = new CDOBranchManagerImpl(this, service(ObjectMapper.class));
 		bind(BranchManager.class, branchManager);
 		bind(BranchReplicator.class, branchManager);
 		
