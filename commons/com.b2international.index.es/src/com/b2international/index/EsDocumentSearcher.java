@@ -24,6 +24,7 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
@@ -76,7 +77,8 @@ public class EsDocumentSearcher implements Searcher {
 				.setFetchSource(true)
 				.get();
 		if (response.isExists()) {
-			return mapper.readValue(response.getSourceAsBytes(), type);
+			final BytesReference bytesRef = response.getSourceAsBytesRef();
+			return mapper.readValue(bytesRef.array(), bytesRef.arrayOffset(), bytesRef.length(), type);
 		} else {
 			return null;
 		}
@@ -172,7 +174,8 @@ public class EsDocumentSearcher implements Searcher {
 						value = (T) hit.getSource().get(Iterables.getOnlyElement(query.getFields()));
 					}
 				} else {
-					value = reader.readValue(hit.source());
+					final BytesReference bytesRef = hit.sourceRef();
+					value = reader.readValue(bytesRef.array(), bytesRef.arrayOffset(), bytesRef.length());
 				}
 				if (value instanceof WithId) {
 					((WithId) value).set_id(hit.getId());
