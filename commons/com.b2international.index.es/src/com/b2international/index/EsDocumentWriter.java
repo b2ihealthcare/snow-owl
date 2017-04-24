@@ -120,8 +120,10 @@ public class EsDocumentWriter implements Writer {
 			    .script(script)
 			    .filter(query)
 			    .get();
+			if (r.getUpdated() > 0) {
+				admin.log().info("Updated {} {} documents with script '{}', params({})", r.getUpdated(), mapping.typeAsString(), update.getScript(), update.getParams());
+			}
 			checkState(r.getVersionConflicts() == 0, "There were unknown version conflicts during bulk updates");
-			admin.log().info("Updated {} {} documents with script '{}', params({})", r.getUpdated(), mapping.typeAsString(), update.getScript(), update.getParams());
 			checkState(r.getSearchFailures().isEmpty(), "There were search failure during bulk updates");
 			if (!r.getIndexingFailures().isEmpty()) {
 				Throwable t = null;
