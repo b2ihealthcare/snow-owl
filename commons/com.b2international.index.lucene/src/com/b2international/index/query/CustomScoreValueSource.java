@@ -69,7 +69,7 @@ public class CustomScoreValueSource extends VectorValueSource {
 					if ("_score".equals(field)) {
 						ctx.put(field, value.objectVal(doc));
 					} else {
-						_source.put(field, value.objectVal(doc));
+						_source.put(field, ImmutableMap.of("value", value.objectVal(doc)));
 					}
 				}
 				ctx.put("doc", _source);
