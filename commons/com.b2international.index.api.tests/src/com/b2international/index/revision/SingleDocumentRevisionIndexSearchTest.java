@@ -31,6 +31,7 @@ import com.b2international.index.revision.RevisionFixtures.Data;
 import com.b2international.index.revision.RevisionFixtures.RangeData;
 import com.b2international.index.revision.RevisionFixtures.ScoredData;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 /**
@@ -123,6 +124,32 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 			@Override
 			public boolean matches(ScoredData input) {
 				return input.getScore() == input.getDoi();
+			}
+		});
+	}
+	
+	@Test
+	public void searchWithCustomScoreParams() throws Exception {
+		final ScoredData first = new ScoredData("field1", "field2", 1.0f);
+		final ScoredData second = new ScoredData("field1", "field2.2", 2.0f);
+		
+		indexRevision(MAIN, STORAGE_KEY1, first);
+		indexRevision(MAIN, STORAGE_KEY2, second);
+		
+		final int factor = 2;
+		final Query<ScoredData> query = Query.select(ScoredData.class).where(Expressions.scriptScore(
+				Expressions.exactMatch("field1", "field1"), "doiFactor", true, ImmutableMap.of("factor", factor)))
+				.withScores(true)
+				.build();
+		
+		final Iterable<ScoredData> matches = search(MAIN, query);
+		
+		assertThat(matches).hasSize(factor);
+		assertThat(matches).contains(first, second);
+		assertThat(matches).are(new Condition<ScoredData>() {
+			@Override
+			public boolean matches(ScoredData input) {
+				return Math.abs((double) factor * input.getDoi() - (double) input.getScore()) < 0.00001;
 			}
 		});
 	}

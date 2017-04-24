@@ -96,6 +96,7 @@ public class RevisionFixtures {
 	
 	@Doc
 	@Script(name="doi", script="return doc['doi']", fields={"doi"})
+	@Script(name="doiFactor", script="return doc['doi'] * params.factor", fields={"doi"})
 	public static class ScoredData extends Data implements WithScore {
 		
 		private float score = 0.0f;

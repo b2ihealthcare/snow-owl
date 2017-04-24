@@ -15,6 +15,9 @@
  */
 package com.b2international.index.query;
 
+import java.util.Collections;
+import java.util.Map;
+
 /**
  * @since 5.0
  */
@@ -23,11 +26,13 @@ public class ScriptScoreExpression implements Expression {
 	private final String scriptName;
 	private final Expression expression;
 	private final boolean strict;
+	private final Map<String, Object> params;
 
-	ScriptScoreExpression(Expression expression, String scriptName, boolean strict) {
+	ScriptScoreExpression(Expression expression, String scriptName, boolean strict, final Map<String, Object> params) {
 		this.expression = expression;
 		this.scriptName = scriptName;
 		this.strict = strict;
+		this.params = params == null ? Collections.emptyMap() : params;
 	}
 	
 	public Expression expression() {
@@ -45,6 +50,10 @@ public class ScriptScoreExpression implements Expression {
 	@Override
 	public String toString() {
 		return String.format("SCRIPT SCORE(%s)", expression);
+	}
+
+	public Map<String, Object> getParams() {
+		return params;
 	}
 	
 }

@@ -27,6 +27,7 @@ import org.apache.lucene.queries.function.docvalues.FloatDocValues;
 import org.apache.lucene.queries.function.valuesource.VectorValueSource;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
@@ -40,10 +41,12 @@ public class CustomScoreValueSource extends VectorValueSource {
 	private final Map<String, ValueSource> sources;
 	private final GroovyShell shell;
 	private final String script;
+	private final Map<String, Object> scriptParams;
 
-	public CustomScoreValueSource(String script, Map<String, ValueSource> sources) {
+	public CustomScoreValueSource(String script, final Map<String, Object> scriptParams, Map<String, ValueSource> sources) {
 		super(ImmutableList.copyOf(sources.values()));
 		this.script = script;
+		this.scriptParams = scriptParams;
 		this.sources = sources;
 		this.shell = new GroovyShell();
 	}
@@ -58,7 +61,7 @@ public class CustomScoreValueSource extends VectorValueSource {
 		return new FloatDocValues(this) {
 			@Override
 			public float floatVal(int doc) {
-				final Map<String, Object> ctx = newHashMap();
+				final ImmutableMap.Builder<String, Object> ctx = ImmutableMap.builder();
 				final Map<String, Object> _source = newHashMap();
 				
 				for (String field : sources.keySet()) {
@@ -70,11 +73,12 @@ public class CustomScoreValueSource extends VectorValueSource {
 					}
 				}
 				ctx.put("doc", _source);
-				ctx.putAll(context);
+				ctx.put("params", scriptParams);
+				ctx.putAll(scriptParams);
 				
-				final Binding binding = new Binding(ctx);
+				final Binding binding = new Binding(ctx.build());
 				compiledScript.setBinding(binding);
-				return (float) compiledScript.run();
+				return ((Number) compiledScript.run()).floatValue();
 			}
 		};
 	}

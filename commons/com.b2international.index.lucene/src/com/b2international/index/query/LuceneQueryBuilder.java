@@ -186,14 +186,14 @@ public final class LuceneQueryBuilder {
 		final Query innerQuery = deque.pop();
 		final CustomScoreQuery query = new CustomScoreQuery(
 			new ConstantScoreQuery(innerQuery), 
-			new FunctionQuery(visit(innerQuery, scoreScript))
+			new FunctionQuery(visit(innerQuery, scoreScript, expression.getParams()))
 		);
 		query.setStrict(expression.isStrict());
 		needsScoring = true;
 		deque.push(query);
 	}
 	
-	private ValueSource visit(final Query inner, final Script script) {
+	private ValueSource visit(final Query inner, final Script script, final Map<String, Object> scriptParams) {
 		Map<String, ValueSource> valueSources = newHashMap();
 		valueSources.put("_score", new ScoreValueSource(inner));
 		for (String field : script.fields()) {
@@ -207,7 +207,7 @@ public final class LuceneQueryBuilder {
 			}
 		}
 		
-		return new CustomScoreValueSource(script.script(), valueSources);
+		return new CustomScoreValueSource(script.script(), scriptParams, valueSources);
 	}
 //		if (func instanceof DualScoreFunction) {
 //			final DualScoreFunction<?, ?> f = (DualScoreFunction<?, ?>) func;
