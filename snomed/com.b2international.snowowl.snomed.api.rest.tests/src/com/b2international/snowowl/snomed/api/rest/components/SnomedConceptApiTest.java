@@ -37,9 +37,11 @@ import java.util.*;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
@@ -47,7 +49,11 @@ import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.domain.IdentifierStatus;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -135,6 +141,16 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		createComponent(branchPath, SnomedComponentType.CONCEPT, requestBody).statusCode(201)
 		.header("Location", endsWith("/" + conceptId));
+		
+		SctId conceptSctId = SnomedRequests.identifiers().prepareGet()
+			.setComponentId(conceptId)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync()
+			.first()
+			.get();
+		
+		assertEquals(IdentifierStatus.ASSIGNED.getSerializedName(), conceptSctId.getStatus());
 	}
 
 	@Test

@@ -49,9 +49,11 @@ import java.util.UUID;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
@@ -67,8 +69,12 @@ import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.domain.IdentifierStatus;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
@@ -145,6 +151,16 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 		createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(201)
 		.header("Location", endsWith("/" + descriptionId));
+		
+		SctId descriptionSctId = SnomedRequests.identifiers().prepareGet()
+				.setComponentId(descriptionId)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync()
+				.first()
+				.get();
+			
+		assertEquals(IdentifierStatus.ASSIGNED.getSerializedName(), descriptionSctId.getStatus());
 	}
 
 	@Test
