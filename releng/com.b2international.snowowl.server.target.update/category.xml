@@ -64,7 +64,6 @@
    <bundle id="ch.qos.logback.slf4j" version="1.0.7.v201505121915"/>
    <bundle id="ch.qos.logback.slf4j.source" version="1.0.7.v201505121915"/>
    <bundle id="com.google.guava" version="18.0.0"/>
-   <bundle id="com.google.guava.source" version="18.0.0"/>
    <bundle id="org.slf4j.api" version="1.7.2.v20121108-1250"/>
    <bundle id="org.slf4j.api.source" version="1.7.2.v20121108-1250"/>
    <bundle id="org.slf4j.log4j" version="1.7.2.v20130115-1340"/>
@@ -113,7 +112,6 @@
    <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-yaml" version="2.6.6"/>
    <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-csv" version="2.6.6"/>
    <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-smile" version="2.6.6"/>
-   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-csv" version="2.6.6"/>
    <bundle id="com.fasterxml.jackson.module.jackson-module-afterburner" version="2.6.6"/>
    <bundle id="com.healthmarketscience.jackcess" version="1.2.9"/>
    <bundle id="io.reactivex.rxjava2.rxjava" version="2.0.7"/>
