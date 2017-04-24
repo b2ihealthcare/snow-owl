@@ -41,9 +41,9 @@ public class CustomScoreValueSource extends VectorValueSource {
 	private final Map<String, ValueSource> sources;
 	private final GroovyShell shell;
 	private final String script;
-	private final Map<String, Object> scriptParams;
+	private final Map<String, ? extends Object> scriptParams;
 
-	public CustomScoreValueSource(String script, final Map<String, Object> scriptParams, Map<String, ValueSource> sources) {
+	public CustomScoreValueSource(String script, final Map<String, ? extends Object> scriptParams, Map<String, ValueSource> sources) {
 		super(ImmutableList.copyOf(sources.values()));
 		this.script = script;
 		this.scriptParams = scriptParams;
@@ -74,7 +74,6 @@ public class CustomScoreValueSource extends VectorValueSource {
 				}
 				ctx.put("doc", _source);
 				ctx.put("params", scriptParams);
-				ctx.putAll(scriptParams);
 				
 				final Binding binding = new Binding(ctx.build());
 				compiledScript.setBinding(binding);

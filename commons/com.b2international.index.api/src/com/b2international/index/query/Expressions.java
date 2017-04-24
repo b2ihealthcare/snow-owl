@@ -217,7 +217,7 @@ public class Expressions {
 		return new ScriptScoreExpression(query, scriptName, strict, Collections.emptyMap());
 	}
 	
-	public static Expression scriptScore(Expression query, String scriptName, boolean strict, Map<String, Object> params) {
+	public static Expression scriptScore(Expression query, String scriptName, boolean strict, Map<String, ? extends Object> params) {
 		return new ScriptScoreExpression(query, scriptName, strict, params);
 	}
 

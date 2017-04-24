@@ -35,7 +35,7 @@ import com.google.common.collect.Maps;
 public class Fixtures {
 
 	@Doc
-	@Script(name="floatField", script="return doc['floatField'].value", fields={"floatField"})
+	@Script(name="floatField", script="return doc.floatField.value", fields={"floatField"})
 	public static class Data {
 
 		@Analyzed(analyzer=Analyzers.CASE_SENSITIVE)

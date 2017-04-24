@@ -26,9 +26,9 @@ public class ScriptScoreExpression implements Expression {
 	private final String scriptName;
 	private final Expression expression;
 	private final boolean strict;
-	private final Map<String, Object> params;
+	private final Map<String, ? extends Object> params;
 
-	ScriptScoreExpression(Expression expression, String scriptName, boolean strict, final Map<String, Object> params) {
+	ScriptScoreExpression(Expression expression, String scriptName, boolean strict, final Map<String, ? extends Object> params) {
 		this.expression = expression;
 		this.scriptName = scriptName;
 		this.strict = strict;
@@ -52,7 +52,7 @@ public class ScriptScoreExpression implements Expression {
 		return String.format("SCRIPT SCORE(%s)", expression);
 	}
 
-	public Map<String, Object> getParams() {
+	public Map<String, ? extends Object> getParams() {
 		return params;
 	}
 	

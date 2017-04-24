@@ -193,7 +193,7 @@ public final class LuceneQueryBuilder {
 		deque.push(query);
 	}
 	
-	private ValueSource visit(final Query inner, final Script script, final Map<String, Object> scriptParams) {
+	private ValueSource visit(final Query inner, final Script script, final Map<String, ? extends Object> scriptParams) {
 		Map<String, ValueSource> valueSources = newHashMap();
 		valueSources.put("_score", new ScoreValueSource(inner));
 		for (String field : script.fields()) {
