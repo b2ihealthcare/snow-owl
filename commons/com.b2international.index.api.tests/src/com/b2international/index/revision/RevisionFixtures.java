@@ -20,6 +20,7 @@ import java.util.Objects;
 import com.b2international.index.Analyzed;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.Script;
 import com.b2international.index.WithScore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -94,6 +95,7 @@ public class RevisionFixtures {
 	}
 	
 	@Doc
+	@Script(name="doi", script="return doc['doi']", fields={"doi"})
 	public static class ScoredData extends Data implements WithScore {
 		
 		private float score = 0.0f;

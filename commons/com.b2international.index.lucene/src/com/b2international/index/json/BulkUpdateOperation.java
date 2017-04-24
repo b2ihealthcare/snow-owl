@@ -58,7 +58,7 @@ public final class BulkUpdateOperation<T> implements Operation {
 	public void execute(IndexWriter writer, Searcher searcher) throws IOException {
 		final DocumentMapping mapping = mappings.getMapping(update.getType());
 		final String scriptName = update.getScript();
-		final String script = mapping.getScript(scriptName);
+		final String script = mapping.getScript(scriptName).script();
 		
 		final GroovyShell shell = new GroovyShell();
 		Script compiledScript = shell.parse(script);

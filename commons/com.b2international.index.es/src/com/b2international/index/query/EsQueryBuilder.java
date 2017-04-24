@@ -123,8 +123,8 @@ public final class EsQueryBuilder {
 			visit((DisMaxPredicate) expression);
 		} else if (expression instanceof BoostPredicate) {
 			visit((BoostPredicate) expression);
-		} else if (expression instanceof CustomScoreExpression) {
-			visit((CustomScoreExpression) expression);
+		} else if (expression instanceof ScriptScoreExpression) {
+			visit((ScriptScoreExpression) expression);
 		} else if (expression instanceof DecimalPredicate) {
 			visit((DecimalPredicate) expression);
 		} else if (expression instanceof DecimalRangePredicate) {
@@ -136,7 +136,7 @@ public final class EsQueryBuilder {
 		}
 	}
 	
-	private void visit(CustomScoreExpression expression) {
+	private void visit(ScriptScoreExpression expression) {
 		throw new UnsupportedOperationException();
 //		final Expression inner = expression.expression();
 //		visit(inner);

@@ -29,8 +29,21 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Script {
 
+	/**
+	 * @return the name of the script
+	 */
 	String name();
 	
+	/**
+	 * The actual Groovy script.
+	 * @return
+	 */
 	String script();
+	
+	/**
+	 * Optionally specify the fields to be loaded for the script
+	 * @return
+	 */
+	String[] fields() default {};
 	
 }

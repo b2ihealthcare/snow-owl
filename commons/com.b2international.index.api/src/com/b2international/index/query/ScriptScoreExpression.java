@@ -18,8 +18,33 @@ package com.b2international.index.query;
 /**
  * @since 5.0
  */
-public interface ScoreFunction {
+public class ScriptScoreExpression implements Expression {
 
-	String name();
+	private final String scriptName;
+	private final Expression expression;
+	private final boolean strict;
+
+	ScriptScoreExpression(Expression expression, String scriptName, boolean strict) {
+		this.expression = expression;
+		this.scriptName = scriptName;
+		this.strict = strict;
+	}
+	
+	public Expression expression() {
+		return expression;
+	}
+
+	public String scriptName() {
+		return scriptName;
+	}
+	
+	public boolean isStrict() {
+		return strict;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("SCRIPT SCORE(%s)", expression);
+	}
 	
 }

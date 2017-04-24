@@ -40,8 +40,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.Maps;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Maps;
 
 /**
  * @since 4.7
@@ -149,8 +149,8 @@ public final class DocumentMapping {
 		return parent;
 	}
 	
-	public String getScript(String name) {
-		return scripts.get(name).script();
+	public Script getScript(String name) {
+		return scripts.get(name);
 	}
 	
 	public Collection<DocumentMapping> getNestedMappings() {

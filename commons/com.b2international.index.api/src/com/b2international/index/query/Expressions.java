@@ -207,12 +207,12 @@ public class Expressions {
 		return new DisMaxPredicate(disjuncts, 0.0f);
 	}
 
-	public static Expression customScore(Expression query, ScoreFunction func) {
-		return customScore(query, func, false);
+	public static Expression scriptScore(Expression query, String scriptName) {
+		return scriptScore(query, scriptName, false);
 	}
 	
-	public static Expression customScore(Expression query, ScoreFunction func, boolean strict) {
-		return new CustomScoreExpression(query, func, strict);
+	public static Expression scriptScore(Expression query, String scriptName, boolean strict) {
+		return new ScriptScoreExpression(query, scriptName, strict);
 	}
 
 }

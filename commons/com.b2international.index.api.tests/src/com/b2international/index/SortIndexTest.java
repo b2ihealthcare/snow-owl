@@ -36,7 +36,6 @@ import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
 import com.b2international.index.query.Expressions;
-import com.b2international.index.query.FieldScoreFunction;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
@@ -375,7 +374,7 @@ public class SortIndexTest extends BaseIndexTest {
 		indexDocuments(documents);
 		
 		final Query<Data> descendingQuery = Query.select(Data.class)
-				.where(Expressions.customScore(Expressions.matchAll(), new FieldScoreFunction("floatField")))
+				.where(Expressions.scriptScore(Expressions.matchAll(), "floatField"))
 				.limit(NUM_DOCS)
 				.sortBy(SortBy.SCORE)
 				.build();
@@ -383,7 +382,7 @@ public class SortIndexTest extends BaseIndexTest {
 		checkDocumentOrder(descendingQuery, data -> data.getField1(), ImmutableSet.copyOf(orderedItems), String.class);
 		
 		final Query<Data> ascendingQuery = Query.select(Data.class)
-				.where(Expressions.customScore(Expressions.matchAll(), new FieldScoreFunction("floatField")))
+				.where(Expressions.scriptScore(Expressions.matchAll(), "floatField"))
 				.limit(NUM_DOCS)
 				.sortBy(SortBy.field(SortBy.FIELD_SCORE, Order.ASC))
 				.build();

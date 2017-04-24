@@ -22,7 +22,6 @@ import java.util.Collection;
 import org.assertj.core.api.Condition;
 import org.junit.Test;
 
-import com.b2international.index.query.DualScoreFunction;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -111,13 +110,8 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 		indexRevision(MAIN, STORAGE_KEY1, first);
 		indexRevision(MAIN, STORAGE_KEY2, second);
 		
-		final Query<ScoredData> query = Query.select(ScoredData.class).where(Expressions.customScore(Expressions.exactMatch("field1", "field1"),
-				new DualScoreFunction<String, Float>("ScoreFunction", "field1", "doi") {
-					@Override
-					protected float compute(String field1, Float doi) {
-						return doi;
-					}
-				}, true))
+		final Query<ScoredData> query = Query.select(ScoredData.class).where(Expressions.scriptScore(
+				Expressions.exactMatch("field1", "field1"), "doi", true))
 				.withScores(true)
 				.build();
 		
