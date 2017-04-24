@@ -38,7 +38,7 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 		final Object configDir = settings.containsKey(CONFIG_DIRECTORY) ? settings.get(CONFIG_DIRECTORY) : Paths.get("target");
 		final File dataDirectory = dir instanceof File ? (File) dir : new File((String) dir);
 		final Path configDirectory = configDir instanceof Path ? (Path) configDir : Paths.get((String) configDir);
-		final Node node = EmbeddedNode.getInstance(configDirectory, dataDirectory, persistent);
+		final Node node = EsNode.getInstance(configDirectory, dataDirectory, persistent);
 		return new EsIndexClient(new EsIndexAdmin(node.client(), name, mappings, settings), mapper);
 	}
 

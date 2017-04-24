@@ -37,7 +37,7 @@ import com.b2international.index.admin.AwaitPendingTasks;
 /**
  * @since 5.10
  */
-public final class EmbeddedNode extends Node {
+public final class EsNode extends Node {
 
 	private static final String CONFIG_FILE = "elasticsearch.yml";
 	private static final String CLUSTER_NAME = "elastic-snowowl";
@@ -47,10 +47,10 @@ public final class EmbeddedNode extends Node {
 	
 	static Node getInstance(Path configPath, File directory, boolean persistent) {
 		if (INSTANCE == null) {
-			synchronized (EmbeddedNode.class) {
+			synchronized (EsNode.class) {
 				if (INSTANCE == null) {
 					final Settings esSettings = configureSettings(configPath.resolve(CONFIG_FILE), directory);
-					final Node node = new EmbeddedNode(esSettings, GroovyPlugin.class, ReindexPlugin.class, DeleteByQueryPlugin.class);
+					final Node node = new EsNode(esSettings, GroovyPlugin.class, ReindexPlugin.class, DeleteByQueryPlugin.class);
 					node.start();
 					AwaitPendingTasks.await(node.client(), LOG);
 					INSTANCE = node;
@@ -106,7 +106,7 @@ public final class EmbeddedNode extends Node {
 	}
 
 	@SafeVarargs
-	private EmbeddedNode(Settings settings, Class<? extends Plugin>...classpathPlugins) {
+	private EsNode(Settings settings, Class<? extends Plugin>...classpathPlugins) {
 		super(InternalSettingsPreparer.prepareEnvironment(settings, null), Version.CURRENT, newArrayList(classpathPlugins));
 	}
 	
