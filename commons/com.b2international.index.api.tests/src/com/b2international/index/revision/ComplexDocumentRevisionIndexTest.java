@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.index.Fixtures.NestedData;
@@ -52,6 +53,7 @@ public class ComplexDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		assertThat(matches).containsOnly(data);
 	}
 	
+	@Ignore("We don't support this anymore")
 	@Test
 	public void searchAndReturnDeeplyNestedDocument() throws Exception {
 		final NestedData nestedData = new NestedData("field2");

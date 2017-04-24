@@ -46,6 +46,12 @@ public class IndexConfiguration {
 	private long fetchDebugThreshold = SlowLogConfig.FETCH_DEBUG_THRESHOLD_DEFAULT;
 	@Min(10)
 	private long fetchTraceThreshold = SlowLogConfig.FETCH_TRACE_THRESHOLD_DEFAULT;
+	
+	@Min(1)
+	private Integer numberOfShards = 3;
+	
+	@Min(1)
+	private int commitConcurrencyLevel = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
 
 	@JsonProperty
 	public long getCommitInterval() {
@@ -145,6 +151,26 @@ public class IndexConfiguration {
 	@JsonProperty
 	public void setFetchTraceThreshold(long fetchTraceThreshold) {
 		this.fetchTraceThreshold = fetchTraceThreshold;
+	}
+
+	@JsonProperty
+	public void setNumberOfShards(Integer numberOfShards) {
+		this.numberOfShards = numberOfShards;
+	}
+	
+	@JsonProperty
+	public Integer getNumberOfShards() {
+		return numberOfShards;
+	}
+	
+	@JsonProperty
+	public int getCommitConcurrencyLevel() {
+		return commitConcurrencyLevel;
+	}
+	
+	@JsonProperty
+	public void setCommitConcurrencyLevel(int commitConcurrencyLevel) {
+		this.commitConcurrencyLevel = commitConcurrencyLevel;
 	}
 
 }

@@ -18,27 +18,21 @@ package com.b2international.index.query;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
-import org.apache.hadoop.hbase.util.Order;
-import org.apache.hadoop.hbase.util.OrderedBytes;
-import org.apache.hadoop.hbase.util.SimplePositionedMutableByteRange;
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.CustomScoreQuery;
 import org.apache.lucene.queries.TermsQuery;
 import org.apache.lucene.queries.function.FunctionQuery;
-import org.apache.lucene.queries.function.FunctionValues;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.lucene.queries.function.valuesource.BytesRefFieldSource;
-import org.apache.lucene.queries.function.valuesource.DualFloatFunction;
 import org.apache.lucene.queries.function.valuesource.FloatFieldSource;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -64,12 +58,14 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.QueryBuilder;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
+import com.b2international.index.Script;
 import com.b2international.index.compat.TextConstants;
-import com.b2international.index.json.Index;
 import com.b2international.index.json.JsonDocumentMapping;
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.TextPredicate.MatchType;
+import com.b2international.index.util.DecimalUtils;
+import com.b2international.index.util.NumericClassUtils;
 import com.google.common.collect.Queues;
 
 /**
@@ -170,8 +166,8 @@ public final class LuceneQueryBuilder {
 			visit((DisMaxPredicate) expression);
 		} else if (expression instanceof BoostPredicate) {
 			visit((BoostPredicate) expression);
-		} else if (expression instanceof CustomScoreExpression) {
-			visit((CustomScoreExpression) expression);
+		} else if (expression instanceof ScriptScoreExpression) {
+			visit((ScriptScoreExpression) expression);
 		} else if (expression instanceof DecimalPredicate) {
 			visit((DecimalPredicate) expression);
 		} else if (expression instanceof DecimalRangePredicate) {
@@ -183,50 +179,69 @@ public final class LuceneQueryBuilder {
 		}
 	}
 	
-	private void visit(CustomScoreExpression expression) {
+	private void visit(ScriptScoreExpression expression) {
+		final Script scoreScript = mapping.getScript(expression.scriptName());
 		final Expression inner = expression.expression();
 		visit(inner);
 		final Query innerQuery = deque.pop();
-		final CustomScoreQuery query = new CustomScoreQuery(new ConstantScoreQuery(innerQuery), new FunctionQuery(visit(expression.func())));
-		query.setStrict(expression.isStrict());
+		final CustomScoreQuery query = new CustomScoreQuery(
+			new ConstantScoreQuery(innerQuery), 
+			new FunctionQuery(visit(innerQuery, scoreScript, expression.getParams()))
+		);
+		query.setStrict(true);
 		needsScoring = true;
 		deque.push(query);
 	}
 	
-	private ValueSource visit(final ScoreFunction func) {
-		if (func instanceof DualScoreFunction) {
-			final DualScoreFunction<?, ?> f = (DualScoreFunction<?, ?>) func;
-			final String firstFieldName = f.getFirst();
-			final Class<?> firstFieldType = mapping.getFieldType(firstFieldName);
-			final String secondFieldName = f.getSecond();
-			final Class<?> secondFieldType = mapping.getFieldType(secondFieldName);
-			// only this combination is supported at the moment
-			if (String.class == firstFieldType && float.class == secondFieldType) {
-				@SuppressWarnings("unchecked") 
-				final DualScoreFunction<String, Float> function = (DualScoreFunction<String, Float>) func;
-				return new DualFloatFunction(new BytesRefFieldSource(firstFieldName), new FloatFieldSource(secondFieldName)) {
-					@Override
-					protected String name() {
-						return f.name();
-					}
-					
-					@Override
-					protected float func(int doc, FunctionValues aVals, FunctionValues bVals) {
-						final String firstValue = aVals.strVal(doc);
-						final float secondValue = bVals.floatVal(doc);
-						return function.compute(firstValue, secondValue);
-					}
-				};
-			}
-		} else if (func instanceof FieldScoreFunction) {
-			final String field = ((FieldScoreFunction) func).getField();
+	private ValueSource visit(final Query inner, final Script script, final Map<String, ? extends Object> scriptParams) {
+		Map<String, ValueSource> valueSources = newHashMap();
+		valueSources.put("_score", new ScoreValueSource(inner));
+		for (String field : script.fields()) {
 			final Class<?> fieldType = mapping.getFieldType(field);
-			if (fieldType == float.class || fieldType == Float.class) {
-				return new FloatFieldSource(field); 
+			if (String.class.isAssignableFrom(fieldType)) {
+				valueSources.put(field, new BytesRefFieldSource(field));
+			} else if (NumericClassUtils.isFloat(fieldType)) {
+				valueSources.put(field, new FloatFieldSource(field));
+			} else {
+				throw new UnsupportedOperationException("Unsupported field type in custom score script " + script.name() + " - " + field);
 			}
 		}
-		throw new UnsupportedOperationException("Not supported score function: " + func);
+		
+		return new CustomScoreValueSource(script.script(), scriptParams, valueSources);
 	}
+//		if (func instanceof DualScoreFunction) {
+//			final DualScoreFunction<?, ?> f = (DualScoreFunction<?, ?>) func;
+//			final String firstFieldName = f.getFirst();
+//			final Class<?> firstFieldType = mapping.getFieldType(firstFieldName);
+//			final String secondFieldName = f.getSecond();
+//			final Class<?> secondFieldType = mapping.getFieldType(secondFieldName);
+			// only this combination is supported at the moment
+//			if (String.class == firstFieldType && float.class == secondFieldType) {
+//				@SuppressWarnings("unchecked") 
+//				final DualScoreFunction<String, Float> function = (DualScoreFunction<String, Float>) func;
+//				return new DualFloatFunction(new BytesRefFieldSource(firstFieldName), new FloatFieldSource(secondFieldName)) {
+//					@Override
+//					protected String name() {
+//						return f.name();
+//					}
+//					
+//					@Override
+//					protected float func(int doc, FunctionValues aVals, FunctionValues bVals) {
+//						final String firstValue = aVals.strVal(doc);
+//						final float secondValue = bVals.floatVal(doc);
+//						return function.compute(firstValue, secondValue);
+//					}
+//				};
+//			}
+//		} else if (func instanceof FieldScoreFunction) {
+//			final String field = ((FieldScoreFunction) func).getField();
+//			final Class<?> fieldType = mapping.getFieldType(field);
+//			if (fieldType == float.class || fieldType == Float.class) {
+//				return new FloatFieldSource(field); 
+//			}
+//		}
+//		throw new UnsupportedOperationException("Not supported score function: " + func);
+//	}
 	
 	private void visit(BooleanPredicate predicate) {
 		deque.push(Fields.boolField(predicate.getField()).toQuery(predicate.getArgument()));
@@ -367,7 +382,7 @@ public final class LuceneQueryBuilder {
 	private void visit(DecimalSetPredicate predicate) {
 		final Collection<BytesRef> terms = newHashSetWithExpectedSize(predicate.values().size());
 		for (BigDecimal decimal : predicate.values()) {
-			terms.add(encode(decimal));
+			terms.add(new BytesRef(DecimalUtils.encode(decimal)));
 		}
 		final Query filter = new TermsQuery(predicate.getField(), terms);
 		deque.push(filter);
@@ -389,12 +404,7 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(DecimalPredicate predicate) {
-		final Set<BigDecimal> vals = Collections.singleton(predicate.getArgument());
-		final Collection<BytesRef> terms = newHashSetWithExpectedSize(vals.size());
-		for (BigDecimal decimal : vals) {
-			terms.add(encode(decimal));
-		}
-		final Query filter = new TermsQuery(predicate.getField(), terms);
+		final Query filter = Fields.stringField(predicate.getField()).toQuery(DecimalUtils.encode(predicate.getArgument()));
 		deque.push(filter);
 	}
 
@@ -414,9 +424,9 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(DecimalRangePredicate range) {
-		final BytesRef lower = range.lower() == null ? null : encode(range.lower());
-		final BytesRef upper = range.upper() == null ? null : encode(range.upper());
-		final Query filter = new TermRangeQuery(range.getField(), lower, upper, range.isIncludeLower(), range.isIncludeUpper());
+		final String lower = range.lower() == null ? null : DecimalUtils.encode(range.lower());
+		final String upper = range.upper() == null ? null : DecimalUtils.encode(range.upper());
+		final Query filter = TermRangeQuery.newStringRange(range.getField(), lower, upper, range.isIncludeLower(), range.isIncludeUpper());
 		deque.push(filter);
 	}
 	
@@ -432,12 +442,6 @@ public final class LuceneQueryBuilder {
 	private void visit(BoostPredicate boost) {
 		visit(boost.expression());
 		deque.push(new BoostQuery(deque.pop(), boost.boost()));
-	}
-	
-	private BytesRef encode(BigDecimal val) {
-		final SimplePositionedMutableByteRange dst = new SimplePositionedMutableByteRange(Index.PRECISION);
-		final int writtenBytes = OrderedBytes.encodeNumeric(dst, val, Order.ASCENDING);
-		return new BytesRef(dst.getBytes(), 0, writtenBytes);
 	}
 	
 }

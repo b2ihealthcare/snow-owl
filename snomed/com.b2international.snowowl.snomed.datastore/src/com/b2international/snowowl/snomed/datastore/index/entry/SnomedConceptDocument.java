@@ -33,6 +33,7 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.index.Doc;
+import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ITreeComponent;
@@ -59,6 +60,14 @@ import com.google.common.collect.FluentIterable;
  */
 @Doc
 @JsonDeserialize(builder=SnomedConceptDocument.Builder.class)
+@Script(
+	name="doiFactor", 
+	script=
+	"interest = params.useDoi ? (doc.doi.value - params.minDoi) / (params.maxDoi - params.minDoi) : 0\n"
+	+ "id = doc.id.value\n" 
+	+ "return params.termScores.id ? params.termScores.id + interest : 0.0", 
+	fields={SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.DOI})
+@Script(name="doi", script="return doc.doi.value", fields={SnomedConceptDocument.Fields.DOI})
 public class SnomedConceptDocument extends SnomedComponentDocument implements ITreeComponent {
 
 	public static final float DEFAULT_DOI = 1.0f;
@@ -234,7 +243,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		private LongSet statedParents;
 		private LongSet statedAncestors;
 		private SnomedRefSetType refSetType;
-		private int referencedComponentType;
+		private short referencedComponentType;
 		private int mapTargetComponentType;
 		private float doi = DEFAULT_DOI;
 		private long refSetStorageKey = CDOUtils.NO_STORAGE_KEY;
@@ -328,7 +337,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			return getSelf();
 		}
 
-		Builder referencedComponentType(int referencedComponentType) {
+		Builder referencedComponentType(short referencedComponentType) {
 			this.referencedComponentType = referencedComponentType;
 			return getSelf();
 		}
@@ -399,7 +408,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	private final boolean primitive;
 	private final boolean exhaustive;
 	private final SnomedRefSetType refSetType;
-	private final int referencedComponentType;
+	private final short referencedComponentType;
 	private final int mapTargetComponentType;
 	private final boolean structural;
 	private final long refSetStorageKey;
@@ -421,7 +430,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			final boolean primitive,
 			final boolean exhaustive, 
 			final SnomedRefSetType refSetType, 
-			final int referencedComponentType,
+			final short referencedComponentType,
 			final int mapTargetComponentType,
 			final long refSetStorageKey,
 			final boolean structural,
@@ -492,7 +501,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		return refSetType;
 	}
 	
-	public int getReferencedComponentType() {
+	public short getReferencedComponentType() {
 		return referencedComponentType;
 	}
 	

@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.index.Doc;
+import com.b2international.index.Script;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -39,13 +40,25 @@ import com.google.common.collect.ImmutableSet;
 
 @Doc(type = "job")
 @JsonDeserialize(builder=RemoteJobEntry.Builder.class)
+@Script(name=RemoteJobEntry.WITH_DELETED, script="ctx._source.deleted = true")
+@Script(name=RemoteJobEntry.WITH_STATE, script="ctx._source.state = params.state")
+@Script(name=RemoteJobEntry.WITH_COMPLETION_LEVEL, script="ctx._source.completionLevel = params.completionLevel")
+@Script(name=RemoteJobEntry.WITH_RUNNING, script="ctx._source.state = params.state;ctx._source.startDate = params.startDate")
+@Script(name=RemoteJobEntry.WITH_DONE, script="ctx._source.state = params.state;ctx._source.finishDate = params.finishDate;ctx._source.result = params.result")
 public final class RemoteJobEntry implements Serializable {
+
+	public static final String WITH_STATE = "withState";
+	public static final String WITH_DELETED = "withDeleted";
+	public static final String WITH_COMPLETION_LEVEL = "withCompletionLevel";
+	public static final String WITH_RUNNING = "withRunning";
+	public static final String WITH_DONE = "withDone";
 
 	private static final long serialVersionUID = 1L;
 	private static final Set<RemoteJobState> DONE_STATES = ImmutableSet.of(RemoteJobState.FINISHED, RemoteJobState.FAILED, RemoteJobState.CANCELED);
 
 	public static final int MIN_COMPLETION_LEVEL = 0;
 	public static final int MAX_COMPLETION_LEVEL = 100;
+
 
 	public static class Fields {
 		public static final String ID = "id";

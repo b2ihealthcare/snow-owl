@@ -33,7 +33,8 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.google.common.io.InputSupplier;
+import com.google.common.io.ByteSource;
+import com.google.common.io.Files;
 
 /**
  * Singleton for collecting all example scripts registered via <i>scripts</i> extension-point.
@@ -98,19 +99,18 @@ public enum ExampleScriptCollector {
 		try {
 			
 			is.set(fileUrl.openStream());
-			final InputSupplier<InputStream> inputSupplier = new InputSupplier<InputStream>() {
-				@Override public InputStream getInput() throws IOException {
-					return is.get();
-				}
-			};
-			
+
 			final File tmpDirectory = com.google.common.io.Files.createTempDir();
 			final File tmpScriptFile = new File(tmpDirectory, fileName + "." + extension);
 			tmpScriptFile.deleteOnExit();
 			
-			com.google.common.io.Files.copy(inputSupplier, tmpScriptFile);
+			new ByteSource() {
+				@Override
+				public InputStream openStream() throws IOException {
+					return is.get();
+				}
+			}.copyTo(Files.asByteSink(tmpScriptFile));
 			return tmpScriptFile;
-			
 		} catch (final IOException e) {
 			throw new SnowowlServiceException(e);
 		} finally {

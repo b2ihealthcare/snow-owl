@@ -35,7 +35,7 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 	private int offset = 0;
 	private int limit = DEFAULT_LIMIT;
 	private Expression where;
-	private SortBy sortBy = SortBy.DOC;
+	private SortBy sortBy = SortBy.DOC_ID;
 	private boolean withScores = false;
 
 	private Set<String> fields = Collections.emptySet();

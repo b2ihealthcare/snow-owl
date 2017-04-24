@@ -335,11 +335,15 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 			throw new ImportException("Couldn't read row from release file.", e);
 		} finally {
 			
-			Closeables.closeQuietly(releaseFileListReader);
-			
-			for (final ComponentImportEntry importEntry : importEntries.values()) {
-				Closeables.closeQuietly(importEntry.getWriter());
+			try {
+				Closeables.close(releaseFileListReader, true);
+				for (final ComponentImportEntry importEntry : importEntries.values()) {
+					Closeables.close(importEntry.getWriter(), true);
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			}
+			
 		}
 
 		return createImportUnits(importEntries);
@@ -548,7 +552,11 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 				}
 			}
 		} finally {
-			Closeables.closeQuietly(sliceBeanReader);
+			try {
+				Closeables.close(sliceBeanReader, true);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 

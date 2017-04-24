@@ -20,8 +20,8 @@ import static com.google.common.collect.Maps.newHashMap;
 import java.io.IOException;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.util.ClasspathResourceLoader;
 
 import com.google.common.collect.ImmutableMap;
@@ -35,7 +35,7 @@ public class AnalyzerImpls {
 
 	private static final int POSITION_INCREMENT_GAP = 100;
 
-	public static final Analyzer DEFAULT = new SimpleAnalyzer();
+	public static final Analyzer DEFAULT = new StandardAnalyzer();
 
 	private static Analyzer EXACT;
 	private static Analyzer TOKENIZED;

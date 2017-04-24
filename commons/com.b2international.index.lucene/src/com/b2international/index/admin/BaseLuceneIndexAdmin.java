@@ -76,6 +76,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	private final AtomicBoolean open = new AtomicBoolean(false);
 	private final Mappings mappings;
 	private final Map<String, Object> settings;
+	private final Logger log;
 	
 	private Closer closer;
 	private Directory directory;
@@ -93,6 +94,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	protected BaseLuceneIndexAdmin(String name, Mappings mappings, Map<String, Object> settings) {
 		this.name = name;
 		this.mappings = mappings;
+		this.log = LoggerFactory.getLogger(String.format("index.%s", name));
 		
 		// init default settings
 		this.settings = newHashMap(settings);
@@ -102,10 +104,6 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 		
 		if (!this.settings.containsKey(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY)) {
 			this.settings.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL);
-		}
-		
-		if (!this.settings.containsKey(IndexClientFactory.LOG_KEY)) {
-			this.settings.put(IndexClientFactory.LOG_KEY, LoggerFactory.getLogger(String.format("index.%s", name)));
 		}
 		
 		if (!this.settings.containsKey(IndexClientFactory.SLOW_LOG_KEY)) {
@@ -124,8 +122,8 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	}
 	
 	@Override
-	public Logger log() {
-		return (Logger) settings().get(IndexClientFactory.LOG_KEY);
+	public final Logger log() {
+		return log;
 	}
 
 	@Override

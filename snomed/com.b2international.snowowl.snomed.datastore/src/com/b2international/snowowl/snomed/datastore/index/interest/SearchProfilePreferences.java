@@ -107,7 +107,7 @@ public class SearchProfilePreferences extends BeanPropertyChangeSupporter implem
 			xStream.processAnnotations(SearchProfilePreferences.class);
 			xStream.toXML(this, outputStream);
 		} finally {
-			Closeables.closeQuietly(outputStream);
+			Closeables.close(outputStream, true);
 		}
 	}
 	

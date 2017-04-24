@@ -36,7 +36,7 @@
 		<module>com.b2international.snowowl.datastore.server</module>
 		<module>com.b2international.snowowl.datastore.server.tests</module>
 		<module>com.b2international.snowowl.dependencies</module>
-		<module>com.b2international.snowowl.emf.compare</module>
+<!-- 		<module>com.b2international.snowowl.emf.compare</module> -->
 		<module>com.b2international.snowowl.importer</module>
 		<module>com.b2international.snowowl.index.diff</module>
 		

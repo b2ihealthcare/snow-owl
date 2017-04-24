@@ -17,7 +17,6 @@ package com.b2international.index;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.collect.Sets.newTreeSet;
 import static org.junit.Assert.assertArrayEquals;
 
@@ -35,7 +34,6 @@ import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
 import com.b2international.index.query.Expressions;
-import com.b2international.index.query.FieldScoreFunction;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
@@ -316,43 +314,6 @@ public class SortIndexTest extends BaseIndexTest {
 	}
 
 	@Test
-	public void sortDocOrder() throws Exception {
-		final List<String> orderedItems = newArrayList();
-		// XXX: Order of documents must be preserved, since we are testing document ordering
-		final Map<String, Data> documents = newLinkedHashMap();
-		
-		for (int i = 0; i < NUM_DOCS; i++) {
-			String item = null;
-			while (item == null || orderedItems.contains(item)) {
-				item = RandomStringUtils.randomAlphabetic(10);
-			}
-			orderedItems.add(item);
-
-			final Data data = new Data();
-			data.setField1(item);
-			documents.put(item, data);
-		}
-		
-		indexDocuments(documents);
-		
-		final Query<Data> ascendingQuery = Query.select(Data.class)
-				.where(Expressions.matchAll())
-				.limit(NUM_DOCS)
-				.sortBy(SortBy.DOC)
-				.build();
-		
-		checkDocumentOrder(ascendingQuery, data -> data.getField1(), ImmutableSet.copyOf(orderedItems), String.class);
-		
-		final Query<Data> descendingQuery = Query.select(Data.class)
-				.where(Expressions.matchAll())
-				.limit(NUM_DOCS)
-				.sortBy(SortBy.field(SortBy.FIELD_DOC, Order.DESC))
-				.build();
-		
-		checkDocumentOrder(descendingQuery, data -> data.getField1(), ImmutableSet.copyOf(Lists.reverse(orderedItems)), String.class);
-	}
-	
-	@Test
 	public void sortScore() throws Exception {
 		final List<String> orderedItems = newArrayList(); 
 		final Map<String, Data> documents = newHashMap();
@@ -373,7 +334,7 @@ public class SortIndexTest extends BaseIndexTest {
 		indexDocuments(documents);
 		
 		final Query<Data> descendingQuery = Query.select(Data.class)
-				.where(Expressions.customScore(Expressions.matchAll(), new FieldScoreFunction("floatField")))
+				.where(Expressions.scriptScore(Expressions.matchAll(), "floatField"))
 				.limit(NUM_DOCS)
 				.sortBy(SortBy.SCORE)
 				.build();
@@ -381,7 +342,7 @@ public class SortIndexTest extends BaseIndexTest {
 		checkDocumentOrder(descendingQuery, data -> data.getField1(), ImmutableSet.copyOf(orderedItems), String.class);
 		
 		final Query<Data> ascendingQuery = Query.select(Data.class)
-				.where(Expressions.customScore(Expressions.matchAll(), new FieldScoreFunction("floatField")))
+				.where(Expressions.scriptScore(Expressions.matchAll(), "floatField"))
 				.limit(NUM_DOCS)
 				.sortBy(SortBy.field(SortBy.FIELD_SCORE, Order.ASC))
 				.build();

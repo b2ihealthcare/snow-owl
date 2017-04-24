@@ -57,7 +57,7 @@ abstract public class DataTypeUtils {
 	private static String getDataTypePredicateLabel(final String dataTypeName, Iterable<SnomedConstraintDocument> predicates2) {
 		final List<SnomedConstraintDocument> predicates = Lists.newArrayList(Iterables.filter(predicates2, new Predicate<SnomedConstraintDocument>() {
 			@Override public boolean apply(final SnomedConstraintDocument predicateMini) {
-				return PredicateType.DATATYPE.equals(predicateMini.getType()) && checkNotNull(dataTypeName, "Data type name argument cannot be null.").equals(predicateMini.getDataTypeName());
+				return PredicateType.DATATYPE.equals(predicateMini.getPredicateType()) && checkNotNull(dataTypeName, "Data type name argument cannot be null.").equals(predicateMini.getDataTypeName());
 			}
 		}));
 		if (CompareUtils.isEmpty(predicates)) {

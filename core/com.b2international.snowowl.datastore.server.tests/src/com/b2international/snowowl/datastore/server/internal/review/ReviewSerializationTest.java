@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.ReviewStatus;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,7 +35,7 @@ import com.google.common.collect.ImmutableSet;
 public class ReviewSerializationTest {
 
 	private ReviewImpl review;
-	private ConceptChangesImpl conceptChanges;
+	private ConceptChanges conceptChanges;
 	private ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 
 	@Before
@@ -50,7 +51,7 @@ public class ReviewSerializationTest {
 		when(target.headTimestamp()).thenReturn(8L);
 		
 		this.review = ReviewImpl.builder("id", source, target).status(ReviewStatus.CURRENT).lastUpdated("2015-07-14T00:00:00Z").build();
-		this.conceptChanges = new ConceptChangesImpl("id", ImmutableSet.of("new1", "new2"), ImmutableSet.of("changed1"), ImmutableSet.of("deleted1", "deleted2", "deleted3"));
+		this.conceptChanges = new ConceptChanges("id", ImmutableSet.of("new1", "new2"), ImmutableSet.of("changed1"), ImmutableSet.of("deleted1", "deleted2", "deleted3"));
 	}
 	
 	@Test
@@ -92,7 +93,7 @@ public class ReviewSerializationTest {
 	@Test
 	public void deserializeCDOBranchImpl() throws Exception {
 		final String json = mapper.writeValueAsString(conceptChanges);
-		final ConceptChangesImpl value = mapper.readValue(json, ConceptChangesImpl.class);
+		final ConceptChanges value = mapper.readValue(json, ConceptChanges.class);
 		
 		assertEquals("id", value.id());
 		assertEquals(ImmutableSet.of("new1", "new2"), value.newConcepts());

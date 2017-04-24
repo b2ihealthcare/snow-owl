@@ -112,7 +112,7 @@ public class SnomedOntologyExportRequest extends RequestWithMonitoring<Void> {
 			outputStream = new BufferedOutputStream(outputStream);
 			IOUtil.copyBinary(in, outputStream, length);
 		} finally {
-			Closeables.closeQuietly(outputStream);
+			Closeables.close(outputStream, true);
 			monitor.done();
 		}
 		

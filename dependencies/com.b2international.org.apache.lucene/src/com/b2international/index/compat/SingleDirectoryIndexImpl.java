@@ -132,9 +132,13 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 			}
 		}
 		
-		Closeables.closeQuietly(manager);
-		Closeables.closeQuietly(writer);
-		Closeables.closeQuietly(directory);
+		try {
+			Closeables.close(manager, true);
+			Closeables.close(writer, true);
+			Closeables.close(directory, true);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 		
 		manager = null;
 		writer = null;

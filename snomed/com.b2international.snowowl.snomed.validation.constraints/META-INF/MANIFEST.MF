@@ -6,7 +6,7 @@ Bundle-Version: 5.10.0.qualifier
 Bundle-Activator: com.b2international.snowowl.snomed.validation.constraints.ValidationExamplesActivator
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
- com.google.guava;bundle-version="[15.0.0,16.0.0)",
+ com.google.guava;bundle-version="[18.0.0,19.0.0)",
  com.b2international.snowowl.datastore.server,
  com.b2international.snowowl.snomed.datastore,
  com.b2international.snowowl.snomed.datastore.server,

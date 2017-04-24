@@ -16,17 +16,20 @@
 package com.b2international.index.mapping;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 
 import com.b2international.index.Analyzed;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.util.Reflections;
@@ -38,6 +41,7 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Maps;
 
 /**
  * @since 4.7
@@ -45,7 +49,7 @@ import com.google.common.collect.ImmutableSortedMap;
 public final class DocumentMapping {
 
 	// type path delimiter to differentiate between same nested types in different contexts
-	private static final String DELIMITER = ".";
+	public static final String DELIMITER = ".";
 	private static final Joiner DELIMITER_JOINER = Joiner.on(DELIMITER);
 	
 	public static final String _ID = "_id";
@@ -66,6 +70,7 @@ public final class DocumentMapping {
 	private final Map<Class<?>, DocumentMapping> nestedTypes;
 	private final TreeMap<String, Analyzed> analyzedFields;
 	private final DocumentMapping parent;
+	private final Map<String, Script> scripts;
 
 	DocumentMapping(Class<?> type) {
 		this(null, type);
@@ -121,14 +126,39 @@ public final class DocumentMapping {
 					return new DocumentMapping(DocumentMapping.this.parent == null ? DocumentMapping.this : DocumentMapping.this.parent, input);
 				}
 			});
+		
+		this.scripts = Maps.uniqueIndex(getScripts(type), Script::name);
 	}
 	
+	private Collection<Script> getScripts(Class<?> type) {
+		final Set<Script> scripts = newHashSet();
+		for (Script script : type.getAnnotationsByType(Script.class)) {
+			scripts.add(script);
+		}
+		// check superclass and superinterfaces
+		if (type.getSuperclass() != null) {
+			scripts.addAll(getScripts(type.getSuperclass()));
+		}
+		for (Class<?> iface : type.getInterfaces()) {
+			scripts.addAll(getScripts(iface));
+		}
+		return scripts;
+	}
+
 	public DocumentMapping getParent() {
 		return parent;
 	}
 	
+	public Script getScript(String name) {
+		return scripts.get(name);
+	}
+	
 	public Collection<DocumentMapping> getNestedMappings() {
 		return ImmutableList.copyOf(nestedTypes.values());
+	}
+	
+	public boolean isNestedMapping(Class<?> fieldType) {
+		return nestedTypes.containsKey(fieldType);
 	}
 	
 	public DocumentMapping getNestedMapping(String field) {

@@ -6,8 +6,8 @@ Bundle-Version: 5.10.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Fragment-Host: com.b2international.index.api
-Require-Bundle: com.b2international.org.apache.lucene;bundle-version="4.9.0",
- com.b2international.commons
-Bundle-ClassPath: .,
- lib/elasticsearch-2.3.3.jar,
- lib/joda-time-2.8.2.jar
+Require-Bundle: com.b2international.org.apache.lucene;bundle-version="5.5.2",
+ com.b2international.commons,
+ org.codehaus.groovy;bundle-version="2.0.7"
+Bundle-ClassPath: .
+Bundle-Vendor: B2i Healthcare

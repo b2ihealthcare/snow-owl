@@ -130,8 +130,9 @@ public class SnomedOntologyService {
 	 * @param ontology
 	 * @param exportType
 	 * @param outputFile
+	 * @throws IOException 
 	 */
-	public void saveOntology(final OWLOntology ontology, final SnomedOntologyExportType exportType, final File outputFile) {
+	public void saveOntology(final OWLOntology ontology, final SnomedOntologyExportType exportType, final File outputFile) throws IOException {
 		OutputStream outputStream = null;
 		
 		try {
@@ -148,7 +149,7 @@ public class SnomedOntologyService {
 		} catch (final OWLOntologyStorageException e) {
 			throw new OntologyException(e);
 		} finally {
-			Closeables.closeQuietly(outputStream);
+			Closeables.close(outputStream, true);
 		}
 	}
 

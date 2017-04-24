@@ -30,12 +30,9 @@ import java.util.Map;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.Hits;
-import com.b2international.index.query.DualScoreFunction;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.query.FieldScoreFunction;
-import com.b2international.index.query.ScoreFunction;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
@@ -52,10 +49,10 @@ import com.b2international.snowowl.snomed.datastore.escg.IndexQueryQueryEvaluato
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.SearchProfileQueryProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Fields;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.dsl.query.RValue;
 import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.5
@@ -234,29 +231,11 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 			
 			queryBuilder.filter(RevisionDocument.Expressions.ids(conceptScoreMap.keySet()));
 			
-			final ScoreFunction func = new DualScoreFunction<String, Float>("ConceptScoreMap", Fields.ID, Fields.DOI) {
-				@Override
-				protected float compute(String idValue, Float interestValue) {
-					float interest = containsKey(OptionKey.USE_DOI) ? interestValue : 0.0f;
-					
-					// TODO move this normalization to index initializer.
-					if (interest != 0.0f) {
-						interest = (interest - MIN_DOI_VALUE) / (MAX_DOI_VALUE - MIN_DOI_VALUE);
-					}
-					
-					if (conceptScoreMap.containsKey(idValue)) {
-						return conceptScoreMap.get(idValue) + interest;
-					} else {
-						return 0.0f;
-					}
-				}
-			};
-			
 			final Expression q = addSearchProfile(searchProfileQuery, queryBuilder.build());
-			queryExpression = Expressions.customScore(q, func);
+			queryExpression = Expressions.scriptScore(q, "doiFactor", ImmutableMap.of("termScores", conceptScoreMap, "useDoi", containsKey(OptionKey.USE_DOI), "minDoi", MIN_DOI_VALUE, "maxDoi", MAX_DOI_VALUE));
 		} else if (containsKey(OptionKey.USE_DOI)) {
 			final Expression q = addSearchProfile(searchProfileQuery, queryBuilder.build());
-			queryExpression = Expressions.customScore(q, new FieldScoreFunction(Fields.DOI));
+			queryExpression = Expressions.scriptScore(q, "doi");
 		} else {
 			queryExpression = addSearchProfile(searchProfileQuery, queryBuilder.build());
 		}

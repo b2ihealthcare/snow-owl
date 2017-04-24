@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.hbase.util.OrderedBytes;
-import org.apache.hadoop.hbase.util.SimplePositionedMutableByteRange;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.LeafReaderContext;
@@ -176,7 +174,7 @@ public class JsonDocumentSearcher implements Searcher {
 	@Override
 	public <T> Hits<T> search(Query<T> query) throws IOException {
 		final QueryProfiler profiler = new QueryProfiler(query, slowLogConfig);
-		final DocumentMapping mapping = getDocumentMapping(query);
+		final DocumentMapping mapping = mappings.getDocumentMapping(query);
 		final int offset = query.getOffset();
 		final int limit = query.getLimit();
 		
@@ -304,11 +302,7 @@ public class JsonDocumentSearcher implements Searcher {
 						fieldValues.put(key, (Integer) value);
 					} else if (NumericClassUtils.isShort(fieldType)) {
 						fieldValues.put(key, ((Integer) value).shortValue());
-					} else if (NumericClassUtils.isBigDecimal(fieldType)) {
-						BytesRef bytesRef = (BytesRef) value;
-						SimplePositionedMutableByteRange src = new SimplePositionedMutableByteRange(bytesRef.bytes, bytesRef.offset, bytesRef.length);
-						fieldValues.put(key, OrderedBytes.decodeNumericAsBigDecimal(src));
-					} else if (String.class.isAssignableFrom(fieldType)) {
+					} else if (NumericClassUtils.isBigDecimal(fieldType) || String.class.isAssignableFrom(fieldType)) {
 						BytesRef bytesRef = (BytesRef) value;
 						fieldValues.put(key, bytesRef.utf8ToString());
 					} else {
@@ -392,14 +386,6 @@ public class JsonDocumentSearcher implements Searcher {
 		}
 	}
 
-	private DocumentMapping getDocumentMapping(Query<?> query) {
-		if (query.getParentType() != null) {
-			return mappings.getMapping(query.getParentType()).getNestedMapping(query.getFrom());
-		} else {
-			return mappings.getMapping(query.getFrom());
-		}
-	}
-
 	private org.apache.lucene.search.Query toLuceneQuery(DocumentMapping mapping, Expression where) {
 		return new LuceneQueryBuilder(mapping, luceneQueryBuilder).build(where);
 	}
@@ -423,9 +409,10 @@ public class JsonDocumentSearcher implements Searcher {
             SortBy.Order order = item.getOrder();
             
 			switch (field) {
-            case SortBy.FIELD_DOC:
-                convertedItems.add(new SortField(null, SortField.Type.DOC, order == SortBy.Order.DESC));
-                break;
+			case DocumentMapping._ID:
+				convertedItems.add(new SortField(DocumentMapping._ID, SortField.Type.STRING_VAL, order == SortBy.Order.DESC));
+				nonSortedFields.remove(field);
+				break;
             case SortBy.FIELD_SCORE:
                 // XXX: default order for scores is *descending*
                 convertedItems.add(new SortField(null, SortField.Type.SCORE, order == SortBy.Order.ASC));

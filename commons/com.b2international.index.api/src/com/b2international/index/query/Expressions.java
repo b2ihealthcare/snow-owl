@@ -19,7 +19,9 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.google.common.base.Splitter;
@@ -207,12 +209,12 @@ public class Expressions {
 		return new DisMaxPredicate(disjuncts, 0.0f);
 	}
 
-	public static Expression customScore(Expression query, ScoreFunction func) {
-		return customScore(query, func, false);
+	public static Expression scriptScore(Expression query, String scriptName) {
+		return new ScriptScoreExpression(query, scriptName, Collections.emptyMap());
 	}
 	
-	public static Expression customScore(Expression query, ScoreFunction func, boolean strict) {
-		return new CustomScoreExpression(query, func, strict);
+	public static Expression scriptScore(Expression query, String scriptName, Map<String, ? extends Object> params) {
+		return new ScriptScoreExpression(query, scriptName, params);
 	}
 
 }

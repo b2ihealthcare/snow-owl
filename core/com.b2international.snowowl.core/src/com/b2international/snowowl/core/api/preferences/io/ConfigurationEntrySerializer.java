@@ -90,7 +90,7 @@ public class ConfigurationEntrySerializer<T> {
 	/**
 	 * For internal use only; serializes current contents into the defaults file.
 	 */
-	public void serializeDefaults() {
+	public void serializeDefaults() throws IOException {
 		
 		FileOutputStream stream = null;
 		
@@ -100,7 +100,7 @@ public class ConfigurationEntrySerializer<T> {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
-			Closeables.closeQuietly(stream);
+			Closeables.close(stream, true);
 		}
 	}
 }

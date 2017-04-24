@@ -136,12 +136,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="com.b2international.snowowl.emf.compare"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
          id="com.b2international.commons.groovy"
          download-size="0"
          install-size="0"
@@ -199,6 +193,14 @@ Visit us at http://b2i.sg
 
    <plugin
          id="com.b2international.index.lucene"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="com.b2international.index.es"
          download-size="0"
          install-size="0"
          version="0.0.0"

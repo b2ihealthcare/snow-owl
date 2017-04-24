@@ -39,7 +39,6 @@ import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdent
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.util.Providers;
 
 /**
  * @since 4.0
@@ -58,7 +57,7 @@ public class ReservationImplTest {
 	public void whenReservingRangeOfIDs_ThenItShouldConflictWithAllIDsInThatRangeIncludingBoundaries() throws Exception {
 		final Index store = Indexes.createIndex(UUID.randomUUID().toString(), new ObjectMapper(), new Mappings(SctId.class));
 		store.admin().create();
-		final ISnomedIdentifierService identifierService = new DefaultSnomedIdentifierService(Providers.of(store), new ItemIdGenerationStrategy() {
+		final ISnomedIdentifierService identifierService = new DefaultSnomedIdentifierService(store, new ItemIdGenerationStrategy() {
 			int counter = 200;
 			@Override
 			public String generateItemId(String namespace, ComponentCategory category) {

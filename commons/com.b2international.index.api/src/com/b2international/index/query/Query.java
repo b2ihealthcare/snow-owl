@@ -53,7 +53,7 @@ public final class Query<T> {
 	private Class<T> select;
 	private Class<?> from;
 	private Expression where;
-	private SortBy sortBy = SortBy.DOC;
+	private SortBy sortBy = SortBy.DOC_ID;
 	private Class<?> parentType;
 	private boolean withScores;
 	private Set<String> fields;
@@ -138,7 +138,7 @@ public final class Query<T> {
 		sb.append("SELECT " + getSelectString());
 		sb.append(" FROM " + DocumentMapping.getType(from));
 		sb.append(" WHERE " + where);
-		if (!SortBy.DOC.equals(sortBy)) {
+		if (!SortBy.DOC_ID.equals(sortBy)) {
 			sb.append(" SORT BY " + sortBy);
 		}
 		sb.append(" LIMIT " + limit);
@@ -177,6 +177,10 @@ public final class Query<T> {
 	
 	public static <T> QueryBuilder<T> select(Class<T> select, Class<?> scope) {
 		return new DefaultQueryBuilder<T>(select, select, scope);
+	}
+
+	public boolean isDocIdOnly() {
+		return getFields().size() == 1 && getFields().contains(DocumentMapping._ID);
 	}
 
 }
