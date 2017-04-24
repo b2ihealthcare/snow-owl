@@ -22,18 +22,22 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Deque;
 
+import org.elasticsearch.common.lucene.search.function.CombineFunction;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.DisMaxQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder.Operator;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
+import org.elasticsearch.script.ScriptService.ScriptType;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.b2international.index.util.DecimalUtils;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Queues;
 
 /**
@@ -63,19 +67,23 @@ public final class EsQueryBuilder {
 		return new FormattedRuntimeException(ILLEGAL_STACK_STATE_MESSAGE, deque);
 	}
 	
+	public boolean needsScoring() {
+		return needsScoring;
+	}
+	
 	public QueryBuilder build(Expression expression) {
 		checkNotNull(expression, "expression");
 		// always filter by type
 		visit(expression);
 		if (deque.size() == 1) {
 			QueryBuilder queryBuilder = deque.pop();
-			if (!needsScoring) {
+			if (needsScoring) {
+				return queryBuilder;
+			} else {
 				return QueryBuilders.boolQuery()
 					.disableCoord(true)
 					.must(QueryBuilders.matchAllQuery())
 					.filter(queryBuilder);
-			} else {
-				return queryBuilder;
 			}
 		} else {
 			throw newIllegalStateException();
@@ -89,8 +97,7 @@ public final class EsQueryBuilder {
 			// XXX executing a term query on a probably nonexistent field and value, should return zero docs
 			deque.push(MATCH_NONE);
 		} else if (expression instanceof StringPredicate) {
-			StringPredicate predicate = (StringPredicate) expression;
-			visit(predicate);
+			visit((StringPredicate) expression);
 		} else if (expression instanceof LongPredicate) {
 			visit((LongPredicate) expression);
 		} else if (expression instanceof LongRangePredicate) {
@@ -137,48 +144,17 @@ public final class EsQueryBuilder {
 	}
 	
 	private void visit(ScriptScoreExpression expression) {
-		throw new UnsupportedOperationException();
-//		final Expression inner = expression.expression();
-//		visit(inner);
-//		final Query innerQuery = deque.pop();
-//		final CustomScoreQuery query = new CustomScoreQuery(new ConstantScoreQuery(innerQuery), new FunctionQuery(visit(expression.func())));
-//		query.setStrict(expression.isStrict());
-//		deque.push(query);
+		final Expression inner = expression.expression();
+		visit(inner);
+		final QueryBuilder innerQuery = deque.pop();
+		
+		final String rawScript = mapping.getScript(expression.scriptName()).script();
+		org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(rawScript, ScriptType.INLINE, "groovy", ImmutableMap.of("params", expression.getParams()));
+		needsScoring = true;
+		deque.push(QueryBuilders
+				.functionScoreQuery(innerQuery, ScoreFunctionBuilders.scriptFunction(script))
+				.boostMode(CombineFunction.REPLACE));
 	}
-	
-//	private ValueSource visit(final ScoreFunction func) {
-//		if (func instanceof DualScoreFunction) {
-//			final DualScoreFunction<?, ?> f = (DualScoreFunction<?, ?>) func;
-//			final String firstFieldName = f.getFirst();
-//			final Class<?> firstFieldType = mapping.getFieldType(firstFieldName);
-//			final String secondFieldName = f.getSecond();
-//			final Class<?> secondFieldType = mapping.getFieldType(secondFieldName);
-//			// only this combination is supported at the moment
-//			if (String.class == firstFieldType && float.class == secondFieldType) {
-//				final DualScoreFunction<String, Float> function = (DualScoreFunction<String, Float>) func;
-//				return new DualFloatFunction(new BytesRefFieldSource(firstFieldName), new FloatFieldSource(secondFieldName)) {
-//					@Override
-//					protected String name() {
-//						return f.name();
-//					}
-//					
-//					@Override
-//					protected float func(int doc, FunctionValues aVals, FunctionValues bVals) {
-//						final String firstValue = aVals.strVal(doc);
-//						final float secondValue = bVals.floatVal(doc);
-//						return function.compute(firstValue, secondValue);
-//					}
-//				};
-//			}
-//		} else if (func instanceof FieldScoreFunction) {
-//			final String field = ((FieldScoreFunction) func).getField();
-//			final Class<?> fieldType = mapping.getFieldType(field);
-//			if (fieldType == float.class || fieldType == Float.class) {
-//				return new FloatFieldSource(field); 
-//			}
-//		}
-//		throw new UnsupportedOperationException("Not supported score function: " + func);
-//	}
 	
 	private void visit(BoolExpression bool) {
 		final BoolQueryBuilder query = QueryBuilders.boolQuery();
@@ -189,6 +165,7 @@ public final class EsQueryBuilder {
 			final EsQueryBuilder innerQueryBuilder = new EsQueryBuilder(mapping);
 			innerQueryBuilder.visit(must);
 			if (innerQueryBuilder.needsScoring) {
+				needsScoring = innerQueryBuilder.needsScoring;
 				query.must(innerQueryBuilder.deque.pop());
 			} else {
 				query.filter(innerQueryBuilder.deque.pop());
@@ -222,6 +199,7 @@ public final class EsQueryBuilder {
 		final DocumentMapping nestedMapping = mapping.getNestedMapping(predicate.getField());
 		final EsQueryBuilder nestedQueryBuilder = new EsQueryBuilder(nestedMapping, nestedPath);
 		nestedQueryBuilder.visit(predicate.getExpression());
+		needsScoring = nestedQueryBuilder.needsScoring;
 		final QueryBuilder nestedQuery = nestedQueryBuilder.deque.pop();
 		deque.push(QueryBuilders.nestedQuery(nestedPath, nestedQuery));
 	}

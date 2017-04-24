@@ -97,14 +97,16 @@ public class EsDocumentSearcher implements Searcher {
 		
 		final TimeValue scrollTime = TimeValue.timeValueSeconds(60);
 		
-		final QueryBuilder esQuery = new EsQueryBuilder(mapping).build(query.getWhere());
+		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping);
+		final QueryBuilder esQuery = esQueryBuilder.build(query.getWhere());
 		
 		final SearchRequestBuilder req = client.prepareSearch(admin.name())
 			.setRouting(mapping.typeAsString())
 			.setTypes(mapping.typeAsString())
 			.setSize(toRead)
 			.setScroll(scrollTime)
-			.setQuery(esQuery);
+			.setQuery(esQuery)
+			.setTrackScores(esQueryBuilder.needsScoring());
 		
 		if (query.getFields().isEmpty()) {
 			req.setFetchSource(true);
