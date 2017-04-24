@@ -46,7 +46,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedIdentifierBootstrap.class);
-
+	private static final String SNOMED_IDS_INDEX = "snomedids";
 	private static final String STORE_RESERVATIONS = "store_reservations";
 
 	@Override
@@ -87,7 +87,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 
 		switch (conf.getStrategy()) {
 		case EMBEDDED:
-			final Index index = Indexes.createIndex("snomedids", env.service(ObjectMapper.class), new Mappings(SctId.class), env.service(IndexSettings.class));
+			final Index index = Indexes.createIndex(SNOMED_IDS_INDEX, env.service(ObjectMapper.class), new Mappings(SctId.class), env.service(IndexSettings.class));
 			index.admin().create();
 			LOGGER.info("Snow Owl is configured to use embedded identifier service.");
 			final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(index, reservationService); 
