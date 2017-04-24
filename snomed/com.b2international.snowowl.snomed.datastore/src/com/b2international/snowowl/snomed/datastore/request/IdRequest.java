@@ -114,6 +114,8 @@ final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C
 						if (!existingIds.isEmpty()) {
 							// TODO: Report all existing identifiers
 							throw new AlreadyExistsException(category.getDisplayName(), Iterables.getFirst(existingIds, null));
+						} else {
+							recorder.register(userSuppliedIds);
 						}
 						
 						final Multimap<String, BaseSnomedComponentCreateRequest> requestsByNamespace = FluentIterable.from(categoryRequests)
