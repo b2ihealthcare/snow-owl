@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
+import com.b2international.index.mapping.DocumentMapping;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -39,11 +40,6 @@ public class SortBy {
 	}
 
 	/**
-	 * Special field name for sorting based on the document's natural occurrence (document order). 
-	 */
-	public static final String FIELD_DOC = "_doc";
-	
-	/**
 	 * Special field name for sorting based on the document score (relevance).
 	 */
 	public static final String FIELD_SCORE = "_score";
@@ -51,7 +47,7 @@ public class SortBy {
 	/**
 	 * Singleton representing document sort based on their natural occurrence. 
 	 */
-	public static final SortBy DOC = SortBy.field(FIELD_DOC, Order.ASC);
+	public static final SortBy DOC_ID = SortBy.field(DocumentMapping._ID, Order.ASC);
 	
 	/**
 	 * Singleton representing document sort based on their score in decreasing order (higher score first).
@@ -140,7 +136,7 @@ public class SortBy {
 		
 		public SortBy build() {
 			if (sortOrderMap.isEmpty()) {
-				return DOC;
+				return DOC_ID;
 			} else if (sortOrderMap.size() == 1) {
 				Entry<String, Order> onlyElement = Iterables.getOnlyElement(sortOrderMap.entrySet());
 				return new SortByField(onlyElement.getKey(), onlyElement.getValue());

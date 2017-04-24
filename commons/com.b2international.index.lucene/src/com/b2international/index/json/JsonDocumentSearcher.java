@@ -409,9 +409,10 @@ public class JsonDocumentSearcher implements Searcher {
             SortBy.Order order = item.getOrder();
             
 			switch (field) {
-            case SortBy.FIELD_DOC:
-                convertedItems.add(new SortField(null, SortField.Type.DOC, order == SortBy.Order.DESC));
-                break;
+			case DocumentMapping._ID:
+				convertedItems.add(new SortField(DocumentMapping._ID, SortField.Type.STRING_VAL, order == SortBy.Order.DESC));
+				nonSortedFields.remove(field);
+				break;
             case SortBy.FIELD_SCORE:
                 // XXX: default order for scores is *descending*
                 convertedItems.add(new SortField(null, SortField.Type.SCORE, order == SortBy.Order.ASC));
