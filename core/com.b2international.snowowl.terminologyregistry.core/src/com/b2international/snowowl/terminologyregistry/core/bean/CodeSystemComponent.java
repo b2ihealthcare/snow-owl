@@ -18,6 +18,5 @@ package com.b2international.snowowl.terminologyregistry.core.bean;
 /**
  * @since 3.0.1
  */
-public interface CodeSystemComponent extends CodeSystemShortNameProvider, CodeSystemVersionProvider, CodeProvider {
-
+public interface CodeSystemComponent extends CodeSystemShortNameProvider, CodeSystemVersionProvider, CodeProvider, CodeSystemOidProvider {
 }
