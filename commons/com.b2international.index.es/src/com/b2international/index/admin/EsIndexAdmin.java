@@ -63,7 +63,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		this.client = client;
 		this.name = name.toLowerCase();
 		this.mappings = mappings;
-		this.settings = newHashMap(settings);
+		this.settings = settings;
 		this.log = LoggerFactory.getLogger(String.format("index.%s", this.name));
 	}
 	

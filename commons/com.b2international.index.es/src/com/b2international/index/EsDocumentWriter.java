@@ -158,7 +158,7 @@ public class EsDocumentWriter implements Writer {
 					}
 				}
 			})
-			.setConcurrentRequests(Math.max(1, Runtime.getRuntime().availableProcessors() / 4))
+			.setConcurrentRequests((int) admin.settings().get(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL))
 			.setBulkActions(5000)
 			.build();
 

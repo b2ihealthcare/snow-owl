@@ -49,6 +49,9 @@ public class IndexConfiguration {
 	
 	@Min(1)
 	private Integer numberOfShards = 3;
+	
+	@Min(1)
+	private int commitConcurrencyLevel = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
 
 	@JsonProperty
 	public long getCommitInterval() {
@@ -158,6 +161,16 @@ public class IndexConfiguration {
 	@JsonProperty
 	public Integer getNumberOfShards() {
 		return numberOfShards;
+	}
+	
+	@JsonProperty
+	public int getCommitConcurrencyLevel() {
+		return commitConcurrencyLevel;
+	}
+	
+	@JsonProperty
+	public void setCommitConcurrencyLevel(int commitConcurrencyLevel) {
+		this.commitConcurrencyLevel = commitConcurrencyLevel;
 	}
 
 }
