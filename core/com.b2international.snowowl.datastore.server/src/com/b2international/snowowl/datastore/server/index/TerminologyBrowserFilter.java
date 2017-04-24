@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -43,7 +44,7 @@ import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
@@ -113,12 +114,10 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 				
 				//fetch the labels in one query
 				Collection<String> rootIds = getRootIds(branchPath);
-				Map<String, String> childrenIdToLabelMap = fetchLabels(branchPath, Sets.newHashSet(rootIds));
-				
-				addTopLevels(branchPath, null, rootIds, topLevelDepth, childrenIdToLabelMap);
+				addTopLevels(branchPath, null, rootIds, topLevelDepth, Maps.uniqueIndex(rootIds, Functions.<String>identity()));
 				
 				//fetch the labels in one query
-				Map<String, String> idToLabelMap = fetchLabels(branchPath, componentIdDocMap.keySet());
+				Map<String, String> idToLabelMap = fetchLabels(branchPath, componentIdDocMap);
 				
 				for (final String componentId : componentIdDocMap.keySet()) {
 					processComponentForTree(branchPath, componentId, idToLabelMap);
@@ -136,20 +135,21 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 	}
 	
 	/**
-	 * Default implementation returns the ids for the labels as well.
 	 * @param branchPath
-	 * @param keySet
+	 * @param componentIdDocMap
 	 * @return
 	 */
-	protected Map<String, String> fetchLabels(IBranchPath branchPath, Set<String> idSet) {
-		
-		return Maps.asMap(idSet, new Function<String, String>() {
+	protected Map<String, String> fetchLabels(IBranchPath branchPath, Map<String, Document> componentIdDocMap) {
+		return extractLabels(componentIdDocMap);
+	}
 
-			@Override
-			public String apply(String id) {
-				return id;
-			}
-		});
+	private Map<String, String> extractLabels(Map<String, Document> componentIdDocMap) {
+		Map<String, String> result = Maps.newHashMap();
+		for (Entry<String, Document> entry : componentIdDocMap.entrySet()) {
+			String label = Mappings.label().getValue(entry.getValue());
+			result.put(entry.getKey(), label);
+		}
+		return result;
 	}
 
 	/**
