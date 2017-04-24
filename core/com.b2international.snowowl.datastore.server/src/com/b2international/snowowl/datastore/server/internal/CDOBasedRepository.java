@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.internal;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -37,6 +38,7 @@ import com.b2international.commons.platform.Extensions;
 import com.b2international.index.DefaultIndex;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClient;
+import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexRead;
 import com.b2international.index.Indexes;
 import com.b2international.index.Searcher;
@@ -69,7 +71,9 @@ import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfo;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfos;
+import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.IndexSettings;
+import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.b2international.snowowl.datastore.index.MappingProvider;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
@@ -221,7 +225,10 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		types.addAll(getToolingTypes(toolingId));
 		types.add(CommitInfoDocument.class);
 		
-		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, new Mappings(types), getDelegate().service(IndexSettings.class));
+		final Map<String, Object> indexSettings = newHashMap(getDelegate().service(IndexSettings.class));
+		final IndexConfiguration repositoryIndexConfiguration = getDelegate().service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();
+		indexSettings.put(IndexClientFactory.NUMBER_OF_SHARDS, repositoryIndexConfiguration.getNumberOfShards());
+		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, new Mappings(types), indexSettings);
 		final Index index = new DefaultIndex(indexClient);
 		final Provider<BranchManager> branchManager = provider(BranchManager.class);
 		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, new RevisionBranchProvider() {

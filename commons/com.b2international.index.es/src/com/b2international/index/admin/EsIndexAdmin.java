@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.index.Analyzed;
 import com.b2international.index.Analyzers;
+import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
@@ -107,7 +108,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 		}
 
 		try {
-			req.setSettings(createSettings());
+			final Map<String, Object> indexSettings = createSettings();
+			log.info("Configuring '{}' index with settings: {}", name, indexSettings);
+			req.setSettings(indexSettings);
 		} catch (IOException e) {
 			throw new IndexException("Couldn't prepare settings for index " + name, e);
 		}
@@ -118,8 +121,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 	}
 
 	private Map<String, Object> createSettings() throws IOException {
-		return ImmutableMap.of("analysis", 
-			Settings.builder().loadFromStream("analysis.json", Resources.getResource(getClass(), "analysis.json").openStream()).build().getAsStructuredMap()
+		return ImmutableMap.of(
+			"analysis", 
+			Settings.builder().loadFromStream("analysis.json", Resources.getResource(getClass(), "analysis.json").openStream()).build().getAsStructuredMap(),
+			"number_of_shards",
+			String.valueOf(settings().getOrDefault(IndexClientFactory.NUMBER_OF_SHARDS, "1"))
 		);
 	}
 	

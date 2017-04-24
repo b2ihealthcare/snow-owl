@@ -60,6 +60,12 @@ public interface IndexClientFactory {
 	 * in a single call from the index.
 	 */
 	String RESULT_WINDOW_KEY = "max_result_window";
+	
+	/**
+	 * Configuration key to specify the number of shards for the index.
+	 * Currently only the index.es fragment supports.
+	 */
+	String NUMBER_OF_SHARDS = "number_of_shards";
 
 	/**
 	 * The default commit interval is 15 seconds.
