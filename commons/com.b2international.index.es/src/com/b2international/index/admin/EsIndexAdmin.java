@@ -85,6 +85,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 	@Override
 	public void create() {
 		if (exists()) {
+			waitForYellowHealth();
 			return;
 		}
 		final CreateIndexRequestBuilder req = client().admin().indices().prepareCreate(name);
