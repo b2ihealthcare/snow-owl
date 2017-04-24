@@ -63,8 +63,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 		this.client = client;
 		this.name = name.toLowerCase();
 		this.mappings = mappings;
-		this.settings = settings;
+		this.settings = newHashMap(settings);
 		this.log = LoggerFactory.getLogger(String.format("index.%s", this.name));
+		this.settings.putIfAbsent(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, IndexClientFactory.DEFAULT_COMMIT_CONCURRENCY_LEVEL);
 	}
 	
 	@Override
