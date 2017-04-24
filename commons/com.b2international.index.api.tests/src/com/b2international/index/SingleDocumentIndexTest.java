@@ -15,17 +15,21 @@
  */
 package com.b2international.index;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
-import static com.b2international.index.Fixtures.*;
-
 import com.b2international.index.Fixtures.Data;
+import com.b2international.index.Fixtures.DataWithMap;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -36,6 +40,8 @@ import com.google.common.collect.ImmutableMap;
  * @since 4.7
  */
 public class SingleDocumentIndexTest extends BaseIndexTest {
+
+	private static final int NUM_DOCS = 123;
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
@@ -62,6 +68,31 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 		indexDocument(KEY1, doc2);
 		assertEquals(doc, getDocument(Data.class, KEY1));
 		assertEquals(doc2, getDocument(DataWithMap.class, KEY1));
+	}
+	
+	@Test
+	public void indexMultipleDocuments() throws Exception {
+		final Map<String, Data> documents = newHashMap();
+		final List<String> keys = newArrayList();
+		
+		for (int i = 0; i < NUM_DOCS; i++) {
+			final Data doc = new Data();
+			doc.setIntField(i);
+			
+			final String key = Integer.toString(i);
+			keys.add(key);
+			documents.put(key, doc);
+		}
+		
+		indexDocuments(documents);
+		
+		// Change sequential keys to a random permutation of the original
+		Collections.shuffle(keys);
+		
+		for (int i = 0; i < NUM_DOCS; i++) {
+			String key = keys.get(i);
+			assertEquals(documents.get(key), getDocument(Data.class, key));
+		}
 	}
 	
 	@Test

@@ -89,13 +89,6 @@
       </builder>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.nodeTransformer">
-      <transformer
-            class="com.b2international.snowowl.datastore.server.snomed.version.SnomedNodeTransformer"
-            repositoryUuid="snomedStore">
-      </transformer>
-   </extension>
-   <extension
          point="com.b2international.snowowl.datastore.server.historyInfo">
       <detailsBuilder
             builderClass="com.b2international.snowowl.datastore.server.snomed.history.SnomedConceptHistoryInfoDetailsBuilder">

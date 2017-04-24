@@ -32,8 +32,6 @@ import com.b2international.snowowl.snomed.datastore.id.gen.SequentialItemIdGener
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Provider;
-import com.google.inject.util.Providers;
 
 /**
  * @since 4.5
@@ -53,11 +51,10 @@ public class DefaultSnomedIdentifierServiceTest extends AbstractIdentifierServic
 		store = Indexes.createIndex(UUID.randomUUID().toString(), new ObjectMapper(), new Mappings(SctId.class));
 		store.admin().create();
 		
-		final Provider<Index> storeProvider = Providers.of(store);
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
-		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(storeProvider, reservationService);
+		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
 		
-		service = new DefaultSnomedIdentifierService(storeProvider, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
+		service = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
 	}
 	
 	@After

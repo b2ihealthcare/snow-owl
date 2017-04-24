@@ -17,12 +17,13 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.b2international.index.BulkUpdate;
-import com.b2international.index.IdProvider;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
@@ -41,11 +42,11 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
-import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 /**
@@ -229,24 +230,14 @@ public abstract class BranchManagerImpl implements BranchManager {
 
 	private InternalBranch doDelete(final InternalBranch branch) {
 		final String path = branch.path();
-		commit(update(branch.getClass(), path, new Function<InternalBranch, InternalBranch>() {
-			@Override
-			public InternalBranch apply(InternalBranch input) {
-				return input.withDeleted();
-			}
-		}));
+		commit(update(branch.getClass(), path, InternalBranch.WITH_DELETED, Collections.emptyMap()));
 		sendChangeEvent(path); // Explicit notification (delete)
 		return (InternalBranch) getBranch(path);
 	}
 	
 	/*package*/ final InternalBranch handleCommit(final InternalBranch branch, final long timestamp) {
 		final String path = branch.path();
-		commit(update(branch.getClass(), path, new Function<InternalBranch, InternalBranch>() {
-			@Override
-			public InternalBranch apply(InternalBranch input) {
-				return input.withHeadTimestamp(timestamp);
-			}
-		}));
+		commit(update(branch.getClass(), path, InternalBranch.WITH_HEADTIMESTAMP, ImmutableMap.of("headTimestamp", timestamp)));
 		sendChangeEvent(path); // Explicit notification (commit)
 		return (InternalBranch) getBranch(path);
 	}
@@ -294,17 +285,11 @@ public abstract class BranchManagerImpl implements BranchManager {
 		});
 	}
 	
-	protected final IndexWrite<Void> update(final Class<? extends InternalBranch> branchType, final String path, final Function<InternalBranch, InternalBranch> mutator) {
+	protected final IndexWrite<Void> update(final Class<? extends InternalBranch> branchType, final String path, final String mutator, final Map<String, Object> params) {
 		return new IndexWrite<Void>() {
 			@Override
 			public Void execute(Writer index) throws IOException {
-				index.bulkUpdate(new BulkUpdate<>(branchType, DocumentMapping.matchId(path), new IdProvider.ConstantIdProvider<>(path), new Function<InternalBranch, InternalBranch>() {
-					@Override
-					public InternalBranch apply(InternalBranch input) {
-						input.setBranchManager(BranchManagerImpl.this);
-						return mutator.apply(input);
-					}
-				}));
+				index.bulkUpdate(new BulkUpdate<>(branchType, DocumentMapping.matchId(path), DocumentMapping._ID, mutator, params));
 				return null;
 			}
 		};

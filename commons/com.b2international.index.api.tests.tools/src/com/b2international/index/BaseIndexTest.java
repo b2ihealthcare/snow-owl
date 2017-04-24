@@ -17,6 +17,7 @@ package com.b2international.index;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.After;
@@ -27,6 +28,7 @@ import com.b2international.index.query.Query;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.7
@@ -56,13 +58,19 @@ public abstract class BaseIndexTest {
 	}
 	
 	/**
-	 * Returns the document types used by this test case.
-	 * @return
+	 * @return the document types used by this test case
 	 */
 	protected abstract Collection<Class<?>> getTypes();
 
+	/**
+	 * @return the settings to use for the index client
+	 */
+	protected Map<String, Object> getSettings() {
+		return ImmutableMap.of();
+	}
+	
 	private final IndexClient createIndexClient(ObjectMapper mapper, Mappings mappings) {
-		return Indexes.createIndexClient(UUID.randomUUID().toString(), mapper, mappings);
+		return Indexes.createIndexClient(UUID.randomUUID().toString(), mapper, mappings, getSettings());
 	}
 	
 	protected final Index index() {
@@ -87,6 +95,17 @@ public abstract class BaseIndexTest {
 			@Override
 			public Void execute(Writer index) throws IOException {
 				index.put(key, doc);
+				index.commit();
+				return null;
+			}
+		});
+	}
+	
+	protected final <T> void indexDocuments(final Map<String, T> docs) {
+		index().write(new IndexWrite<Void>() {
+			@Override
+			public Void execute(Writer index) throws IOException {
+				index.putAll(docs);
 				index.commit();
 				return null;
 			}

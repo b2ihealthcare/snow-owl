@@ -208,7 +208,7 @@ backup_repositories() {
 		unlock_all_repositories_and_exit "Failed to retrieve list of repositories. Exiting with error."
 	fi
 	
-	echo "$CURL_MESSAGE" | while read -r REPOSITORY
+	echo "$CURL_MESSAGE" | grep -Po '"id":.*?[^\\]",' | sed 's/\"id\":\"\(.*\)\",/\1/' | while read -r REPOSITORY
 	do
 		backup_repository || break
 	done

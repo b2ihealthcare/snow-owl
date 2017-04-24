@@ -107,10 +107,9 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 
 	@Test
 	public void issue_SO_2138_testItemIdsReturnedInSequence() throws Exception {
-		final Provider<Index> storeProvider = Providers.of(store);
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
-		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(storeProvider, reservationService);
-		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(storeProvider, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
+		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
 
 		List<String> actualIds = ImmutableList.copyOf(identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT, 3));
 		List<String> expectedIds = ImmutableList.of("100005", "101009", "102002");
@@ -126,10 +125,9 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 	
 	@Test
 	public void issue_SO_2138_testItemIdWraparound() throws Exception {
-		final Provider<Index> storeProvider = Providers.of(store);
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
-		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(storeProvider, reservationService);
-		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(storeProvider, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
+		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
 		
 		identifiers.register(ImmutableSet.of("999999999999998003"));
 		
@@ -140,13 +138,12 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 	
 	@Test
 	public void issue_SO_2138_testSkipReservedRange() throws Exception {
-		final Provider<Index> storeProvider = Providers.of(store);
 		
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		reservationService.create("noTwoHundreds", Reservations.range(200L, 299L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
 		
-		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(storeProvider, reservationService);
-		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(storeProvider, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
+		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
 		
 		// The next item ID would be 200, if it weren't for the reserved range 200-299
 		identifiers.register(ImmutableSet.of("199004"));
@@ -156,13 +153,11 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 	
 	@Test
 	public void issue_SO_2138_testSkipReservedRangeWithWraparound() throws Exception {
-		final Provider<Index> storeProvider = Providers.of(store);
-		
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		reservationService.create("nothingAboveTwoHundred", Reservations.range(200L, 9999_9999_9999_999L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
 		
-		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(storeProvider, reservationService);
-		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(storeProvider, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
+		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
 		
 		// The next item ID would be 200, if it weren't for the reserved range, which goes to the maximum allowed value
 		identifiers.register(ImmutableSet.of("199004"));
@@ -172,14 +167,13 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 	
 	@Test(expected=IllegalStateException.class)
 	public void issue_SO_2138_testCoveringReservedRanges() throws Exception {
-		final Provider<Index> storeProvider = Providers.of(store);
 		
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		reservationService.create("nothingAboveOneHundredNinetyNine", Reservations.range(200L, 9999_9999_9999_999L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
 		reservationService.create("nothingBelowOneHundredNinetyNine", Reservations.range(100L, 198L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
 		
-		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(storeProvider, reservationService);
-		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(storeProvider, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
+		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
 		
 		identifiers.register(ImmutableSet.of("198007"));
 		

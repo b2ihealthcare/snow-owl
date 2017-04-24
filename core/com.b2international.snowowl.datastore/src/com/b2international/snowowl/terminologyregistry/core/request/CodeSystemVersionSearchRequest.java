@@ -54,11 +54,11 @@ final class CodeSystemVersionSearchRequest extends SearchResourceRequest<Reposit
 		final ExpressionBuilder query = Expressions.builder();
 
 		if (!StringUtils.isEmpty(codeSystemShortName)) {
-			query.must(CodeSystemVersionEntry.Expressions.shortName(codeSystemShortName));
+			query.filter(CodeSystemVersionEntry.Expressions.shortName(codeSystemShortName));
 		}
 		
 		if (!StringUtils.isEmpty(versionId)) {
-			query.must(CodeSystemVersionEntry.Expressions.versionId(versionId));
+			query.filter(CodeSystemVersionEntry.Expressions.versionId(versionId));
 		}
 		
 		final Searcher searcher = context.service(Searcher.class);

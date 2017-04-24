@@ -46,6 +46,7 @@ import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.cdo.CDOConnectionFactoryProvider;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
+import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
@@ -157,7 +158,7 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 	}
 	
 	private void initializeJobSupport(Environment env, SnowOwlConfiguration configuration) {
-		final Index index = Indexes.createIndex("jobs", env.service(ObjectMapper.class), new Mappings(RemoteJobEntry.class));
+		final Index index = Indexes.createIndex("jobs", env.service(ObjectMapper.class), new Mappings(RemoteJobEntry.class), env.service(IndexSettings.class));
 		// TODO make this configurable
 		final long defaultJobCleanUpInterval = TimeUnit.MINUTES.toMillis(1);
 		env.services()

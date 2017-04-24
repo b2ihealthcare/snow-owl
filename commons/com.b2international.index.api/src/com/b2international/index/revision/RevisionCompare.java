@@ -181,7 +181,7 @@ public final class RevisionCompare {
 		return Query.selectPartial(query.getSelect(), query.getFrom(), query.getFields())
 				.where(Expressions.builder()
 						.must(query.getWhere())
-						.must(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys))
+						.filter(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys))
 						.build())
 				.limit(storageKeys.size())
 				.build();

@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bundle-Version: 5.9.0
+Bundle-Version: 5.10.0.qualifier
 Bundle-Name: Snow Owl SNOMED CT REST Service
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: com.b2international.snowowl.snomed.api.rest;singleton:=true
@@ -72,12 +72,12 @@ Import-Package: com.b2international.commons,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Web-ContextPath: /snowowl/snomed-ct/v2
-Require-Bundle: com.google.guava;bundle-version="[15.0.0,16.0.0)",
+Require-Bundle: com.google.guava;bundle-version="[18.0.0,19.0.0)",
  org.eclipse.equinox.security;bundle-version="1.1.100",
- com.fasterxml.jackson.core.jackson-annotations;bundle-version="[2.4.5,2.5.0)",
- com.fasterxml.jackson.core.jackson-core;bundle-version="[2.4.5,2.5.0)",
- com.fasterxml.jackson.core.jackson-databind;bundle-version="[2.4.5,2.5.0)",
- com.fasterxml.jackson.dataformat.jackson-dataformat-csv;bundle-version="[2.4.5,2.5.0)"
+ com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.6.6",
+ com.fasterxml.jackson.core.jackson-core;bundle-version="2.6.6",
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="2.6.6",
+ com.fasterxml.jackson.dataformat.jackson-dataformat-csv;bundle-version="2.6.6"
 Bundle-ClassPath: .,
  WEB-INF/lib/aopalliance-1.0.jar,
  WEB-INF/lib/classmate-1.1.0.jar,
@@ -112,9 +112,8 @@ Bundle-ClassPath: .,
  WEB-INF/lib/swagger-core_2.10-1.3.11.jar,
  WEB-INF/lib/swagger-models-0.9.3.jar,
  WEB-INF/lib/swagger-springmvc-0.9.3.jar,
- WEB-INF/lib/jackson-datatype-guava-2.4.5.jar,
- WEB-INF/lib/jackson-jaxrs-json-provider-2.4.5.jar,
- WEB-INF/lib/jackson-module-jaxb-annotations-2.4.5.jar,
- WEB-INF/lib/jackson-module-jsonSchema-2.4.5.jar,
- WEB-INF/lib/jackson-dataformat-csv-2.4.5.jar,
- WEB-INF/lib/jackson-module-scala_2.10-2.4.5.jar
+ WEB-INF/lib/jackson-datatype-guava-2.6.6.jar,
+ WEB-INF/lib/jackson-jaxrs-json-provider-2.6.6.jar,
+ WEB-INF/lib/jackson-module-jaxb-annotations-2.6.6.jar,
+ WEB-INF/lib/jackson-module-jsonSchema-2.6.6.jar,
+ WEB-INF/lib/jackson-module-scala_2.10-2.6.6.jar

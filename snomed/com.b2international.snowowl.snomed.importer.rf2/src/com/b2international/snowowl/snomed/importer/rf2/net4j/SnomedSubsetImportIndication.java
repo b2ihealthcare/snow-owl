@@ -106,7 +106,7 @@ public class SnomedSubsetImportIndication extends IndicationWithMonitoring {
 			}
 		} finally {
 			monitor.done();
-			Closeables.closeQuietly(out);
+			Closeables.close(out, true);
 		}
 	}
 

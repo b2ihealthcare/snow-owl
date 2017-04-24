@@ -60,11 +60,11 @@ public final class Taxonomies {
 			final String characteristicTypeId = characteristicType.getConceptId();
 			final Query<SnomedRelationshipIndexEntry.Views.StatementWithId> query = Query.selectPartial(SnomedRelationshipIndexEntry.Views.StatementWithId.class, SnomedRelationshipIndexEntry.class)
 					.where(Expressions.builder()
-							.must(active())
-							.must(typeId(Concepts.IS_A))
-							.must(characteristicTypeId(characteristicTypeId))
-							.must(sourceIds(LongSets.toStringSet(conceptIds)))
-							.must(destinationIds(LongSets.toStringSet(conceptIds)))
+							.filter(active())
+							.filter(typeId(Concepts.IS_A))
+							.filter(characteristicTypeId(characteristicTypeId))
+							.filter(sourceIds(LongSets.toStringSet(conceptIds)))
+							.filter(destinationIds(LongSets.toStringSet(conceptIds)))
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();

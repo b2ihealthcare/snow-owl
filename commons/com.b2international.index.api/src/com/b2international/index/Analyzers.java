@@ -29,9 +29,135 @@ public enum Analyzers {
 	DEFAULT,
 
 	/**
-	 * Restriction on top of the default analyzer, to only escape white spaces and delimiters but do not include the custom markers in the resulting
-	 * text.
+	 * Indexes the term as is for exact match searches with ASCII folding and in lower-case form.
+	 * "exact_match": {
+        	"tokenizer": "keyword",
+        	"filter": [
+        	  "asciifolding",
+        	  "lowercase"
+        	]
+        }
 	 */
-	NON_BOOKEND
+	EXACT,
 
+	
+	/**
+	 * "tokenized": {
+	       "tokenizer": "whitespace",
+	       "filter": [
+	          "asciifolding",
+	          "lowercase",
+	          "possessive",
+	          "word_splitter",
+	          "unique_token"
+	       ]
+	    }
+	    "word_splitter": {
+            "type": "word_delimiter",
+            "split_on_case_change": "false",
+            "preserve_original": "true",
+            "stem_english_possessive": "false",
+            "type_table": [", => DIGIT", ". => DIGIT"]
+        }
+	 */
+	TOKENIZED,
+
+	/**
+	 * "stemming": {
+        	"tokenizer" : "whitespace",
+        	"filter" : [
+				"asciifolding",
+				"lowercase",
+				"possessive",
+				"word_splitter",
+				"unique_token",
+				"english_stemmer"
+        	]
+        }
+	 */
+	STEMMING,
+
+	/**
+	 * "search_stemming": {
+        	"tokenizer" : "whitespace",
+        	"filter" : [
+				"asciifolding",
+				"lowercase",
+				"possessive",
+				"unique_token",
+				"english_stemmer"
+        	]
+        }
+	 */
+	SEARCH_STEMMING,
+
+	/**
+	 * "prefix": {
+           "tokenizer": "whitespace",
+           "filter": [
+              "asciifolding",
+              "lowercase",
+              "possessive",
+              "word_splitter",
+              "unique_token",
+              "edge_ngram"
+           ]
+        }
+	 */
+	PREFIX,
+
+	/**
+	 * "case_sensitive": {
+        	"tokenizer" : "whitespace",
+        	"filter" : [
+        		"possessive",
+        		"word_splitter",
+        		"unique_token"
+        	]
+        }
+	 */
+	CASE_SENSITIVE,
+	
+	/**
+	 * "case_sensitive_prefix": {
+           "tokenizer": "whitespace",
+           "filter": [
+              "asciifolding",
+              "possessive",
+              "word_splitter",
+              "unique_token",
+              "edge_ngram"
+           ]
+        }
+	 */
+	CASE_SENSITIVE_PREFIX,
+	
+	/**
+	 * "case_sensitive_ascii_folding": {
+        	"tokenizer" : "whitespace",
+        	"filter" : [
+				"asciifolding",
+				"possessive",
+				"word_splitter",
+				"unique_token"
+        	]
+        }
+	 */
+	CASE_SENSITIVE_ASCII,
+	
+	/**
+	 * "case_sensitive_ascii_folding_exact_match": {
+        	"tokenizer" : "keyword",
+        	"filter" : [
+				"asciifolding"
+        	]
+        }
+	 */
+	CASE_SENSITIVE_ASCII_EXACT, 
+	
+	/**
+	 * Use the same analyzer that is configured for the {@link Analyzed#analyzer()} field. 
+	 */
+	INDEX
+	
 }

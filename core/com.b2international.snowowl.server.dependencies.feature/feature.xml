@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.server.dependencies.feature"
       label="Snow Owl Server Dependencies"
-      version="5.9.0"
+      version="5.10.0.qualifier"
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
@@ -176,7 +176,7 @@ Visit us at http://b2i.sg
          id="org.eclipse.net4j"
          download-size="0"
          install-size="0"
-         version="4.1.1.b2i"
+         version="4.1.2.b2i"
          unpack="false"/>
 
    <plugin
@@ -204,7 +204,7 @@ Visit us at http://b2i.sg
          id="org.eclipse.net4j.util"
          download-size="0"
          install-size="0"
-         version="3.2.1.b2i"
+         version="3.2.2.b2i"
          unpack="false"/>
 
    <plugin
@@ -778,13 +778,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.emf.compare"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.slf4j.log4j"
          download-size="0"
          install-size="0"
@@ -844,7 +837,7 @@ Visit us at http://b2i.sg
          id="com.b2international.org.apache.lucene"
          download-size="0"
          install-size="0"
-         version="5.5.1.b2i"/>
+         version="5.5.2.b2i"/>
 
    <plugin
          id="org.emfjson.core"
@@ -953,6 +946,27 @@ Visit us at http://b2i.sg
 
    <plugin
          id="org.reactivestreams.reactive-streams"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.fasterxml.jackson.dataformat.jackson-dataformat-smile"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.ning.compress-lzf"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.jboss.netty"
          download-size="0"
          install-size="0"
          version="0.0.0"

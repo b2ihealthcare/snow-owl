@@ -39,8 +39,8 @@ public class SnomedTextDefinitionExporter extends SnomedRf2DescriptionExporter {
 	@Override
 	protected void appendExpressionConstraint(final ExpressionBuilder builder) {
 		builder
-			.must(SnomedDescriptionIndexEntry.Expressions.type(Concepts.TEXT_DEFINITION))
-			.must(SnomedDescriptionIndexEntry.Expressions.languageCode(getLanguageCode()));
+			.filter(SnomedDescriptionIndexEntry.Expressions.type(Concepts.TEXT_DEFINITION))
+			.filter(SnomedDescriptionIndexEntry.Expressions.languageCode(getLanguageCode()));
 	}
 
 }

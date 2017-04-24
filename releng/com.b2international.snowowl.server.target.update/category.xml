@@ -24,9 +24,6 @@
    <feature url="features/org.emfjson.feature_0.10.0.jar" id="org.emfjson.feature" version="0.10.0">
       <category name="Modeling"/>
    </feature>
-   <feature url="features/org.eclipse.emf.compare_3.0.1.201408191310.jar" id="org.eclipse.emf.compare" version="3.0.1.201408191310">
-      <category name="Modeling"/>
-   </feature>
    <feature url="features/org.eclipse.net4j_4.1.0.v20120612-0600.jar" id="org.eclipse.net4j" version="4.1.0.v20120612-0600">
       <category name="CDO"/>
    </feature>
@@ -66,8 +63,7 @@
    <bundle id="ch.qos.logback.core.source" version="1.0.7.v20121108-1250"/>
    <bundle id="ch.qos.logback.slf4j" version="1.0.7.v201505121915"/>
    <bundle id="ch.qos.logback.slf4j.source" version="1.0.7.v201505121915"/>
-   <bundle id="com.google.guava" version="15.0.0.v201403281430"/>
-   <bundle id="com.google.guava.source" version="15.0.0.v201403281430"/>
+   <bundle id="com.google.guava" version="18.0.0"/>
    <bundle id="org.slf4j.api" version="1.7.2.v20121108-1250"/>
    <bundle id="org.slf4j.api.source" version="1.7.2.v20121108-1250"/>
    <bundle id="org.slf4j.log4j" version="1.7.2.v20130115-1340"/>
@@ -110,12 +106,13 @@
    <bundle id="com.codahale.metrics.json" version="3.0.2"/>
    <bundle id="com.codahale.metrics.healthchecks" version="3.0.2"/>
    <bundle id="com.codahale.metrics.servlet" version="3.0.2"/>
-   <bundle id="com.fasterxml.jackson.core.jackson-annotations" version="2.4.5"/>
-   <bundle id="com.fasterxml.jackson.core.jackson-core" version="2.4.5"/>
-   <bundle id="com.fasterxml.jackson.core.jackson-databind" version="2.4.5"/>
-   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-yaml" version="2.4.5"/>
-   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-csv" version="2.4.5"/>
-   <bundle id="com.fasterxml.jackson.module.jackson-module-afterburner" version="2.4.5"/>
+   <bundle id="com.fasterxml.jackson.core.jackson-annotations" version="2.6.6"/>
+   <bundle id="com.fasterxml.jackson.core.jackson-core" version="2.6.6"/>
+   <bundle id="com.fasterxml.jackson.core.jackson-databind" version="2.6.6"/>
+   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-yaml" version="2.6.6"/>
+   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-csv" version="2.6.6"/>
+   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-smile" version="2.6.6"/>
+   <bundle id="com.fasterxml.jackson.module.jackson-module-afterburner" version="2.6.6"/>
    <bundle id="com.healthmarketscience.jackcess" version="1.2.9"/>
    <bundle id="io.reactivex.rxjava2.rxjava" version="2.0.7"/>
    <bundle id="org.reactivestreams.reactive-streams" version="1.0.0.release"/>
@@ -124,12 +121,14 @@
    <bundle id="org.assertj.core" version="1.7.1"/>
    <bundle id="org.h2" version="1.3.174"/>
    <bundle id="org.mockito.mockito-all" version="1.9.5"/>
-   <bundle id="org.yaml.snakeyaml" version="1.12.0"/>
+   <bundle id="org.yaml.snakeyaml" version="1.15.0"/>
    <bundle id="xstream" version="1.4.7"/>
    <bundle id="org.apache.el" version="7.0.56.v201412180755"/>
    <bundle id="javax.xml" version="1.3.4.v201005080400"/>
    <bundle id="javax.xml.stream" version="1.0.1.v201004272200" />
    <bundle id="org.semanticweb.owl.owlapi" version="3.4.4" />
+   <bundle id="org.jboss.netty" version="3.10.5.Final" />
+   <bundle id="com.ning.compress-lzf" version="1.0.4" />
    <category-def name="Eclipse Runtime" label="Eclipse RT Components"/>
    <category-def name="Modeling" label="Modeling Components"/>
    <category-def name="IDE Tools" label="Development Environment Tools"/>

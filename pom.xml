@@ -5,14 +5,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b2international.snowowl</groupId>
 	<artifactId>snowowl-parent</artifactId>
-	<version>5.9.0</version>
+	<version>5.10.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<!-- Maven Dependency Versions -->
-		<jackson.version>2.4.5</jackson.version>
+		<jackson.version>2.6.6</jackson.version>
 		<!-- Build tool/compiler versions -->
 		<tycho.version>0.23.0</tycho.version>
 		<tycho-extras.version>0.23.0</tycho-extras.version>
@@ -128,7 +128,7 @@
 							<type>eclipse-plugin</type>
 							<id>com.google.guava</id>
 							<restrictTo>
-								<versionRange>[15.0.0,16.0.0)</versionRange>
+								<versionRange>[18.0.0,19.0.0)</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
@@ -437,6 +437,12 @@
 				</dependency>
 				<dependency>
 					<groupId>com.fasterxml.jackson.dataformat</groupId>
+					<artifactId>jackson-dataformat-smile</artifactId>
+					<version>${jackson.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>com.fasterxml.jackson.dataformat</groupId>
 					<artifactId>jackson-dataformat-csv</artifactId>
 					<version>${jackson.version}</version>
 					<scope>provided</scope>
@@ -534,7 +540,7 @@
 				<dependency>
 					<groupId>org.yaml</groupId>
 					<artifactId>snakeyaml</artifactId>
-					<version>1.12</version>
+					<version>1.15</version>
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
@@ -566,6 +572,24 @@
 					<artifactId>commons-collections</artifactId>
 					<version>3.2.2</version>
 					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+					<version>18.0</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+				    <groupId>com.ning</groupId>
+				    <artifactId>compress-lzf</artifactId>
+				    <version>1.0.4</version>
+				    <scope>provided</scope>
+				</dependency>
+				<dependency>
+				    <groupId>io.netty</groupId>
+				    <artifactId>netty</artifactId>
+				    <version>3.10.5.Final</version>
+				    <scope>provided</scope>
 				</dependency>
 			</dependencies>
 			<repositories>
@@ -629,7 +653,7 @@
 		<profile>
 			<id>tp_dependencies</id>
 			<properties>
-				<target.platform.version>5.8.0-SNAPSHOT</target.platform.version>
+				<target.platform.version>5.10.0-SNAPSHOT</target.platform.version>
 				<target.platform.url>${nexus.url}/content/unzip/snapshots.unzip/com/b2international/snowowl/com.b2international.snowowl.server.target.update/${target.platform.version}/com.b2international.snowowl.server.target.update-${target.platform.version}.zip-unzip/</target.platform.url>
 			</properties>
 			<repositories>

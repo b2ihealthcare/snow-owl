@@ -347,7 +347,7 @@ import com.google.common.collect.Maps;
 				sessionConfiguration.setRepositoryName(repositoryUuid);
 				sessionConfiguration.setConnector(connector);
 
-				if (getSnowOwlConfiguration().isGzip()) {
+				if (!isEmbedded() && getSnowOwlConfiguration().isGzip()) {
 					sessionConfiguration.setStreamWrapper(new GZIPStreamWrapper());
 				}
 

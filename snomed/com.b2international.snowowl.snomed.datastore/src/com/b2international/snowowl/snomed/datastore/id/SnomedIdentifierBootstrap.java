@@ -20,16 +20,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.index.Index;
-import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.index.Indexes;
+import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration.IdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.cis.CisSnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.gen.SequentialItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierService;
@@ -37,7 +39,6 @@ import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdent
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.UniqueInStoreReservation;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Provider;
 
 /**
  * @since 4.5
@@ -45,7 +46,7 @@ import com.google.inject.Provider;
 public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedIdentifierBootstrap.class);
-
+	private static final String SNOMED_IDS_INDEX = "snomedids";
 	private static final String STORE_RESERVATIONS = "store_reservations";
 
 	@Override
@@ -86,19 +87,13 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 
 		switch (conf.getStrategy()) {
 		case EMBEDDED:
-			final Provider<Index> indexProvider = new Provider<Index>() {
-				@Override
-				public Index get() {
-					return env.service(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(Index.class);
-				}
-			};
-			LOGGER.info("Snow Owl is configured to use embedded identifier service.");
-			final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(indexProvider, reservationService); 
-			identifierService = new DefaultSnomedIdentifierService(indexProvider, generationStrategy, reservationService, conf);
+			final Index index = Indexes.createIndex(SNOMED_IDS_INDEX, env.service(ObjectMapper.class), new Mappings(SctId.class), env.service(IndexSettings.class));
+			index.admin().create();
+			final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(index, reservationService); 
+			identifierService = new DefaultSnomedIdentifierService(index, generationStrategy, reservationService, conf);
 			break;
 		case CIS:
 			final ObjectMapper mapper = new ObjectMapper();
-			LOGGER.info("Snow Owl is configured to use CIS based identifier service.");
 			identifierService = new CisSnomedIdentifierService(conf, reservationService, mapper);
 			break;
 		default:
@@ -106,6 +101,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 		}
 
 		env.services().registerService(ISnomedIdentifierService.class, identifierService);
+		LOGGER.info("Snow Owl is configured to use {} based identifier service.", conf.getStrategy());
 	}
 
 }

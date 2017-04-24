@@ -59,14 +59,14 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 		addEffectiveTimeClause(queryBuilder);
 		
 		if (containsKey(OptionKey.TYPE)) {
-			queryBuilder.must(refSetTypes(getCollection(OptionKey.TYPE, SnomedRefSetType.class)));
+			queryBuilder.filter(refSetTypes(getCollection(OptionKey.TYPE, SnomedRefSetType.class)));
 		} else {
 			// always add type filter, so only concept docs with refset props will be returned
-			queryBuilder.must(Expressions.exists(SnomedConceptDocument.Fields.REFSET_TYPE));
+			queryBuilder.filter(Expressions.exists(SnomedConceptDocument.Fields.REFSET_TYPE));
 		}
 		
 		if (containsKey(OptionKey.REFERENCED_COMPONENT_TYPE)) {
-			queryBuilder.must(referencedComponentTypes(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, Integer.class)));
+			queryBuilder.filter(referencedComponentTypes(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, Integer.class)));
 		}
 		
 		final Query<SnomedConceptDocument> query = select(SnomedConceptDocument.class)

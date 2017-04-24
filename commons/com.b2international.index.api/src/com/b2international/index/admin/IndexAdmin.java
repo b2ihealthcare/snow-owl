@@ -92,4 +92,11 @@ public interface IndexAdmin {
 	 */
 	void optimize(int maxSegments);
 
+	/**
+	 * @return whether the underlying index service supports _hash values on revision documents or not, by default assumes it does
+	 */
+	default boolean isHashSupported() {
+		return true;
+	}
+
 }

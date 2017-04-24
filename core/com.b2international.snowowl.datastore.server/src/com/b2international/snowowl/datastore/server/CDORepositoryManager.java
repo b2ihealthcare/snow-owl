@@ -40,8 +40,8 @@ import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionManager;
 import org.eclipse.emf.cdo.spi.server.InternalSession;
 import org.eclipse.emf.cdo.spi.server.InternalSessionManager;
 import org.eclipse.net4j.Net4jUtil;
+import org.eclipse.net4j.acceptor.IAcceptor;
 import org.eclipse.net4j.jvm.JVMUtil;
-import org.eclipse.net4j.signal.wrapping.GZIPStreamWrapperInjector;
 import org.eclipse.net4j.tcp.TCPUtil;
 import org.eclipse.net4j.util.container.IPluginContainer;
 import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
@@ -66,6 +66,7 @@ import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
+import com.b2international.snowowl.datastore.net4j.TcpGZIPStreamWrapperInjector;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -215,10 +216,6 @@ import com.google.common.net.HostAndPort;
 		//read extension points first, then create managed items 
 		super.doBeforeActivate();
 		
-		if (getSnowOwlConfiguration().isGzip()) {
-			IPluginContainer.INSTANCE.addPostProcessor(new GZIPStreamWrapperInjector(CDOProtocolConstants.PROTOCOL_NAME));
-		}
-		
 		Net4jUtil.prepareContainer(IPluginContainer.INSTANCE);
 		JVMUtil.prepareContainer(IPluginContainer.INSTANCE);
 		TCPUtil.prepareContainer(IPluginContainer.INSTANCE);
@@ -232,7 +229,11 @@ import com.google.common.net.HostAndPort;
 		final HostAndPort hostAndPort = getRepositoryConfiguration().getHostAndPort();
 		// open port in server environments
 		if (SnowOwlApplication.INSTANCE.getEnviroment().isServer()) {
-			TCPUtil.getAcceptor(IPluginContainer.INSTANCE, hostAndPort.toString()); // Start the TCP transport
+			IAcceptor acceptor = TCPUtil.getAcceptor(IPluginContainer.INSTANCE, hostAndPort.toString()); // Start the TCP transport
+			if (getSnowOwlConfiguration().isGzip()) {
+				IPluginContainer.INSTANCE.addPostProcessor(new TcpGZIPStreamWrapperInjector(CDOProtocolConstants.PROTOCOL_NAME, acceptor));
+			}
+
 			LOGGER.info("Listening on {} for connections", hostAndPort);
 		}
 		

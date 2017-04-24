@@ -32,8 +32,8 @@ public class LuceneIndexClientFactory implements IndexClientFactory {
 	@Override
 	public IndexClient createClient(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {
 		mapper.registerModule(new AfterburnerModule());
-		if (settings.containsKey(IndexClientFactory.DIRECTORY)) {
-			final Object dir = settings.get(IndexClientFactory.DIRECTORY);
+		if (settings.containsKey(IndexClientFactory.DATA_DIRECTORY)) {
+			final Object dir = settings.get(IndexClientFactory.DATA_DIRECTORY);
 			final File directory = dir instanceof File ? (File) dir : new File((String) dir);
 			return new LuceneIndexClient(new FSIndexAdmin(directory, name, mapper, mappings, settings), mapper);
 		} else {

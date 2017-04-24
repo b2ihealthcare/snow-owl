@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Terminology Datastore
 Bundle-SymbolicName: com.b2international.snowowl.datastore;singleton:=true
-Bundle-Version: 5.9.0
+Bundle-Version: 5.10.0.qualifier
 Bundle-Activator: com.b2international.snowowl.datastore.DatastoreActivator
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
@@ -72,7 +72,6 @@ Export-Package: com.b2international.snowowl.datastore,
  com.b2international.snowowl.terminologymetadata.validation,
  com.b2international.snowowl.terminologyregistry.core.builder,
  com.b2international.snowowl.terminologyregistry.core.request
-Import-Package: com.b2international.index.compat,
- org.apache.log4j;version="1.2.15",
+Import-Package: org.apache.log4j;version="1.2.15",
  org.slf4j;version="1.7.2"
 Bundle-ActivationPolicy: lazy

@@ -15,9 +15,7 @@
  */
 package com.b2international.index.json;
 
-import java.util.Collections;
-
-import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.Query;
 
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.lucene.IndexField;
@@ -29,7 +27,7 @@ import com.b2international.index.mapping.DocumentMapping;
 public class JsonDocumentMapping {
 
 	public static IndexField<String> _id() {
-		return Fields.stringField(DocumentMapping._ID);
+		return Fields.stringDocValuesField(DocumentMapping._ID);
 	}
 	
 	public static IndexField<String> _uid() {
@@ -40,8 +38,8 @@ public class JsonDocumentMapping {
 		return Fields.searchOnlyStringField(DocumentMapping._TYPE);
 	}
 
-	public static Filter filterByType(String type) {
-		return _type().createTermsFilter(Collections.singleton(type));
+	public static Query matchType(String type) {
+		return _type().toQuery(type);
 	}
 
 	public static IndexField<String> _hash() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,8 @@ import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermFilter;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.BytesRef;
 
 /**
  * @since 4.3
@@ -46,40 +42,19 @@ public interface IndexField<T> {
 
 	Set<String> getValuesAsStringSet(Document doc);
 
-	TermQuery toQuery(T value);
+	Query toQuery(T value);
+	
+	Query toQuery(Iterable<T> values);
 
-	PrefixQuery toExistsQuery();
+	Query toExistsQuery();
 
 	Term toTerm(T value);
-
-	TermFilter toTermFilter(T value);
 
 	void addTo(Document doc, T value);
 
 	void removeAll(Document doc);
 
 	Sort createSort();
-
-	/**
-	 * Creates a {@link Filter} accepting documents where any of the specified values appear in the indexed content for this field.
-	 * <p>
-	 * If the specified {@code Iterable} is empty, the returned filter will match no documents.
-	 * 
-	 * @param values the values to use (may not be {@code null})
-	 * @return the {@code Filter} accepting any of the specified values for this field
-	 */
-	Filter createTermsFilter(Iterable<T> values);
-
-	/**
-	 * <i>Expert</i>: creates a {@link Filter} accepting documents where any of the specified {@link BytesRef}s appear in the indexed content for this
-	 * field (term values need to be converted by the caller).
-	 * <p>
-	 * If the specified {@code Iterable} is empty, the returned filter will match no documents.
-	 * 
-	 * @param bytesRefs the {@code BytesRef}s to use (may not be {@code null})
-	 * @return the {@code Filter} accepting any of the specified values for this field
-	 */
-	Filter createBytesRefFilter(Iterable<BytesRef> bytesRefs);
 
 	/**
 	 * Reads the value from the given source {@link Document} and adds it to the target {@link Document}.

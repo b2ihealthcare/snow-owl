@@ -17,13 +17,14 @@ package com.b2international.snowowl.datastore.commitinfo;
 
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.matchTextAllPrefix;
+import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextPhrase;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 
 import com.b2international.index.Analyzed;
+import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.WithId;
 import com.b2international.index.WithScore;
@@ -109,7 +110,7 @@ public final class CommitInfoDocument implements WithId, WithScore {
 		}
 		
 		public static Expression allCommentPrefixesPresent(final String comment) {
-			return matchTextAllPrefix(Fields.COMMENT, comment);
+			return matchTextAll(Fields.COMMENT+".prefix", comment);
 		}
 		
 		public static Expression timeStamp(final long timeStamp) {
@@ -129,7 +130,8 @@ public final class CommitInfoDocument implements WithId, WithScore {
 	
 	private final String branch;
 	private final String userId;
-	@Analyzed
+	@Analyzed(analyzer=Analyzers.TOKENIZED)
+	@Analyzed(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
 	private final String comment;
 	private final long timeStamp;
 	

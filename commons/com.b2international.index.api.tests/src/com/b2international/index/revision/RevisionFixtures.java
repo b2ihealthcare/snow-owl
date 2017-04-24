@@ -18,7 +18,9 @@ package com.b2international.index.revision;
 import java.util.Objects;
 
 import com.b2international.index.Analyzed;
+import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.Script;
 import com.b2international.index.WithScore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,6 +37,7 @@ public class RevisionFixtures {
 	@Doc
 	public static class Data extends Revision {
 		
+		@Analyzed(analyzer=Analyzers.TOKENIZED)
 		private String field1;
 		private String field2;
 
@@ -92,6 +95,8 @@ public class RevisionFixtures {
 	}
 	
 	@Doc
+	@Script(name="doi", script="return doc.doi.value", fields={"doi"})
+	@Script(name="doiFactor", script="return doc.doi.value * params.factor", fields={"doi"})
 	public static class ScoredData extends Data implements WithScore {
 		
 		private float score = 0.0f;

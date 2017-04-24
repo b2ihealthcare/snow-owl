@@ -16,6 +16,7 @@
 package com.b2international.index;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -23,10 +24,15 @@ import java.lang.annotation.Target;
 /**
  * @since 4.7
  */
+@Repeatable(AnalyzedFields.class)
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Analyzed {
 	
+	public String alias() default "";
+	
 	public Analyzers analyzer() default Analyzers.DEFAULT;
+	
+	public Analyzers searchAnalyzer() default Analyzers.INDEX;
 	
 }

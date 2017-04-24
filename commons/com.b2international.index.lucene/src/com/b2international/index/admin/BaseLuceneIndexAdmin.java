@@ -43,9 +43,11 @@ import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.util.QueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.index.Analyzed;
 import com.b2international.index.AnalyzerImpls;
 import com.b2international.index.Analyzers;
 import com.b2international.index.IndexClientFactory;
@@ -74,6 +76,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	private final AtomicBoolean open = new AtomicBoolean(false);
 	private final Mappings mappings;
 	private final Map<String, Object> settings;
+	private final Logger log;
 	
 	private Closer closer;
 	private Directory directory;
@@ -82,6 +85,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	private ExecutorService executor;
 	private TransactionLog tlog;
 	private ReentrantLock lock = new ReentrantLock();
+	private QueryBuilder queryBuilder;
 	
 	protected BaseLuceneIndexAdmin(String name, Mappings mappings) {
 		this(name, mappings, Maps.<String, Object>newHashMap());
@@ -90,6 +94,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	protected BaseLuceneIndexAdmin(String name, Mappings mappings, Map<String, Object> settings) {
 		this.name = name;
 		this.mappings = mappings;
+		this.log = LoggerFactory.getLogger(String.format("index.%s", name));
 		
 		// init default settings
 		this.settings = newHashMap(settings);
@@ -101,12 +106,12 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 			this.settings.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL);
 		}
 		
-		if (!this.settings.containsKey(IndexClientFactory.LOG_KEY)) {
-			this.settings.put(IndexClientFactory.LOG_KEY, LoggerFactory.getLogger(String.format("index.%s", name)));
-		}
-		
 		if (!this.settings.containsKey(IndexClientFactory.SLOW_LOG_KEY)) {
 			this.settings.put(IndexClientFactory.SLOW_LOG_KEY, new SlowLogConfig(this.settings));
+		}
+		
+		if (!this.settings.containsKey(IndexClientFactory.RESULT_WINDOW_KEY)) {
+			this.settings.put(IndexClientFactory.RESULT_WINDOW_KEY, IndexClientFactory.DEFAULT_RESULT_WINDOW);
 		}
 	}
 	
@@ -117,14 +122,19 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	}
 	
 	@Override
-	public Logger log() {
-		return (Logger) settings().get(IndexClientFactory.LOG_KEY);
+	public final Logger log() {
+		return log;
 	}
 
 	@Override
 	public IndexWriter getWriter() {
 		ensureOpen();
 		return writer;
+	}
+	
+	@Override
+	public final QueryBuilder getQueryBuilder() {
+		return queryBuilder;
 	}
 	
 	@Override
@@ -166,6 +176,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 			closer.register(directory);
 			
 			writer = new IndexWriter(directory, createConfig(false));
+			queryBuilder = new QueryBuilder(getSearchAnalyzer());
 			closer.register(writer);
 			
 			tlog = createTransactionlog(writer.getCommitData());
@@ -224,18 +235,34 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 
 	private IndexWriterConfig createConfig(boolean clean) {
 		// TODO configurable analyzer and options
-		final IndexWriterConfig config = new IndexWriterConfig(getDefaultAnalyzer());
+		final IndexWriterConfig config = new IndexWriterConfig(getIndexAnalyzer());
 		config.setOpenMode(clean ? OpenMode.CREATE : OpenMode.CREATE_OR_APPEND);
 		return config;
 	}
 	
-	private Analyzer getDefaultAnalyzer() {
+	private Analyzer getIndexAnalyzer() {
 		final Map<String, Analyzer> fieldAnalyzers = newHashMap();
 		for (DocumentMapping mapping : mappings.getMappings()) {
-			for (Entry<String, Analyzers> entry : mapping.getAnalyzedFields().entrySet()) {
-				final Analyzers analyzer = entry.getValue();
+			for (Entry<String, Analyzed> entry : mapping.getAnalyzedFields().entrySet()) {
+				final Analyzers analyzer = entry.getValue().analyzer();
 				if (Analyzers.DEFAULT != analyzer) {
 					fieldAnalyzers.put(entry.getKey(), AnalyzerImpls.getAnalyzer(analyzer));
+				}
+			}
+		}
+		return new PerFieldAnalyzerWrapper(AnalyzerImpls.DEFAULT, fieldAnalyzers);
+	}
+	
+	private Analyzer getSearchAnalyzer() {
+		final Map<String, Analyzer> fieldAnalyzers = newHashMap();
+		for (DocumentMapping mapping : mappings.getMappings()) {
+			for (Entry<String, Analyzed> entry : mapping.getAnalyzedFields().entrySet()) {
+				final Analyzers indexAnalyzer = entry.getValue().analyzer();
+				final Analyzers searchAnalyzer = entry.getValue().searchAnalyzer();
+				if (Analyzers.INDEX == searchAnalyzer) {
+					fieldAnalyzers.put(entry.getKey(), AnalyzerImpls.getAnalyzer(indexAnalyzer));
+				} else {
+					fieldAnalyzers.put(entry.getKey(), AnalyzerImpls.getAnalyzer(searchAnalyzer));
 				}
 			}
 		}

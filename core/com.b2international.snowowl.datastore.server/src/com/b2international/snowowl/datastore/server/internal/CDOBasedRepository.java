@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.internal;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -42,7 +43,6 @@ import com.b2international.index.IndexRead;
 import com.b2international.index.Indexes;
 import com.b2international.index.Searcher;
 import com.b2international.index.mapping.Mappings;
-import com.b2international.index.query.slowlog.SlowLogConfig;
 import com.b2international.index.revision.DefaultRevisionIndex;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranchProvider;
@@ -72,6 +72,7 @@ import com.b2international.snowowl.datastore.commitinfo.CommitInfo;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfos;
 import com.b2international.snowowl.datastore.config.IndexConfiguration;
+import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.b2international.snowowl.datastore.index.MappingProvider;
@@ -90,7 +91,6 @@ import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchMan
 import com.b2international.snowowl.datastore.server.internal.branch.CDOMainBranchImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.InternalCDOBasedBranch;
 import com.b2international.snowowl.datastore.server.internal.merge.MergeServiceImpl;
-import com.b2international.snowowl.datastore.server.internal.review.ConceptChangesImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewManagerImpl;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -199,7 +199,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 	}
 	
 	private void initializeBranchingSupport(int mergeMaxResults) {
-		final CDOBranchManagerImpl branchManager = new CDOBranchManagerImpl(this);
+		final CDOBranchManagerImpl branchManager = new CDOBranchManagerImpl(this, service(ObjectMapper.class));
 		bind(BranchManager.class, branchManager);
 		bind(BranchReplicator.class, branchManager);
 		
@@ -220,14 +220,15 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		types.add(Review.class);
 		types.add(ReviewImpl.class);
 		types.add(ConceptChanges.class);
-		types.add(ConceptChangesImpl.class);
 		types.add(CodeSystemEntry.class);
 		types.add(CodeSystemVersionEntry.class);
 		types.addAll(getToolingTypes(toolingId));
 		types.add(CommitInfoDocument.class);
 		
-		final Map<String, Object> settings = initIndexSettings();
-		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, new Mappings(types), settings);
+		final Map<String, Object> indexSettings = newHashMap(getDelegate().service(IndexSettings.class));
+		final IndexConfiguration repositoryIndexConfiguration = getDelegate().service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();
+		indexSettings.put(IndexClientFactory.NUMBER_OF_SHARDS, repositoryIndexConfiguration.getNumberOfShards());
+		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, new Mappings(types), indexSettings);
 		final Index index = new DefaultIndex(indexClient);
 		final Provider<BranchManager> branchManager = provider(BranchManager.class);
 		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, new RevisionBranchProvider() {
@@ -252,36 +253,6 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		bind(RevisionIndex.class, revisionIndex);
 		// initialize the index
 		index.admin().create();
-	}
-
-	private Map<String, Object> initIndexSettings() {
-		final ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder();
-		builder.put(IndexClientFactory.DIRECTORY, getDelegate().getDataDirectory() + "/indexes");
-		
-		final IndexConfiguration config = service(SnowOwlConfiguration.class)
-				.getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();
-		
-		builder.put(IndexClientFactory.COMMIT_INTERVAL_KEY, config.getCommitInterval());
-		builder.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, config.getTranslogSyncInterval());
-		
-		final SlowLogConfig slowLog = createSlowLogConfig(config);
-		builder.put(IndexClientFactory.SLOW_LOG_KEY, slowLog);
-		
-		return builder.build();
-	}
-
-	private SlowLogConfig createSlowLogConfig(final IndexConfiguration config) {
-		final ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder();
-		builder.put(SlowLogConfig.FETCH_DEBUG_THRESHOLD, config.getFetchDebugThreshold());
-		builder.put(SlowLogConfig.FETCH_INFO_THRESHOLD, config.getFetchInfoThreshold());
-		builder.put(SlowLogConfig.FETCH_TRACE_THRESHOLD, config.getFetchTraceThreshold());
-		builder.put(SlowLogConfig.FETCH_WARN_THRESHOLD, config.getFetchWarnThreshold());
-		builder.put(SlowLogConfig.QUERY_DEBUG_THRESHOLD, config.getQueryDebugThreshold());
-		builder.put(SlowLogConfig.QUERY_INFO_THRESHOLD, config.getQueryInfoThreshold());
-		builder.put(SlowLogConfig.QUERY_TRACE_THRESHOLD, config.getQueryTraceThreshold());
-		builder.put(SlowLogConfig.QUERY_WARN_THRESHOLD, config.getQueryWarnThreshold());
-		
-		return new SlowLogConfig(builder.build());
 	}
 
 	private Collection<Class<?>> getToolingTypes(String toolingId) {

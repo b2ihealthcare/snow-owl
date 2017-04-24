@@ -21,6 +21,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import java.util.Collection;
 import java.util.Map;
 
+import com.b2international.index.query.Query;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -62,6 +63,14 @@ public final class Mappings {
 			}
 		}
 		return Iterables.getOnlyElement(mappings);
+	}
+	
+	public DocumentMapping getDocumentMapping(Query<?> query) {
+		if (query.getParentType() != null) {
+			return getMapping(query.getParentType()).getNestedMapping(query.getFrom());
+		} else {
+			return getMapping(query.getFrom());
+		}
 	}
 
 }

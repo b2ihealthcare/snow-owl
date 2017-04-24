@@ -2,14 +2,14 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: B2i Groovy Commons
 Bundle-SymbolicName: com.b2international.commons.groovy;singleton:=true
-Bundle-Version: 5.9.0
+Bundle-Version: 5.10.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.b2international.commons.groovy.classloader,com.b2i
  nternational.commons.groovy.transform
 Bundle-ClassPath: .
 Require-Bundle: org.codehaus.groovy;bundle-version="[2.0.7,2.1.0)",
- com.google.guava;bundle-version="[15.0.0,16.0.0)",
+ com.google.guava;bundle-version="[18.0.0,19.0.0)",
  org.eclipse.jdt.groovy.core,
  org.eclipse.core.resources,
  org.eclipse.jdt.core,

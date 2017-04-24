@@ -16,28 +16,31 @@
 package com.b2international.index;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newTreeSet;
 import static org.junit.Assert.assertArrayEquals;
 
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.PrimitiveIterator;
 import java.util.Random;
-import java.util.SortedSet;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
 import com.b2international.index.query.Expressions;
-import com.b2international.index.query.FieldScoreFunction;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
+import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -46,6 +49,8 @@ import com.google.common.collect.Lists;
  */
 public class SortIndexTest extends BaseIndexTest {
 
+	private static final int NUM_DOCS = 1000;
+
 	@Override
 	protected Collection<Class<?>> getTypes() {
 		return ImmutableList.<Class<?>>of(Data.class);
@@ -53,326 +58,302 @@ public class SortIndexTest extends BaseIndexTest {
 
 	@Test
 	public void sortStringField() throws Exception {
-		final SortedSet<String> ordered = newTreeSet(); 
+		final TreeSet<String> orderedItems = newTreeSet();
+		final Map<String, Data> documents = newHashMap(); 
 
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < NUM_DOCS; i++) {
 			String item = null;
-			while (item == null || ordered.contains(item)) {
+			while (item == null || orderedItems.contains(item)) {
 				item = RandomStringUtils.randomAlphabetic(10);
 			}
-			ordered.add(item);
+			orderedItems.add(item);
+			
 			final Data data = new Data();
 			data.setField1(item); 
-			indexDocument(Integer.toString(i), data);
+			documents.put(Integer.toString(i), data);
 		}
 
+		indexDocuments(documents);
+		
 		final Query<Data> ascendingQuery = Query.select(Data.class)
 				.where(Expressions.matchAll())
+				.limit(NUM_DOCS)
 				.sortBy(SortBy.field("field1", Order.ASC))
 				.build();
 
-		final Hits<Data> ascendingHits = search(ascendingQuery);
-		final List<String> ascendingFields = FluentIterable.from(ascendingHits).transform(data -> data.getField1()).toList();
-		assertArrayEquals(Iterables.toArray(ordered, String.class), Iterables.toArray(ascendingFields, String.class));
-
+		checkDocumentOrder(ascendingQuery, data -> data.getField1(), orderedItems, String.class);
+		
 		final Query<Data> descendingQuery = Query.select(Data.class)
 				.where(Expressions.matchAll())
+				.limit(NUM_DOCS)
 				.sortBy(SortBy.field("field1", Order.DESC))
 				.build();
 
-		final Hits<Data> descendingHits = search(descendingQuery);
-		final SortedSet<String> descendingOrdered = ImmutableSortedSet.copyOf(ordered).descendingSet();
-		final List<String> descendingFields = FluentIterable.from(descendingHits).transform(data -> data.getField1()).toList();
-		assertArrayEquals(Iterables.toArray(descendingOrdered, String.class), Iterables.toArray(descendingFields, String.class));
+		checkDocumentOrder(descendingQuery, data -> data.getField1(), orderedItems.descendingSet(), String.class);
 	}
 
 	@Test
 	public void sortAnalyzedField() throws Exception {
-		final SortedSet<String> ordered = newTreeSet(); 
+		final TreeSet<String> orderedItems = newTreeSet();
+		final Map<String, Data> documents = newHashMap(); 
 
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < NUM_DOCS; i++) {
 			String item = null;
-			while (item == null || ordered.contains(item)) {
+			while (item == null || orderedItems.contains(item)) {
 				item = RandomStringUtils.randomAlphabetic(10);
 			}
-			ordered.add(item);
+			orderedItems.add(item);
+			
 			final Data data = new Data();
-			data.setAnalyzedField(item); 
-			indexDocument(Integer.toString(i), data);
+			data.setAnalyzedField(item);
+			documents.put(Integer.toString(i), data);
 		}
+		
+		indexDocuments(documents);
 
 		final Query<Data> ascendingQuery = Query.select(Data.class)
 				.where(Expressions.matchAll())
+				.limit(NUM_DOCS)
 				.sortBy(SortBy.field("analyzedField", Order.ASC))
 				.build();
-
-		final Hits<Data> ascendingHits = search(ascendingQuery);
-		final List<String> ascendingFields = FluentIterable.from(ascendingHits).transform(data -> data.getAnalyzedField()).toList();
-		assertArrayEquals(Iterables.toArray(ordered, String.class), Iterables.toArray(ascendingFields, String.class));
+		
+		checkDocumentOrder(ascendingQuery, data -> data.getAnalyzedField(), orderedItems, String.class);
 
 		final Query<Data> descendingQuery = Query.select(Data.class)
 				.where(Expressions.matchAll())
+				.limit(NUM_DOCS)
 				.sortBy(SortBy.field("analyzedField", Order.DESC))
 				.build();
 
-		final Hits<Data> descendingHits = search(descendingQuery);
-		final SortedSet<String> descendingOrdered = ImmutableSortedSet.copyOf(ordered).descendingSet();
-		final List<String> descendingFields = FluentIterable.from(descendingHits).transform(data -> data.getAnalyzedField()).toList();
-		assertArrayEquals(Iterables.toArray(descendingOrdered, String.class), Iterables.toArray(descendingFields, String.class));
+		checkDocumentOrder(descendingQuery, data -> data.getAnalyzedField(), orderedItems.descendingSet(), String.class);
 	}
 
 	@Test
 	public void sortBigDecimalField() throws Exception {
 		final PrimitiveIterator.OfDouble doubleIterator = new Random().doubles().iterator();
-		final SortedSet<BigDecimal> ordered = newTreeSet(); 
+		final TreeSet<BigDecimal> orderedItems = newTreeSet();
+		final Map<String, Data> documents = newHashMap();
 
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < NUM_DOCS; i++) {
 			BigDecimal item = null;
-			while (item == null || ordered.contains(item)) {
+			while (item == null || orderedItems.contains(item)) {
 				item = BigDecimal.valueOf(doubleIterator.nextDouble()); 
 			}
-			ordered.add(item);
+			orderedItems.add(item);
+			
 			final Data data = new Data();
 			data.setBigDecimalField(item); 
-			indexDocument(Integer.toString(i), data);
+			documents.put(Integer.toString(i), data);
 		}
+		
+		indexDocuments(documents);
 
 		final Query<Data> ascendingQuery = Query.select(Data.class)
 				.where(Expressions.matchAll())
+				.limit(NUM_DOCS)
 				.sortBy(SortBy.field("bigDecimalField", Order.ASC))
 				.build();
 
-		final Hits<Data> ascendingHits = search(ascendingQuery);
-		final List<BigDecimal> ascendingFields = FluentIterable.from(ascendingHits).transform(data -> data.getBigDecimalField()).toList();
-		assertArrayEquals(Iterables.toArray(ordered, BigDecimal.class), Iterables.toArray(ascendingFields, BigDecimal.class));
+		checkDocumentOrder(ascendingQuery, data -> data.getBigDecimalField(), orderedItems, BigDecimal.class);
 
 		final Query<Data> descendingQuery = Query.select(Data.class)
 				.where(Expressions.matchAll())
+				.limit(NUM_DOCS)
 				.sortBy(SortBy.field("bigDecimalField", Order.DESC))
 				.build();
 
-		final Hits<Data> descendingHits = search(descendingQuery);
-		final SortedSet<BigDecimal> descendingOrdered = ImmutableSortedSet.copyOf(ordered).descendingSet();
-		final List<BigDecimal> descendingFields = FluentIterable.from(descendingHits).transform(data -> data.getBigDecimalField()).toList();
-		assertArrayEquals(Iterables.toArray(descendingOrdered, BigDecimal.class), Iterables.toArray(descendingFields, BigDecimal.class));
+		checkDocumentOrder(descendingQuery, data -> data.getBigDecimalField(), orderedItems.descendingSet(), BigDecimal.class);
 	}
 
 	@Test
 	public void sortFloatField() throws Exception {
 		final PrimitiveIterator.OfDouble doubleIterator = new Random().doubles().iterator();
-		final SortedSet<Float> ordered = newTreeSet(); 
+		final TreeSet<Float> orderedItems = newTreeSet();
+		final Map<String, Data> documents = newHashMap();
 
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < NUM_DOCS; i++) {
 			float item = 0.0f;
-			while (item == 0.0f || ordered.contains(item)) {
+			while (item == 0.0f || orderedItems.contains(item)) {
 				item = (float) doubleIterator.nextDouble(); 
 			}
-			ordered.add(item);
+			orderedItems.add(item);
+			
 			final Data data = new Data();
 			data.setFloatField(item); 
-			indexDocument(Integer.toString(i), data);
+			documents.put(Integer.toString(i), data);
 		}
+		
+		indexDocuments(documents);
 
 		final Query<Data> ascendingQuery = Query.select(Data.class)
 				.where(Expressions.matchAll())
+				.limit(NUM_DOCS)
 				.sortBy(SortBy.field("floatField", Order.ASC))
 				.build();
 
-		final Hits<Data> ascendingHits = search(ascendingQuery);
-		final List<Float> ascendingFields = FluentIterable.from(ascendingHits).transform(data -> data.getFloatField()).toList();
-		assertArrayEquals(Iterables.toArray(ordered, Float.class), Iterables.toArray(ascendingFields, Float.class));
+		checkDocumentOrder(ascendingQuery, data -> data.getFloatField(), orderedItems, Float.class);
 
 		final Query<Data> descendingQuery = Query.select(Data.class)
 				.where(Expressions.matchAll())
+				.limit(NUM_DOCS)
 				.sortBy(SortBy.field("floatField", Order.DESC))
 				.build();
 
-		final Hits<Data> descendingHits = search(descendingQuery);
-		final SortedSet<Float> descendingOrdered = ImmutableSortedSet.copyOf(ordered).descendingSet();
-		final List<Float> descendingFields = FluentIterable.from(descendingHits).transform(data -> data.getFloatField()).toList();
-		assertArrayEquals(Iterables.toArray(descendingOrdered, Float.class), Iterables.toArray(descendingFields, Float.class));
+		checkDocumentOrder(descendingQuery, data -> data.getFloatField(), orderedItems.descendingSet(), Float.class);
 	}
 
 	@Test
 	public void sortLongField() throws Exception {
 		final PrimitiveIterator.OfLong longIterator = new Random().longs().iterator();
-		final SortedSet<Long> ordered = newTreeSet(); 
-
-		for (int i = 0; i < 20; i++) {
+		final TreeSet<Long> orderedItems = newTreeSet(); 
+		final Map<String, Data> documents = newHashMap();
+		
+		for (int i = 0; i < NUM_DOCS; i++) {
 			long item = 0L;
-			while (item == 0L || ordered.contains(item)) {
+			while (item == 0L || orderedItems.contains(item)) {
 				item = longIterator.nextLong(); 
 			}
-			ordered.add(item);
+			orderedItems.add(item);
+			
 			final Data data = new Data();
 			data.setLongField(item); 
-			indexDocument(Integer.toString(i), data);
+			documents.put(Integer.toString(i), data);
 		}
+		
+		indexDocuments(documents);
 
 		final Query<Data> ascendingQuery = Query.select(Data.class)
 				.where(Expressions.matchAll())
+				.limit(NUM_DOCS)
 				.sortBy(SortBy.field("longField", Order.ASC))
 				.build();
 
-		final Hits<Data> ascendingHits = search(ascendingQuery);
-		final List<Long> ascendingFields = FluentIterable.from(ascendingHits).transform(data -> data.getLongField()).toList();
-		assertArrayEquals(Iterables.toArray(ordered, Long.class), Iterables.toArray(ascendingFields, Long.class));
-
+		checkDocumentOrder(ascendingQuery, data -> data.getLongField(), orderedItems, Long.class);
+		
 		final Query<Data> descendingQuery = Query.select(Data.class)
 				.where(Expressions.matchAll())
+				.limit(NUM_DOCS)
 				.sortBy(SortBy.field("longField", Order.DESC))
 				.build();
 
-		final Hits<Data> descendingHits = search(descendingQuery);
-		final SortedSet<Long> descendingOrdered = ImmutableSortedSet.copyOf(ordered).descendingSet();
-		final List<Long> descendingFields = FluentIterable.from(descendingHits).transform(data -> data.getLongField()).toList();
-		assertArrayEquals(Iterables.toArray(descendingOrdered, Long.class), Iterables.toArray(descendingFields, Long.class));
+		checkDocumentOrder(descendingQuery, data -> data.getLongField(), orderedItems.descendingSet(), Long.class);
 	}
 
 	@Test
 	public void sortIntField() throws Exception {
 		final PrimitiveIterator.OfInt intIterator = new Random().ints().iterator();
-		final SortedSet<Integer> ordered = newTreeSet(); 
-
-		for (int i = 0; i < 20; i++) {
+		final TreeSet<Integer> orderedItems = newTreeSet(); 
+		final Map<String, Data> documents = newHashMap();
+		
+		for (int i = 0; i < NUM_DOCS; i++) {
 			int item = 0;
-			while (item == 0 || ordered.contains(item)) {
+			while (item == 0 || orderedItems.contains(item)) {
 				item = intIterator.nextInt(); 
 			}
-			ordered.add(item);
+			orderedItems.add(item);
+			
 			final Data data = new Data();
 			data.setIntField(item); 
-			indexDocument(Integer.toString(i), data);
+			documents.put(Integer.toString(i), data);
 		}
 
+		indexDocuments(documents);
+		
 		final Query<Data> ascendingQuery = Query.select(Data.class)
 				.where(Expressions.matchAll())
+				.limit(NUM_DOCS)
 				.sortBy(SortBy.field("intField", Order.ASC))
 				.build();
-
-		final Hits<Data> ascendingHits = search(ascendingQuery);
-		final List<Integer> ascendingFields = FluentIterable.from(ascendingHits).transform(data -> data.getIntField()).toList();
-		assertArrayEquals(Iterables.toArray(ordered, Integer.class), Iterables.toArray(ascendingFields, Integer.class));
-
+		
+		checkDocumentOrder(ascendingQuery, data -> data.getIntField(), orderedItems, Integer.class);
+		
 		final Query<Data> descendingQuery = Query.select(Data.class)
 				.where(Expressions.matchAll())
+				.limit(NUM_DOCS)
 				.sortBy(SortBy.field("intField", Order.DESC))
 				.build();
-
-		final Hits<Data> descendingHits = search(descendingQuery);
-		final SortedSet<Integer> descendingOrdered = ImmutableSortedSet.copyOf(ordered).descendingSet();
-		final List<Integer> descendingFields = FluentIterable.from(descendingHits).transform(data -> data.getIntField()).toList();
-		assertArrayEquals(Iterables.toArray(descendingOrdered, Integer.class), Iterables.toArray(descendingFields, Integer.class));
+		
+		checkDocumentOrder(descendingQuery, data -> data.getIntField(), orderedItems.descendingSet(), Integer.class);
 	}
 
 	@Test
 	public void sortShortField() throws Exception {
 		final PrimitiveIterator.OfInt intIterator = new Random().ints().iterator();
-		final SortedSet<Short> ordered = newTreeSet(); 
-
-		for (short i = 0; i < 20; i++) {
+		final TreeSet<Short> orderedItems = newTreeSet(); 
+		final Map<String, Data> documents = newHashMap();
+		
+		for (short i = 0; i < NUM_DOCS; i++) {
 			short item = 0;
-			while (item == 0 || ordered.contains(item)) {
+			while (item == 0 || orderedItems.contains(item)) {
 				item = (short) intIterator.nextInt(); 
 			}
-			ordered.add(item);
+			orderedItems.add(item);
+			
 			final Data data = new Data();
 			data.setShortField(item); 
-			indexDocument(Integer.toString(i), data);
+			documents.put(Integer.toString(i), data);
 		}
+		
+		indexDocuments(documents);
 
 		final Query<Data> ascendingQuery = Query.select(Data.class)
 				.where(Expressions.matchAll())
+				.limit(NUM_DOCS)
 				.sortBy(SortBy.field("shortField", Order.ASC))
 				.build();
 
-		final Hits<Data> ascendingHits = search(ascendingQuery);
-		final List<Short> ascendingFields = FluentIterable.from(ascendingHits).transform(data -> data.getShortField()).toList();
-		assertArrayEquals(Iterables.toArray(ordered, Short.class), Iterables.toArray(ascendingFields, Short.class));
+		checkDocumentOrder(ascendingQuery, data -> data.getShortField(), orderedItems, Short.class);
 
 		final Query<Data> descendingQuery = Query.select(Data.class)
 				.where(Expressions.matchAll())
+				.limit(NUM_DOCS)
 				.sortBy(SortBy.field("shortField", Order.DESC))
 				.build();
 
-		final Hits<Data> descendingHits = search(descendingQuery);
-		final SortedSet<Short> descendingOrdered = ImmutableSortedSet.copyOf(ordered).descendingSet();
-		final List<Short> descendingFields = FluentIterable.from(descendingHits).transform(data -> data.getShortField()).toList();
-		assertArrayEquals(Iterables.toArray(descendingOrdered, Short.class), Iterables.toArray(descendingFields, Short.class));
+		checkDocumentOrder(descendingQuery, data -> data.getShortField(), orderedItems.descendingSet(), Short.class);
 	}
 
 	@Test
-	public void sortDocOrder() throws Exception {
-		final List<String> ordered = newArrayList(); 
-		
-		for (int i = 0; i < 20; i++) {
-			String item = null;
-			while (item == null || ordered.contains(item)) {
-				item = RandomStringUtils.randomAlphabetic(10);
-			}
-			ordered.add(item);
-			final Data data = new Data();
-			data.setField1(item); 
-			indexDocument(Integer.toString(i), data);
-		}
-		
-		final Query<Data> ascendingQuery = Query.select(Data.class)
-				.where(Expressions.matchAll())
-				.sortBy(SortBy.DOC)
-				.build();
-		
-		final Hits<Data> ascendingHits = search(ascendingQuery);
-		final List<String> ascendingFields = FluentIterable.from(ascendingHits).transform(data -> data.getField1()).toList();
-		assertArrayEquals(Iterables.toArray(ordered, String.class), Iterables.toArray(ascendingFields, String.class));
-		
-		final Query<Data> descendingQuery = Query.select(Data.class)
-				.where(Expressions.matchAll())
-				.sortBy(SortBy.field(SortBy.FIELD_DOC, Order.DESC))
-				.build();
-		
-		final Hits<Data> descendingHits = search(descendingQuery);
-		final List<String> descendingOrdered = Lists.reverse(ordered);
-		final List<String> descendingFields = FluentIterable.from(descendingHits).transform(data -> data.getField1()).toList();
-		assertArrayEquals(Iterables.toArray(descendingOrdered, String.class), Iterables.toArray(descendingFields, String.class));
-	}
-	
-	@Test
 	public void sortScore() throws Exception {
-		final List<String> ordered = newArrayList(); 
+		final List<String> orderedItems = newArrayList(); 
+		final Map<String, Data> documents = newHashMap();
 		
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < NUM_DOCS; i++) {
 			String item = null;
-			while (item == null || ordered.contains(item)) {
+			while (item == null || orderedItems.contains(item)) {
 				item = RandomStringUtils.randomAlphabetic(10);
 			}
-			ordered.add(item);
+			orderedItems.add(item);
+			
 			final Data data = new Data();
 			data.setField1(item); 
 			data.setFloatField(100.0f - i);
-			indexDocument(Integer.toString(i), data);
+			documents.put(Integer.toString(i), data);
 		}
 		
+		indexDocuments(documents);
+		
 		final Query<Data> descendingQuery = Query.select(Data.class)
-				.where(Expressions.customScore(
-						Expressions.matchAll(), 
-						new FieldScoreFunction("floatField")))
+				.where(Expressions.scriptScore(Expressions.matchAll(), "floatField"))
+				.limit(NUM_DOCS)
 				.sortBy(SortBy.SCORE)
 				.build();
 		
-		final Hits<Data> descendingHits = search(descendingQuery);
-		final List<String> descendingFields = FluentIterable.from(descendingHits).transform(data -> data.getField1()).toList();
-		assertArrayEquals(Iterables.toArray(ordered, String.class), Iterables.toArray(descendingFields, String.class));
+		checkDocumentOrder(descendingQuery, data -> data.getField1(), ImmutableSet.copyOf(orderedItems), String.class);
 		
 		final Query<Data> ascendingQuery = Query.select(Data.class)
-				.where(Expressions.customScore(
-						Expressions.matchAll(),  
-						new FieldScoreFunction("floatField")))
+				.where(Expressions.scriptScore(Expressions.matchAll(), "floatField"))
+				.limit(NUM_DOCS)
 				.sortBy(SortBy.field(SortBy.FIELD_SCORE, Order.ASC))
 				.build();
 		
-		final Hits<Data> ascendingHits = search(ascendingQuery);
-		final List<String> ascendingOrdered = Lists.reverse(ordered);
-		final List<String> ascendingFields = FluentIterable.from(ascendingHits).transform(data -> data.getField1()).toList();
-		assertArrayEquals(Iterables.toArray(ascendingOrdered, String.class), Iterables.toArray(ascendingFields, String.class));
+		checkDocumentOrder(ascendingQuery, data -> data.getField1(), ImmutableSet.copyOf(Lists.reverse(orderedItems)), String.class);
+	}
+
+	private <T> void checkDocumentOrder(Query<Data> query, Function<? super Data, T> hitFunction, Set<T> keySet, Class<T> clazz) {
+		final Hits<Data> hits = search(query);
+		final T[] actual = FluentIterable.from(hits).transform(hitFunction).toArray(clazz);
+		final T[] expected = Iterables.toArray(keySet, clazz);
+		assertArrayEquals(expected, actual);
 	}	
 }

@@ -26,10 +26,11 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.options.Options;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.query.Query;
+import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -67,7 +68,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	/**
 	 * Special field name for sorting based on the document's natural occurrence (document order). 
 	 */
-	public static final SortField DOC = new SortField(SortBy.FIELD_DOC, true);
+	public static final SortField DOC_ID = new SortField(DocumentMapping._ID, true);
 	
 	/**
 	 * Special field name for sorting based on the document score (relevance).
@@ -192,7 +193,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	}
 	
 	protected final ExpressionBuilder addIdFilter(ExpressionBuilder queryBuilder, Function<Collection<String>, Expression> expressionFactory) {
-		return applyIdFilter(queryBuilder, (qb, ids) -> qb.must(expressionFactory.apply(ids)));
+		return applyIdFilter(queryBuilder, (qb, ids) -> qb.filter(expressionFactory.apply(ids)));
 	}
 	
 	protected final SortBy sortBy() {
@@ -204,7 +205,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 			}
 			return builder.build();
 		} else {
-			return SortBy.DOC;
+			return SortBy.DOC_ID;
 		}		
 	}
 	

@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snowowl-parent</artifactId>
-		<version>5.9.0</version>
+		<version>5.10.0-SNAPSHOT</version>
 	</parent>
 	
 	<modules>
@@ -24,6 +24,7 @@
 		<module>com.b2international.index.api.tests</module>
 		<module>com.b2international.index.api.tests.tools</module>
 		<module>com.b2international.index.lucene</module>
+		<module>com.b2international.index.es</module>
 	</modules>
 	
 </project>

@@ -158,7 +158,6 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		// <* should eval to * MINUS parents IN (ROOT_ID)
 		if (inner instanceof Any) {
 			return Promise.immediate(Expressions.builder()
-					.must(Expressions.matchAll())
 					.mustNot(parents(Collections.singleton(IComponent.ROOT_ID)))
 					.build());
 		} else {
@@ -210,7 +209,6 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		// <!* should eval to * MINUS parents in (ROOT_ID)
 		if (innerConstraint instanceof Any) {
 			return Promise.immediate(Expressions.builder()
-					.must(Expressions.matchAll())
 					.mustNot(parents(Collections.singleton(IComponent.ROOT_ID)))
 					.build());
 		} else {
@@ -309,8 +307,8 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 						final Expression left = (Expression) innerExpressions.get(0);
 						final Expression right = (Expression) innerExpressions.get(1);
 						return Expressions.builder()
-								.must(left)
-								.must(right)
+								.filter(left)
+								.filter(right)
 								.build();
 					}
 				});
@@ -347,7 +345,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 						final Expression left = (Expression) innerExpressions.get(0);
 						final Expression right = (Expression) innerExpressions.get(1);
 						return Expressions.builder()
-								.must(left)
+								.filter(left)
 								.mustNot(right)
 								.build();
 					}

@@ -29,22 +29,29 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastP
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.datastore.id.domain.IdentifierStatus;
+import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
@@ -119,6 +126,16 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(201)
 		.header("Location", endsWith("/" + relationshipId));
+		
+		SctId relationshipSctId = SnomedRequests.identifiers().prepareGet()
+				.setComponentId(relationshipId)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync()
+				.first()
+				.get();
+			
+		assertEquals(IdentifierStatus.ASSIGNED.getSerializedName(), relationshipSctId.getStatus());
 	}
 
 	@Test

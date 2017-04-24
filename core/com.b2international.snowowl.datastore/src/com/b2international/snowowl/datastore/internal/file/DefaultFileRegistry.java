@@ -29,6 +29,8 @@ import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.file.FileRegistry;
+import com.google.common.io.ByteSink;
+import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 
 /**
@@ -61,7 +63,12 @@ public final class DefaultFileRegistry implements InternalFileRegistry {
 		}
 		
 		try {
-			Files.copy(() -> bin, file);
+			new ByteSource() {
+				@Override
+				public InputStream openStream() throws IOException {
+					return bin;
+				}
+			}.copyTo(Files.asByteSink(file));
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Failed to upload attachment of " + id, e);
 		}
@@ -72,7 +79,12 @@ public final class DefaultFileRegistry implements InternalFileRegistry {
 		final File requestedFile = getFile(id);
 		
 		try {
-			Files.copy(requestedFile, () -> out);
+			Files.asByteSource(requestedFile).copyTo(new ByteSink() {
+				@Override
+				public OutputStream openStream() throws IOException {
+					return out;
+				}
+			});
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Failed to download attachment of " + id, e); 
 		}

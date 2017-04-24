@@ -44,7 +44,6 @@ import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
-import com.google.inject.Provider;
 
 /**
  * An item identifier generation strategy that assigns item identifiers to components in a sequential
@@ -92,13 +91,13 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 		}
 
 		private SctId getLastSctId(final String namespace, final ComponentCategory category) {
-			return store.get().read(new IndexRead<SctId>() {
+			return store.read(new IndexRead<SctId>() {
 				@Override
 				public SctId execute(final Searcher index) throws IOException {
 					
 					final Expression idsByNamespaceAndType = Expressions.builder()
-							.must(SctId.Expressions.namespace(namespace))
-							.must(SctId.Expressions.partitionId(namespace, category))
+							.filter(SctId.Expressions.namespace(namespace))
+							.filter(SctId.Expressions.partitionId(namespace, category))
 							.build();
 					
 					final Hits<SctId> hits = index.search(Query.select(SctId.class)
@@ -153,11 +152,11 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 		return CompareUtils.isEmpty(namespace) ? SnomedIdentifiers.MAX_INT_ITEMID : SnomedIdentifiers.MAX_NAMESPACE_ITEMID;
 	}
 	
-	private final Provider<Index> store;
+	private final Index store;
 	private final ISnomedIdentiferReservationService reservationService;
 	private final LoadingCache<Pair<String, ComponentCategory>, ItemIdCounter> lastItemIds;
 	
-	public SequentialItemIdGenerationStrategy(final Provider<Index> store, final ISnomedIdentiferReservationService reservationService) {
+	public SequentialItemIdGenerationStrategy(final Index store, final ISnomedIdentiferReservationService reservationService) {
 		this.store = store;
 		this.reservationService = reservationService;
 		this.lastItemIds = CacheBuilder.newBuilder().build(CacheLoader.from(namespaceCategoryPair -> new ItemIdCounter(namespaceCategoryPair.getA(), namespaceCategoryPair.getB())));

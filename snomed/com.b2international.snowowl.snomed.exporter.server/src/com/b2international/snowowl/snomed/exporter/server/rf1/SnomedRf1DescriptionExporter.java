@@ -139,9 +139,9 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1CoreExporter<
 		if (!doc.isActive()) {
 			
 			Expression condition = Expressions.builder()
-					.must(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(doc.getId())))
-					.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR)))
-					.must(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(Sets.newHashSet(doc.getId())))
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Sets.newHashSet(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR)))
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
 			
 			Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(condition).build();
 						

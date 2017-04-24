@@ -142,7 +142,7 @@ public class ReviewManagerImpl implements ReviewManager {
 						
 							index.removeAll(ImmutableMap.of(
 									ReviewImpl.class, ids,
-									ConceptChangesImpl.class, ids
+									ConceptChanges.class, ids
 									));
 							
 							index.commit();
@@ -158,8 +158,8 @@ public class ReviewManagerImpl implements ReviewManager {
 
 		private Expression buildQuery(ReviewStatus status, long beforeTimestamp) {
 			return Expressions.builder()
-					.must(Expressions.exactMatch(ReviewImpl.Fields.STATUS, status.toString()))
-					.must(Expressions.matchRange(ReviewImpl.Fields.LAST_UPDATED, null, ISO8601Utils.format(new Date(beforeTimestamp))))
+					.filter(Expressions.exactMatch(ReviewImpl.Fields.STATUS, status.toString()))
+					.filter(Expressions.matchRange(ReviewImpl.Fields.LAST_UPDATED, null, ISO8601Utils.format(new Date(beforeTimestamp))))
 					.build();
 		}
 	}
@@ -221,8 +221,8 @@ public class ReviewManagerImpl implements ReviewManager {
 				final Hits<ReviewImpl> affectedReviews = index.searcher().search(
 						Query.select(ReviewImpl.class)
 						.where(Expressions.builder()
-								.must(Expressions.nestedMatch("source", Expressions.exactMatch("path", path)))
-								.must(Expressions.nestedMatch("target", Expressions.exactMatch("path", path)))
+								.should(Expressions.nestedMatch("source", Expressions.exactMatch("path", path)))
+								.should(Expressions.nestedMatch("target", Expressions.exactMatch("path", path)))
 								.build()
 								)
 						.limit(Integer.MAX_VALUE)
@@ -377,7 +377,7 @@ public class ReviewManagerImpl implements ReviewManager {
 			}
 		}
 		
-		final ConceptChangesImpl convertedChanges = new ConceptChangesImpl(id, newConcepts, changedConcepts, deletedConcepts);
+		final ConceptChanges convertedChanges = new ConceptChanges(id, newConcepts, changedConcepts, deletedConcepts);
 
 		try {
 			getReview(id);
@@ -415,7 +415,7 @@ public class ReviewManagerImpl implements ReviewManager {
 		final ConceptChanges conceptChanges = store.read(new IndexRead<ConceptChanges>() {
 			@Override
 			public ConceptChanges execute(Searcher index) throws IOException {
-				return index.get(ConceptChangesImpl.class, id);
+				return index.get(ConceptChanges.class, id);
 			}
 		});
 
@@ -432,7 +432,7 @@ public class ReviewManagerImpl implements ReviewManager {
 			public Review execute(Writer index) throws IOException {
 				index.removeAll(ImmutableMap.of(
 						ReviewImpl.class, Collections.singleton(review.id()),
-						ConceptChangesImpl.class, Collections.singleton(review.id())));
+						ConceptChanges.class, Collections.singleton(review.id())));
 				index.commit();
 				return review;
 			}

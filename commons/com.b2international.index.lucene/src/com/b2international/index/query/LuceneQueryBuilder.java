@@ -18,31 +18,26 @@ package com.b2international.index.query;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
-import org.apache.hadoop.hbase.util.Order;
-import org.apache.hadoop.hbase.util.OrderedBytes;
-import org.apache.hadoop.hbase.util.SimplePositionedMutableByteRange;
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.CustomScoreQuery;
 import org.apache.lucene.queries.TermsQuery;
 import org.apache.lucene.queries.function.FunctionQuery;
-import org.apache.lucene.queries.function.FunctionValues;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.lucene.queries.function.valuesource.BytesRefFieldSource;
-import org.apache.lucene.queries.function.valuesource.DualFloatFunction;
 import org.apache.lucene.queries.function.valuesource.FloatFieldSource;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser.Operator;
+import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BoostQuery;
@@ -61,17 +56,16 @@ import org.apache.lucene.search.join.ToChildBlockJoinQuery;
 import org.apache.lucene.search.join.ToParentBlockJoinQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.QueryBuilder;
-import org.apache.lucene.util.automaton.LevenshteinAutomata;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
-import com.b2international.index.AnalyzerImpls;
-import com.b2international.index.compat.Highlighting;
+import com.b2international.index.Script;
 import com.b2international.index.compat.TextConstants;
-import com.b2international.index.json.Index;
 import com.b2international.index.json.JsonDocumentMapping;
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.TextPredicate.MatchType;
+import com.b2international.index.util.DecimalUtils;
+import com.b2international.index.util.NumericClassUtils;
 import com.google.common.collect.Queues;
 
 /**
@@ -83,8 +77,16 @@ public final class LuceneQueryBuilder {
 	
 	private final Deque<Query> deque = Queues.newLinkedBlockingDeque();
 	private final DocumentMapping mapping;
+	private final QueryBuilder luceneQueryBuilder;
 	
-	public LuceneQueryBuilder(DocumentMapping mapping) {
+	/**
+	 * Set to {@code true} if at least one predicate is seen that affects query scoring.
+	 */
+	private boolean needsScoring;
+
+	
+	public LuceneQueryBuilder(DocumentMapping mapping, QueryBuilder luceneQueryBuilder) {
+		this.luceneQueryBuilder = luceneQueryBuilder;
 		this.mapping = checkNotNull(mapping, "mapping");
 	}
 
@@ -94,10 +96,31 @@ public final class LuceneQueryBuilder {
 	
 	public org.apache.lucene.search.Query build(Expression expression) {
 		checkNotNull(expression, "expression");
-		// always filter by type
-		visit(Expressions.builder().must(mapping.matchType()).must(expression).build());
+		visit(expression);
+		
 		if (deque.size() == 1) {
-			return deque.pop();
+			Query convertedQuery = deque.pop();
+			BooleanQuery.Builder builder = new BooleanQuery.Builder();
+			
+			if (convertedQuery instanceof BooleanQuery) {
+				BooleanQuery booleanQuery = (BooleanQuery) convertedQuery;
+				
+				for (BooleanClause clause : booleanQuery.clauses()) {
+					builder.add(clause);
+				}
+				builder.setDisableCoord(booleanQuery.isCoordDisabled());
+				builder.setMinimumNumberShouldMatch(booleanQuery.getMinimumNumberShouldMatch());
+			} else {
+				if (needsScoring) {
+					builder.add(convertedQuery, Occur.MUST);
+				} else {
+					builder.add(new MatchAllDocsQuery(), Occur.MUST);
+					builder.add(convertedQuery, Occur.FILTER);
+				}
+				builder.setDisableCoord(true);
+			}
+			builder.add(JsonDocumentMapping.matchType(mapping.typeAsString()), Occur.FILTER);
+			return builder.build();
 		} else {
 			throw newIllegalStateException();
 		}
@@ -143,8 +166,8 @@ public final class LuceneQueryBuilder {
 			visit((DisMaxPredicate) expression);
 		} else if (expression instanceof BoostPredicate) {
 			visit((BoostPredicate) expression);
-		} else if (expression instanceof CustomScoreExpression) {
-			visit((CustomScoreExpression) expression);
+		} else if (expression instanceof ScriptScoreExpression) {
+			visit((ScriptScoreExpression) expression);
 		} else if (expression instanceof DecimalPredicate) {
 			visit((DecimalPredicate) expression);
 		} else if (expression instanceof DecimalRangePredicate) {
@@ -156,51 +179,72 @@ public final class LuceneQueryBuilder {
 		}
 	}
 	
-	private void visit(CustomScoreExpression expression) {
+	private void visit(ScriptScoreExpression expression) {
+		final Script scoreScript = mapping.getScript(expression.scriptName());
 		final Expression inner = expression.expression();
 		visit(inner);
 		final Query innerQuery = deque.pop();
-		final CustomScoreQuery query = new CustomScoreQuery(new ConstantScoreQuery(innerQuery), new FunctionQuery(visit(expression.func())));
-		query.setStrict(expression.isStrict());
+		final CustomScoreQuery query = new CustomScoreQuery(
+			new ConstantScoreQuery(innerQuery), 
+			new FunctionQuery(visit(innerQuery, scoreScript, expression.getParams()))
+		);
+		query.setStrict(true);
+		needsScoring = true;
 		deque.push(query);
 	}
 	
-	private ValueSource visit(final ScoreFunction func) {
-		if (func instanceof DualScoreFunction) {
-			final DualScoreFunction<?, ?> f = (DualScoreFunction<?, ?>) func;
-			final String firstFieldName = f.getFirst();
-			final Class<?> firstFieldType = mapping.getFieldType(firstFieldName);
-			final String secondFieldName = f.getSecond();
-			final Class<?> secondFieldType = mapping.getFieldType(secondFieldName);
-			// only this combination is supported at the moment
-			if (String.class == firstFieldType && float.class == secondFieldType) {
-				final DualScoreFunction<String, Float> function = (DualScoreFunction<String, Float>) func;
-				return new DualFloatFunction(new BytesRefFieldSource(firstFieldName), new FloatFieldSource(secondFieldName)) {
-					@Override
-					protected String name() {
-						return f.name();
-					}
-					
-					@Override
-					protected float func(int doc, FunctionValues aVals, FunctionValues bVals) {
-						final String firstValue = aVals.strVal(doc);
-						final float secondValue = bVals.floatVal(doc);
-						return function.compute(firstValue, secondValue);
-					}
-				};
-			}
-		} else if (func instanceof FieldScoreFunction) {
-			final String field = ((FieldScoreFunction) func).getField();
+	private ValueSource visit(final Query inner, final Script script, final Map<String, ? extends Object> scriptParams) {
+		Map<String, ValueSource> valueSources = newHashMap();
+		valueSources.put("_score", new ScoreValueSource(inner));
+		for (String field : script.fields()) {
 			final Class<?> fieldType = mapping.getFieldType(field);
-			if (fieldType == float.class || fieldType == Float.class) {
-				return new FloatFieldSource(field); 
+			if (String.class.isAssignableFrom(fieldType)) {
+				valueSources.put(field, new BytesRefFieldSource(field));
+			} else if (NumericClassUtils.isFloat(fieldType)) {
+				valueSources.put(field, new FloatFieldSource(field));
+			} else {
+				throw new UnsupportedOperationException("Unsupported field type in custom score script " + script.name() + " - " + field);
 			}
 		}
-		throw new UnsupportedOperationException("Not supported score function: " + func);
+		
+		return new CustomScoreValueSource(script.script(), scriptParams, valueSources);
 	}
+//		if (func instanceof DualScoreFunction) {
+//			final DualScoreFunction<?, ?> f = (DualScoreFunction<?, ?>) func;
+//			final String firstFieldName = f.getFirst();
+//			final Class<?> firstFieldType = mapping.getFieldType(firstFieldName);
+//			final String secondFieldName = f.getSecond();
+//			final Class<?> secondFieldType = mapping.getFieldType(secondFieldName);
+			// only this combination is supported at the moment
+//			if (String.class == firstFieldType && float.class == secondFieldType) {
+//				@SuppressWarnings("unchecked") 
+//				final DualScoreFunction<String, Float> function = (DualScoreFunction<String, Float>) func;
+//				return new DualFloatFunction(new BytesRefFieldSource(firstFieldName), new FloatFieldSource(secondFieldName)) {
+//					@Override
+//					protected String name() {
+//						return f.name();
+//					}
+//					
+//					@Override
+//					protected float func(int doc, FunctionValues aVals, FunctionValues bVals) {
+//						final String firstValue = aVals.strVal(doc);
+//						final float secondValue = bVals.floatVal(doc);
+//						return function.compute(firstValue, secondValue);
+//					}
+//				};
+//			}
+//		} else if (func instanceof FieldScoreFunction) {
+//			final String field = ((FieldScoreFunction) func).getField();
+//			final Class<?> fieldType = mapping.getFieldType(field);
+//			if (fieldType == float.class || fieldType == Float.class) {
+//				return new FloatFieldSource(field); 
+//			}
+//		}
+//		throw new UnsupportedOperationException("Not supported score function: " + func);
+//	}
 	
 	private void visit(BooleanPredicate predicate) {
-		deque.push(Fields.boolField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument())));
+		deque.push(Fields.boolField(predicate.getField()).toQuery(predicate.getArgument()));
 	}
 	
 	private void visit(BoolExpression bool) {
@@ -209,8 +253,14 @@ public final class LuceneQueryBuilder {
 		// first add the mustClauses, then the mustNotClauses, if there are no mustClauses but mustNot ones then add a match all before
 		for (Expression must : bool.mustClauses()) {
 			// visit the item and immediately pop the deque item back
-			visit(must);
-			query.add(deque.pop(), Occur.MUST);
+			LuceneQueryBuilder innerQueryBuilder = new LuceneQueryBuilder(mapping, luceneQueryBuilder);
+			innerQueryBuilder.visit(must);
+			
+			if (innerQueryBuilder.needsScoring) {
+				query.add(innerQueryBuilder.deque.pop(), Occur.MUST);
+			} else {
+				query.add(innerQueryBuilder.deque.pop(), Occur.FILTER);
+			}
 		}
 		
 		for (Expression mustNot : bool.mustNotClauses()) {
@@ -236,10 +286,10 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(NestedPredicate predicate) {
-		final Query parentFilter = JsonDocumentMapping.filterByType(mapping.typeAsString());
+		final Query parentFilter = JsonDocumentMapping.matchType(mapping.typeAsString());
 		final DocumentMapping nestedMapping = mapping.getNestedMapping(predicate.getField());
-		final Query childFilter = JsonDocumentMapping.filterByType(nestedMapping.typeAsString());
-		final Query innerQuery = new LuceneQueryBuilder(nestedMapping).build(predicate.getExpression());
+		final Query childFilter = JsonDocumentMapping.matchType(nestedMapping.typeAsString());
+		final Query innerQuery = new LuceneQueryBuilder(nestedMapping, luceneQueryBuilder).build(predicate.getExpression());
 		final Query childQuery = new BooleanQuery.Builder()
 										.add(innerQuery, Occur.MUST)
 										.add(childFilter, Occur.FILTER)
@@ -255,9 +305,9 @@ public final class LuceneQueryBuilder {
 		
 		final DocumentMapping parentMapping = mapping.getParent();
 		checkArgument(parentMapping.type() == parentType, "Unexpected parent type. %s vs. %s", parentMapping.type(), parentType);
-		final Query parentQuery = new LuceneQueryBuilder(parentMapping).build(parentExpression);
+		final Query parentQuery = new LuceneQueryBuilder(parentMapping, luceneQueryBuilder).build(parentExpression);
 		
-		final Query parentFilter = JsonDocumentMapping.filterByType(parentMapping.typeAsString());
+		final Query parentFilter = JsonDocumentMapping.matchType(parentMapping.typeAsString());
 		
 		final Query toChildQuery = new ToChildBlockJoinQuery(parentQuery, new QueryBitSetProducer(parentFilter));
 		deque.push(toChildQuery);
@@ -267,41 +317,28 @@ public final class LuceneQueryBuilder {
 		final String field = predicate.getField();
 		final String term = predicate.term();
 		final MatchType type = predicate.type();
-		final Analyzer analyzer = AnalyzerImpls.getAnalyzer(predicate.analyzer());
 		Query query;
 		switch (type) {
 		case PHRASE:
 			{
-				final QueryBuilder queryBuilder = new QueryBuilder(analyzer);
-				query = queryBuilder.createPhraseQuery(field, term);
+				query = luceneQueryBuilder.createPhraseQuery(field, term);
 			}
 			break;
 		case ALL:
 			{
-				final QueryBuilder queryBuilder = new QueryBuilder(analyzer);
-				query = queryBuilder.createBooleanQuery(field, term, Occur.MUST);
+				query = luceneQueryBuilder.createBooleanQuery(field, term, Occur.MUST);
 			}
 			break;
 		case ANY:
 			{
-				final QueryBuilder queryBuilder = new QueryBuilder(analyzer);
-				query = queryBuilder.createBooleanQuery(field, term, Occur.SHOULD);
+				query = luceneQueryBuilder.createBooleanQuery(field, term, Occur.SHOULD);
 			}
 			break;
 		case FUZZY:
-			query = new FuzzyQuery(new Term(field, term), LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE, 1);
-			break;
-		case ALL_PREFIX:
-			final List<String> prefixes = Highlighting.split(analyzer, term);
-			final BooleanQuery.Builder q = new BooleanQuery.Builder();
-			q.setDisableCoord(true);
-			for (String prefix : prefixes) {
-				q.add(new PrefixQuery(new Term(field, prefix)), Occur.MUST);
-			}
-			query = q.build();
+			query = new FuzzyQuery(new Term(field, term), 1, 1);
 			break;
 		case PARSED:
-			final QueryParser parser = new QueryParser(field, analyzer);
+			final QueryParser parser = new QueryParser(field, luceneQueryBuilder.getAnalyzer());
 			parser.setDefaultOperator(Operator.AND);
 			parser.setAllowLeadingWildcard(true);
 			try {
@@ -312,36 +349,40 @@ public final class LuceneQueryBuilder {
 			break;
 		default: throw new UnsupportedOperationException("Unexpected text match type: " + type);
 		}
+		
 		if (query == null) {
 			query = new MatchNoDocsQuery();
+		} else {
+			needsScoring = true;
 		}
+		
 		deque.push(query);	
 	}
 	
 	private void visit(StringPredicate predicate) {
-		final Query filter = Fields.stringField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
+		final Query filter = Fields.stringField(predicate.getField()).toQuery(predicate.getArgument());
 		deque.push(filter);
 	}
 	
 	private void visit(StringSetPredicate predicate) {
-		final Query filter = Fields.stringField(predicate.getField()).createTermsFilter(predicate.values());
+		final Query filter = Fields.stringField(predicate.getField()).toQuery(predicate.values());
 		deque.push(filter);
 	}
 	
 	private void visit(IntSetPredicate predicate) {
-		final Query filter = Fields.intField(predicate.getField()).createTermsFilter(predicate.values());
+		final Query filter = Fields.intField(predicate.getField()).toQuery(predicate.values());
 		deque.push(filter);
 	}
 	
 	private void visit(LongSetPredicate predicate) {
-		final Query filter = Fields.longField(predicate.getField()).createTermsFilter(predicate.values());
+		final Query filter = Fields.longField(predicate.getField()).toQuery(predicate.values());
 		deque.push(filter);
 	}
 	
 	private void visit(DecimalSetPredicate predicate) {
 		final Collection<BytesRef> terms = newHashSetWithExpectedSize(predicate.values().size());
 		for (BigDecimal decimal : predicate.values()) {
-			terms.add(encode(decimal));
+			terms.add(new BytesRef(DecimalUtils.encode(decimal)));
 		}
 		final Query filter = new TermsQuery(predicate.getField(), terms);
 		deque.push(filter);
@@ -353,22 +394,17 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(IntPredicate predicate) {
-		final Query filter = Fields.intField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
+		final Query filter = Fields.intField(predicate.getField()).toQuery(predicate.getArgument());
 		deque.push(filter);
 	}
 	
 	private void visit(LongPredicate predicate) {
-		final Query filter = Fields.longField(predicate.getField()).createTermsFilter(Collections.singleton(predicate.getArgument()));
+		final Query filter = Fields.longField(predicate.getField()).toQuery(predicate.getArgument());
 		deque.push(filter);
 	}
 	
 	private void visit(DecimalPredicate predicate) {
-		final Set<BigDecimal> vals = Collections.singleton(predicate.getArgument());
-		final Collection<BytesRef> terms = newHashSetWithExpectedSize(vals.size());
-		for (BigDecimal decimal : vals) {
-			terms.add(encode(decimal));
-		}
-		final Query filter = new TermsQuery(predicate.getField(), terms);
+		final Query filter = Fields.stringField(predicate.getField()).toQuery(DecimalUtils.encode(predicate.getArgument()));
 		deque.push(filter);
 	}
 
@@ -388,9 +424,9 @@ public final class LuceneQueryBuilder {
 	}
 	
 	private void visit(DecimalRangePredicate range) {
-		final BytesRef lower = range.lower() == null ? null : encode(range.lower());
-		final BytesRef upper = range.upper() == null ? null : encode(range.upper());
-		final Query filter = new TermRangeQuery(range.getField(), lower, upper, range.isIncludeLower(), range.isIncludeUpper());
+		final String lower = range.lower() == null ? null : DecimalUtils.encode(range.lower());
+		final String upper = range.upper() == null ? null : DecimalUtils.encode(range.upper());
+		final Query filter = TermRangeQuery.newStringRange(range.getField(), lower, upper, range.isIncludeLower(), range.isIncludeUpper());
 		deque.push(filter);
 	}
 	
@@ -406,12 +442,6 @@ public final class LuceneQueryBuilder {
 	private void visit(BoostPredicate boost) {
 		visit(boost.expression());
 		deque.push(new BoostQuery(deque.pop(), boost.boost()));
-	}
-	
-	private BytesRef encode(BigDecimal val) {
-		final SimplePositionedMutableByteRange dst = new SimplePositionedMutableByteRange(Index.PRECISION);
-		final int writtenBytes = OrderedBytes.encodeNumeric(dst, val, Order.ASCENDING);
-		return new BytesRef(dst.getBytes(), 0, writtenBytes);
 	}
 	
 }

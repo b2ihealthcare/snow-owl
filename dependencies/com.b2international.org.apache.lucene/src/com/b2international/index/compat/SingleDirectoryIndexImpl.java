@@ -95,7 +95,7 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 	protected void initLucene(final File indexDirectory, final boolean clean) {
 		try {
 			this.directory = Directories.openFile(indexDirectory.toPath());
-			final Analyzer analyzer = new ComponentTermAnalyzer(true, true);
+			final Analyzer analyzer = new ComponentTermAnalyzer();
 			final IndexWriterConfig config = new IndexWriterConfig(analyzer);
 			config.setOpenMode(clean ? OpenMode.CREATE : OpenMode.CREATE_OR_APPEND);
 			config.setIndexDeletionPolicy(new SnapshotDeletionPolicy(config.getIndexDeletionPolicy()));
@@ -132,9 +132,13 @@ public abstract class SingleDirectoryIndexImpl implements SingleDirectoryIndex, 
 			}
 		}
 		
-		Closeables.closeQuietly(manager);
-		Closeables.closeQuietly(writer);
-		Closeables.closeQuietly(directory);
+		try {
+			Closeables.close(manager, true);
+			Closeables.close(writer, true);
+			Closeables.close(directory, true);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 		
 		manager = null;
 		writer = null;

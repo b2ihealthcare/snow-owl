@@ -24,8 +24,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
-import com.google.common.io.InputSupplier;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.ValidatableResponse;
 
@@ -59,20 +59,18 @@ public abstract class SnomedExportRestRequests extends AbstractSnomedApiTest {
 
 		try {
 
-			final InputSupplier<InputStream> supplier = new InputSupplier<InputStream>() {
+			tmpDir = Files.createTempDir();
+			exportArchive = new File(tmpDir, "export.zip");
+			new ByteSource() {
 				@Override
-				public InputStream getInput() throws IOException {
+				public InputStream openStream() throws IOException {
 					return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 							.contentType(ContentType.JSON)
 							.get("/exports/{id}/archive", exportId)
 							.thenReturn()
 							.asInputStream();
 				}
-			};
-
-			tmpDir = Files.createTempDir();
-			exportArchive = new File(tmpDir, "export.zip");
-			Files.copy(supplier, exportArchive);
+			}.copyTo(Files.asByteSink(exportArchive));
 
 		} catch (final Exception e) {
 			throw e;

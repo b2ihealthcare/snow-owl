@@ -57,6 +57,7 @@ import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 5.4
@@ -89,7 +90,8 @@ public class IssueSO2109Test {
 		when(repository.getCdoBranchManager()).thenReturn(cdoBranchManager);
 		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
 		when(repository.getConflictProcessor()).thenReturn(conflictProcessor);
-		store = Indexes.createIndex(UUID.randomUUID().toString(), JsonSupport.getDefaultObjectMapper(),
+		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
+		store = Indexes.createIndex(UUID.randomUUID().toString(), mapper,
 				new Mappings(CDOMainBranchImpl.class, CDOBranchImpl.class, InternalBranch.class, Data.class));
 		store.admin().create();
 
@@ -113,7 +115,7 @@ public class IssueSO2109Test {
 
 		when(repository.getIndex()).thenReturn(store);
 
-		manager = new CDOBranchManagerImpl(repository);
+		manager = new CDOBranchManagerImpl(repository, mapper);
 	}
 
 	@After

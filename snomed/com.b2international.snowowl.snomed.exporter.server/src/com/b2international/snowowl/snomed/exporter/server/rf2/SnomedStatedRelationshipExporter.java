@@ -38,6 +38,6 @@ public class SnomedStatedRelationshipExporter extends SnomedRf2RelationshipExpor
 	
 	@Override
 	protected void appendExpressionConstraint(ExpressionBuilder builder) {
-		builder.must(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP));
+		builder.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP));
 	}
 }

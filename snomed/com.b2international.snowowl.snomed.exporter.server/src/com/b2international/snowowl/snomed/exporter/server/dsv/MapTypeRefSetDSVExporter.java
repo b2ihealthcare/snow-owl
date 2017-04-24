@@ -263,8 +263,8 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						
 						//we need every target, limit needs to be set as the default is 50 hits
 						ExpressionBuilder condition = Expressions.builder()
-								.must(SnomedRelationshipIndexEntry.Expressions.sourceId(member.getReferencedComponentId()))
-								.must(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.HAS_SDD_CLASS));
+								.filter(SnomedRelationshipIndexEntry.Expressions.sourceId(member.getReferencedComponentId()))
+								.filter(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.HAS_SDD_CLASS));
 						
 						Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class).where(condition.build()).limit(1).build();
 						

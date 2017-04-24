@@ -25,6 +25,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
 
@@ -34,9 +35,11 @@ import com.google.common.collect.Maps;
 public class Fixtures {
 
 	@Doc
+	@Script(name="floatField", script="return doc.floatField.value", fields={"floatField"})
 	public static class Data {
 
-		@Analyzed
+		@Analyzed(analyzer=Analyzers.CASE_SENSITIVE)
+		@Analyzed(alias="exact", analyzer=Analyzers.EXACT)
 		private String analyzedField;
 		
 		private String field1;
@@ -334,6 +337,7 @@ public class Fixtures {
 	@Doc
 	public static class DataWithMap {
 		
+		@JsonIgnore
 		Map<String, Object> properties;
 
 		@JsonCreator

@@ -136,24 +136,24 @@ public class SnomedModuleDependencyRefSetService {
 	private Expression createPublishedMembersQueryExpression(final String moduleId) {
 		final Expression sourceExpression = Expressions
 				.builder()
-				.must(SnomedRefSetMemberIndexEntry.Expressions.module(moduleId))
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.module(moduleId))
 				.mustNot(SnomedRefSetMemberIndexEntry.Expressions.sourceEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 				.build();
 		
 		final Expression targetExpression = Expressions
 				.builder()
-				.must(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentId(moduleId))
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentId(moduleId))
 				.mustNot(SnomedRefSetMemberIndexEntry.Expressions.targetEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 				.build();
 		
 		return Expressions
 				.builder()
-				.must(Expressions
+				.filter(Expressions
 						.builder()
 						.should(sourceExpression)
 						.should(targetExpression)
 						.build())
-				.must(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_MODULE_DEPENDENCY_TYPE))
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_MODULE_DEPENDENCY_TYPE))
 				.build();
 	}
 
