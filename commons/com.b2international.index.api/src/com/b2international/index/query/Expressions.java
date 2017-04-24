@@ -210,15 +210,11 @@ public class Expressions {
 	}
 
 	public static Expression scriptScore(Expression query, String scriptName) {
-		return scriptScore(query, scriptName, false);
+		return new ScriptScoreExpression(query, scriptName, Collections.emptyMap());
 	}
 	
-	public static Expression scriptScore(Expression query, String scriptName, boolean strict) {
-		return new ScriptScoreExpression(query, scriptName, strict, Collections.emptyMap());
-	}
-	
-	public static Expression scriptScore(Expression query, String scriptName, boolean strict, Map<String, ? extends Object> params) {
-		return new ScriptScoreExpression(query, scriptName, strict, params);
+	public static Expression scriptScore(Expression query, String scriptName, Map<String, ? extends Object> params) {
+		return new ScriptScoreExpression(query, scriptName, params);
 	}
 
 }

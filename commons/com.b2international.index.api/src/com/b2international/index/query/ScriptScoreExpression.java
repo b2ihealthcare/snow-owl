@@ -25,13 +25,11 @@ public class ScriptScoreExpression implements Expression {
 
 	private final String scriptName;
 	private final Expression expression;
-	private final boolean strict;
 	private final Map<String, ? extends Object> params;
 
-	ScriptScoreExpression(Expression expression, String scriptName, boolean strict, final Map<String, ? extends Object> params) {
+	ScriptScoreExpression(Expression expression, String scriptName, final Map<String, ? extends Object> params) {
 		this.expression = expression;
 		this.scriptName = scriptName;
-		this.strict = strict;
 		this.params = params == null ? Collections.emptyMap() : params;
 	}
 	
@@ -41,10 +39,6 @@ public class ScriptScoreExpression implements Expression {
 
 	public String scriptName() {
 		return scriptName;
-	}
-	
-	public boolean isStrict() {
-		return strict;
 	}
 	
 	@Override

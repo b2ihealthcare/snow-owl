@@ -112,7 +112,7 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 		indexRevision(MAIN, STORAGE_KEY2, second);
 		
 		final Query<ScoredData> query = Query.select(ScoredData.class).where(Expressions.scriptScore(
-				Expressions.exactMatch("field1", "field1"), "doi", true))
+				Expressions.exactMatch("field1", "field1"), "doi"))
 				.withScores(true)
 				.build();
 		
@@ -138,7 +138,7 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 		
 		final int factor = 2;
 		final Query<ScoredData> query = Query.select(ScoredData.class).where(Expressions.scriptScore(
-				Expressions.exactMatch("field1", "field1"), "doiFactor", true, ImmutableMap.of("factor", factor)))
+				Expressions.exactMatch("field1", "field1"), "doiFactor", ImmutableMap.of("factor", factor)))
 				.withScores(true)
 				.build();
 		

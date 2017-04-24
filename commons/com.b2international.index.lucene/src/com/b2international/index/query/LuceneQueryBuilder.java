@@ -188,7 +188,7 @@ public final class LuceneQueryBuilder {
 			new ConstantScoreQuery(innerQuery), 
 			new FunctionQuery(visit(innerQuery, scoreScript, expression.getParams()))
 		);
-		query.setStrict(expression.isStrict());
+		query.setStrict(true);
 		needsScoring = true;
 		deque.push(query);
 	}
