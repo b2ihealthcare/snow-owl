@@ -48,6 +48,18 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedSearchRequest
 		return addOption(SnomedConceptSearchRequest.OptionKey.PARSED_TERM, true);
 	}
 
+	/**
+	 * Filters concepts based on all active descriptions where descriptions may be partial in order matches of the search term,
+	 * Eg.: Administration of nutritional supplement can be found with search term = "adm o sup"
+	 * or matches for full words contained in the search term in any order,
+	 * Eg.: Braom neoplasm tissue sample can be found with search term = "sample brain"
+	 * or exact matches for the search term.
+	 * 
+	 * Searches are case insensitive and ignore TextConstants.DELIMITERS. They can be used in combination with withDoi(), 
+	 * withSearchProfile(), withFuzzySearch(), and withParsedTerm()
+	 * @param Search text 
+	 * @return SnomedConceptSearchRequestBuilder
+	 */
 	public final SnomedConceptSearchRequestBuilder filterByTerm(String term) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.TERM, term);
 	}
