@@ -17,6 +17,7 @@ package com.b2international.index.query;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.queries.function.FunctionValues;
@@ -64,12 +65,16 @@ public final class ScoreValueSource extends ValueSource {
 
 	@Override
 	public boolean equals(Object o) {
-		return o == this;
+		if (this == o) return true;
+		if (o == null) return false;
+		if (getClass() != o.getClass()) return false;
+		ScoreValueSource other = (ScoreValueSource) o;
+		return Objects.equals(query, other.query);
 	}
 
 	@Override
 	public int hashCode() {
-		return System.identityHashCode(this);
+		return Objects.hash(query);
 	}
 
 	@Override
