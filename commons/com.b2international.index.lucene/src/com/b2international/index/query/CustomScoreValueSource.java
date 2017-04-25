@@ -75,7 +75,7 @@ public class CustomScoreValueSource extends VectorValueSource {
 				ctx.put("doc", _source);
 				ctx.put("params", scriptParams);
 				
-				final Binding binding = new Binding(ctx.build());
+				final Binding binding = new Binding(newHashMap(ctx.build()));
 				compiledScript.setBinding(binding);
 				return ((Number) compiledScript.run()).floatValue();
 			}
