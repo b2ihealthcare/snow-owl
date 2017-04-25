@@ -1,6 +1,47 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.10.1
+
+### Changed
+- Elasticsearch module now properly configures dynamic mapping on Object/Map field types
+
+### Bugs
+- Searching for SNOMED CT Concept with termFilter throws score evaluation exception
+
+## 5.10.0
+
+### Breaking changes
+- `_id` document fields now indexed with doc_values enabled
+- `EMBEDDED` identifier service now operates on its own index, named `snomedids`
+- SNOMED CT Description index mapping now uses more precise analyzers to provide the best possible text matches when search for description terms
+  * Exact term searches now possible via the new `term.exact` index field
+  * Prefix searches now return better results (via the new `term.prefix` field), because the mapping now uses the `edgengram` tokenfilter to generate `1..20` length prefixes for each SNOMED CT Description term
+- NOTE: Due to the above mentioned changes, datasets created before 5.10.0 require a **full reindex**
+
+### Added
+- Full (but still **experimental**) Elasticsearch support (https://github.com/b2ihealthcare/snow-owl/pull/147)
+  * Supported elasticsearch version is `2.3.3`
+  * Snow Owl starts a local-only Elasticsearch node by default, but it is possible to configure the node to connect to a cluster of others
+  * Configure the Elasticsearch node with the `configuration/elasticsearch.yml` ES configuration file
+  * This index API implementation does not support the `SHA-1` `_hash` field on revision documents thus it cannot skip them from a revision compare result and will return them. Clients should query the base and head of the branch and remove the false positive hits manually.
+- Configuration options
+  * Added `numberOfShards` configuration option to repository.index node in snowowl_config.yml
+  * Added `commitConcurrencyLevel` configuration option to repository.index node in snowowl_config.yml
+  
+### Changed
+- Low-level Index API chanages (see https://github.com/b2ihealthcare/snow-owl/pull/147 for details)
+- API changes:
+  * JSON representations now include non-null values instead of non-empty
+  * SNOMED CT Concept inactivation properties are no longer auto-expanded. The new `inactivationProperties()` expand parameter need to be added to the expand parameter list in order to retrieve them.
+
+### Bugs
+- Fixed memory leak when using `gzip` compression on the in-JVM Net4j connection
+- Fixed invalid SNOMED CT Identifier state when supplying the identifiers instead of generating them (1e4488e35884cfa6f458471e73c7fd6943239722)
+
+### Performance
+- Greatly improved performance of index queries by using filter clauses in boolean queries instead of must clauses (eac279977bf2b0c49da949701136ba19260b5aef)
+
 ## 5.9.0
 
 ### Breaking changes
