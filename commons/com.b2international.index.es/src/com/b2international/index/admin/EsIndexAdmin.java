@@ -147,6 +147,10 @@ public final class EsIndexAdmin implements IndexAdmin {
 			
 			if (Map.class.isAssignableFrom(fieldType) || Object.class == fieldType) {
 				// allow dynamic mappings for dynamic objects like field using Map or Object
+				final Map<String, Object> prop = newHashMap();
+				prop.put("type", "object");
+				prop.put("dynamic", "true");
+				properties.put(property, prop);
 				continue;
 			} else if (mapping.isNestedMapping(fieldType)) {
 				// this is a nested document type create a nested mapping
