@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.10.1
+
+### Changed
+- Elasticsearch module now properly configures dynamic mapping on Object/Map field types
+
+### Bugs
+- Searching for SNOMED CT Concept with termFilter throws score evaluation exception
+
 ## 5.10.0
 
 ### Breaking changes
