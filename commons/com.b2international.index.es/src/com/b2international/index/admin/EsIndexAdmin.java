@@ -145,7 +145,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 			if (DocumentMapping._ID.equals(property)) continue;
 			final Class<?> fieldType = NumericClassUtils.unwrapCollectionType(field);
 			
-			if (Map.class.isAssignableFrom(fieldType) || Object.class == fieldType) {
+			checkState(fieldType != Object.class, "Dynamic mappings are not supported with Object type fields");
+			if (Map.class.isAssignableFrom(fieldType)) {
 				// allow dynamic mappings for dynamic objects like field using Map or Object
 				final Map<String, Object> prop = newHashMap();
 				prop.put("type", "object");

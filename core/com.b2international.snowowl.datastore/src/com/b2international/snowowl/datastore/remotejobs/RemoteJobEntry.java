@@ -122,7 +122,7 @@ public final class RemoteJobEntry implements Serializable {
 		private int completionLevel = MIN_COMPLETION_LEVEL;
 		private boolean deleted;
 		private Map<String, Object> parameters;
-		private Object result;
+		private Map<String, Object> result;
 		
 		@JsonCreator
 		private Builder() {
@@ -173,7 +173,7 @@ public final class RemoteJobEntry implements Serializable {
 			return this;
 		}
 		
-		public Builder result(Object result) {
+		public Builder result(Map<String, Object> result) {
 			this.result = result;
 			return this;
 		}
@@ -198,7 +198,7 @@ public final class RemoteJobEntry implements Serializable {
 	private final Date finishDate;
 	private final RemoteJobState state;
 	private final int completionLevel;
-	private final Object result;
+	private final Map<String, Object> result;
 	private final boolean deleted;
 	private final Map<String, Object> parameters;
 
@@ -212,7 +212,7 @@ public final class RemoteJobEntry implements Serializable {
 			final RemoteJobState state, 
 			final int completionLevel,
 			final boolean deleted,
-			final Object result,
+			final Map<String, Object> result,
 			final Map<String, Object> parameters) {
 		this.id = id;
 		this.description = description;
@@ -267,7 +267,7 @@ public final class RemoteJobEntry implements Serializable {
 		return parameters;
 	}
 	
-	public Object getResult() {
+	public Map<String, Object> getResult() {
 		return result;
 	}
 	
