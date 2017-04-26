@@ -50,6 +50,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<SnomedDescriptions> {
 
 	enum OptionKey {
+		EXACT_TERM,
 		TERM,
 		CONCEPT,
 		TYPE,
@@ -89,6 +90,10 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 			} else {
 				queryBuilder.must(fuzzy(searchTerm));
 			}
+		}
+		
+		if (containsKey(OptionKey.EXACT_TERM)) {
+			queryBuilder.must(exactTerm(getString(OptionKey.EXACT_TERM)));
 		}
 
 		final Hits<SnomedDescriptionIndexEntry> hits = searcher.search(select(SnomedDescriptionIndexEntry.class)

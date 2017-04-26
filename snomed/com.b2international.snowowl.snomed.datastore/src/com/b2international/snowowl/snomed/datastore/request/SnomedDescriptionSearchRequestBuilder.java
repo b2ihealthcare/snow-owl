@@ -47,6 +47,10 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	public SnomedDescriptionSearchRequestBuilder filterByTerm(String termFilter) {
 		return addOption(OptionKey.TERM, termFilter == null ? termFilter : termFilter.trim());
 	}
+	
+	public SnomedDescriptionSearchRequestBuilder filterByExactTerm(String exactTermFilter) {
+		return addOption(OptionKey.EXACT_TERM, exactTermFilter == null ? exactTermFilter : exactTermFilter.trim());
+	}
 
 	public SnomedDescriptionSearchRequestBuilder filterByConcept(String conceptFilter) {
 		return addOption(OptionKey.CONCEPT, conceptFilter);
