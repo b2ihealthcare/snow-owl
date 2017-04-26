@@ -37,6 +37,9 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 final class SnomedRefSetMemberCreateRequest implements Request<TransactionContext, String> {
 
 	@Nonnull
+	private String id;
+
+	@Nonnull
 	private Boolean active = Boolean.TRUE;
 	
 	@NotEmpty
@@ -52,6 +55,10 @@ final class SnomedRefSetMemberCreateRequest implements Request<TransactionContex
 	SnomedRefSetMemberCreateRequest() {
 	}
 	
+	String getId() {
+		return id;
+	}
+
 	Boolean isActive() {
 		return active;
 	}
@@ -114,6 +121,10 @@ final class SnomedRefSetMemberCreateRequest implements Request<TransactionContex
 	
 	void setProperties(Map<String, Object> properties) {
 		this.properties.putAll(properties);
+	}
+
+	void setId(String id) {
+		this.id = id;
 	}
 
 	@Override

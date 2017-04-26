@@ -43,6 +43,7 @@ final class SnomedDescriptionTypeMemberCreateDelegate extends SnomedRefSetMember
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT);
 
 		SnomedDescriptionTypeRefSetMember member = SnomedComponents.newDescriptionTypeMember()
+				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModule(getModuleId())

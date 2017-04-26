@@ -50,6 +50,7 @@ final class SnomedExtendedMapMemberCreateDelegate extends SnomedRefSetMemberCrea
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MAP_CATEGORY_ID);
 
 		SnomedComplexMapRefSetMember member = SnomedComponents.newComplexMapMember()
+				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModule(getModuleId())

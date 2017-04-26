@@ -48,6 +48,7 @@ final class SnomedComplexMapMemberCreateDelegate extends SnomedRefSetMemberCreat
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_CORRELATION_ID);
 
 		SnomedComplexMapRefSetMember member = SnomedComponents.newComplexMapMember()
+				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModule(getModuleId())

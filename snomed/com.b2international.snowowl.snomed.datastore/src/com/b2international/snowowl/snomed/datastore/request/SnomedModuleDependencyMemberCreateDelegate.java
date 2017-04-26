@@ -44,6 +44,7 @@ final class SnomedModuleDependencyMemberCreateDelegate extends SnomedRefSetMembe
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
 
 		SnomedModuleDependencyRefSetMember member = SnomedComponents.newModuleDependencyMember()
+				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModule(getModuleId())

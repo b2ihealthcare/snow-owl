@@ -60,6 +60,7 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 		}
 
 		SnomedConcreteDataTypeRefSetMember member = SnomedComponents.newConcreteDomainReferenceSetMember()
+				.withId(getId())
 				.withActive(isActive())
 				.withAttributeLabel(getComponentId(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME))
 				.withCharacteristicType(CharacteristicType.getByConceptId(getComponentId(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)))

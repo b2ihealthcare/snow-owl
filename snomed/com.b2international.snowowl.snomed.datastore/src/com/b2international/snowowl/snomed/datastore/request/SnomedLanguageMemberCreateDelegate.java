@@ -43,6 +43,7 @@ final class SnomedLanguageMemberCreateDelegate extends SnomedRefSetMemberCreateD
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
 
 		SnomedLanguageRefSetMember member = SnomedComponents.newLanguageMember()
+				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModule(getModuleId())

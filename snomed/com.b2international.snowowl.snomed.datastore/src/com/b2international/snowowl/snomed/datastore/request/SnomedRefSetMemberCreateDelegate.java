@@ -40,6 +40,10 @@ abstract class SnomedRefSetMemberCreateDelegate {
 	protected SnomedRefSetMemberCreateDelegate(SnomedRefSetMemberCreateRequest request) {
 		this.request = request;
 	}
+	
+	String getId() {
+		return request.getId();
+	}
 
 	Boolean isActive() {
 		return request.isActive();

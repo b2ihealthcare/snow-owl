@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
@@ -33,6 +34,7 @@ public final class SnomedRefSetMemberCreateRequestBuilder
 		extends BaseRequestBuilder<SnomedRefSetMemberCreateRequestBuilder, TransactionContext, String>
 		implements SnomedTransactionalRequestBuilder<String> {
 
+	private String id = UUID.randomUUID().toString();
 	private Boolean active = Boolean.TRUE;
 	private String moduleId;
 	private String referenceSetId;
@@ -40,6 +42,11 @@ public final class SnomedRefSetMemberCreateRequestBuilder
 	private Map<String, Object> properties = Collections.emptyMap();
 	
 	SnomedRefSetMemberCreateRequestBuilder() {
+	}
+	
+	public SnomedRefSetMemberCreateRequestBuilder setId(String id) {
+		this.id = id;
+		return getSelf();
 	}
 	
 	public SnomedRefSetMemberCreateRequestBuilder setReferencedComponentId(String referencedComponentId) {
@@ -78,6 +85,7 @@ public final class SnomedRefSetMemberCreateRequestBuilder
 	@Override
 	public Request<TransactionContext, String> doBuild() {
 		final SnomedRefSetMemberCreateRequest request = new SnomedRefSetMemberCreateRequest();
+		request.setId(id);
 		request.setActive(active);
 		request.setModuleId(moduleId);
 		request.setReferencedComponentId(referencedComponentId);

@@ -42,6 +42,7 @@ final class SnomedAssociationMemberCreateDelegate extends SnomedRefSetMemberCrea
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_TARGET_COMPONENT);
 
 		SnomedAssociationRefSetMember member = SnomedComponents.newAssociationMember()
+				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModule(getModuleId())
