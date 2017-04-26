@@ -25,6 +25,7 @@ import java.util.Deque;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.BoostableQueryBuilder;
 import org.elasticsearch.index.query.DisMaxQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -298,7 +299,11 @@ public final class EsQueryBuilder {
 	
 	private void visit(BoostPredicate boost) {
 		visit(boost.expression());
-		deque.push(QueryBuilders.boostingQuery().boost(boost.boost()).positive(deque.pop()));
+		QueryBuilder qb = deque.pop();
+		if (qb instanceof BoostableQueryBuilder) {
+			((BoostableQueryBuilder) qb).boost(boost.boost());
+		}
+		deque.push(qb);
 	}
 	
 }

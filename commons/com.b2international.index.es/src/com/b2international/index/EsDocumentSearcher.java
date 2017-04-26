@@ -127,7 +127,7 @@ public class EsDocumentSearcher implements Searcher {
 			response = req.get();
 		} catch (Exception e) {
 			admin.log().error("Couldn't execute query", e);
-			throw new IndexException("Couldn't execute query" + e.getMessage(), null);
+			throw new IndexException("Couldn't execute query: " + e.getMessage(), null);
 		}
 		final Builder<SearchHits> allHits = ImmutableList.builder();
 		final int totalHits = (int) response.getHits().getTotalHits();
