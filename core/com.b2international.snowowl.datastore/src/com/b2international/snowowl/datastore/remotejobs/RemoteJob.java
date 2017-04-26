@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.Primitives;
 
 /**
@@ -73,7 +74,7 @@ public final class RemoteJob extends Job {
 			if (response != null) {
 				final Class<? extends Object> responseType = response.getClass();
 				if (Primitives.isWrapperType(responseType) || String.class.isAssignableFrom(responseType) || UUID.class.isAssignableFrom(responseType)) {
-					this.response = response;
+					this.response = ImmutableMap.of("value", response);
 				} else {
 					this.response = mapper.convertValue(response, Map.class);
 				}
