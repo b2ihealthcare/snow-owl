@@ -42,6 +42,7 @@ final class SnomedAttributeValueMemberCreateDelegate extends SnomedRefSetMemberC
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_VALUE_ID);
 
 		SnomedAttributeValueRefSetMember member = SnomedComponents.newAttributeValueMember()
+				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModule(getModuleId())

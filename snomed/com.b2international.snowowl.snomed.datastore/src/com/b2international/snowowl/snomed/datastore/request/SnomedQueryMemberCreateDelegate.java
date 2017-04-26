@@ -87,6 +87,7 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
 
 		SnomedQueryRefSetMember member = SnomedComponents.newQueryMember()
+				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModule(getModuleId())

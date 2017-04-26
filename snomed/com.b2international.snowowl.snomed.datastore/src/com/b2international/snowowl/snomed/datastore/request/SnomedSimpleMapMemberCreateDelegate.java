@@ -43,6 +43,7 @@ final class SnomedSimpleMapMemberCreateDelegate extends SnomedRefSetMemberCreate
 		// FIXME: check map target if it's also in SNOMED CT?
 
 		SnomedSimpleMapRefSetMember member = SnomedComponents.newSimpleMapMember()
+				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModule(getModuleId())
