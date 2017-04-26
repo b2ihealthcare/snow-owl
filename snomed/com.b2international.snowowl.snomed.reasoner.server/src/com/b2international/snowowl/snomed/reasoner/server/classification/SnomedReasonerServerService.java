@@ -103,7 +103,9 @@ import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAss
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 
 import bak.pcj.LongIterator;
@@ -307,8 +309,10 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		
 		final ImmutableList.Builder<RelationshipChangeEntry> relationshipBuilder = ImmutableList.builder();
 		final ImmutableList.Builder<IConcreteDomainChangeEntry> concreteDomainBuilder = ImmutableList.builder();
-	
-		new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder).collectNormalFormChanges(null, new OntologyChangeProcessor<StatementFragment>(namespaceAndModuleAssigner) {
+		final Multimap<String, StatementFragment> newRelationshipsMultimap = HashMultimap.create();
+		final Multimap<String, ConcreteDomainFragment> newConcreteDomainMultimap = HashMultimap.create();
+				
+		new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder).collectNormalFormChanges(null, new OntologyChangeProcessor<StatementFragment>(namespaceAndModuleAssigner, newRelationshipsMultimap) {
 			@Override 
 			protected void handleAddedSubject(final String conceptId, final StatementFragment addedSubject) {
 				registerEntry(Long.valueOf(conceptId), addedSubject, Nature.INFERRED);
@@ -366,7 +370,8 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 			}
 		});
 		
-		new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder).collectNormalFormChanges(null, new OntologyChangeProcessor<ConcreteDomainFragment>(namespaceAndModuleAssigner) {
+		new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder)
+			.collectNormalFormChanges(null, new OntologyChangeProcessor<ConcreteDomainFragment>(namespaceAndModuleAssigner, newConcreteDomainMultimap) {
 			@Override 
 			protected void handleAddedSubject(final String conceptId, final ConcreteDomainFragment addedSubject) {
 				registerEntry(Long.valueOf(conceptId), addedSubject, Nature.INFERRED);

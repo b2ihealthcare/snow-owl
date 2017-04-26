@@ -21,6 +21,7 @@ import java.util.List;
 
 import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Nature;
+import com.google.common.collect.Multimap;
 
 /**
  * A change processor that collects a list of changes.
@@ -30,14 +31,14 @@ import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Na
  */
 public class OntologyChangeRecorder<T extends Serializable> extends OntologyChangeProcessor<T> {
 	
-	public static <T extends Serializable> OntologyChangeRecorder<T> create(final List<OntologyChange<T>> changes, final NamespaceAndMolduleAssigner assigner) {
-		return new OntologyChangeRecorder<T>(changes, assigner);
+	public static <T extends Serializable> OntologyChangeRecorder<T> create(final List<OntologyChange<T>> changes, final NamespaceAndMolduleAssigner assigner, Multimap<String, T> newPropertiesMultimap) {
+		return new OntologyChangeRecorder<T>(changes, assigner, newPropertiesMultimap);
 	}
 	
 	private final List<OntologyChange<T>> changes;
 	
-	public OntologyChangeRecorder(final List<OntologyChange<T>> changes, final NamespaceAndMolduleAssigner assigner) {
-		super(assigner);
+	public OntologyChangeRecorder(final List<OntologyChange<T>> changes, final NamespaceAndMolduleAssigner assigner, Multimap<String, T> newPropertiesMultimap) {
+		super(assigner, newPropertiesMultimap);
 		this.changes = changes;
 	}
 

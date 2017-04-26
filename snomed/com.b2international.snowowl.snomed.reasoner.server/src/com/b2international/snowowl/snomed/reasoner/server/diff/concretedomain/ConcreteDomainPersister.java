@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain;
 
-import java.util.Collection;
-import java.util.Set;
-
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -34,6 +31,7 @@ import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Na
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
+import com.google.common.collect.Multimap;
 
 /**
  * Applies changes related to concrete domain elements using the specified SNOMED CT editing context.
@@ -45,8 +43,8 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 	private final Nature nature;
 	private final SnomedEditingContext context;
 	
-	public ConcreteDomainPersister(final SnomedEditingContext context, final Nature nature, NamespaceAndMolduleAssigner namespaceAndModuleAssigner) {
-		super(namespaceAndModuleAssigner);
+	public ConcreteDomainPersister(final SnomedEditingContext context, final Nature nature, NamespaceAndMolduleAssigner namespaceAndModuleAssigner, Multimap<String, ConcreteDomainFragment> newConcreteDomainMultimap) {
+		super(namespaceAndModuleAssigner, newConcreteDomainMultimap);
 		this.nature = nature;
 		this.context = context;
 		conceptLookupService = new SnomedConceptLookupService();
@@ -66,9 +64,9 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 	}
 	
 	@Override
-	protected void beforeHandleAddedSubjects(Set<String> conceptIds) {
+	protected void beforeHandleAddedSubjects() {
 		//pre-allocate namespaces for the new concrete domains per each concept
-		getRelationshipNamespaceAssigner().allocateConcreteDomainModules(conceptIds, context);
+		getRelationshipNamespaceAssigner().allocateConcreteDomainModules(newPropertiesMultiMap.keySet(), context);
 	}
 	
 	@Override

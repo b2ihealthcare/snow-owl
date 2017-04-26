@@ -27,7 +27,6 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
@@ -43,11 +42,12 @@ import com.google.common.collect.Sets;
 public abstract class OntologyChangeProcessor<T extends Serializable> {
 	
 	private NamespaceAndMolduleAssigner relationshipNamespaceAssigner;
-	protected Multimap<String, T> newPropertiesMultiMap = HashMultimap.create(); 
+	protected Multimap<String, T> newPropertiesMultiMap; 
 
-	public OntologyChangeProcessor(NamespaceAndMolduleAssigner relationshipNamespaceAssigner) {
+	public OntologyChangeProcessor(NamespaceAndMolduleAssigner relationshipNamespaceAssigner, Multimap<String, T> newPropertiesMultiMap) {
 		Preconditions.checkNotNull(relationshipNamespaceAssigner);
 		this.relationshipNamespaceAssigner = relationshipNamespaceAssigner;
+		this.newPropertiesMultiMap = newPropertiesMultiMap;
 	}
 	
 	public void apply(final long conceptId, final Collection<T> oldCollection, final Collection<T> newCollection, final Ordering<T> ordering) {
@@ -88,10 +88,8 @@ public abstract class OntologyChangeProcessor<T extends Serializable> {
 			if (ordering.binarySearch(sortedOld, newMini) < 0) {
 				newPropertiesMultiMap.put(String.valueOf(conceptId), newMini);
 			}
-			
 			subMonitor.worked(1);
 		}
-		handleAddedSubjects(newPropertiesMultiMap.keySet());
 	}
 	
 	public void apply(final Collection<OntologyChange<T>> changes, final IProgressMonitor monitor) {
@@ -130,12 +128,12 @@ public abstract class OntologyChangeProcessor<T extends Serializable> {
 	/**
 	 * Handles the concept id to new inferred properties map.
 	 * Subclasses can overwrite to add custom behavior before handling the new properties for each concept.
-	 * @param properties multi map
 	 */
-	protected void handleAddedSubjects(Set<String> keySet) {
+	public void handleAddedSubjects() {
 		
-		beforeHandleAddedSubjects(keySet);
+		beforeHandleAddedSubjects();
 		
+		Set<String> keySet = newPropertiesMultiMap.keySet();
 		for (String key : keySet) {
 			Collection<T> values = newPropertiesMultiMap.get(key);
 			for (T fragment : values) {
@@ -144,14 +142,27 @@ public abstract class OntologyChangeProcessor<T extends Serializable> {
 		}
 	}
 	
-	protected void beforeHandleAddedSubjects(Set<String> keySet) {
+	/**
+	 * This method is called before adding a new inferred change
+	 */
+	protected void beforeHandleAddedSubjects() {
 		//subclasses should override
 	}
 
+	/**
+	 * This method is called to handle a removed inferred change from the concept passed in
+	 * @param conceptId
+	 * @param addedSubject
+	 */
 	protected void handleRemovedSubject(final String conceptId, final T removedSubject) {
 		// Subclasses should override		
 	}
 
+	/**
+	 * This method is called to handle an added inferred change to the concept passed in
+	 * @param conceptId
+	 * @param addedSubject
+	 */
 	protected void handleAddedSubject(final String conceptId, final T addedSubject) {
 		// Subclasses should override
 	}

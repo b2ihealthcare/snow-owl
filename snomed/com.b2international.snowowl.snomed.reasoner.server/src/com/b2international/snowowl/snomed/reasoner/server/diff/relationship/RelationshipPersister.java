@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.reasoner.server.diff.relationship;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
@@ -38,6 +37,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRef
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 /**
@@ -57,9 +57,9 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 	
 	private final Collection<String> relationshipIds = Sets.newHashSet();
 	
-	public RelationshipPersister(final SnomedEditingContext context, final Nature nature, final NamespaceAndMolduleAssigner relationshipNamespaceAllocator) {
+	public RelationshipPersister(final SnomedEditingContext context, final Nature nature, final NamespaceAndMolduleAssigner relationshipNamespaceAllocator, Multimap<String, StatementFragment> newStatementsMultimap) {
 		
-		super(relationshipNamespaceAllocator);
+		super(relationshipNamespaceAllocator, newStatementsMultimap);
 		this.context = context;
 		this.nature = nature;
 		
@@ -87,9 +87,9 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 	}
 	
 	@Override
-	protected void beforeHandleAddedSubjects(Set<String> conceptIds) {
+	protected void beforeHandleAddedSubjects() {
 		//pre-allocate namespaces for the new relationships per each concept
-		getRelationshipNamespaceAssigner().allocateRelationshipNamespacesAndModules(conceptIds, context);
+		getRelationshipNamespaceAssigner().allocateRelationshipNamespacesAndModules(newPropertiesMultiMap.keySet(), context);
 	}
 	
 	@Override

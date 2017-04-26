@@ -30,7 +30,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 
-import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
@@ -43,18 +42,21 @@ import com.b2international.snowowl.datastore.server.remotejobs.AbstractRemoteJob
 import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasonerTaxonomyBuilder.Type;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
+import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.SnomedReasonerServerActivator;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange;
-import com.b2international.snowowl.snomed.reasoner.server.diff.SourceConceptNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain.ConcreteDomainPersister;
 import com.b2international.snowowl.snomed.reasoner.server.diff.relationship.RelationshipPersister;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 
 import bak.pcj.set.LongSet;
 
@@ -142,21 +144,26 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Persisting changes", 6);
 		SnomedEditingContext editingContext = null;
 		
+		final Multimap<String, StatementFragment> newRelationshipsMultimap = HashMultimap.create();
+		final Multimap<String, ConcreteDomainFragment> newConcreteDomainMultimap = HashMultimap.create();
+		
 		try {
 
 			editingContext = new SnomedEditingContext(branchPath);
 			final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, Type.REASONER);
 
 			final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
-			final RelationshipPersister relationshipAddPersister = new RelationshipPersister(editingContext, OntologyChange.Nature.ADD, namespaceAndModuleAssigner);
-			final RelationshipPersister relationshipRemovePersister = new RelationshipPersister(editingContext, OntologyChange.Nature.REMOVE, namespaceAndModuleAssigner);
+			final RelationshipPersister relationshipAddPersister = new RelationshipPersister(editingContext, OntologyChange.Nature.ADD, namespaceAndModuleAssigner, newRelationshipsMultimap);
+			final RelationshipPersister relationshipRemovePersister = 
+					new RelationshipPersister(editingContext, OntologyChange.Nature.REMOVE, namespaceAndModuleAssigner, HashMultimap.<String, StatementFragment>create());
 			
 			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipAddPersister);
 			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipRemovePersister);
 			
 			final ConceptConcreteDomainNormalFormGenerator conceptConcreteDomainGenerator = new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
-			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.ADD, namespaceAndModuleAssigner));
-			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.REMOVE, namespaceAndModuleAssigner));
+			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.ADD, namespaceAndModuleAssigner, newConcreteDomainMultimap));
+			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), 
+					new ConcreteDomainPersister(editingContext, OntologyChange.Nature.REMOVE, namespaceAndModuleAssigner, HashMultimap.<String, ConcreteDomainFragment>create()));
 
 			final List<LongSet> equivalenciesToFix = Lists.newArrayList();
 
