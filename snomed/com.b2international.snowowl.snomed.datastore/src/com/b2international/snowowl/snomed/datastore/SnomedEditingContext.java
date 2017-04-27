@@ -29,7 +29,6 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMIT
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFIER_VALUE_TOPLEVEL_CONCEPT;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFYING_RELATIONSHIP;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_COMPLEX_MAP_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_TYPE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_SIMPLE_TYPE;
@@ -39,7 +38,6 @@ import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMes
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_CONCEPT_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_ONLY_FSN_DESCRIPTION_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_REFERENCE_SET_MESSAGE;
-import static com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions.isPreferred;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.emptyList;
 import static org.eclipse.emf.cdo.common.id.CDOID.NULL;
@@ -70,7 +68,6 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -833,9 +830,9 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			
 			final Concept concept = getConceptChecked(cdoId);
 			
-			if (updateSubtypeRelationships) {
-				updateChildren(concept, plan);
-			}
+//			if (updateSubtypeRelationships) {
+//				updateChildren(concept, plan);
+//			}
 			
 			if (monitor.isCanceled()) {
 				return SnomedInactivationPlan.NULL_IMPL;
