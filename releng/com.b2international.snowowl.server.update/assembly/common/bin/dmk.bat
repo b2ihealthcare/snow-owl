@@ -169,8 +169,14 @@ rem ------------------------------
 
 	rem Added awt.headless - http://mail-archives.apache.org/mod_mbox/poi-user/200705.mbox/%3C15719338671.20070504144714@dinom.ru%3E
 
-	set JAVA_OPTS=%JAVA_OPTS% -Xms5g 
-	set JAVA_OPTS=%JAVA_OPTS% -Xmx10g 
+	set JAVA_OPTS=%JAVA_OPTS% -Xms12g
+	set JAVA_OPTS=%JAVA_OPTS% -Xmx12g
+	set JAVA_OPTS=%JAVA_OPTS% -XX:+UseConcMarkSweepGC
+	set JAVA_OPTS=%JAVA_OPTS% -XX:CMSInitiatingOccupancyFraction=75
+	set JAVA_OPTS=%JAVA_OPTS% -XX:+UseCMSInitiatingOccupancyOnly
+	set JAVA_OPTS=%JAVA_OPTS% -XX:+DisableExplicitGC
+	set JAVA_OPTS=%JAVA_OPTS% -XX:+AlwaysPreTouch
+	set JAVA_OPTS=%JAVA_OPTS% -Xss1m
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl 
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl 
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl

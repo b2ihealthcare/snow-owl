@@ -190,8 +190,14 @@ then
 		
 		#Added awt.headless - http://mail-archives.apache.org/mod_mbox/poi-user/200705.mbox/%3C15719338671.20070504144714@dinom.ru%3E
         JAVA_OPTS="$JAVA_OPTS \
-        			-Xms5g \
-                    -Xmx10g \
+        			-Xms12g \
+                    -Xmx12g \
+                    -XX:+UseConcMarkSweepGC \
+                    -XX:CMSInitiatingOccupancyFraction=75 \
+                    -XX:+UseCMSInitiatingOccupancyOnly \
+                    -XX:+DisableExplicitGC \
+                    -XX:+AlwaysPreTouch \
+                    -Xss1m \
                     -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl \
                     -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl \
                     -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl \
