@@ -10,6 +10,7 @@
  * For example, the expression constraint below finds the set of anatomical 
  * structures, which are the finding site of a type of bone fracture (e.g. 
  * 85050009|Humerus|, 71341001|Femur|).
+ */
  
 <91723000|Anatomical structure|: 
 	R 363698007|Finding site| = <125605004 |Fracture of bone|
