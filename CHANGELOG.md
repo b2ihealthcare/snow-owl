@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.10.3
+
+### Changed
+- Default JVM settings have been changed to recommended default elasticsearch settings (835cbc700022abdc68bf8f764d92794cf8a42254)
+
+### Bugs
+- Exact term matching should use match query insteac of term query (11ffb349d2e2b778d36f0673217e0446990dc795)
+- Fixed invalid parsed text predicate -> ES query mapping (72043fb0d9c9b53a31b666643e5bce270beb9241)
+
 ## 5.10.2
 
 ### Added
