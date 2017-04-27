@@ -1,6 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.10.2
+
+### Added
+- SNOMED CT Description API now supports exact term matching via new option `EXACT_TERM` (3e33b974fd67671b5d8f616c2d6eeefca46ad885)
+- SNOMED CT Reference Set Member API now supports user supplied UUID parameters
+
+### Bugs
+- Fixed serialization issue of SyntaxException (20dbbea9eb13acb14237864d9be69258ccd7bf1b)
+- Fixed RemoteJobEntry result field mapping (3bc8b16febe593a6692873100ae32cb6f633ac40)
+- Fixed invalid BoostExpression -> ES Query mapping (00c57a81a0bf4c18f0796eb7583b361af70a9fe6)
+
 ## 5.10.1
 
 ### Changed
