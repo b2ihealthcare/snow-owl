@@ -68,6 +68,7 @@ import com.b2international.snowowl.datastore.version.VersioningManagerBroker;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemVersionSearchRequestBuilder;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -89,19 +90,25 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, V
 	private static final String ADJUST_EFFECTIVE_TIME_COMMIT_COMMENT_TEMPLATE = "Adjusted effective time to ''{0}'' for {1} version ''{2}''.";
 	
 	@NotEmpty
+	@JsonProperty
 	private String versionId;
 	
+	@JsonProperty
 	private String description;
 	
+	@JsonProperty
 	private String parentBranchPath;
 	
 	@NotNull
+	@JsonProperty
 	private Date effectiveTime;
 	
 	@NotEmpty
+	@JsonProperty
 	private String codeSystemShortName;
 	
 	@NotEmpty
+	@JsonProperty
 	private String primaryToolingId;
 	
 	private Collection<String> toolingIds = Collections.emptySet();
