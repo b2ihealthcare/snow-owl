@@ -241,7 +241,12 @@ public final class EsQueryBuilder {
 			query = QueryBuilders.fuzzyQuery(field, term).fuzziness(Fuzziness.ONE).prefixLength(1);
 			break;
 		case PARSED:
-			query = QueryBuilders.queryStringQuery(TextConstants.escape(term)).allowLeadingWildcard(true).defaultOperator(Operator.AND);
+			query = QueryBuilders.queryStringQuery(TextConstants.escape(term))
+						.field(field)
+						.escape(false)
+						.useDisMax(true)
+						.allowLeadingWildcard(true)
+						.defaultOperator(Operator.AND);
 			break;
 		default: throw new UnsupportedOperationException("Unexpected text match type: " + type);
 		}
