@@ -11,6 +11,7 @@
  *	       ^447562003|ICD-10 complex map reference set|)
  *
  * or as:
+ */
      
 (<19829001|Disorder of lung| AND <301867009|Edema of trunk|) AND
 	^447562003|ICD-10 complex map reference set|
