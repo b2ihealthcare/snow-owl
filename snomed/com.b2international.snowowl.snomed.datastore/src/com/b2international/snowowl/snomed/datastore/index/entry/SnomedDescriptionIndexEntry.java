@@ -173,7 +173,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public static Expression exactTerm(String term) {
-			return exactMatch(Fields.TERM+".exact", term);
+			return matchTextAll(Fields.TERM+".exact", term);
 		}
 		
 		public static Expression allTermPrefixesPresent(String term) {
