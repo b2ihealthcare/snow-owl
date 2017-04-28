@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.10.5
+
+### Bugs
+- Fixed MRCM rendering issue (29ed90711b75462b277c72ce5d6b7c0e03367c57)
+- Fixed version creation failure if complex map use invalid map category ids 
+
 ## 5.10.4
 
 ### Changed
