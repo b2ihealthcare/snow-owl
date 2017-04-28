@@ -370,41 +370,38 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				SctId::isAssigned, 
 				SctId::isPublished))));
 		
-		if (!problemSctIds.isEmpty()) {
-			throw new SctIdStatusException("Cannot publish %s component IDs because they are not assigned or already published.", problemSctIds);
-		}
-		
-		final Map<String, SctId> assignedSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, SctId::isAssigned));
-		
-		if (assignedSctIds.isEmpty()) {
-			return;
-		}
-
 		HttpPost deprecateRequest = null;
 		String currentNamespace = null;
 		
 		try {
 			
-			if (assignedSctIds.size() > 1) {
-				final Multimap<String, String> componentIdsByNamespace = toNamespaceMultimap(assignedSctIds.keySet());
-				for (final Entry<String, Collection<String>> entry : componentIdsByNamespace.asMap().entrySet()) {
-					currentNamespace = entry.getKey();
-					
-					for (final Collection<String> bulkIds : Iterables.partition(entry.getValue(), BULK_LIMIT)) {
-						LOGGER.debug(String.format("Sending bulk publication request for namespace %s with size %d.", currentNamespace, bulkIds.size()));
-						deprecateRequest = httpPost(String.format("sct/bulk/publish?token=%s", getToken()), createBulkPublishData(currentNamespace, bulkIds));
-						execute(deprecateRequest);
+			final Map<String, SctId> assignedSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, SctId::isAssigned));
+			if (!assignedSctIds.isEmpty()) {
+				if (assignedSctIds.size() > 1) {
+					final Multimap<String, String> componentIdsByNamespace = toNamespaceMultimap(assignedSctIds.keySet());
+					for (final Entry<String, Collection<String>> entry : componentIdsByNamespace.asMap().entrySet()) {
+						currentNamespace = entry.getKey();
+						
+						for (final Collection<String> bulkIds : Iterables.partition(entry.getValue(), BULK_LIMIT)) {
+							LOGGER.debug(String.format("Sending bulk publication request for namespace %s with size %d.", currentNamespace, bulkIds.size()));
+							deprecateRequest = httpPost(String.format("sct/bulk/publish?token=%s", getToken()), createBulkPublishData(currentNamespace, bulkIds));
+							execute(deprecateRequest);
+						}
 					}
+					
+				} else {
+					
+					final String componentId = Iterables.getOnlyElement(assignedSctIds.keySet());
+					currentNamespace = SnomedIdentifiers.getNamespace(componentId);
+					deprecateRequest = httpPost(String.format("sct/publish?token=%s", getToken()), createPublishData(componentId));
+					execute(deprecateRequest);
 				}
-				
-			} else {
-				
-				final String componentId = Iterables.getOnlyElement(assignedSctIds.keySet());
-				currentNamespace = SnomedIdentifiers.getNamespace(componentId);
-				deprecateRequest = httpPost(String.format("sct/publish?token=%s", getToken()), createPublishData(componentId));
-				execute(deprecateRequest);
 			}
-		
+			
+			if (!problemSctIds.isEmpty()) {
+				throw new SctIdStatusException("Cannot publish %s component IDs because they are not assigned or already published.", problemSctIds);
+			}
+			
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(String.format("Exception while publishing IDs for namespace %s.", currentNamespace), e);
 		} finally {
