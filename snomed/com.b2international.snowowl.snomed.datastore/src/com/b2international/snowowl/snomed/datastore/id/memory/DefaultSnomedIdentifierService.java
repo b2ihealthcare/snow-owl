@@ -194,10 +194,6 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 				SctId::isAssigned, 
 				SctId::isPublished))));
 		
-		if (!problemSctIds.isEmpty()) {
-			throw new SctIdStatusException("Cannot publish %s component IDs because they are not assigned or already published.", problemSctIds);
-		}
-		
 		final Map<String, SctId> assignedSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, SctId::isAssigned));
 		
 		for (final SctId sctId : assignedSctIds.values()) {
@@ -205,6 +201,10 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		}
 		
 		putSctIds(assignedSctIds);
+		
+		if (!problemSctIds.isEmpty()) {
+			throw new SctIdStatusException("Cannot publish %s component IDs because they are not assigned or already published.", problemSctIds);
+		}
 	}
 
 	@Override
