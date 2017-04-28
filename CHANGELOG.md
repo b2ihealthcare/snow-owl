@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.10.4
+
+### Changed
+- Add versioning parameters to job params object (7ac489c6f715bb7fec791deb78bd83b681440613) 
+- Exclude UK products by their module ID from classifications (12164c8116701f9a21bce822810c2cfb9851b310)
+- SNOMED CT Identifier service now properly move all ASSIGNED ids to PUBLISHED and report errors after the changes
+
 ## 5.10.3
 
 ### Changed
