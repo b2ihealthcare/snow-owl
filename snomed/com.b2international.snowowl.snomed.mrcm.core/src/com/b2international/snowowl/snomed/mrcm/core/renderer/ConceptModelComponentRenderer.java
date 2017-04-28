@@ -18,11 +18,6 @@ package com.b2international.snowowl.snomed.mrcm.core.renderer;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.IComponentNameProvider;
-import com.b2international.snowowl.core.api.INameProviderFactory;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
 import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
@@ -38,9 +33,6 @@ import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
 import com.google.common.base.Strings;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -49,23 +41,14 @@ import com.google.common.collect.ImmutableMap;
 public class ConceptModelComponentRenderer {
 	private static int DEFAULT_LENGTH_LIMIT = 60;
 	
-	private final LoadingCache<String, String> componentLabelMap;
+	private final Map<String, String> componentLabelMap;
 	
 	public ConceptModelComponentRenderer(final String branch) {
 		this(branch, ImmutableMap.<String, String>of());
 	}
 	
 	public ConceptModelComponentRenderer(final String branch, Map<String, String> componentLabelMap) {
-		this.componentLabelMap = CacheBuilder.newBuilder().build(new CacheLoader<String, String>() {
-			@Override
-			public String load(String id) throws Exception {
-				final INameProviderFactory conceptNameProviderFactory = CoreTerminologyBroker.getInstance().getNameProviderFactory(SnomedTerminologyComponentConstants.CONCEPT);
-				final IComponentNameProvider conceptNameProvider = conceptNameProviderFactory.getNameProvider();
-				return conceptNameProvider.getComponentLabel(BranchPathUtils.createPath(branch), id);
-			}
-		});
-		
-		this.componentLabelMap.putAll(componentLabelMap);
+		this.componentLabelMap = componentLabelMap;
 	}
 	
 	/**
@@ -223,7 +206,7 @@ public class ConceptModelComponentRenderer {
 		if (Strings.isNullOrEmpty(conceptId)) {
 			return "";
 		} else {
-			return componentLabelMap.getUnchecked(conceptId);
+			return componentLabelMap.getOrDefault(conceptId, conceptId);
 		}
 	}
 	
