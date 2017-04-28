@@ -9,7 +9,7 @@
 	<parent>
 		<artifactId>releng-parent</artifactId>
 		<groupId>com.b2international.snowowl</groupId>
-		<version>5.10.4</version>
+		<version>5.10.5</version>
 	</parent>
 	
 	<properties>

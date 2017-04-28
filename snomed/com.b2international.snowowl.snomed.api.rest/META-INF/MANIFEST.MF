@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bundle-Version: 5.10.4
+Bundle-Version: 5.10.5
 Bundle-Name: Snow Owl SNOMED CT REST Service
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: com.b2international.snowowl.snomed.api.rest;singleton:=true
