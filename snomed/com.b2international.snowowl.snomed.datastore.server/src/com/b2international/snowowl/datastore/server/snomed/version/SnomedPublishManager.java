@@ -54,6 +54,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierService.SctIdStatusException;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
@@ -207,11 +208,16 @@ public class SnomedPublishManager extends PublishManager {
 	@Override
 	public void postCommit() {
 		if (!CompareUtils.isEmpty(componentIdsToPublish)) {
-			SnomedRequests.identifiers().preparePublish()
+			try {
+				SnomedRequests.identifiers().preparePublish()
 					.setComponentIds(componentIdsToPublish)
 					.build(getRepositoryUuid())
 					.execute(getEventBus())
 					.getSync();
+			} catch (SctIdStatusException e) {
+				// report ID issues as warning instead of error
+				LOGGER.warn(e.getMessage(), e);
+			}
 		}
 		super.postCommit();
 	}
