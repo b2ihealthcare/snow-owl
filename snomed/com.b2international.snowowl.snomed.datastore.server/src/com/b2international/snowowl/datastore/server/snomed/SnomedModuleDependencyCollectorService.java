@@ -52,7 +52,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -223,7 +222,7 @@ public enum SnomedModuleDependencyCollectorService {
 	}
 
 	private void tryCreateMemberIfNotEmpty(long sourceModule, String dependsOnConceptId) {
-		if (!Strings.isNullOrEmpty(dependsOnConceptId) && SnomedIdentifiers.getComponentCategory(dependsOnConceptId) == ComponentCategory.CONCEPT) {
+		if (SnomedIdentifiers.isConceptIdentifier(dependsOnConceptId)) {
 			tryCreateMember(sourceModule, getConceptModuleMapping().get(Long.parseLong(dependsOnConceptId)));
 		}
 	}
