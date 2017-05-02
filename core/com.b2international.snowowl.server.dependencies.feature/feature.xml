@@ -809,7 +809,7 @@ Visit us at http://b2i.sg
          id="com.b2international.snowowl.hibernate.validator"
          download-size="0"
          install-size="0"
-         version="5.1.2.Final-b2i"
+         version="5.1.3.Final-b2i"
          unpack="false"/>
 
    <plugin
