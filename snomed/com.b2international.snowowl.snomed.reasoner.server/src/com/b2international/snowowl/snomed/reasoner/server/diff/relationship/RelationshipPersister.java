@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.reasoner.server.diff.relationship;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -89,7 +90,7 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 	@Override
 	protected void beforeHandleAddedSubjects() {
 		//pre-allocate namespaces for the new relationships per each concept
-		getRelationshipNamespaceAssigner().allocateRelationshipNamespacesAndModules(newPropertiesMultiMap.keySet(), context);
+		getRelationshipNamespaceAssigner().allocateRelationshipNamespacesAndModules(new HashSet<String>(newPropertiesMultiMap.keySet()), context);
 	}
 	
 	@Override
@@ -98,7 +99,6 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 		if (!Nature.ADD.equals(nature)) {
 			return;
 		}
-
 		final String namespace = getRelationshipNamespaceAssigner().getRelationshipNamespace(sourceConceptId, context.getBranchPath());
 		
 		

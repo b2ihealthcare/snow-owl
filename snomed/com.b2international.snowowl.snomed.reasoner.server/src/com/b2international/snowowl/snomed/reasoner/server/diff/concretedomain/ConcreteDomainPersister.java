@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain;
 
+import java.util.HashSet;
+
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -66,7 +68,7 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 	@Override
 	protected void beforeHandleAddedSubjects() {
 		//pre-allocate namespaces for the new concrete domains per each concept
-		getRelationshipNamespaceAssigner().allocateConcreteDomainModules(newPropertiesMultiMap.keySet(), context);
+		getRelationshipNamespaceAssigner().allocateConcreteDomainModules(new HashSet<String>(newPropertiesMultiMap.keySet()), context);
 	}
 	
 	@Override
