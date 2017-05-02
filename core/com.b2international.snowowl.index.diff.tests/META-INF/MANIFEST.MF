@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Index Diff Tests
 Bundle-SymbolicName: com.b2international.snowowl.index.diff.tests;singleton:=true
-Bundle-Version: 4.6.8.qualifier
+Bundle-Version: 4.6.9.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: .
