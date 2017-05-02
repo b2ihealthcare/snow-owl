@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Hibernate Validator Wrapper
 Bundle-SymbolicName: com.b2international.snowowl.hibernate.validator
-Bundle-Version: 5.1.2.Final-b2i
+Bundle-Version: 5.1.3.Final-b2i
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .,
