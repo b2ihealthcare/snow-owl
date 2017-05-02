@@ -121,7 +121,7 @@ public abstract class AbstractTerminologyImportValidator<T extends CDOObject> {
 		}).toSet();
 		
 		if (rows.size() > fieldSet.size()) {
-			addDefect(sheetName, DefectType.DUPLICATE, String.format("Spreadsheet %s, has duplicated fields in column %s.", sheetName, uniqueColumn));
+			addDefect(sheetName, DefectType.DUPLICATE, String.format("Spreadsheet %s, has duplicated fields in column %s.", sheetName, uniqueColumn + 1));
 		}
 	}
 	
