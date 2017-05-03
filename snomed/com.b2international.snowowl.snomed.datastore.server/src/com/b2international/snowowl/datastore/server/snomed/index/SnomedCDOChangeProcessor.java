@@ -439,7 +439,7 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 		final ComponentLabelChangeProcessor labelChangeProcessor = new ComponentLabelChangeProcessor(branchPath, index);
 		final Function<CDOID, Document> documentProvider = new Function<CDOID, Document>() {
 			@Override public Document apply(CDOID input) {
-				return getDocumentForDetachedMember(input);
+				return getMemberDocumentByStorageKey(input);
 			}
 		};
 		final List<ChangeSetProcessor<SnomedDocumentBuilder>> changeSetProcessors = ImmutableList.<ChangeSetProcessor<SnomedDocumentBuilder>>builder()
@@ -857,21 +857,21 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 	}
 
 	/*returns with the index document of a detached reference set member identified by its unique storage key.*/
-	private Document getDocumentForDetachedMember(final CDOID id) {
+	private Document getMemberDocumentByStorageKey(final CDOID id) {
 		
 		final long storageKey = CDOIDUtils.asLong(id);
 		final Query query = SnomedMappings.newQuery().storageKey(storageKey).matchAll();
 		
 		final TopDocs topDocs = index.search(branchPath, query, 1);
 		
-		Preconditions.checkNotNull(topDocs, "Cannot find detached reference set member with its unique storage key: " + id);
-		Preconditions.checkState(!CompareUtils.isEmpty(topDocs.scoreDocs), "Cannot find detached reference set member with its unique storage key: " + id);
+		final String message = "Cannot find reference set member document by storage key: " + id;
+		Preconditions.checkNotNull(topDocs, message);
+		Preconditions.checkState(!CompareUtils.isEmpty(topDocs.scoreDocs), message);
 		
 		final ScoreDoc scoreDoc = topDocs.scoreDocs[0];
 		final Document doc = index.document(branchPath, scoreDoc.doc, MEMBER_FIELD_TO_LOAD);
 		
-		return Preconditions.checkNotNull(doc, "Cannot find detached reference set member with its unique storage key: " + id);
-		
+		return Preconditions.checkNotNull(doc, message);
 	}
 	
 	/*returns with the terminology browser service. always represents the previous state of the SNOMED CT ontology*/
