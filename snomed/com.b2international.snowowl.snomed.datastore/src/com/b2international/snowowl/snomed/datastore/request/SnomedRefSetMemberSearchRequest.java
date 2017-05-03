@@ -121,6 +121,9 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			if (propsFilter.containsKey(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
 				final Collection<String> targetComponentIds = propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT, String.class);
 				addFilterClause(filter, SnomedMappings.memberTargetComponentId().createTermsFilter(targetComponentIds), Occur.MUST);
+			} else if (propsFilter.containsKey(SnomedRf2Headers.FIELD_MAP_TARGET)) {
+				final Collection<String> mapTargets = propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_TARGET, String.class);
+				addFilterClause(filter, SnomedMappings.memberMapTargetComponentId().createTermsFilter(mapTargets), Occur.MUST);
 			}
 		}
 		
