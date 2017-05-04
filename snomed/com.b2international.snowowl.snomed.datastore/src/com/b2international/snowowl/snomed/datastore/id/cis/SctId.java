@@ -321,4 +321,9 @@ public class SctId {
 		return IdentifierStatus.DEPRECATED.getSerializedName().equals(this.status);
 	}
 	
+	@Override
+	public String toString() {
+		return getSctid();
+	}
+	
 }

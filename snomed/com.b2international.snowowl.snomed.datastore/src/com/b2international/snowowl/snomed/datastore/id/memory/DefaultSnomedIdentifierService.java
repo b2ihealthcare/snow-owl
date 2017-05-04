@@ -283,23 +283,31 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 	@Override
 	public void publish(final Collection<String> componentIds) {
-		
-		final Map<String, SctId> publishedSctIds = Maps.newHashMap();
-
 		LOGGER.debug("Publishing {} component IDs.", componentIds.size());
-
-		for (SctId sctId : getSctIds(componentIds)) {
-
+		
+		final Collection<SctId> sctIds = getSctIds(componentIds);
+		final Collection<SctId> modifiedSctIds = newHashSet();
+		final Collection<SctId> problemSctIds = newHashSet();
+		
+		for (final SctId sctId : sctIds) {
 			if (sctId.isAssigned()) {
 				sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
-				publishedSctIds.put(sctId.getSctid(), sctId);
+				modifiedSctIds.add(sctId);
 			} else if (!sctId.isPublished()) {
-				throw new BadRequestException("Cannot publish ID '%s' in state '%s'.", sctId.getSctid(), sctId.getStatus());
+				problemSctIds.add(sctId);
 			}
-			
 		}
 		
-		store.putAll(publishedSctIds);
+		store.putAll(Maps.uniqueIndex(modifiedSctIds, new Function<SctId, String>() {
+			@Override
+			public String apply(SctId id) {
+				return id.getSctid();
+			}
+		}));
+		
+		if (!problemSctIds.isEmpty()) {
+			LOGGER.warn("Could not publish component IDs ({}), because they are not assigned nor already published", problemSctIds);
+		}
 	}
 
 	@Override
