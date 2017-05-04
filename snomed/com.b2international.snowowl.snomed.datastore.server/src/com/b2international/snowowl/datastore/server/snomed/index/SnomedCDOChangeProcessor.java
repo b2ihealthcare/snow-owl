@@ -711,13 +711,12 @@ public class SnomedCDOChangeProcessor implements ICDOChangeProcessor {
 					final CDOFeatureDelta changeStatusDelta = revisionDelta.getFeatureDelta(SnomedPackage.Literals.COMPONENT__ACTIVE);
 					if (changeStatusDelta instanceof CDOSetFeatureDelta) {
 						CDOSetFeatureDelta delta = (CDOSetFeatureDelta) changeStatusDelta;
-						final Boolean oldValue = (Boolean) delta.getOldValue();
 						final Boolean newValue = (Boolean) delta.getValue();
-						if (Boolean.TRUE == oldValue && Boolean.FALSE == newValue) {
+						if (Boolean.FALSE == newValue) {
 							//nothing can be dirty and new at the same time
 							//we do not need this concept. either it was deactivated now or sometime earlier.
 							taxonomyBuilder.removeNode(createNode(dirtyConcept.getId(), true));
-						} else if (Boolean.FALSE == oldValue && Boolean.TRUE == newValue) {
+						} else if (Boolean.TRUE == newValue) {
 							//consider reverting inactivation
 							if (!taxonomyBuilder.containsNode(dirtyConcept.getId())) {
 								taxonomyBuilder.addNode(createNode(dirtyConcept));
