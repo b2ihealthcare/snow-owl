@@ -205,6 +205,11 @@ public class ConcurrentCollectionUtils {
 			}
 		};
 	}
+	
+	public static <F, T> Iterator<T> transform(final Iterator<F> sourceIterator, final Function<F, T> function) {
+		return transform(sourceIterator, function, Runtime.getRuntime().availableProcessors());
+	}
+	
 	/**
 	 * Applies the specified function concurrently to each item of the source iterator, 
 	 * retaining the original order of the elements. The underlying {@link Iterator} 
@@ -217,14 +222,14 @@ public class ConcurrentCollectionUtils {
 	 * @param function the function to use
 	 * @return the iterator with transformed elements
 	 */
-	public static <F, T> Iterator<T> transform(final Iterator<F> sourceIterator, final Function<F, T> function) {
+	public static <F, T> Iterator<T> transform(final Iterator<F> sourceIterator, final Function<F, T> function, final int numberOfAvailableProcessors) {
 		Preconditions.checkNotNull(sourceIterator, "Source iterator must not be null.");
 		Preconditions.checkNotNull(function, "Function must not be null.");
 		
 		return new AbstractIterator<T>() {
 			private static final int READ_AHEAD_FACTOR = 2;
 			
-			private final int availableProcessors = Runtime.getRuntime().availableProcessors();
+			private final int availableProcessors = numberOfAvailableProcessors;
 			private final int prefetchBatchSize = availableProcessors * READ_AHEAD_FACTOR;
 			
 			private final Queue<Future<T>> futureQueue = new ConcurrentLinkedQueue<Future<T>>();
