@@ -44,7 +44,6 @@ import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.IndexRead;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
-import com.google.common.base.Functions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
@@ -112,12 +111,13 @@ public class TerminologyBrowserFilter<E extends IIndexEntry> {
 					componentIdParentComponentIdMap.putAll(componentId, parentIds);
 				}
 				
-				//fetch the labels in one query
 				Collection<String> rootIds = getRootIds(branchPath);
-				addTopLevels(branchPath, null, rootIds, topLevelDepth, Maps.uniqueIndex(rootIds, Functions.<String>identity()));
-				
+
 				//fetch the labels in one query
 				Map<String, String> idToLabelMap = fetchLabels(branchPath, componentIdDocMap);
+
+				addTopLevels(branchPath, null, rootIds, topLevelDepth, idToLabelMap);
+				
 				
 				for (final String componentId : componentIdDocMap.keySet()) {
 					processComponentForTree(branchPath, componentId, idToLabelMap);
