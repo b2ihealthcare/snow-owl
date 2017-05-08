@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Server Console
 Bundle-SymbolicName: com.b2international.snowowl.server.console
-Bundle-Version: 4.6.9.qualifier
+Bundle-Version: 4.6.10.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.8.0,3.9.0)",

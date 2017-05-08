@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl File-based Authentication
 Bundle-SymbolicName: com.b2international.snowowl.authentication.file;singleton:=true
-Bundle-Version: 4.6.9.qualifier
+Bundle-Version: 4.6.10.qualifier
 Bundle-Activator: com.b2international.snowowl.authentication.file.FileAuthenticationPlugin
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime,

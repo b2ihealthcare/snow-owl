@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.b2international.snowowl</groupId>
     <artifactId>snomed-parent</artifactId>
-    <version>4.6.9-SNAPSHOT</version>
+    <version>4.6.10-SNAPSHOT</version>
   </parent>
   <artifactId>com.b2international.snowowl.snomed.refset.model</artifactId>
   <packaging>eclipse-plugin</packaging>
