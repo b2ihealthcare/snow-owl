@@ -24,6 +24,7 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.commit.CDOChangeSetData;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
@@ -98,21 +99,16 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 	
 	private ComponentTextProvider currentTextProvider;
 	
-	private ComponentTextProvider baseTextProvider;
-	
 	@Override
 	public Collection<HierarchicalComponentDelta> processChanges(CDOChangeSetData changeSetData, CDOView baseView, CDOView currentView) {
+
 		currentTextProvider = new CdoViewComponentTextProvider(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class), currentView);
-		baseTextProvider = new CdoViewComponentTextProvider(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class), baseView);
 		return super.processChanges(changeSetData, baseView, currentView);
 	}
 
 	/**
 	 * Tires to resolve as much CDO ID to SNOMED&nbsp;CT concept ID mapping as possible from the {@link InternalCDORevisionDelta changed deltas}
 	 * and the {@link InternalCDORevision new revisions}.
-	 */
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.delta.AbstractComponentDeltaBuilder#preProcess()
 	 */
 	@Override
 	protected void preProcess() {
@@ -204,11 +200,8 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 					//if inactive, simple do not process component
 					final boolean active = (Boolean) revision.getValue(SnomedPackage.eINSTANCE.getComponent_Active());
 					if (!active) {
-						
 						return;
-						
 					}
-					
 				}
 				
 				//reference set member
@@ -217,13 +210,9 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 					//if member is new but inactive, skip processing
 					final boolean active = (Boolean) revision.getValue(SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_Active());
 					if (!active) {
-						
 						return;
-						
 					}
-					
 				}
-				
 			}
 			
 			//concepts
@@ -406,17 +395,11 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.delta.AbstractHierarchicalComponentDeltaBuilder#getTerminologyBrowser()
-	 */
 	@Override
 	protected SnomedTerminologyBrowser getTerminologyBrowser() {
 		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.delta.AbstractHierarchicalComponentDeltaBuilder#getTerminologyComponentId()
-	 */
 	@Override
 	protected short getTerminologyComponentId() {
 		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
@@ -425,7 +408,7 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 	@Override
 	protected AbstractIndexEntry getIndexEntryFromTerminologyBrowser(final String id) {
 		final SnomedConceptIndexEntry concept = (SnomedConceptIndexEntry) super.getIndexEntryFromTerminologyBrowser(id);
-		return SnomedConceptIndexEntry.builder(concept).label(getConceptLabel(id, getCurrentView())).build();
+		return SnomedConceptIndexEntry.builder(concept).label(getConceptLabel(id, concept.getStorageKey(), getCurrentView())).build();
 	}
 	
 	/**
@@ -438,7 +421,7 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 	 */
 	private HierarchicalComponentDelta createDelta(final String conceptId, final long cdoId, final ChangeKind change, final CDOView view) {
 		
-		final String label = getConceptLabel(conceptId, view);
+		final String label = getConceptLabel(conceptId, cdoId, view);
 		
 		short terminologyComponentId = getTerminologyComponentId();
 		String iconId = new SnomedConceptIconIdProvider().getIconId(BranchPointUtils.create(view), conceptId);
@@ -511,8 +494,11 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 	private HierarchicalComponentDelta createDelta(final InternalCDORevision revision, final ChangeKind change, final CDOView view) {
 		
 		final String conceptId = String.valueOf(revision.getValue(SnomedPackage.eINSTANCE.getComponent_Id()));
-		final String label = getConceptLabel(conceptId, view);
 		final long cdoId = CDOIDUtils.asLong(revision.getID());
+		final String label = getConceptLabel(conceptId, cdoId, view);
+		
+		
+		
 		
 		short terminologyComponentId = getTerminologyComponentId();
 		String iconId = new SnomedConceptIconIdProvider().getIconId(BranchPointUtils.create(view), conceptId);
@@ -534,7 +520,9 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 		Preconditions.checkNotNull(concept, "SNOMED CT concept argument cannot be null.");
 		
 		final String conceptId = concept.getId();
-		final String label = getConceptLabel(conceptId, concept.cdoView());
+		
+		final String label = getConceptLabel(conceptId, CDOIDUtil.getLong(concept.cdoID()), concept.cdoView());
+		
 		final long cdoId = CDOIDUtils.asLong(concept.cdoID());
 		
 		short terminologyComponentId = getTerminologyComponentId();
@@ -552,12 +540,10 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 	}
 
 	/*returns with the PT of a concept. first checks cached components, then index, then CDO, finally falls back to ID*/
-	private String getConceptLabel(final String conceptId, final CDOView view) {
+	private String getConceptLabel(final String conceptId, final long storageKey, final CDOView view) {
 
 		Preconditions.checkNotNull(conceptId, "Concept ID argument cannot be null.");
 		CDOUtils.check(view);
-		
-		final ComponentTextProvider textProvider = (view == getBaseView()) ? baseTextProvider : currentTextProvider;
 		
 		//try to get object from already processed deltas (we can avoid one label lookup)
 		String label = null;
@@ -575,14 +561,21 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 
 		//fall back to CDO
 		if (StringUtils.isEmpty(label)) {
-			label = textProvider.getText(conceptId);
+			if (view == getBaseView()) {
+				CDOObject cdoObject = view.getObject(CDOIDUtil.createLong(storageKey));
+				if (cdoObject instanceof Concept) {
+					Concept concept = (Concept) cdoObject;
+					label = concept.getFullySpecifiedName();
+				}
+			} else {
+				label = currentTextProvider.getText(conceptId);
+			}
 		}
 
 		//if still empty fall back to ID
 		if (StringUtils.isEmpty(label)) {
 			label = conceptId;
 		}
-
 		return label;
 	}
 	
