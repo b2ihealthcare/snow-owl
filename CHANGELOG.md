@@ -5,14 +5,14 @@ All notable changes to this project will be documented in this file.
 
 ### Bugs
 - Fixed MRCM rendering issue (29ed90711b75462b277c72ce5d6b7c0e03367c57)
-- Fixed version creation failure if complex map use invalid map category ids 
+- Fixed version creation failure if complex map uses invalid map category ids 
 
 ## 5.10.4
 
 ### Changed
 - Add versioning parameters to job params object (7ac489c6f715bb7fec791deb78bd83b681440613) 
 - Exclude UK products by their module ID from classifications (12164c8116701f9a21bce822810c2cfb9851b310)
-- SNOMED CT Identifier service now properly move all ASSIGNED ids to PUBLISHED and report errors after the changes
+- SNOMED CT Identifier service now properly moves all ASSIGNED ids to PUBLISHED and reports errors after the changes
 
 ## 5.10.3
 
