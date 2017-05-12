@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl SNOMED CT Datastore Tests
 Bundle-SymbolicName: com.b2international.snowowl.snomed.datastore.tests;singleton:=true
-Bundle-Version: 4.6.10.qualifier
+Bundle-Version: 4.6.11.qualifier
 Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.snowowl.snomed.datastore;bundle-version="4.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7

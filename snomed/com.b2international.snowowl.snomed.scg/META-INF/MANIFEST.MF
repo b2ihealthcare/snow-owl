@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl SCG Core
 Bundle-Vendor: B2i Healthcare
-Bundle-Version: 4.6.10.qualifier
+Bundle-Version: 4.6.11.qualifier
 Bundle-SymbolicName: com.b2international.snowowl.snomed.scg;singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.8.0,3.9.0)",
