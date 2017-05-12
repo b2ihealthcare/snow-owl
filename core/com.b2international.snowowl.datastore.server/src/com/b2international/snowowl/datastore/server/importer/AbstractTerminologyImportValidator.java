@@ -30,8 +30,11 @@ import com.b2international.snowowl.datastore.importer.TerminologyImportType;
 import com.b2international.snowowl.datastore.importer.TerminologyImportValidationDefect;
 import com.b2international.snowowl.datastore.importer.TerminologyImportValidationDefect.DefectType;
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -113,15 +116,35 @@ public abstract class AbstractTerminologyImportValidator<T extends CDOObject> {
 	 * @return true if duplicates found
 	 */
 	protected void validateDuplicateFields(final String sheetName, final Set<Row> rows, final int uniqueColumn) {
-		Set<String> fieldSet = FluentIterable.from(rows).transform(new Function<Row, String>() {
-			@Override
-			public String apply(Row row) {
-				return ExcelUtilities.extractContentAsString(row.getCell(uniqueColumn));
-			}
-		}).toSet();
 		
-		if (rows.size() > fieldSet.size()) {
-			addDefect(sheetName, DefectType.DUPLICATE, String.format("Spreadsheet %s, has duplicated fields in column %s.", sheetName, uniqueColumn + 1));
+		Multimap<String, Row> numberOfUniqueRowsMap = ArrayListMultimap.create();
+		
+		for (Row row : rows) {
+			String uniqueCellString = ExcelUtilities.extractContentAsString(row.getCell(uniqueColumn));
+			numberOfUniqueRowsMap.put(uniqueCellString, row);
+		}
+		
+		Set<String> uniqueCellStringKeys = numberOfUniqueRowsMap.keySet();
+		for (String uniqueCellStringKey : uniqueCellStringKeys) {
+			Collection<Row> countedRows = numberOfUniqueRowsMap.get(uniqueCellStringKey);
+			if (countedRows.size() > 1) {
+				
+				ImmutableSet<String> violatingRowNumbers = FluentIterable.from(countedRows).transform(new Function<Row, String>() {
+
+					@Override
+					public String apply(Row row) {
+						return String.valueOf(row.getRowNum()+1);
+					}
+				}).toSet();
+				
+				//join the violating row numbers
+				Joiner joiner = Joiner.on(',');
+				joiner.skipNulls();
+				String jointString = joiner.join(violatingRowNumbers);
+				   
+				addDefect(sheetName, DefectType.DUPLICATE, String.format("Spreadsheet %s, unique column %s has duplicated values (%s) between rows %s.", 
+						sheetName, uniqueColumn + 1, uniqueCellStringKey, jointString));
+			}
 		}
 	}
 	
