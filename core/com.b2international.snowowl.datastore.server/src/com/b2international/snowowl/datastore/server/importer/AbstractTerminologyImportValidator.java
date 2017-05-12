@@ -138,8 +138,7 @@ public abstract class AbstractTerminologyImportValidator<T extends CDOObject> {
 				}).toSet();
 				
 				//join the violating row numbers
-				Joiner joiner = Joiner.on(',');
-				joiner.skipNulls();
+				Joiner joiner = Joiner.on(',').skipNulls();
 				String jointString = joiner.join(violatingRowNumbers);
 				   
 				addDefect(sheetName, DefectType.DUPLICATE, String.format("Spreadsheet %s, unique column %s has duplicated values (%s) between rows %s.", 
