@@ -78,6 +78,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -332,8 +333,8 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							
 							//FSN
 							if (descriptionTypeId.equals(Concepts.FULLY_SPECIFIED_NAME)) {
-								final String description = findPreferredDescription(conceptCDOAndSnomedIds.get(conceptCDOId), fsnDescriptions);
-								stringBuffer.append(joinResultsWithDelimiters(Sets.newHashSet(description), 1, delimiter, descriptionIdExpected));
+								final Collection<String> descriptions = findPreferredDescription(conceptCDOAndSnomedIds.get(conceptCDOId), fsnDescriptions);
+								stringBuffer.append(joinResultsWithDelimiters(descriptions, 1, delimiter, descriptionIdExpected));
 							} else {
 								final Collection<String> descriptions = findDescriptions(conceptCDOAndSnomedIds.get(conceptCDOId), descriptionTypeId);
 								stringBuffer.append(joinResultsWithDelimiters(descriptions, exportItemMaxOccurences.get(descriptionTypeId), delimiter, descriptionIdExpected));
@@ -376,8 +377,8 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							break;
 
 						case PREFERRED_TERM:
-							final String pt = findPreferredDescription(conceptCDOAndSnomedIds.get(conceptCDOId), ptDescriptions);
-							stringBuffer.append(pt);
+							final Collection<String> ptWithId = findPreferredDescription(conceptCDOAndSnomedIds.get(conceptCDOId), ptDescriptions);
+							stringBuffer.append(joinResultsWithDelimiters(ptWithId, 1, delimiter, descriptionIdExpected));
 							break;
 
 						case CONCEPT_ID:
@@ -436,7 +437,9 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		return file;
 	}
 	
-	private String findPreferredDescription(final String conceptId, final SnomedDescriptions descriptions) {
+	private Collection<String> findPreferredDescription(final String conceptId, final SnomedDescriptions descriptions) {
+		
+		List<String> resultStrings = Lists.newArrayList();
 		
 		FluentIterable<ISnomedDescription> conceptFilter = FluentIterable.from(descriptions)
 				.filter(new Predicate<ISnomedDescription>() {
@@ -453,24 +456,28 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			.first();
 				
 		if (optionalFSN.isPresent()) {
-			return optionalFSN.get().getTerm();
+			
+			resultStrings.add(optionalFSN.get().getId());
+			resultStrings.add(optionalFSN.get().getTerm());
 		} else {
 			optionalFSN = conceptFilter
 				.filter(new AcceptabilityPredicate(Concepts.REFSET_LANGUAGE_TYPE_UK, true))
 				.first();
 			if (optionalFSN.isPresent()) {
-				return optionalFSN.get().getTerm();
+				resultStrings.add(optionalFSN.get().getId());
+				resultStrings.add(optionalFSN.get().getTerm());
 			} else {
 				optionalFSN = conceptFilter
 					.filter(new AcceptabilityPredicate(Concepts.REFSET_LANGUAGE_TYPE_US, true))
 					.first();
 			} if (optionalFSN.isPresent()) {
-				return optionalFSN.get().getTerm();
+				resultStrings.add(optionalFSN.get().getId());
+				resultStrings.add(optionalFSN.get().getTerm());
 			} else {
 				LOG.warn("Neither the preference nor the UK descriptions were found for concept with id {}." + conceptId);
-				return "";
 			}
 		}
+		return resultStrings;
 	}
 
 	private void fetchRefsetMemberConceptIds() {
@@ -961,7 +968,9 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	 */
 	private Collection<String> findDescriptions(final String conceptId, final String descriptionTypeId) {
 		
-		return FluentIterable.from(descriptions)
+		List<String> resultStrings = Lists.newArrayList();
+		
+		Set<ISnomedDescription> filteredDescriptions = FluentIterable.from(descriptions)
 				.filter(new Predicate<ISnomedDescription>() {
 
 			@Override
@@ -982,14 +991,14 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		//filter out the preferred synonyms
 		.filter(new AcceptabilityPredicate(Long.toString(languageConfiguration), false))
 		.filter(new AcceptabilityPredicate(Concepts.REFSET_LANGUAGE_TYPE_UK, false))
-		.filter(new AcceptabilityPredicate(Concepts.REFSET_LANGUAGE_TYPE_US, false))
-		.transform(new Function<ISnomedDescription, String>() {
-
-			@Override
-			public String apply(ISnomedDescription description) {
-				return description.getTerm();
-			}
-		}).toSet();
+		.filter(new AcceptabilityPredicate(Concepts.REFSET_LANGUAGE_TYPE_US, false)).toSet();
+		
+		for (ISnomedDescription snomedDescription : filteredDescriptions) {
+			resultStrings.add(snomedDescription.getId());
+			resultStrings.add(snomedDescription.getTerm());
+		}
+		return resultStrings;
+		
 	}
 	
 	/**
