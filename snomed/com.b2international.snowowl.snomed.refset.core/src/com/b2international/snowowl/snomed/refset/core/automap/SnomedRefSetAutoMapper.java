@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -29,6 +30,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
@@ -37,6 +39,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchR
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterables;
 
 /**
  * This class is responsible for mapping labels or IDs with SNOMED CT concepts. For performance optimization the automapper uses a recursive algorithm
@@ -49,12 +52,12 @@ public class SnomedRefSetAutoMapper {
 	private static final int SEARCHER_STEP_LIMIT = 243;
 	private static final int SEARCHER_STEP_INCREMENT_MULTIPLIER = 3;
 
-	private final String topLevelConceptId;
+	private final Set<String> selectedAncestorIds;
 	private final RefSetAutoMapperModel model;
 	
-	public SnomedRefSetAutoMapper(final String topLevelConceptId, final RefSetAutoMapperModel model) {
+	public SnomedRefSetAutoMapper(final Set<String> selectedAncestorIds, final RefSetAutoMapperModel model) {
 		this.model = model;
-		this.topLevelConceptId = topLevelConceptId;
+		this.selectedAncestorIds = selectedAncestorIds;
 	}
 
 	public Map<Integer, String> resolveValues(final IProgressMonitor monitor) {
@@ -81,7 +84,7 @@ public class SnomedRefSetAutoMapper {
 						.filterByActive(true)
 						.filterByTerm(entry.getValue())
 						.filterByExtendedLocales(locales)
-						.filterByAncestor(topLevelConceptId)
+						.filterByEscg(generateExpression())
 						.withSearchProfile(userId)
 						.withDoi()
 						.setExpand("pt()");
@@ -118,6 +121,33 @@ public class SnomedRefSetAutoMapper {
 		}
 		
 		return resolvedValues;
+	}
+
+	private String generateExpression() {
+		
+		if (selectedAncestorIds.isEmpty()) {
+			
+			return String.format("<%s", Concepts.ROOT_CONCEPT);
+			
+		} else if (selectedAncestorIds.size() == 1) {
+			
+			return String.format("<%s", Iterables.getOnlyElement(selectedAncestorIds));
+			
+		} else {
+			
+			String firstId = FluentIterable.from(selectedAncestorIds).first().get();
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(String.format("<%s", firstId));
+			
+			for (String id : selectedAncestorIds) {
+				if (!id.equals(firstId)) {
+					sb.append(String.format(" UNION <%s", id));
+				}
+			}
+			
+			return sb.toString();
+		}
 	}
 
 	protected Map<Integer, String> getValuesFromColumn(final int targetColumn) {
