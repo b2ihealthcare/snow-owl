@@ -2259,7 +2259,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 					if (type != null) {
 						predicates.get(type).put(componentId, predicate);	
 					} else if (SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(key) == CONCEPT_NUMBER) {
-						predicates.get(HierarchyInclusionType.SELF).put(predicateStorageKey + "#" + componentId, predicate);	
+						predicates.get(HierarchyInclusionType.SELF).put(key + PredicateUtils.PREDICATE_SEPARATOR + componentId, predicate);	
 					} else if (PredicateUtils.REFSET_PREDICATE_KEY_PREFIX.equals(key)) {
 						predicates.get(HierarchyInclusionType.SELF).put(componentId, predicate);
 					} else {
