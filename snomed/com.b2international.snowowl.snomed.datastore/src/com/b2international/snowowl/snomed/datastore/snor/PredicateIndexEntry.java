@@ -104,18 +104,18 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable, ITerminol
 	 * @param storageKey unique identifier of the SNOMED&nbsp;CT concept attribute constraint.
 	 * @param queryExpression the query expression describing the domain part of an MRCM attribute constraint.
 	 * @param relationshipTypeExpression expression specifying the IDs of the allowed relationship type SNOMED&nbsp;CT concepts. 
-	 * @param relationshipvValueExpression expression specifying the IDs of the allowed relationship value SNOMED&nbsp;CT concepts.
+	 * @param relationshipValueExpression expression specifying the IDs of the allowed relationship value SNOMED&nbsp;CT concepts.
 	 * @param characteristicTypeExpression expression specifying the IDs of the allowed relationship characteristic type SNOMED&nbsp;CT concepts.
 	 * @param groupRule the group role. See: {@link GroupRule}.
 	 * @param flags a flag encapsulating the {@link #isRequired()} and {@link #isMultiple()} properties.
 	 * @return the new relationship type predicate.
 	 */
-	public static PredicateIndexEntry createRelationshipTypePredicate(final long storageKey, final String queryExpression, final String relationshipTypeExpression, final String relationshipvValueExpression, 
+	public static PredicateIndexEntry createRelationshipTypePredicate(final long storageKey, final String queryExpression, final String relationshipTypeExpression, final String relationshipValueExpression, 
 			final String characteristicTypeExpression, final GroupRule groupRule, final byte flags) {
 		
 		final PredicateIndexEntry predicate = new PredicateIndexEntry(storageKey, queryExpression, PredicateType.RELATIONSHIP, flags);
 		predicate.relationshipTypeExpression = checkNotNull(relationshipTypeExpression, "Relationship type IDs argument cannot be null.");
-		predicate.relationshipvValueExpression = checkNotNull(relationshipvValueExpression, "Relationship value IDs argument cannot be null.");
+		predicate.relationshipValueExpression = checkNotNull(relationshipValueExpression, "Relationship value IDs argument cannot be null.");
 		predicate.characteristicTypeExpression = checkNotNull(characteristicTypeExpression, "Relationship characteristic type IDs argument cannot be null.");
 		
 		predicate.groupRule = checkNotNull(groupRule, "Group role argument cannot be null.");
@@ -157,7 +157,7 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable, ITerminol
 	/**ESCG expression describing the allowed SNOMED&nbsp;CT relationship type concept IDs. Can be {@code null}.*/
 	@Nullable private String relationshipTypeExpression;
 	/**ESCG expression describing the allowed SNOMED&nbsp;CT relationship value concept IDs. Can be {@code null}.*/
-	@Nullable private String relationshipvValueExpression;
+	@Nullable private String relationshipValueExpression;
 	/**ESCG expression describing the allowed SNOMED&nbsp;CT relationship characteristic type concept IDs. Can be {@code null}.*/
 	@Nullable private String characteristicTypeExpression;
 	/**Enumeration instance for the relationship group role. Can be {@code null} if the current predicate instance is NOT a {@link PredicateType#RELATIONSHIP relationship type}.*/
@@ -278,7 +278,7 @@ public class PredicateIndexEntry implements IIndexEntry, Serializable, ITerminol
 	 */
 	public String getRelationshipValueExpression() {
 		Preconditions.checkState(PredicateType.RELATIONSHIP.equals(type), "Predicate type was not a relationship type but " + type);
-		return relationshipvValueExpression;
+		return relationshipValueExpression;
 	}
 	
 	/**
