@@ -114,6 +114,7 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 	
 	private static final EAttribute LANGUAGE_ACCEPTABILITY_ID_ATTRIBUTE = SnomedRefSetPackage.eINSTANCE.getSnomedLanguageRefSetMember_AcceptabilityId();
 	private static final EAttribute ATTRIBUTE_VALUE_ID_ATTRIBUTE = SnomedRefSetPackage.eINSTANCE.getSnomedAttributeValueRefSetMember_ValueId();
+	private static final EAttribute TARGET_COMPONENT_ID = SnomedRefSetPackage.eINSTANCE.getSnomedAssociationRefSetMember_TargetComponentId();
 	
 	private static final Collection<EStructuralFeature> EXCLUDED_FEATURES = unmodifiableSet(Sets.<EStructuralFeature>newHashSet(
 			SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_EffectiveTime(),
@@ -194,6 +195,10 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 		
 		if (ATTRIBUTE_VALUE_ID_ATTRIBUTE.equals(changedFeature)) {
 			return createAttributeValueChangeDelta(diff);
+		}
+		
+		if (TARGET_COMPONENT_ID.equals(changedFeature)) {
+			return createTargetComponentIdChangeDelta(diff);
 		}
 		
 		if (MEMBER_RELEASED_ATTRIBUTE.equals(changedFeature)) {
@@ -580,6 +585,15 @@ public class SnomedDiffProcessor extends NodeDeltaDiffProcessor {
 		final String oldConceptLabel = getConceptLabel(getBranchPath(member), String.valueOf(diff.getOldValue()));
 		final String newConceptLabel = getConceptLabel(getBranchPath(member), String.valueOf(diff.getValue()));
 		final FeatureChange featureChange = createFeatureChange("Attribute value", oldConceptLabel, newConceptLabel);
+		return createDeltaForUpdate(memberLabel, featureChange, REFSET_MEMBER_NUMBER);
+	}
+	
+	private NodeDelta createTargetComponentIdChangeDelta(SingleValueAttributeDiff diff) {
+		SnomedAssociationRefSetMember member = (SnomedAssociationRefSetMember) diff.getTarget();
+		String memberLabel = getMemberLabel(member);
+		String oldConceptLabel = getConceptLabel(getBranchPath(member), String.valueOf(diff.getOldValue()));
+		String newConceptLabel = getConceptLabel(getBranchPath(member), String.valueOf(diff.getValue()));
+		FeatureChange featureChange = createFeatureChange("Target component id", oldConceptLabel, newConceptLabel);
 		return createDeltaForUpdate(memberLabel, featureChange, REFSET_MEMBER_NUMBER);
 	}
 	
