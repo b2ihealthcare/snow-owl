@@ -158,6 +158,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -1524,7 +1525,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 											.setExpand("pt()")
 											.setLocales(languagePreference)
 											.build(branchPath.getPath()).executeSync(eventBus);
-				term = concept.getPt().getTerm();
+				term = getPreferredTermSafe(concept);
 				break;
 				
 			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
@@ -2089,7 +2090,7 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 						.setLocales(languagePreference)
 					.build(branchPath.getPath())
 					.executeSync(eventBus);
-				componentLabel = concept.getPt().getTerm();
+				componentLabel = getPreferredTermSafe(concept);
 				break;
 				
 			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
@@ -2107,12 +2108,13 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 						.setLocales(languagePreference)
 					.build(branchPath.getPath())
 					.executeSync(eventBus);
-				componentLabel = relationship.getSourceConcept().getPt().getTerm() + " " +  relationship.getTypeConcept().getPt().getTerm() + " " +  relationship.getDestinationConcept().getPt().getTerm();
-				break;
+			componentLabel = String.format("%s %s %s", 
+					getPreferredTermSafe(relationship.getSourceConcept()),
+					getPreferredTermSafe(relationship.getTypeConcept()), 
+					getPreferredTermSafe(relationship.getDestinationConcept()));
+			break;
 			
 		}
-		
-		
 		
 		return componentLabel;
 		
@@ -2147,6 +2149,10 @@ public class SnomedComponentService implements ISnomedComponentService, IPostSto
 //		
 //		//could be null
 //		return Mappings.label().getValue(doc);
+	}
+	
+	private String getPreferredTermSafe(ISnomedConcept concept) {
+		return concept.getPt() == null ? concept.getId() : Strings.isNullOrEmpty(concept.getPt().getTerm()) ? concept.getId() : concept.getPt().getTerm();
 	}
 	
 	private String getIconId(final String conceptId, final IndexSearcher searcher) throws IOException {
