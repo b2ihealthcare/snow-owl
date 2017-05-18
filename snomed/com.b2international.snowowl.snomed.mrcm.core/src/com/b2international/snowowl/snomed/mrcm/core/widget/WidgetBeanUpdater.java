@@ -37,7 +37,6 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EObject;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
@@ -46,7 +45,6 @@ import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -82,7 +80,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
-import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -531,13 +528,6 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 	
 	private void removeOrDeactivate(final SnomedEditingContext context, final Description existingDescription) {
 		
-		//if the description does not have any language type reference set member contained in the reference set configured for the dataset
-		//we have to ignore the removal
-		//e.g.: 'Anterior chamber angle tumor' is available for US not for SG or UK, we have to ignore it
-		if (!relevantForSelectedLanguage(existingDescription)) {
-			return; //we do not have to do anything
-		}
-		
 		// Remove or deactivate depending on the deletion plan 
 		final SnomedDeletionPlan plan = context.canDelete(existingDescription, null);
 		
@@ -549,7 +539,7 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 			context.delete(plan);
 		} else {
 			if (CDOState.NEW.equals(existingDescription.cdoState())) {
-				//rejected because last FSN of the concept, although it can be removed since does not persisted yet. so we delete it
+				// rejected because last FSN of the concept, although it can be removed since does not persisted yet. so we delete it
 				SnomedModelExtensions.remove(existingDescription);
 			} else {
 				SnomedModelExtensions.deactivate(existingDescription);
@@ -557,37 +547,6 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 		}
 	}
 	
-	//returns true only and if the
-	//description has at least one active language reference set member
-	//that is contained in the language type reference set member selected as the default one
-	//language reference set selection is specified by the selected language
-	private boolean relevantForSelectedLanguage(final Description existingDescription) {
-		
-		if (!CDOUtils.checkObject(existingDescription)) {
-			return false;
-		}
-		
-		if (CompareUtils.isEmpty(existingDescription.getLanguageRefSetMembers())) {
-			return false;
-		}
-		
-		final Predicate<String> languagePredicate = new Predicate<String>() { //true if the specified string (describing the identifier concept ID of the language reference set) equals with the configured one 
-			@Override public boolean apply(final String refSetId) {
-				return languageRefSetId.equals(refSetId);
-			}
-		};
-		final Predicate<SnomedLanguageRefSetMember> activePredicate = new Predicate<SnomedLanguageRefSetMember>() {
-			@Override public boolean apply(final SnomedLanguageRefSetMember member) {
-				return member.isActive();
-			}
-		};
-		return Iterables.any(Iterables.transform(Iterables.filter(existingDescription.getLanguageRefSetMembers(), activePredicate), new Function<SnomedLanguageRefSetMember, String>() {
-			@Override public String apply(final SnomedLanguageRefSetMember member) {
-				return member.getRefSet().getIdentifierId();
-			}
-		}), languagePredicate);
-	}
-
 	private Description findDescription(final SnomedEditingContext context, final Concept concept, final String descriptionId) {
 		final Description candidate = findDescriptionInTransaction(concept.getDescriptions(), descriptionId);
 		return (candidate != null) ? candidate : new SnomedDescriptionLookupService().getComponent(descriptionId, context.getTransaction());
