@@ -44,7 +44,6 @@ import com.b2international.snowowl.datastore.server.history.AbstractHistoryInfoD
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
@@ -181,11 +180,6 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 			return change + getConceptLabel(description.getType()) + ": \"" + description.getTerm() + "\".";
 		} else if (cdoObject instanceof Relationship) {
 			final Relationship relationship = (Relationship) cdoObject;
-			
-			
-			if (SnomedConstants.Concepts.STATED_RELATIONSHIP.equals(relationship.getCharacteristicType().getId()))
-				return null;
-			
 			if (null != relationship.getSource() && null != relationship.getType() && null != relationship.getDestination())
 				return change + getConceptLabel(relationship.getCharacteristicType()).toLowerCase() + ": " + getRelationshipLabel(relationship) + ".";
 		} else if (cdoObject instanceof SnomedConcreteDataTypeRefSetMember) {
@@ -245,10 +239,6 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 			}
 		} else if (changedObject instanceof Relationship) {
 			final Relationship relationship = (Relationship) changedObject;
-			
-			if (SnomedConstants.Concepts.STATED_RELATIONSHIP.equals(relationship.getCharacteristicType().getId()))
-				return null;
-			
 			if (STATUS_FEATURE_NAME.equals(featureName)) {
 				return appendDescription(builder, getFeatureMapping().get(featureName), getBooleanValue(featureValue), getRelationshipLabel(relationship)).toString();
 			} else if (MODULE_FEATURE_NAME.equals(featureName)) {
