@@ -140,9 +140,12 @@ public final class Promise<T> extends AbstractFuture<T> {
 
 	/**
 	 * Define what to do when the promise becomes resolved.
+	 * Transforms this promise type T into a promise of type U
+	 * with the function passed in.  The new promise will be available at the time
+	 * when this promise is available.
 	 * 
 	 * @param fail
-	 * @return
+	 * @return promise with type T
 	 */
 	public final <U> Promise<U> then(final Function<T, U> func) {
 		final Promise<U> transformed = new Promise<>();
@@ -164,6 +167,15 @@ public final class Promise<T> extends AbstractFuture<T> {
 		return transformed;
 	}
 	
+	/**
+	 * Define what to do when the promise becomes resolved.
+	 * Transforms this promise type T into and replaces it to a new promise of type U
+	 * with the function passed in.  The new promise will be available at the earliest when the original 
+	 * promise is ready.
+	 * 
+	 * @param fail
+	 * @return promise with type T
+	 */
 	public final <U> Promise<U> thenWith(final Function<T, Promise<U>> func) {
 		final Promise<U> transformed = new Promise<>();
 		Futures.addCallback(this, new FutureCallback<T>() {
@@ -269,6 +281,8 @@ public final class Promise<T> extends AbstractFuture<T> {
 	}
 	
 	/**
+	 * Provides a promise object with type T that is available immediately.
+	 * 
 	 * @param value
 	 * @return
 	 * @since 4.6
