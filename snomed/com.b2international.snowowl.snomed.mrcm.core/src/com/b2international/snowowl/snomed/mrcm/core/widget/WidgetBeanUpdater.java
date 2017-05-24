@@ -45,6 +45,7 @@ import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.NullComponent;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -595,12 +596,36 @@ public class WidgetBeanUpdater implements IWidgetBeanUpdater {
 							|| !existingRelationship.getDestination().getId().equals(selectedValue.getId())
 							|| !existingRelationship.getCharacteristicType().getId().equals(selectedCharacteristicType.getId())) {
 						
-						SnomedModelExtensions.removeOrDeactivate(existingRelationship);
-						relationshipBean.setSctId(RelationshipWidgetBean.UNINITIALIZED);
-						
-						if (selectedValue != NullComponent.<String>getNullImplementation() && selectedType != NullComponent.<String>getNullImplementation() && selectedCharacteristicType != NullComponent.<String>getNullImplementation()) {
-							addRelationship(context, concept, relationshipBean);
+						if (CDOUtils.isUnpersisted(existingRelationship)) {
+							
+							final SnomedConceptLookupService lookupService = new SnomedConceptLookupService();
+							
+							if (!existingRelationship.getType().getId().equals(selectedType.getId())) {
+								final Concept convertedType = lookupService.getComponent(selectedType.getId(), context.getTransaction());
+								existingRelationship.setType(convertedType);
+							}
+							
+							if (selectedValue != null && !existingRelationship.getDestination().getId().equals(selectedValue.getId())) {
+								final Concept convertedValue = lookupService.getComponent(selectedValue.getId(), context.getTransaction());
+								existingRelationship.setDestination(convertedValue);
+							}
+							
+							if (!existingRelationship.getCharacteristicType().getId().equals(selectedCharacteristicType.getId())) {
+								final Concept convertedCharacteristicType = lookupService.getComponent(selectedCharacteristicType.getId(), context.getTransaction());
+								existingRelationship.setCharacteristicType(convertedCharacteristicType);
+							}
+							
+						} else {
+							
+							SnomedModelExtensions.removeOrDeactivate(existingRelationship);
+							relationshipBean.setSctId(RelationshipWidgetBean.UNINITIALIZED);
+							
+							if (selectedValue != NullComponent.<String>getNullImplementation() && selectedType != NullComponent.<String>getNullImplementation() && selectedCharacteristicType != NullComponent.<String>getNullImplementation()) {
+								addRelationship(context, concept, relationshipBean);
+							}
+							
 						}
+						
 					}
 					
 					currentRelationships.remove(existingRelationship);
