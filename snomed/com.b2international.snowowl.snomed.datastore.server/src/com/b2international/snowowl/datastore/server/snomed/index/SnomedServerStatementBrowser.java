@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.snomed.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -43,6 +44,10 @@ import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.index.mapping.IndexField;
 import com.b2international.snowowl.datastore.index.mapping.Mappings;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementCollectionMode;
@@ -50,12 +55,12 @@ import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongMapIterator;
 import bak.pcj.map.LongKeyMap;
 import bak.pcj.set.LongSet;
 
@@ -472,32 +477,32 @@ public class SnomedServerStatementBrowser extends AbstractSnomedIndexBrowser<Sno
 	}
 
 	@Override
-	public Map<String, String> getAllDestinationLabels(final IBranchPath branchPath, final Collection<String> sourceIds,
-			final String typeId) {
+	public Map<String, String> getAllDestinationLabels(final IBranchPath branchPath, final Collection<String> sourceIds, final String typeId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(sourceIds, "sourceIds");
 		checkNotNull(typeId, "typeId");
-		final StatementDestinationIdCollector collector = new StatementDestinationIdCollector();
-
-		final Query query = SnomedMappings.newQuery().relationshipType(typeId).matchAll();
-		service.search(branchPath, query, collector);
-
-		final LongKeyLongMap idsSet = collector.getIds();
-		final LongKeyLongMapIterator iter = idsSet.entries();
-		while (iter.hasNext()) {
-			iter.next();
-			if (!sourceIds.contains(String.valueOf(iter.getKey()))) {
-				iter.remove();
-			}
-		}
-		final Map<String, String> result = Maps.newHashMapWithExpectedSize(idsSet.size());
-		final String[] ids = LongSets.toStringArray(idsSet.keySet());
-		final String[] values = LongSets.toStringArray(idsSet.values());
-		final String[] labels = ApplicationContext.getInstance().getService(ISnomedComponentService.class).getLabels(branchPath, values);
-		for (int i = 0; i < ids.length; i++) {
-			result.put(ids[i], labels[i]);
-		}
-		return result;
+		
+		return SnomedRequests.prepareSearchRelationship()
+			.all()
+			.filterBySource(sourceIds)
+			.filterByType(typeId)
+			.filterByActive(true)
+			.setExpand("destination(expand(pt()))")
+			.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
+			.build(branchPath.getPath())
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.then(new Function<SnomedRelationships, Map<String, String>>() {
+				@Override
+				public Map<String, String> apply(SnomedRelationships input) {
+					Map<String, String> result = newHashMap();
+					for (ISnomedRelationship relationship : input) {
+						result.put(relationship.getSourceId(), relationship.getDestinationConcept().getPt() == null
+								? relationship.getDestinationId() : relationship.getDestinationConcept().getPt().getTerm());
+					}
+					return result;
+				}
+			})
+			.getSync();
 	}
 	
 	private Query queryActiveRelationshipsWhereObjectId(long conceptId) {
