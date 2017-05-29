@@ -20,6 +20,7 @@ import java.util.Collection;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.request.SearchResourceRequest;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequest.OptionKey;
 
@@ -79,6 +80,10 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 	
 	public SnomedRelationshipSearchRequestBuilder filterByGroup(Integer groupMin, Integer groupMax) {
 		return addOption(OptionKey.GROUP_MIN, groupMin).addOption(OptionKey.GROUP_MAX, groupMax);
+	}
+	
+	public SnomedRelationshipSearchRequestBuilder filterByModifier(RelationshipModifier modifier) {
+		return addOption(OptionKey.MODIFIER, modifier);
 	}
 	
 	@Override
