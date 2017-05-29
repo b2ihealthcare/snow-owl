@@ -31,6 +31,27 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.google.common.base.Function;
 
 /**
+ * Represents a SNOMED&nbsp;CT Reference Set Member.
+ * <br>
+ * Reference sets returned by search requests are populated based on the expand parameters passed into the {@link BaseResourceRequestBuilder#setExpand(String)}
+ * methods. The expand parameters can be nested allowing a fine control for the details returned in the resultset.  
+ * 
+ * The supported expand parameters are:
+ * <p>
+ * <ul>
+ * <li>targetComponent()</li> - returns the target component of the member
+ * <li>referencedComponent()</li> - returns the referenced component of the member
+ * </ul>
+ * 
+ * Expand parameters can be nested to further expand or filter the details returned. For example:
+ * <p>
+ * <i>referencedComponent(expand(pt()))</i>, would return the preferred term of a <i>Concept</i> type referenced component.
+ * 
+ * @see SnomedConcept
+ * @see SnomedDescription
+ * @see SnomedRelationship
+ * @see SnomedReferenceSet
+ * 
  * @since 4.5
  */
 public final class SnomedReferenceSetMember extends SnomedComponent {

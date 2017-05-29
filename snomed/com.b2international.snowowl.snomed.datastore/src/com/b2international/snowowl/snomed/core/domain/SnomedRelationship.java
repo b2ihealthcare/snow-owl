@@ -22,8 +22,27 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Represents a SNOMEd&nbsp;CT relationship.
+ * Represents a SNOMED&nbsp;CT relationship.
+ * <br>
+ * Relationships returned by search requests are populated based on the expand parameters passed into the {@link BaseResourceRequestBuilder#setExpand(String)}
+ * methods. The expand parameters can be nested allowing a fine control for the details returned in the resultset.  
  * 
+ * The supported expand parameters are:
+ * <p>
+ * <ul>
+ * <li>source()</li> - returns the source concept of the relationship.
+ * <li>destination()</li> - returns the destination concept of the relationship.
+ * <li>type()</li> - returns the concept representing the type of the relationship
+ * </ul>
+ * 
+ * Expand parameters can be nested to further expand or filter the details returned. 
+ * For example the expand string:
+ * <p><i>source(expand(pt()))</i>, would return the source concept's preferred term as well.
+ * 
+ * @see SnomedConcept
+ * @see SnomedDescription
+ * @see SnomedReferenceSet
+ * @see SnomedReferenceSetMember
  */
 public final class SnomedRelationship extends SnomedCoreComponent {
 
