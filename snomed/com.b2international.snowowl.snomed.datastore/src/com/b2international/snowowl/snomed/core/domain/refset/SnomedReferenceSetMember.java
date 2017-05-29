@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,37 @@ package com.b2international.snowowl.snomed.core.domain.refset;
 
 import java.util.Map;
 
+import com.b2international.snowowl.datastore.request.BaseResourceRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 
 /**
+ * Represents a SNOMED&nbsp;CT Reference Set Member.
+ * <br>
+ * Reference sets returned by search requests are populated based on the expand parameters passed into the {@link BaseResourceRequestBuilder#setExpand(String)}
+ * methods. The expand parameters can be nested allowing a fine control for the details returned in the resultset.  
+ * 
+ * The supported expand parameters are:
+ * <p>
+ * <ul>
+ * <li>targetComponent()</li> - returns the target component of the member
+ * <li>referencedComponent()</li> - returns the referenced component of the member
+ * </ul>
+ * 
+ * Expand parameters can be nested to further expand or filter the details returned. For example:
+ * <p>
+ * <i>referencedComponent(expand(pt()))</i>, would return the preferred term of a <i>Concept</i> type referenced component.
+ * 
+ * @see SnomedConcept
+ * @see SnomedDescription
+ * @see SnomedRelationship
+ * @see SnomedReferenceSet
+ * 
  * @since 4.5
  */
 public interface SnomedReferenceSetMember extends SnomedComponent {

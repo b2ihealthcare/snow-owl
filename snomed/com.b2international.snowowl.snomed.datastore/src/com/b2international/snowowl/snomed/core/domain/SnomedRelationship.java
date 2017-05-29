@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,32 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import com.b2international.snowowl.datastore.request.BaseResourceRequestBuilder;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+
 /**
- * Represents a SNOMEd&nbsp;CT relationship.
+ * Represents a SNOMED&nbsp;CT relationship.
+ * <br>
+ * Relationships returned by search requests are populated based on the expand parameters passed into the {@link BaseResourceRequestBuilder#setExpand(String)}
+ * methods. The expand parameters can be nested allowing a fine control for the details returned in the resultset.  
  * 
+ * The supported expand parameters are:
+ * <p>
+ * <ul>
+ * <li>source()</li> - returns the source concept of the relationship.
+ * <li>destination()</li> - returns the destination concept of the relationship.
+ * <li>type()</li> - returns the concept representing the type of the relationship
+ * </ul>
+ * 
+ * Expand parameters can be nested to further expand or filter the details returned. 
+ * For example the expand string:
+ * <p><i>source(expand(pt()))</i>, would return the source concept's preferred term as well.
+ * 
+ * @see SnomedConcept
+ * @see SnomedDescription
+ * @see SnomedReferenceSet
+ * @see SnomedReferenceSetMember
  */
 public class SnomedRelationship extends BaseSnomedCoreComponent implements ISnomedRelationship {
 

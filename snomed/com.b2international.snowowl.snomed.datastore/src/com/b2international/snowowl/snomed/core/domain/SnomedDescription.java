@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,29 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.Map;
 
+import com.b2international.snowowl.datastore.request.BaseResourceRequestBuilder;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.google.common.collect.Multimap;
 
 /**
  * Represents a SNOMED&nbsp;CT description.
- *
+ * <br>
+ * Descriptions returned by search requests are populated based on the expand parameters passed into the {@link BaseResourceRequestBuilder#setExpand(String)}
+ * methods.   
+ * 
+ * The supported expand parameters are:
+ * <p>
+ * <ul>
+ * <li>type() - returns the concept representing the type of the description
+ * </ul>
+ * 
+ * Expand parameters can be nested to further expand or filter the details returned. 
+ * <p>
+ * @see SnomedConcept
+ * @see SnomedRelationship
+ * @see SnomedReferenceSet
+ * @see SnomedReferenceSetMember
  */
 public class SnomedDescription extends BaseSnomedCoreComponent implements ISnomedDescription {
 
