@@ -15,61 +15,47 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.dsv;
 
+import static java.util.Optional.ofNullable;
+
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
-import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.ComponentIdSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.DatatypeSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportModel;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
-import com.b2international.snowowl.snomed.exporter.server.SnomedRefSetExporterQueries;
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -90,62 +76,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	 */
 
 	private enum QueryType {
-
 		DESCRIPTION, RELATIONSHIP, DATATYPE;
-
-		/**
-		 * Returns the appropriate export query string.
-		 * 
-		 * @return
-		 */
-		public String getQueryString(boolean filterOnGroupId) {
-			switch (this) {
-				case DESCRIPTION:
-					return SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_DESCRIPTION_QUERY;
-				case RELATIONSHIP:
-					return SnomedRefSetExporterQueries.buildDSVExportRelationshipQuery(filterOnGroupId);
-				case DATATYPE:
-					return SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_DATATYPE_QUERY;
-				default:
-					return null;
-			}
-		}
-
-		/**
-		 * Returns the string of a query which checks if the element has been removed on the branch.
-		 * 
-		 * @return
-		 */
-		public String getRemovedCheckerQueryString() {
-			switch (this) {
-				case DESCRIPTION:
-					return SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_REMOVED_DESCRIPTION_QUERY;
-				case RELATIONSHIP:
-					return SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_REMOVED_RELATIONSHIP_QUERY;
-				case DATATYPE:
-					return SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_REMOVED_DATATYPE_QUERY;
-				default:
-					return null;
-			}
-		}
-
-		/**
-		 * Returns the string of a query which checks if the element has been inactivated on the branch.
-		 * 
-		 * @return
-		 */
-		public String getInactivatedCheckerQueryString() {
-			switch (this) {
-				case DESCRIPTION:
-					return SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_INACTIVATED_DESCRIPTION_QUERY;
-				case RELATIONSHIP:
-					return SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_INACTIVATED_RELATIONSHIP_QUERY;
-				case DATATYPE:
-					return SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_INACTIVATED_DATATYPE_QUERY;
-				default:
-					return null;
-			}
-		}
 	}
 
 	/**
@@ -153,26 +84,20 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	 */
 	private static String TEMPORARY_WORKING_DIRECTORY;
 
-	private Connection connection;
-
 	private String refSetId;
-	private boolean descriptionIdExpected;
-	private boolean relationshipTargetIdExpected;
+	private boolean includeDescriptionId;
+	private boolean includeRelationshipId;
 	private Collection<AbstractSnomedDsvExportItem> exportItems;
 	private Collection<AbstractSnomedDsvExportItem> groupedOnlyItems;
-	private int branchId;
-	private long branchBase;
 	private IBranchPath branchPath;
-	private Long languageConfiguration;
 	private String delimiter;
-
-	private Map<Long, String> conceptCDOAndSnomedIds;
 
 	private Map<Integer, LinkedHashMap<String, Integer>> groupedRelationships;
 	private Map<String, Integer> exportItemMaxOccurences;
 	private Collection<String> headerList;
 	private Collection<String> metaHeaderList;
-	private final Set<String> synonymAndDescendants;
+
+	private List<ExtendedLocale> locales;
 
 	/**
 	 * Creates a new instance with the export parameters. Called by the SnomedSimpleTypeRefSetDSVExportServerIndication.
@@ -183,31 +108,22 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	public SnomedSimpleTypeRefSetDSVExporter(final SnomedRefSetDSVExportModel exportSetting) {
 
 		this.refSetId = exportSetting.getRefSetId();
-		this.descriptionIdExpected = exportSetting.isDescriptionIdExpected();
-		this.relationshipTargetIdExpected = exportSetting.isRelationshipTargetExpected();
+		this.includeDescriptionId = exportSetting.includeDescriptionId();
+		this.includeRelationshipId = exportSetting.includeRelationshipTargetId();
 		this.exportItems = exportSetting.getExportItems();
-		this.languageConfiguration = exportSetting.getLanguageConfigurationId();
+		this.locales = exportSetting.getLocales();
 		this.delimiter = exportSetting.getDelimiter();
-		this.branchId = exportSetting.getBranchID();
-		this.branchBase = exportSetting.getBranchBase();
 		this.branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
 
 		SnomedSimpleTypeRefSetDSVExporter.TEMPORARY_WORKING_DIRECTORY = exportSetting.getExportPath();
 		groupedRelationships = Maps.newTreeMap();
 		exportItemMaxOccurences = Maps.newHashMap();
 		groupedOnlyItems = Lists.newArrayList();
-		// set up the database connection
-		connection = ApplicationContext.getInstance().getService(ICDORepositoryManager.class).get(SnomedPackage.eINSTANCE).getConnection();
-		synonymAndDescendants = SnomedRequests.prepareGetSynonyms()
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.then(new Function<SnomedConcepts, Set<String>>() {
-					@Override
-					public Set<String> apply(SnomedConcepts input) {
-						return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).toSet();
-					}
-				})
-				.getSync();
+//		synonymAndDescendants = SnomedRequests.prepareGetSynonyms()
+//				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+//				.execute(getEventBus())
+//				.then(concepts -> FluentIterable.from(concepts).transform(IComponent.ID_FUNCTION).toSet())
+//				.getSync();
 	}
 
 	/**
@@ -228,9 +144,8 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 			file.createNewFile();
 
-			conceptCDOAndSnomedIds = getExportedMemberConceptCDOAndSnomedIds(refSetId);
-
-			createHeaderList();
+			SnomedReferenceSet refset = getRefset(refSetId);
+			createHeaderList(refset);
 
 			// write the header to the file
 			StringBuffer sb = new StringBuffer();
@@ -241,7 +156,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				sb.append(metaHeaderListElement);
 			}
 
-			if (descriptionIdExpected || relationshipTargetIdExpected) {
+			if (includeDescriptionId || includeRelationshipId) {
 				sb.append(System.getProperty("line.separator"));
 				// sb.length > 0 works not, because the first element of the meta header can be empty string.
 				boolean fistElement = true;
@@ -261,10 +176,9 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			async.stop();
 			async = null;
 			remainderMonitor = monitor.fork(20);
-			remainderMonitor.begin(conceptCDOAndSnomedIds.size());
-
+			remainderMonitor.begin(refset.getMembers().getTotal());
 			// write data to the file row by row
-			for (Long conceptCDOId : conceptCDOAndSnomedIds.keySet()) {
+			for (SnomedReferenceSetMember refsetMember : refset.getMembers().getItems()) {
 				StringBuffer stringBuffer = new StringBuffer();
 
 				for (AbstractSnomedDsvExportItem exportItem : exportItems) {
@@ -279,8 +193,8 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							final String descriptionTypeId = descriptionItem.getComponentId();
 							final int descriptionOccurrences = exportItemMaxOccurences.get(descriptionTypeId);
 							
-							final Collection<String> descriptions = executeDescriptionQuery(QueryType.DESCRIPTION, conceptCDOId, descriptionTypeId);
-							stringBuffer.append(joinResultsWithDelimiters(descriptions, descriptionOccurrences, delimiter, descriptionIdExpected));
+							final Collection<String> descriptions = getDescriptionTokens(QueryType.DESCRIPTION, refsetMember, descriptionTypeId);
+							stringBuffer.append(joinResultsWithDelimiters(descriptions, descriptionOccurrences, delimiter, includeDescriptionId));
 							break;
 
 						case RELATIONSHIP:
@@ -288,21 +202,22 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							final String relationshipTypeId = String.valueOf(relationshipItem.getComponentId());
 							final int relationshipOccurrences = exportItemMaxOccurences.get(relationshipTypeId);
 							
-							final Collection<String> relationships = executeRelationshipOrDatatypeQuery(QueryType.RELATIONSHIP, conceptCDOId, relationshipTypeId, true, 0);
-							stringBuffer.append(joinResultsWithDelimiters(relationships, relationshipOccurrences, delimiter, relationshipTargetIdExpected));
+							final Collection<String> relationships = getRelationshipTokens(QueryType.RELATIONSHIP, refsetMember, relationshipTypeId, true, 0);
+							stringBuffer.append(joinResultsWithDelimiters(relationships, relationshipOccurrences, delimiter, includeRelationshipId));
 							break;
 
 						case DATAYPE:
 							final DatatypeSnomedDsvExportItem datatypeItem = (DatatypeSnomedDsvExportItem) exportItem;
 							final String datatypeName = exportItem.getDisplayName();
 							final int datatypeOccurrences = exportItemMaxOccurences.get(datatypeName);
-							final Collection<String> datatypes = executeRelationshipOrDatatypeQuery(QueryType.DATATYPE, conceptCDOId, datatypeName, false, null);
+							final Collection<String> datatypes = getDatatypeTokens(QueryType.DATATYPE, refsetMember, datatypeName);
 							final Collection<String> formattedDatatypeTerms = new ArrayList<String>();
 							
 							for (final String dataTypeTerm : datatypes) {
 								
 								if (!datatypeItem.isBooleanDatatype()) {
 									formattedDatatypeTerms.add(dataTypeTerm);
+									// XXX: add continue here? or else it could be added twice to the list 
 								}
 								
 								if ("0".equals(dataTypeTerm)) {
@@ -318,27 +233,27 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							break;
 
 						case PREFERRED_TERM:
-							stringBuffer.append(getPreferredTerm(conceptCDOId, descriptionIdExpected));
+							stringBuffer.append(getPreferredTerm(refsetMember, includeDescriptionId));
 							break;
 
 						case CONCEPT_ID:
-							stringBuffer.append(conceptCDOAndSnomedIds.get(conceptCDOId));
+							stringBuffer.append(refsetMember.getReferencedComponent().getId());
 							break;
 
 						case MODULE: 
-							stringBuffer.append(getModule(conceptCDOId));
+							stringBuffer.append(refsetMember.getReferencedComponent().getModuleId());
 							break;
 
 						case EFFECTIVE_TIME:
-							stringBuffer.append(getEffectiveTime(conceptCDOId));
+							stringBuffer.append(Dates.formatByGmt(refsetMember.getReferencedComponent().getEffectiveTime()));
 							break;
 
 						case STATUS_LABEL:
-							stringBuffer.append(isActive(conceptCDOId) ? "Active" : "Inactive");
+							stringBuffer.append(refsetMember.getReferencedComponent().isActive() ? "Active" : "Inactive");
 							break;
 
 						case DEFINITION_STATUS: 
-							stringBuffer.append(getDefinitionStatus(conceptCDOId));
+							stringBuffer.append(toConcept(refsetMember).getDefinitionStatus());
 							break;
 
 						default:
@@ -350,16 +265,14 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					for (String relationshipId : groupedRelationships.get(groupId).keySet()) {
 						stringBuffer.append(delimiter);
 						TreeSet<String> relationships = Sets.newTreeSet();
-						relationships.addAll(executeRelationshipOrDatatypeQuery(QueryType.RELATIONSHIP, conceptCDOId, relationshipId, true, groupId));
-						stringBuffer
-								.append(joinResultsWithDelimiters(relationships, groupedRelationships.get(groupId).get(relationshipId), delimiter, relationshipTargetIdExpected));
+						relationships.addAll(getRelationshipTokens(QueryType.RELATIONSHIP, refsetMember, relationshipId, true, groupId));
+						stringBuffer.append(joinResultsWithDelimiters(relationships, groupedRelationships.get(groupId).get(relationshipId), delimiter, includeRelationshipId));
 					}
 				}
 				stringBuffer.append(System.getProperty("line.separator"));
 				os.writeBytes(stringBuffer.toString());
 				remainderMonitor.worked(1);
 			}
-			connection.close();
 		} catch (Exception e) {
 			throw new SnowowlServiceException(e);
 		} finally {
@@ -377,31 +290,70 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		return file;
 	}
 
+	private String getPreferredTerm(SnomedReferenceSetMember refsetMember, boolean includeDescriptionId) {
+		SnomedDescription pt = toConcept(refsetMember).getPt();
+		return includeDescriptionId ? pt.getId() + delimiter + pt.getTerm() : pt.getTerm();
+	}
+
+	private Collection<String> getDatatypeTokens(QueryType datatype, SnomedReferenceSetMember refsetMember, String datatypeName) {
+		Collection<String> result = Lists.newArrayList();
+		SnomedConcept concept = toConcept(refsetMember);
+		List<SnomedRelationship> items = concept.getRelationships().getItems();
+		for (SnomedRelationship snomedRelationship : items) {
+			List<SnomedReferenceSetMember> cdMembers = snomedRelationship.getMembers().getItems();
+			for (SnomedReferenceSetMember cdMember : cdMembers) {
+				Map<String, Object> properties = cdMember.getProperties();
+				if (properties.containsKey(Fields.ATTRIBUTE_NAME) && properties.get(Fields.ATTRIBUTE_NAME).equals(datatypeName)) {
+					result.add(properties.get(SnomedRf2Headers.FIELD_VALUE).toString());
+				}
+			}
+		}
+		
+		return result;
+	}
+
+	private SnomedConcept toConcept(SnomedReferenceSetMember refsetMember) {
+		return (SnomedConcept) refsetMember.getReferencedComponent();
+	}
+
+	private Collection<String> getRelationshipTokens(QueryType relationship, SnomedReferenceSetMember refsetMember,String relationshipTypeId, boolean filterByGroupNumber, int groupNumber) {
+		return null;
+	}
+
+	private Collection<String> getDescriptionTokens(QueryType description, SnomedReferenceSetMember refsetMember, String descriptionTypeId) {
+		return null;
+	}
+
 	/**
-	 * Searches for the maximum presence of the description, relationship or concrete data types. Separated grouped and ungrouped relationships, generates the header strings and
+	 * Searches for the maximum presence of the description, relationship or concrete data types. 
+	 * Separated grouped and ungrouped relationships, generates the header strings and
 	 * initializes the row descriptor object.
+	 * @param refset 
 	 * 
 	 * @return with one or two header row in a collection. If there are two rows than the collection contains a new line character after the elements of the first row.
-	 * @throws SQLException
 	 */
-	private void createHeaderList() throws SQLException {
+	private void createHeaderList(SnomedReferenceSet refset) {
 
 		headerList = new ArrayList<String>();
 		metaHeaderList = new ArrayList<String>();
 
+		List<SnomedReferenceSetMember> members = refset.getMembers().getItems();
+		
+		Map<String, Integer> occurenceByTypeId = initOccurrenceMap(members, exportItems);
+		
 		for (AbstractSnomedDsvExportItem exportItem : exportItems) {
 			switch (exportItem.getType()) {
 				
 				case DESCRIPTION:
 					final ComponentIdSnomedDsvExportItem descriptionItem = (ComponentIdSnomedDsvExportItem) exportItem;
 					final String descriptionTypeId = descriptionItem.getComponentId();
-					final int descriptionOccurrences = getMaxOccurence(QueryType.DESCRIPTION, descriptionTypeId);
+					final int descriptionOccurrences = getMaxOccurence(occurenceByTypeId, descriptionTypeId);
 					final String descriptionDisplayName = descriptionItem.getDisplayName();
 					
 					exportItemMaxOccurences.put(descriptionTypeId, descriptionOccurrences);
 					// only one result
 				if (2 > descriptionOccurrences) {
-						if (descriptionIdExpected) {
+						if (includeDescriptionId) {
 							metaHeaderList.add(descriptionDisplayName);
 							metaHeaderList.add(descriptionDisplayName);
 							headerList.add("descriptionId");
@@ -413,7 +365,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						// zero or more than one result
 					} else {
 						for (int j = 1; j <= descriptionOccurrences; j++) {
-							if (descriptionIdExpected) {
+							if (includeDescriptionId) {
 								metaHeaderList.add(descriptionDisplayName + " (" + j + ")");
 								metaHeaderList.add(descriptionDisplayName + " (" + j + ")");
 								headerList.add("descriptionId");
@@ -433,14 +385,14 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					final String relationshipDisplayName = relationshipItem.getDisplayName();
 					
 					// if the relationship occurs as an ungrouped relationship.
-					if (sortToPropertyGroups(relationshipTypeId)) {
+					if (sortToRelationshipGroups(members, relationshipTypeId)) {
 						
-						final int relationshipOccurrences = getMaxOccurence(QueryType.RELATIONSHIP, relationshipTypeId);
+						final int relationshipOccurrences = getMaxOccurence(occurenceByTypeId, relationshipTypeId);
 						exportItemMaxOccurences.put(relationshipTypeId, relationshipOccurrences);
 						
 						// only one result
 						if (2 > relationshipOccurrences) {
-							if (relationshipTargetIdExpected) {
+							if (includeRelationshipId) {
 								metaHeaderList.add(relationshipDisplayName);
 								metaHeaderList.add(relationshipDisplayName);
 								headerList.add("Id");
@@ -452,7 +404,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							// zero or more than one result
 						} else {
 							for (int j = 1; j <= relationshipOccurrences; j++) {
-								if (relationshipTargetIdExpected) {
+								if (includeRelationshipId) {
 									metaHeaderList.add(relationshipDisplayName + " (" + j + ")");
 									metaHeaderList.add(relationshipDisplayName + " (" + j + ")");
 									headerList.add("Id");
@@ -474,7 +426,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				case DATAYPE:
 					final DatatypeSnomedDsvExportItem datatypeItem = (DatatypeSnomedDsvExportItem) exportItem;
 					final String datatypeDisplayName = datatypeItem.getDisplayName();
-					final int datatypeOccurrences = getMaxOccurence(QueryType.DATATYPE, datatypeDisplayName);
+					final int datatypeOccurrences = getMaxOccurence(occurenceByTypeId, datatypeDisplayName);
 					exportItemMaxOccurences.put(datatypeDisplayName, datatypeOccurrences);
 
 					// only one result
@@ -492,7 +444,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					break;
 
 				case PREFERRED_TERM:
-					if (descriptionIdExpected) {
+					if (includeDescriptionId) {
 						metaHeaderList.add(exportItem.getDisplayName());
 						metaHeaderList.add(exportItem.getDisplayName());
 						headerList.add("descriptionId");
@@ -514,7 +466,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		for (Integer groupId : groupedRelationships.keySet()) {
 			for (String relationshipTypeId : groupedRelationships.get(groupId).keySet()) {
 				if (1 == groupedRelationships.get(groupId).get(relationshipTypeId)) {
-					if (relationshipTargetIdExpected) {
+					if (includeRelationshipId) {
 						metaHeaderList.add(getNameProvider().getComponentLabel(branchPath, relationshipTypeId) + " (AG" + groupId + ")");
 						metaHeaderList.add(getNameProvider().getComponentLabel(branchPath, relationshipTypeId) + " (AG" + groupId + ")");
 						headerList.add("Id");
@@ -525,7 +477,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					}
 				} else {
 					for (int j = 1; j <= groupedRelationships.get(groupId).get(relationshipTypeId); j++) {
-						if (relationshipTargetIdExpected) {
+						if (includeRelationshipId) {
 							metaHeaderList.add(getNameProvider().getComponentLabel(branchPath, relationshipTypeId) + " (" + j + ") " + " (AG" + groupId + ")");
 							metaHeaderList.add(getNameProvider().getComponentLabel(branchPath, relationshipTypeId) + " (" + j + ") " + " (AG" + groupId + ")");
 							headerList.add("Id");
@@ -544,408 +496,126 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		exportItems.removeAll(groupedOnlyItems);
 	}
 
+	private boolean sortToRelationshipGroups(List<SnomedReferenceSetMember> members, String relationshipTypeId) {
+		
+		Map<Integer, Integer> groupsAndCounts = Maps.newHashMap();
+
+		AtomicBoolean occoursAsUngrouped =  new AtomicBoolean(false);
+		AtomicBoolean noOccurance = new AtomicBoolean(false);
+		
+		asConceptStream(members)
+			.forEach(concept -> {
+					AtomicInteger i = new AtomicInteger();
+					
+					concept.getRelationships().getItems().stream()
+						.filter(relationship -> relationship.getType().getId().equals(relationshipTypeId))
+						.forEach(relationship -> {
+
+							if (relationship.getGroup() == 0) {
+								occoursAsUngrouped.set(true);
+							} else {
+								groupsAndCounts.compute(relationship.getGroup(), (key, oldValue) -> ofNullable(oldValue).orElse(0) + 1 );
+							}
+							i.incrementAndGet();
+					});
+					
+					if (i.get() == 1) {
+						noOccurance.set(true);
+					}
+					
+					groupsAndCounts.entrySet().stream().forEach(entry -> {
+						groupedRelationships.compute(entry.getKey(), (key, oldValue) -> {
+								LinkedHashMap<String, Integer> relationshipTypeOccurence = ofNullable(oldValue).orElseGet(LinkedHashMap::new);
+								relationshipTypeOccurence.compute(relationshipTypeId, (innerKey, innerOldValue) -> Math.max(ofNullable(innerOldValue).orElse(0), entry.getValue()));
+								return relationshipTypeOccurence;
+							});
+					});
+					
+				} 
+			);
+		
+		return occoursAsUngrouped.get() || noOccurance.get();
+	}
+
+	private Map<String, Integer> initOccurrenceMap(List<SnomedReferenceSetMember> members, Collection<AbstractSnomedDsvExportItem> exportColumns) {
+		Map<String, Integer> result = Maps.newHashMap();
+		
+		asConceptStream(members).forEach(concept -> {
+
+			exportColumns.stream().forEach(column -> {
+
+				switch (column.getType()) {
+					case DESCRIPTION: {
+						ComponentIdSnomedDsvExportItem item = (ComponentIdSnomedDsvExportItem) column;
+						int count = (int) concept.getDescriptions()
+								.getItems().stream()
+								.filter(description -> description.getTypeId().equals(item.getComponentId()))
+								.count();
+						result.compute(item.getComponentId(), (key, oldCountValue) -> Math.max(oldCountValue, count));
+						break;
+					}
+					case RELATIONSHIP: {
+						ComponentIdSnomedDsvExportItem item = (ComponentIdSnomedDsvExportItem) column;
+						int count = (int) concept.getRelationships()
+								.getItems().stream()
+								.filter(relationship -> relationship.getTypeId().equals(item.getComponentId()))
+								.count();
+						result.compute(item.getComponentId(), (key, oldCountValue) -> Math.max(oldCountValue, count));
+						break;
+					}
+					case DATAYPE: {
+						DatatypeSnomedDsvExportItem item = (DatatypeSnomedDsvExportItem) column;
+						
+						int count = (int) concept.getRelationships()
+								.getItems().stream()
+								.flatMap(relationship -> relationship.getMembers().getItems().stream())
+								.filter(cdMember -> cdMember.getProperties().get(Fields.ATTRIBUTE_NAME).toString().contains(item.getDisplayName()))
+								.count();
+						result.compute(item.getDisplayName(), (key, oldCountValue) -> Math.max(oldCountValue, count));
+						break;
+					}
+					default: break;
+				}
+			});
+		});
+		
+		return result;
+	}
+
 	private ISnomedConceptNameProvider getNameProvider() {
 		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class);
 	}
 
-	/**
-	 * Sorts the relationship to property groups.
-	 * 
-	 * @param relationshipCDOId
-	 * @return true if the relationship occurs also as an ungrouped relationship.
-	 * @throws SQLException
-	 */
-
-	private boolean sortToPropertyGroups(String relationshipCDOId) throws SQLException {
-
-		boolean occoursAsUngrouped = false;
-		boolean noOccurance = false;
-
-		HashMap<Integer, Integer> groupsAndCounts = Maps.newHashMap();
-		PreparedStatement statement = connection.prepareStatement(QueryType.RELATIONSHIP.getQueryString(false));
-		statement.setString(2, relationshipCDOId);
-		statement.setInt(3, branchId);
-		statement.setInt(4, branchId);
-		statement.setLong(5, branchBase);
-		statement.setLong(6, branchBase);
-
-		PreparedStatement removedCheckerStatement = connection.prepareStatement(QueryType.RELATIONSHIP.getRemovedCheckerQueryString());
-		removedCheckerStatement.setInt(2, branchId);
-
-		for (Long conceptCDOId : conceptCDOAndSnomedIds.keySet()) {
-			statement.setLong(1, conceptCDOId);
-			ResultSet resultSet = statement.executeQuery();
-			int i = 1;
-			while (resultSet.absolute(i)) {
-				long CDOId = resultSet.getLong(1);
-				Integer group = resultSet.getInt(4);
-				long resultBranch = resultSet.getLong(3);
-				// if the result comes from the main branch, it is possible that
-				// it
-				// has been removed on the actual branch.
-				if (0 == resultBranch) {
-					removedCheckerStatement.setLong(1, CDOId);
-					ResultSet removedCheckerResultSet = removedCheckerStatement.executeQuery();
-					// if the result is on the branch with negative version,
-					// than it
-					// has been removed.
-					if (removedCheckerResultSet.absolute(1) && removedCheckerResultSet.getLong(1) < 0) {
-						i++;
-						continue;
-					}
-				}
-				if (0 == group) {
-					occoursAsUngrouped = true;
-					i++;
-					continue;
-				}
-				if (groupsAndCounts.get(group) != null) {
-					Integer count = groupsAndCounts.get(group);
-					groupsAndCounts.put(group, count++);
-				} else {
-					groupsAndCounts.put(group, 1);
-				}
-				i++;
-			}
-			if (1 == i) {
-				noOccurance = true;
-			}
-			for (Integer groupId : groupsAndCounts.keySet()) {
-				// if there is no item with the actual group id
-				if (null == groupedRelationships.get(groupId)) {
-					groupedRelationships.put(groupId, new LinkedHashMap<String, Integer>());
-					groupedRelationships.get(groupId).put(relationshipCDOId, groupsAndCounts.get(groupId));
-					// if there is no item with the given relationship id
-				} else if (null == groupedRelationships.get(groupId).get(relationshipCDOId)) {
-					groupedRelationships.get(groupId).put(relationshipCDOId, groupsAndCounts.get(groupId));
-				} else if (groupsAndCounts.get(groupId) > groupedRelationships.get(groupId).get(relationshipCDOId)) {
-					groupedRelationships.get(groupId).put(relationshipCDOId, groupsAndCounts.get(groupId));
-				} else {
-					continue;
-				}
-			}
-
-		}
-		return (occoursAsUngrouped || noOccurance);
-	}
 
 	/**
 	 * This method implements a maximum search. It founds the maximum presence of a given description, relationship or concrete datatype.
+	 * @param occurenceByTypeId 
+	 * @param members 
 	 * 
 	 * @param queryType
 	 *            - type of the query can be description, relationship and data type.
-	 * @param typeString
-	 *            - type string of the description or relationship or data type.
-	 * @return
-	 * @throws SQLException
-	 */
-	private int getMaxOccurence(QueryType queryType, String typeString) throws SQLException {
-		int max = -1;
-		int size;
-		for (Long conceptCDOId : conceptCDOAndSnomedIds.keySet()) {
-			if (QueryType.RELATIONSHIP.equals(queryType)) {
-				size = executeRelationshipOrDatatypeQuery(queryType, conceptCDOId, typeString, true, 0).size();
-			} else if (QueryType.DESCRIPTION.equals(queryType)) {
-				size = executeDescriptionQuery(queryType, conceptCDOId, typeString).size();
-			}
-			else {
-				size = executeRelationshipOrDatatypeQuery(queryType, conceptCDOId, typeString, false, null).size();
-			}
-			if (size > max) {
-				max = size;
-			}
-		}
-		return max;
-	}
-
-	/**
-	 * Returns with the results of the query.
-	 * 
-	 * @param queryType
-	 *            - type of the query can be RELATIONSHIP or DATATYPE.
-	 * @param conceptCDOId
-	 *            - CDO ID of the exported concept.
 	 * @param typeId
-	 *            - type string of the description or relationship or data type.
-	 * @param filterOnGroupId
-	 *            - denotes if the results are filtered on a certain property group. It is interpreted only on relationships.
-	 * @param groupId
-	 *            - property group id of the relationship.
-	 * @return the results of the query in a collection.
-	 * @throws SQLException
-	 */
-
-	private Collection<String> executeRelationshipOrDatatypeQuery(QueryType queryType, long conceptCDOId, String typeId, boolean filterOnGroupId, Integer groupId)
-			throws SQLException {
-
-		Preconditions.checkArgument((QueryType.RELATIONSHIP.equals(queryType) || QueryType.DATATYPE.equals(queryType)), "Query type is not RELATIONSHIP or DATATYPE but "
-				+ queryType.toString());
-		// sorted map is used to order relationship target names alphabetically
-		Map<String, String> resultCollection = new TreeMap<String, String>();
-
-		PreparedStatement statement = connection.prepareStatement(queryType.getQueryString(filterOnGroupId));
-		int paramIndex = 1;
-
-		statement.setLong(paramIndex++, conceptCDOId);
-		statement.setString(paramIndex++, typeId);
-		statement.setInt(paramIndex++, branchId);
-		statement.setInt(paramIndex++, branchId);
-		statement.setLong(paramIndex++, branchBase);
-		statement.setLong(paramIndex++, branchBase);
-		if (QueryType.RELATIONSHIP.equals(queryType) && filterOnGroupId) {
-			statement.setInt(paramIndex++, groupId);
-		}
-		ResultSet resultSet = statement.executeQuery();
-
-		PreparedStatement removedCheckerStatement = connection.prepareStatement(queryType.getRemovedCheckerQueryString());
-		removedCheckerStatement.setInt(2, branchId);
-
-		PreparedStatement inactivatedCheckerStatement = connection.prepareStatement(queryType.getInactivatedCheckerQueryString());
-
-		int i = 1;
-
-		while (resultSet.absolute(i)) {
-			long CDOId = resultSet.getLong(1);
-			long resultBranch = resultSet.getLong(3);
-			// if the result comes from the main branch, it is possible that is
-			// has been removed on the actual branch.
-			if (0 == resultBranch) {
-				removedCheckerStatement.setLong(1, CDOId);
-				ResultSet removedCheckerResultSet = removedCheckerStatement.executeQuery();
-				// if the result is on the branch with negative version, than it
-				// has been removed.
-				if (removedCheckerResultSet.absolute(1) && removedCheckerResultSet.getLong(1) < 0) {
-					i++;
-					continue;
-				}
-			}
-			// remove the deleted and already published relationships or concrete datatype elements
-			inactivatedCheckerStatement.setLong(1, CDOId);
-			inactivatedCheckerStatement.setInt(2, branchId);
-			ResultSet inactivatedCheckerResultSet = inactivatedCheckerStatement.executeQuery();
-			// if the latest version on the branch is inactive, then it has been removed.
-			if (inactivatedCheckerResultSet.absolute(1) && !inactivatedCheckerResultSet.getBoolean(1)) {
-				i++;
-				continue;
-			}
-			if (QueryType.RELATIONSHIP.equals(queryType)) {
-				if (relationshipTargetIdExpected) {
-					// relationship with target id
-					resultCollection.put(getPreferredTerm(resultSet.getLong(5), false), resultSet.getString(2) + delimiter + getPreferredTerm(resultSet.getLong(5), false));
-				} else {
-					// relationship without target id
-					resultCollection.put(getPreferredTerm(resultSet.getLong(5), false), getPreferredTerm(resultSet.getLong(5), false));
-				}
-			} else {
-				// datatype
-				resultCollection.put(resultSet.getString(2), resultSet.getString(2));
-			}
-			i++;
-		}
-
-		return resultCollection.values();
-	}
-
-	/**
-	 * 
-	 * @param queryType
-	 *            - must be DESCRIPTION
-	 * @param conceptCDOId
-	 *            - CDO ID of the exported concept.
-	 * @param typeString
-	 *            - the Concept ID of description type.
+	 *            - type id of the description or relationship or data type.
 	 * @return
-	 * @throws SQLException
 	 */
-
-	private Collection<String> executeDescriptionQuery(QueryType queryType, long conceptCDOId, String typeString) throws SQLException {
-
-		Preconditions.checkArgument(QueryType.DESCRIPTION.equals(queryType), "Query type is not DESCRIPTION but " + queryType.toString());
-
-		Map<Long, String> resultCollection = new HashMap<Long, String>();
-
-		PreparedStatement statement = connection.prepareStatement(queryType.getQueryString(false));
-		statement.setInt(1, branchId);
-		statement.setInt(2, branchId);
-		statement.setLong(3, branchBase);
-		statement.setLong(4, branchBase);
-
-		statement.setLong(5, conceptCDOId);
-		statement.setString(6, typeString);
-
-		statement.setInt(7, branchId);
-		statement.setInt(8, branchId);
-		statement.setLong(9, branchBase);
-		statement.setLong(10, branchBase);
-
-		statement.setLong(11, languageConfiguration);
-
-		statement.setInt(12, branchId);
-		statement.setInt(13, branchId);
-		statement.setLong(14, branchBase);
-		statement.setLong(15, branchBase);
-		ResultSet resultSet = statement.executeQuery();
-
-		PreparedStatement removedCheckerStatement = connection.prepareStatement(queryType.getRemovedCheckerQueryString());
-		removedCheckerStatement.setInt(2, branchId);
-
-		PreparedStatement inactivatedCheckerStatement = connection.prepareStatement(queryType.getInactivatedCheckerQueryString());
-
-		int i = 1;
-		while (resultSet.absolute(i)) {
-			long CDOId = resultSet.getLong(1);
-			String id = null;
-			long resultBranch = resultSet.getLong(3);
-			if (descriptionIdExpected) {
-				id = resultSet.getString(4);
-			}
-			// if the result comes from the main branch, it is possible that is has been removed on the actual branch.
-			if (0 == resultBranch) {
-				removedCheckerStatement.setLong(1, CDOId);
-				ResultSet removedCheckerResultSet = removedCheckerStatement.executeQuery();
-				// if the result is on the branch with negative version, than it has been removed.
-				if (removedCheckerResultSet.absolute(1) && removedCheckerResultSet.getLong(1) < 0) {
-					i++;
-					continue;
-				}
-			}
-			// remove the deleted and already published descriptions
-			inactivatedCheckerStatement.setLong(1, CDOId);
-			inactivatedCheckerStatement.setInt(2, branchId);
-			ResultSet inactivatedCheckerResultSet = inactivatedCheckerStatement.executeQuery();
-			// if the latest version on the branch is inactive, then it has been removed.
-			if (inactivatedCheckerResultSet.absolute(1) && !inactivatedCheckerResultSet.getBoolean(1)) {
-				i++;
-				continue;
-			}
-			if (descriptionIdExpected) {
-				// description with id
-				resultCollection.put(CDOId, id + delimiter + resultSet.getString(2));
-			} else {
-				// description without id
-				resultCollection.put(CDOId, resultSet.getString(2));
-			}
-			i++;
-		}
-		return resultCollection.values();
+	private int getMaxOccurence(Map<String, Integer> occurenceByTypeId, String typeId) {
+		return occurenceByTypeId.get(typeId);
 	}
 
-	/**
-	 * Get the preferred term of a concept.
-	 * 
-	 * @param conceptCDOId
-	 * @return A {@link SnomedConceptDocument} object containing the label and storage key of the preferred term.
-	 * @throws SQLException
-	 */
-
-	private String getPreferredTerm(long conceptCDOId, boolean descriptionIdExpected) throws SQLException {
-		ResultSet resultSet = null;
-
-		int i = 1;
-
-		final PreparedStatement preferredTermStatement = connection.prepareStatement(SnomedRefSetExporterQueries.buildPreferredTermQuery(synonymAndDescendants.size()));
-		preferredTermStatement.setString(i++, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
-
-		preferredTermStatement.setInt(i++, branchId);
-		preferredTermStatement.setInt(i++, branchId);
-		preferredTermStatement.setLong(i++, branchBase);
-		preferredTermStatement.setLong(i++, branchBase);
-
-		preferredTermStatement.setLong(i++, conceptCDOId);
-
-		preferredTermStatement.setInt(i++, branchId);
-		preferredTermStatement.setInt(i++, branchId);
-		preferredTermStatement.setLong(i++, branchBase);
-		preferredTermStatement.setLong(i++, branchBase);
-
-		final ICDOConnectionManager connectionManager = ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
-		final ICDOConnection cdoConnection = connectionManager.get(SnomedPackage.eINSTANCE);
-		final CDOBranch branch = cdoConnection.getSession().getBranchManager().getBranch(branchId);
-		final CDOBranchPoint branchPoint = branch.getHead();
-		
-		for (final String typeId : synonymAndDescendants) {
-			
-			final int j = i++;
-			
-			CDOUtils.apply(new CDOViewFunction<Void, CDOView>(branchPoint) {
-				@Override protected Void apply(final CDOView view) {
-
-					final CDOID cdoId = new SnomedConceptLookupService().getComponent(typeId, view).cdoID();
-					final long storageKey = CDOIDUtils.asLong(cdoId);
-					
-					try {
-						preferredTermStatement.setLong(j, storageKey);
-					} catch (final SQLException e) {
-						throw new SnowowlRuntimeException(e);
-					}
-					
-					return null;
-				}
-			});
-			
-		}
-
-		preferredTermStatement.setString(i++, String.valueOf(languageConfiguration));
-
-		preferredTermStatement.setInt(i++, branchId);
-		preferredTermStatement.setInt(i++, branchId);
-		preferredTermStatement.setLong(i++, branchBase);
-		preferredTermStatement.setLong(i++, branchBase);
-
-		resultSet = preferredTermStatement.executeQuery();
-		resultSet.absolute(1);
-		String result;
-		if (resultSet.isFirst()) {
-			result = resultSet.getString(1);
-			if (descriptionIdExpected) {
-				result = resultSet.getString(3) + delimiter + result;
-			}
-		} else {
-			result = "";
-			if (descriptionIdExpected) {
-				result += delimiter;
-			}
-		}
-
-		return result;
+	private Stream<SnomedConcept> asConceptStream(List<SnomedReferenceSetMember> members) {
+		return members.stream()
+			.map(member -> member.getReferencedComponent())
+			.map(SnomedConcept.class::cast);
 	}
 
-	/**
-	 * Returns the effective time of the exported concept.
-	 * 
-	 * @param conceptCDOId
-	 * @return
-	 * @throws SQLException
-	 */
-
-	private String getEffectiveTime(long conceptCDOId) throws SQLException {
-		PreparedStatement effectiveTimeStatement = connection.prepareStatement(SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_EFFECTIVE_TIME_QUERY);
-		effectiveTimeStatement.setLong(1, conceptCDOId);
-		effectiveTimeStatement.setInt(2, branchId);
-		effectiveTimeStatement.setInt(3, branchId);
-		effectiveTimeStatement.setLong(4, branchBase);
-		effectiveTimeStatement.setLong(5, branchBase);
-		ResultSet resultSet = effectiveTimeStatement.executeQuery();
-		if (resultSet.absolute(1)) {
-			Date effectiveTime = resultSet.getDate(1);
-			if (null == effectiveTime) {
-				return EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL;
-			}
-			return effectiveTime.toString();
-		} else {
-			return "";
-		}
-
-	}
-
-	private String joinResultsWithDelimiters(Collection<String> results, int max, String delimiter, boolean descriptionAndDescriptionIdExpected) {
+	private String joinResultsWithDelimiters(Collection<String> results, int max, String delimiter, boolean includeComponentId) {
 		StringBuffer sb = new StringBuffer();
 		sb.append(Joiner.on(delimiter).join(results));
 
 		int start = 0;
 
 		if (sb.length() == 0) {
-			if (descriptionAndDescriptionIdExpected) {
+			if (includeComponentId) {
 				sb.append(delimiter);
 			}
 			start = results.size() + 1;
@@ -956,86 +626,63 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		// fill the remaining slots with delimiters
 		for (int j = start; j < max; j++) {
 			sb.append(delimiter);
-			if (descriptionAndDescriptionIdExpected) {
+			if (includeComponentId) {
 				sb.append(delimiter);
 			}
 		}
 		return sb.toString();
 	}
 
-	private Map<Long, String> getExportedMemberConceptCDOAndSnomedIds(String refSetId) throws SQLException {
-		Map<Long, String> conceptCDOIds = Maps.newHashMap();
-		PreparedStatement inactivatedCheckerStatement = connection
-				.prepareStatement(SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_INACTIVATED_REFSET_MEMBER_CONCEPT_QUERY);
-		PreparedStatement statement = connection.prepareStatement(SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_REFSET_MEMBER_QUERY);
-		statement.setLong(1, Long.valueOf(refSetId));
-		statement.setInt(2, branchId);
-		statement.setInt(3, branchId);
-		statement.setLong(4, branchBase);
-		statement.setLong(5, branchBase);
-		statement.setInt(6, branchId);
-		statement.setInt(7, branchId);
-		statement.setLong(8, branchBase);
-		statement.setLong(9, branchBase);
-		ResultSet resultSet = statement.executeQuery();
-		int i = 1;
-		while (resultSet.absolute(i)) {
-			Long CDOId = resultSet.getLong(1);
-			inactivatedCheckerStatement.setLong(1, CDOId);
-			inactivatedCheckerStatement.setInt(2, branchId);
-			ResultSet inactivatedCheckerResultSet = inactivatedCheckerStatement.executeQuery();
-			
-			/*
-			 * Active refset members are skipped if the referenced concept is inactive!
-			 */
-			if (inactivatedCheckerResultSet.absolute(1) && !inactivatedCheckerResultSet.getBoolean(1)) {
-				i++;
-				continue;
-			}
-			conceptCDOIds.put(resultSet.getLong(1), resultSet.getString(2));
-			i++;
-		}
-		return conceptCDOIds;
+	
+	/**
+	 * Fetch members of the specified refset identifier.
+	 * Don't include inactive members or members that are active BUT their identified component are inactive.
+	 * @param refSetId
+	 * @return
+	 */
+	private SnomedReferenceSet getRefset(String refSetId) {
+		String expand = MessageFormat.format(""
+				+ "members("
+				+ "			limit:{0},"
+				+ "			active:true,"
+				+ "			expand("
+				+ "					referencedComponent(" //referenced components are concept in DSV export
+				+ "										active:true,"
+				+ "										expand("
+				+ "												pt(),"
+				+ "												descriptions("
+				+ "															limit:{0},"
+				+ "															active:true,"
+				+ "															type(expand(pt())),"
+				+ "															expand("
+				+ "																	members(" //expanding each description's language refset members
+				+ "																			limit:{0},"
+				+ "																			expand(pt())"
+				+ "																	)"
+				+ "															)"
+				+ "												),"
+				+ "												relationships("
+				+ "															limit:{0},"
+				+ "															active:true,"
+				+ "															expand(members(limit:{0},expand(pt())))," // expanding each relationships's concrete domain members 
+				+ "															destination(expand(pt())),"
+				+ "															type(expand(pt()))"
+				+ "												)"
+				+ "										)"
+				+ "					)"
+				+ "			)"
+				+ ")", String.valueOf(Integer.MAX_VALUE));
+		SnomedReferenceSet refset = 
+			SnomedRequests.prepareGetReferenceSet(refSetId)
+				.setExpand(expand)
+				.setLocales(locales)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getEventBus())
+			.getSync();
+		return refset;
 	}
 
-	private boolean isActive(Long conceptCDOId) throws SQLException {
-		PreparedStatement statement = connection.prepareStatement(SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_IS_ACTIVE_CONCEPT_QUERY);
-		statement.setLong(1, conceptCDOId);
-		statement.setInt(2, branchId);
-		statement.setInt(3, branchId);
-		statement.setLong(4, branchBase);
-		statement.setLong(5, branchBase);
-		ResultSet resultSet = statement.executeQuery();
-
-		if (resultSet.absolute(1)) {
-			return resultSet.getBoolean(1);
-		} else {
-			return false;
-		}
-
-	}
-
-	private String getDefinitionStatus(Long conceptCDOId) throws SQLException {
-		PreparedStatement statement = connection.prepareStatement(SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_DEFINITION_STATUS_QUERY);
-		statement.setLong(1, conceptCDOId);
-		statement.setInt(2, branchId);
-		statement.setInt(3, branchId);
-		statement.setLong(4, branchBase);
-		statement.setLong(5, branchBase);
-		ResultSet resultSet = statement.executeQuery();
-		resultSet.absolute(1);
-		return getPreferredTerm(resultSet.getLong(1), false);
-	}
-
-	private String getModule(Long conceptCDOId) throws SQLException {
-		PreparedStatement statement = connection.prepareStatement(SnomedRefSetExporterQueries.SQL_SIMPLE_TYPE_REFSET_DSV_EXPORT_MODULE_QUERY);
-		statement.setLong(1, conceptCDOId);
-		statement.setInt(2, branchId);
-		statement.setInt(3, branchId);
-		statement.setLong(4, branchBase);
-		statement.setLong(5, branchBase);
-		ResultSet resultSet = statement.executeQuery();
-		resultSet.absolute(1);
-		return getPreferredTerm(resultSet.getLong(1), false);
+	private IEventBus getEventBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 }
