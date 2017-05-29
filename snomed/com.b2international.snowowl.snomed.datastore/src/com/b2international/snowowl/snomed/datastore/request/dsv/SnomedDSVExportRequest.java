@@ -17,18 +17,22 @@ package com.b2international.snowowl.snomed.datastore.request.dsv;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
-import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import org.eclipse.net4j.util.om.monitor.EclipseMonitor;
 
+import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.file.FileRegistry;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedClientProtocol;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportClientRequest;
@@ -47,9 +51,6 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 	private String refSetId;
 	
 	@JsonProperty
-	private String refSetLabel;
-	
-	@JsonProperty
 	private SnomedRefSetType refSetType;
 	
 	@JsonProperty
@@ -62,10 +63,13 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 	private boolean relationshipTargetExpected;
 	
 	@JsonProperty
-	private long languageConfigurationId;
+	private String delimiter;
 
 	@JsonProperty
-	private String delimiter;
+	private List<AbstractSnomedDsvExportItem> exportItems;
+
+	@JsonProperty
+	private List<ExtendedLocale> locales;
 
 	@Override
 	public UUID execute(BranchContext context) {
@@ -92,26 +96,23 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 
 	private SnomedRefSetDSVExportModel toExportModel(BranchContext context) {
 		SnomedRefSetDSVExportModel model = new SnomedRefSetDSVExportModel();
-		CDOBranch branch = context.service(CDOBranchManager.class).getBranch(context.branchPath());
+		Branch branch = context.branch();
 		
-		model.setBranchBase(branch.getBase().getTimeStamp());
-		model.setBranchID(branch.getID());
+		model.setUserId(ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId());
+		model.setBranchBase(branch.baseTimestamp());
 		model.setBranchPath(context.branchPath());
 		model.setConceptSize(conceptSize);
 		model.setDelimiter(delimiter);
-		model.setDescriptionIdExpected(descriptionIdExpected);;
-		model.setLanguageConfigurationId(languageConfigurationId);
+		model.setIncludeDescriptionId(descriptionIdExpected);
+		model.setLocales(locales);
 		model.setRefSetId(refSetId);
-		model.setRelationshipTargetExpected(relationshipTargetExpected);
+		model.setIncludeRelationshipTargetId(relationshipTargetExpected);
+		model.addExportItems(exportItems);
 		return model;
 	}
 
 	public void setRefsetId(String refSetId) {
 		this.refSetId = refSetId;
-	}
-
-	public void setRefsetLabel(String refSetLabel) {
-		this.refSetLabel = refSetLabel;
 	}
 
 	public void setRefsetType(SnomedRefSetType refSetType) {
@@ -130,11 +131,15 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 		this.relationshipTargetExpected = relationshipTargetExpected;
 	}
 
-	public void setLanguageConfigurationId(long languageConfigurationId) {
-		this.languageConfigurationId = languageConfigurationId;
-	}
-
 	public void setDelimiter(String delimiter) {
 		this.delimiter = delimiter;
+	}
+	
+	public void setExportItems(List<AbstractSnomedDsvExportItem> exportItems) {
+		this.exportItems = exportItems;
+	}
+
+	public void setLocales(List<ExtendedLocale> locales) {
+		this.locales = locales;
 	}
 }

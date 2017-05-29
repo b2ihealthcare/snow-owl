@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.internal.rf2;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.List;
 
 import org.eclipse.net4j.signal.RequestWithMonitoring;
 import org.eclipse.net4j.util.io.ExtendedDataInputStream;
@@ -26,6 +27,7 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult.Result;
 
@@ -67,15 +69,20 @@ public class SnomedRefSetDSVExportClientRequest extends RequestWithMonitoring<Fi
 
 		out.writeUTF(exportModel.getUserId());
 		out.writeUTF(exportModel.getRefSetId());
-		out.writeBoolean(exportModel.isDescriptionIdExpected());
-		out.writeBoolean(exportModel.isRelationshipTargetExpected());
+		out.writeBoolean(exportModel.includeDescriptionId());
+		out.writeBoolean(exportModel.includeRelationshipTargetId());
+		
 		out.writeInt(exportModel.getExportItems().size());
 		for (final AbstractSnomedDsvExportItem exportItem : exportModel.getExportItems()) {
 			exportItem.writeToOutputStream(out);
 		}
-		out.writeLong(exportModel.getLanguageConfigurationId());
+		
+		out.writeInt(exportModel.getLocales().size());
+		List<ExtendedLocale> locales = exportModel.getLocales();
+		for (ExtendedLocale extendedLocale : locales) {
+			out.writeString(extendedLocale.toString());
+		}
 		out.writeUTF(exportModel.getDelimiter());
-		out.writeInt(exportModel.getBranchID());
 		out.writeLong(exportModel.getBranchBase());
 		out.writeUTF(exportModel.getBranchPath());
 	}

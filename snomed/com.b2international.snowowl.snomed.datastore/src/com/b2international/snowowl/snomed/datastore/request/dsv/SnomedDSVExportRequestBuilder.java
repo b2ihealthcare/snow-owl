@@ -15,12 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.dsv;
 
+import java.util.List;
 import java.util.UUID;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 
@@ -30,13 +33,13 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 public final class SnomedDSVExportRequestBuilder extends BaseRequestBuilder<SnomedDSVExportRequestBuilder, BranchContext, UUID> implements RevisionIndexRequestBuilder<UUID> {
 
 	private String refSetId;
-	private String refSetLabel;
 	private SnomedRefSetType refSetType;
 	private int conceptSize;
 	private boolean descriptionIdExpected;
 	private boolean relationshipTargetExpected;
-	private long languageConfigurationId;
+	private List<ExtendedLocale> locales;
 	private String delimiter;
+	private List<AbstractSnomedDsvExportItem> exportItems;
 	
 	SnomedDSVExportRequestBuilder() {}
 	
@@ -45,10 +48,6 @@ public final class SnomedDSVExportRequestBuilder extends BaseRequestBuilder<Snom
 		return getSelf();
 	}
 	
-	public SnomedDSVExportRequestBuilder setRefSetLabel(String refSetLabel) {
-		this.refSetLabel = refSetLabel;
-		return getSelf();
-	}
 	
 	public SnomedDSVExportRequestBuilder setRefSetType(SnomedRefSetType refSetType) {
 		this.refSetType = refSetType;
@@ -69,9 +68,9 @@ public final class SnomedDSVExportRequestBuilder extends BaseRequestBuilder<Snom
 		this.relationshipTargetExpected = relationshipTargetExpected;
 		return getSelf();
 	}
-	
-	public SnomedDSVExportRequestBuilder setLanguageConfigurationId(long languageConfigurationId) {
-		this.languageConfigurationId = languageConfigurationId;
+
+	public SnomedDSVExportRequestBuilder setLocales(List<ExtendedLocale> locales) {
+		this.locales = locales;
 		return getSelf();
 	}
 	
@@ -80,17 +79,22 @@ public final class SnomedDSVExportRequestBuilder extends BaseRequestBuilder<Snom
 		return getSelf();
 	}
 	
+	public SnomedDSVExportRequestBuilder setExportItems(List<AbstractSnomedDsvExportItem> exportItems) {
+		this.exportItems = exportItems;
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<BranchContext, UUID> doBuild() {
 		SnomedDSVExportRequest req = new SnomedDSVExportRequest();
 		req.setRefsetId(refSetId);
-		req.setRefsetLabel(refSetLabel);
 		req.setRefsetType(refSetType);
 		req.setConceptSize(conceptSize);
 		req.setDescriptionIdExpected(descriptionIdExpected);
 		req.setRelationshipTargetExpected(relationshipTargetExpected);
-		req.setLanguageConfigurationId(languageConfigurationId);
+		req.setLocales(locales);
 		req.setDelimiter(delimiter);
+		req.setExportItems(exportItems);
 		return req;
 	}
 }

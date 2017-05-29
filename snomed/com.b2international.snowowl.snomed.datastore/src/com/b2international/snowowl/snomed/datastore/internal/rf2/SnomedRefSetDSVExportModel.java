@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.internal.rf2;
 import java.util.Collection;
 import java.util.List;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Lists;
 
@@ -31,17 +32,16 @@ public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 	private SnomedRefSetType refSetType;
 	private int conceptSize;
 
-	private boolean descriptionIdExpected;
-	private boolean relationshipTargetExpected;
+	private boolean includeDescriptionId;
+	private boolean includeRelationshipTargetId;
 	private List<AbstractSnomedDsvExportItem> exportItems = Lists.newArrayList();
-	private long languageConfigurationId;
 	private String delimiter;
-	private int branchID;
 	private long branchBase;
 	// used for simple and complex map type refsets
 	private String branchPath;
 	
 	private String userId;
+	private List<ExtendedLocale> locales;
 
 	public SnomedRefSetDSVExportModel() {
 		super();
@@ -71,12 +71,12 @@ public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 		return refSetLabel;
 	}
 	
-	public Long getLanguageConfigurationId() {
-		return languageConfigurationId;
+	public void setLocales(List<ExtendedLocale> locales) {
+		this.locales = locales;
 	}
-
-	public void setLanguageConfigurationId(Long languageConfigurationId) {
-		this.languageConfigurationId = languageConfigurationId;
+	
+	public List<ExtendedLocale> getLocales() {
+		return locales;
 	}
 
 	public String getDelimiter() {
@@ -87,28 +87,12 @@ public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 		this.delimiter = delimiter;
 	}
 
-	public int getBranchID() {
-		return branchID;
-	}
-
-	public void setBranchID(int branchID) {
-		this.branchID = branchID;
-	}
-
 	public long getBranchBase() {
 		return branchBase;
 	}
 
 	public void setBranchBase(long branchBase) {
 		this.branchBase = branchBase;
-	}
-
-	public boolean isDescriptionIdExpected() {
-		return descriptionIdExpected;
-	}
-
-	public void setDescriptionIdExpected(boolean descriptionIdExpected) {
-		this.descriptionIdExpected = descriptionIdExpected;
 	}
 
 	public List<AbstractSnomedDsvExportItem> getExportItems() {
@@ -127,23 +111,36 @@ public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 		exportItems.addAll(items);
 	}
 
-	public boolean isRelationshipTargetExpected() {
-		return relationshipTargetExpected;
-	}
-
-	public void setRelationshipTargetExpected(boolean relationshipTargetExpected) {
-		this.relationshipTargetExpected = relationshipTargetExpected;
-	}
-
 	public String getBranchPath() {
 		return branchPath;
 	}
+	
+	public void setIncludeDescriptionId(boolean includeDescriptionId) {
+		this.includeDescriptionId = includeDescriptionId;
+	}
 
+	public boolean includeDescriptionId() {
+		return includeDescriptionId;
+	}
+	
+	public void setIncludeRelationshipTargetId(boolean includeRelationshipTargetId) {
+		this.includeRelationshipTargetId = includeRelationshipTargetId;
+	}
+	
+	public boolean includeRelationshipTargetId() {
+		return includeRelationshipTargetId;
+	}
+	
+	
 	public void setBranchPath(String branchPath) {
 		this.branchPath = branchPath;
 	}
 	
 	public String getUserId() {
 		return userId;
+	}
+	
+	public void setUserId(String userId) {
+		this.userId = userId;
 	}
 }

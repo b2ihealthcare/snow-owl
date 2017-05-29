@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 
 import org.eclipse.net4j.signal.IndicationWithMonitoring;
 import org.eclipse.net4j.signal.SignalProtocol;
@@ -27,6 +28,7 @@ import org.eclipse.net4j.util.io.ExtendedDataInputStream;
 import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.QueryBuilder;
@@ -45,14 +47,15 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult;
-import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportModel;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult.Result;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportModel;
 import com.b2international.snowowl.snomed.exporter.server.dsv.IRefSetDSVExporter;
 import com.b2international.snowowl.snomed.exporter.server.dsv.MapTypeRefSetDSVExporter;
 import com.b2international.snowowl.snomed.exporter.server.dsv.SnomedSimpleTypeRefSetDSVExporter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Lists;
 
 /**
  * This class receives requests from client side and depending the user request
@@ -89,19 +92,23 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 		exportSetting.setExportPath(System.getProperty("java.io.tmpdir") + File.separatorChar + "DSV_export" + System.currentTimeMillis());
 		userId = in.readUTF();
 		exportSetting.setRefSetId(in.readUTF());
-		exportSetting.setDescriptionIdExpected(in.readBoolean());
-		exportSetting.setRelationshipTargetExpected(in.readBoolean());
+		exportSetting.setIncludeDescriptionId(in.readBoolean());
+		exportSetting.setIncludeRelationshipTargetId(in.readBoolean());
 		int exportItemsSize = in.readInt();
 		for (int i = 0; i < exportItemsSize; i++) {
 			// TODO supplying MAIN here, as the selected branch read later from the stream
 			exportSetting.addExportItem(AbstractSnomedDsvExportItem.createFromInputStream(in));
 		}
-		exportSetting.setLanguageConfigurationId(in.readLong());
+		
+		int extendedLocaleSize = in.readInt();
+		List<ExtendedLocale> locales = Lists.newArrayList();
+		for (int i = 0; i < extendedLocaleSize; i++) {
+			locales.add(ExtendedLocale.valueOf(in.readString()));
+		}
+		exportSetting.setLocales(locales);
 		exportSetting.setDelimiter(in.readUTF());
-		exportSetting.setBranchID(in.readInt());
 		exportSetting.setBranchBase(in.readLong());
 		exportSetting.setBranchPath(in.readUTF());
-		
 		branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
 	}
 
