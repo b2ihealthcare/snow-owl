@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 
 import org.eclipse.net4j.signal.IndicationWithMonitoring;
@@ -89,7 +90,7 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 	protected void indicating(ExtendedDataInputStream in, OMMonitor monitor) throws Exception {
 		// the file path does not equals to the path given by the user it is for
 		// the temporary file on the server side.
-		exportSetting.setExportPath(System.getProperty("java.io.tmpdir") + File.separatorChar + "DSV_export" + System.currentTimeMillis());
+		exportSetting.setExportPath(Files.createTempDirectory("dsv-export-temp-dir").toFile().getAbsolutePath());
 		userId = in.readUTF();
 		exportSetting.setRefSetId(in.readUTF());
 		exportSetting.setIncludeDescriptionId(in.readBoolean());
