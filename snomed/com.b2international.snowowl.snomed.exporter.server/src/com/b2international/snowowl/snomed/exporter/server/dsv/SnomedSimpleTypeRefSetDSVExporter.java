@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
@@ -42,6 +43,7 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -350,6 +352,26 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		headerList = new ArrayList<String>();
 		metaHeaderList = new ArrayList<String>();
 
+		Map<String, String> descriptionTypeIdToTermMap = SnomedRequests.prepareSearchConcept()
+			.all()
+			.setLocales(locales)
+			.filterByAncestor(Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT)
+			.setExpand("pt()")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getEventBus())
+			.then(concepts -> toTypeIdTermMap(concepts))
+			.getSync();
+		
+		Map<String, String> relationsshipTypeIdToTermMap = SnomedRequests.prepareSearchConcept()
+				.all()
+				.setLocales(locales)
+				.filterByAncestor(Concepts.LINKAGE)
+				.setExpand("pt()")
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.execute(getEventBus())
+				.then(concepts -> toTypeIdTermMap(concepts))
+				.getSync();
+		
 		
 		Map<String, Integer> occurenceByTypeId = initOccurrenceMap(referencedComponents, exportItems);
 		
@@ -360,7 +382,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					final ComponentIdSnomedDsvExportItem descriptionItem = (ComponentIdSnomedDsvExportItem) exportItem;
 					final String descriptionTypeId = descriptionItem.getComponentId();
 					final int descriptionOccurrences = getMaxOccurence(occurenceByTypeId, descriptionTypeId);
-					final String descriptionDisplayName = descriptionItem.getDisplayName();
+					final String descriptionDisplayName = descriptionTypeIdToTermMap.getOrDefault(descriptionTypeId, descriptionItem.getDisplayName());
 					
 					exportItemMaxOccurences.put(descriptionTypeId, descriptionOccurrences);
 					// only one result
@@ -394,7 +416,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				case RELATIONSHIP:
 					final ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
 					final String relationshipTypeId = String.valueOf(relationshipItem.getComponentId());
-					final String relationshipDisplayName = relationshipItem.getDisplayName();
+					final String relationshipDisplayName = relationsshipTypeIdToTermMap.getOrDefault(relationshipTypeId, relationshipItem.getDisplayName());
 					
 					// if the relationship occurs as an ungrouped relationship.
 					if (sortToRelationshipGroups(referencedComponents, relationshipTypeId)) {
@@ -506,6 +528,15 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		// remove the only grouped relationships from the export items, because
 		// they will be exported particularly by groups.
 		exportItems.removeAll(groupedOnlyItems);
+	}
+
+	private Map<String, String> toTypeIdTermMap(SnomedConcepts concepts) {
+		return concepts.getItems()
+					.stream()
+					.collect(Collectors.toMap(concept -> concept.getId(), concept -> {
+							SnomedDescription pt = concept.getPt();
+							return pt == null ? concept.getId() : pt.getTerm();
+						}));
 	}
 
 	private boolean sortToRelationshipGroups(SnomedConcepts referencedComponents, String relationshipTypeId) {
