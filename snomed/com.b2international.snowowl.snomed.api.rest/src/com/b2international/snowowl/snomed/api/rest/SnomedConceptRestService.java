@@ -155,8 +155,9 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.filterByTerm(termFilter)
 					.filterByEscg(escgFilter)
 					.filterByEcl(eclFilter)
-					.setExpand(expand)
 					.filterByExtendedLocales(extendedLocales)
+					.setExpand(expand)
+					.setLocales(extendedLocales)
 					.build(repositoryId, branch)
 					.execute(bus));
 	}
