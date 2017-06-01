@@ -148,6 +148,7 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 			final File file = doExport(toExportModel(context));
 			final UUID fileId = UUID.randomUUID();
 			context.service(FileRegistry.class).upload(fileId, new FileInputStream(file));
+			file.delete();
 			return fileId;
 		} catch (final Exception e) {
 			return throwExportException("Error occurred while exporting SNOMED CT.", e);
