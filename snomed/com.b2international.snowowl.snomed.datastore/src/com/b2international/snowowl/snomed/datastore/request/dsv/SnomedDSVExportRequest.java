@@ -20,10 +20,7 @@ import java.io.FileInputStream;
 import java.util.List;
 import java.util.UUID;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.net4j.util.om.monitor.EclipseMonitor;
+import org.eclipse.net4j.util.om.monitor.Monitor;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -73,20 +70,24 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 
 	@Override
 	public UUID execute(BranchContext context) {
+		File file = null;
 		try {
-			File file = doExport(toExportModel(context));
+			file = doExport(toExportModel(context));
 			UUID fileId = UUID.randomUUID();
 			context.service(FileRegistry.class).upload(fileId, new FileInputStream(file));
 			return fileId;
 		} catch (Exception e) {
 			throw new RuntimeException("Error occurred during DSV export.", e);
+		} finally {
+			if (file != null) {
+				file.delete();
+			}
 		}
 	}
 
 	private File doExport(SnomedRefSetDSVExportModel exportModel) throws Exception {
 		SnomedRefSetDSVExportClientRequest dsvRequest = new SnomedRefSetDSVExportClientRequest(SnomedClientProtocol.getInstance(), exportModel);
-		IProgressMonitor submonitor = SubMonitor.convert(new NullProgressMonitor(), "Performing SNOMED CT export to DSV format...", 1000).newChild(1000, SubMonitor.SUPPRESS_ALL_LABELS);
-		File exportFile = dsvRequest.send(new EclipseMonitor(submonitor));
+		File exportFile = dsvRequest.send(new Monitor());
 
 		SnomedExportResult result = dsvRequest.getExportResult();
 		exportModel.getExportResult().setResultAndMessage(result.getResult(), result.getMessage());
