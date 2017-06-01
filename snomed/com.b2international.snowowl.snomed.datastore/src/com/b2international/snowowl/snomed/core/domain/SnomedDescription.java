@@ -25,8 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Multimap;
 
 /**
- * Represents a SNOMED CT Description.
- * Information about the inactivation reason can also be retrieved from this object if applicable.
+ * Represents a SNOMED&nbsp;CT description.
  * <br>
  * Descriptions returned by search requests are populated based on the expand parameters passed into the {@link BaseResourceRequestBuilder#setExpand(String)}
  * methods.   
@@ -34,7 +33,7 @@ import com.google.common.collect.Multimap;
  * The supported expand parameters are:
  * <p>
  * <ul>
- * <li>type() - returns the concept representing the type of the description
+ * <li>{@code type()} - returns the concept representing the type of the description</li>
  * </ul>
  * 
  * Expand parameters can be nested to further expand or filter the details returned. 
@@ -45,6 +44,8 @@ import com.google.common.collect.Multimap;
  * @see SnomedReferenceSetMember
  */
 public final class SnomedDescription extends SnomedCoreComponent {
+
+	private static final long serialVersionUID = 1L;
 
 	private String term;
 	private String languageCode;

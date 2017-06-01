@@ -39,13 +39,13 @@ import com.google.common.base.Function;
  * The supported expand parameters are:
  * <p>
  * <ul>
- * <li>targetComponent()</li> - returns the target component of the member
- * <li>referencedComponent()</li> - returns the referenced component of the member
+ * <li>{@code targetComponent()} - returns the target component of the member</li>
+ * <li>{@code referencedComponent()} - returns the referenced component of the member</li>
  * </ul>
  * 
  * Expand parameters can be nested to further expand or filter the details returned. For example:
  * <p>
- * <i>referencedComponent(expand(pt()))</i>, would return the preferred term of a <i>Concept</i> type referenced component.
+ * {@code referencedComponent(expand(pt()))}, would return the preferred term of a <i>Concept</i> type referenced component.
  * 
  * @see SnomedConcept
  * @see SnomedDescription
@@ -55,6 +55,8 @@ import com.google.common.base.Function;
  * @since 4.5
  */
 public final class SnomedReferenceSetMember extends SnomedComponent {
+
+	private static final long serialVersionUID = -7471488952871955209L;
 
 	public static final Function<SnomedReferenceSetMember, String> GET_REFERENCED_COMPONENT_ID = (member) -> member.getReferencedComponent().getId();
 	

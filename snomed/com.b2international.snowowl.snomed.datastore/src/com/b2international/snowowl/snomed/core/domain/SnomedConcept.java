@@ -22,49 +22,46 @@ import java.util.Set;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.collect.Multimap;
 
 /**
- * Represents a SNOMED CT concept.
- * <p>
- * If the component status is not active, additional information about the inactivation reason and associated concepts can also be retrieved from this
- * object.
- * 
+ * Represents a SNOMED&nbsp;CT concept.
  * <br>
  * Concepts returned by search requests are populated based on the expand parameters passed into the {@link BaseResourceRequestBuilder#setExpand(String)}
- * methods.  
+ * methods. The expand parameters can be nested allowing a fine control for the details returned in the resultset.  
  * 
  * The supported expand parameters are:
  * <p>
  * <ul>
- * <li>pt() - returns the <i>Preferred Term</i> for the </li> locale set by {@link BaseResourceRequestBuilder#setLocales(java.util.List)} method.
- * .setLocales(languagePreference)
+ * <li>{@code pt()} - returns the <i>Preferred Term</i> for the </li> locale set by {@link BaseResourceRequestBuilder#setLocales(java.util.List)} method.
  * 
- * <li>fsn()</li> - returns the <i>Fully Specified Name (fsn)</i> for the </li> locale set by {@link BaseResourceRequestBuilder#setLocales(java.util.List)} method.
- * .setLocales(languagePreference)
- * <li>descriptions()</li> - returns the descriptions of the concept
- * <li>relationships()</li> - returns the relationships of the concept
- * <li>descendants(direct:true|false, form:"stated"|"inferred")</li> - returns the all or the only the direct descendants of the concept based on the stated or the inferred tree. 
- * <li>ancestors(direct:true|false, form:"stated"|"inferred")</li> - - returns the all or the only the direct ancestors of the concept based on the stated or the inferred tree.
- *      
+ * <li>{@code fsn()} - returns the <i>Fully Specified Name (fsn)</i> for the </li> locale set by {@link BaseResourceRequestBuilder#setLocales(java.util.List)} method.
+ * .setLocales(languagePreference)</li>
+ * <li>{@code descriptions()} - returns the descriptions of the concept</li>
+ * <li>{@code relationships()} - returns the relationships of the concept</li>
+ * <li>{@code descendants(direct:true|false, form:"stated"|"inferred")} - returns the all or the only the direct descendants of the concept based on the stated or the inferred tree.</li> 
+ * <li>{@code ancestors(direct:true|false, form:"stated"|"inferred")} - returns the all or the only the direct ancestors of the concept based on the stated or the inferred tree.</li>
  * </ul>
  * 
  * Expand parameters can be nested to further expand or filter the details returned. 
  * For example the expand string:
- * <p><i>descriptions(expand(type:"typeId"))</i><p>
- * would returns the descriptions with the specified <i>typeId</i>
- * .setExpand("referencedComponent(expand(pt()))")
+ * <p>{@code descriptions(expand(type:"typeId"))}<p>
+ * returns only the descriptions with the specified <i>typeId</i>
  * 
  * <p>
+ * @see BaseResourceRequestBuilder#setLocales(java.util.List)
  * @see SnomedDescription
  * @see SnomedRelationship
  * @see SnomedReferenceSet
  * @see SnomedReferenceSetMember
  */
 public final class SnomedConcept extends SnomedCoreComponent implements DefinitionStatusProvider {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Enumerates expandable property keys.

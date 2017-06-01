@@ -42,9 +42,14 @@ public abstract class ResourceRequestBuilder<B extends ResourceRequestBuilder<B,
 	protected ResourceRequestBuilder() {}
 	
 	/**
-	 * Sets the request to use the given {@link ExtendedLocale}s for the returned display labels. The given {@link ExtendedLocale}s are in preferred order.
-	 * @param locales - to use for all the labels returned by the request
-	 * @return this builder
+	 * Sets the request to return the preferred locale for the returned display labels.
+	 * Typical way to obtain the preferred locales: 
+	 * <p>
+	 * {@code private final List<ExtendedLocale> locales = ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference()}
+	 * 
+	 * 
+	 * @param locales for the labels returns by the request
+	 * @return BaseResourceRequestBuilder   
 	 */
 	public final B setLocales(List<ExtendedLocale> locales) {
 		if (!CompareUtils.isEmpty(locales)) {
