@@ -39,6 +39,11 @@ public abstract class BaseResourceRequestBuilder<B extends BaseResourceRequestBu
 	
 	/**
 	 * Sets the request to return the preferred locale for the returned display labels.
+	 * Typical way to obtain the preferred locales: 
+	 * <p>
+	 * {@code private final List<ExtendedLocale> locales = ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference()}
+	 * 
+	 * 
 	 * @param locales for the labels returns by the request
 	 * @return BaseResourceRequestBuilder   
 	 */

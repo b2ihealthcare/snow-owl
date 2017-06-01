@@ -35,13 +35,13 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
  * The supported expand parameters are:
  * <p>
  * <ul>
- * <li>targetComponent()</li> - returns the target component of the member
- * <li>referencedComponent()</li> - returns the referenced component of the member
+ * <li>{@code targetComponent()} - returns the target component of the member</li>
+ * <li>{@code referencedComponent()} - returns the referenced component of the member</li>
  * </ul>
  * 
  * Expand parameters can be nested to further expand or filter the details returned. For example:
  * <p>
- * <i>referencedComponent(expand(pt()))</i>, would return the preferred term of a <i>Concept</i> type referenced component.
+ * {@code referencedComponent(expand(pt()))}, would return the preferred term of a <i>Concept</i> type referenced component.
  * 
  * @see SnomedConcept
  * @see SnomedDescription

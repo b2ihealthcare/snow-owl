@@ -28,14 +28,14 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
  * The supported expand parameters are:
  * <p>
  * <ul>
- * <li>source()</li> - returns the source concept of the relationship.
- * <li>destination()</li> - returns the destination concept of the relationship.
- * <li>type()</li> - returns the concept representing the type of the relationship
+ * <li>{@code source()} - returns the source concept of the relationship</li>
+ * <li>{@code destination()} - returns the destination concept of the relationship</li>
+ * <li>{@code type()} - returns the concept representing the type of the relationship</li>
  * </ul>
  * 
  * Expand parameters can be nested to further expand or filter the details returned. 
  * For example the expand string:
- * <p><i>source(expand(pt()))</i>, would return the source concept's preferred term as well.
+ * <p>{@code source(expand(pt()))}, would return the source concept's preferred term as well.
  * 
  * @see SnomedConcept
  * @see SnomedDescription

@@ -31,7 +31,7 @@ import com.google.common.collect.Multimap;
  * The supported expand parameters are:
  * <p>
  * <ul>
- * <li>type() - returns the concept representing the type of the description
+ * <li>{@code type()} - returns the concept representing the type of the description</li>
  * </ul>
  * 
  * Expand parameters can be nested to further expand or filter the details returned. 

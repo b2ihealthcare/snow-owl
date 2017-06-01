@@ -31,7 +31,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
  * The supported expand parameters are:
  * <p>
  * <ul>
- * <li>members()</li> - returns the members of this reference set as well.
+ * <li>{@code members()} - returns the members of this reference set as part of the reference set</li>
  * </ul>
  * 
  * Expand parameters can be nested to further expand or filter the details returned. 
