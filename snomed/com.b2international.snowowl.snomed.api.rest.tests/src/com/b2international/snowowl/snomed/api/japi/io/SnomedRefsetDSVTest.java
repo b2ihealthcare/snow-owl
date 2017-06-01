@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,26 +35,23 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
-import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.CommitResult;
-import com.b2international.snowowl.datastore.request.TransactionalRequestBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConcreteDomainConstraint;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedDescriptionConstraint;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipConstraint;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.ComponentIdSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.DatatypeSnomedDsvExportItem;
@@ -85,11 +83,19 @@ public class SnomedRefsetDSVTest  {
 	private IEventBus bus;
 	
 	private FileRegistry fileRegistry;
+
+	private File tempDir;
 	
 	@Before
 	public void setup() {
 		bus = ApplicationContext.getInstance().getService(IEventBus.class);
 		fileRegistry = ApplicationContext.getInstance().getService(FileRegistry.class);
+		tempDir = Files.createTempDir();
+	}
+	
+	@After
+	public void destroy() {
+		FileUtils.deleteDirectory(tempDir);
 	}
 	
 	@Test
@@ -110,10 +116,6 @@ public class SnomedRefsetDSVTest  {
 				.setExportItems(createExportItems(refsetId))
 				.build(REPOSITORY_ID, MAIN_BRANCH).execute(bus)
 				.getSync();
-	
-		
-		File tempDir = Files.createTempDir();
-		tempDir.deleteOnExit();
 
 		File dsvExportZipFile = new File(tempDir, String.format("dsv-export-%s.zip", fileId.toString()));
 		OutputStream outputStream = new FileOutputStream(dsvExportZipFile);
@@ -121,11 +123,11 @@ public class SnomedRefsetDSVTest  {
 		Assert.assertTrue("Export archive must exist!", dsvExportZipFile.exists());
 
 		FileUtils.decompressZipArchive(dsvExportZipFile, tempDir);
-		File decompressedDsvFile = new File(tempDir,"dsv-export-file.txt");
+		File decompressedDsvFile = new File(tempDir, "dsv-export-file.txt");
 		Assert.assertTrue("Uncompressed file must exist.", decompressedDsvFile.exists());
 
 		List<String> dsvExportLines = Files.readLines(decompressedDsvFile, Charsets.UTF_8);
-		Assert.assertTrue(MessageFormat.format("DSV export file must contain at least {0} lines besides header row(s)", dsvExportLines.size()), dsvExportLines.size() > 2);
+		Assert.assertTrue(MessageFormat.format("Expected 4 lines in the exported file (2 header and 2 member lines) instead of {0} lines.", dsvExportLines.size()), dsvExportLines.size() == 4);
 	}
 
 	private List<ExtendedLocale> locales() {
@@ -133,23 +135,32 @@ public class SnomedRefsetDSVTest  {
 	}
 
 	private List<AbstractSnomedDsvExportItem> createExportItems(String refsetId) {
-		
-		Set<String> referencedComponentIds = SnomedRequests.prepareSearchMember()
+			SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
 				.all()
-				.filterByRefSet(refsetId)
+				.filterByEcl(String.format("^%s", refsetId))
 				.build(REPOSITORY_ID, MAIN_BRANCH)
 				.execute(bus)
-				.then(SnomedReferenceSetMembers.GET_REFERENCED_COMPONENT_IDS)
 				.getSync();
 		
-		return transformToExportItems(getConstraints(referencedComponentIds));
+		return transformToExportItems(getConstraints(concepts));
 	}
 
-	private Iterable<SnomedConstraint> getConstraints(Set<String> referencedComponents) {
-		Set<String> conceptIds = referencedComponents.stream().filter(id -> SnomedIdentifiers.getComponentCategory(id) == ComponentCategory.CONCEPT).collect(Collectors.toSet());
+	private Iterable<SnomedConstraint> getConstraints(SnomedConcepts concepts) {
 		return SnomedRequests
-					.prepareGetApplicablePredicates(MAIN_BRANCH, conceptIds, conceptIds, Collections.emptySet())
-					.getSync();
+				.prepareGetApplicablePredicates(MAIN_BRANCH, idsOf(concepts), ancestorsOf(concepts), Collections.emptySet()).getSync();
+	}
+
+	private Set<String> idsOf(SnomedConcepts concepts) {
+		return concepts.getItems().stream()
+							.map(SnomedConcept::getId)
+							.collect(Collectors.toSet());
+	}
+
+	private Set<String> ancestorsOf(SnomedConcepts concepts) {
+		return concepts.getItems()
+					.stream()
+					.flatMap(item -> SnomedConcept.GET_ANCESTORS.apply(item).stream())
+					.collect(Collectors.toSet());
 	}
 
 	private void addMembers(String refsetId, String... refComponentIds) {
@@ -158,14 +169,13 @@ public class SnomedRefsetDSVTest  {
 		for (String refComponentId : refComponentIds) {
 			bulkRequestBuilder.add(memberBuilder(refsetId, refComponentId));
 		}
-		new TransactionalRequestBuilder<BulkResponse>() {
-			@Override
-			public Request<TransactionContext, BulkResponse> build() {
-				return bulkRequestBuilder.build();
-			}
-		}.build(REPOSITORY_ID, MAIN_BRANCH, "test", "test")
-			.execute(bus)
-			.getSync();
+		
+		SnomedRequests.prepareCommit()
+				.setBody(bulkRequestBuilder)
+				.setUserId("test")
+				.setCommitComment("test")
+				.build(REPOSITORY_ID, MAIN_BRANCH)
+				.execute(bus).getSync();
 	}
 
 	private String createRefset() {
