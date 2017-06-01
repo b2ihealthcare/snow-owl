@@ -147,6 +147,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 					.filterByType(typeFilter)
 					.filterByAcceptability(acceptabilityFilter)
 					.filterByExtendedLocales(extendedLocales)
+					.setLocales(extendedLocales)
 					.setLimit(limit)
 					.setOffset(offset)
 					.setExpand(expand)
