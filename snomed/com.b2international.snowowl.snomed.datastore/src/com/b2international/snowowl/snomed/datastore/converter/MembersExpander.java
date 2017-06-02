@@ -26,6 +26,7 @@ import com.b2international.snowowl.snomed.core.domain.BaseSnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -50,15 +51,26 @@ class MembersExpander {
 	void expand(List<? extends SnomedCoreComponent> results, Set<String> componentIds) {
 		if (expand.containsKey("members")) {
 			final Options membersOptions = expand.get("members", Options.class);
-			// TODO support limit, offset, filtering, selection
-			final SnomedReferenceSetMembers matchingMembers = SnomedRequests
+			
+			final Boolean active = membersOptions.getBoolean("active");
+			final int offset = BaseSnomedComponentConverter.getOffset(membersOptions);
+			final int limit = BaseSnomedComponentConverter.getLimit(membersOptions);
+			
+			final SnomedRefSetMemberSearchRequestBuilder req = SnomedRequests
 				.prepareSearchMember()
 				.all()
 				.filterByReferencedComponent(componentIds)
 				.setLocales(locales)
-				.setExpand(membersOptions.get("expand", Options.class))
-				.build()
-				.execute(context);
+				.setOffset(offset)
+				.setLimit(limit)
+				.setExpand(membersOptions.get("expand", Options.class));
+			
+			if (active != null) {
+				req.filterByActive(active);
+			}
+			
+			final SnomedReferenceSetMembers matchingMembers = req.build().execute(context);
+			
 			final Multimap<String, SnomedReferenceSetMember> membersByReferencedComponentId = Multimaps.index(matchingMembers, new Function<SnomedReferenceSetMember, String>() {
 				@Override
 				public String apply(SnomedReferenceSetMember input) {
