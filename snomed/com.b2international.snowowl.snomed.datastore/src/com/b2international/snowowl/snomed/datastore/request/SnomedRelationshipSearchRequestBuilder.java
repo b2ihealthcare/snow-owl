@@ -60,8 +60,13 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedSearchRe
 		return addOption(OptionKey.CHARACTERISTIC_TYPE, termFilter);
 	}
 	
+	public SnomedRelationshipSearchRequestBuilder filterByCharacteristicTypes(Collection<String> characteristicTypes) {
+		return addOption(OptionKey.CHARACTERISTIC_TYPE, characteristicTypes);
+	}
+	
 	@Override
 	protected SearchRequest<SnomedRelationships> createSearch() {
 		return new SnomedRelationshipSearchRequest();
 	}
+
 }

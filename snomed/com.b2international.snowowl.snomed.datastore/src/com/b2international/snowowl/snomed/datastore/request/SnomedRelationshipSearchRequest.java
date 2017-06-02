@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
@@ -63,11 +64,12 @@ final class SnomedRelationshipSearchRequest extends SnomedSearchRequest<SnomedRe
 			queryBuilder.relationshipType(getString(OptionKey.TYPE));
 		}
 		
-		if (containsKey(OptionKey.CHARACTERISTIC_TYPE)) {
-			queryBuilder.relationshipCharacteristicType(getString(OptionKey.CHARACTERISTIC_TYPE));
-		}
-		
 		final BooleanFilter filter = new BooleanFilter();
+		
+		if (containsKey(OptionKey.CHARACTERISTIC_TYPE)) {
+			final Collection<String> charTypes = getCollection(OptionKey.CHARACTERISTIC_TYPE, String.class);
+			addFilterClause(filter, SnomedMappings.relationshipCharacteristicType().createTermsFilter(StringToLongFunction.copyOf(charTypes)), Occur.MUST);
+		}
 		
 		addComponentIdFilter(filter);
 
