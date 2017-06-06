@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.mrcm.core.server.widget;
-
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 
 import java.util.Collection;
 import java.util.List;
@@ -35,7 +33,7 @@ import com.b2international.snowowl.core.api.IComponentNameProvider;
 import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.component.IconIdProviderUtil;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
-import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.mrcm.core.configuration.SnomedSimpleTypeRefSetAttributeConfiguration;
@@ -86,9 +84,8 @@ public class WidgetBeanProvider {
 			monitor = new NullProgressMonitor();
 		}
 		
-		final boolean active = getServiceForClass(SnomedTaxonomyService.class).isActive(branchPath, conceptId);
-		
-		final ConceptWidgetBean cwb = new ConceptWidgetBean(conceptWidgetModel, conceptId, active);
+		final SnomedConceptIndexEntry concept = strategy.getConcept(conceptId);
+		final ConceptWidgetBean cwb = new ConceptWidgetBean(conceptWidgetModel, conceptId, concept.isActive());
 		
 		final AtomicReference<List<LeafWidgetBean>> descriptionBeansRef = new AtomicReference<List<LeafWidgetBean>>();
 		final AtomicReference<ListMultimap<Integer, LeafWidgetBean>> relationshipGroupsRef = new AtomicReference<ListMultimap<Integer, LeafWidgetBean>>();
