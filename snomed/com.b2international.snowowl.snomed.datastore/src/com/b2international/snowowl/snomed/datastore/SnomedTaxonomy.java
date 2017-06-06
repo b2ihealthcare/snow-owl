@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,19 @@ import java.util.Collection;
  * Since the taxonomy uses a cache under the hood its instantiation time and memory consumption is 
  * higher than any other stateless services in general. Clients should reuse one instance than frequently 
  * creating a new one.
- * <p>Clients should be also aware of the following:
- * <p>The taxonomy represents the current/actual state of the SNOMED&nbsp;CT ontology when an instance is created.
- * The taxonomy is not aware of changing its internal state after making any kind of modifications in
+ * <p>
+ * Clients should be also aware of the following:
+ * <ul>
+ * <li>The taxonomy represents the current/actual state of the SNOMED&nbsp;CT ontology when an instance is created.
+ * <li>The taxonomy is not aware of changing its internal state after making any kind of modifications in
  * the ontology, hence the state of the taxonomy may be out of sync from the actual content of
  * the SNOMED&nbsp;CT ontology.
- * <p>Clients should consider acquiring a write lock on the SNOMED&nbsp;CT repository when running any scripts
+ * </ul>
+ * <p>
+ * Clients should consider acquiring a write lock on the SNOMED&nbsp;CT repository when running any scripts
  * which use a taxonomy instance to ensure data consistency.
- *
  */
+@Deprecated
 public interface SnomedTaxonomy {
 
 	/**
