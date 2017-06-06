@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,17 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.unmodifiableCollection;
 
 import java.util.Collection;
+import java.util.Set;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Functions;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.primitives.Longs;
 
 /**
  * Class for collecting IDs of concepts that are marked for inactivation.
@@ -132,7 +141,27 @@ public class SnomedConceptInactivationIdCollector {
 	protected Collection<String> getAllSuperTypeIds(final IBranchPath branchPath, final String id) {
 		checkNotNull(branchPath, "branchPath");
 		checkNotNull(id, "id");
-		return newHashSet(getTaxonomyService().getAllSupertypes(branchPath, id));
+		
+		final ISnomedConcept concept = SnomedRequests.prepareGetConcept()
+			.setComponentId(id)
+			.build(branchPath.getPath())
+			.execute(getServiceForClass(IEventBus.class))
+			.getSync();
+		
+		final ImmutableSet.Builder<Long> longIds = ImmutableSet.builder();
+		if (concept.getParentIds() != null) {
+			longIds.addAll(Longs.asList(concept.getParentIds()));
+		}
+		if (concept.getAncestorIds() != null) {
+			longIds.addAll(Longs.asList(concept.getAncestorIds()));
+		}
+		
+		final Set<String> allSuperTypeIds = newHashSet();
+		FluentIterable.from(longIds.build())
+			.transform(Functions.toStringFunction())
+			.copyInto(allSuperTypeIds);
+		
+		return allSuperTypeIds;
 	}
 
 	/**
@@ -144,11 +173,18 @@ public class SnomedConceptInactivationIdCollector {
 	protected Collection<String> getAllSubTypeIds(final IBranchPath branchPath, final String id) {
 		checkNotNull(branchPath, "branchPath");
 		checkNotNull(id, "id");
-		return newHashSet(getTaxonomyService().getAllSubtypes(branchPath, id));
-	}
-	
-	private SnomedTaxonomyService getTaxonomyService() {
-		return getServiceForClass(SnomedTaxonomyService.class);
-	}
 
+		final SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
+				.filterByAncestor(id)
+				.build(branchPath.getPath())
+				.execute(getServiceForClass(IEventBus.class))
+				.getSync();
+
+		final Set<String> allSubTypeIds = newHashSet();
+		for (ISnomedConcept concept : concepts) {
+			allSubTypeIds.add(concept.getId());
+		}
+
+		return allSubTypeIds;
+	}
 }
