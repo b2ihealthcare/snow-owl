@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,10 +87,6 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 		return Collections2.transform(getIndexService().searchUnsorted(branchPath, queryAdapter), SnomedDescription.IndexObjectConverterFunctions.INSTANCE);
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.mrcm.core.widget.WidgetBeanProviderStrategy#getConcept(java.lang.String)
-	 */
-	@Override
 	protected SnomedConceptIndexEntry getConcept(final String conceptId) {
 		return ApplicationContext.getInstance().getService(SnomedTerminologyBrowser.class).getConcept(branchPath, conceptId);
 	}

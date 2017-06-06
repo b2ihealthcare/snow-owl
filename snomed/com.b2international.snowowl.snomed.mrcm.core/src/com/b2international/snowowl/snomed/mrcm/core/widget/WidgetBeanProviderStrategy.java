@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -316,9 +316,6 @@ public abstract class WidgetBeanProviderStrategy {
 		// Skip if we are in a group and the type is in the set that should never appear in a group
 		return !groupModel.isUngrouped() && !Sets.intersection(unusedModel.getAllowedTypeIds(), WidgetBeanUtils.NEVER_GROUPED_RELATIONSHIP_TYPE_IDS).isEmpty();
 	}
-	
-	/*returns with the lightweight representation of the SNOMED CT concept identifier by the specified ID*/
-	abstract protected SnomedConceptIndexEntry getConcept(final String conceptId);
 	
 	/**
 	 * Returns a map where the unique keys are the description ids and the values are the acceptability maps. The acceptability map's keys are the
