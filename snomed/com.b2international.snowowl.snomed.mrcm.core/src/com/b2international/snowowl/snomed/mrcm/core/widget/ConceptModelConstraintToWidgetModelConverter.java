@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,11 @@ import java.util.Set;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collections.LongArrayTransformedToSet;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
+import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.escg.IEscgQueryEvaluatorService;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry;
 import com.b2international.snowowl.snomed.datastore.snor.PredicateIndexEntry.PredicateType;
 import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
@@ -47,6 +48,8 @@ import com.b2international.snowowl.snomed.mrcm.core.widget.model.WidgetModel.Upp
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+
+import bak.pcj.LongCollection;
 
 /**
  */
@@ -155,19 +158,22 @@ public class ConceptModelConstraintToWidgetModelConverter {
 	 * @param multiple
 	 * @param strength
 	 */
-	private static void processRelationshipPredicate(final IBranchPath branchPath, final PredicateIndexEntry predicate, final List<RelationshipWidgetModel> ungroupedRelationshipWidgetModels, 
+	private static void processRelationshipPredicate(final IBranchPath branchPath, 
+			final PredicateIndexEntry predicate, 
+			final List<RelationshipWidgetModel> ungroupedRelationshipWidgetModels, 
 			final List<WidgetModel> singleGroupedRelationshipWidgetModels) {
 
 		Preconditions.checkState(PredicateType.RELATIONSHIP.equals(predicate.getType()), "Predicate type was not a relationship type but " + predicate.getType());
 		
 		final LowerBound lowerBound = predicate.isRequired() ? LowerBound.REQUIRED : LowerBound.OPTIONAL;
 		final UpperBound upperBound = predicate.isMultiple() ? UpperBound.MULTIPLE : UpperBound.SINGLE;
+		final LongCollection typeIds = getQueryEvaluatorService().evaluateConceptIds(branchPath, predicate.getRelationshipTypeExpression());
+		final LongCollection characteristicTypeIds = getQueryEvaluatorService().evaluateConceptIds(branchPath, predicate.getCharacteristicTypeExpression());
 		
-
 		final RelationshipWidgetModel relationshipWidgetModel = RelationshipWidgetModel.createRegularModel(lowerBound, upperBound, branchPath, 
-				newHashSet(getTaxonomyService().evaluateEscg(branchPath, predicate.getRelationshipTypeExpression())),
+				newHashSet(LongSets.toStringSet(typeIds)),
 				predicate.getRelationshipValueExpression(),
-				newHashSet(getTaxonomyService().evaluateEscg(branchPath, predicate.getCharacteristicTypeExpression())));
+				newHashSet(LongSets.toStringSet(characteristicTypeIds)));
 		
 		switch (predicate.getGroupRule()) {
 			case SINGLE_GROUP: 
@@ -183,7 +189,6 @@ public class ConceptModelConstraintToWidgetModelConverter {
 			default: 
 				throw new IllegalArgumentException("Unknown group role: " + predicate.getGroupRule()); 
 		}
-		
 	}
 
 	private static Set<String> getIds(final long... ids) {
@@ -198,7 +203,7 @@ public class ConceptModelConstraintToWidgetModelConverter {
 		return Collections.synchronizedList(Lists.<T>newArrayList());
 	}
 	
-	private static SnomedTaxonomyService getTaxonomyService() {
-		return getServiceForClass(SnomedTaxonomyService.class);
+	private static IEscgQueryEvaluatorService getQueryEvaluatorService() {
+		return getServiceForClass(IEscgQueryEvaluatorService.class);
 	}
 }
