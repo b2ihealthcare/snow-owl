@@ -76,7 +76,7 @@ import com.b2international.snowowl.snomed.reasoner.classification.entry.Relation
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.model.LongConcepts;
 import com.b2international.snowowl.snomed.reasoner.preferences.IReasonerPreferencesService;
-import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
@@ -153,13 +153,13 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	};
 	
 	private final Cache<String, ReasonerTaxonomy> taxonomyResultRegistry;
-	private NamespaceAndMolduleAssigner namespaceAndModuleAssigner;
+	private NamespaceAndModuleAssigner namespaceAndModuleAssigner;
 	
 	public SnomedReasonerServerService(int maximumReasonerCount, int maximumTaxonomiesToKeep) {
 		super(maximumReasonerCount);
 
 		this.taxonomyResultRegistry = CacheBuilder.newBuilder().maximumSize(maximumTaxonomiesToKeep).build();
-		this.namespaceAndModuleAssigner = Extensions.getFirstPriorityExtension("com.b2international.snowowl.snomed.reasoner.server.namespaceAssigner", NamespaceAndMolduleAssigner.class);
+		this.namespaceAndModuleAssigner = Extensions.getFirstPriorityExtension("com.b2international.snowowl.snomed.reasoner.server.namespaceAssigner", NamespaceAndModuleAssigner.class);
 		if (namespaceAndModuleAssigner == null) {
 			throw new NullPointerException("Could not find a namespace and module allocator in the extension registry");
 		}
@@ -276,8 +276,9 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		ImmutableList.Builder<RelationshipChangeEntry> relationshipBuilder = ImmutableList.builder();
 		ImmutableList.Builder<IConcreteDomainChangeEntry> concreteDomainBuilder = ImmutableList.builder();
 		Map<Long, ChangeConcept> changeConceptCache = newHashMap();
-		
-		new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder).collectNormalFormChanges(null, new OntologyChangeProcessor<StatementFragment>(namespaceAndModuleAssigner) {
+				
+		new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder)
+			.collectNormalFormChanges(null, new OntologyChangeProcessor<StatementFragment>() {
 			@Override 
 			protected void handleAddedSubject(final String conceptId, final StatementFragment addedSubject) {
 				registerEntry(Long.valueOf(conceptId), addedSubject, Nature.INFERRED);
@@ -334,7 +335,8 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 			}
 		});
 		
-		new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder).collectNormalFormChanges(null, new OntologyChangeProcessor<ConcreteDomainFragment>(namespaceAndModuleAssigner) {
+		new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder)
+			.collectNormalFormChanges(null, new OntologyChangeProcessor<ConcreteDomainFragment>() {
 			@Override 
 			protected void handleAddedSubject(final String conceptId, final ConcreteDomainFragment addedSubject) {
 				registerEntry(Long.valueOf(conceptId), addedSubject, Nature.INFERRED);
