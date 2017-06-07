@@ -21,6 +21,7 @@ import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockCon
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -53,13 +54,15 @@ import com.b2international.snowowl.datastore.server.snomed.index.InitialReasoner
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.classification.EquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
-import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange;
+import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeRecorder;
 import com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain.ConcreteDomainPersister;
 import com.b2international.snowowl.snomed.reasoner.server.diff.relationship.RelationshipPersister;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
@@ -151,24 +154,16 @@ public class PersistChangesRequest implements Request<ServiceProvider, ApiError>
 		try {
 
 			editingContext = new SnomedEditingContext(branchPath);
-			InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = getIndex().read(branchPath.getPath(), new RevisionIndexRead<InitialReasonerTaxonomyBuilder>() {
-				@Override
-				public InitialReasonerTaxonomyBuilder execute(RevisionSearcher searcher) throws IOException {
-					return new InitialReasonerTaxonomyBuilder(searcher, Type.REASONER);
-				}
-			});
 
-			RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
-			RelationshipPersister relationshipAddPersister = new RelationshipPersister(editingContext, OntologyChange.Nature.ADD, namespaceAndModuleAssigner);
-			RelationshipPersister relationshipRemovePersister = new RelationshipPersister(editingContext, OntologyChange.Nature.REMOVE, namespaceAndModuleAssigner);
-
-			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipAddPersister);
-			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipRemovePersister);
-
-			ConceptConcreteDomainNormalFormGenerator conceptConcreteDomainGenerator = new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
-			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.ADD, namespaceAndModuleAssigner));
-			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.REMOVE, namespaceAndModuleAssigner));
-
+			final OntologyChangeRecorder<StatementFragment> relationshipRecorder = new OntologyChangeRecorder<>();
+			final OntologyChangeRecorder<ConcreteDomainFragment> concreteDomainRecorder = new OntologyChangeRecorder<>();
+			recordChanges(subMonitor, relationshipRecorder, concreteDomainRecorder);
+		
+			namespaceAndModuleAssigner.allocateRelationshipIdsAndModules(relationshipRecorder.getAddedSubjects().keys(), editingContext);
+			applyRelationshipChanges(editingContext, relationshipRecorder);
+			
+			namespaceAndModuleAssigner.allocateConcreteDomainModules(concreteDomainRecorder.getAddedSubjects().keySet(), editingContext);
+			applyConcreteDomainChanges(editingContext, concreteDomainRecorder);
 			List<LongSet> equivalenciesToFix = Lists.newArrayList();
 
 			for (LongSet equivalentSet : taxonomy.getEquivalentConceptIds()) {
@@ -202,6 +197,49 @@ public class PersistChangesRequest implements Request<ServiceProvider, ApiError>
 			if (editingContext != null) {
 				editingContext.close();
 			}
+		}
+	}
+	
+	private void recordChanges(final SubMonitor subMonitor,
+			final OntologyChangeRecorder<StatementFragment> relationshipRecorder,
+			final OntologyChangeRecorder<ConcreteDomainFragment> concreteDomainRecorder) {
+		
+		IBranchPath branchPath = taxonomy.getBranchPath();
+		InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = getIndex().read(branchPath.getPath(), new RevisionIndexRead<InitialReasonerTaxonomyBuilder>() {
+			@Override
+			public InitialReasonerTaxonomyBuilder execute(RevisionSearcher searcher) throws IOException {
+				return new InitialReasonerTaxonomyBuilder(searcher, Type.REASONER);
+			}
+		});
+	
+		final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
+		relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipRecorder);
+	
+		final ConceptConcreteDomainNormalFormGenerator conceptConcreteDomainGenerator = new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
+		conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), concreteDomainRecorder);
+	}
+
+	private void applyRelationshipChanges(SnomedEditingContext editingContext, OntologyChangeRecorder<StatementFragment> relationshipRecorder) {
+		final RelationshipPersister relationshipPersister = new RelationshipPersister(editingContext, namespaceAndModuleAssigner);
+		
+		for (Entry<String, StatementFragment> addedFragments : relationshipRecorder.getAddedSubjects().entries()) {
+			relationshipPersister.handleAddedSubject(addedFragments.getKey(), addedFragments.getValue());
+		}
+		
+		for (Entry<String, StatementFragment> removedFragments : relationshipRecorder.getRemovedSubjects().entries()) {
+			relationshipPersister.handleRemovedSubject(removedFragments.getKey(), removedFragments.getValue());
+		}
+	}
+
+	private void applyConcreteDomainChanges(SnomedEditingContext editingContext, OntologyChangeRecorder<ConcreteDomainFragment> concreteDomainRecorder) {
+		final ConcreteDomainPersister concreteDomainPersister = new ConcreteDomainPersister(editingContext, namespaceAndModuleAssigner);
+		
+		for (Entry<String, ConcreteDomainFragment> addedFragments : concreteDomainRecorder.getAddedSubjects().entries()) {
+			concreteDomainPersister.handleAddedSubject(addedFragments.getKey(), addedFragments.getValue());
+		}
+		
+		for (Entry<String, ConcreteDomainFragment> removedFragments : concreteDomainRecorder.getRemovedSubjects().entries()) {
+			concreteDomainPersister.handleRemovedSubject(removedFragments.getKey(), removedFragments.getValue());
 		}
 	}
 
