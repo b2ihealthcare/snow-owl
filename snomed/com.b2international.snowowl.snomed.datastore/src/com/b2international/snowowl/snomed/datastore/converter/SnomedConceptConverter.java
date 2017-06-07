@@ -120,13 +120,12 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 	@Override
 	protected void expand(List<ISnomedConcept> results) {
 		final Set<String> conceptIds = FluentIterable.from(results).transform(ID_FUNCTION).toSet();
-		expandInactivationProperties(results, conceptIds);
 		
 		if (expand().isEmpty()) {
 			return;
 		}
 		
-		
+		expandInactivationProperties(results, conceptIds);
 		new MembersExpander(context(), expand(), locales()).expand(results, conceptIds);
 		
 		final DescriptionRequestHelper helper = new DescriptionRequestHelper() {
