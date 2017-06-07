@@ -64,11 +64,13 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSea
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 
 /**
@@ -119,12 +121,11 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 	
 	@Override
 	protected void expand(List<ISnomedConcept> results) {
-		final Set<String> conceptIds = FluentIterable.from(results).transform(ID_FUNCTION).toSet();
-		
-		if (expand().isEmpty()) {
+		if (expand().isEmpty() || results.isEmpty()) {
 			return;
 		}
 		
+		final Set<String> conceptIds = FluentIterable.from(results).transform(ID_FUNCTION).toSet();
 		expandInactivationProperties(results, conceptIds);
 		new MembersExpander(context(), expand(), locales()).expand(results, conceptIds);
 		
@@ -306,11 +307,23 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 				}
 				
 				final int offset = getOffset(expandOptions);
-				final Collection<String> componentIds = newHashSet(descendantsByAncestor.values());
+				final Set<String> componentIds = newHashSet(descendantsByAncestor.values());
 				
 				if (limit > 0 && !componentIds.isEmpty()) {
+					final Set<String> alreadySeenDescendantIds = newHashSet(Sets.intersection(componentIds, conceptIds));
 					// remove any already known concept definition
 					componentIds.removeAll(conceptIds);
+					
+					if (!alreadySeenDescendantIds.isEmpty()) {
+						// make sure we expand already seen descendants
+						final List<ISnomedConcept> alreadySeenDescendants = FluentIterable.from(results).filter(new Predicate<ISnomedConcept>() {
+							@Override
+							public boolean apply(ISnomedConcept input) {
+								return alreadySeenDescendantIds.contains(input.getId());
+							}
+						}).toList();
+						new SnomedConceptConverter(context(), expandOptions.get("expand", Options.class), locales()).expand(alreadySeenDescendants);
+					}
 					
 					final SnomedConcepts descendants = SnomedRequests.prepareSearchConcept()
 							.all()
@@ -319,6 +332,7 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 							.setLocales(locales())
 							.setExpand(expandOptions.get("expand", Options.class))
 							.build().execute(context());
+					
 					
 					final Map<String, ISnomedConcept> descendantsById = newHashMap();
 					descendantsById.putAll(Maps.uniqueIndex(descendants, ID_FUNCTION));
