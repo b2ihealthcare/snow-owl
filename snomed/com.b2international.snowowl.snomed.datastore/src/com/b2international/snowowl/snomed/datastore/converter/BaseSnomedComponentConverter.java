@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.converter;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -47,7 +45,7 @@ abstract class BaseSnomedComponentConverter<T extends SnomedIndexEntry, R extend
 	private final List<ExtendedLocale> locales;
 
 	protected BaseSnomedComponentConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
-		this.context = checkNotNull(context, "context");
+		this.context = context;
 		this.expand = expand == null ? OptionsBuilder.newBuilder().build() : expand;
 		this.locales = locales == null ? Collections.<ExtendedLocale>emptyList() : locales;
 	}
