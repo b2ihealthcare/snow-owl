@@ -22,6 +22,7 @@ import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockCon
 import static org.eclipse.core.runtime.Status.OK_STATUS;
 
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -47,17 +48,14 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.SnomedReasonerServerActivator;
-import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange;
+import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeRecorder;
 import com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain.ConcreteDomainPersister;
 import com.b2international.snowowl.snomed.reasoner.server.diff.relationship.RelationshipPersister;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-
 import bak.pcj.set.LongSet;
 
 /**
@@ -75,7 +73,7 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 	private DatastoreLockContext lockContext;
 	private IOperationLockTarget lockTarget;
 	
-	private NamespaceAndMolduleAssigner namespaceAndModuleAssigner;
+	private NamespaceAndModuleAssigner namespaceAndModuleAssigner;
 
 	/**
 	 * @param name
@@ -83,7 +81,7 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 	 * @param branchPath
 	 * @param userId
 	 */
-	public PersistChangesRemoteJob(String name, ReasonerTaxonomy taxonomy, IBranchPath branchPath, String userId, final NamespaceAndMolduleAssigner namespaceAndModuleAssigner) {
+	public PersistChangesRemoteJob(String name, ReasonerTaxonomy taxonomy, IBranchPath branchPath, String userId, final NamespaceAndModuleAssigner namespaceAndModuleAssigner) {
 		super(name);
 		this.taxonomy = taxonomy;
 		this.branchPath = branchPath;
@@ -141,29 +139,22 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 			throw new IllegalStateException("Tried to run the same persist changes job twice.");
 		}
 		
-		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Persisting changes", 6);
+		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Persisting changes", 4);
 		SnomedEditingContext editingContext = null;
-		
-		final Multimap<String, StatementFragment> newRelationshipsMultimap = HashMultimap.create();
-		final Multimap<String, ConcreteDomainFragment> newConcreteDomainMultimap = HashMultimap.create();
 		
 		try {
 
 			editingContext = new SnomedEditingContext(branchPath);
-			final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, Type.REASONER);
-
-			final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
-			final RelationshipPersister relationshipAddPersister = new RelationshipPersister(editingContext, OntologyChange.Nature.ADD, namespaceAndModuleAssigner, newRelationshipsMultimap);
-			final RelationshipPersister relationshipRemovePersister = 
-					new RelationshipPersister(editingContext, OntologyChange.Nature.REMOVE, namespaceAndModuleAssigner, HashMultimap.<String, StatementFragment>create());
 			
-			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipAddPersister);
-			relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipRemovePersister);
+			final OntologyChangeRecorder<StatementFragment> relationshipRecorder = new OntologyChangeRecorder<>();
+			final OntologyChangeRecorder<ConcreteDomainFragment> concreteDomainRecorder = new OntologyChangeRecorder<>();
+			recordChanges(subMonitor, relationshipRecorder, concreteDomainRecorder);
+		
+			namespaceAndModuleAssigner.allocateRelationshipIdsAndModules(relationshipRecorder.getAddedSubjects().keys(), editingContext);
+			applyRelationshipChanges(editingContext, relationshipRecorder);
 			
-			final ConceptConcreteDomainNormalFormGenerator conceptConcreteDomainGenerator = new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
-			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), new ConcreteDomainPersister(editingContext, OntologyChange.Nature.ADD, namespaceAndModuleAssigner, newConcreteDomainMultimap));
-			conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), 
-					new ConcreteDomainPersister(editingContext, OntologyChange.Nature.REMOVE, namespaceAndModuleAssigner, HashMultimap.<String, ConcreteDomainFragment>create()));
+			namespaceAndModuleAssigner.allocateConcreteDomainModules(concreteDomainRecorder.getAddedSubjects().keySet(), editingContext);
+			applyConcreteDomainChanges(editingContext, concreteDomainRecorder);
 
 			final List<LongSet> equivalenciesToFix = Lists.newArrayList();
 
@@ -193,6 +184,43 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 			if (editingContext != null) {
 				editingContext.close();
 			}
+		}
+	}
+
+	private void recordChanges(final SubMonitor subMonitor,
+			final OntologyChangeRecorder<StatementFragment> relationshipRecorder,
+			final OntologyChangeRecorder<ConcreteDomainFragment> concreteDomainRecorder) {
+		
+		final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, Type.REASONER);
+	
+		final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
+		relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipRecorder);
+	
+		final ConceptConcreteDomainNormalFormGenerator conceptConcreteDomainGenerator = new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
+		conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), concreteDomainRecorder);
+	}
+
+	private void applyRelationshipChanges(SnomedEditingContext editingContext, OntologyChangeRecorder<StatementFragment> relationshipRecorder) {
+		final RelationshipPersister relationshipPersister = new RelationshipPersister(editingContext, namespaceAndModuleAssigner);
+		
+		for (Entry<String, StatementFragment> addedFragments : relationshipRecorder.getAddedSubjects().entries()) {
+			relationshipPersister.handleAddedSubject(addedFragments.getKey(), addedFragments.getValue());
+		}
+		
+		for (Entry<String, StatementFragment> removedFragments : relationshipRecorder.getRemovedSubjects().entries()) {
+			relationshipPersister.handleRemovedSubject(removedFragments.getKey(), removedFragments.getValue());
+		}
+	}
+
+	private void applyConcreteDomainChanges(SnomedEditingContext editingContext, OntologyChangeRecorder<ConcreteDomainFragment> concreteDomainRecorder) {
+		final ConcreteDomainPersister concreteDomainPersister = new ConcreteDomainPersister(editingContext, namespaceAndModuleAssigner);
+		
+		for (Entry<String, ConcreteDomainFragment> addedFragments : concreteDomainRecorder.getAddedSubjects().entries()) {
+			concreteDomainPersister.handleAddedSubject(addedFragments.getKey(), addedFragments.getValue());
+		}
+		
+		for (Entry<String, ConcreteDomainFragment> removedFragments : concreteDomainRecorder.getRemovedSubjects().entries()) {
+			concreteDomainPersister.handleRemovedSubject(removedFragments.getKey(), removedFragments.getValue());
 		}
 	}
 
