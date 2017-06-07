@@ -33,6 +33,8 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
@@ -44,6 +46,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.inject.Provider;
 
 import bak.pcj.set.LongSet;
@@ -152,16 +155,33 @@ public class SnomedClientRefSetBrowser extends AbstractClientRefSetBrowser<Snome
 	
 	@Override
 	public Collection<SnomedConceptIndexEntry> getMemberConcepts(final String refsetId) {
-		final List<ISnomedConcept> concepts = SnomedRequests.prepareSearchConcept()
-				.all()
-				.filterByEscg("^" + refsetId)
-				.setLocales(getLocales())
-				.setExpand("pt()")
-				.build(getBranchPath().getPath())
-				.executeSync(bus)
-				.getItems();
 		
-		return SnomedConceptIndexEntry.fromConcepts(concepts);
+		SnomedReferenceSet referenceSet = SnomedRequests.prepareGetReferenceSet()
+			.setComponentId(refsetId)
+			.build(getBranchPath().getPath())
+			.executeSync(bus);
+		
+		//only concept referenced components are supported
+		if (!referenceSet.getReferencedComponentType().equals(SnomedTerminologyComponentConstants.CONCEPT)) {
+			return Sets.newHashSet();
+		}
+		
+		//fetch the members
+		SnomedReferenceSetMembers members = SnomedRequests.prepareSearchMember()
+			.all()
+			.filterByRefSet(refsetId)
+			.setExpand("referencedComponent()")
+			.build(getBranchPath().getPath())
+			.executeSync(bus);
+			
+		Set<ISnomedConcept> referencedConcepts = FluentIterable.from(members).transform(new Function<SnomedReferenceSetMember, ISnomedConcept>() {
+
+			@Override
+			public ISnomedConcept apply(SnomedReferenceSetMember member) {
+				return (ISnomedConcept) member.getReferencedComponent();
+			}
+		}).toSet();
+		return SnomedConceptIndexEntry.fromConcepts(referencedConcepts);
 	}
 	
 	/**
