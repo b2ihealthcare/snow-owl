@@ -110,7 +110,10 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	public long getStorageKey(final IBranchPath branchPath, final String conceptId) {
 		checkNotNull(branchPath, "Branch path argument cannot be null.");
 		checkNotNull(conceptId, "Concept ID argument cannot be null.");
-		final Query query = Mappings.newQuery().type(getConceptTerminologyComponentId()).id(conceptId).matchAll();
+		final Query query = Mappings.newQuery()
+				.and(getTerminologyComponentTypeQuery())
+				.id(conceptId)
+				.matchAll();
 		return getStorageKey(branchPath, query);
 	}
 
@@ -260,11 +263,10 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 	
 	protected Query getSubTypesQuery(final String id) {
 		return Mappings.newQuery()
-				.type(getConceptTerminologyComponentId())
+				.and(getTerminologyComponentTypeQuery())
 				.parent(id)
 				.matchAll();
 	}
-
 	
 	abstract protected short getConceptTerminologyComponentId();
 
@@ -337,7 +339,9 @@ public abstract class AbstractIndexTerminologyBrowser<E extends IIndexEntry> ext
 
 	// The default implementation restricts the query to a single component type only
 	private Query getDefaultTerminologyComponentTypeQuery() {
-		return Mappings.newQuery().type(getConceptTerminologyComponentId()).matchAll();
+		return Mappings.newQuery()
+				.type(getConceptTerminologyComponentId())
+				.matchAll();
 	}
 
 	/**
