@@ -12,25 +12,16 @@
             intId="100"
             name="SNOMED CT Concept"
             terminologyId="com.b2international.snowowl.terminology.snomed">
-         <supportedRefSetType
-               type="SIMPLE_MAP">
-         </supportedRefSetType>
-         <supportedRefSetType
-               type="SIMPLE">
-         </supportedRefSetType>
-         <supportedRefSetType
-               type="ATTRIBUTE_VALUE">
-         </supportedRefSetType>
-         <supportedMapTargetType
-               type="SIMPLE_MAP">
-         </supportedMapTargetType>
-         <supportedRefSetType
-               type="COMPLEX_MAP">
-         </supportedRefSetType>
-         <supportedRefSetType
-               type="EXTENDED_MAP">
-         </supportedRefSetType>
+         <supportedRefSetType type="SIMPLE"/>
+         <supportedRefSetType type="SIMPLE_MAP"/>
+         <supportedRefSetType type="ATTRIBUTE_VALUE" />
+         <supportedRefSetType type="COMPLEX_MAP" />
+         <supportedRefSetType type="EXTENDED_MAP" />
+
+         <supportedMapTargetType type="SIMPLE_MAP" />
       </terminologyComponent>
+      
+      <!-- Description -->
       <terminologyComponent
             decorator="icons/snomed_description_decorator.png"
             hierarchical="false"
@@ -39,16 +30,12 @@
             intId="101"
             name="SNOMED CT Description"
             terminologyId="com.b2international.snowowl.terminology.snomed">
-         <supportedRefSetType
-               type="SIMPLE">
-         </supportedRefSetType>
-         <supportedRefSetType
-               type="ATTRIBUTE_VALUE">
-         </supportedRefSetType>
-         <supportedRefSetType
-               type="SIMPLE_MAP">
-         </supportedRefSetType>
+         <supportedRefSetType type="SIMPLE"/>
+         <supportedRefSetType type="ATTRIBUTE_VALUE"/>
+         <supportedRefSetType type="SIMPLE_MAP"/>
       </terminologyComponent>
+      
+      <!-- Relationship -->
       <terminologyComponent
             decorator="icons/snomed_relationship_decorator.png"
             hierarchical="false"
@@ -58,6 +45,8 @@
             name="SNOMED CT Relationship"
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </terminologyComponent>
+      
+      <!-- Refset -->
       <terminologyComponent
             decorator="icons/snomed_refset_decorator.png"
             hierarchical="true"
@@ -66,9 +55,7 @@
             intId="103"
             name="SNOMED CT Reference Set"
             terminologyId="com.b2international.snowowl.terminology.snomed">
-         <supportedRefSetType
-               type="QUERY">
-         </supportedRefSetType>
+         <supportedRefSetType type="QUERY" />
       </terminologyComponent>
       <terminologyComponent
             decorator="icons/snomed_refset_decorator.png"
