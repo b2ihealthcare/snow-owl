@@ -56,7 +56,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.classification.EquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange;
@@ -80,14 +80,14 @@ public class PersistChangesRequest implements Request<ServiceProvider, ApiError>
 	@JsonProperty
 	private final String classificationId;
 	private final String userId;
-	private final NamespaceAndMolduleAssigner namespaceAndModuleAssigner;
+	private final NamespaceAndModuleAssigner namespaceAndModuleAssigner;
 
 	private ReasonerTaxonomy taxonomy;
 	private DatastoreLockContext lockContext;
 	private IOperationLockTarget lockTarget;
 	private LongSet statedDescendantsOfSmp;
 
-	public PersistChangesRequest(String classificationId, ReasonerTaxonomy taxonomy, String userId, NamespaceAndMolduleAssigner namespaceAndModuleAssigner) {
+	public PersistChangesRequest(String classificationId, ReasonerTaxonomy taxonomy, String userId, NamespaceAndModuleAssigner namespaceAndModuleAssigner) {
 		this.classificationId = classificationId;
 		this.taxonomy = taxonomy;
 		this.userId = userId;
