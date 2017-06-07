@@ -65,22 +65,21 @@ public class CodeSystemBean extends BeanPropertyChangeSupporter implements CodeS
 	}
 	
 	/**
-	 * Resolves the specified code system version by prefix matching against the
-	 * available versions.
+	 * Resolves the specified code system version from the available versions.
+	 * Note: only used for Value Sets.
 	 * 
 	 * @return the one available version which is matching or null if the
 	 *         version could not be resolved.
 	 * @throws RuntimeException if multiple versions would match.
 	 */
 	public String resolveCodeSytemVersion() {
-		// recognize "2007-01-31" from the specified "2007-01"
 		String resolved = null;
 		for (String availableVersion : availableCodeSystemVersions) {
-			if (availableVersion.startsWith(codeSystemVersion)) {
+			if (availableVersion.equals(codeSystemVersion)) {
 				if (resolved == null) {
 					resolved = availableVersion;
 				} else {
-					throw new RuntimeException("Code system version could not be resolved. Multiple versions are present with '" + codeSystemVersion + "' prefix.");
+					throw new RuntimeException("Multiple versions are present with '" + codeSystemVersion + "' id.");
 				}
 			} 
 		}
