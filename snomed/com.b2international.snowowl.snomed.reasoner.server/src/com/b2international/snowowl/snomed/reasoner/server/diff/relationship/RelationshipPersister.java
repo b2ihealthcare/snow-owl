@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server.diff.relationship;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -24,6 +22,7 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
@@ -31,20 +30,16 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
-import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Nature;
-import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
 /**
  * Applies changes related to relationships using the specified SNOMED CT editing context.
  */
-public class RelationshipPersister extends OntologyChangeProcessor<StatementFragment> {
+public class RelationshipPersister {
 
 	private final Concept inferredRelationshipConcept;
 	private final Concept existentialRelationshipConcept;
@@ -52,17 +47,14 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 	private final SnomedConceptLookupService conceptLookupService;
 	private final SnomedRelationshipLookupService relationshipLookupService;
 	private final CDOTransaction transaction;
-	private final SnomedEditingContext context;
 	private final Map<Long, Concept> relationshipTypeConcepts;
-	private final Nature nature;
 	
-	private final Collection<String> relationshipIds = Sets.newHashSet();
+	private final SnomedEditingContext context;
+	private final NamespaceAndModuleAssigner namespaceAndModuleAssigner;
 	
-	public RelationshipPersister(final SnomedEditingContext context, final Nature nature, final NamespaceAndMolduleAssigner relationshipNamespaceAllocator, Multimap<String, StatementFragment> newStatementsMultimap) {
-		
-		super(relationshipNamespaceAllocator, newStatementsMultimap);
+	public RelationshipPersister(final SnomedEditingContext context, final NamespaceAndModuleAssigner namespaceAndModuleAssigner) {
 		this.context = context;
-		this.nature = nature;
+		this.namespaceAndModuleAssigner = namespaceAndModuleAssigner;
 		
 		conceptLookupService = new SnomedConceptLookupService();
 		relationshipLookupService = new SnomedRelationshipLookupService();
@@ -76,55 +68,30 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 		relationshipTypeConcepts = Maps.newHashMap();
 	}
 	
-	@Override
-	protected void handleRemovedSubject(final String conceptId, final StatementFragment removedEntry) {
-
-		if (!Nature.REMOVE.equals(nature)) {
-			return;
-		}
-		
+	public void handleRemovedSubject(final String conceptId, final StatementFragment removedEntry) {
 		final Relationship relationship = (Relationship) context.lookup(removedEntry.getStorageKey());
 		SnomedModelExtensions.removeOrDeactivate(relationship);
 	}
 	
-	@Override
-	protected void beforeHandleAddedSubjects() {
-		//pre-allocate namespaces for the new relationships per each concept
-		getRelationshipNamespaceAssigner().allocateRelationshipNamespacesAndModules(new HashSet<String>(newPropertiesMultiMap.keySet()), context);
-	}
-	
-	@Override
-	protected void handleAddedSubject(final String sourceConceptId, final StatementFragment addedEntry) {
-
-		if (!Nature.ADD.equals(nature)) {
-			return;
-		}
-		final String namespace = getRelationshipNamespaceAssigner().getRelationshipNamespace(sourceConceptId, context.getBranchPath());
-		
-		
+	public void handleAddedSubject(final String sourceConceptId, final StatementFragment addedEntry) {
+		final String relationshipId = namespaceAndModuleAssigner.getRelationshipId(sourceConceptId);
 		final Concept sourceConcept = conceptLookupService.getComponent(sourceConceptId, transaction);
-		final Concept module = getRelationshipNamespaceAssigner().getRelationshipModule(sourceConceptId, context.getBranchPath());
+		final Concept module = namespaceAndModuleAssigner.getRelationshipModule(sourceConceptId);
 		
 		final Concept typeConcept;
 		final long typeId = addedEntry.getTypeId();
 		
 		if (relationshipTypeConcepts.containsKey(typeId)) {
-			
 			typeConcept = relationshipTypeConcepts.get(typeId);
-			
 		} else {
-			
 			typeConcept = conceptLookupService.getComponent(Long.toString(typeId), transaction);
 			relationshipTypeConcepts.put(typeId, typeConcept);
-			
 		}
 		
 		final Concept destinationConcept = conceptLookupService.getComponent(Long.toString(addedEntry.getDestinationId()), transaction);
 		
-		final Relationship newRel = context.buildEmptyRelationship(namespace);
-		
-		relationshipIds.add(newRel.getId());
-
+		final Relationship newRel = SnomedFactory.eINSTANCE.createRelationship();
+		newRel.setId(relationshipId);
 		newRel.setType(typeConcept);
 		newRel.setActive(true);
 		newRel.setCharacteristicType(inferredRelationshipConcept);
@@ -155,10 +122,6 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 				newRel.getConcreteDomainRefSetMembers().add(refSetMember);
 			}
 		}
-	}
-	
-	public Collection<String> getRelationshipIds() {
-		return relationshipIds;
 	}
 
 	private String getCharacteristicTypeId(final SnomedConcreteDataTypeRefSetMember originalMember, final String defaultCharacteristicTypeId) {
