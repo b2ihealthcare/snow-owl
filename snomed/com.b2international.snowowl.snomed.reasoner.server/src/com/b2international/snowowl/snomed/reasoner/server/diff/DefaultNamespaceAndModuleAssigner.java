@@ -15,47 +15,55 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server.diff;
 
+import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
+
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
+import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
+import com.google.common.collect.Multiset;
 
 /**
  * Simple assigner that allocates the default namespace and module for relationships and concrete domains.
  */
-public class DefaultNamespaceAndModuleAssigner implements NamespaceAndMolduleAssigner {
+public class DefaultNamespaceAndModuleAssigner implements NamespaceAndModuleAssigner {
 
+	private Iterator<String> relationshipIds;
 	private Concept defaultRelationshipModuleConcept;
-
 	private Concept defaultConcreteDomainModuleConcept;
 
 	@Override
-	public String getRelationshipNamespace(String sourceConceptId, final IBranchPath branchPath) {
-		return SnomedEditingContext.getDefaultNamespace();
+	public String getRelationshipId(String sourceConceptId) {
+		return relationshipIds.next();
 	}
 
 	@Override
-	public Concept getRelationshipModule(String sourceConceptId, final IBranchPath branchPath) {
+	public Concept getRelationshipModule(String sourceConceptId) {
 		return defaultRelationshipModuleConcept;
 	}
 
 	@Override
-	public Concept getConcreteDomainModule(String sourceConceptId, IBranchPath branchPath) {
+	public Concept getConcreteDomainModule(String sourceConceptId) {
 		return defaultConcreteDomainModuleConcept;
 	}
 
 	@Override
-	public void allocateRelationshipNamespacesAndModules(Set<String> conceptIds, final SnomedEditingContext editingContext) {
+	public void allocateRelationshipIdsAndModules(Multiset<String> conceptIds, final SnomedEditingContext editingContext) {
+		ISnomedIdentifierService identifierService = getServiceForClass(ISnomedIdentifierService.class);
+		String defaultNamespace = editingContext.getDefaultNamespace();
+		Collection<String> reservedIds = identifierService.reserve(defaultNamespace, ComponentCategory.RELATIONSHIP, conceptIds.size());
 		
+		relationshipIds = reservedIds.iterator();
 		defaultRelationshipModuleConcept = editingContext.getDefaultModuleConcept();
 	}
 
 	@Override
 	public void allocateConcreteDomainModules(Set<String> conceptIds, final SnomedEditingContext editingContext) {
-		
 		defaultConcreteDomainModuleConcept = editingContext.getDefaultModuleConcept();
 	}
-
 }
