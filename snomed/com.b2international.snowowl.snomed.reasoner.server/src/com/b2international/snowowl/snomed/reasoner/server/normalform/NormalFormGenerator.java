@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import bak.pcj.list.LongList;
  * hierarchy encapsulated in a reasoner.
  * 
  * @param <T> the generated component type
- * 
  */
 public abstract class NormalFormGenerator<T extends Serializable> {
 
@@ -72,19 +71,27 @@ public abstract class NormalFormGenerator<T extends Serializable> {
 				processor.apply(conceptId, existingComponents, generatedComponents, ordering, subMonitor.newChild(1));
 				generatedComponentCount += generatedComponents.size();
 			}
-
-			processor.handleAddedSubjects();
+			
 		} finally {
 			subMonitor.done();
 		}
 		
 		return generatedComponentCount; 
 	}
-	
+
+	/**
+	 * Returns the set of currently persisted components for the specified concept.
+	 * <p>
+	 * The returned collection might not be in normal form.
+	 * 
+	 * @param concept the concept for which components should be generated
+	 * @return the existing components of the specified concept
+	 */
 	public abstract Collection<T> getExistingComponents(final long conceptId);
 
 	/**
 	 * Computes and returns a set of components in normal form for the specified concept.
+	 * 
 	 * @param concept the concept for which components should be generated
 	 * @return the generated components of the specified concept in normal form
 	 */
