@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,13 @@ package com.b2international.snowowl.snomed.reasoner.server.diff;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 
-import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
@@ -37,18 +33,8 @@ import com.google.common.collect.Sets;
  * element is encountered.
  * 
  * @param <T> the change subject's type
- * 
  */
 public abstract class OntologyChangeProcessor<T extends Serializable> {
-	
-	private NamespaceAndMolduleAssigner relationshipNamespaceAssigner;
-	protected Multimap<String, T> newPropertiesMultiMap; 
-
-	public OntologyChangeProcessor(NamespaceAndMolduleAssigner relationshipNamespaceAssigner, Multimap<String, T> newPropertiesMultiMap) {
-		Preconditions.checkNotNull(relationshipNamespaceAssigner);
-		this.relationshipNamespaceAssigner = relationshipNamespaceAssigner;
-		this.newPropertiesMultiMap = newPropertiesMultiMap;
-	}
 	
 	public void apply(final long conceptId, final Collection<T> oldCollection, final Collection<T> newCollection, final Ordering<T> ordering) {
 		apply(conceptId, oldCollection, newCollection, ordering, null);
@@ -78,16 +64,16 @@ public abstract class OntologyChangeProcessor<T extends Serializable> {
 			subMonitor.worked(1);
 		}
 		
-		//collect the inferred properties per concept
-		for (final T newMini : sortedNew) {
+		for (final T newSubject : sortedNew) {
 
 			if (subMonitor.isCanceled()) {
 				throw new OperationCanceledException();
 			}
 			
-			if (ordering.binarySearch(sortedOld, newMini) < 0) {
-				newPropertiesMultiMap.put(String.valueOf(conceptId), newMini);
+			if (ordering.binarySearch(sortedOld, newSubject) < 0) {
+				handleAddedSubject(String.valueOf(conceptId), newSubject);
 			}
+			
 			subMonitor.worked(1);
 		}
 	}
@@ -115,38 +101,6 @@ public abstract class OntologyChangeProcessor<T extends Serializable> {
 			
 			subMonitor.worked(1);
 		}
-	}
-	
-	/**assigner
-	 * Returns the relationship namespace and module allocator assigned to this change processor.
-	 * @return
-	 */
-	protected NamespaceAndMolduleAssigner getRelationshipNamespaceAssigner() {
-		return relationshipNamespaceAssigner;
-	}
-
-	/**
-	 * Handles the concept id to new inferred properties map.
-	 * Subclasses can overwrite to add custom behavior before handling the new properties for each concept.
-	 */
-	public void handleAddedSubjects() {
-		
-		beforeHandleAddedSubjects();
-		
-		Set<String> keySet = newPropertiesMultiMap.keySet();
-		for (String key : keySet) {
-			Collection<T> values = newPropertiesMultiMap.get(key);
-			for (T fragment : values) {
-				handleAddedSubject(key, fragment);
-			}
-		}
-	}
-	
-	/**
-	 * This method is called before adding a new inferred change
-	 */
-	protected void beforeHandleAddedSubjects() {
-		//subclasses should override
 	}
 
 	/**

@@ -15,73 +15,66 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server.diff;
 
+import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
+import static com.google.common.collect.Maps.newHashMap;
+
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner;
-import com.google.common.collect.Maps;
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 
 /**
  * Simple assigner that allocates the namespaces and modules for relationships and concrete domains
  * to match the source concept's namespace.
- *
  */
-public class SourceConceptNamespaceAndModuleAssigner implements NamespaceAndMolduleAssigner {
+public class SourceConceptNamespaceAndModuleAssigner implements NamespaceAndModuleAssigner {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SourceConceptNamespaceAndModuleAssigner.class);
-
-	private Map<String, Concept> conceptIdToRelationshipModuleMap = Maps.newHashMap();
-	
-	private Map<String, Concept> conceptIdToConcreteDomainModuleMap = Maps.newHashMap();
-
-	private Concept relationshipDefaultModuleConcept;
-
-	private Concept cdDefaultModuleConcept;
+	private Map<String, Iterator<String>> namespaceToRelationshipIdMap = newHashMap();
+	private Map<String, Concept> conceptIdToRelationshipModuleMap = newHashMap();
+	private Map<String, Concept> conceptIdToConcreteDomainModuleMap = newHashMap();
 
 	@Override
-	public String getRelationshipNamespace(String sourceConceptId, final IBranchPath branchPath) {
-		return SnomedIdentifiers.create(sourceConceptId).getNamespace();
+	public String getRelationshipId(String sourceConceptId) {
+		String sourceConceptNamespace = SnomedIdentifiers.create(sourceConceptId).getNamespace();
+		return namespaceToRelationshipIdMap.get(sourceConceptNamespace).next();
 	}
 
 	@Override
-	public Concept getRelationshipModule(String sourceConceptId, final IBranchPath branchPath) {
-
-		if (!conceptIdToRelationshipModuleMap.containsKey(sourceConceptId)) {
-			LOGGER.warn("Could not find the conceptId '{}' in the allocated module map.", sourceConceptId);
-			return relationshipDefaultModuleConcept;
-		}
+	public Concept getRelationshipModule(String sourceConceptId) {
 		return conceptIdToRelationshipModuleMap.get(sourceConceptId);
 	}
 
 	@Override
-	public Concept getConcreteDomainModule(String sourceConceptId, IBranchPath branchPath) {
-		
-		if (!conceptIdToConcreteDomainModuleMap.containsKey(sourceConceptId)) {
-			LOGGER.warn("Could not find the conceptId '{}' in the allocated module map.", sourceConceptId);
-			return cdDefaultModuleConcept;
-		}
+	public Concept getConcreteDomainModule(String sourceConceptId) {
 		return conceptIdToConcreteDomainModuleMap.get(sourceConceptId);
 	}
 
 	@Override
-	public void allocateRelationshipNamespacesAndModules(Set<String> conceptIds, final SnomedEditingContext editingContext) {
-
-		//default module is the fall back
-		relationshipDefaultModuleConcept = editingContext.getDefaultModuleConcept();
-
+	public void allocateRelationshipIdsAndModules(Multiset<String> conceptIds, final SnomedEditingContext editingContext) {
+		Multiset<String> reservedIdsByNamespace = HashMultiset.create();
+		for (Multiset.Entry<String> conceptIdWithCount : conceptIds.entrySet()) {
+			String namespace = SnomedIdentifiers.create(conceptIdWithCount.getElement()).getNamespace();
+			reservedIdsByNamespace.add(namespace, conceptIdWithCount.getCount());
+		}
+		
+		ISnomedIdentifierService identifierService = getServiceForClass(ISnomedIdentifierService.class);
+		for (Multiset.Entry<String> namespaceWithCount : reservedIdsByNamespace.entrySet()) {
+			Collection<String> reservedIds = identifierService.reserve(namespaceWithCount.getElement(), ComponentCategory.RELATIONSHIP, namespaceWithCount.getCount());
+			namespaceToRelationshipIdMap.put(namespaceWithCount.getElement(), reservedIds.iterator());
+		}
+		
 		SnomedConceptLookupService conceptLookupService = new SnomedConceptLookupService();
-
-		// find the SDD_Ext concepts first as it is the fastest
-		for (String conceptId : conceptIds) {
-
+		for (String conceptId : conceptIds.elementSet()) {
 			Concept concept = conceptLookupService.getComponent(conceptId, editingContext.getTransaction());
 			conceptIdToRelationshipModuleMap.put(conceptId, concept.getModule());
 		}
@@ -89,18 +82,10 @@ public class SourceConceptNamespaceAndModuleAssigner implements NamespaceAndMold
 
 	@Override
 	public void allocateConcreteDomainModules(Set<String> conceptIds, final SnomedEditingContext editingContext) {
-		
-		//default module is the fall back
-		cdDefaultModuleConcept = editingContext.getDefaultModuleConcept();
-
 		SnomedConceptLookupService conceptLookupService = new SnomedConceptLookupService();
-		
-		// find the SDD_Ext concepts first as it is the fastest
 		for (String conceptId : conceptIds) {
-
 			Concept concept = conceptLookupService.getComponent(conceptId, editingContext.getTransaction());
 			conceptIdToConcreteDomainModuleMap.put(conceptId, concept.getModule());
 		}
 	}
-
 }
