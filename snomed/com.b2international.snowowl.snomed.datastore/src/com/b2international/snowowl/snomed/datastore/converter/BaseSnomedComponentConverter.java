@@ -26,6 +26,7 @@ import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.datastore.request.SearchRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
 import com.google.common.base.Function;
@@ -96,10 +97,10 @@ abstract class BaseSnomedComponentConverter<T extends SnomedIndexEntry, R extend
 	}
 	
 	protected static final int getLimit(final Options expandOptions) {
-		return expandOptions.containsKey("limit") ? expandOptions.get("limit", Integer.class) : 50;
+		return expandOptions.containsKey("limit") ? expandOptions.get("limit", Integer.class) : SearchRequestBuilder.DEFAULT_LIMIT;
 	}
 
 	protected static final int getOffset(final Options expandOptions) {
-		return expandOptions.containsKey("offset") ? expandOptions.get("offset", Integer.class) : 0;
+		return expandOptions.containsKey("offset") ? expandOptions.get("offset", Integer.class) : SearchRequestBuilder.DEFAULT_OFFSET;
 	}
 }

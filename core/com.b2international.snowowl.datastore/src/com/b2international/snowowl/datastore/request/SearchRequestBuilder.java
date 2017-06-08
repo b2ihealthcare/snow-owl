@@ -30,10 +30,12 @@ import com.google.common.base.Strings;
  */
 public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>, R> extends BaseResourceRequestBuilder<B, R> {
 
+	public static final int DEFAULT_OFFSET = 0;
+	public static final int DEFAULT_LIMIT = 50;
 	private static final int MAX_LIMIT = Integer.MAX_VALUE - 1;
 	
-	private int offset = 0;
-	private int limit = 50;
+	private int offset = DEFAULT_OFFSET;
+	private int limit = DEFAULT_LIMIT;
 	private Collection<String> componentIds = Collections.emptyList();
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
@@ -72,7 +74,7 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	 * @return RevisionSearchRequestBuilder
 	 */
 	public final B all() {
-		return setOffset(0).setLimit(MAX_LIMIT);
+		return setOffset(DEFAULT_OFFSET).setLimit(MAX_LIMIT);
 	}
 	
 	/**
@@ -80,7 +82,7 @@ public abstract class SearchRequestBuilder<B extends SearchRequestBuilder<B, R>,
 	 * @return RevisionSearchRequestBuilder
 	 */
 	public final B one() {
-		return setOffset(0).setLimit(1);
+		return setOffset(DEFAULT_OFFSET).setLimit(1);
 	}
 	
 	// XXX: Does not allow empty-ish values
