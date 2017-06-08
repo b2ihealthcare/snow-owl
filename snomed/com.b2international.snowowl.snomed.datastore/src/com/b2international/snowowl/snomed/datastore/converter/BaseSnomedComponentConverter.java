@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.converter;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -28,6 +26,7 @@ import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.datastore.request.SearchRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedIndexEntry;
 import com.google.common.base.Function;
@@ -47,7 +46,7 @@ abstract class BaseSnomedComponentConverter<T extends SnomedIndexEntry, R extend
 	private final List<ExtendedLocale> locales;
 
 	protected BaseSnomedComponentConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
-		this.context = checkNotNull(context, "context");
+		this.context = context;
 		this.expand = expand == null ? OptionsBuilder.newBuilder().build() : expand;
 		this.locales = locales == null ? Collections.<ExtendedLocale>emptyList() : locales;
 	}
@@ -97,11 +96,11 @@ abstract class BaseSnomedComponentConverter<T extends SnomedIndexEntry, R extend
 		return EffectiveTimes.toDate(effectiveTimeAsLong);
 	}
 	
-	protected final int getLimit(final Options expandOptions) {
-		return expandOptions.containsKey("limit") ? expandOptions.get("limit", Integer.class) : 50;
+	protected static final int getLimit(final Options expandOptions) {
+		return expandOptions.containsKey("limit") ? expandOptions.get("limit", Integer.class) : SearchRequestBuilder.DEFAULT_LIMIT;
 	}
 
-	protected final int getOffset(final Options expandOptions) {
-		return expandOptions.containsKey("offset") ? expandOptions.get("offset", Integer.class) : 0;
+	protected static final int getOffset(final Options expandOptions) {
+		return expandOptions.containsKey("offset") ? expandOptions.get("offset", Integer.class) : SearchRequestBuilder.DEFAULT_OFFSET;
 	}
 }

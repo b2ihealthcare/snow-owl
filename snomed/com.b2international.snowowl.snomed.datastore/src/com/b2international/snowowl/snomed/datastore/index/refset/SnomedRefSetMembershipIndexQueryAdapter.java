@@ -44,6 +44,7 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedQueryBui
 import com.b2international.snowowl.snomed.datastore.services.SnomedRefSetMembershipLookupService;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 /**
@@ -51,6 +52,7 @@ import com.google.common.collect.Lists;
  */
 public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberIndexQueryAdapter implements Serializable {
 
+	public static final List<SnomedRefSetType> MAPPING_REFSETS = ImmutableList.of(SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.EXTENDED_MAP);
 	private static final long serialVersionUID = 1947806511934554585L;
 
 	public static SnomedRefSetMembershipIndexQueryAdapter createFindByStorageKeyQuery(final long storageKey) {
@@ -224,7 +226,7 @@ public class SnomedRefSetMembershipIndexQueryAdapter extends SnomedRefSetMemberI
 				queryBuilder.and(specialFieldQuery);
 				
 				return SnomedMappings.newQuery()
-						.and(createRefSetTypeQuery(Lists.newArrayList(SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.EXTENDED_MAP)))
+						.and(createRefSetTypeQuery(MAPPING_REFSETS))
 						.and(queryBuilder.matchAny())
 						.matchAll();
 			}

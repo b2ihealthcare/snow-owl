@@ -37,6 +37,7 @@ import com.google.common.collect.Multimap;
  * <li>{@code relationships()} - returns the relationships of the concept</li>
  * <li>{@code descendants(direct:true|false, form:"stated"|"inferred")} - returns the all or the only the direct descendants of the concept based on the stated or the inferred tree.</li> 
  * <li>{@code ancestors(direct:true|false, form:"stated"|"inferred")} - returns the all or the only the direct ancestors of the concept based on the stated or the inferred tree.</li>
+ * <li>{@code inactivationProperties()} - returns inactivation properties like indicator and association targets.</li>
  * </ul>
  * 
  * Expand parameters can be nested to further expand or filter the details returned. 

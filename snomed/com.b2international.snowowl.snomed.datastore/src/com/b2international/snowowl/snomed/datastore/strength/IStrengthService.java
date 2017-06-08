@@ -17,19 +17,19 @@ package com.b2international.snowowl.snomed.datastore.strength;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 
 /**
- * Service for extracting strength information from {@link SnomedRefSetMemberIndexEntry}s.
+ * Service for extracting strength information from {@link SnomedReferenceSetMember}s.
  * 
  */
 public interface IStrengthService {
 
 	/**
-	 * Returns a collection of {@link StrengthEntry} for the specified collection of {@link SnomedRefSetMemberIndexEntry}s
+	 * Returns a collection of {@link StrengthEntry} for the specified collection of {@link SnomedReferenceSetMember}s
 	 * 
 	 * @param entries
 	 * @return
 	 */
-	Collection<StrengthEntry> getStrengths(Collection<SnomedRefSetMemberIndexEntry> entries);
+	Collection<StrengthEntry> getStrengths(Collection<SnomedReferenceSetMember> entries);
 }
