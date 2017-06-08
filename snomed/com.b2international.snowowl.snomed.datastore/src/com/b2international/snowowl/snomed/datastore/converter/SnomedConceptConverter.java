@@ -145,17 +145,19 @@ final class SnomedConceptConverter extends BaseSnomedComponentConverter<SnomedCo
 	}
 
 	private void expandInactivationProperties(List<ISnomedConcept> results, Set<String> conceptIds) {
-		new InactivationExpander<ISnomedConcept>(context(), Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR) {
-			@Override
-			protected void setAssociationTargets(ISnomedConcept result,Multimap<AssociationType, String> associationTargets) {
-				((SnomedConcept) result).setAssociationTargets(associationTargets);
-			}
-			
-			@Override
-			protected void setInactivationIndicator(ISnomedConcept result, String valueId) {
-				((SnomedConcept) result).setInactivationIndicator(InactivationIndicator.getByConceptId(valueId));				
-			}
-		}.expand(results, conceptIds);
+		if (expand().containsKey("inactivationProperties")) {
+			new InactivationExpander<ISnomedConcept>(context(), Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR) {
+				@Override
+				protected void setAssociationTargets(ISnomedConcept result,Multimap<AssociationType, String> associationTargets) {
+					((SnomedConcept) result).setAssociationTargets(associationTargets);
+				}
+				
+				@Override
+				protected void setInactivationIndicator(ISnomedConcept result, String valueId) {
+					((SnomedConcept) result).setInactivationIndicator(InactivationIndicator.getByConceptId(valueId));				
+				}
+			}.expand(results, conceptIds);
+		}
 	}
 
 	private void expandPreferredTerm(List<ISnomedConcept> results, final Set<String> conceptIds, final DescriptionRequestHelper helper) {
