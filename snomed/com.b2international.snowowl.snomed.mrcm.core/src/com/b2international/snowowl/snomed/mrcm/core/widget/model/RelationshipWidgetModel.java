@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.mrcm.core.widget.model;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.snomed.datastore.EscgExpressionConstants.REJECT_ALL_EXPRESSION;
 import static com.b2international.snowowl.snomed.datastore.EscgExpressionConstants.UNRESTRICTED_EXPRESSION;
 
 import java.io.Serializable;
@@ -25,7 +24,7 @@ import java.util.Set;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.utils.UnrestrictedStringSet;
-import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
+import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 
 /**
  * The model that drives the rendering of the relationship selector widget.
@@ -123,10 +122,7 @@ public class RelationshipWidgetModel extends AllowedTypesWidgetModel implements 
 	/*instead of storing a set of concept IDs, we convert the expression to index query and add a concept ID boolean query with occur MUST
 	 *if we got a positive integer hit count that means the component ID is in the subset of allowed concept IDs*/
 	private boolean matchesWithValueId(final String valueId) {
-		if (UNRESTRICTED_EXPRESSION.equals(allowedValueIdsExpression) || REJECT_ALL_EXPRESSION.equals(allowedValueIdsExpression)) {
-			return true;
-		}
-		return getServiceForClass(SnomedTaxonomyService.class).evaluateEscg(branchPath, allowedValueIdsExpression).contains(valueId);
+		// XXX: Method on terminology browser handles REJECT_ALL and UNRESTRICTED expressions
+		return getServiceForClass(SnomedTerminologyBrowser.class).contains(branchPath, allowedValueIdsExpression, valueId);
 	}
-	
 }

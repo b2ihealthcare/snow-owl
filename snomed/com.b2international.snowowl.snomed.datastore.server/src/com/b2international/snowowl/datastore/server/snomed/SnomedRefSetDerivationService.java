@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,25 +41,29 @@ import org.eclipse.emf.cdo.util.CommitException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bak.pcj.LongCollection;
-import bak.pcj.map.LongKeyMap;
-
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.api.index.IIndexQueryAdapter;
+import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedStatementBrowser;
-import com.b2international.snowowl.snomed.datastore.SnomedTaxonomyService;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.derivation.SnomedRefSetDerivationModel;
 import com.b2international.snowowl.snomed.datastore.index.SnomedDescriptionContainerQueryAdapter;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRefSetDerivationService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
+import com.google.common.collect.FluentIterable;
+
+import bak.pcj.LongCollection;
+import bak.pcj.map.LongKeyMap;
 
 /**
  * Service class for SNOMED&nbsp;CT simple type and simple map type reference set derivation.
@@ -262,9 +266,17 @@ public class SnomedRefSetDerivationService implements ISnomedRefSetDerivationSer
 	private Collection<String> collectSubTypeConceptIds(final IBranchPath branchPath, final Collection<String> conceptIds) {
 		
 		final Collection<String> allDescendantConceptIds = newHashSet(conceptIds);
-		final SnomedTaxonomyService taxonomyService = getServiceForClass(SnomedTaxonomyService.class);
 		for (final String conceptId : conceptIds) {
-			allDescendantConceptIds.addAll(taxonomyService.getAllSubtypes(branchPath, conceptId));
+			final SnomedConcepts descendantConcepts = SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByAncestor(conceptId)
+				.build(branchPath.getPath())
+				.execute(getServiceForClass(IEventBus.class))
+				.getSync();
+			
+			FluentIterable.from(descendantConcepts)
+				.transform(IComponent.ID_FUNCTION)
+				.copyInto(allDescendantConceptIds);
 		}
 		
 		return allDescendantConceptIds;

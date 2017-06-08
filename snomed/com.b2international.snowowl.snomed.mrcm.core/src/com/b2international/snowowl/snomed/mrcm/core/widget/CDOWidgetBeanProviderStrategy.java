@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,10 @@ import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.functions.UncheckedCastFunction;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.datastore.SnomedClientTerminologyBrowser;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.DataTypeWidgetBean;
 import com.b2international.snowowl.snomed.mrcm.core.widget.bean.LeafWidgetBean;
@@ -94,14 +91,6 @@ public class CDOWidgetBeanProviderStrategy extends WidgetBeanProviderStrategy {
 	protected Collection<SnomedDescription> getDescriptions() {
 		return Collections2.filter(Collections2.transform(concept.getDescriptions(), SnomedDescription.CDOObjectConverterFunction.INSTANCE), 
 				SnomedDescription.ActivePredicate.INSTANCE);
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.mrcm.core.widget.WidgetBeanProviderStrategy#getConcept(java.lang.String)
-	 */
-	@Override
-	protected SnomedConceptIndexEntry getConcept(String conceptId) {
-		return ApplicationContext.getInstance().getService(SnomedClientTerminologyBrowser.class).getConcept(conceptId);
 	}
 
 	@Override
