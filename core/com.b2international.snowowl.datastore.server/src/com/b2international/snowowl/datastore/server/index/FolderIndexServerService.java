@@ -212,7 +212,7 @@ public abstract class FolderIndexServerService extends FSIndexServerService<Pare
 			return Collections.emptySet();
 		}
 		final Document doc = document(branchPath, topDocs.scoreDocs[0].doc, Mappings.fieldsToLoad().parent().build());
-		return Mappings.unfilteredParent().getValues(doc);
+		return Mappings.parent().getValues(doc);
 	}
 	
 	// TODO: place this method somewhere which is more component set specific
