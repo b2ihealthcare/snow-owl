@@ -1,11 +1,24 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.10.6
+
+### Added
+- New SNOMED CT DSV export Java API is available (see `SnomedRequests.dsv().prepareExport()`) 
+- Support for SNOMED CT Reference Set Member filtering by mapTarget values (48e5179f7c70a54747177d5559bcd91c1c74bf5c) 
+- Support for SNOMED CT Relationship filtering by modifier values (1dcc314707286dbe650346d26724d1160668a804)
+
+### Bugs
+- Fixed issue with `pt()` and `fsn()` expansion in `/:path/concepts` endpoint (26ce744a7f8d0948831135d84da729c42e285f86)
+- Fixed CDO object deletion bug by backporting changes from eclipse/cdo commit (d7e9aa038ef50b296540620f7158f9b9b516f8d4)
+- Fixed NPE thrown by Protegé module on shutdown (2e591d3148a3c81eb84d8756831d42dc5f94b093)
+- Delete temp RF2 file after export finishes (reduces allocated disk space) (901750d3c1b1adf0565a8d6518f93bade3d56305)
+
 ## 5.10.5
 
 ### Bugs
 - Fixed MRCM rendering issue (29ed90711b75462b277c72ce5d6b7c0e03367c57)
-- Fixed version creation failure if complex map uses invalid map category ids 
+- Fixed version creation failure if complex map uses invalid map category ids
 
 ## 5.10.4
 
