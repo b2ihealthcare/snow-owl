@@ -86,6 +86,7 @@ public class SnomedRefSetAutoMapper {
 						.withSearchProfile(userId)
 						.withDoi()
 						.sortBy(SearchResourceRequest.SCORE)
+						.setLocales(locales)
 						.setExpand("pt()");
 				
 				for (int limit = 1; limit < SEARCHER_STEP_LIMIT; limit *= SEARCHER_STEP_INCREMENT_MULTIPLIER) {

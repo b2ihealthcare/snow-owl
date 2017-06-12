@@ -78,7 +78,7 @@ All notable changes to this project will be documented in this file.
 ## 5.9.0
 
 ### Breaking changes
-- Datasets create before 5.9.0 require a **full reindex** in case you would like to use the new branch compare API (or you are using the old review-based compare feature). 
+- Datasets created before 5.9.0 require a **full reindex** in case you would like to use the new branch compare API (or you are using the old review-based compare feature). 
 
 ### Added
 - New branch compare Java API (https://github.com/b2ihealthcare/snow-owl/pull/145)

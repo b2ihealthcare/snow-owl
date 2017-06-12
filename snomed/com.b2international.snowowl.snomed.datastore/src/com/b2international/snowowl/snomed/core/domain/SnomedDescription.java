@@ -25,11 +25,27 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Multimap;
 
 /**
- * Represents a SNOMED CT Description.
+ * Represents a SNOMED&nbsp;CT description.
+ * <br>
+ * Descriptions returned by search requests are populated based on the expand parameters passed into the {@link BaseResourceRequestBuilder#setExpand(String)}
+ * methods.   
+ * 
+ * The supported expand parameters are:
  * <p>
- * Information about the inactivation reason can also be retrieved from this object if applicable.
+ * <ul>
+ * <li>{@code type()} - returns the concept representing the type of the description</li>
+ * </ul>
+ * 
+ * Expand parameters can be nested to further expand or filter the details returned. 
+ * <p>
+ * @see SnomedConcept
+ * @see SnomedRelationship
+ * @see SnomedReferenceSet
+ * @see SnomedReferenceSetMember
  */
 public final class SnomedDescription extends SnomedCoreComponent {
+
+	private static final long serialVersionUID = 1L;
 
 	private String term;
 	private String languageCode;

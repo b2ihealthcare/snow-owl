@@ -1,0 +1,38 @@
+= Software requirements
+
+== Introduction
+
+This document lists the required set of software components necessary to run Snow Owl on the x86_64 platform. 
+Components and the corresponding files to download are listed in the sections below.
+
+== Components
+
+=== Operating system
+
+Snow Owl requires a *CentOS* or *Red Hat Enterprise Linux Server (RHEL)* release *6*, or *Ubuntu 14.04* installation. As of
+2017-04-06, the latest available release for CentOS is http://wiki.centos.org/Manuals/ReleaseNotes/CentOS6.8[version 6.8].
+We recommend starting with a minimal install and adding packages later, as required.
+
+=== Database
+
+Terminology contents are persisted using the *5.7* series of *MySQL Community Server*, downloadable from 
+http://dev.mysql.com/downloads/repo/yum/[MySQL's yum repository]. Select "`Red Hat Enterprise Linux / Oracle Linux 6 
+(Architecture independent), RPM package`" for download.
+
+=== JDK
+
+Snow Owl uses version *8 update 121* of the *Java SE Development Kit*; An installable archive can be downloaded from the 
+http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html[JDK8 download page]. Select the 
+"`Linux x64`" edition.
+
+=== LDAP
+
+Authentication and authorization of browsers, terminology editors, reviewers and administrators is performed through an 
+*Apache DS* version *2.0* LDAP server. The package to install can be located by following the download link after 
+`ApacheDS 2.0.0-M12` on the http://directory.apache.org/apacheds/download-old-versions.html[Download Old Versions] page.
+The file to download is `apacheds-2.0.0-M12-x86_64.rpm`. 
+
+Browsing and managing ApacheDS instances can be done through the *Apache Directory Studio* application. We recommend 
+installing the latest release from the corresponding 
+http://directory.apache.org/studio/download-old-versions.html[Downloads Old Versions] page on Apache's website. Download
+`Apache Directory Studio 2.0.0-M7` for a version compatible with the M12 release of the server.

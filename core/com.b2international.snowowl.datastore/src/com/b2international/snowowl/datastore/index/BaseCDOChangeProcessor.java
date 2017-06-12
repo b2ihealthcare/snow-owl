@@ -205,7 +205,7 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 	protected abstract Collection<ChangeSetProcessor> getChangeSetProcessors();
 
 	/**
-	 * Subclasses may override this method to execute additional logic
+	 * Subclasses may override this method to execute additional logic before the processing of the changeset.
 	 * 
 	 * @param commitChangeSet
 	 * @param index

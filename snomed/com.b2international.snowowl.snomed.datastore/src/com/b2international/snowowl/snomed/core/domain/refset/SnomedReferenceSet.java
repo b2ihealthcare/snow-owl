@@ -18,12 +18,35 @@ package com.b2international.snowowl.snomed.core.domain.refset;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
+ * Represents a SNOMED&nbsp;CT Reference Set.
+ * <br>
+ * Reference sets returned by search requests are populated based on the expand parameters passed into the {@link BaseResourceRequestBuilder#setExpand(String)}
+ * methods. The expand parameters can be nested allowing a fine control for the details returned in the resultset.  
+ * 
+ * The supported expand parameters are:
+ * <p>
+ * <ul>
+ * <li>{@code members()} - returns the members of this reference set as part of the reference set</li>
+ * </ul>
+ * 
+ * Expand parameters can be nested to further expand or filter the details returned. 
+ * 
+ * @see SnomedConcept
+ * @see SnomedDescription
+ * @see SnomedRelationship
+ * @see SnomedReferenceSetMember
+ * 
  * @since 4.5
  */
 public final class SnomedReferenceSet extends SnomedComponent {
+
+	private static final long serialVersionUID = 6190078291559073421L;
 
 	private SnomedRefSetType type;
 	private String referencedComponentType;

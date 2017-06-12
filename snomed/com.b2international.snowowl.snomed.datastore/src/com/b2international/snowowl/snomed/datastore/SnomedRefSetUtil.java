@@ -293,6 +293,9 @@ public abstract class SnomedRefSetUtil {
 		case Concepts.REFSET_COMPLEX_MAP_TYPE: return SnomedRefSetType.COMPLEX_MAP;
 		case Concepts.EXTENDED_MAP_TYPE: return SnomedRefSetType.EXTENDED_MAP;
 		case Concepts.REFSET_DESCRIPTION_TYPE: return SnomedRefSetType.DESCRIPTION_TYPE;
+		case Concepts.REFSET_ASSOCIATION_TYPE: return SnomedRefSetType.ASSOCIATION;
+		case Concepts.REFSET_MODULE_DEPENDENCY_TYPE: return SnomedRefSetType.MODULE_DEPENDENCY;
+		
 		default: return null;
 		}
 	}
