@@ -72,7 +72,7 @@ import com.google.common.io.Files;
 /**
  * @since 5.11
  */
-public class SnomedRefsetDSVTest  {
+public class SnomedRefSetDSVExportTest {
 
 	private static final String REPOSITORY_ID = SnomedDatastoreActivator.REPOSITORY_UUID;
 	
@@ -114,7 +114,8 @@ public class SnomedRefsetDSVTest  {
 				.setRefSetId(refsetId)
 				.setRefSetType(SnomedRefSetType.SIMPLE)
 				.setExportItems(createExportItems(refsetId))
-				.build(REPOSITORY_ID, MAIN_BRANCH).execute(bus)
+				.build(REPOSITORY_ID, MAIN_BRANCH)
+				.execute(bus)
 				.getSync();
 
 		File dsvExportZipFile = new File(tempDir, String.format("dsv-export-%s.zip", fileId.toString()));

@@ -25,7 +25,7 @@ import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.snomed.api.impl.SnomedReleases;
 import com.b2international.snowowl.snomed.api.japi.branches.BranchCompareRequestTest;
 import com.b2international.snowowl.snomed.api.japi.branches.SnomedBranchRequestTest;
-import com.b2international.snowowl.snomed.api.japi.io.SnomedRefsetDSVTest;
+import com.b2international.snowowl.snomed.api.japi.io.SnomedRefSetDSVExportTest;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedBranchingApiTest;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedMergeApiTest;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedMergeConflictTest;
@@ -86,7 +86,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// Java API test cases
 	SnomedBranchRequestTest.class,
 	BranchCompareRequestTest.class,
-	SnomedRefsetDSVTest.class
+	SnomedRefSetDSVExportTest.class
 })
 public class AllSnomedApiTests {
 

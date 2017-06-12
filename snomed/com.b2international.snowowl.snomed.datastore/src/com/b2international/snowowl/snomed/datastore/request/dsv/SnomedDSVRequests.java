@@ -24,7 +24,7 @@ public class SnomedDSVRequests {
 		return new SnomedDSVExportRequestBuilder();
 	}
 
-	public SnomedDSVImportRequestBuilder prepareImport() {
-		return new SnomedDSVImportRequestBuilder();
-	}
+//	public SnomedDSVImportRequestBuilder prepareImport() {
+//		return new SnomedDSVImportRequestBuilder();
+//	}
 }
