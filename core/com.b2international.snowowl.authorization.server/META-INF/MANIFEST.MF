@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Authorization Server
 Bundle-SymbolicName: com.b2international.snowowl.authorization.server;singleton:=true
-Bundle-Version: 5.10.5
+Bundle-Version: 5.11.0.qualifier
 Bundle-Activator: com.b2international.snowowl.authorization.server.AuthorizationServerActivator
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime,

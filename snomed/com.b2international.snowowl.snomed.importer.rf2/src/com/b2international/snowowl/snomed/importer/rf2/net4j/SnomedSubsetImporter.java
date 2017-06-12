@@ -38,6 +38,7 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -54,6 +55,7 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.id.domain.SnomedComponentIds;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetCreateRequestBuilder;
@@ -143,7 +145,6 @@ public class SnomedSubsetImporter {
 	 *             if there was an error during the import
 	 */
 	public SnomedUnimportedRefSets doImport() throws SnowowlServiceException {
-		
 		try (TransactionContext context = new ImportOnlySnomedTransactionContext(new SnomedEditingContext(this.branchPath))) {
 			
 			final SubsetInformation information = createSubsetInformation();
@@ -437,7 +438,14 @@ public class SnomedSubsetImporter {
 			
 			final String cmtRefSetId = getIdIfCMTConcept(label);
 			if (cmtRefSetId == null) {
-				identifierConceptReq.setIdFromNamespace(Concepts.B2I_NAMESPACE);
+				SnomedComponentIds ids = SnomedRequests.identifiers()
+												.prepareGenerate()
+												.setQuantity(1)
+												.setNamespace(Concepts.B2I_NAMESPACE)
+												.setCategory(ComponentCategory.CONCEPT)
+												.build()
+												.execute(context);
+				identifierConceptReq.setId(ids.first().orElseThrow(() -> new IllegalArgumentException("Couldn't generate ID for refset identifier concept.")));
 			} else {
 				identifierConceptReq.setId(cmtRefSetId);
 			}

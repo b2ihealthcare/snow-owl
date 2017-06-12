@@ -18,6 +18,8 @@ package com.b2international.snowowl.snomed.datastore.internal.rf2;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.Path;
+import java.util.List;
 
 import org.eclipse.net4j.signal.RequestWithMonitoring;
 import org.eclipse.net4j.util.io.ExtendedDataInputStream;
@@ -26,6 +28,7 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult.Result;
 
@@ -37,10 +40,10 @@ import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportRes
  * 
  */
 public class SnomedRefSetDSVExportClientRequest extends RequestWithMonitoring<File> {
-
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedRefSetDSVExportClientRequest.class);
 	private final SnomedRefSetDSVExportModel exportModel;
 	private SnomedExportResult result;
-	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedRefSetDSVExportClientRequest.class);
 
 	public SnomedRefSetDSVExportClientRequest(final SnomedClientProtocol protocol, final SnomedRefSetDSVExportModel exportModel) {
 		super(protocol, Net4jProtocolConstants.REFSET_TO_DSV_SIGNAL);
@@ -67,15 +70,20 @@ public class SnomedRefSetDSVExportClientRequest extends RequestWithMonitoring<Fi
 
 		out.writeUTF(exportModel.getUserId());
 		out.writeUTF(exportModel.getRefSetId());
-		out.writeBoolean(exportModel.isDescriptionIdExpected());
-		out.writeBoolean(exportModel.isRelationshipTargetExpected());
+		out.writeBoolean(exportModel.includeDescriptionId());
+		out.writeBoolean(exportModel.includeRelationshipTargetId());
+		
 		out.writeInt(exportModel.getExportItems().size());
 		for (final AbstractSnomedDsvExportItem exportItem : exportModel.getExportItems()) {
 			exportItem.writeToOutputStream(out);
 		}
-		out.writeLong(exportModel.getLanguageConfigurationId());
+		
+		out.writeInt(exportModel.getLocales().size());
+		List<ExtendedLocale> locales = exportModel.getLocales();
+		for (ExtendedLocale extendedLocale : locales) {
+			out.writeString(extendedLocale.toString());
+		}
 		out.writeUTF(exportModel.getDelimiter());
-		out.writeInt(exportModel.getBranchID());
 		out.writeLong(exportModel.getBranchBase());
 		out.writeUTF(exportModel.getBranchPath());
 	}
@@ -84,8 +92,8 @@ public class SnomedRefSetDSVExportClientRequest extends RequestWithMonitoring<Fi
 	protected File confirming(final ExtendedDataInputStream in, final OMMonitor monitor) throws Exception {
 
 		BufferedOutputStream out = null;
-
-		final File file = new File(exportModel.getExportPath());
+		Path tempFile = java.nio.file.Files.createTempFile("export", ".zip");
+		final File file = tempFile.toFile();
 		long size;
 		try {
 			result = (SnomedExportResult) in.readObject(SnomedExportResult.class.getClassLoader());
@@ -94,10 +102,7 @@ public class SnomedRefSetDSVExportClientRequest extends RequestWithMonitoring<Fi
 				size = in.readLong();
 				out = new BufferedOutputStream(new FileOutputStream(file));
 				while (size != 0L) {
-					int chunk = Net4jProtocolConstants.BUFFER_SIZE;
-					if (size < Net4jProtocolConstants.BUFFER_SIZE) {
-						chunk = (int) size;
-					}
+					int chunk = (int) Math.min(size, Net4jProtocolConstants.BUFFER_SIZE);
 					
 					final byte[] buffer = in.readByteArray();
 					out.write(buffer);

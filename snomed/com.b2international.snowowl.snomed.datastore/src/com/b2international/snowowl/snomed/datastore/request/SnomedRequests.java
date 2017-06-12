@@ -47,6 +47,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.dsv.SnomedDSVRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -303,6 +304,14 @@ public abstract class SnomedRequests {
 	 */
 	public static SnomedRf2Requests rf2() {
 		return new SnomedRf2Requests();
+	}
+
+	/**
+	 * Returns the central class that provides access to IO services, turning the SNOMED CT content to delimiter separated values (DSV), and vice versa.
+	 * @return central SNOMED CT RF2 client
+	 */
+	public static SnomedDSVRequests dsv() {
+		return new SnomedDSVRequests();
 	}
 
 	/**

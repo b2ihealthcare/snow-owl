@@ -10,3 +10,4 @@
 /* Logically, this expression constraint takes the set of descendants of 
  * |disorder of lung| and subtracts the set of descendants of |edema of trunk|.
  * Please note that the keyword 'MINUS' is case insensitive.
+ */
