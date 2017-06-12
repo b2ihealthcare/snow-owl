@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
+import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -76,13 +77,18 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 		@Override 
 		public QuickSearchElement apply(final SnomedReferenceSet input) {
 			final ISnomedConcept concept = identifierConceptMap.get(input.getId());
-			final String label = concept.getPt() == null ? concept.getId() : concept.getPt().getTerm();
-			return new CompactQuickSearchElement(input.getId(), 
-					input.getIconId(), 
-					label, 
-					false,
-					getMatchRegions(queryExpression, label),
-					getSuffixes(queryExpression, label));
+			
+			if (concept == null) {
+				return null;
+			} else {
+				final String label = concept.getPt() == null ? concept.getId() : concept.getPt().getTerm();
+				return new CompactQuickSearchElement(input.getId(), 
+						input.getIconId(), 
+						label, 
+						false,
+						getMatchRegions(queryExpression, label),
+						getSuffixes(queryExpression, label));
+			}
 		}
 	}
 	
@@ -96,36 +102,41 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 		final IBranchPath branchPath = getBranchPath(branchPathMap);
 
 		if (StringUtils.isEmpty(filterText)) {
-			return getUnfilteredComponents(filterText, limit, configuration, branchPath);
+			return getUnfilteredComponents(limit, configuration, branchPath);
 		} else {
 			return getFilteredComponents(filterText, limit, configuration, branchPath);
 		}
 	}
 
-	private QuickSearchContentResult getUnfilteredComponents(final String filterText, final int limit,
-			final Map<String, Object> configuration, final IBranchPath branchPath) {
-		final SnomedRefSetSearchRequestBuilder refSetRequest = buildRefSetSearchRequest(limit, configuration,
-				getComponentIdsFromConfiguration(configuration), getRefSetTypes(configuration));
-		final SnomedReferenceSets matchingRefSets = refSetRequest.build(branchPath.getPath()).executeSync(getEventBus());
+	private QuickSearchContentResult getUnfilteredComponents(final int limit, final Map<String, Object> configuration, final IBranchPath branchPath) {
+		
+		final SnomedRefSetSearchRequestBuilder refSetRequest = buildRefSetSearchRequest(limit, configuration, 
+				getComponentIdsFromConfiguration(configuration));
+		final SnomedReferenceSets matchingRefSets = refSetRequest.build(branchPath.getPath())
+				.executeSync(getEventBus());
 
 		if (matchingRefSets.getTotal() <= 0) {
 			return new QuickSearchContentResult();
 		}
 
 		final ImmutableList<String> conceptIds = FluentIterable.from(matchingRefSets.getItems())
-				.transform(new Function<SnomedReferenceSet, String>() {
-					@Override
-					public String apply(SnomedReferenceSet input) {
-						return input.getId();
-					}
-				}).toList();
+				.transform(new Function<SnomedReferenceSet, String>() { @Override public String apply(SnomedReferenceSet input) {
+					return input.getId();
+				}})
+				.toList();
 
 		final SnomedConceptSearchRequestBuilder conceptRequest = buildConceptSearchRequest("", limit, conceptIds);
 		final SnomedConcepts matchingConcepts = conceptRequest.build(branchPath.getPath()).executeSync(getEventBus());
 
 		final Map<String, ISnomedConcept> matchingConceptsById = createMatchingConceptsMap(matchingConcepts);
-		return new QuickSearchContentResult(matchingRefSets.getTotal(), Lists.transform(matchingRefSets.getItems(),
-				new RefSetToQuickSearchElementConverter(filterText, matchingConceptsById)));
+		final RefSetToQuickSearchElementConverter converter = new RefSetToQuickSearchElementConverter("", matchingConceptsById);
+		final List<QuickSearchElement> elements = FluentIterable.from(matchingRefSets.getItems())
+				.transform(converter)
+				.filter(Predicates.notNull())
+				.toList();
+
+		// XXX: Total count can be off if inactive identifier concepts are present with active reference sets
+		return new QuickSearchContentResult(matchingRefSets.getTotal(), elements);
 	}
 
 	private QuickSearchContentResult getFilteredComponents(final String queryExpression, final int limit,
@@ -140,8 +151,7 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 
 		final Map<String, ISnomedConcept> matchingConceptsById = createMatchingConceptsMap(matchingConcepts);
 
-		final SnomedRefSetSearchRequestBuilder refSetRequest = buildRefSetSearchRequest(limit, configuration, matchingConceptsById.keySet(),
-				getRefSetTypes(configuration));
+		final SnomedRefSetSearchRequestBuilder refSetRequest = buildRefSetSearchRequest(limit, configuration, matchingConceptsById.keySet());
 		final SnomedReferenceSets matchingRefSets = refSetRequest.build(branchPath.getPath()).executeSync(getEventBus());
 
 		return new QuickSearchContentResult(matchingRefSets.getTotal(), Lists.transform(matchingRefSets.getItems(),
@@ -150,27 +160,33 @@ public class SnomedRefSetQuickSearchContentProvider extends AbstractQuickSearchC
 
 	private SnomedConceptSearchRequestBuilder buildConceptSearchRequest(final String filterText, final int limit,
 			final List<String> componentIds) {
+		
+		final int searchLimit = componentIds.isEmpty() ? limit : componentIds.size();
+		
 		return SnomedRequests
 				.prepareSearchConcept()
 				.filterByActive(true)
 				.filterByTerm(filterText)
 				.filterByDescriptionType("<<" + Concepts.SYNONYM)
 				.filterByAncestor(Concepts.REFSET_ALL)
-				.setLimit(limit)
+				.setLimit(searchLimit)
 				.setExpand("pt()")
 				.setLocales(getLocales())
 				.setComponentIds(componentIds);
 	}
 	
-	private SnomedRefSetSearchRequestBuilder buildRefSetSearchRequest(final int limit, final Map<String, Object> configuration,
-			final Collection<String> componentIds, final Collection<SnomedRefSetType> refSetTypes) {
-		return SnomedRequests
-			.prepareSearchRefSet()
+	private SnomedRefSetSearchRequestBuilder buildRefSetSearchRequest(final int limit, 
+			final Map<String, Object> configuration, 
+			final Collection<String> componentIds) {
+		
+		final int searchLimit = componentIds.isEmpty() ? limit : componentIds.size();
+		
+		return SnomedRequests.prepareSearchRefSet()
 			.filterByActive(true)
-			.filterByTypes(refSetTypes)
+			.filterByTypes(getRefSetTypes(configuration))
 			.filterByReferencedComponentType(getReferencedComponentType(configuration))
 			.setComponentIds(ImmutableSet.copyOf(componentIds))
-			.setLimit(limit);
+			.setLimit(searchLimit);
 	}
 	
 	private Map<String, ISnomedConcept> createMatchingConceptsMap(final SnomedConcepts matchingConcepts) {
