@@ -684,14 +684,22 @@ public class BranchingListTableMappingWithRanges extends BasicAbstractListTableM
   {
     ITransaction transaction = accessor.getTransaction();
     InternalCDORevision revision = (InternalCDORevision)transaction.getRevision(id);
-    int branchID = transaction.getBranch().getID();
+    if (revision == null)
+    {
+      // This must be an attempt to resurrect an object, i.e., revise its detached revision
+      return;
+    }
 
     if (TRACER.isEnabled())
     {
       TRACER.format("objectDetached {1}", revision); //$NON-NLS-1$
     }
 
-    clearList(accessor, id, branchID, revision.getVersion(), FINAL_VERSION, revision.getList(getFeature()).size() - 1);
+    int branchID = transaction.getBranch().getID();
+    int version = revision.getVersion();
+    int lastIndex = revision.getList(getFeature()).size() - 1;
+
+    clearList(accessor, id, branchID, version, FINAL_VERSION, lastIndex);
   }
 
   @Override
