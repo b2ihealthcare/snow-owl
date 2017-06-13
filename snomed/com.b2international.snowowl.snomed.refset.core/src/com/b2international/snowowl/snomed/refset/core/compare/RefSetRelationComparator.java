@@ -131,22 +131,23 @@ public class RefSetRelationComparator {
 		}
 
 		@Override
-		public Collection<ReferencedComponentDelta> apply(SnomedConceptIndexEntry id) {
+		public Collection<ReferencedComponentDelta> apply(SnomedConceptIndexEntry indexEntry) {
+			
 			Collection<ReferencedComponentDelta> componentDeltas = new ArrayList<ReferencedComponentDelta>();
 			for (SnomedConceptIndexEntry refComponent : referencedComponents) {
-				if (isSubsumed(refComponent, id)) {
-					componentDeltas.add(new ReferencedComponentDelta(id.getId(), id.getLabel(), id.getIconId(), DeltaKind.SUBSUMED, refComponent.getId(), refComponent.getLabel(), refComponent.getIconId()));
+				if (isSubsumed(refComponent, indexEntry)) {
+					componentDeltas.add(new ReferencedComponentDelta(indexEntry.getId(), indexEntry.getLabel(), indexEntry.getIconId(), DeltaKind.SUBSUMED, refComponent.getId(), refComponent.getLabel(), refComponent.getIconId()));
 				}
 				
-				if (isRelated(refComponent, id)) {
-					componentDeltas.add(new ReferencedComponentDelta(id.getId(), id.getLabel(), id.getIconId(), DeltaKind.RELATED, refComponent.getId(), refComponent.getLabel(), refComponent.getIconId()));
+				if (isRelated(refComponent, indexEntry)) {
+					componentDeltas.add(new ReferencedComponentDelta(indexEntry.getId(), indexEntry.getLabel(), indexEntry.getIconId(), DeltaKind.RELATED, refComponent.getId(), refComponent.getLabel(), refComponent.getIconId()));
 				}
 				
 			}
 			
 			// if there is no subsumption or relationship between the two concepts, then it was added simply.
 			if (componentDeltas.isEmpty()) {
-				componentDeltas.add(new ReferencedComponentDelta(id.getId(), id.getLabel(), id.getIconId(), DeltaKind.ADDED));
+				componentDeltas.add(new ReferencedComponentDelta(indexEntry.getId(), indexEntry.getLabel(), indexEntry.getIconId(), DeltaKind.ADDED));
 			}
 			
 			return componentDeltas;
