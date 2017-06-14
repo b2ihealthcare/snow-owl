@@ -120,6 +120,7 @@
 									<include>com.b2international.snowowl.datastore.request</include>
 									<include>com.b2international.snowowl.snomed.datastore.request</include>
 									<include>com.b2international.snowowl.snomed.core.domain</include>
+									<include>com.b2international.snowowl.snomed.core.domain.refset</include>
 								</includes>
 							</javadocOptions>
 						</configuration>
