@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.snor;
 
-import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.*;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
@@ -321,7 +321,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		public static final String SELF_IDS = "selfIds";
 		public static final String DESCENDANT_IDS = "descendantIds";
 		public static final String REFSET_IDS = "refSetIds";
-		public static final String TYPE = "type";
+		public static final String PREDICATE_TYPE = "predicateType";
 	}
 	
 	/**
@@ -330,7 +330,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	public static final class Expressions extends RevisionDocument.Expressions {
 		
 		public static Expression types(Collection<PredicateType> types) {
-			return matchAny(Fields.TYPE, FluentIterable.from(types).transform(new Function<PredicateType, String>() {
+			return matchAny(Fields.PREDICATE_TYPE, FluentIterable.from(types).transform(new Function<PredicateType, String>() {
 				@Override
 				public String apply(PredicateType input) {
 					return input.name();
