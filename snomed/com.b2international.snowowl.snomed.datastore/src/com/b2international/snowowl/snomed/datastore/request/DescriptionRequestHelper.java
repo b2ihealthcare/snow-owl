@@ -67,7 +67,7 @@ public abstract class DescriptionRequestHelper {
 		public SnomedDescription apply(Collection<SnomedDescription> descriptions) {
 			try {
 				
-				SnomedDescription candidate = ordering.max(descriptions);
+				SnomedDescription candidate = ordering.min(descriptions);
 				
 				/*
 				 * We're using ExplicitFirstOrdering so that it doesn't break in the middle of processing 
@@ -317,7 +317,9 @@ public abstract class DescriptionRequestHelper {
 		
 		return extractBest(indexByConceptId(descriptions), languageRefSetIds, description -> {
 			Set<String> preferredLanguageRefSetIds = Maps.filterValues(description.getAcceptabilityMap(), Predicates.equalTo(Acceptability.PREFERRED)).keySet();
-			return languageRefSetOrdering.max(preferredLanguageRefSetIds);
+			// the explicit first ordering will put the VIP / anticipated / first priority languages codes to the min end. 
+			String firstPriority = languageRefSetOrdering.min(preferredLanguageRefSetIds);
+			return firstPriority;
 		});
 	}
 	
