@@ -32,6 +32,7 @@ import java.util.Set;
 import com.b2international.index.Analyzed;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.Script;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -57,6 +58,7 @@ import com.google.common.collect.Maps;
  */
 @Doc
 @JsonDeserialize(builder = SnomedDescriptionIndexEntry.Builder.class)
+@Script(name="normalizeWithOffset", script="(_score / (_score + 1.0f)) + params.offset")
 public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 
 	private static final long serialVersionUID = 301681633674309020L;

@@ -43,6 +43,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.5
@@ -140,9 +141,9 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 
 	private Expression createTermDisjunctionQuery(final String searchTerm) {
 		final List<Expression> disjuncts = newArrayList();
-		disjuncts.add(exactTerm(searchTerm));
-		disjuncts.add(allTermsPresent(searchTerm));
-		disjuncts.add(allTermPrefixesPresent(searchTerm));
+		disjuncts.add(Expressions.scriptScore(exactTerm(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 2)));
+		disjuncts.add(Expressions.scriptScore(allTermsPresent(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
+		disjuncts.add(Expressions.scriptScore(allTermPrefixesPresent(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
 		return Expressions.dismax(disjuncts);
 	}
 
