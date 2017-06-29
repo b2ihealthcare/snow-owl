@@ -57,6 +57,3 @@ The third script `snowowl_migration_4.6_to_4.7_phase_3_old_table_deletion.sh` de
 --------------------------
 ./migration_4.6_to_4.7/snowowl_migration_4.6_to_4.7_phase_3_old_table_deletion.sh admin snomed
 --------------------------
-
-=== Index update
-After the database migration, Code System and Code System Version indexes must be updated. In order to do this, start the terminology server with the `-Dsnowowl.reindex=true` VM argument. If the reindex argument is missing or false, the index update process is skipped.
