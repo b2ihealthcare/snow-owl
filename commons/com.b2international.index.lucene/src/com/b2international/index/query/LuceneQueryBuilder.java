@@ -257,6 +257,7 @@ public final class LuceneQueryBuilder {
 			innerQueryBuilder.visit(must);
 			
 			if (innerQueryBuilder.needsScoring) {
+				needsScoring = innerQueryBuilder.needsScoring;
 				query.add(innerQueryBuilder.deque.pop(), Occur.MUST);
 			} else {
 				query.add(innerQueryBuilder.deque.pop(), Occur.FILTER);
