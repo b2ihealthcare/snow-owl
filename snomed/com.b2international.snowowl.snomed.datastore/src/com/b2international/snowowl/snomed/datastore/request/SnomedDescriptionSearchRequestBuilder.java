@@ -44,10 +44,29 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 		return addOption(OptionKey.PARSED_TERM, true);
 	}
 	
+	/**
+	 * Filters results by matching description terms, using different methods for comparison.
+	 * <p>
+	 * This filter affects the score of each result. If results should be returned in order of 
+	 * relevance, specify {@link SearchResourceRequest#SCORE} as one of the sort fields.
+	 * 
+	 * @param termFilter the expression to match
+	 * @return <code>this</code> search request builder, for method chaining
+	 */
 	public SnomedDescriptionSearchRequestBuilder filterByTerm(String termFilter) {
 		return addOption(OptionKey.TERM, termFilter == null ? termFilter : termFilter.trim());
 	}
-	
+
+	/**
+	 * Filters results by matching description terms, as entered (the comparison is case 
+	 * insensitive and folds non-ASCII characters to their closest equivalent).
+	 * <p>
+	 * This filter affects the score of each result. If results should be returned in order of 
+	 * relevance, specify {@link SearchResourceRequest#SCORE} as one of the sort fields.
+	 * 
+	 * @param termFilter the expression to match
+	 * @return <code>this</code> search request builder, for method chaining
+	 */
 	public SnomedDescriptionSearchRequestBuilder filterByExactTerm(String exactTermFilter) {
 		return addOption(OptionKey.EXACT_TERM, exactTermFilter == null ? exactTermFilter : exactTermFilter.trim());
 	}

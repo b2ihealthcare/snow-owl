@@ -41,6 +41,16 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	SnomedConceptSearchRequestBuilder() {
 	}
 
+	/**
+	 * Enables degree-of-interest-based searching: concepts that are more often referred to in a clinical setting 
+	 * are preferred over less frequently used ones.
+	 * <p>
+	 * This filter affects the score of each result, even if no other score-based constraint is present. If results 
+	 * should be returned in order of relevance, specify {@link SearchResourceRequest#SCORE} as one of the sort fields.
+	 * 
+	 * @return <code>this</code> search request builder, for method chaining
+	 * @see <a href="https://www.nlm.nih.gov/research/umls/Snomed/core_subset.html">The CORE Problem List Subset of SNOMED CT&reg;</a>
+	 */
 	public final SnomedConceptSearchRequestBuilder withDoi() {
 		return addOption(SnomedConceptSearchRequest.OptionKey.USE_DOI, true);
 	}
@@ -57,6 +67,15 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 		return addOption(SnomedConceptSearchRequest.OptionKey.PARSED_TERM, true);
 	}
 
+	/**
+	 * Filters results by matching description terms on each concept, using different methods for comparison.
+	 * <p>
+	 * This filter affects the score of each result. If results should be returned in order of 
+	 * relevance, specify {@link SearchResourceRequest#SCORE} as one of the sort fields.
+	 * 
+	 * @param term the expression to match
+	 * @return <code>this</code> search request builder, for method chaining
+	 */
 	public final SnomedConceptSearchRequestBuilder filterByTerm(String term) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.TERM, term);
 	}
