@@ -55,6 +55,10 @@ public final class ScoreValueSource extends ValueSource {
 			@Override
 			public double doubleVal(int document) {
 				try {
+					int iteratorId = scorer.iterator().advance(document);
+					if (iteratorId != document) {
+						throw new IllegalStateException("Couldn't advance iterator to document " + document + ", got docID " + iteratorId);
+					}
 					return scorer.score();
 				} catch (IOException exception) {
 					throw new RuntimeException(exception);
