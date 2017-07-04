@@ -403,6 +403,7 @@ public class JsonDocumentSearcher implements Searcher {
 		
 		final Set<String> nonSortedFields = query.getFields() == null ? newHashSet() : newHashSet(query.getFields());
 		final List<SortField> convertedItems = newArrayListWithExpectedSize(items.size());
+		boolean sortById = false;
 		
 		for (final SortByField item : Iterables.filter(items, SortByField.class)) {
             String field = item.getField();
@@ -412,6 +413,7 @@ public class JsonDocumentSearcher implements Searcher {
 			case DocumentMapping._ID:
 				convertedItems.add(new SortField(DocumentMapping._ID, SortField.Type.STRING_VAL, order == SortBy.Order.DESC));
 				nonSortedFields.remove(field);
+				sortById = true;
 				break;
             case SortBy.FIELD_SCORE:
                 // XXX: default order for scores is *descending*
@@ -422,6 +424,11 @@ public class JsonDocumentSearcher implements Searcher {
                 nonSortedFields.remove(field);
             }
         }
+		
+		// Tie-breaker, required to make "searchAfter" work
+		if (!sortById) {
+			convertedItems.add(new SortField(DocumentMapping._ID, SortField.Type.STRING_VAL, false));
+		}
 		
 		for (String nonSortedField : nonSortedFields) {
 			/* 
