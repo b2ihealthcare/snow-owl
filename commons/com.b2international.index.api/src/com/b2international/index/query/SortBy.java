@@ -127,7 +127,7 @@ public class SortBy {
 	}
 	
 	public static final class Builder {
-		private final Map<String, Order> sortOrderMap = Maps.newHashMap();
+		private final Map<String, Order> sortOrderMap = Maps.newLinkedHashMap();
 		
 		public Builder add(String field, Order order) {
 			sortOrderMap.put(field, order);

@@ -76,6 +76,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptUpdateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequest;
@@ -541,7 +542,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			.setOffset(offset)
 			.setLimit(limit)
 			.filterByTerm(query)
-			.sortBy(SearchResourceRequest.SCORE)
+			.sortBy(SearchResourceRequest.SCORE, new SearchResourceRequest.SortField(SnomedDescriptionIndexEntry.Fields.TERM, true))
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(bus)
 			.getSync()
