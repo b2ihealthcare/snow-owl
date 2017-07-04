@@ -87,13 +87,13 @@ public final class TerminologyTree {
 	 * @param nodeIds
 	 * @return
 	 */
-	public Collection<SnomedConceptDocument> getNodes(Collection<String> nodeIds) {
+	public Collection<SnomedConceptDocument> getNodes(Set<String> nodeIds) {
 		return FluentIterable.from(nodeIds).transform(new Function<String, SnomedConceptDocument>() {
 			@Override
 			public SnomedConceptDocument apply(String input) {
 				return getNode(input);
 			}
-		}).toSet();
+		}).toList();
 	}
 
 	/**
@@ -189,7 +189,7 @@ public final class TerminologyTree {
 	 * @param nodeId
 	 * @return
 	 */
-	public Collection<String> getProximalPrimitiveParentIds(String nodeId) {
+	public Set<String> getProximalPrimitiveParentIds(String nodeId) {
 		return getProximalPrimitiveParentIds(getAncestors(nodeId));
 	}
 
