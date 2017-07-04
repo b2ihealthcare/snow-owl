@@ -34,6 +34,7 @@ import org.apache.lucene.queries.function.FunctionQuery;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.lucene.queries.function.valuesource.BytesRefFieldSource;
 import org.apache.lucene.queries.function.valuesource.FloatFieldSource;
+import org.apache.lucene.queries.function.valuesource.QueryValueSource;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser.Operator;
@@ -195,7 +196,7 @@ public final class LuceneQueryBuilder {
 	
 	private ValueSource visit(final Query inner, final Script script, final Map<String, ? extends Object> scriptParams) {
 		Map<String, ValueSource> valueSources = newHashMap();
-		valueSources.put("_score", new ScoreValueSource(inner));
+		valueSources.put("_score", new QueryValueSource(inner, 0.0f));
 		for (String field : script.fields()) {
 			final Class<?> fieldType = mapping.getFieldType(field);
 			if (String.class.isAssignableFrom(fieldType)) {
