@@ -1,6 +1,21 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.10.7
+
+### Changed
+- Normalize description scores into buckets using the following order:
+  * 1. Exact
+  * 2. All terms present
+  * 3. All term prefixes present
+
+### Bugs
+- Fixed ordering of hits returned by `/:path/concepts` and `/:path/descriptions` endpoints when filtering them by term
+- Include a unique tiebreaker sort field (`_id`) in search requests (both Lucene and Elasticsearch index modules)
+- Fixed stated/inferred expansion in TerminologyTree (d5f8b0fc19d754a5d2602b5d1a4607e928f620fd)
+- Fixed score computation issue in index.lucene module (735551e372acd528123ec8c57f8a39fafed81ef0)
+- Fixed doiFactor script to properly compute the final score of a doc (88a0d116f6eb5667f8f9b8e7bd39ec82d5241afb)
+
 ## 5.10.6
 
 ### Added
