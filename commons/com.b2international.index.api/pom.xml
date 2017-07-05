@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>commons-parent</artifactId>
-		<version>5.10.6</version>
+		<version>5.10.7</version>
 	</parent>
 	<artifactId>com.b2international.index.api</artifactId>
 	<packaging>eclipse-plugin</packaging>

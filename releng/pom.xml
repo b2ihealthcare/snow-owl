@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snowowl-parent</artifactId>
-		<version>5.10.6</version>
+		<version>5.10.7</version>
 	</parent>
 	
 	<properties>
