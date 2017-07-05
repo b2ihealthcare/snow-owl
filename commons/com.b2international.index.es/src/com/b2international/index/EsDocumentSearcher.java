@@ -203,6 +203,8 @@ public class EsDocumentSearcher implements Searcher {
 			items.add(sortBy);
 		}
 		
+		boolean sortById = false;
+		
 		for (final SortByField item : Iterables.filter(items, SortByField.class)) {
             String field = item.getField();
             SortBy.Order order = item.getOrder();
@@ -212,10 +214,17 @@ public class EsDocumentSearcher implements Searcher {
                 // XXX: default order for scores is *descending*
                 req.addSort(SortBuilders.scoreSort().order(order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC)); 
                 break;
+            case DocumentMapping._ID: //$FALL-THROUGH$
+            	sortById = true;
             default:
             	req.addSort(SortBuilders.fieldSort(field).order(order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC));
             }
         }
+		
+		// add _id field as tiebreaker if not defined in the original SortBy
+		if (!sortById) {
+			req.addSort(SortBuilders.fieldSort(DocumentMapping._ID).order(SortOrder.DESC));
+		}
 	}
 
 }
