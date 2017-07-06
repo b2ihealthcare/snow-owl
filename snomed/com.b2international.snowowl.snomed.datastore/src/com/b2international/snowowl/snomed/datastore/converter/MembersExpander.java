@@ -52,17 +52,13 @@ class MembersExpander {
 		if (expand.containsKey("members")) {
 			final Options membersOptions = expand.get("members", Options.class);
 			
-			final Boolean active = membersOptions.getBoolean("active");
-			final int offset = BaseSnomedComponentConverter.getOffset(membersOptions);
-			final int limit = BaseSnomedComponentConverter.getLimit(membersOptions);
+			final Boolean active = membersOptions.containsKey("active") ? membersOptions.getBoolean("active") : null;
 			
 			final SnomedRefSetMemberSearchRequestBuilder req = SnomedRequests
 				.prepareSearchMember()
 				.all()
 				.filterByReferencedComponent(componentIds)
 				.setLocales(locales)
-				.setOffset(offset)
-				.setLimit(limit)
 				.setExpand(membersOptions.get("expand", Options.class));
 			
 			if (active != null) {
