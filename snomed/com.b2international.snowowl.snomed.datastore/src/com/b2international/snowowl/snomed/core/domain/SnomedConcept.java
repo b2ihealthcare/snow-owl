@@ -40,11 +40,13 @@ import com.google.common.collect.Multimap;
  * <li>{@code inactivationProperties()} - returns inactivation properties like indicator and association targets.</li>
  * </ul>
  * 
+ * The number of expanded fields can be controlled with the {@code limit:} directive. For example:
+ * <p>ancestors(direct:false, form:"inferred", limit:Integer.MAX_VALUE)<p>
+ *
  * Expand parameters can be nested to further expand or filter the details returned. 
  * For example the expand string:
  * <p>{@code descriptions(expand(type:"typeId"))}<p>
  * returns only the descriptions with the specified <i>typeId</i>
- * 
  * <p>
  * @see BaseResourceRequestBuilder#setLocales(java.util.List)
  * @see SnomedDescription
