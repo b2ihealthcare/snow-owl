@@ -47,6 +47,9 @@ import com.google.common.collect.Multimap;
  * <li>{@code ancestors(direct:true|false, form:"stated"|"inferred")} - returns the all or the only the direct ancestors of the concept based on the stated or the inferred tree.</li>
  * </ul>
  * 
+ * The number of expanded fields can be controlled with the {@code limit:} directive. For example:
+ * <p>ancestors(direct:false, form:"inferred", limit:Integer.MAX_VALUE)<p>
+ *
  * Expand parameters can be nested to further expand or filter the details returned. 
  * For example the expand string:
  * <p>{@code descriptions(expand(type:"typeId"))}<p>
