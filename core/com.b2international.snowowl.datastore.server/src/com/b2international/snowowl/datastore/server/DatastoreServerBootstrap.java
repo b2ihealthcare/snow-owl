@@ -95,6 +95,11 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 		mapper.registerModule(new PrimitiveCollectionModule());
 		env.services().registerService(ObjectMapper.class, mapper);
+		// initialize class loader registry
+		env.services().registerService(RepositoryClassLoaderProviderRegistry.class, new ExtensionBasedRepositoryClassLoaderProviderRegistry());
+		final ClassLoader classLoader = env.service(RepositoryClassLoaderProviderRegistry.class).getClassLoader();
+		// initialize Notification support
+		env.services().registerService(Notifications.class, new Notifications(env.service(IEventBus.class), classLoader));
 	}
 
 	@Override
@@ -140,9 +145,6 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			}
 		}
 		
-		env.services().registerService(RepositoryClassLoaderProviderRegistry.class, new ExtensionBasedRepositoryClassLoaderProviderRegistry());
-		final ClassLoader classLoader = env.service(RepositoryClassLoaderProviderRegistry.class).getClassLoader();
-		env.services().registerService(Notifications.class, new Notifications(env.service(IEventBus.class), classLoader));
 	}
 	
 	@Override
