@@ -36,7 +36,8 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
  * </ul>
  * 
  * The number of expanded fields can be controlled with the {@code limit:} directive. For example:
- * <p>members(limit:Integer.MAX_VALUE)<p>
+ * {@code members(limit:Integer.MAX_VALUE)}
+ * <p>
  *
  * Expand parameters can be nested to further expand or filter the details returned. 
  * 
