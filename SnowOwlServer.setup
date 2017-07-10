@@ -116,7 +116,7 @@
     </annotation>
     <description>${scope.project.label}</description>
   </setupTask>
-  <stream name="develop"/>
+  <stream name="5.x"/>
   <logicalProjectContainer
       xsi:type="setup:ProjectCatalog"
       href="index:/org.eclipse.setup#//@projectCatalogs[name='com.github']"/>
