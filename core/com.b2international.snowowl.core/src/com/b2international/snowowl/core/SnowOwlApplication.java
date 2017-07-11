@@ -193,6 +193,7 @@ public enum SnowOwlApplication {
 			this.bootstrap.run(configuration, environment, monitor);
 			checkApplicationState();
 			running.set(true);
+			this.bootstrap.postRun(configuration, environment);
 			LOG.info("Snow Owl successfully started.");
 		} else {
 			LOG.info("Snow Owl is already running.");
