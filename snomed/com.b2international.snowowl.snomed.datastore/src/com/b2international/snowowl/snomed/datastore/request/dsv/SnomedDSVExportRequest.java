@@ -34,7 +34,6 @@ import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedClientPro
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportClientRequest;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportModel;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -46,9 +45,6 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 
 	@JsonProperty
 	private String refSetId;
-	
-	@JsonProperty
-	private SnomedRefSetType refSetType;
 	
 	@JsonProperty
 	private int conceptSize;
@@ -114,10 +110,6 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 
 	public void setRefsetId(String refSetId) {
 		this.refSetId = refSetId;
-	}
-
-	public void setRefsetType(SnomedRefSetType refSetType) {
-		this.refSetType = refSetType;
 	}
 
 	public void setConceptSize(int conceptSize) {

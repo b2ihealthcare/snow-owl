@@ -121,7 +121,7 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 		
 		try {
 			response = exporter.executeDSVExport(monitor);
-		} catch (SnowowlServiceException e) {
+		} catch (Exception e) {
 			final String reason = null != e.getMessage() ? " Reason: '" + e.getMessage() + "'" : "";
 			LogUtils.logExportActivity(LOGGER, userId, branchPath, "Caught exception while exporting SNOMED CT terminology to DSV format." + reason);
 			

@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.exporter.server.dsv;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
@@ -31,6 +32,7 @@ public interface IRefSetDSVExporter {
 	 * @param monitor
 	 * @return
 	 * @throws SnowowlServiceException
+	 * @throws IOException 
 	 */
-	public File executeDSVExport(OMMonitor monitor) throws SnowowlServiceException;
+	public File executeDSVExport(OMMonitor monitor) throws SnowowlServiceException, IOException;
 }

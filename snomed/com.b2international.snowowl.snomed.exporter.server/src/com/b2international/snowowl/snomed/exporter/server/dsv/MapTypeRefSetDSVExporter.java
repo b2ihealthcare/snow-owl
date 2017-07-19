@@ -22,11 +22,13 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Map;
 
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
+import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
@@ -71,10 +73,9 @@ import com.google.common.collect.Maps;
  */
 public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
-	private static String TEMPORARY_WORKING_DIRECTORY;
-	private static String DELIMITER;
-	private static String LINE_SEPARATOR;
-	
+	private final String tmpDir;
+	private final String delimiter;
+	private final String lineSeparator;
 	private final SnomedRefSetDSVExportModel exportSetting;
 	private final IBranchPath branchPath;
 	private RevisionIndex revisionIndexService; 
@@ -83,16 +84,16 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		this.exportSetting = exportSetting;
 		this.branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
 		
-		TEMPORARY_WORKING_DIRECTORY = exportSetting.getExportPath();
-		DELIMITER = exportSetting.getDelimiter();
-		LINE_SEPARATOR = System.getProperty("line.separator");
+		tmpDir = exportSetting.getExportPath();
+		delimiter = exportSetting.getDelimiter();
+		lineSeparator = System.getProperty("line.separator");
 		
 		RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
 		revisionIndexService = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
 	}
 
 	@Override
-	public File executeDSVExport(final OMMonitor monitor) throws SnowowlServiceException {
+	public File executeDSVExport(final OMMonitor monitor) throws SnowowlServiceException, IOException {
 		
 		final int memberNumberToSignal = 100;
 		final ApplicationContext applicationContext = ApplicationContext.getInstance();
@@ -111,7 +112,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		} else {
 			monitor.begin(activeMemberCount/memberNumberToSignal);
 		}
-		final File file = new File(TEMPORARY_WORKING_DIRECTORY);
+		final File file = new File(tmpDir, refSet.getId() + ".csv");
 		DataOutputStream os = null;
 		try {
 			file.createNewFile();
@@ -199,16 +200,17 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				}
 			}
 		}
-		return file;
+		File zipFile = FileUtils.createZipArchive(file.getParentFile(), Files.createTempFile("export", ".zip").toFile());
+		return zipFile;
 	}
 
 	private String getHeader() {
 		final StringBuffer buffer = new StringBuffer();
 		for (final AbstractSnomedDsvExportItem item : exportSetting.getExportItems()) {
 			buffer.append(item.getDisplayName());
-			buffer.append(DELIMITER);
+			buffer.append(delimiter);
 		}
-		buffer.append(LINE_SEPARATOR);
+		buffer.append(lineSeparator);
 		return buffer.toString();
 	}
 
@@ -216,9 +218,9 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		final StringBuffer buffer = new StringBuffer();
 		for (final AbstractSnomedDsvExportItem exportItem : exportSetting.getExportItems()) {
 			buffer.append(getExportItemForConcept(entry, exportItem.getType(), labelMap));
-			buffer.append(DELIMITER);
+			buffer.append(delimiter);
 		}
-		buffer.append(LINE_SEPARATOR);
+		buffer.append(lineSeparator);
 		return buffer.toString();
 	}
 

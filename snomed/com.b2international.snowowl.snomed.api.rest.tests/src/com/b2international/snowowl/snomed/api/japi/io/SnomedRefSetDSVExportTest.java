@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -34,14 +35,12 @@ import com.b2international.commons.FileUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.bulk.BulkRequest;
-import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -52,6 +51,7 @@ import com.b2international.snowowl.snomed.core.domain.constraint.SnomedDescripti
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipConstraint;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.ComponentIdSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.DatatypeSnomedDsvExportItem;
@@ -60,7 +60,6 @@ import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedDsvExport
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetCreateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
@@ -99,10 +98,11 @@ public class SnomedRefSetDSVExportTest {
 	}
 	
 	@Test
-	public void export() throws Exception {
+	public void simpleTypeDSVExport() throws Exception {
 
-		String refsetId = createRefset();
-		addMembers(refsetId, Concepts.SUBSTANCE, Concepts.FINDING_SITE);
+		String refsetId = createRefset(SnomedRefSetType.SIMPLE);
+		addMember(refsetId, Concepts.SUBSTANCE);
+		addMember(refsetId, Concepts.FINDING_SITE);
 		
 		UUID fileId = 
 			SnomedRequests.dsv()
@@ -112,7 +112,6 @@ public class SnomedRefSetDSVExportTest {
 				.setDescriptionIdExpected(true)
 				.setRelationshipTargetExpected(true)
 				.setRefSetId(refsetId)
-				.setRefSetType(SnomedRefSetType.SIMPLE)
 				.setExportItems(createExportItems(refsetId))
 				.build(REPOSITORY_ID, MAIN_BRANCH)
 				.execute(bus)
@@ -124,11 +123,44 @@ public class SnomedRefSetDSVExportTest {
 		Assert.assertTrue("Export archive must exist!", dsvExportZipFile.exists());
 
 		FileUtils.decompressZipArchive(dsvExportZipFile, tempDir);
-		File decompressedDsvFile = new File(tempDir, "dsv-export-file.txt");
+		File decompressedDsvFile = new File(tempDir, refsetId+".csv");
 		Assert.assertTrue("Uncompressed file must exist.", decompressedDsvFile.exists());
 
 		List<String> dsvExportLines = Files.readLines(decompressedDsvFile, Charsets.UTF_8);
 		Assert.assertTrue(MessageFormat.format("Expected 4 lines in the exported file (2 header and 2 member lines) instead of {0} lines.", dsvExportLines.size()), dsvExportLines.size() == 4);
+	}
+	
+	@Test
+	public void mapTypeDSVExport() throws Exception {
+
+		String refsetId = createRefset(SnomedRefSetType.SIMPLE_MAP);
+		addMember(refsetId, Concepts.SUBSTANCE, Collections.singletonMap(SnomedRf2Headers.FIELD_MAP_TARGET, "XXX"));
+		addMember(refsetId, Concepts.FINDING_SITE, Collections.singletonMap(SnomedRf2Headers.FIELD_MAP_TARGET, "XXX"));
+		
+		UUID fileId = 
+			SnomedRequests.dsv()
+				.prepareExport()
+				.setLocales(locales())
+				.setDelimiter(DELIMITER)
+				.setDescriptionIdExpected(true)
+				.setRelationshipTargetExpected(true)
+				.setRefSetId(refsetId)
+				.setExportItems(createExportItems(refsetId))
+				.build(REPOSITORY_ID, MAIN_BRANCH)
+				.execute(bus)
+				.getSync();
+
+		File dsvExportZipFile = new File(tempDir, String.format("dsv-export-%s.zip", fileId.toString()));
+		OutputStream outputStream = new FileOutputStream(dsvExportZipFile);
+		fileRegistry.download(fileId, outputStream);
+		Assert.assertTrue("Export archive must exist!", dsvExportZipFile.exists());
+
+		FileUtils.decompressZipArchive(dsvExportZipFile, tempDir);
+		File decompressedDsvFile = new File(tempDir, refsetId + ".csv");
+		Assert.assertTrue("Uncompressed file must exist.", decompressedDsvFile.exists());
+
+		List<String> dsvExportLines = Files.readLines(decompressedDsvFile, Charsets.UTF_8);
+		Assert.assertTrue(MessageFormat.format("Expected 3 lines in the exported file (2 header and 2 member lines) instead of {0} lines.", dsvExportLines.size()), dsvExportLines.size() == 3);
 	}
 
 	private List<ExtendedLocale> locales() {
@@ -164,29 +196,31 @@ public class SnomedRefSetDSVExportTest {
 					.collect(Collectors.toSet());
 	}
 
-	private void addMembers(String refsetId, String... refComponentIds) {
-		BulkRequestBuilder<TransactionContext> bulkRequestBuilder = BulkRequest.create();
-
-		for (String refComponentId : refComponentIds) {
-			bulkRequestBuilder.add(memberBuilder(refsetId, refComponentId));
-		}
-		
-		SnomedRequests.prepareCommit()
-				.setBody(bulkRequestBuilder)
-				.setUserId("test")
-				.setCommitComment("test")
-				.build(REPOSITORY_ID, MAIN_BRANCH)
-				.execute(bus).getSync();
+	private void addMember(String refsetId, String referencedComponentId) {
+		addMember(refsetId, referencedComponentId, Collections.emptyMap());
+	}
+	
+	private void addMember(String refsetId, String referencedComponentId, Map<String, Object> properties) {
+		SnomedRequests.prepareNewMember()
+				.setModuleId(Concepts.MODULE_SCT_CORE)
+				.setActive(true)
+				.setReferenceSetId(refsetId)
+				.setReferencedComponentId(referencedComponentId)
+				.setProperties(properties)
+				.setId(UUID.randomUUID().toString())
+				.build(REPOSITORY_ID, MAIN_BRANCH, "test", "test")
+				.execute(bus)
+				.getSync();
 	}
 
-	private String createRefset() {
-		SnomedDescriptionCreateRequestBuilder fsn = descriptionBuilder(Concepts.FULLY_SPECIFIED_NAME, "term-test");
-		SnomedDescriptionCreateRequestBuilder pt = descriptionBuilder(Concepts.SYNONYM, "test");
+	private String createRefset(SnomedRefSetType type) {
+		SnomedDescriptionCreateRequestBuilder fsn = toDescriptionRequest(Concepts.FULLY_SPECIFIED_NAME, "term-test");
+		SnomedDescriptionCreateRequestBuilder pt = toDescriptionRequest(Concepts.SYNONYM, "test");
 
-		SnomedRelationshipCreateRequestBuilder statedIsA = relationshipBuilder(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP, Concepts.REFSET_SIMPLE_TYPE);
-		SnomedRelationshipCreateRequestBuilder inferredIsA = relationshipBuilder(Concepts.IS_A, CharacteristicType.INFERRED_RELATIONSHIP, Concepts.REFSET_SIMPLE_TYPE);
+		SnomedRelationshipCreateRequestBuilder statedIsA = toRelationshipRequest(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP, SnomedRefSetUtil.getConceptId(type));
+		SnomedRelationshipCreateRequestBuilder inferredIsA = toRelationshipRequest(Concepts.IS_A, CharacteristicType.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getConceptId(type));
 
-		SnomedRefSetCreateRequestBuilder refSet = createRefsetBuilder();
+		SnomedRefSetCreateRequestBuilder refSet = toRefSetRequest(type);
 		
 		String conceptId = generateId();
 		createConcept(fsn, pt, statedIsA, inferredIsA, refSet, conceptId);
@@ -194,9 +228,9 @@ public class SnomedRefSetDSVExportTest {
 		return conceptId;
 	}
 
-	private SnomedRefSetCreateRequestBuilder createRefsetBuilder() {
+	private SnomedRefSetCreateRequestBuilder toRefSetRequest(SnomedRefSetType type) {
 		return SnomedRequests.prepareNewRefSet()
-				.setType(SnomedRefSetType.SIMPLE)
+				.setType(type)
 				.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT);
 	}
 
@@ -236,7 +270,7 @@ public class SnomedRefSetDSVExportTest {
 				.getSync().first().orElseThrow(() -> new IllegalStateException("Couldn't generate identifier concept ID"));
 	}
 
-	private SnomedRelationshipCreateRequestBuilder relationshipBuilder(String typeId, CharacteristicType characteristicType, String desctinationId) {
+	private SnomedRelationshipCreateRequestBuilder toRelationshipRequest(String typeId, CharacteristicType characteristicType, String desctinationId) {
 		return SnomedRequests.prepareNewRelationship()
 				.setIdFromNamespace(Concepts.B2I_NAMESPACE)
 				.setModuleId(Concepts.MODULE_SCT_CORE)
@@ -245,22 +279,13 @@ public class SnomedRefSetDSVExportTest {
 				.setCharacteristicType(characteristicType);
 	}
 
-	private SnomedDescriptionCreateRequestBuilder descriptionBuilder(String typeId, String term) {
+	private SnomedDescriptionCreateRequestBuilder toDescriptionRequest(String typeId, String term) {
 		return SnomedRequests.prepareNewDescription()
 				.setIdFromNamespace(Concepts.B2I_NAMESPACE)
 				.setModuleId(Concepts.MODULE_SCT_CORE)
 				.setTerm(term)
 				.setTypeId(typeId)
 				.preferredIn(Concepts.REFSET_LANGUAGE_TYPE_UK);
-	}
-	
-	private SnomedRefSetMemberCreateRequestBuilder memberBuilder(String refsetId, String targetConcept) {
-		return SnomedRequests.prepareNewMember()
-				.setModuleId(Concepts.MODULE_SCT_CORE)
-				.setActive(true)
-				.setReferenceSetId(refsetId)
-				.setReferencedComponentId(targetConcept)
-				.setId(UUID.randomUUID().toString());
 	}
 	
 	private List<AbstractSnomedDsvExportItem> transformToExportItems(final Iterable<SnomedConstraint> constraints) {

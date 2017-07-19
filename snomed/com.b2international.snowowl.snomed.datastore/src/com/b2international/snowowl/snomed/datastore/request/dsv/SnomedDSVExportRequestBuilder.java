@@ -24,7 +24,6 @@ import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 
 /**
@@ -33,7 +32,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 public final class SnomedDSVExportRequestBuilder extends BaseRequestBuilder<SnomedDSVExportRequestBuilder, BranchContext, UUID> implements RevisionIndexRequestBuilder<UUID> {
 
 	private String refSetId;
-	private SnomedRefSetType refSetType;
 	private int conceptSize;
 	private boolean descriptionIdExpected;
 	private boolean relationshipTargetExpected;
@@ -45,12 +43,6 @@ public final class SnomedDSVExportRequestBuilder extends BaseRequestBuilder<Snom
 	
 	public SnomedDSVExportRequestBuilder setRefSetId(String refSetId) {
 		this.refSetId = refSetId;
-		return getSelf();
-	}
-	
-	
-	public SnomedDSVExportRequestBuilder setRefSetType(SnomedRefSetType refSetType) {
-		this.refSetType = refSetType;
 		return getSelf();
 	}
 	
@@ -88,7 +80,6 @@ public final class SnomedDSVExportRequestBuilder extends BaseRequestBuilder<Snom
 	protected Request<BranchContext, UUID> doBuild() {
 		SnomedDSVExportRequest req = new SnomedDSVExportRequest();
 		req.setRefsetId(refSetId);
-		req.setRefsetType(refSetType);
 		req.setConceptSize(conceptSize);
 		req.setDescriptionIdExpected(descriptionIdExpected);
 		req.setRelationshipTargetExpected(relationshipTargetExpected);

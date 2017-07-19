@@ -20,6 +20,7 @@ import static java.util.Optional.ofNullable;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -121,12 +122,12 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	 * @throws SnowowlServiceException
 	 */
 	@Override
-	public File executeDSVExport(OMMonitor monitor) throws SnowowlServiceException {
+	public File executeDSVExport(OMMonitor monitor) throws SnowowlServiceException, IOException {
 
 		monitor.begin(100);
 		Async async = monitor.forkAsync(80);
 		OMMonitor remainderMonitor = null;
-		File file = new File(exportPath, "dsv-export-file.txt");
+		File file = new File(exportPath, refSetId + ".csv");
 		try (final DataOutputStream os = new DataOutputStream(new FileOutputStream(file)) ) {
 
 			file.createNewFile();
