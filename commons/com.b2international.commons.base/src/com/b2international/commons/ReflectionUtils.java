@@ -15,9 +15,12 @@
  */
 package com.b2international.commons;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 
 public class ReflectionUtils {
 
@@ -31,23 +34,34 @@ public class ReflectionUtils {
 		}
 	}
 	
-	public static Object getGetterValue(Object object, String property) {
+	public static Object getPropertyValue(Object object, String property) {
 		try {
-			return getGetter(object.getClass(), property).invoke(object);
+			return getPropertyAccessor(object.getClass(), property).invoke(object);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			throw new RuntimeException("Could not get value from getter: " + object + "-" + property, e);
 		}
 	}
 	
-	private static Method getGetter(Class<?> type, String property) {
-		try {
-			return type.getMethod(property);
-		} catch (NoSuchMethodException | SecurityException e) {
-			if (!property.startsWith("get")) {
-				return getGetter(type, "get".concat(StringUtils.capitalizeFirstLetter(property)));
-			}
-			throw new RuntimeException("Could not find applicable getter method: " + property, e);
+	private static Method getPropertyAccessor(Class<?> type, String property) {
+		List<String> candidates = newArrayList(property);
+		
+		if (!property.startsWith("get")) {
+			candidates.add("get".concat(StringUtils.capitalizeFirstLetter(property)));
 		}
+		
+		if (!property.startsWith("is")) {
+			candidates.add("is".concat(StringUtils.capitalizeFirstLetter(property)));
+		}
+		
+		for (String methodName : candidates) {
+			try {
+				return type.getMethod(methodName);
+			} catch (NoSuchMethodException | SecurityException ignored) {
+				// Skip to next candidate
+			}
+		}
+		
+		throw new RuntimeException("Could not find applicable getter method for property: " + property);
 	}
 	
 	public static <R, T> R getField(Class<T> clazz, T instance, String fieldName) {
