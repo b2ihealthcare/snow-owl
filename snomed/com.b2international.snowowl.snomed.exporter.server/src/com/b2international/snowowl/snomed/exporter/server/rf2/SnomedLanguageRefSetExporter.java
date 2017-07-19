@@ -46,11 +46,14 @@ public class SnomedLanguageRefSetExporter extends AbstractSnomedRf2CoreExporter<
 
 	@Override
 	protected void appendExpressionConstraint(ExpressionBuilder builder) {
-		builder
-			.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(singleton(SnomedRefSetType.LANGUAGE)))
-			.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(LongSets.toStringSet(descriptionIds)));
+		builder.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(singleton(SnomedRefSetType.LANGUAGE)));
+		appendReferencedComponentIdClause(builder, descriptionIds);
 	}
-	
+
+	protected ExpressionBuilder appendReferencedComponentIdClause(ExpressionBuilder builder, LongSet descriptionIds) {
+		return builder.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(LongSets.toStringSet(descriptionIds)));
+	}
+
 	@Override
 	public String convertToString(SnomedRefSetMemberIndexEntry doc) {
 		final StringBuilder sb = new StringBuilder();
@@ -104,7 +107,7 @@ public class SnomedLanguageRefSetExporter extends AbstractSnomedRf2CoreExporter<
 				.toString();
 	}
 	
-	private String getLanguageCode() {
+	protected String getLanguageCode() {
 		return languageCode;
 	}
 }

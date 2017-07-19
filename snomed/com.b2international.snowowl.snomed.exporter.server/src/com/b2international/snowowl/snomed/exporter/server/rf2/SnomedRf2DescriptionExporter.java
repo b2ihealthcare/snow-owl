@@ -118,6 +118,10 @@ public class SnomedRf2DescriptionExporter extends AbstractSnomedRf2CoreExporter<
 		})));
 	}
 	
+	public LongSet getExportedDescriptionIdSet() {
+		return PrimitiveSets.newLongOpenHashSet(descriptionIds);
+	}
+	
 	@Override
 	public void execute() throws IOException {
 		super.execute();

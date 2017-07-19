@@ -20,6 +20,7 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ROOT_C
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.UK_ACCEPTABLE_MAP;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.UK_PREFERRED_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranch;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedExportRestRequests.createExport;
@@ -51,7 +52,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 
@@ -59,8 +62,11 @@ import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.api.domain.browser.SnomedBrowserDescriptionType;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedBrowserRestRequests;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -69,7 +75,7 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
@@ -84,23 +90,18 @@ import com.google.common.collect.Sets;
 public class SnomedExportApiTest extends AbstractSnomedApiTest {
 
 	private static final Joiner TAB_JOINER = Joiner.on('\t');
-
+	
 	private static void assertArchiveContainsLines(File exportArchive, Multimap<String, Pair<Boolean, String>> fileToLinesMap) throws Exception {
 		Multimap<String, Pair<Boolean, String>> resultMap = collectLines(exportArchive, fileToLinesMap);
 		Set<String> difference = Sets.difference(fileToLinesMap.keySet(), resultMap.keySet());
 
 		assertTrue(String.format("File(s) starting with <%s> are missing from the export archive", Joiner.on(", ").join(difference)), difference.isEmpty());
 
-		for (Entry<String, Collection<Pair<Boolean, String>>> entry : fileToLinesMap.asMap().entrySet()) {
-			for (Pair<Boolean, String> result : resultMap.get(entry.getKey())) {
-				Pair<Boolean, String> originalLine = Iterables.getOnlyElement(FluentIterable.from(entry.getValue()).filter(new Predicate<Pair<Boolean, String>>() {
-					@Override
-					public boolean apply(Pair<Boolean, String> input) {
-						return input.getB().equals(result.getB());
-					}
-				}));
+		for (Entry<String, Collection<Pair<Boolean, String>>> fileNameToLineExistenceEntry : fileToLinesMap.asMap().entrySet()) {
+			for (Pair<Boolean, String> result : resultMap.get(fileNameToLineExistenceEntry.getKey())) {
+				Pair<Boolean, String> originalLine = Iterables.getOnlyElement(FluentIterable.from(fileNameToLineExistenceEntry.getValue()).filter(pair -> pair.getB().equals(result.getB())));
 
-				String message = String.format("Line: %s must %sbe contained in %s", originalLine.getB(), originalLine.getA() ? "" : "not ", entry.getKey());
+				String message = String.format("Line: %s must %sbe contained in %s", originalLine.getB(), originalLine.getA() ? "" : "not ", fileNameToLineExistenceEntry.getKey());
 				assertEquals(message, true, result.getA());
 			}
 		}
@@ -677,15 +678,15 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		String unpublishedEnglishDescriptionLine = createDescriptionLine(unpublishedEnglishDescriptionId, "", conceptId, "en", Concepts.SYNONYM, defaultDescriptionTerm);
 		String unpublishedDanishDescriptionLine = createDescriptionLine(unpublishedDanishDescriptionId, "", conceptId, "da", Concepts.SYNONYM, defaultDescriptionTerm);
 		
-		String englishTextDefinitionMemberLine = createAcceptableLanguageRefsetMemberLine(branchPath, englishTextDefinitionId, versionEffectiveTime);
-		String danishTextDefinitionMemberLine = createAcceptableLanguageRefsetMemberLine(branchPath, danishTextDefinitionId, versionEffectiveTime);
-		String englishDescriptionMemberLine = createAcceptableLanguageRefsetMemberLine(branchPath, englishDescriptionId, versionEffectiveTime);
-		String danishDescriptionMemberLine = createAcceptableLanguageRefsetMemberLine(branchPath, danishDescriptionId, versionEffectiveTime);
+		String englishTextDefinitionMemberLine = createAcceptableUKLanguageRefsetMemberLine(branchPath, englishTextDefinitionId, versionEffectiveTime);
+		String danishTextDefinitionMemberLine = createAcceptableUKLanguageRefsetMemberLine(branchPath, danishTextDefinitionId, versionEffectiveTime);
+		String englishDescriptionMemberLine = createAcceptableUKLanguageRefsetMemberLine(branchPath, englishDescriptionId, versionEffectiveTime);
+		String danishDescriptionMemberLine = createAcceptableUKLanguageRefsetMemberLine(branchPath, danishDescriptionId, versionEffectiveTime);
 		
-		String unpublishedEnglishTextDefinitionMemberLine = createAcceptableLanguageRefsetMemberLine(branchPath, unpublishedEnglishTextDefinitionId, "");
-		String unpublishedDanishTextDefinitionMemberLine = createAcceptableLanguageRefsetMemberLine(branchPath, unpublishedDanishTextDefinitionId, "");
-		String unpublishedEnglishDescriptionMemberLine = createAcceptableLanguageRefsetMemberLine(branchPath, unpublishedEnglishDescriptionId, "");
-		String unpublishedDanishDescriptionMemberLine = createAcceptableLanguageRefsetMemberLine(branchPath, unpublishedDanishDescriptionId, "");
+		String unpublishedEnglishTextDefinitionMemberLine = createAcceptableUKLanguageRefsetMemberLine(branchPath, unpublishedEnglishTextDefinitionId, "");
+		String unpublishedDanishTextDefinitionMemberLine = createAcceptableUKLanguageRefsetMemberLine(branchPath, unpublishedDanishTextDefinitionId, "");
+		String unpublishedEnglishDescriptionMemberLine = createAcceptableUKLanguageRefsetMemberLine(branchPath, unpublishedEnglishDescriptionId, "");
+		String unpublishedDanishDescriptionMemberLine = createAcceptableUKLanguageRefsetMemberLine(branchPath, unpublishedDanishDescriptionId, "");
 		
 		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 				
@@ -752,20 +753,202 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}
 	
+	@Test
+	public void exportLangRefset_acceptabilityChangesOnly() throws Exception {
+		//103367005 | With consistency (attribute)
+		final String conceptId = "103367005";
+		Map<String, Object> conceptBodyMap = SnomedBrowserRestRequests.getBrowserConcept(branchPath, conceptId).extract().as(Map.class);
+		List<Object> descriptions = ((List<Object>)conceptBodyMap.get("descriptions"));
+		
+		Optional<Map> toAcceptableInUSOptionalMap = getSynonymRowOptional(descriptions, "en", Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_US).findFirst();
+		Optional<Map> toPreferredInUSOptionalMap = getSynonymRowOptional(descriptions, "en", Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_US).findFirst();
+
+		Preconditions.checkArgument(toAcceptableInUSOptionalMap.isPresent() && toPreferredInUSOptionalMap.isPresent(), String.format("Can't test acceptability for concept %s, a concept is needed for this test that originally has 1 preferred and 1 acceptable syn in US language.", conceptId));
+		
+		String toAcceptableInUSDescriptionId = (String) toAcceptableInUSOptionalMap.get().get("descriptionId");
+		String toPreferredInUSDescriptionId = (String) toPreferredInUSOptionalMap.get().get("descriptionId");
+		
+		// change PT: in US to be ACCEPTABLE
+		toMap(toAcceptableInUSOptionalMap.get().get("acceptabilityMap")).put(Concepts.REFSET_LANGUAGE_TYPE_US,Acceptability.ACCEPTABLE);
+		// change Syn: in US to be PREFERRED
+		toMap(toPreferredInUSOptionalMap.get().get("acceptabilityMap")).put(Concepts.REFSET_LANGUAGE_TYPE_US,Acceptability.PREFERRED);
+		
+		// commit
+		SnomedBrowserRestRequests.updateBrowserConcept(branchPath, conceptId, conceptBodyMap).statusCode(200);
+		
+		
+		// export delta rf2
+		final Map<Object, Object> config = ImmutableMap.builder()
+				.put("type", Rf2ReleaseType.DELTA.name())
+				.put("branchPath", branchPath.getPath())
+				.put("includeUnpublished", true)
+				.build();
+		
+		final String exportId = getExportId(createExport(config));
+		final File exportArchive = getExportFile(exportId);
+
+		
+		String toAcceptableInUSDescriptionLine = createLanguageRefsetMemberLine(branchPath, toAcceptableInUSDescriptionId, "", Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE.getConceptId());
+		String toPreferredInUSDescriptionLine = createLanguageRefsetMemberLine(branchPath, toPreferredInUSDescriptionId, "", Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED.getConceptId());
+
+		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
+
+		// assert acceptability changes present in rf2 lang refset file.
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-en", Pair.of(true, toAcceptableInUSDescriptionLine));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-en", Pair.of(true, toPreferredInUSDescriptionLine));
+		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+	}
 	
-	private static String getLanguageRefsetMemberId(IBranchPath branchPath, String descriptionId) {
+	
+	@Test
+	public void exportLangRefset_acceptabilityAndDescChanges() throws Exception {
+		
+		final String codeSystemShortName = "SNOMEDCT-ACCEPTABILITY-CHANGES";
+		createCodeSystem(branchPath, codeSystemShortName).statusCode(201);
+		
+		// create new concept
+		final String conceptId = createNewConcept(branchPath);
+		final String descriptionIdA = createNewDescription(branchPath, conceptId, Concepts.SYNONYM, UK_ACCEPTABLE_MAP, "en");
+		final String descriptionIdB = createNewDescription(branchPath, conceptId, Concepts.SYNONYM, UK_ACCEPTABLE_MAP, "da");
+		final String descriptionIdC = createNewDescription(branchPath, conceptId, Concepts.SYNONYM, UK_PREFERRED_MAP, "en");
+		final String descriptionIdD = createNewDescription(branchPath, conceptId, Concepts.SYNONYM, UK_PREFERRED_MAP, "da");
+		final String descriptionIdE = createNewDescription(branchPath, conceptId, Concepts.SYNONYM, UK_ACCEPTABLE_MAP, "en");
+		final String descriptionIdF = createNewDescription(branchPath, conceptId, Concepts.SYNONYM, UK_ACCEPTABLE_MAP, "da");
+		
+		// version new concept
+		final String versionEffectiveTime = "20170801";
+		createVersion(codeSystemShortName, "v1", versionEffectiveTime).statusCode(201);
+		
+		
+		//103367005 | With consistency (attribute)
+		Map<String, Object> conceptBodyMap = SnomedBrowserRestRequests.getBrowserConcept(branchPath, conceptId).extract().as(Map.class);
+		List<Object> descriptions = ((List<Object>)conceptBodyMap.get("descriptions"));
+		
+// 		changes
+//		- change description A with language code 'en' (e.g. case significance) and change corresponding language refset member AM (e.g. change acceptability from acceptable to preferred )
+		Map<String, Object> descriptionA = getDescriptionById(descriptions, descriptionIdA);
+		descriptionA.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE);
+		toMap(descriptionA.get("acceptabilityMap")).put(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED);
+		
+//		- change description B with language code 'da' (e.g. case significance) and change corresponding language refset member BM (e.g. change acceptability from acceptable to preferred)
+		Map<String, Object> descriptionB = getDescriptionById(descriptions, descriptionIdB);
+		descriptionB.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE);
+		toMap(descriptionB.get("acceptabilityMap")).put(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED);
+		
+//		- change another C descriptions acceptability with language code 'en' from preferred to acceptable (CM member), but leave the description as is
+		Map<String, Object> descriptionC = getDescriptionById(descriptions, descriptionIdC);
+		toMap(descriptionC.get("acceptabilityMap")).put(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE);
+		
+//		- change another D descriptions acceptability with language code 'da' from preferred to acceptable (DM member), but leave the description as is
+		Map<String, Object> descriptionD = getDescriptionById(descriptions, descriptionIdD);
+		toMap(descriptionD.get("acceptabilityMap")).put(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE);
+		
+//		- change description E with language code 'en' (e.g. case significance), but don't change acceptability  (EM member)
+		Map<String, Object> descriptionE = getDescriptionById(descriptions, descriptionIdE);
+		descriptionE.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE);
+		
+//		- change description F with language code 'da' (e.g. case significance), but don't change acceptability (FM member)
+		Map<String, Object> descriptionF = getDescriptionById(descriptions, descriptionIdF);
+		descriptionF.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE);
+		
+		// commit
+		SnomedBrowserRestRequests.updateBrowserConcept(branchPath, conceptId, conceptBodyMap).statusCode(200);
+		
+		// export delta rf2
+		final Map<Object, Object> config = ImmutableMap.builder()
+				.put("type", Rf2ReleaseType.DELTA.name())
+				.put("branchPath", branchPath.getPath())
+				.put("includeUnpublished", true)
+				.build();
+		
+		final String exportId = getExportId(createExport(config));
+		final File exportArchive = getExportFile(exportId);
+	
+		String descriptionLineA = createDescriptionLine(descriptionIdA, "", conceptId, "en", Concepts.SYNONYM, SnomedRestFixtures.DEFAULT_TERM, CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.getConceptId());
+		String descriptionLineB = createDescriptionLine(descriptionIdB, "", conceptId, "da", Concepts.SYNONYM, SnomedRestFixtures.DEFAULT_TERM, CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.getConceptId());
+		String descriptionLineC = createDescriptionLine(descriptionIdC, "", conceptId, "en", Concepts.SYNONYM, SnomedRestFixtures.DEFAULT_TERM);
+		String descriptionLineD = createDescriptionLine(descriptionIdD, "", conceptId, "da", Concepts.SYNONYM, SnomedRestFixtures.DEFAULT_TERM);
+		String descriptionLineE = createDescriptionLine(descriptionIdE, "", conceptId, "en", Concepts.SYNONYM, SnomedRestFixtures.DEFAULT_TERM, CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.getConceptId());
+		String descriptionLineF = createDescriptionLine(descriptionIdF, "", conceptId, "da", Concepts.SYNONYM, SnomedRestFixtures.DEFAULT_TERM, CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.getConceptId());
+		
+		String languageMemberLineA = createLanguageRefsetMemberLine(branchPath, descriptionIdA, "", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED.getConceptId());
+		String languageMemberLineB = createLanguageRefsetMemberLine(branchPath, descriptionIdB, "", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED.getConceptId());
+		String languageMemberLineC = createLanguageRefsetMemberLine(branchPath, descriptionIdC, "", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE.getConceptId());
+		String languageMemberLineD = createLanguageRefsetMemberLine(branchPath, descriptionIdD, "", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE.getConceptId());
+		String languageMemberLineE = createLanguageRefsetMemberLine(branchPath, descriptionIdE, "", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE.getConceptId());
+		String languageMemberLineF = createLanguageRefsetMemberLine(branchPath, descriptionIdF, "", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE.getConceptId());
+
+		
+// 		assertions
+//		description file 'en': A, E (C must not exist in it )
+//		description file 'da': B, F (D must not exist in it )
+//		language refset file 'en': AM, CM (EM must not exist in it )
+//		language refset file 'da': BM, DM (FM must not exist in it )		
+
+		// assert acceptability changes present in rf2 lang refset file.
+		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.create();
+		fileToLinesMap.put("sct2_Description_Delta-en", Pair.of(true, descriptionLineA));
+		fileToLinesMap.put("sct2_Description_Delta-en", Pair.of(true, descriptionLineE));
+		fileToLinesMap.put("sct2_Description_Delta-en", Pair.of(false, descriptionLineC));
+		fileToLinesMap.put("sct2_Description_Delta-da", Pair.of(true, descriptionLineB));
+		fileToLinesMap.put("sct2_Description_Delta-da", Pair.of(true, descriptionLineF));
+		fileToLinesMap.put("sct2_Description_Delta-da", Pair.of(false, descriptionLineD));
+
+		
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-en", Pair.of(true, languageMemberLineA));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-en", Pair.of(true, languageMemberLineC));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-en", Pair.of(false, languageMemberLineE));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-da", Pair.of(true, languageMemberLineB));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-da", Pair.of(true, languageMemberLineD));
+		fileToLinesMap.put("der2_cRefset_LanguageDelta-da", Pair.of(false, languageMemberLineF));
+		
+		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+	}
+
+	private Map getDescriptionById(List<Object> descriptions, String descriptionId) {
+		return descriptions.stream()
+				.filter(Map.class::isInstance)
+				.map(Map.class::cast)
+				.filter(row -> descriptionId.equals(row.get("descriptionId"))).findFirst().get();
+	}
+	
+	private Stream<Map> getSynonymRowOptional(List<Object> descriptions, String languageCode, Acceptability acceptability, String languageRefsetId) {
+		return descriptions.stream()
+				.filter(Map.class::isInstance)
+				.map(Map.class::cast)
+				.filter(row -> Boolean.TRUE.equals(row.get("active")))
+				.filter(row -> SnomedBrowserDescriptionType.SYNONYM.name().equals(row.get("type")))
+				.filter(row -> acceptability.name().equals(toMap(row.get("acceptabilityMap")).get(languageRefsetId)))
+				.filter(row -> languageCode.equals(row.get("lang")));
+	}
+	
+	
+	
+	
+	private Map<Object, Object> toMap(Object object) {
+		return Map.class.cast(object);
+	}
+	
+	private static String getLanguageRefsetMemberId(IBranchPath branchPath, String descriptionId, String languageRefsetId) {
 		final Collection<Map<String, Object>> members = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").extract().body().path("members.items");
-		return String.valueOf(Iterables.getOnlyElement(members).get("id"));
+		return String.valueOf(members.stream().filter(member -> languageRefsetId.equals(member.get("referenceSetId"))).findFirst().get().get("id"));
 	}
 	
 	private static String createDescriptionLine(String id, String effectiveTime, String conceptId, String languageCode, String type, String term) {
-		return getComponentLine(ImmutableList.<String> of(id, effectiveTime, "1", MODULE_SCT_CORE, conceptId, languageCode,
-				type, term, CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId()));
+		return createDescriptionLine(id, effectiveTime, conceptId, languageCode, type, term, CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId());
 	}
 	
-	private static String createAcceptableLanguageRefsetMemberLine(IBranchPath branchPath, String descriptionId, String effectiveTime) {
-		return getComponentLine(ImmutableList.<String> of(getLanguageRefsetMemberId(branchPath, descriptionId), effectiveTime, "1", MODULE_SCT_CORE, Concepts.REFSET_LANGUAGE_TYPE_UK, descriptionId,
-				Acceptability.ACCEPTABLE.getConceptId()));
+	private static String createDescriptionLine(String id, String effectiveTime, String conceptId, String languageCode, String type, String term, String caseSignificance) {
+		return getComponentLine(ImmutableList.<String> of(id, effectiveTime, "1", MODULE_SCT_CORE, conceptId, languageCode, type, term, caseSignificance));
+	}
+	
+	private static String createLanguageRefsetMemberLine(IBranchPath branchPath, String descriptionId, String effectiveTime, String languageRefsetId, String acceptabilityId) {
+		return getComponentLine(ImmutableList.<String> of(getLanguageRefsetMemberId(branchPath, descriptionId, languageRefsetId), effectiveTime, "1", MODULE_SCT_CORE, languageRefsetId, descriptionId,
+				acceptabilityId));
+	}
+	
+	private static String createAcceptableUKLanguageRefsetMemberLine(IBranchPath branchPath, String descriptionId, String effectiveTime) {
+		return createLanguageRefsetMemberLine(branchPath, descriptionId, effectiveTime, Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE.getConceptId());
 	}
 
 	private static String getComponentLine(final List<String> lineElements) {
