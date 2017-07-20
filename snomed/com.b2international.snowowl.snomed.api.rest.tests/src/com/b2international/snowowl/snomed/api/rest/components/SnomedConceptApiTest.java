@@ -30,8 +30,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestReq
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.*;
 
@@ -355,6 +354,26 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertTrue(updatedMemberIds.containsAll(memberIds));
 	}
 
+	@Test
+	public void updateInactivationIndicatorOnActiveConcept() throws Exception {
+		String conceptId = createNewConcept(branchPath);
+		
+		// ensure that the concept does not have any indicator set before the update
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "inactivationProperties()")
+			.statusCode(200)
+			.body("inactivationIndicator", nullValue());
+		
+		// Inactivate the duplicate concept and point to the other one
+		Map<?, ?> updateReq = ImmutableMap.<String, Object>builder()
+				.put("inactivationIndicator", InactivationIndicator.PENDING_MOVE)
+				.put("commitComment", "Add a pending move indicator to an active concept")
+				.build();
+		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, updateReq);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "inactivationProperties()")
+			.statusCode(200)
+			.body("inactivationIndicator", equalTo(InactivationIndicator.PENDING_MOVE.toString()));
+	}
+	
 	@Test
 	public void createDuplicateConcept() throws Exception {
 		String conceptId = createNewConcept(branchPath);

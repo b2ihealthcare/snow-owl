@@ -260,16 +260,16 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			updateAssociationTargets(context, newAssociationTargets);
 			return true;
 			
-		} else if (!currentStatus && !newStatus) {
+		} else if (currentStatus == newStatus) {
 			
-			// Inactive --> Inactive: update indicator and/or association targets if required
+			// Same status, allow indicator and/or association targets to be updated if required
 			// (using original values that can be null)
 			
 			updateInactivationIndicator(context, inactivationIndicator);
 			updateAssociationTargets(context, associationTargets);
 			return false;
-
-		} else /* if (currentStatus && newStatus) */ {
+			
+		} else {
 			return false;
 		}
 	}
