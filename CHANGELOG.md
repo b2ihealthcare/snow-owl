@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.10.8
+
+### Added
+- Support inactivation indicator and association target updates on active SNOMED CT concepts
+- Support postRun application bootstrap phase (ea64e8b9fe8b172fa95fd409ca61a3fdc207c8dd)
+
+### Bugs
+- Fixed SNOMED CT Mapping Reference Set DSV export (dc1300e54cea6c6756d0898b62eca0bb26ff5b87)
+
 ## 5.10.7
 
 ### Changed
