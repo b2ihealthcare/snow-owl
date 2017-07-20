@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Datastore Server
 Bundle-SymbolicName: com.b2international.snowowl.datastore.server;singleton:=true
-Bundle-Version: 5.10.7
+Bundle-Version: 5.10.8
 Bundle-Activator: com.b2international.snowowl.datastore.server.DatastoreServerActivator
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",

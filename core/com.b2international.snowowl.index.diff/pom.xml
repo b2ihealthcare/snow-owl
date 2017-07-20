@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>core-parent</artifactId>
-		<version>5.10.7</version>
+		<version>5.10.8</version>
 	</parent>
 	<artifactId>com.b2international.snowowl.index.diff</artifactId>
 	<packaging>eclipse-plugin</packaging>
