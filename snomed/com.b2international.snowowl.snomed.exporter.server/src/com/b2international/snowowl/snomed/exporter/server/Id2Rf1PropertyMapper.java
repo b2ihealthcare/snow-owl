@@ -15,11 +15,12 @@
  */
 package com.b2international.snowowl.snomed.exporter.server;
 
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.google.common.collect.Maps;
 
@@ -35,6 +36,7 @@ public class Id2Rf1PropertyMapper {
 	private Map<String, String> descriptionTypeMap;
 	private Map<String, String> relationshipTypeMap;
 	private Map<String, String> refinabilityTypeMap;
+	private Map<String, String> extendedDescriptionTypeMap;
 	
 	/**
 	 * Creates a new mapper instance with a given branch ID.
@@ -45,6 +47,7 @@ public class Id2Rf1PropertyMapper {
 		refinabilityTypeMap = initRefinabilityTypeCache();
 		relationshipTypeMap = initRelationshipTypeCache();
 		descriptionTypeMap = initDescriptionTypeCache();
+		extendedDescriptionTypeMap = initExtendedDescriptionTypeCache();
 		initialCapitalStatusMap = initInitialiCapitalStatusCache();
 		conceptStatusMap = initConceptStatusCache();
 		descriptionStatusMap = initDescriptionStatusCache();
@@ -76,16 +79,17 @@ public class Id2Rf1PropertyMapper {
 	}
 	
 	@Nullable
+	public String getExtendedDescriptionType(@Nullable final String conceptId) {
+		return extendedDescriptionTypeMap.get(conceptId);
+	}
+	
+	@Nullable
 	public String getRelationshipType(@Nullable final String storageKey) {
 		return relationshipTypeMap.get(storageKey);
 	}
 	
 	@Nullable
 	public String getRefinabilityType(@Nullable final String conceptId) {
-		//XXX IHTSDO international release does not contain relationship refinability reference set
-		if (StringUtils.isEmpty(conceptId)) {
-			return "0";
-		}
 		final String refinabilityType = refinabilityTypeMap.get(conceptId);
 		return null == refinabilityType ? "0" : refinabilityType;
 	}
@@ -93,6 +97,8 @@ public class Id2Rf1PropertyMapper {
 	/*creates and initialize the concept status cache*/
 	private Map<String, String> initDescriptionStatusCache() {
 		descriptionStatusMap = Maps.newHashMap();
+		descriptionStatusMap.put("0", "0");
+		descriptionStatusMap.put("1", "1");
 		descriptionStatusMap.put(Concepts.DUPLICATE, "2");
 		descriptionStatusMap.put(Concepts.OUTDATED, "3");
 		descriptionStatusMap.put(Concepts.ERRONEOUS, "5");
@@ -107,6 +113,8 @@ public class Id2Rf1PropertyMapper {
 	/*creates and initialize the concept status cache*/
 	private Map<String, String> initConceptStatusCache() {
 		conceptStatusMap = Maps.newHashMap();
+		conceptStatusMap.put("0", "0");
+		conceptStatusMap.put("1", "1");
 		conceptStatusMap.put(Concepts.DUPLICATE, "2");
 		conceptStatusMap.put(Concepts.OUTDATED, "3");
 		conceptStatusMap.put(Concepts.AMBIGUOUS, "4");
@@ -133,6 +141,22 @@ public class Id2Rf1PropertyMapper {
 		descriptionTypeMap.put(Concepts.FULLY_SPECIFIED_NAME, "3");
 		return descriptionTypeMap;
 	}
+	
+	private Map<String, String> initExtendedDescriptionTypeCache() {
+		extendedDescriptionTypeMap = newHashMap();
+		extendedDescriptionTypeMap.put(Concepts.SYNONYM, "2");
+		extendedDescriptionTypeMap.put(Concepts.FULLY_SPECIFIED_NAME, "3");
+		extendedDescriptionTypeMap.put(Concepts.FULL_NAME, "4");
+		extendedDescriptionTypeMap.put(Concepts.ABBREVIATION, "5");
+		extendedDescriptionTypeMap.put(Concepts.PRODUCT_TERM, "6");
+		extendedDescriptionTypeMap.put(Concepts.SHORT_NAME, "7");
+		extendedDescriptionTypeMap.put(Concepts.PREFERRED_PLURAL, "8");
+		extendedDescriptionTypeMap.put(Concepts.NOTE, "9");
+		extendedDescriptionTypeMap.put(Concepts.SEARCH_TERM, "10");
+		extendedDescriptionTypeMap.put(Concepts.ABBREVIATION_PLURAL, "11");
+		extendedDescriptionTypeMap.put(Concepts.PRODUCT_TERM_PLURAL, "12");
+		return extendedDescriptionTypeMap; 
+	}
 
 	/*creates and initialize the relationship type cache for RF1 mapping*/
 	private Map<String, String> initRelationshipTypeCache() {
@@ -141,11 +165,6 @@ public class Id2Rf1PropertyMapper {
 		relationshipTypeMap.put(Concepts.STATED_RELATIONSHIP, "0");
 		relationshipTypeMap.put(Concepts.INFERRED_RELATIONSHIP, "0");
 		relationshipTypeMap.put(Concepts.QUALIFYING_RELATIONSHIP, "1");
-		//XXX historical relationship is not supported yet
-		/* ID: 2
-		 * This is used to relate an inactive concept to another concept.
-		 * Example: The | SAME AS | relationship connects an inactive concept with the concept it duplicates.
-		 */
 		relationshipTypeMap.put(Concepts.ADDITIONAL_RELATIONSHIP, "3");
 		return relationshipTypeMap;
 	}

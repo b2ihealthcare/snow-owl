@@ -32,15 +32,15 @@ import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Set;
 
-import bak.pcj.map.LongKeyLongMap;
-
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
+import com.b2international.snowowl.snomed.exporter.server.sandbox.AbstractSnomedRelationshipExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExporter;
-import com.b2international.snowowl.snomed.exporter.server.sandbox.AbstractSnomedRelationshipExporter;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
+
+import bak.pcj.map.LongKeyLongMap;
 
 
 /**
@@ -51,9 +51,6 @@ import com.google.common.base.Supplier;
  */
 public class SnomedExportExecutor {
 	
-	/**
-	 * 
-	 */
 	private static final Charset UTF_8 = Charset.forName("UTF-8");
 
 	private static final String RELEASE_BASE_DIRECTORY = "SnomedCT_Release_";
