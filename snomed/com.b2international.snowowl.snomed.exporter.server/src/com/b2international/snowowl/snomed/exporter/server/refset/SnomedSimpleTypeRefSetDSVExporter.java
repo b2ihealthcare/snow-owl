@@ -15,6 +15,12 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.refset;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
+
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,6 +35,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -39,14 +46,13 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
@@ -57,15 +63,13 @@ import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.ISnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.IClientSnomedComponentService;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.exporter.model.ComponentIdSnomedDsvExportItem;
@@ -74,27 +78,24 @@ import com.b2international.snowowl.snomed.exporter.model.SnomedDsvExportItemType
 import com.b2international.snowowl.snomed.exporter.model.SnomedRefSetDSVExportModel;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 /**
- * This class implements the export process of the DSV export for simple type reference sets. 
- * Used by the SnomedSimpleTypeRefSetExportServerIndication class.
- * 
- * 
+ * This class implements the export process of the DSV export for simple type reference sets. Used by the SnomedSimpleTypeRefSetExportServerIndication
+ * class.
  */
 public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 	/**
-	 * This enumeration represents the different query types. It is used in the executeQuery method, to select the appropriate query string for the prepared statements.
-	 * 
-	 * 
+	 * This enumeration represents the different query types. It is used in the executeQuery method, to select the appropriate query string for the
+	 * prepared statements.
 	 */
 
 	private enum QueryType {
@@ -155,42 +156,8 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			}
 		}
 	}
-	
-	class AcceptabilityPredicate implements Predicate<ISnomedDescription> {
-		
-		private String languageRefsetId;
-		private boolean isPreferred;
 
-		public AcceptabilityPredicate(String languageRefsetId, boolean isPreferred) {
-			this.languageRefsetId = languageRefsetId;
-			this.isPreferred = isPreferred;
-		}
-		
-		@Override
-		public boolean apply(ISnomedDescription description) {
-			Acceptability acceptability = description.getAcceptabilityMap().get(languageRefsetId);
-			
-			if (isPreferred) {
-				return Acceptability.PREFERRED == acceptability;
-			} else {
-				return Acceptability.PREFERRED != acceptability;
-			}
-		}
-	}
-
-	private static final Logger LOG = LoggerFactory.getLogger(SnomedSimpleTypeRefSetDSVExporter.class);
-	
-	/**
-	 * Stores the synonym and it's descendants type IDs for the preferred term queries.
-	 */
-	private static final Set<String> SYNONYM_AND_DESCENDANTS = ApplicationContext.getInstance().getService(IClientSnomedComponentService.class)
-			.getSynonymAndDescendantIds();
-
-	/**
-	 * Directory of the temporary file on the server side.
-	 */
-	private static String TEMPORARY_WORKING_DIRECTORY;
-
+	private String workingDir;
 	private Connection connection;
 
 	private String refSetId;
@@ -211,11 +178,11 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	private Collection<String> headerList;
 	private Collection<String> metaHeaderList;
 
-	private SnomedDescriptions descriptions;
-	
-	private List<Long> languagePreferenceList = Lists.newArrayList(languageConfiguration, Long.valueOf(Concepts.REFSET_LANGUAGE_TYPE_UK), Long.valueOf(Concepts.REFSET_LANGUAGE_TYPE_US));
-
-	private Set<Long> memberConceptIds;
+	private IEventBus bus;
+	private Set<String> synonymAndDescendantIds;
+	private Map<String, ISnomedDescription> ptMap;
+	private Map<String, ISnomedDescription> fsnMap;
+	private Multimap<String, ISnomedDescription> otherDescriptions;
 
 	/**
 	 * Creates a new instance with the export parameters. Called by the SnomedSimpleTypeRefSetDSVExportServerIndication.
@@ -235,10 +202,26 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		this.branchBase = exportSetting.getBranchBase();
 		this.branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
 
-		SnomedSimpleTypeRefSetDSVExporter.TEMPORARY_WORKING_DIRECTORY = exportSetting.getExportPath();
+		workingDir = exportSetting.getExportPath();
 		groupedRelationships = Maps.newTreeMap();
 		exportItemMaxOccurences = Maps.newHashMap();
 		groupedOnlyItems = Lists.newArrayList();
+		
+		bus = ApplicationContext.getServiceForClass(IEventBus.class);
+		
+		synonymAndDescendantIds = SnomedRequests.prepareSearchConcept()
+			.all()
+			.filterByEscg("<<" + Concepts.SYNONYM)
+			.filterByActive(true)
+			.build(branchPath.getPath())
+			.execute(getBus())
+			.then(new Function<SnomedConcepts, Set<String>>() {
+				@Override
+				public Set<String> apply(SnomedConcepts input) {
+					return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).toSet();
+				}
+			}).getSync();
+		
 		// set up the database connection
 		connection = ApplicationContext.getInstance().getService(ICDORepositoryManager.class).get(SnomedPackage.eINSTANCE).getConnection();
 	}
@@ -256,30 +239,16 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		monitor.begin(100);
 		Async async = monitor.forkAsync(80);
 		OMMonitor remainderMonitor = null;
-		File file = new File(TEMPORARY_WORKING_DIRECTORY);
+		File file = new File(workingDir);
+		
 		try ( final DataOutputStream os = new DataOutputStream(new FileOutputStream(file)) ) {
 
 			file.createNewFile();
 			
-			fetchRefsetMemberConceptIds();
+			if (isDescriptionExportItemPresent()) {
+				fetchDescriptions();
+			}
 
-			SnomedDescriptions fsnDescriptions = null;
-			SnomedDescriptions ptDescriptions = null;
-			
-			//pre-fetch the FSNs
-			if (isFSNNeeded()) {
-				fsnDescriptions = fetchFsnDescriptions();
-			}
-			
-			//pre-fetch the preferred terms
-			if (isPtNeeded()) {
-				ptDescriptions = fetchPtDescriptions();
-			}
-			
-			if (descriptionsNeeded()) {
-				descriptions = fetchOtherDescriptions(refSetId);
-			}
-			
 			conceptCDOAndSnomedIds = getExportedMemberConceptCDOAndSnomedIds(refSetId);
 
 			createHeaderList();
@@ -333,11 +302,25 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							
 							//FSN
 							if (descriptionTypeId.equals(Concepts.FULLY_SPECIFIED_NAME)) {
-								final Collection<String> descriptions = findPreferredDescription(conceptCDOAndSnomedIds.get(conceptCDOId), fsnDescriptions);
-								stringBuffer.append(joinResultsWithDelimiters(descriptions, 1, delimiter, descriptionIdExpected));
+								ISnomedDescription description = fsnMap.get(conceptCDOAndSnomedIds.get(conceptCDOId));
+								Collection<String> descriptionResult = descriptionIdExpected ? newArrayList(description.getId(), description.getTerm()) : singleton(description.getTerm()); 
+								stringBuffer.append(joinResultsWithDelimiters(descriptionResult, 1, delimiter, descriptionIdExpected));
 							} else {
-								final Collection<String> descriptions = findDescriptions(conceptCDOAndSnomedIds.get(conceptCDOId), descriptionTypeId);
-								stringBuffer.append(joinResultsWithDelimiters(descriptions, exportItemMaxOccurences.get(descriptionTypeId), delimiter, descriptionIdExpected));
+								
+								Collection<ISnomedDescription> descriptions = otherDescriptions.get(conceptCDOAndSnomedIds.get(conceptCDOId));
+								final Collection<String> results = FluentIterable.from(descriptions).filter(new Predicate<ISnomedDescription>() {
+									@Override
+									public boolean apply(ISnomedDescription input) {
+										return input.getTypeId().equals(descriptionTypeId);
+									}
+								}).transformAndConcat(new Function<ISnomedDescription, List<String>>() {
+									@Override
+									public List<String> apply(ISnomedDescription input) {
+										return descriptionIdExpected ? newArrayList(input.getId(), input.getTerm()) : singletonList(input.getTerm());
+									}
+								}).toList();
+								
+								stringBuffer.append(joinResultsWithDelimiters(results, exportItemMaxOccurences.get(descriptionTypeId), delimiter, descriptionIdExpected));
 							}
 							
 							break;
@@ -377,8 +360,9 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							break;
 
 						case PREFERRED_TERM:
-							final Collection<String> ptWithId = findPreferredDescription(conceptCDOAndSnomedIds.get(conceptCDOId), ptDescriptions);
-							stringBuffer.append(joinResultsWithDelimiters(ptWithId, 1, delimiter, descriptionIdExpected));
+							ISnomedDescription pt = ptMap.get(conceptCDOAndSnomedIds.get(conceptCDOId));
+							Collection<String> descriptionResult = descriptionIdExpected ? newArrayList(pt.getId(), pt.getTerm()) : singleton(pt.getTerm()); 
+							stringBuffer.append(joinResultsWithDelimiters(descriptionResult, 1, delimiter, descriptionIdExpected));
 							break;
 
 						case CONCEPT_ID:
@@ -437,159 +421,98 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		return file;
 	}
 	
-	private Collection<String> findPreferredDescription(final String conceptId, final SnomedDescriptions descriptions) {
+	private void fetchDescriptions() {
 		
-		List<String> resultStrings = Lists.newArrayList();
-		
-		FluentIterable<ISnomedDescription> conceptFilter = FluentIterable.from(descriptions)
-				.filter(new Predicate<ISnomedDescription>() {
-
+		final boolean isPreferredTermPresent = FluentIterable.from(exportItems).firstMatch(new Predicate<AbstractSnomedDsvExportItem>() {
 			@Override
-			public boolean apply(ISnomedDescription description) {
-				return description.getConceptId().equals(conceptId);
+			public boolean apply(AbstractSnomedDsvExportItem input) {
+				return SnomedDsvExportItemType.PREFERRED_TERM == input.getType();
 			}
-		});
-				
-				
-		Optional<ISnomedDescription> optionalFSN = conceptFilter
-			.filter(new AcceptabilityPredicate(String.valueOf(languageConfiguration), true))
-			.first();
-				
-		if (optionalFSN.isPresent()) {
-			
-			resultStrings.add(optionalFSN.get().getId());
-			resultStrings.add(optionalFSN.get().getTerm());
-		} else {
-			optionalFSN = conceptFilter
-				.filter(new AcceptabilityPredicate(Concepts.REFSET_LANGUAGE_TYPE_UK, true))
-				.first();
-			if (optionalFSN.isPresent()) {
-				resultStrings.add(optionalFSN.get().getId());
-				resultStrings.add(optionalFSN.get().getTerm());
-			} else {
-				optionalFSN = conceptFilter
-					.filter(new AcceptabilityPredicate(Concepts.REFSET_LANGUAGE_TYPE_US, true))
-					.first();
-			} if (optionalFSN.isPresent()) {
-				resultStrings.add(optionalFSN.get().getId());
-				resultStrings.add(optionalFSN.get().getTerm());
-			} else {
-				LOG.warn("Neither the preference nor the UK descriptions were found for concept with id {}." + conceptId);
-			}
-		}
-		return resultStrings;
-	}
-
-	private void fetchRefsetMemberConceptIds() {
+		}).isPresent();
 		
-		IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
-		
-		//pre-fetch the members
-		SnomedReferenceSetMembers referenceSetMembers = SnomedRequests.prepareSearchMember()
-				.filterByRefSet(refSetId)
-				.filterByActive(true)
-				.setExpand("expandReferencedComponent()")
-				.all()
-				.build(branchPath.getPath()).executeSync(eventBus);
-		
-		memberConceptIds = FluentIterable.from(referenceSetMembers).transform(new Function<SnomedReferenceSetMember, Long>() {
-
+		boolean isFsnPresent = FluentIterable.from(exportItems).filter(ComponentIdSnomedDsvExportItem.class).firstMatch(new Predicate<ComponentIdSnomedDsvExportItem>() {
 			@Override
-			public Long apply(SnomedReferenceSetMember member) {
-				return Long.valueOf(member.getReferencedComponent().getId());
+			public boolean apply(ComponentIdSnomedDsvExportItem input) {
+				return SnomedDsvExportItemType.DESCRIPTION == input.getType() && String.valueOf(input.getComponentId()).equals(Concepts.FULLY_SPECIFIED_NAME);
+			}
+		}).isPresent();
+		
+		final Set<String> otherDescriptionTypeIds = FluentIterable.from(exportItems).filter(ComponentIdSnomedDsvExportItem.class).filter(new Predicate<ComponentIdSnomedDsvExportItem>() {
+			@Override
+			public boolean apply(ComponentIdSnomedDsvExportItem input) {
+				return SnomedDsvExportItemType.DESCRIPTION == input.getType() && !String.valueOf(input.getComponentId()).equals(Concepts.FULLY_SPECIFIED_NAME);
+			}
+		}).transform(new Function<ComponentIdSnomedDsvExportItem, String>() {
+			@Override
+			public String apply(ComponentIdSnomedDsvExportItem input) {
+				return String.valueOf(input.getComponentId());
 			}
 		}).toSet();
-	}
-	
-	private SnomedDescriptions fetchOtherDescriptions(String refSetId) {
 		
-		IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
-
-		SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
-			.filterByConceptId(memberConceptIds)
-			.filterByActive(true)
-			.filterByLanguageRefSetIds(Lists.newArrayList(languageConfiguration))
+		Set<String> expandOptions = newHashSet();
+		if (isPreferredTermPresent) {
+			expandOptions.add("pt()");
+		}
+		
+		if (isFsnPresent) {
+			expandOptions.add("fsn()");
+		}
+		
+		if (!otherDescriptionTypeIds.isEmpty()) {
+			expandOptions.add("descriptions()");
+		}
+		
+		SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
 			.all()
-			.build(branchPath.getPath()).executeSync(eventBus);
-		
-		return descriptions;
-	}
-
-	private SnomedDescriptions fetchFsnDescriptions() {
-		
-		IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
-
-		return SnomedRequests.prepareSearchDescription()
-			.filterByConceptId(memberConceptIds)
+			.filterByEscg("^" + refSetId)
 			.filterByActive(true)
-			.filterByType(Concepts.FULLY_SPECIFIED_NAME)
-			.all()
-			.filterByLanguageRefSetIds(languagePreferenceList)
-			.build(branchPath.getPath()).executeSync(eventBus);
-	}
-	
-	//fetch every active synonym that have preferred or UK language refset members
-	private SnomedDescriptions fetchPtDescriptions() {
+			.setExpand(Joiner.on(',').join(expandOptions))
+			.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
+			.build(branchPath.getPath())
+			.executeSync(getBus());
 		
-		IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
-
-		return SnomedRequests.prepareSearchDescription()
-			.filterByConceptId(memberConceptIds)
-			.filterByActive(true)
-			.filterByType("<<" + Concepts.SYNONYM)
-			.all()
-			.filterByLanguageRefSetIds(languagePreferenceList)
-			.build(branchPath.getPath()).executeSync(eventBus);
-	}
-
-	/*
-	 * Returns true if descriptions are part of the import
-	 */
-	private boolean descriptionsNeeded() {
+		ptMap = newHashMap();
+		fsnMap = newHashMap();
+		otherDescriptions = ArrayListMultimap.create();
 		
-		return FluentIterable.from(exportItems).filter(new Predicate<AbstractSnomedDsvExportItem>() {
-
-			@Override
-			public boolean apply(AbstractSnomedDsvExportItem exportItem) {
-				return exportItem.getType() == SnomedDsvExportItemType.DESCRIPTION;
-			}
-		}).first().isPresent();
-	}
-
-	/*
-	 * Returns true is FSN is needed as part of the import
-	 */
-	private boolean isFSNNeeded() {
-		
-		return FluentIterable.from(exportItems).filter(new Predicate<AbstractSnomedDsvExportItem>() {
-
-			@Override
-			public boolean apply(AbstractSnomedDsvExportItem exportItem) {
-				if (exportItem.getType() == SnomedDsvExportItemType.DESCRIPTION) {
-					final ComponentIdSnomedDsvExportItem descriptionItem = (ComponentIdSnomedDsvExportItem) exportItem;
-					final String descriptionTypeId = String.valueOf(descriptionItem.getComponentId());
-
-					return descriptionTypeId.equals(Concepts.FULLY_SPECIFIED_NAME);
-				} else {
-					return false;
-				}
-			}
-		}).first().isPresent();
-	}
-	
-	/*
-	 * Returns true is FSN is needed as part of the import
-	 */
-	private boolean isPtNeeded() {
-		
-		return FluentIterable.from(exportItems).filter(new Predicate<AbstractSnomedDsvExportItem>() {
-
-			@Override
-			public boolean apply(AbstractSnomedDsvExportItem exportItem) {
-				return exportItem.getType() == SnomedDsvExportItemType.PREFERRED_TERM;
+		for (final ISnomedConcept concept : concepts) {
+			
+			if (isPreferredTermPresent) {
+				ptMap.put(concept.getId(), concept.getPt());
 			}
 			
-		}).first().isPresent();
+			if (isFsnPresent) {
+				fsnMap.put(concept.getId(), concept.getFsn());
+			}
+			
+			if (!otherDescriptionTypeIds.isEmpty()) {
+				
+				List<ISnomedDescription> filteredDescriptions = FluentIterable.from(concept.getDescriptions())
+						.filter(new Predicate<ISnomedDescription>() {
+							@Override
+							public boolean apply(ISnomedDescription input) {
+								boolean condition = input.isActive() && otherDescriptionTypeIds.contains(input.getTypeId());
+								return isPreferredTermPresent ? !input.getId().equals(concept.getPt().getId()) && condition : condition;
+							}
+				}).toList();
+				
+				for (ISnomedDescription description : filteredDescriptions) {
+					otherDescriptions.put(concept.getId(), description);
+				}
+				
+			}
+			
+		}
+		
+	}
+
+	private boolean isDescriptionExportItemPresent() {
+		return FluentIterable.from(exportItems).firstMatch(new Predicate<AbstractSnomedDsvExportItem>() {
+			@Override
+			public boolean apply(AbstractSnomedDsvExportItem exportItem) {
+				return SnomedDsvExportItemType.DESCRIPTION == exportItem.getType() || SnomedDsvExportItemType.PREFERRED_TERM == exportItem.getType();
+			}
+		}).isPresent();
 	}
 
 	/**
@@ -610,12 +533,19 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				case DESCRIPTION:
 					final ComponentIdSnomedDsvExportItem descriptionItem = (ComponentIdSnomedDsvExportItem) exportItem;
 					final String descriptionTypeId = String.valueOf(descriptionItem.getComponentId());
-					final int descriptionOccurrences = getMaxOccurence(QueryType.DESCRIPTION, descriptionTypeId);
+					int descriptionOccurrences;
+
+					if (descriptionTypeId.equals(Concepts.FULLY_SPECIFIED_NAME)) {
+						descriptionOccurrences = 1; // FIXME? single FSN?
+					} else {
+						descriptionOccurrences = getFilteredOtherDescriptions(descriptionTypeId);
+					}
+					
 					final String descriptionDisplayName = descriptionItem.getDisplayName();
 					
 					exportItemMaxOccurences.put(descriptionTypeId, descriptionOccurrences);
-					// only one result
-				if (2 > descriptionOccurrences) {
+
+					if (descriptionOccurrences < 2) {
 						if (descriptionIdExpected) {
 							metaHeaderList.add(descriptionDisplayName);
 							metaHeaderList.add(descriptionDisplayName);
@@ -625,7 +555,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							metaHeaderList.add(descriptionDisplayName);
 							headerList.add("");
 						}
-						// zero or more than one result
 					} else {
 						for (int j = 1; j <= descriptionOccurrences; j++) {
 							if (descriptionIdExpected) {
@@ -637,7 +566,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 								metaHeaderList.add(descriptionDisplayName + " (" + j + ")");
 								headerList.add("");
 							}
-
 						}
 					}
 					break;
@@ -653,8 +581,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						final int relationshipOccurrences = getMaxOccurence(QueryType.RELATIONSHIP, relationshipTypeId);
 						exportItemMaxOccurences.put(relationshipTypeId, relationshipOccurrences);
 						
-						// only one result
-						if (2 > relationshipOccurrences) {
+						if (relationshipOccurrences < 2) {
 							if (relationshipTargetIdExpected) {
 								metaHeaderList.add(relationshipDisplayName);
 								metaHeaderList.add(relationshipDisplayName);
@@ -664,7 +591,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 								metaHeaderList.add(relationshipDisplayName);
 								headerList.add("");
 							}
-							// zero or more than one result
 						} else {
 							for (int j = 1; j <= relationshipOccurrences; j++) {
 								if (relationshipTargetIdExpected) {
@@ -757,6 +683,24 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		// remove the only grouped relationships from the export items, because
 		// they will be exported particularly by groups.
 		exportItems.removeAll(groupedOnlyItems);
+	}
+
+	private int getFilteredOtherDescriptions(final String descriptionTypeId) {
+		int max = 0;
+		for (Entry<String, Collection<ISnomedDescription>> entry : otherDescriptions.asMap().entrySet()) {
+			
+			int numberOfTypes = FluentIterable.from(entry.getValue()).filter(new Predicate<ISnomedDescription>() {
+				@Override
+				public boolean apply(ISnomedDescription input) {
+					return input.getTypeId().equals(descriptionTypeId);
+				}
+			}).size();
+			
+			if (numberOfTypes > max) {
+				max = numberOfTypes;
+			}
+		}
+		return max;
 	}
 
 	private ISnomedConceptNameProvider getNameProvider() {
@@ -858,15 +802,13 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		int max = -1;
 		int size;
 		for (Long conceptCDOId : conceptCDOAndSnomedIds.keySet()) {
+			
 			if (QueryType.RELATIONSHIP.equals(queryType)) {
 				size = executeRelationshipOrDatatypeQuery(queryType, conceptCDOId, typeString, true, 0).size();
-			} else if (QueryType.DESCRIPTION.equals(queryType)) {
-				//size = findDescriptions(conceptCDOAndSnomedIds.get(conceptCDOId), typeString).size();
-					size = executeDescriptionQuery(queryType, conceptCDOId, typeString).size();
-			}
-			else {
+			} else {
 				size = executeRelationshipOrDatatypeQuery(queryType, conceptCDOId, typeString, false, null).size();
 			}
+			
 			if (size > max) {
 				max = size;
 			}
@@ -962,129 +904,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		return resultCollection.values();
 	}
 	
-	/*
-	 * Find the descriptions for the given concept id and description type id but
-	 * without the FNSs and PTs.
-	 */
-	private Collection<String> findDescriptions(final String conceptId, final String descriptionTypeId) {
-		
-		List<String> resultStrings = Lists.newArrayList();
-		
-		Set<ISnomedDescription> filteredDescriptions = FluentIterable.from(descriptions)
-				.filter(new Predicate<ISnomedDescription>() {
-
-			@Override
-			public boolean apply(ISnomedDescription description) {
-				return description.getConceptId().equals(conceptId);
-			}
-		})
-		
-		//filter out the FSNs
-		.filter(new Predicate<ISnomedDescription>() {
-
-			@Override
-			public boolean apply(ISnomedDescription description) {
-				return description.getTypeId().equals(descriptionTypeId);
-			}
-		})
-		
-		//filter out the preferred synonyms
-		.filter(new AcceptabilityPredicate(Long.toString(languageConfiguration), false))
-		.filter(new AcceptabilityPredicate(Concepts.REFSET_LANGUAGE_TYPE_UK, false))
-		.filter(new AcceptabilityPredicate(Concepts.REFSET_LANGUAGE_TYPE_US, false)).toSet();
-		
-		for (ISnomedDescription snomedDescription : filteredDescriptions) {
-			resultStrings.add(snomedDescription.getId());
-			resultStrings.add(snomedDescription.getTerm());
-		}
-		return resultStrings;
-		
-	}
-	
-	/**
-	 * 
-	 * @param queryType
-	 *            - must be DESCRIPTION
-	 * @param conceptCDOId
-	 *            - CDO ID of the exported concept.
-	 * @param typeString
-	 *            - the Concept ID of description type.
-	 * @return
-	 * @throws SQLException
-	 */
-	private Collection<String> executeDescriptionQuery(QueryType queryType, long conceptCDOId, String typeString) throws SQLException {
-
-		Preconditions.checkArgument(QueryType.DESCRIPTION.equals(queryType), "Query type is not DESCRIPTION but " + queryType.toString());
-
-		Map<Long, String> resultCollection = new HashMap<Long, String>();
-
-		PreparedStatement statement = connection.prepareStatement(queryType.getQueryString(false));
-		statement.setInt(1, branchId);
-		statement.setInt(2, branchId);
-		statement.setLong(3, branchBase);
-		statement.setLong(4, branchBase);
-
-		statement.setLong(5, conceptCDOId);
-		statement.setString(6, typeString);
-
-		statement.setInt(7, branchId);
-		statement.setInt(8, branchId);
-		statement.setLong(9, branchBase);
-		statement.setLong(10, branchBase);
-
-		statement.setLong(11, languageConfiguration);
-
-		statement.setInt(12, branchId);
-		statement.setInt(13, branchId);
-		statement.setLong(14, branchBase);
-		statement.setLong(15, branchBase);
-		ResultSet resultSet = statement.executeQuery();
-
-		PreparedStatement removedCheckerStatement = connection.prepareStatement(queryType.getRemovedCheckerQueryString());
-		removedCheckerStatement.setInt(2, branchId);
-
-		PreparedStatement inactivatedCheckerStatement = connection.prepareStatement(queryType.getInactivatedCheckerQueryString());
-
-		int i = 1;
-		while (resultSet.absolute(i)) {
-			long CDOId = resultSet.getLong(1);
-			String id = null;
-			long resultBranch = resultSet.getLong(3);
-			if (descriptionIdExpected) {
-				id = resultSet.getString(4);
-			}
-			// if the result comes from the main branch, it is possible that is has been removed on the actual branch.
-			if (0 == resultBranch) {
-				removedCheckerStatement.setLong(1, CDOId);
-				ResultSet removedCheckerResultSet = removedCheckerStatement.executeQuery();
-				// if the result is on the branch with negative version, than it has been removed.
-				if (removedCheckerResultSet.absolute(1) && removedCheckerResultSet.getLong(1) < 0) {
-					i++;
-					continue;
-				}
-			}
-			// remove the deleted and already published descriptions
-			inactivatedCheckerStatement.setLong(1, CDOId);
-			inactivatedCheckerStatement.setInt(2, branchId);
-			ResultSet inactivatedCheckerResultSet = inactivatedCheckerStatement.executeQuery();
-			// if the latest version on the branch is inactive, then it has been removed.
-			if (inactivatedCheckerResultSet.absolute(1) && !inactivatedCheckerResultSet.getBoolean(1)) {
-				i++;
-				continue;
-			}
-			if (descriptionIdExpected) {
-				// description with id
-				resultCollection.put(CDOId, id + delimiter + resultSet.getString(2));
-			} else {
-				// description without id
-				resultCollection.put(CDOId, resultSet.getString(2));
-			}
-			i++;
-		}
-		return resultCollection.values();
-	}
-	
-
 	/**
 	 * Get the preferred term of a concept.
 	 * 
@@ -1098,7 +917,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 		int i = 1;
 
-		final PreparedStatement preferredTermStatement = connection.prepareStatement(SnomedRefSetExporterQueries.buildPreferredTermQuery(SYNONYM_AND_DESCENDANTS.size()));
+		final PreparedStatement preferredTermStatement = connection.prepareStatement(SnomedRefSetExporterQueries.buildPreferredTermQuery(synonymAndDescendantIds.size()));
 		preferredTermStatement.setString(i++, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
 
 		preferredTermStatement.setInt(i++, branchId);
@@ -1118,7 +937,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		final CDOBranch branch = cdoConnection.getSession().getBranchManager().getBranch(branchId);
 		final CDOBranchPoint branchPoint = branch.getHead();
 		
-		for (final String typeId : SYNONYM_AND_DESCENDANTS) {
+		for (final String typeId : synonymAndDescendantIds) {
 			
 			final int j = i++;
 			
@@ -1290,5 +1109,9 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		ResultSet resultSet = statement.executeQuery();
 		resultSet.absolute(1);
 		return getPreferredTerm(resultSet.getLong(1), false);
+	}
+	
+	private IEventBus getBus() {
+		return bus;
 	}
 }
