@@ -225,6 +225,7 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 				props.put(SnomedRf2Headers.FIELD_CORRELATION_ID, entry.getCorrelationId());
 			case SIMPLE_MAP:
 				props.put(SnomedRf2Headers.FIELD_MAP_TARGET, entry.getMapTargetComponentId());
+				props.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, entry.getMapTargetDescription());
 				props.put(SnomedMappings.memberMapTargetComponentType().fieldName(), entry.getMapTargetComponentTypeAsShort());
 				break;
 			case CONCRETE_DATA_TYPE:
