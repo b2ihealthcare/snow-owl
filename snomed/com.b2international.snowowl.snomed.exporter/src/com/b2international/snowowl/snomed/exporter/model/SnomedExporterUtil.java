@@ -16,13 +16,12 @@
 package com.b2international.snowowl.snomed.exporter.model;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Set;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.MapSetType;
-import com.b2international.snowowl.snomed.datastore.SnomedClientRefSetBrowser;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
@@ -42,36 +41,36 @@ public final class SnomedExporterUtil {
 	 * @param refSetIds the reference set identifier concept ID.
 	 * @return a collection of map set setting. Can be empty if no map set should be created while publishing SNOMED&nbsp;CT into RF1.
 	 */
-	public static final Set<SnomedMapSetSetting> createSettings(final Set<String> refSetIds) {
+	public static final Set<SnomedMapSetSetting> createSettings(final Collection<SnomedRefSetIndexEntry> refSets) {
 		final Set<SnomedMapSetSetting> settings = Sets.newHashSet();
-		for (final String refSetId : refSetIds) {
-			if (shouldCreateMapSetSetting(refSetId))
-				settings.add(createSetting(refSetId));
+		for (final SnomedRefSetIndexEntry refset : refSets) {
+			if (shouldCreateMapSetSetting(refset))
+				settings.add(createSetting(refset));
 		}
 		return settings;
 	}
 
 	/*returns true if a map set setting should be created for the RF1 publication process*/
-	private static boolean shouldCreateMapSetSetting(final String refSetId) {
-		return isConceptType(refSetId) && !(!isMapping(getType(refSetId)) || isStructuralRefSet(refSetId));
+	private static boolean shouldCreateMapSetSetting(final SnomedRefSetIndexEntry entry) {
+		return isConceptType(entry) && isMapping(getType(entry)) && !isStructuralRF1RefSet(entry.getId());
 	}
 
 	/*returns true if the passed in reference set identifier concept ID is either CTV3 simple map ID or SNOMED RT simple map reference set ID*/
-	private static boolean isStructuralRefSet(final String refSetId) {
+	private static boolean isStructuralRF1RefSet(final String refSetId) {
 		return Concepts.CTV3_SIMPLE_MAP_TYPE_REFERENCE_SET_ID.equals(refSetId) 
 				|| Concepts.SNOMED_RT_SIMPLE_MAP_TYPE_REFERENCE_SET_ID.equals(refSetId);
 	}
 	
 	/*creates and returns with a new map setting instance for the RF1 publication.*/
-	public static SnomedMapSetSetting createSetting(final String refSetId) {
-		if (Concepts.ICD_O_REFERENCE_SET_ID.equals(refSetId))
-			return (SnomedMapSetSetting) SnomedMapSetSetting.ICD_O_SETTING;
-		else if (Concepts.ICD_9_CM_REFERENCE_SET_ID.equals(refSetId))
-			return (SnomedMapSetSetting) SnomedMapSetSetting.ICD_9_CM_SETTING;
-		else if (Concepts.ICD_10_REFERENCE_SET_ID.equals(refSetId))
-			return (SnomedMapSetSetting) SnomedMapSetSetting.ICD_10_SETTING;
+	public static SnomedMapSetSetting createSetting(final SnomedRefSetIndexEntry entry) {
+		if (Concepts.ICD_O_REFERENCE_SET_ID.equals(entry.getId()))
+			return SnomedMapSetSetting.ICD_O_SETTING;
+		else if (Concepts.ICD_9_CM_REFERENCE_SET_ID.equals(entry.getId()))
+			return SnomedMapSetSetting.ICD_9_CM_SETTING;
+		else if (Concepts.ICD_10_REFERENCE_SET_ID.equals(entry.getId()))
+			return SnomedMapSetSetting.ICD_10_SETTING;
 		else 
-			return new SnomedMapSetSetting(refSetId, "", "", "", "", MapSetType.UNSPECIFIED, isComplex(getType(refSetId)));
+			return new SnomedMapSetSetting(entry.getId(), "", "", "", "", MapSetType.UNSPECIFIED, isComplex(getType(entry)));
 	}
 
 	/*returns true if the reference set type is either simple map or complex map type*/
@@ -85,25 +84,15 @@ public final class SnomedExporterUtil {
 	}
 	
 	/*returns with the type of the reference set identified by the reference set identifier concept ID*/
-	private static SnomedRefSetType getType(final String refSetId) {
-		return getRefSet(refSetId).getType();
-	}
-
-	/*returns with the reference set lightweight representation identified by the reference set identifier concept ID*/
-	private static SnomedRefSetIndexEntry getRefSet(final String refSetId) {
-		return getBrowser().getRefSet(refSetId);
+	private static SnomedRefSetType getType(final SnomedRefSetIndexEntry entry) {
+		return entry.getType();
 	}
 	
 	/*returns true if the referenced component is a SNOMED CT concept*/
-	private static boolean isConceptType(final String refSetId) {
-		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER == getBrowser().getRefSet(refSetId).getReferencedComponentType();
+	private static boolean isConceptType(final SnomedRefSetIndexEntry entry) {
+		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER == entry.getReferencedComponentType();
 	}
 	
-	/*returns with the SNOMED CT reference set browser service*/
-	private static SnomedClientRefSetBrowser getBrowser() {
-		return ApplicationContext.getInstance().getService(SnomedClientRefSetBrowser.class);
-	}
-
 	private SnomedExporterUtil() { }
 	
 }

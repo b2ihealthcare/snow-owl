@@ -15,35 +15,44 @@
  */
 package com.b2international.snowowl.snomed.exporter.model;
 
-import static com.b2international.commons.collections.Collections3.forEach;
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.core.api.ComponentUtils.getIds;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Sets.newHashSet;
+import static java.util.Collections.singleton;
 
 import java.io.File;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import org.eclipse.net4j.util.StringUtil;
 
-import com.b2international.commons.StringUtils;
-import com.b2international.commons.collections.Procedure;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetBrowser;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Function;
+import com.google.common.base.Strings;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
@@ -96,11 +105,24 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		final SnomedRf2ExportModel model = new SnomedRf2ExportModel();
 		model.releaseType = contentSubType;
 		model.clientBranch = branchPath;
-		forEach(getIds(getServiceForClass(SnomedRefSetBrowser.class).getAllReferenceSets(branchPath)), new Procedure<String>() {
-			protected void doApply(final String refSetId) {
-				model.updateRefSet(refSetId);
-			}
-		});
+		
+		Set<String> refsetIds = SnomedRequests.prepareSearchRefSet()
+			.all()
+			.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
+			.build(model.clientBranch.getPath())
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.then(new Function<SnomedReferenceSets, Set<String>>() {
+				@Override
+				public Set<String> apply(SnomedReferenceSets input) {
+					return FluentIterable.from(input).transform(IComponent.ID_FUNCTION).toSet();
+				}
+			})
+			.getSync();
+			
+		for (String id : refsetIds) {
+			model.updateRefSet(id);
+		}
+		
 		return model;
 	}
 	
@@ -137,24 +159,83 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	 * @param refSetId
 	 */
 	public SnomedRf2ExportModel(@Nullable final String refSetId) {
-		super();
-		refSetIds = StringUtils.isEmpty(refSetId) ? Sets.<String> newHashSet() : Sets.newHashSet(refSetId);
-		singleRefSetExport = !refSetIds.isEmpty();
-		coreComponentsToExport = !singleRefSetExport;
-		releaseType = ContentSubType.SNAPSHOT;
 		
-		if (refSetId !=null) {
-			settings = Sets.newHashSet(SnomedExporterUtil.createSetting(refSetId));
-		} else {
-			settings = Sets.newHashSet();
-		}
+		super();
+		
+		clientBranch = BranchPathUtils.createActivePath(SnomedPackage.eINSTANCE);
+		releaseType = ContentSubType.SNAPSHOT;
 		refSetsToExport = true;
 		modulesToExport = Sets.newHashSet();
-		final ICDOConnection connection = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).get(SnomedPackage.eINSTANCE);
-		clientBranch = BranchPathUtils.createActivePath(connection.getUuid());
 		userId = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId();
 		unsetEffectiveTimeLabel = "";
+		
+		SnomedRefSetIndexEntry indexEntry = getRefsetIndexEntry(refSetId);
+		
+		if (indexEntry != null) {
+
+			refSetIds = newHashSet(indexEntry.getId());
+			singleRefSetExport = true;
+			coreComponentsToExport = false;
+			settings = SnomedExporterUtil.createSettings(singleton(indexEntry));
+			
+		} else {
+			
+			refSetIds = newHashSet();
+			singleRefSetExport = false;
+			coreComponentsToExport = true;
+			settings = Sets.newHashSet();
+					
+		}
+		
 		setExportPath(initExportPath());
+	}
+
+	private SnomedRefSetIndexEntry getRefsetIndexEntry(final String refSetId) {
+		
+		if (Strings.isNullOrEmpty(refSetId)) {
+			return null;
+		}
+		
+		return SnomedRequests.prepareSearchRefSet()
+			.setLimit(1)
+			.setComponentIds(singleton(refSetId))
+			.setLocales(getLocales())
+			.build(clientBranch.getPath())
+			.execute(getBus())
+			.then(new Function<SnomedReferenceSets, SnomedRefSetIndexEntry>() {
+				@Override
+				public SnomedRefSetIndexEntry apply(SnomedReferenceSets input) {
+					final SnomedReferenceSet refset = Iterables.getOnlyElement(input, null);
+					if (refset != null) {
+						return SnomedRequests.prepareSearchConcept()
+							.setLimit(1)
+							.setComponentIds(singleton(refset.getId()))
+							.setExpand("pt()")
+							.setLocales(getLocales())
+							.build(clientBranch.getPath())
+							.execute(getBus())
+							.then(new Function<SnomedConcepts, SnomedRefSetIndexEntry>() {
+								@Override
+								public SnomedRefSetIndexEntry apply(SnomedConcepts input) {
+									ISnomedConcept concept = Iterables.getOnlyElement(input, null);
+									if (concept != null) {
+										return SnomedRefSetIndexEntry.builder(refset).label(concept.getPt().getTerm()).build();
+									}
+									return null;
+								}
+							}).getSync();
+					}
+					return null;
+				}
+			}).getSync();
+	}
+
+	private List<ExtendedLocale> getLocales() {
+		return ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference();
+	}
+
+	private IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 
 	public Set<String> getRefSetIds() {
