@@ -45,6 +45,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableListMultimap;
@@ -225,7 +226,9 @@ final class SnomedReferenceSetMemberConverter extends BaseSnomedComponentConvert
 				props.put(SnomedRf2Headers.FIELD_CORRELATION_ID, entry.getCorrelationId());
 			case SIMPLE_MAP:
 				props.put(SnomedRf2Headers.FIELD_MAP_TARGET, entry.getMapTargetComponentId());
-				props.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, entry.getMapTargetDescription());
+				if (!Strings.isNullOrEmpty(entry.getMapTargetDescription())) {
+					props.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, entry.getMapTargetDescription());
+				}
 				props.put(SnomedMappings.memberMapTargetComponentType().fieldName(), entry.getMapTargetComponentTypeAsShort());
 				break;
 			case CONCRETE_DATA_TYPE:
