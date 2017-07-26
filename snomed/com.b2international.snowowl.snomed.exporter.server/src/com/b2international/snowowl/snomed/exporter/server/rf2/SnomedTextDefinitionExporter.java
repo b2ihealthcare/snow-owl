@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.rf2;
 
-import java.io.IOException;
-
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -44,8 +42,4 @@ public class SnomedTextDefinitionExporter extends SnomedRf2DescriptionExporter {
 			.filter(SnomedDescriptionIndexEntry.Expressions.type(Concepts.TEXT_DEFINITION))
 			.filter(SnomedDescriptionIndexEntry.Expressions.languageCode(getLanguageCode()));
 	}
-	
-	@Override
-	protected void executeAdditionalExporters() throws IOException {/* Overriding with empty implementation, to avoid language members to be written twice to lang refset file*/}
-
 }

@@ -42,6 +42,7 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.FileUtils;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionIndex;
@@ -526,6 +527,13 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			langCodeTodescriptionIdExportedMap.put(languageCode, descriptionExporter.getExportedDescriptionIdSet());
 		}
 		
+		for (String languageCode : languageCodesInUse) {
+			logActivity(String.format("Exporting %sSNOMED CT text definitions and language reference set members with language code '%s' into RF2 format",
+					exportContext.isUnpublishedExport() ? "unpublished " : "", languageCode));
+			SnomedTextDefinitionExporter textDefinitionExporter = new SnomedTextDefinitionExporter(exportContext, revisionSearcher, languageCode);
+			textDefinitionExporter.execute();
+			langCodeTodescriptionIdExportedMap.merge(languageCode, textDefinitionExporter.getExportedDescriptionIdSet(), (oldIdsSet, newIdsSet) -> LongSets.newLongSet(LongSets.concat(oldIdsSet.iterator(), newIdsSet.iterator())));
+		}
 		
 		// export language members with non changed descriptions
 		for (String languageCode : languageCodesInUse) {
@@ -541,11 +549,6 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			monitor.worked(2);
 		}
 
-		for (String languageCode : languageCodesInUse) {
-			logActivity(String.format("Exporting %sSNOMED CT text definitions and language reference set members with language code '%s' into RF2 format",
-					exportContext.isUnpublishedExport() ? "unpublished " : "", languageCode));
-			new SnomedTextDefinitionExporter(exportContext, revisionSearcher, languageCode).execute();
-		}
 		
 		if (monitor.isCanceled()) {
 			return;

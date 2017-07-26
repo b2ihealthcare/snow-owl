@@ -125,10 +125,6 @@ public class SnomedRf2DescriptionExporter extends AbstractSnomedRf2CoreExporter<
 	@Override
 	public void execute() throws IOException {
 		super.execute();
-		executeAdditionalExporters();
-	}
-
-	protected void executeAdditionalExporters() throws IOException {
 		new SnomedExportExecutor(new SnomedLanguageRefSetExporter(getExportContext(), getRevisionSearcher(), getLanguageCode(), descriptionIds)).execute();
 	}
 }
