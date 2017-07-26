@@ -29,5 +29,15 @@
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </terminologyComponent>
    </extension>
-
+   <extension
+         point="com.b2international.snowowl.core.representation">
+      <representation
+            class="com.b2international.snowowl.snomed.mrcm.AttributeConstraint"
+            terminologyComponentId="com.b2international.snowowl.terminology.snomed.predicate">
+      </representation>
+      <representation
+            class="com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument"
+            terminologyComponentId="com.b2international.snowowl.terminology.snomed.predicate">
+      </representation>
+   </extension>
 </plugin>
