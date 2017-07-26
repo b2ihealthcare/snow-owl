@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
+
+import static com.google.common.collect.Sets.newHashSet;
+
+import java.util.Set;
+
+import org.eclipse.emf.cdo.CDOState;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
@@ -39,19 +45,35 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase {
 	@Override
 	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) {
 
+		Set<AttributeConstraint> newConstraints = newHashSet();
+		Set<AttributeConstraint> changedConstraints = newHashSet();
+		
 		for (ConceptModelComponent component : Iterables.concat(
 				commitChangeSet.getNewComponents(ConceptModelPredicate.class),
-				commitChangeSet.getNewComponents(ConceptSetDefinition.class)
-				)) {
+				commitChangeSet.getNewComponents(ConceptSetDefinition.class))) {
+
 			final AttributeConstraint constraint = ConceptModelUtils.getContainerConstraint(component);
-			indexNewRevision(constraint.cdoID(), SnomedConstraintDocument.builder(constraint).build());
+			if (constraint.cdoState().equals(CDOState.NEW)) {
+				newConstraints.add(constraint);
+			} else {
+				changedConstraints.add(constraint);	
+			}
 		}
 
 		for (ConceptModelComponent component : Iterables.concat(
 				commitChangeSet.getDirtyComponents(ConceptModelPredicate.class),
 				commitChangeSet.getDirtyComponents(ConceptSetDefinition.class))) {
+			
 			final AttributeConstraint constraint = ConceptModelUtils.getContainerConstraint(component);
-			indexChangedRevision(constraint.cdoID(), SnomedConstraintDocument.builder(constraint).build());
+			changedConstraints.add(constraint);
+		}
+		
+		for (AttributeConstraint newConstraint : newConstraints) {
+			indexNewRevision(newConstraint.cdoID(), SnomedConstraintDocument.builder(newConstraint).build());
+		}
+		
+		for (AttributeConstraint changedConstraint : changedConstraints) {
+			indexChangedRevision(changedConstraint.cdoID(), SnomedConstraintDocument.builder(changedConstraint).build());
 		}
 
 		deleteRevisions(SnomedConstraintDocument.class, commitChangeSet.getDetachedComponents(MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT));
