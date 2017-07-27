@@ -45,7 +45,7 @@ public final class ClassifyRequestBuilder extends BaseRequestBuilder<ClassifyReq
 				.setId(settings.getClassificationId())
 				.setUser(settings.getUserId())
 				.setRequest(build())
-				.setDescription(String.format("Classifying the ontology on %s", settings.getSnomedBranchPath().getPath()))
+				.setDescription(String.format("Classifying the ontology on %s", settings.getBranchPath()))
 				.buildAsync();
 	}
 

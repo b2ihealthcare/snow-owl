@@ -25,7 +25,7 @@ import java.util.UUID;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.snomed.reasoner.model.ConceptDefinition;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 /**
  * Carries all parameters required for starting a classification for a branch.
@@ -36,18 +36,17 @@ public class ClassificationSettings implements Serializable {
 
 	private final String classificationId = UUID.randomUUID().toString();
 	private final String userId;
-	private final IBranchPath snomedBranchPath;
+	private final String branchPath;
 	private final List<ConceptDefinition> additionalDefinitions = newArrayList();
 	
 	private String parentContextDescription = DatastoreLockContextDescriptions.CLASSIFY_WITH_REVIEW;
 	private String reasonerId;
 	
-	public ClassificationSettings(String userId, IBranchPath snomedBranchPath) {
+	public ClassificationSettings(String userId, IBranchPath branchPath) {
 		checkNotNull(userId, "User identifier may not be null.");
-		checkNotNull(snomedBranchPath, "SNOMED CT branch path may not be null.");
-		
+		checkNotNull(branchPath, "SNOMED CT branch path may not be null.");
 		this.userId = userId;
-		this.snomedBranchPath = snomedBranchPath;
+		this.branchPath = branchPath.getPath();
 	}
 	
 	public ClassificationSettings withAdditionalDefinitions(List<ConceptDefinition> additionalDefinitions) {
@@ -86,8 +85,8 @@ public class ClassificationSettings implements Serializable {
 		return userId;
 	}
 
-	public IBranchPath getSnomedBranchPath() {
-		return snomedBranchPath;
+	public String getBranchPath() {
+		return branchPath;
 	}
 	
 	public String getReasonerId() {
@@ -96,10 +95,10 @@ public class ClassificationSettings implements Serializable {
 	
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add("classificationId", classificationId)
 				.add("userId", userId)
-				.add("snomedBranchPath", snomedBranchPath)
+				.add("branchPath", branchPath)
 				.add("additionalDefinitions", additionalDefinitions)
 				.add("parentContextDescription", parentContextDescription)
 				.add("reasonerId", reasonerId)

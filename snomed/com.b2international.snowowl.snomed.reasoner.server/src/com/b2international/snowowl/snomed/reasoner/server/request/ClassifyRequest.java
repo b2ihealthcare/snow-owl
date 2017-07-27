@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ApiError;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSettings;
 import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerService;
@@ -56,7 +57,7 @@ public class ClassifyRequest implements Request<ServiceProvider, ApiError> {
 	
 	@JsonProperty
 	public String getBranch() {
-		return settings.getSnomedBranchPath().getPath();
+		return settings.getBranchPath();
 	}
 
 	@Override
@@ -75,7 +76,7 @@ public class ClassifyRequest implements Request<ServiceProvider, ApiError> {
 
 		try {
 
-			IBranchPath snomedBranchPath = settings.getSnomedBranchPath();
+			IBranchPath snomedBranchPath = BranchPathUtils.createPath(settings.getBranchPath());
 			List<ConceptDefinition> additionalDefinitions = settings.getAdditionalDefinitions();
 			String parentContextDescription = settings.getParentContextDescription();
 
