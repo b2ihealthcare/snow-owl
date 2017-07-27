@@ -81,7 +81,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	private static final long serialVersionUID = 5198766293865046258L;
 
-	public static class Fields {
+	public static class Fields extends SnomedDocument.Fields {
 		// known RF2 fields
 		public static final String REFERENCE_SET_ID = "referenceSetId"; // XXX different than the RF2 header field name
 		public static final String REFERENCED_COMPONENT_ID = SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID;
