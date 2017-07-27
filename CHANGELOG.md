@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## 5.10.8
+## 5.10.9
 
 ### Bugs
 - Fixed issue with MRCM constraint indexing (782a6ad9bc63b003bb94e5fb23b18f548d901d3a)
