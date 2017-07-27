@@ -25,6 +25,7 @@ import java.util.UUID;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.snomed.reasoner.model.ConceptDefinition;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
 
 /**
@@ -73,6 +74,7 @@ public class ClassificationSettings implements Serializable {
 		return classificationId;
 	}
 	
+	@JsonIgnore
 	public List<ConceptDefinition> getAdditionalDefinitions() {
 		return additionalDefinitions;
 	}
