@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 ## 5.10.8
 
+### Bugs
+- Fixed issue with MRCM constraint indexing (782a6ad9bc63b003bb94e5fb23b18f548d901d3a)
+- Fix missing terminology component extension point for MRCM rules (a00a7f0f492d2eacb9d63b3d0f6dbe6517072f71)
+- Fix issues with language reference set export (c423bb741a5e3b78d0b7f04ee7eff294ce7c21fa, c877c9cda07200a1fa831be2df4e90974962af08)
+
+## 5.10.8
+
 ### Added
 - Support inactivation indicator and association target updates on active SNOMED CT concepts
 - Support postRun application bootstrap phase (ea64e8b9fe8b172fa95fd409ca61a3fdc207c8dd)
