@@ -19,8 +19,6 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Set;
 
-import org.eclipse.emf.cdo.CDOState;
-
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
@@ -53,7 +51,7 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase {
 				commitChangeSet.getNewComponents(ConceptSetDefinition.class))) {
 
 			final AttributeConstraint constraint = ConceptModelUtils.getContainerConstraint(component);
-			if (constraint.cdoState().equals(CDOState.NEW)) {
+			if (commitChangeSet.getNewComponents().contains(constraint)) {
 				newConstraints.add(constraint);
 			} else {
 				changedConstraints.add(constraint);	
