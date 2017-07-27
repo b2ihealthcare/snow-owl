@@ -16,18 +16,14 @@
 package com.b2international.snowowl.snomed.datastore.internal.rf2;
 
 /**
- * 
- *
+ * @since 1.0
  */
-public class SimpleSnomedDsvExportItem extends AbstractSnomedDsvExportItem {
+public final class SimpleSnomedDsvExportItem extends AbstractSnomedDsvExportItem {
 
 	public SimpleSnomedDsvExportItem(final SnomedDsvExportItemType type) {
 		super(type);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.snomed.exporter.model.AbstractSnomedDsvExportItem#getDisplayName()
-	 */
 	@Override
 	public String getDisplayName() {
 		return getType().getDisplayName();

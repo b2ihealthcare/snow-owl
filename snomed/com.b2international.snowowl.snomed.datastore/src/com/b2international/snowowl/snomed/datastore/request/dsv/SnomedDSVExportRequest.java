@@ -47,9 +47,6 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 	private String refSetId;
 	
 	@JsonProperty
-	private int conceptSize;
-	
-	@JsonProperty
 	private boolean descriptionIdExpected;
 	
 	@JsonProperty
@@ -64,6 +61,8 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 	@JsonProperty
 	private List<ExtendedLocale> locales;
 
+	SnomedDSVExportRequest() {}
+	
 	@Override
 	public UUID execute(BranchContext context) {
 		File file = null;
@@ -98,7 +97,6 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 		model.setUserId(ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId());
 		model.setBranchBase(branch.baseTimestamp());
 		model.setBranchPath(context.branchPath());
-		model.setConceptSize(conceptSize);
 		model.setDelimiter(delimiter);
 		model.setIncludeDescriptionId(descriptionIdExpected);
 		model.setLocales(locales);
@@ -108,31 +106,27 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 		return model;
 	}
 
-	public void setRefsetId(String refSetId) {
+	void setRefsetId(String refSetId) {
 		this.refSetId = refSetId;
 	}
 
-	public void setConceptSize(int conceptSize) {
-		this.conceptSize = conceptSize;
-	}
-
-	public void setDescriptionIdExpected(boolean descriptionIdExpected) {
+	void setDescriptionIdExpected(boolean descriptionIdExpected) {
 		this.descriptionIdExpected = descriptionIdExpected;
 	}
 
-	public void setRelationshipTargetExpected(boolean relationshipTargetExpected) {
+	void setRelationshipTargetExpected(boolean relationshipTargetExpected) {
 		this.relationshipTargetExpected = relationshipTargetExpected;
 	}
 
-	public void setDelimiter(String delimiter) {
+	void setDelimiter(String delimiter) {
 		this.delimiter = delimiter;
 	}
 	
-	public void setExportItems(List<AbstractSnomedDsvExportItem> exportItems) {
+	void setExportItems(List<AbstractSnomedDsvExportItem> exportItems) {
 		this.exportItems = exportItems;
 	}
 
-	public void setLocales(List<ExtendedLocale> locales) {
+	void setLocales(List<ExtendedLocale> locales) {
 		this.locales = locales;
 	}
 }

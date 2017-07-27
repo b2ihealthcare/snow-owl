@@ -18,13 +18,15 @@ package com.b2international.snowowl.snomed.datastore.internal.rf2;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ComponentIdSnomedDsvExportItem extends AbstractSnomedDsvExportItem {
+public final class ComponentIdSnomedDsvExportItem extends AbstractSnomedDsvExportItem {
 
 	private final String componentId;
+	private final String componentLabel;
 	
-	public ComponentIdSnomedDsvExportItem(final SnomedDsvExportItemType type, final String componentId) {
+	public ComponentIdSnomedDsvExportItem(final SnomedDsvExportItemType type, final String componentId, final String componentLabel) {
 		super(type);
 		this.componentId = componentId;
+		this.componentLabel = componentLabel;
 	}
 	
 	public String getComponentId() {
@@ -35,11 +37,11 @@ public class ComponentIdSnomedDsvExportItem extends AbstractSnomedDsvExportItem 
 	public void writeToOutputStream(DataOutputStream outputStream) throws IOException {
 		super.writeToOutputStream(outputStream);
 		outputStream.writeUTF(componentId);
+		outputStream.writeUTF(componentLabel);
 	}
 	
 	@Override
 	public String getDisplayName() {
-		// TODO fix labels, this should not be part of the item, labels should be computed on a higher level
-		return getComponentId();
+		return componentLabel;
 	}
 }

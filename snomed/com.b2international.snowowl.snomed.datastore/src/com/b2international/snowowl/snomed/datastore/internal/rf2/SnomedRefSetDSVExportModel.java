@@ -28,9 +28,7 @@ import com.google.common.collect.Lists;
 public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 
 	private String refSetId;
-	private String refSetLabel;
 	private SnomedRefSetType refSetType;
-	private int conceptSize;
 
 	private boolean includeDescriptionId;
 	private boolean includeRelationshipTargetId;
@@ -47,14 +45,6 @@ public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 		super();
 	}
 	
-	public int getConceptSize() {
-		return conceptSize;
-	}
-
-	public void setConceptSize(int conceptSize) {
-		this.conceptSize = conceptSize;
-	}
-
 	public SnomedRefSetType getRefSetType() {
 		return refSetType;
 	}
@@ -65,10 +55,6 @@ public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 	
 	public void setRefSetId(String refSetId) {
 		this.refSetId = refSetId;
-	}
-	
-	public String getRefSetLabel() {
-		return refSetLabel;
 	}
 	
 	public void setLocales(List<ExtendedLocale> locales) {

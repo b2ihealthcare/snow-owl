@@ -296,12 +296,12 @@ public class SnomedRefSetDSVExportTest {
 		for (final SnomedConstraint constraint : constraints) {
 			if (constraint instanceof SnomedDescriptionConstraint) {
 				final String descriptionTypeId = ((SnomedDescriptionConstraint) constraint).getTypeId();
-				final ComponentIdSnomedDsvExportItem descriptionExportItem = new ComponentIdSnomedDsvExportItem(SnomedDsvExportItemType.DESCRIPTION, descriptionTypeId);
+				final ComponentIdSnomedDsvExportItem descriptionExportItem = new ComponentIdSnomedDsvExportItem(SnomedDsvExportItemType.DESCRIPTION, descriptionTypeId, descriptionTypeId);
 				results.add(descriptionExportItem);
 			} else if (constraint instanceof SnomedRelationshipConstraint) {
 				final SnomedRelationshipConstraint relationshipConstraint = (SnomedRelationshipConstraint) constraint;
 				final String matchingType = relationshipConstraint.getType();
-				final ComponentIdSnomedDsvExportItem relationshipExportItem = new ComponentIdSnomedDsvExportItem(SnomedDsvExportItemType.RELATIONSHIP, matchingType);
+				final ComponentIdSnomedDsvExportItem relationshipExportItem = new ComponentIdSnomedDsvExportItem(SnomedDsvExportItemType.RELATIONSHIP, matchingType, matchingType);
 				results.add(relationshipExportItem);
 			} else if (constraint instanceof SnomedConcreteDomainConstraint) {
 				final SnomedConcreteDomainConstraint concreteDomainConstraint = (SnomedConcreteDomainConstraint) constraint;

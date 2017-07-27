@@ -32,7 +32,6 @@ import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedD
 public final class SnomedDSVExportRequestBuilder extends BaseRequestBuilder<SnomedDSVExportRequestBuilder, BranchContext, UUID> implements RevisionIndexRequestBuilder<UUID> {
 
 	private String refSetId;
-	private int conceptSize;
 	private boolean descriptionIdExpected;
 	private boolean relationshipTargetExpected;
 	private List<ExtendedLocale> locales;
@@ -43,11 +42,6 @@ public final class SnomedDSVExportRequestBuilder extends BaseRequestBuilder<Snom
 	
 	public SnomedDSVExportRequestBuilder setRefSetId(String refSetId) {
 		this.refSetId = refSetId;
-		return getSelf();
-	}
-	
-	public SnomedDSVExportRequestBuilder setConceptSize(int conceptSize) {
-		this.conceptSize = conceptSize;
 		return getSelf();
 	}
 	
@@ -80,7 +74,6 @@ public final class SnomedDSVExportRequestBuilder extends BaseRequestBuilder<Snom
 	protected Request<BranchContext, UUID> doBuild() {
 		SnomedDSVExportRequest req = new SnomedDSVExportRequest();
 		req.setRefsetId(refSetId);
-		req.setConceptSize(conceptSize);
 		req.setDescriptionIdExpected(descriptionIdExpected);
 		req.setRelationshipTargetExpected(relationshipTargetExpected);
 		req.setLocales(locales);

@@ -18,12 +18,13 @@ package com.b2international.snowowl.snomed.datastore.internal.rf2;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * Represents an exported column in DSV files created from reference sets of the SNOMED&nbsp;CT terminology. 
  *
  */
-public abstract class AbstractSnomedDsvExportItem {
+public abstract class AbstractSnomedDsvExportItem implements Serializable {
 
 	private final SnomedDsvExportItemType type;
 
@@ -66,7 +67,8 @@ public abstract class AbstractSnomedDsvExportItem {
 			case DESCRIPTION:
 			case RELATIONSHIP:
 				final String componentId = inputStream.readUTF();
-				return new ComponentIdSnomedDsvExportItem(type, componentId);
+				final String componentLabel = inputStream.readUTF();
+				return new ComponentIdSnomedDsvExportItem(type, componentId, componentLabel);
 
 			case DATAYPE:
 				final String datatypeLabel = inputStream.readUTF();
