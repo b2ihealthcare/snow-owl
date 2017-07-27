@@ -20,6 +20,8 @@ import static org.junit.Assert.assertEquals;
 import java.util.Date;
 import java.util.UUID;
 
+import org.eclipse.emf.cdo.CDOState;
+import org.eclipse.emf.spi.cdo.InternalCDOObject;
 import org.junit.Test;
 
 import com.b2international.index.revision.Revision;
@@ -69,6 +71,7 @@ public class ConstraintChangeProcessorTest extends BaseChangeProcessorTest {
 
 	private AttributeConstraint createDescriptionConstraint() {
 		final AttributeConstraint constraint = MrcmFactory.eINSTANCE.createAttributeConstraint();
+		((InternalCDOObject) constraint).cdoInternalSetState(CDOState.NEW);
 		withCDOID(constraint, nextStorageKey());
 		constraint.setActive(true);
 		constraint.setAuthor("test");
