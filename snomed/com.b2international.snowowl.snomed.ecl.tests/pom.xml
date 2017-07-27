@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.b2international.snowowl</groupId>
     <artifactId>snomed-parent</artifactId>
-    <version>5.10.8</version>
+    <version>5.10.9</version>
   </parent>
   <artifactId>com.b2international.snowowl.snomed.ecl.tests</artifactId>
   <packaging>eclipse-test-plugin</packaging>

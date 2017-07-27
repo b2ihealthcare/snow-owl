@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.b2international.snowowl</groupId>
-    <version>5.10.8</version>
+    <version>5.10.9</version>
     <artifactId>dependencies-parent</artifactId>
   </parent>
   <artifactId>org.eclipse.emf.cdo.server</artifactId>

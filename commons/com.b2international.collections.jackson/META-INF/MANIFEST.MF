@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Jackson Module for Primitive Collections API
 Bundle-SymbolicName: com.b2international.collections.jackson;singleton:=true
-Bundle-Version: 5.10.8
+Bundle-Version: 5.10.9
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Require-Bundle: com.b2international.collections.api,

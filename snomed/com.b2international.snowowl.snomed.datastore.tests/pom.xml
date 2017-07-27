@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
-		<version>5.10.8</version>
+		<version>5.10.9</version>
 		<artifactId>snomed-parent</artifactId>
 	</parent>
 	<artifactId>com.b2international.snowowl.snomed.datastore.tests</artifactId>
