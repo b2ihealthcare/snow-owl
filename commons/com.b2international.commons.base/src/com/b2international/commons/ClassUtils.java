@@ -50,6 +50,10 @@ public class ClassUtils {
 		return match;
 	}
 	
+	public static boolean isInstanceOrNull(Class<?> clazz, Object object) {
+		return object == null || clazz.isInstance(object);
+	}
+	
 	public static <T> T checkAndCast(final Object object, final Class<T> targetClass) {
 		checkNotNull(object, "Object argument cannot be null.");
 		checkNotNull(targetClass, "Target class argument cannot be null.");
