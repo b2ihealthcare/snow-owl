@@ -238,6 +238,7 @@ public final class FileUtils {
 	 *
 	 */
 	public static void decompressZipArchive(final File zipFile, final File rootDirectoryToUnZip) throws IOException {
+		
 		final int BUFFER = 2048;
 
 		if (rootDirectoryToUnZip.exists() && rootDirectoryToUnZip.isFile()) {
@@ -251,15 +252,25 @@ public final class FileUtils {
 		final FileInputStream fis = new FileInputStream(zipFile);
 		final ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
 
-		ZipEntry entry;
-		while((entry = zis.getNextEntry()) != null) {
-			int count;
-			final byte data[] = new byte[BUFFER];
+		ZipEntry entry = zis.getNextEntry();
+		
+		while (entry != null) {
 
+			File newFile = new File(rootDirectoryToUnZip, entry.getName());
+			
 			if (entry.isDirectory()) {
-				new File(rootDirectoryToUnZip, entry.getName()).mkdir();
+				newFile.mkdir();
 			} else {
-				final FileOutputStream fos = new FileOutputStream(new File(rootDirectoryToUnZip, entry.getName()));
+
+				File parentFile = newFile.getParentFile();
+				if (parentFile != null && !parentFile.exists()) {
+					parentFile.mkdirs();
+				}
+				
+				int count;
+				final byte data[] = new byte[BUFFER];
+				
+				final FileOutputStream fos = new FileOutputStream(newFile);
 				final BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER);
 
 				while ((count = zis.read(data, 0, BUFFER)) != -1) {
@@ -271,6 +282,8 @@ public final class FileUtils {
 				dest.close();
 				fos.close();
 			}
+			
+			entry = zis.getNextEntry();
 		}
 
 		zis.close();
