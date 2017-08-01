@@ -357,17 +357,17 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 		while (componentIds.size() < quantity) {
 			
-			String componentId = generateComponentId(namespace, category);
+			String componentId = generateComponentId(namespace, category, 1);
 			
-			int i = 1;
+			int attempt = 2;
 			while (isDisallowed(componentId, componentIds)) {
 				
-				if (i == getConfig().getMaxIdGenerationAttempts()) {
+				if (attempt >= getConfig().getMaxIdGenerationAttempts()) {
 					throw new BadRequestException("Couldn't generate identifier in %s number of attempts", getConfig().getMaxIdGenerationAttempts());
 				}
 				
-				componentId = generateComponentId(namespace, category);
-				i++;
+				componentId = generateComponentId(namespace, category, attempt);
+				attempt++;
 			}
 
 			componentIds.add(componentId);
@@ -380,12 +380,12 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		return componentIds.contains(componentId) || getReservationService().isReserved(componentId) || store.containsKey(componentId);
 	}
 
-	private String generateComponentId(final String namespace, final ComponentCategory category) {
+	private String generateComponentId(final String namespace, final ComponentCategory category, int attempt) {
 		final String selectedNamespace = selectNamespace(namespace);
 		final StringBuilder builder = new StringBuilder();
 
 		// generate the SCT Item ID (value can be a function of component category and namespace)
-		builder.append(generationStrategy.generateItemId(selectedNamespace, category));
+		builder.append(generationStrategy.generateItemId(selectedNamespace, category, attempt));
 
 		// append namespace and the first part of the partition-identifier
 		if (Strings.isNullOrEmpty(selectedNamespace)) {
