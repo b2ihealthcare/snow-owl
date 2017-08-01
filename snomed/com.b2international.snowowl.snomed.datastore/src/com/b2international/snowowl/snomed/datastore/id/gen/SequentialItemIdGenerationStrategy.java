@@ -40,6 +40,7 @@ import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
+import com.google.common.primitives.Ints;
 
 /**
  * An item identifier generation strategy that assigns item identifiers to components in a sequential
@@ -48,6 +49,8 @@ import com.google.common.collect.RangeSet;
  * @since 5.4
  */
 public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrategy {
+
+	private static final int MAX_ATTEMPT = 512;
 
 	private class ItemIdCounter {
 
@@ -110,13 +113,14 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 			return Iterables.getOnlyElement(hits, null);
 		}
 		
-		public long getNextItemId() {
-			long current, next;
+		public long getNextItemId(long stepSize) {
+			long current;
+			long next;
 			
 	        do {
 	        	
 	            current = counter.get();
-				next = snapToLowerBound(current + 1L);
+				next = snapToLowerBound(current + stepSize);
 				
 				Range<Long> firstRange = null;
 				while (excludedRanges.contains(next)) {
@@ -143,7 +147,13 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 		}
 		
 		private long snapToLowerBound(final long value) {
-			return allowedRange.contains(value) ? value : allowedRange.lowerEndpoint();
+			if (value < allowedRange.lowerEndpoint()) { // inclusive
+				return allowedRange.upperEndpoint() - (allowedRange.lowerEndpoint() - value);
+			} else if (value >= allowedRange.upperEndpoint()) { // exclusive
+				return allowedRange.lowerEndpoint() + (value - allowedRange.upperEndpoint());
+			} else {
+				return value;
+			}
 		}
 	}
 	
@@ -170,9 +180,14 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 	}
 
 	@Override
-	public String generateItemId(final String namespace, final ComponentCategory category) {
+	public String generateItemId(final String namespace, final ComponentCategory category, int attempt) {
 		final Pair<String, ComponentCategory> key = Pair.identicalPairOf(Strings.emptyToNull(namespace), category);
-		final long nextItemId = lastItemIds.getUnchecked(key).getNextItemId();
+		
+		final int limitedAttempt = Ints.min(attempt, MAX_ATTEMPT); // 512^512 = 256K will be the biggest jump forward
+		final int previousAttempt = limitedAttempt - 1; // Previous attempts have already advanced the counter
+		int stepSize = limitedAttempt * limitedAttempt - previousAttempt * previousAttempt; 
+		
+		final long nextItemId = lastItemIds.getUnchecked(key).getNextItemId(stepSize);
 		return Long.toString(nextItemId);
 	}
 }

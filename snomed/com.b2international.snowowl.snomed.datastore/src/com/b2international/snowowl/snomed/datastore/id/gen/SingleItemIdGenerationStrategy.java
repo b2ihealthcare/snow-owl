@@ -34,7 +34,7 @@ public class SingleItemIdGenerationStrategy implements ItemIdGenerationStrategy 
 	}
 	
 	@Override
-	public String generateItemId(String namespace, ComponentCategory category) {
+	public String generateItemId(String namespace, ComponentCategory category, int attempt) {
 		return itemId;
 	}
 }

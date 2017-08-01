@@ -29,10 +29,12 @@ public interface ItemIdGenerationStrategy {
 	 * Generates a brand new SNOMED CT Item Identifier.
 	 * 
 	 * @param namespace the namespace identifier
-	 * @param category the terminology independent category of the component  
+	 * @param category the terminology independent category of the component
+	 * @param attempt the number of the current attempt to generate an identifier, starting with 1
+	 *   
 	 * @return the generated item identifier
 	 */
-	String generateItemId(String namespace, ComponentCategory category);
+	String generateItemId(String namespace, ComponentCategory category, int attempt);
 
 	/**
 	 * {@link ItemIdGenerationStrategy} implementation which generates a random Item identifier, independent of the given namespace and category.

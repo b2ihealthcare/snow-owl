@@ -58,7 +58,7 @@ public class ReservationImplTest {
 		final ISnomedIdentifierService identifierService = new DefaultSnomedIdentifierService(store, new ItemIdGenerationStrategy() {
 			int counter = 200;
 			@Override
-			public String generateItemId(String namespace, ComponentCategory category) {
+			public String generateItemId(String namespace, ComponentCategory category, int attempt) {
 				return String.valueOf(counter++);
 			}
 		}, reservations, new SnomedIdentifierConfiguration());
