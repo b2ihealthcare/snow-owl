@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.id.memory;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.Iterator;
 import java.util.List;
@@ -55,7 +55,7 @@ public class DefaultSnomedIdentifierServiceTest {
 		}
 
 		@Override
-		public String generateItemId(final String namespace, final ComponentCategory category) {
+		public String generateItemId(final String namespace, final ComponentCategory category, int attempt) {
 			return itr.next();
 		}
 	}
@@ -158,7 +158,7 @@ public class DefaultSnomedIdentifierServiceTest {
 	@Test
 	public void issue_SO_2138_testSkipReservedRangeWithWraparound() throws Exception {
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
-		reservationService.create("nothingAboveTwoHundred", Reservations.range(200L, 9999_9999_9999_999L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
+		reservationService.create("nothingAboveTwoHundred", Reservations.range(200L, 8999_9999_9999_999L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
 		
 		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
 		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
@@ -172,7 +172,7 @@ public class DefaultSnomedIdentifierServiceTest {
 	@Test(expected=IllegalStateException.class)
 	public void issue_SO_2138_testCoveringReservedRanges() throws Exception {
 		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
-		reservationService.create("nothingAboveOneHundredNinetyNine", Reservations.range(200L, 9999_9999_9999_999L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
+		reservationService.create("nothingAboveOneHundredNinetyNine", Reservations.range(200L, 8999_9999_9999_999L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
 		reservationService.create("nothingBelowOneHundredNinetyNine", Reservations.range(100L, 198L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
 		
 		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
@@ -184,5 +184,21 @@ public class DefaultSnomedIdentifierServiceTest {
 		
 		// This attempt should not be able to generate any other value
 		identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT);
+	}
+	
+	@Test
+	public void testQuadraticProbing() throws Exception {
+		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
+
+		identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT);
+		
+		// Register a few existing SCTIDs that are "in the way"
+		identifiers.register("101009");
+		identifiers.register("104001");
+		identifiers.register("109006");
+		
+		assertEquals("116007", identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT));
 	}
 }
