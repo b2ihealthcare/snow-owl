@@ -181,7 +181,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		inactivationBody.put("associationTargets", ImmutableMap.builder().put(AssociationType.POSSIBLY_EQUIVALENT_TO, newArrayList(sourceConceptId)).build());
 		inactivationBody.put("commitComment", "Inactivated " + inactivatableConceptId);
 		assertComponentCanBeUpdated(testBranchPath, SnomedComponentType.CONCEPT, inactivatableConceptId, inactivationBody);
-		assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, inactivatableConceptId)
+		assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, inactivatableConceptId, "inactivationProperties()")
 			.and()
 			.body("active", equalTo(false))
 			.and()
@@ -228,7 +228,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		
 		assertComponentCanBeUpdated(testBranchPath, SnomedComponentType.CONCEPT, duplicateComponentId, inactivationBody);
 		// check if inactivation went through properly
-		assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, duplicateComponentId)
+		assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, duplicateComponentId, "inactivationProperties()")
 			.and()
 			.body("active", equalTo(false))
 			.and()
@@ -245,7 +245,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertComponentCanBeUpdated(testBranchPath, SnomedComponentType.CONCEPT, duplicateComponentId, associationTargetUpdateBody);
 
 		// verify association target and inactivation indicator update
-		assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, duplicateComponentId)
+		assertComponentExists(testBranchPath, SnomedComponentType.CONCEPT, duplicateComponentId, "inactivationProperties()")
 			.and()
 			.body("active", equalTo(false))
 			.and()

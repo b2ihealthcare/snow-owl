@@ -16,7 +16,7 @@ auth:
   
 snomed:
   ids:
-    strategy : MEMORY
+    strategy: SEQUENTIAL
   
 metrics:
   enabled: true
