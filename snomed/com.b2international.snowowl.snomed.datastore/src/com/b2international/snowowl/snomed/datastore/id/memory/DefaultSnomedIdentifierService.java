@@ -252,8 +252,8 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 
 	private String generateId(final String namespace, final ComponentCategory category, final int maxAttempts, Set<String> componentIds) {
-		for (int attempt = 0; attempt < maxAttempts; attempt++) {
-			final String componentId = generateId(namespace, category);
+		for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+			final String componentId = generateId(namespace, category, attempt);
 			if (!isGeneratedIdDisallowed(componentId, componentIds)) {
 				return componentId;
 			}
@@ -262,11 +262,11 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		throw new BadRequestException("Couldn't generate identifier in maximum (%s) number of attempts", maxAttempts);
 	}
 	
-	private String generateId(final String namespace, final ComponentCategory category) {
+	private String generateId(final String namespace, final ComponentCategory category, final int attempt) {
 		final StringBuilder builder = new StringBuilder();
 	
 		// generate the item identifier (value can be a function of component category and namespace)
-		builder.append(generationStrategy.generateItemId(namespace, category));
+		builder.append(generationStrategy.generateItemId(namespace, category, attempt));
 	
 		// append namespace and the first digit of the partition-identifier
 		if (Strings.isNullOrEmpty(namespace)) {
