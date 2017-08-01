@@ -28,7 +28,7 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 public class RandomItemIdGenerationStrategy implements ItemIdGenerationStrategy {
 
 	@Override
-	public String generateItemId(String namespace, ComponentCategory category) {
+	public String generateItemId(String namespace, ComponentCategory category, int attempt) {
 		// nextInt excludes top value, add 1 to make it inclusive
 		return Integer.toString(new Random().nextInt(9999_9999 - 100 + 1) + 100);
 	}
