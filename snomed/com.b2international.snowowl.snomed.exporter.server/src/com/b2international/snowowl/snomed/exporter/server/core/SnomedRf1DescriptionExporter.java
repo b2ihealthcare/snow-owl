@@ -165,7 +165,6 @@ public class SnomedRf1DescriptionExporter extends SnomedPageableRf1Exporter<Snom
 			.append(valueOfOrEmptyString(_values[5])) // type
 			.append(HT)
 			.append(valueOfOrEmptyString(_values[6])) // language code
-			.append(HT)
 			.toString();
 	}
 
