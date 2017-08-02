@@ -182,11 +182,8 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 	@Override
 	public String generateItemId(final String namespace, final ComponentCategory category, int attempt) {
 		final Pair<String, ComponentCategory> key = Pair.identicalPairOf(Strings.emptyToNull(namespace), category);
-		
 		final int limitedAttempt = Ints.min(attempt, MAX_ATTEMPT); // 512^512 = 256K will be the biggest jump forward
-		final int previousAttempt = limitedAttempt - 1; // Previous attempts have already advanced the counter
-		int stepSize = limitedAttempt * limitedAttempt - previousAttempt * previousAttempt; 
-		
+		final int stepSize = 2 * limitedAttempt - 1; 
 		final long nextItemId = lastItemIds.getUnchecked(key).getNextItemId(stepSize);
 		return Long.toString(nextItemId);
 	}
