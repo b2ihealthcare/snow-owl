@@ -195,10 +195,79 @@ public class DefaultSnomedIdentifierServiceTest {
 		identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT);
 		
 		// Register a few existing SCTIDs that are "in the way"
-		identifiers.register("101009");
-		identifiers.register("104001");
-		identifiers.register("109006");
+		identifiers.register("101009"); // 1
+		identifiers.register("104001"); // 4
+		identifiers.register("109006"); // 9
 		
 		assertEquals("116007", identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT));
+	}
+	
+	@Test
+	public void testQuadraticProbing_wraparound() throws Exception {
+		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
+
+		// itemId counter is initialized with 99999996, next free itemId is 99999997
+		identifiers.register("999999961000154101");
+		assertEquals("999999971000154106", identifiers.generate("1000154", ComponentCategory.CONCEPT));
+		
+		// 99999998 and 2 becomes registered
+		identifiers.register("999999981000154108");
+		identifiers.register("21000154106");
+		
+		// Attempt 1, ID 1: 99999997 + 1 = 99999998 -> in use
+		// Attempt 2, ID 1: 99999998 + 3 = 2        -> in use
+		// Attempt 3, ID 1: 2        + 5 = 7        -> good
+		// Attempt 1, ID 2: 7        + 1 = 8        -> also good
+		List<String> actualIds = ImmutableList.copyOf(identifiers.generate("1000154", ComponentCategory.CONCEPT, 2));
+		List<String> expectedIds = ImmutableList.of("71000154105", "81000154107");
+		assertEquals(expectedIds, actualIds);
+	}
+
+	@Test
+	public void testQuadraticProbing_skipReservedRange() throws Exception {
+		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		reservationService.create("noTwoHundreds", Reservations.range(200L, 299L, "1000004", ImmutableSet.of(ComponentCategory.CONCEPT)));
+		
+		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
+		
+		// itemId counter is initialized with 198, next free itemId is 199
+		identifiers.register("1981000004105");
+		assertEquals("1991000004108", identifiers.generate("1000004", ComponentCategory.CONCEPT));
+		
+		// 300 becomes registered
+		identifiers.register("3001000004102");
+		
+		// Attempt 1, ID 1: 199 + 1 = 200 -> in reserved range, adjusted to 300, in use
+		// Attempt 2, ID 1: 300 + 3 = 303 -> good
+		// Attempt 1, ID 2: 303 + 1 = 304 -> good
+		List<String> actualIds = ImmutableList.copyOf(identifiers.generate("1000004", ComponentCategory.CONCEPT, 2));
+		List<String> expectedIds = ImmutableList.of("3031000004106", "3041000004100");
+		assertEquals(expectedIds, actualIds);
+	}
+	
+	@Test
+	public void testQuadraticProbing_skipReservedRangeWithWraparound() throws Exception {
+		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		reservationService.create("nothingAboveTwoHundred", Reservations.range(200L, 9999_9999L, "1000133", ImmutableSet.of(ComponentCategory.CONCEPT)));
+		
+		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
+
+		// itemId counter is initialized with 198, next free itemId is 199
+		identifiers.register("1981000133109");
+		assertEquals("1991000133107", identifiers.generate("1000133", ComponentCategory.CONCEPT));
+
+		// 1 becomes registered
+		identifiers.register("11000133105");
+
+		// Attempt 1, ID 1: 199 + 1 = 200 -> in reserved range, adjusted to 100000000, wraps to 1, in use
+		// Attempt 2, ID 1: 1   + 3   = 4 -> good
+		// Attempt 1, ID 2: 4   + 1   = 5 -> good
+		List<String> actualIds = ImmutableList.copyOf(identifiers.generate("1000133", ComponentCategory.CONCEPT, 2));
+		List<String> expectedIds = ImmutableList.of("41000133109", "51000133106");
+		assertEquals(expectedIds, actualIds);
 	}
 }
