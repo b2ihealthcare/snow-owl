@@ -56,6 +56,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMemb
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
@@ -99,6 +100,14 @@ public class EquivalentConceptMerger {
 					@Override
 					public Relationship apply(SnomedRelationshipIndexEntry input) {
 						return (Relationship) editingContext.lookup(input.getStorageKey());
+					}
+				})
+				.filter(new Predicate<Relationship>() {
+
+					@Override
+					public boolean apply(Relationship input) {
+						//Exclude relationships that were already marked redundant
+						return input.getDestination() != null && input.getSource() != null;
 					}
 				})
 				.index(new Function<Relationship, String>() {

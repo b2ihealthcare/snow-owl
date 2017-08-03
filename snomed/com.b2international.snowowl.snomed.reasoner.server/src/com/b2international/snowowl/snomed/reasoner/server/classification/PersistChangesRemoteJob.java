@@ -23,6 +23,7 @@ import static org.eclipse.core.runtime.Status.OK_STATUS;
 
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -31,7 +32,9 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
@@ -42,12 +45,15 @@ import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.remotejobs.AbstractRemoteJob;
 import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasonerTaxonomyBuilder.Type;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedTerminologyBrowser;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.SnomedReasonerServerActivator;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeRecorder;
@@ -55,7 +61,14 @@ import com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain.Co
 import com.b2international.snowowl.snomed.reasoner.server.diff.relationship.RelationshipPersister;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Longs;
+
 import bak.pcj.set.LongSet;
 
 /**
@@ -93,10 +106,6 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 		return getServiceForClass(IDatastoreOperationLockManager.class);
 	}
 
-	private static SnomedTerminologyBrowser getTerminologyBrowser() {
-		return getServiceForClass(SnomedTerminologyBrowser.class);
-	}
-	
 	@Override
 	protected IStatus runWithListenableMonitor(final IProgressMonitor monitor) {
 
@@ -157,22 +166,48 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 			applyConcreteDomainChanges(editingContext, concreteDomainRecorder);
 
 			final List<LongSet> equivalenciesToFix = Lists.newArrayList();
-
+			
+			Set<String> firstEquivalentConceptIds = FluentIterable.from(taxonomy.getEquivalentConceptIds()).transform(new Function<LongSet, String>() {
+				@Override
+				public String apply(LongSet input) {
+					return String.valueOf(input.iterator().next());
+				}
+			}).toSet();
+			
+			Set<String> generatedConceptIds = SnomedRequests.prepareSearchConcept()
+				.all()
+				.setComponentIds(firstEquivalentConceptIds)
+				.setExpand("parentIds(), ancestorIds()")
+				.build(branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<SnomedConcepts, Set<String>>() {
+					@Override
+					public Set<String> apply(SnomedConcepts concepts) {
+						return FluentIterable.from(concepts).filter(new Predicate<ISnomedConcept>() {
+							@Override
+							public boolean apply(ISnomedConcept concept) {
+								return isGeneratedConcept(concept);
+							}
+						})
+						.transform(IComponent.ID_FUNCTION)
+						.toSet();
+					}
+				}).getSync();
+			
 			for (final LongSet equivalentSet : taxonomy.getEquivalentConceptIds()) {
-				long firstConceptId = equivalentSet.iterator().next();
-				String firstConceptIdString = Long.toString(firstConceptId);
-
-				// FIXME: make equivalence set to fix user-selectable
-				if (getTerminologyBrowser().isSuperTypeOfById(branchPath, Concepts.GENERATED_SINGAPORE_MEDICINAL_PRODUCT, firstConceptIdString)) {
+				String firstConceptIdString = Long.toString(equivalentSet.iterator().next());
+				if (generatedConceptIds.contains(firstConceptIdString)) {
 					equivalenciesToFix.add(equivalentSet);
 				}
 			}
 
-			new EquivalentConceptMerger(editingContext, equivalenciesToFix).fixEquivalencies();
+			if (!equivalenciesToFix.isEmpty()) {
+				new EquivalentConceptMerger(editingContext, equivalenciesToFix).fixEquivalencies();
+			}
 
 			final CDOTransaction editingContextTransaction = editingContext.getTransaction();
 			editingContext.preCommit();
-
+			
 			new CDOServerCommitBuilder(userId, "Classified ontology.", editingContextTransaction)
 				.parentContextDescription(SAVE_CLASSIFICATION_RESULTS)
 				.commitOne(subMonitor.newChild(2));
@@ -185,6 +220,37 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 				editingContext.close();
 			}
 		}
+	}
+
+	private boolean isGeneratedConcept(ISnomedConcept concept) {
+		
+		final ImmutableSet.Builder<Long> longAncestorIds = ImmutableSet.builder();
+		
+		if (concept.getParentIds() != null) {
+			longAncestorIds.addAll(Longs.asList(concept.getParentIds()));
+		}
+		
+		if (concept.getAncestorIds() != null) {
+			longAncestorIds.addAll(Longs.asList(concept.getAncestorIds()));
+		}
+		
+		if (concept.getStatedParentIds() != null) {
+			longAncestorIds.addAll(Longs.asList(concept.getStatedParentIds()));
+		}
+		
+		if (concept.getStatedAncestorIds() != null) {
+			longAncestorIds.addAll(Longs.asList(concept.getStatedAncestorIds()));
+		}
+		
+		final Set<String> stringAncestorIds = FluentIterable.from(longAncestorIds.build())
+			.transform(Functions.toStringFunction())
+			.toSet();
+		
+		if (stringAncestorIds.contains(Concepts.GENERATED_SINGAPORE_MEDICINAL_PRODUCT)) {
+			return true;
+		}
+		
+		return false;
 	}
 
 	private void recordChanges(final SubMonitor subMonitor,
