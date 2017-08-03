@@ -100,14 +100,13 @@ public class SnomedRf1DescriptionExporter extends SnomedPageableRf1Exporter<Snom
 	}
 
 	@Override
-	protected String convertToString(ISnomedDescription description) {
-		
+	protected String convertToString(ISnomedDescription description) {	
 		Object[] _values = new Object[7];
 		
 		_values[0] = description.getId();
 		_values[1] = BooleanUtils.toString(!description.isActive()); // inverse RF1 status conversion
 		
-		if (!description.isActive() && descriptionToInactivationIndicatorMap.containsKey(description.getId())) {
+		if (descriptionToInactivationIndicatorMap.containsKey(description.getId())) {
 			_values[1] = descriptionToInactivationIndicatorMap.get(description.getId());
 		}
 		
