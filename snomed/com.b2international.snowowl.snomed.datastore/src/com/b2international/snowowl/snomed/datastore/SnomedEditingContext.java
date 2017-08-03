@@ -1202,7 +1202,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			if (IS_A.equals(relationship.getType().getId())) {
 				if (relationship != null) {
 					deletionPlan = canDelete(relationship, deletionPlan);
-					if(deletionPlan.isRejected()) {
+					if (deletionPlan.getRejectionReasons().size() > 0) {
 						deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_MESSAGE, toString(concept)));
 						return deletionPlan;
 					}
@@ -1330,8 +1330,10 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		// a released refset member cannot be deleted. however, since a released refset member can
 		// only contain released relationships, we would not have made it this far if anyway
 		deletionPlan.markForDeletion(refSetEditingContext.getReferringMembers(relationship));		
-		
-		deletionPlan.markForDeletion(relationship);
+
+		if (relationship.getSource() != null) {
+			deletionPlan.markForDeletion(relationship);
+		}
 		
 		return deletionPlan;
 	}
