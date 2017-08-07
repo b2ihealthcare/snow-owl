@@ -320,7 +320,12 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 									}
 								}).toList();
 								
-								stringBuffer.append(joinResultsWithDelimiters(results, exportItemMaxOccurences.get(descriptionTypeId), delimiter, descriptionIdExpected));
+								int maxOccurences = exportItemMaxOccurences.get(descriptionTypeId);
+								if(descriptionIdExpected) {
+									maxOccurences = maxOccurences*2;
+								}
+								
+								stringBuffer.append(joinResultsWithDelimiters(results, maxOccurences, delimiter, descriptionIdExpected));
 							}
 							
 							break;
@@ -1029,9 +1034,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		// fill the remaining slots with delimiters
 		for (int j = start; j < max; j++) {
 			sb.append(delimiter);
-			if (descriptionAndDescriptionIdExpected) {
-				sb.append(delimiter);
-			}
 		}
 		return sb.toString();
 	}
