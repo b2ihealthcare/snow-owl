@@ -50,6 +50,7 @@ public class SnomedRf1RelationshipExporter extends SnomedPageableRf1Exporter<Sno
 	protected SnomedRelationships executeQuery(int offset) {
 		return SnomedRequests.prepareSearchRelationship()
 			.setOffset(offset)
+			.filterByActive(true)
 			.setLimit(DEFAULT_LIMIT)
 			.build(getBranch())
 			.executeSync(getBus());
