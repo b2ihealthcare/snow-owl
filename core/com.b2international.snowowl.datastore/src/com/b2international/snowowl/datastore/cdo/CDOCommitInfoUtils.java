@@ -32,6 +32,7 @@ import java.util.regex.Matcher;
 import javax.annotation.Nullable;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.common.branch.CDOBranchHandler;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
@@ -483,6 +484,23 @@ public abstract class CDOCommitInfoUtils {
 		 */
 		public List<CDOCommitInfo> getInfos() {
 			return Collections.unmodifiableList((List<? extends CDOCommitInfo>) infos);
+		}
+		
+	}
+	
+	public static final class ConsumeAllCDOBranchesHandler implements CDOBranchHandler {
+
+		private final Collection<CDOBranch> infos = Lists.newArrayList();
+		
+		@Override
+		public void handleBranch(CDOBranch branch) {
+			if (branch != null) {
+				infos.add(branch);
+			}
+		}
+
+		public List<CDOBranch> getBranches() {
+			return Collections.unmodifiableList((List<? extends CDOBranch>) infos);
 		}
 		
 	}
