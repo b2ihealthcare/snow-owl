@@ -22,8 +22,8 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import com.b2international.snowowl.core.ComponentIdentifierPair;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -33,7 +33,6 @@ import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
-import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 
 /**
@@ -107,14 +106,13 @@ public class RelationshipPersister {
 			final Relationship originalRel = relationshipLookupService.getComponent(Long.toString(addedEntry.getStatementId()), transaction);
 			
 			for (final SnomedConcreteDataTypeRefSetMember originalMember : originalRel.getConcreteDomainRefSetMembers()) {
-				
 				final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet = (SnomedConcreteDataTypeRefSet) originalMember.getRefSet();
 				final SnomedConcreteDataTypeRefSetMember refSetMember = context.getRefSetEditingContext().createConcreteDataTypeRefSetMember(
 						ComponentIdentifierPair.create(SnomedTerminologyComponentConstants.RELATIONSHIP, newRel.getId()),
 						originalMember.getUomComponentId(),
 						originalMember.getOperatorComponentId(),
 						originalMember.getSerializedValue(), 
-						getCharacteristicTypeId(originalMember, Concepts.INFERRED_RELATIONSHIP), 
+						getCharacteristicTypeId(originalMember), 
 						originalMember.getLabel(), 
 						module.getId(), 
 						concreteDataTypeRefSet);
@@ -124,7 +122,11 @@ public class RelationshipPersister {
 		}
 	}
 
-	private String getCharacteristicTypeId(final SnomedConcreteDataTypeRefSetMember originalMember, final String defaultCharacteristicTypeId) {
-		return Objects.firstNonNull(originalMember.getCharacteristicTypeId(), defaultCharacteristicTypeId);
+	private String getCharacteristicTypeId(final SnomedConcreteDataTypeRefSetMember originalMember) {
+		if (Concepts.ADDITIONAL_RELATIONSHIP.equals(originalMember.getCharacteristicTypeId())) {
+			return Concepts.ADDITIONAL_RELATIONSHIP;
+		} else {
+			return Concepts.INFERRED_RELATIONSHIP;
+		}
 	}
 }
