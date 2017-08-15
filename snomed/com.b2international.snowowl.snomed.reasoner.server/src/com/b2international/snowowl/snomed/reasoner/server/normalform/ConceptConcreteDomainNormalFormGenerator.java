@@ -53,13 +53,13 @@ public class ConceptConcreteDomainNormalFormGenerator extends NormalFormGenerato
 
 	@Override
 	public Collection<ConcreteDomainFragment> getExistingComponents(final long conceptId) {
-		return reasonerTaxonomyBuilder.getInferredConceptConcreteDomainFragments(conceptId);
+		return reasonerTaxonomyBuilder.getInferredConcreteDomainFragments(conceptId);
 	}
 	
 	@Override
 	public Collection<ConcreteDomainFragment> getGeneratedComponents(final long conceptId) {
 		
-		final Set<ConcreteDomainFragment> computedItems = newHashSet(reasonerTaxonomyBuilder.getConceptConcreteDomainFragments(conceptId));
+		final Set<ConcreteDomainFragment> computedItems = newHashSet(reasonerTaxonomyBuilder.getStatedConcreteDomainFragments(conceptId));
 		final LongSet parents = reasonerTaxonomy.getParents(conceptId);
 		
 		for (final LongIterator itr = parents.iterator(); itr.hasNext(); /* empty */) {

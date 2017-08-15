@@ -302,7 +302,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	private GetResultResponseChanges doGetResult(final UUID classificationId, final ReasonerTaxonomy taxonomy) {
 		
 		final IBranchPath branchPath = taxonomy.getBranchPath();
-		final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, InitialReasonerTaxonomyBuilder.Type.REASONER);
+		final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath);
 		final SnomedTerminologyBrowser terminologyBrowser = getTerminologyBrowser();
 		
 		final ImmutableList.Builder<RelationshipChangeEntry> relationshipBuilder = ImmutableList.builder();
@@ -344,8 +344,13 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 				
 				relationshipBuilder.add(entry);
 				
-				// look up all CDEs from the original relationship and add them as inferred
-				final Collection<ConcreteDomainFragment> relationshipConcreteDomainElements = reasonerTaxonomyBuilder.getStatementConcreteDomainFragments(subject.getStatementId());
+				/* 
+				 * Look up all CDEs from the original relationship and add them as inferred.
+				 * 
+				 * (CD members with additional characteristic type will be added the inferred relationship, if they were 
+				 * present on the original relationship, but they will not be displayed here.)
+				 */
+				final Collection<ConcreteDomainFragment> relationshipConcreteDomainElements = reasonerTaxonomyBuilder.getStatedConcreteDomainFragments(subject.getStatementId());
 				
 				for (final ConcreteDomainFragment concreteDomainElementIndexEntry : relationshipConcreteDomainElements) {
 					

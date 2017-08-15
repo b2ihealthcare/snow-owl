@@ -43,7 +43,6 @@ import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLock
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.server.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.server.remotejobs.AbstractRemoteJob;
-import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasonerTaxonomyBuilder.Type;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -257,7 +256,7 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 			final OntologyChangeRecorder<StatementFragment> relationshipRecorder,
 			final OntologyChangeRecorder<ConcreteDomainFragment> concreteDomainRecorder) {
 		
-		final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath, Type.REASONER);
+		final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = new InitialReasonerTaxonomyBuilder(branchPath);
 	
 		final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
 		relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipRecorder);
