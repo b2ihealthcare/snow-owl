@@ -21,18 +21,6 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 
-import bak.pcj.IntIterator;
-import bak.pcj.list.LongArrayList;
-import bak.pcj.list.LongList;
-import bak.pcj.map.LongKeyIntMap;
-import bak.pcj.map.LongKeyIntOpenHashMap;
-import bak.pcj.map.LongKeyLongMap;
-import bak.pcj.map.LongKeyLongOpenHashMap;
-import bak.pcj.map.LongKeyMap;
-import bak.pcj.map.LongKeyOpenHashMap;
-import bak.pcj.set.LongOpenHashSet;
-import bak.pcj.set.LongSet;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.pcj.ArrayIntIterator;
 import com.b2international.commons.pcj.BitSetIntIterator;
@@ -42,18 +30,21 @@ import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 
+import bak.pcj.IntIterator;
+import bak.pcj.list.LongArrayList;
+import bak.pcj.list.LongList;
+import bak.pcj.map.LongKeyIntMap;
+import bak.pcj.map.LongKeyIntOpenHashMap;
+import bak.pcj.map.LongKeyMap;
+import bak.pcj.map.LongKeyOpenHashMap;
+import bak.pcj.set.LongOpenHashSet;
+import bak.pcj.set.LongSet;
+
 /**
  * Abstract superclass for reasoner taxonomy builders. Subclasses should gather and/or modify information contained here about the ontology.
  *
  */
 public abstract class AbstractReasonerTaxonomyBuilder {
-
-	public enum Type {
-		/** The resulting taxonomy is used for populating an OWL ontology. */
-		REASONER, 
-		/** The resulting taxonomy is used for updating indexes. */
-		CHANGE_PROCESSOR;
-	}
 	
 	protected static final long IS_A_ID = Long.parseLong(Concepts.IS_A);
 	protected static final long STATED_RELATIONSHIP = Long.parseLong(Concepts.STATED_RELATIONSHIP);
@@ -73,17 +64,17 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	/** A set containing all fully defined concept IDs. */
 	protected LongSet fullyDefinedConceptIds;
 
-	/** Mapping between concept IDs and the associated active outbound relationships. */
-	protected LongKeyMap conceptIdToStatedStatements;
-
-	/** Mapping between concept IDs and the associated concrete domain members. */
-	protected LongKeyMap conceptIdToStatedConcreteDomains;
+	/** Mapping between concept IDs and the associated active stated outbound relationships. */
+	protected LongKeyMap/*<StatementFragment>*/ conceptIdToStatedStatements;
 	
-	protected LongKeyMap conceptIdToInferredStatements;
-	protected LongKeyMap conceptIdToInferredConcreteDomains;
-
-	/** Mapping between statement IDs and the associated concrete domain members. */
-	protected LongKeyMap statementIdToConcreteDomain;
+	/** Mapping between concept IDs and the associated active inferred outbound relationships. */
+	protected LongKeyMap/*<StatementFragment>*/ conceptIdToInferredStatements;
+	
+	/** Mapping between component IDs and the associated active stated concrete domain members. */
+	protected LongKeyMap/*<ConcreteDomainFragment>*/ componentIdToStatedConcreteDomains;
+	
+	/** Mapping between component IDs and the associated active inferred concrete domain members. */
+	protected LongKeyMap/*<ConcreteDomainFragment>*/ componentIdToInferredConcreteDomains;
 
 	/** Maps internal IDs to SNOMED&nbsp;CT concept IDs. */
 	protected LongList internalIdToconceptId;
@@ -91,26 +82,17 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	/** Maps SNOMED&nbsp;CT concept IDs to internal IDs. */
 	protected LongKeyIntMap conceptIdToInternalId;
 
-	/** Maps component storage keys indexed in this taxonomy builder to their "containing" concept ID. */
-	protected LongKeyLongMap componentStorageKeyToConceptId;
-
-	/** The mode of operation for this taxonomy builder. */
-	private final Type type;
-	
 	/**
 	 * Default constructor; subclasses should initialize fields.
 	 */
-	protected AbstractReasonerTaxonomyBuilder(final Type type) {
-		this.type = type;
-	}
+	protected AbstractReasonerTaxonomyBuilder() { }
 
 	/**
 	 * Copy constructor; fields are initialized from the given source builder.
 	 *
 	 * @param source the builder to copy (may not be {@code null})
 	 */
-	protected AbstractReasonerTaxonomyBuilder(final AbstractReasonerTaxonomyBuilder source, final Type type) {
-		this(type);
+	protected AbstractReasonerTaxonomyBuilder(final AbstractReasonerTaxonomyBuilder source) {
 		checkNotNull(source, "source");
 
 		// We can rebuild these; we have the technology
@@ -120,18 +102,11 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 		this.exhaustiveConceptIds = (LongOpenHashSet) ((LongOpenHashSet) source.exhaustiveConceptIds).clone();
 		this.fullyDefinedConceptIds = (LongOpenHashSet) ((LongOpenHashSet) source.fullyDefinedConceptIds).clone();
 		this.conceptIdToStatedStatements = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToStatedStatements).clone();
-		this.conceptIdToStatedConcreteDomains = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToStatedConcreteDomains).clone();
 		this.conceptIdToInferredStatements = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToInferredStatements).clone();
-		this.conceptIdToInferredConcreteDomains = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.conceptIdToInferredConcreteDomains).clone();
-		this.statementIdToConcreteDomain = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.statementIdToConcreteDomain).clone();
+		this.componentIdToStatedConcreteDomains = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.componentIdToStatedConcreteDomains).clone();
+		this.componentIdToInferredConcreteDomains = (LongKeyOpenHashMap) ((LongKeyOpenHashMap) source.componentIdToInferredConcreteDomains).clone();
 		this.internalIdToconceptId = (LongArrayList) ((LongArrayList) source.internalIdToconceptId).clone();
 		this.conceptIdToInternalId = (LongKeyIntOpenHashMap) ((LongKeyIntOpenHashMap) source.conceptIdToInternalId).clone();
-		
-		this.componentStorageKeyToConceptId = (LongKeyLongOpenHashMap) ((LongKeyLongOpenHashMap) source.componentStorageKeyToConceptId).clone();
-	}
-	
-	protected boolean isReasonerMode() {
-		return Type.REASONER.equals(type);
 	}
 
 	/**
@@ -149,12 +124,6 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	public Collection<StatementFragment> getInferredStatementFragments(final long conceptId) {
 		final Object statements = conceptIdToInferredStatements.get(conceptId);
 		return (Collection<StatementFragment>) (null == statements ? Collections.emptySet() : statements);
-	}
-	
-	@SuppressWarnings("unchecked")
-	public Collection<ConcreteDomainFragment> getInferredConceptConcreteDomainFragments(final long conceptId) {
-		final Object concreteDomains = conceptIdToInferredConcreteDomains.get(conceptId);
-		return (Collection<ConcreteDomainFragment>) (null == concreteDomains ? Collections.emptySet() : concreteDomains);
 	}
 	
 	/**
@@ -214,24 +183,24 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	}
 
 	/**
-	 * Returns with all the concrete domains of the concept given by its unique ID.
-	 * @param conceptId the unique ID of the SNOMED&nbsp;CT concept.
-	 * @return the concrete domains associated with a concept, if any.
+	 * Returns with all the stated concrete domains of the component given by its unique ID.
+	 * @param componentId the unique ID of the SNOMED&nbsp;CT component.
+	 * @return the concrete domains associated with the component, if any.
 	 */
 	@SuppressWarnings("unchecked")
-	public Collection<ConcreteDomainFragment> getConceptConcreteDomainFragments(final long conceptId) {
-		final Object concreteDomains = conceptIdToStatedConcreteDomains.get(conceptId);
+	public Collection<ConcreteDomainFragment> getStatedConcreteDomainFragments(final long componentId) {
+		final Object concreteDomains = componentIdToStatedConcreteDomains.get(componentId);
 		return (Collection<ConcreteDomainFragment>) (null == concreteDomains ? Collections.emptySet() : concreteDomains);
 	}
 
 	/**
-	 * Returns with all the concrete domains of a relationships given by its unique ID.
-	 * @param statementId the unique ID of the SNOMED&nbsp;CT relationships.
-	 * @return the concrete domains associated with a relationship, if any.
+	 * Returns with all the inferred concrete domains of a component given by its unique ID.
+	 * @param componentId the unique ID of the SNOMED&nbsp;CT component.
+	 * @return the concrete domains associated with the component, if any.
 	 */
 	@SuppressWarnings("unchecked")
-	public Collection<ConcreteDomainFragment> getStatementConcreteDomainFragments(final long statementId) {
-		final Object concreteDomains = statementIdToConcreteDomain.get(statementId);
+	public Collection<ConcreteDomainFragment> getInferredConcreteDomainFragments(final long componentId) {
+		final Object concreteDomains = componentIdToInferredConcreteDomains.get(componentId);
 		return (Collection<ConcreteDomainFragment>) (null == concreteDomains ? Collections.emptySet() : concreteDomains);
 	}
 
@@ -241,13 +210,6 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	 */
 	public LongSet getConceptIdSet() {
 		return conceptIdToInternalId.keySet();
-	}
-
-	/**
-	 * @return a {@link LongKeyMap} associating statement identifiers to their corresponding concrete domain members.
-	 */
-	public LongKeyMap getStatementIdToConcreteDomainMap() {
-		return statementIdToConcreteDomain;
 	}
 
 	/**
