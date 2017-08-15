@@ -44,16 +44,6 @@ public class StatementFragment implements Serializable {
 			final boolean destinationNegated,
 			final byte group,
 			final byte unionGroup,
-			final boolean universal) {
-
-		this(typeId, destinationId, destinationNegated, group, unionGroup, universal, -1L, -1L);
-	}
-
-	public StatementFragment(final long typeId,
-			final long destinationId,
-			final boolean destinationNegated,
-			final byte group,
-			final byte unionGroup,
 			final boolean universal,
 			final long statementId,
 			final long storageKey) {
