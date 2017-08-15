@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.reasoner.model;
 
+import static com.b2international.snowowl.snomed.reasoner.model.SnomedOntologyUtils.PREFIX_ROLE;
 import static com.b2international.snowowl.snomed.reasoner.model.SnomedOntologyUtils.PREFIX_ROLE_GROUP;
 import static com.b2international.snowowl.snomed.reasoner.model.SnomedOntologyUtils.PREFIX_ROLE_HAS_MEASUREMENT;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -29,9 +30,12 @@ import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
 
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
 /**
@@ -75,7 +79,24 @@ public class NonZeroGroupKey implements DefinitionNodeKey, Serializable {
 				if (null != hasActiveIngredientExpression) {
 					throw new IllegalStateException(MessageFormat.format("Multiple ''has active ingredient'' relationships were found in group {0}.", number));
 				} else {
-					hasActiveIngredientExpression = Iterables.getOnlyElement(singleRelationshipTerms);
+					hasActiveIngredientExpression = Iterables.tryFind(singleRelationshipTerms, new Predicate<OWLClassExpression>() {
+						@Override
+						public boolean apply(OWLClassExpression input) {
+							if (!(input instanceof OWLObjectSomeValuesFrom)) {
+								return false;
+							}
+							
+							OWLObjectPropertyExpression propertyExpression = ((OWLObjectSomeValuesFrom) input).getProperty();
+							
+							if (propertyExpression.isAnonymous()) {
+								return false;
+							}
+							
+							OWLObjectProperty property = propertyExpression.asOWLObjectProperty();
+							OWLObjectProperty expected = df.getOWLObjectProperty(PREFIX_ROLE + Concepts.HAS_ACTIVE_INGREDIENT, prefixManager);
+							return expected.equals(property);
+						}
+					}).get();
 				}
 			}
 			
