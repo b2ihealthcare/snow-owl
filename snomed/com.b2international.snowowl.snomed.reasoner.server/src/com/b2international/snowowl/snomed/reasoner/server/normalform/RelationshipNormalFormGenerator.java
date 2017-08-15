@@ -38,6 +38,7 @@ import com.b2international.commons.pcj.LongSets;
 import com.b2international.commons.pcj.LongSets.InverseLongFunction;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
@@ -51,9 +52,12 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Maps.EntryTransformer;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
@@ -376,24 +380,16 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 
 		private final StatementFragment fragment;
 
-		/**
-		 * Creates a new relationship fragment from the specified relationship.
-		 *
-		 * @param fragment
-		 *            the relationship to extract attribute and value from (may
-		 *            not be <code>null</code>)
-		 *
-		 * @throws NullPointerException
-		 *             if the given relationship is <code>null</code>
-		 */
-		public RelationshipFragment(final StatementFragment fragment) {
-			this.fragment = checkNotNull(fragment, "fragment");
+		private final Set<ConcreteDomainFragment> concreteDomainFragments;
+
+		public RelationshipFragment(final StatementFragment fragment, Collection<ConcreteDomainFragment> concreteDomainFragments) {
+			this.fragment = checkNotNull(fragment);
+			this.concreteDomainFragments = ImmutableSet.copyOf(concreteDomainFragments);
 		}
 
 		public boolean isDestinationNegated() {
 			return fragment.isDestinationNegated();
 		}
-
 
 		public boolean isUniversal() {
 			return fragment.isUniversal();
@@ -403,16 +399,13 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 			return fragment.getTypeId();
 		}
 
-
 		public long getDestinationId() {
 			return fragment.getDestinationId();
 		}
 
-
 		public long getStatementId() {
 			return fragment.getStatementId();
 		}
-
 
 		public long getStorageKey() {
 			return fragment.getStorageKey();
@@ -426,6 +419,10 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 			}
 
 			if (isUniversal() != other.isUniversal()) {
+				return false;
+			}
+			
+			if (!concreteDomainFragments.equals(other.concreteDomainFragments)) {
 				return false;
 			}
 
@@ -759,10 +756,31 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 			}
 		});
 
+		final ImmutableMultimap.Builder<StatementFragment, ConcreteDomainFragment> cdFragments = ImmutableMultimap.builder(); 
+		
+		for (StatementFragment ownStatedFragment : ownStatedNonIsaFragments) {
+			Collection<ConcreteDomainFragment> ownStatedCdFragments = reasonerTaxonomyBuilder.getStatedConcreteDomainFragments(ownStatedFragment.getStatementId());
+			cdFragments.putAll(ownStatedFragment, ownStatedCdFragments);
+		}
+		
+		for (StatementFragment ownInferredFragment : ownInferredFragments) {
+			Collection<ConcreteDomainFragment> ownInferredCdFragments = reasonerTaxonomyBuilder.getInferredConcreteDomainFragments(ownInferredFragment.getStatementId());
+			cdFragments.putAll(ownInferredFragment, ownInferredCdFragments);
+		}
+
+		for (Object statedFragmentsForParent : otherNonIsAFragments.values()) {
+			Collection<StatementFragment> otherStatedFragments = (Collection<StatementFragment>) statedFragmentsForParent;
+			for (StatementFragment otherStatedFragment : otherStatedFragments) {
+				Collection<ConcreteDomainFragment> otherStatedCdFragments = reasonerTaxonomyBuilder.getStatedConcreteDomainFragments(otherStatedFragment.getStatementId());
+				cdFragments.putAll(otherStatedFragment, otherStatedCdFragments);
+			}
+		}
+
 		final Iterable<StatementFragment> inferredNonIsAFragments = getInferredNonIsAFragments(conceptId, 
 				ownInferredNonIsaFragments, 
 				ownStatedNonIsaFragments,
-				otherNonIsAFragments);
+				otherNonIsAFragments,
+				cdFragments.build());
 
 		// Place results in the cache, so children can re-use it
 		generatedNonIsACache.put(conceptId, ImmutableList.copyOf(inferredNonIsAFragments));
@@ -792,24 +810,25 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 	private Iterable<StatementFragment> getInferredNonIsAFragments(final long sourceId,
 			final Collection<StatementFragment> ownInferredNonIsAFragments,
 			final Collection<StatementFragment> ownStatedNonIsAFragments,
-			final LongKeyMap parentStatedNonIsAFragments) {
+			final LongKeyMap parentStatedNonIsAFragments,
+			final Multimap<StatementFragment, ConcreteDomainFragment> cdFragments) {
 
 		// Index existing inferred non-IS A relationship groups into a GroupSet (without redundancy check)
 		final GroupSet inferredGroups = new GroupSet();
-		final Iterable<Group> ownInferredGroups = toGroups(true, ownInferredNonIsAFragments);
+		final Iterable<Group> ownInferredGroups = toGroups(true, ownInferredNonIsAFragments, cdFragments);
 		for (final Group ownInferredGroup : ownInferredGroups) {
 			inferredGroups.addUnique(ownInferredGroup);
 		}
 
 		// Eliminate redundancy between existing stated non-IS A relationship groups
 		final GroupSet groups = new GroupSet();
-		final Iterable<Group> ownGroups = toGroups(false, ownStatedNonIsAFragments);
+		final Iterable<Group> ownGroups = toGroups(false, ownStatedNonIsAFragments, cdFragments);
 		Iterables.addAll(groups, ownGroups);
 
 		// Continue by adding stated non-IS A relationship groups from parents indicated by the reasoner
 		for (final LongIterator itr = parentStatedNonIsAFragments.keySet().iterator(); itr.hasNext(); /* empty */) {
 			final long parentId = itr.next();
-			final Iterable<Group> otherGroups = toGroups(false, getStatementFragments(parentStatedNonIsAFragments, parentId));
+			final Iterable<Group> otherGroups = toGroups(false, getStatementFragments(parentStatedNonIsAFragments, parentId), cdFragments);
 			Iterables.addAll(groups, otherGroups);
 		}
 
@@ -823,7 +842,9 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		return fromGroupSet(groups);
 	}
 
-	private Iterable<Group> toGroups(final boolean preserveNumbers, final Collection<StatementFragment> nonIsARelationshipFragments) {
+	private Iterable<Group> toGroups(final boolean preserveNumbers, 
+			final Collection<StatementFragment> nonIsARelationshipFragments,
+			final Multimap<StatementFragment, ConcreteDomainFragment> cdFragments) {
 
 		final Map<Byte, Collection<StatementFragment>> relationshipsByGroupId = Multimaps.index(nonIsARelationshipFragments, 
 				new Function<StatementFragment, Byte>() {
@@ -837,7 +858,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 				new EntryTransformer<Byte, Collection<StatementFragment>, Collection<Group>>() {
 			@Override
 			public Collection<Group> transformEntry(final Byte key, final Collection<StatementFragment> values) {
-				final Iterable<UnionGroup> unionGroups = toUnionGroups(preserveNumbers, values);
+				final Iterable<UnionGroup> unionGroups = toUnionGroups(preserveNumbers, values, cdFragments);
 				final Iterable<UnionGroup> disjointUnionGroups = getDisjointComparables(unionGroups);
 
 				if (key == 0) {
@@ -872,7 +893,10 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		return group;
 	}
 
-	private Iterable<UnionGroup> toUnionGroups(final boolean preserveNumbers, final Collection<StatementFragment> values) {
+	private Iterable<UnionGroup> toUnionGroups(final boolean preserveNumbers, 
+			final Collection<StatementFragment> values,
+			final Multimap<StatementFragment, ConcreteDomainFragment> cdFragments) {
+		
 		final Map<Byte, Collection<StatementFragment>> relationshipsByUnionGroupId = Multimaps.index(values, 
 				new Function<StatementFragment, Byte>() {
 			@Override
@@ -887,10 +911,10 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 			public Collection<UnionGroup> transformEntry(final Byte key, final Collection<StatementFragment> values) {
 				if (key == 0) {
 					// Relationships in union group 0 form separate union groups
-					return ImmutableList.copyOf(toZeroUnionGroups(values));
+					return ImmutableList.copyOf(toZeroUnionGroups(values, cdFragments));
 				} else {
 					// Other group numbers produce a single union group from all fragments
-					return ImmutableList.of(toNonZeroUnionGroup(preserveNumbers, key, values));
+					return ImmutableList.of(toNonZeroUnionGroup(preserveNumbers, key, values, cdFragments));
 				}
 			}
 		}).values();
@@ -898,22 +922,25 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		return Iterables.concat(unionGroups);
 	}
 
-	private Iterable<UnionGroup> toZeroUnionGroups(final Collection<StatementFragment> values) {
+	private Iterable<UnionGroup> toZeroUnionGroups(final Collection<StatementFragment> values, final Multimap<StatementFragment, ConcreteDomainFragment> cdFragments) {
 		return FluentIterable.from(values).transform(new Function<StatementFragment, UnionGroup>() {
 			@Override
 			public UnionGroup apply(final StatementFragment input) {
-				final UnionGroup unionGroup = new UnionGroup(ImmutableList.of(new RelationshipFragment(input)));
+				final UnionGroup unionGroup = new UnionGroup(ImmutableList.of(new RelationshipFragment(input, cdFragments.get(input))));
 				unionGroup.setUnionGroupNumber(ZERO_GROUP); 
 				return unionGroup;
 			}
 		});
 	}
 
-	private UnionGroup toNonZeroUnionGroup(final boolean preserveNumbers, final byte unionGroupNumber, final Collection<StatementFragment> values) {
+	private UnionGroup toNonZeroUnionGroup(final boolean preserveNumbers, final byte unionGroupNumber, 
+			final Collection<StatementFragment> values,
+			final Multimap<StatementFragment, ConcreteDomainFragment> cdFragments) {
+		
 		final Iterable<RelationshipFragment> fragments = FluentIterable.from(values).transform(new Function<StatementFragment, RelationshipFragment>() {
 			@Override
 			public RelationshipFragment apply(final StatementFragment input) {
-				return new RelationshipFragment(input);
+				return new RelationshipFragment(input, cdFragments.get(input));
 			}
 		});
 
