@@ -17,41 +17,42 @@ package com.b2international.snowowl.snomed.exporter.server.rf2;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.toList;
 
-import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.collect.LongSets;
+import java.io.IOException;
+import java.util.List;
+
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.exporter.server.AbstractFilteredSnomedCoreExporter;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * Exporter for language type reference sets.
  */
-public class SnomedLanguageRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRefSetMemberIndexEntry> {
+public class SnomedLanguageRefSetExporter extends AbstractFilteredSnomedCoreExporter<SnomedRefSetMemberIndexEntry> {
 
 	private String languageCode;
-	private LongSet descriptionIds;
 
-	public SnomedLanguageRefSetExporter(SnomedExportContext exportContext, RevisionSearcher revisionSearcher, String languageCode,
-			LongSet descriptionIds) {
+	public SnomedLanguageRefSetExporter(SnomedExportContext exportContext, RevisionSearcher revisionSearcher, String languageCode) {
 		super(exportContext, SnomedRefSetMemberIndexEntry.class, revisionSearcher);
 		this.languageCode = checkNotNull(languageCode, "languageCode");
-		this.descriptionIds = checkNotNull(descriptionIds, "descriptionIds");
 	}
 
 	@Override
 	protected void appendExpressionConstraint(ExpressionBuilder builder) {
 		builder.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(singleton(SnomedRefSetType.LANGUAGE)));
-		appendReferencedComponentIdClause(builder, descriptionIds);
-	}
-
-	protected ExpressionBuilder appendReferencedComponentIdClause(ExpressionBuilder builder, LongSet descriptionIds) {
-		return builder.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(LongSets.toStringSet(descriptionIds)));
 	}
 
 	@Override
@@ -110,4 +111,28 @@ public class SnomedLanguageRefSetExporter extends AbstractSnomedRf2CoreExporter<
 	protected String getLanguageCode() {
 		return languageCode;
 	}
+
+	@Override
+	protected Hits<SnomedRefSetMemberIndexEntry> filter(Hits<SnomedRefSetMemberIndexEntry> allResults) throws IOException {
+
+		Multimap<String, SnomedRefSetMemberIndexEntry> referencedComponentToMemberMap = ArrayListMultimap.create();
+		allResults.getHits().forEach(m -> referencedComponentToMemberMap.put(m.getReferencedComponentId(), m));
+		
+		Query<String> query = Query.selectPartial(String.class, SnomedDescriptionIndexEntry.class, singleton(SnomedDescriptionIndexEntry.Fields.ID))
+			.where(Expressions.builder()
+				.must(SnomedDescriptionIndexEntry.Expressions.ids(referencedComponentToMemberMap.keySet()))
+				.filter(SnomedDescriptionIndexEntry.Expressions.languageCode(languageCode))
+				.build())
+			.limit(referencedComponentToMemberMap.keySet().size())
+			.build();
+				
+		List<String> descriptionIdsWithLanguageCode = getRevisionSearcher().search(query).getHits();
+		
+		List<SnomedRefSetMemberIndexEntry> filteredMembers = descriptionIdsWithLanguageCode.stream()
+				.flatMap(id -> referencedComponentToMemberMap.get(id).stream())
+				.collect(toList());
+
+		return new Hits<SnomedRefSetMemberIndexEntry>(filteredMembers, allResults.getOffset(), allResults.getLimit(), allResults.getTotal());
+	}
+
 }

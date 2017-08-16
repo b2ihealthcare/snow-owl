@@ -30,7 +30,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -40,9 +39,7 @@ import org.eclipse.net4j.util.io.ExtendedDataInputStream;
 import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
-import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.FileUtils;
-import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionIndex;
@@ -75,15 +72,15 @@ import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportRes
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContextImpl;
-import com.b2international.snowowl.snomed.exporter.server.SnomedExportExecutor;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRefSetExporterFactory;
 import com.b2international.snowowl.snomed.exporter.server.rf1.Id2Rf1PropertyMapper;
 import com.b2international.snowowl.snomed.exporter.server.rf1.SnomedRf1ConceptExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf1.SnomedRf1DescriptionExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf1.SnomedRf1RelationshipExporter;
-import com.b2international.snowowl.snomed.exporter.server.rf2.LanguageCodeAwareSnomedLanguageRefSetExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SimpleSnomedLanguageRefsetExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedInferredRelationshipExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedLanguageRefSetExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedRf2ConceptExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedRf2DescriptionExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedStatedRelationshipExporter;
@@ -96,7 +93,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 
@@ -518,37 +514,43 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		}
 		
 		Set<String> languageCodesInUse = getLanguageCodesInUse(revisionSearcher);
-		Map<String, LongSet> langCodeTodescriptionIdExportedMap = Maps.newHashMap();
-		for (String languageCode : languageCodesInUse) {
-			logActivity(String.format("Exporting %sSNOMED CT descriptions and language reference set members with language code '%s' into RF2 format",
-					exportContext.isUnpublishedExport() ? "unpublished " : "", languageCode));
-			SnomedRf2DescriptionExporter descriptionExporter = new SnomedRf2DescriptionExporter(exportContext, revisionSearcher, languageCode);
-			descriptionExporter.execute();
-			langCodeTodescriptionIdExportedMap.put(languageCode, descriptionExporter.getExportedDescriptionIdSet());
-		}
 		
 		for (String languageCode : languageCodesInUse) {
-			logActivity(String.format("Exporting %sSNOMED CT text definitions and language reference set members with language code '%s' into RF2 format",
+			logActivity(String.format("Exporting %sSNOMED CT descriptions with language code '%s' into RF2 format",
 					exportContext.isUnpublishedExport() ? "unpublished " : "", languageCode));
-			SnomedTextDefinitionExporter textDefinitionExporter = new SnomedTextDefinitionExporter(exportContext, revisionSearcher, languageCode);
-			textDefinitionExporter.execute();
-			langCodeTodescriptionIdExportedMap.merge(languageCode, textDefinitionExporter.getExportedDescriptionIdSet(), (oldIdsSet, newIdsSet) -> LongSets.newLongSet(LongSets.concat(oldIdsSet.iterator(), newIdsSet.iterator())));
+			new SnomedRf2DescriptionExporter(exportContext, revisionSearcher, languageCode).execute();
 		}
 		
-		// export language members with non changed descriptions
-		for (String languageCode : languageCodesInUse) {
-			logActivity(String.format("Exporting %sSNOMED CT language reference set members of language code '%s' with no description changes into RF2 format",
-					exportContext.isUnpublishedExport() ? "unpublished " : "", languageCode));
-			LongSet descriptionsAlreadyExported = langCodeTodescriptionIdExportedMap.get(languageCode);
-			new SnomedExportExecutor(new LanguageCodeAwareSnomedLanguageRefSetExporter(exportContext, revisionSearcher, languageCode, descriptionsAlreadyExported)).execute();
-		}
-
 		if (monitor.isCanceled()) {
 			return;
 		} else {
 			monitor.worked(2);
 		}
-
+		
+		for (String languageCode : languageCodesInUse) {
+			logActivity(String.format("Exporting %sSNOMED CT text definitions with language code '%s' into RF2 format",
+					exportContext.isUnpublishedExport() ? "unpublished " : "", languageCode));
+			new SnomedTextDefinitionExporter(exportContext, revisionSearcher, languageCode).execute();
+		}
+		
+		if (monitor.isCanceled()) {
+			return;
+		} else {
+			monitor.worked(2);
+		}
+		
+		if (languageCodesInUse.size() == 1) {
+			String languageCode = Iterables.getOnlyElement(languageCodesInUse);
+			logActivity(String.format("Exporting %sSNOMED CT language reference set members with language code '%s' into RF2 format",
+					exportContext.isUnpublishedExport() ? "unpublished " : "", languageCode));
+			new SimpleSnomedLanguageRefsetExporter(exportContext, revisionSearcher, languageCode).execute();
+		} else {
+			for (String languageCode : languageCodesInUse) {
+				logActivity(String.format("Exporting %sSNOMED CT language reference set members with language code '%s' into RF2 format",
+						exportContext.isUnpublishedExport() ? "unpublished " : "", languageCode));
+				new SnomedLanguageRefSetExporter(exportContext, revisionSearcher, languageCode).execute();
+			}
+		}
 		
 		if (monitor.isCanceled()) {
 			return;
@@ -682,7 +684,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		int counter = 0;
 
 		if (coreComponentExport) {
-			counter += 10;
+			counter += 12;
 			if (includeRf1) {
 				counter += 6;
 			}

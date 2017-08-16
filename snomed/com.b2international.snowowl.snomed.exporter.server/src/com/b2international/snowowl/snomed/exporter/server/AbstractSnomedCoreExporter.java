@@ -45,15 +45,15 @@ import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
 public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> implements SnomedExporter {
 
 	// scroll page size for the query
-	private static final int PAGE_SIZE = 100000;
+	protected static final int PAGE_SIZE = 100000;
 	
 	private int currentIndex;
 	private int currentOffset;
 	private Hits<T> hits;
 	
-	private Class<T> clazz;
-	private SnomedExportContext exportContext;
-	private RevisionSearcher revisionSearcher;
+	private final Class<T> clazz;
+	private final SnomedExportContext exportContext;
+	private final RevisionSearcher revisionSearcher;
 
 	protected AbstractSnomedCoreExporter(final SnomedExportContext exportContext, final Class<T> clazz, final RevisionSearcher revisionSearcher) {
 		this.exportContext = checkNotNull(exportContext, "exportContext");
@@ -94,8 +94,6 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 				final Query<T> exportQuery = Query.select(clazz).where(getQueryExpression()).offset(currentOffset).limit(PAGE_SIZE).build();
 				hits = revisionSearcher.search(exportQuery);
 				
-				collectHits(hits);
-				
 				currentIndex = 0;
 				currentOffset += hits.getHits().size();
 				
@@ -108,8 +106,6 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 		return hits.getHits().size() > 0 && currentIndex < hits.getHits().size();
 	}
 	
-	protected void collectHits(Hits<T> hits) {}
-
 	@Override
 	public String next() {
 		return convertToString(hits.getHits().get(currentIndex++));
@@ -120,15 +116,43 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 		return exportContext;
 	}
 
-	public RevisionSearcher getRevisionSearcher() {
-		return revisionSearcher;
-	}
-
 	@Override
 	public void execute() throws IOException {
 		new SnomedExportExecutor(this).execute();
 	}
 	
+	protected RevisionSearcher getRevisionSearcher() {
+		return revisionSearcher;
+	}
+	
+	protected int getCurrentIndex() {
+		return currentIndex;
+	}
+
+	protected void setCurrentIndex(int currentIndex) {
+		this.currentIndex = currentIndex;
+	}
+
+	protected int getCurrentOffset() {
+		return currentOffset;
+	}
+
+	protected void setCurrentOffset(int currentOffset) {
+		this.currentOffset = currentOffset;
+	}
+
+	protected Hits<T> getHits() {
+		return hits;
+	}
+
+	protected void setHits(Hits<T> hits) {
+		this.hits = hits;
+	}
+	
+	protected Class<T> getClazz() {
+		return clazz;
+	}
+
 	protected void appendExpressionConstraint(ExpressionBuilder builder) {
 		//do nothing
 	}
@@ -141,7 +165,7 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 		return BooleanUtils.toString(isActive);
 	}
 
-	private Expression getQueryExpression() {
+	protected Expression getQueryExpression() {
 		
 		ExpressionBuilder builder = Expressions.builder();
 		
