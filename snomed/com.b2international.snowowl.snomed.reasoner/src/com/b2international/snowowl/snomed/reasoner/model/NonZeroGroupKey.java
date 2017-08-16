@@ -26,6 +26,7 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Set;
 
+import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
@@ -79,6 +80,8 @@ public class NonZeroGroupKey implements DefinitionNodeKey, Serializable {
 				if (null != hasActiveIngredientExpression) {
 					throw new IllegalStateException(MessageFormat.format("Multiple ''has active ingredient'' relationships were found in group {0}.", number));
 				} else {
+					final IRI hasActiveIngredientIRI = prefixManager.getIRI(PREFIX_ROLE + Concepts.HAS_ACTIVE_INGREDIENT);
+					
 					hasActiveIngredientExpression = Iterables.tryFind(singleRelationshipTerms, new Predicate<OWLClassExpression>() {
 						@Override
 						public boolean apply(OWLClassExpression input) {
@@ -93,8 +96,8 @@ public class NonZeroGroupKey implements DefinitionNodeKey, Serializable {
 							}
 							
 							OWLObjectProperty property = propertyExpression.asOWLObjectProperty();
-							OWLObjectProperty expected = df.getOWLObjectProperty(PREFIX_ROLE + Concepts.HAS_ACTIVE_INGREDIENT, prefixManager);
-							return expected.equals(property);
+							IRI propertyIRI = property.getIRI();
+							return hasActiveIngredientIRI.equals(propertyIRI);
 						}
 					}).get();
 				}
