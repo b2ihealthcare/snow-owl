@@ -26,11 +26,11 @@ import org.apache.lucene.queries.function.ValueSource;
 import org.apache.lucene.queries.function.docvalues.FloatDocValues;
 import org.apache.lucene.queries.function.valuesource.VectorValueSource;
 
+import com.b2international.index.ScriptEngine;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 
 /**
@@ -38,17 +38,17 @@ import groovy.lang.Script;
  */
 public class CustomScoreValueSource extends VectorValueSource {
 
-	private final Map<String, ValueSource> sources;
-	private final GroovyShell shell;
 	private final String script;
+	private final Map<String, ValueSource> sources;
 	private final Map<String, ? extends Object> scriptParams;
+	private final ScriptEngine scriptEngine;
 
-	public CustomScoreValueSource(String script, final Map<String, ? extends Object> scriptParams, Map<String, ValueSource> sources) {
+	public CustomScoreValueSource(String script, final Map<String, ? extends Object> scriptParams, Map<String, ValueSource> sources, ScriptEngine scriptEngine) {
 		super(ImmutableList.copyOf(sources.values()));
 		this.script = script;
 		this.scriptParams = scriptParams;
 		this.sources = sources;
-		this.shell = new GroovyShell();
+		this.scriptEngine = scriptEngine;
 	}
 	
 	@Override
@@ -57,7 +57,6 @@ public class CustomScoreValueSource extends VectorValueSource {
 		for (String field : sources.keySet()) {
 			fieldValues.put(field, sources.get(field).getValues(context, readerContext));
 		}
-		final Script compiledScript = shell.parse(script);
 		return new FloatDocValues(this) {
 			@Override
 			public float floatVal(int doc) {
@@ -76,6 +75,7 @@ public class CustomScoreValueSource extends VectorValueSource {
 				ctx.put("params", scriptParams);
 				
 				final Binding binding = new Binding(newHashMap(ctx.build()));
+				final Script compiledScript = scriptEngine.compile(script);
 				compiledScript.setBinding(binding);
 				return ((Number) compiledScript.run()).floatValue();
 			}

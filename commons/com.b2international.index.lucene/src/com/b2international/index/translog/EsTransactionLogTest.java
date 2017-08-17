@@ -59,6 +59,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 
+import groovy.lang.Script;
+
 /**
  * @since 5.0
  */
@@ -114,6 +116,11 @@ final class EsTransactionLogTest {
 		@Override
 		public Logger log() {
 			return logger;
+		}
+		
+		@Override
+		public Script compile(String script) {
+			throw new UnsupportedOperationException();
 		}
 
 		@Override

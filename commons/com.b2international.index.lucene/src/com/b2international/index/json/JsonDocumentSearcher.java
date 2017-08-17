@@ -50,6 +50,7 @@ import com.b2international.index.Hits;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
 import com.b2international.index.LuceneIndexAdmin;
+import com.b2international.index.ScriptEngine;
 import com.b2international.index.Searcher;
 import com.b2international.index.WithHash;
 import com.b2international.index.WithId;
@@ -93,8 +94,10 @@ public class JsonDocumentSearcher implements Searcher {
 	private final int resultWindow;
 	private final Logger log;
 	private final QueryBuilder luceneQueryBuilder;
+	private final ScriptEngine scriptEngine;
 
 	public JsonDocumentSearcher(LuceneIndexAdmin admin, ObjectMapper mapper) {
+		this.scriptEngine = admin;
 		this.log = admin.log();
 		this.mapper = mapper;
 		this.mappings = admin.mappings();
@@ -387,7 +390,7 @@ public class JsonDocumentSearcher implements Searcher {
 	}
 
 	private org.apache.lucene.search.Query toLuceneQuery(DocumentMapping mapping, Expression where) {
-		return new LuceneQueryBuilder(mapping, luceneQueryBuilder).build(where);
+		return new LuceneQueryBuilder(mapping, luceneQueryBuilder, scriptEngine).build(where);
 	}
 
 	private org.apache.lucene.search.Sort toLuceneSort(DocumentMapping mapping, Query<?> query) {

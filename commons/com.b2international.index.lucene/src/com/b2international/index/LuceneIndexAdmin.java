@@ -28,7 +28,7 @@ import com.b2international.index.translog.TransactionLog;
 /**
  * @since 4.7
  */
-public interface LuceneIndexAdmin extends IndexAdmin {
+public interface LuceneIndexAdmin extends IndexAdmin, ScriptEngine {
 	
 	void close();
 	

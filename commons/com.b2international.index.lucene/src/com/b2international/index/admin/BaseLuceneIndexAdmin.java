@@ -57,8 +57,12 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.slowlog.SlowLogConfig;
 import com.b2international.index.translog.TransactionLog;
+import com.google.common.collect.MapMaker;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closer;
+
+import groovy.lang.GroovyShell;
+import groovy.lang.Script;
 
 /**
  * @since 4.7
@@ -86,6 +90,8 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	private TransactionLog tlog;
 	private ReentrantLock lock = new ReentrantLock();
 	private QueryBuilder queryBuilder;
+	private GroovyShell shell;
+	private Map<String, Class<?>> scriptCache = new MapMaker().makeMap();
 	
 	protected BaseLuceneIndexAdmin(String name, Mappings mappings) {
 		this(name, mappings, Maps.<String, Object>newHashMap());
@@ -175,6 +181,8 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 			directory = openDirectory();
 			closer.register(directory);
 			
+			shell = new GroovyShell();
+			
 			writer = new IndexWriter(directory, createConfig(false));
 			queryBuilder = new QueryBuilder(getSearchAnalyzer());
 			closer.register(writer);
@@ -210,6 +218,23 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	protected abstract TransactionLog createTransactionlog(Map<String, String> commitData) throws IOException;
 
 	protected abstract Directory openDirectory() throws IOException;
+	
+	@Override
+	public Script compile(String script) {
+		final Class<? extends Script> scriptClass = getScriptClass(script);
+		try {
+			return scriptClass.newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new IndexException("Couldn't instantiate groovy script", e);
+		}
+	}
+	
+	private Class<? extends Script> getScriptClass(String script) {
+		if (!scriptCache.containsKey(script)) {
+			scriptCache.put(script, (Class<?>) shell.getClassLoader().parseClass(script));
+		}
+		return (Class<? extends Script>) scriptCache.get(script);
+	}
 
 	private void initPeriodicCommit(IndexWriter writer, TransactionLog tlog) {
 		final long periodicCommitInterval = (long) settings().get(IndexClientFactory.COMMIT_INTERVAL_KEY);
@@ -290,6 +315,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 			writer = null;
 			manager = null;
 			tlog = null;
+			shell = null;
 			closer.close();
 			closer = null;
 			open.set(false);
