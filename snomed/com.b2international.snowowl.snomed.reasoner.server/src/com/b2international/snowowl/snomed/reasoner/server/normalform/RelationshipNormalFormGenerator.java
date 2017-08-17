@@ -422,7 +422,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 				return false;
 			}
 			
-			if (!concreteDomainFragments.equals(other.concreteDomainFragments)) {
+			if (!concreteDomainFragments.containsAll(other.concreteDomainFragments)) {
 				return false;
 			}
 
@@ -538,10 +538,11 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 
 			final RelationshipFragment other = (RelationshipFragment) obj;
 
-			return (isUniversal() == other.isUniversal()) &&
-					(isDestinationNegated() == other.isDestinationNegated()) &&
-					(getTypeId() == other.getTypeId()) &&
-					(getDestinationId() == other.getDestinationId());
+			return isUniversal() == other.isUniversal() && 
+					isDestinationNegated() == other.isDestinationNegated() &&
+					getTypeId() == other.getTypeId() &&
+					getDestinationId() == other.getDestinationId() &&
+					Objects.equal(concreteDomainFragments, other.concreteDomainFragments);
 		}
 
 		@Override
