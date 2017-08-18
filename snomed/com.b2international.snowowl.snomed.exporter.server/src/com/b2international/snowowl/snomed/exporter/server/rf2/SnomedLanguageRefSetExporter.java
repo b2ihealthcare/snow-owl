@@ -120,7 +120,7 @@ public class SnomedLanguageRefSetExporter extends AbstractFilteredSnomedCoreExpo
 		
 		Query<String> query = Query.selectPartial(String.class, SnomedDescriptionIndexEntry.class, singleton(SnomedDescriptionIndexEntry.Fields.ID))
 			.where(Expressions.builder()
-				.must(SnomedDescriptionIndexEntry.Expressions.ids(referencedComponentToMemberMap.keySet()))
+				.filter(SnomedDescriptionIndexEntry.Expressions.ids(referencedComponentToMemberMap.keySet()))
 				.filter(SnomedDescriptionIndexEntry.Expressions.languageCode(languageCode))
 				.build())
 			.limit(referencedComponentToMemberMap.keySet().size())
