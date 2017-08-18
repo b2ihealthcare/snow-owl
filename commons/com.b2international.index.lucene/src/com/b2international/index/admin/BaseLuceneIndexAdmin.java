@@ -57,7 +57,9 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.slowlog.SlowLogConfig;
 import com.b2international.index.translog.TransactionLog;
-import com.google.common.collect.MapMaker;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closer;
 
@@ -91,7 +93,12 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	private ReentrantLock lock = new ReentrantLock();
 	private QueryBuilder queryBuilder;
 	private GroovyShell shell;
-	private Map<String, Class<?>> scriptCache = new MapMaker().makeMap();
+	private LoadingCache<String, Class<? extends Script>> scriptCache = CacheBuilder.newBuilder().build(new CacheLoader<String, Class<? extends Script>>() {
+		@Override
+		public Class<? extends Script> load(String script) throws Exception {
+			return shell.getClassLoader().parseClass(script);
+		}
+	});
 	
 	protected BaseLuceneIndexAdmin(String name, Mappings mappings) {
 		this(name, mappings, Maps.<String, Object>newHashMap());
@@ -221,7 +228,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	
 	@Override
 	public Script compile(String script) {
-		final Class<? extends Script> scriptClass = getScriptClass(script);
+		final Class<? extends Script> scriptClass = scriptCache.getUnchecked(script);
 		try {
 			return scriptClass.newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {
@@ -229,13 +236,6 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 		}
 	}
 	
-	private Class<? extends Script> getScriptClass(String script) {
-		if (!scriptCache.containsKey(script)) {
-			scriptCache.put(script, (Class<?>) shell.getClassLoader().parseClass(script));
-		}
-		return (Class<? extends Script>) scriptCache.get(script);
-	}
-
 	private void initPeriodicCommit(IndexWriter writer, TransactionLog tlog) {
 		final long periodicCommitInterval = (long) settings().get(IndexClientFactory.COMMIT_INTERVAL_KEY);
 		final PeriodicCommit newPc = new PeriodicCommit(name, writer, tlog);
