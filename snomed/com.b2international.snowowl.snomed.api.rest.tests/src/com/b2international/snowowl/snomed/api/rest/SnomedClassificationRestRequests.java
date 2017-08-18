@@ -77,7 +77,6 @@ public abstract class SnomedClassificationRestRequests {
 	
 	public static ValidatableResponse getEquivalentConceptSets(IBranchPath branchPath, String classificationId) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.queryParam("limit", 2000)
 				.get("/{path}/classifications/{id}/equivalent-concepts", branchPath.getPath(), classificationId)
 				.then();
 	}
