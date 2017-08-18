@@ -60,6 +60,7 @@ import org.apache.lucene.util.QueryBuilder;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.Script;
+import com.b2international.index.ScriptEngine;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.index.json.JsonDocumentMapping;
 import com.b2international.index.lucene.Fields;
@@ -85,9 +86,11 @@ public final class LuceneQueryBuilder {
 	 */
 	private boolean needsScoring;
 
+	private final ScriptEngine scriptEngine;
 	
-	public LuceneQueryBuilder(DocumentMapping mapping, QueryBuilder luceneQueryBuilder) {
+	public LuceneQueryBuilder(DocumentMapping mapping, QueryBuilder luceneQueryBuilder, ScriptEngine scriptEngine) {
 		this.luceneQueryBuilder = luceneQueryBuilder;
+		this.scriptEngine = scriptEngine;
 		this.mapping = checkNotNull(mapping, "mapping");
 	}
 
@@ -208,41 +211,8 @@ public final class LuceneQueryBuilder {
 			}
 		}
 		
-		return new CustomScoreValueSource(script.script(), scriptParams, valueSources);
+		return new CustomScoreValueSource(script.script(), scriptParams, valueSources, scriptEngine);
 	}
-//		if (func instanceof DualScoreFunction) {
-//			final DualScoreFunction<?, ?> f = (DualScoreFunction<?, ?>) func;
-//			final String firstFieldName = f.getFirst();
-//			final Class<?> firstFieldType = mapping.getFieldType(firstFieldName);
-//			final String secondFieldName = f.getSecond();
-//			final Class<?> secondFieldType = mapping.getFieldType(secondFieldName);
-			// only this combination is supported at the moment
-//			if (String.class == firstFieldType && float.class == secondFieldType) {
-//				@SuppressWarnings("unchecked") 
-//				final DualScoreFunction<String, Float> function = (DualScoreFunction<String, Float>) func;
-//				return new DualFloatFunction(new BytesRefFieldSource(firstFieldName), new FloatFieldSource(secondFieldName)) {
-//					@Override
-//					protected String name() {
-//						return f.name();
-//					}
-//					
-//					@Override
-//					protected float func(int doc, FunctionValues aVals, FunctionValues bVals) {
-//						final String firstValue = aVals.strVal(doc);
-//						final float secondValue = bVals.floatVal(doc);
-//						return function.compute(firstValue, secondValue);
-//					}
-//				};
-//			}
-//		} else if (func instanceof FieldScoreFunction) {
-//			final String field = ((FieldScoreFunction) func).getField();
-//			final Class<?> fieldType = mapping.getFieldType(field);
-//			if (fieldType == float.class || fieldType == Float.class) {
-//				return new FloatFieldSource(field); 
-//			}
-//		}
-//		throw new UnsupportedOperationException("Not supported score function: " + func);
-//	}
 	
 	private void visit(BooleanPredicate predicate) {
 		deque.push(Fields.boolField(predicate.getField()).toQuery(predicate.getArgument()));
@@ -254,7 +224,7 @@ public final class LuceneQueryBuilder {
 		// first add the mustClauses, then the mustNotClauses, if there are no mustClauses but mustNot ones then add a match all before
 		for (Expression must : bool.mustClauses()) {
 			// visit the item and immediately pop the deque item back
-			LuceneQueryBuilder innerQueryBuilder = new LuceneQueryBuilder(mapping, luceneQueryBuilder);
+			LuceneQueryBuilder innerQueryBuilder = new LuceneQueryBuilder(mapping, luceneQueryBuilder, scriptEngine);
 			innerQueryBuilder.visit(must);
 			
 			if (innerQueryBuilder.needsScoring) {
@@ -291,7 +261,7 @@ public final class LuceneQueryBuilder {
 		final Query parentFilter = JsonDocumentMapping.matchType(mapping.typeAsString());
 		final DocumentMapping nestedMapping = mapping.getNestedMapping(predicate.getField());
 		final Query childFilter = JsonDocumentMapping.matchType(nestedMapping.typeAsString());
-		final Query innerQuery = new LuceneQueryBuilder(nestedMapping, luceneQueryBuilder).build(predicate.getExpression());
+		final Query innerQuery = new LuceneQueryBuilder(nestedMapping, luceneQueryBuilder, scriptEngine).build(predicate.getExpression());
 		final Query childQuery = new BooleanQuery.Builder()
 										.add(innerQuery, Occur.MUST)
 										.add(childFilter, Occur.FILTER)
@@ -307,7 +277,7 @@ public final class LuceneQueryBuilder {
 		
 		final DocumentMapping parentMapping = mapping.getParent();
 		checkArgument(parentMapping.type() == parentType, "Unexpected parent type. %s vs. %s", parentMapping.type(), parentType);
-		final Query parentQuery = new LuceneQueryBuilder(parentMapping, luceneQueryBuilder).build(parentExpression);
+		final Query parentQuery = new LuceneQueryBuilder(parentMapping, luceneQueryBuilder, scriptEngine).build(parentExpression);
 		
 		final Query parentFilter = JsonDocumentMapping.matchType(parentMapping.typeAsString());
 		

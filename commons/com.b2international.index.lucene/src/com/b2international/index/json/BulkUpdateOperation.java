@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.lucene.index.IndexWriter;
 
 import com.b2international.index.BulkUpdate;
+import com.b2international.index.ScriptEngine;
 import com.b2international.index.Searcher;
 import com.b2international.index.WithId;
 import com.b2international.index.mapping.DocumentMapping;
@@ -35,7 +36,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
 import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 
 /**
@@ -47,11 +47,13 @@ public final class BulkUpdateOperation<T> implements Operation {
 	private final Mappings mappings;
 	private final BulkUpdate<T> update;
 	private final Collection<Index> updates = newArrayList();
+	private final ScriptEngine scriptEngine;
 
-	public BulkUpdateOperation(BulkUpdate<T> update, ObjectMapper mapper, Mappings mappings) {
+	public BulkUpdateOperation(BulkUpdate<T> update, ObjectMapper mapper, Mappings mappings, ScriptEngine scriptEngine) {
 		this.update = update;
 		this.mapper = mapper;
 		this.mappings = mappings;
+		this.scriptEngine = scriptEngine;
 	}
 	
 	@Override
@@ -60,8 +62,6 @@ public final class BulkUpdateOperation<T> implements Operation {
 		final String scriptName = update.getScript();
 		final String script = mapping.getScript(scriptName).script();
 		
-		final GroovyShell shell = new GroovyShell();
-		Script compiledScript = shell.parse(script);
 		final Query<? extends T> query = Query.select(update.getType()).where(update.getFilter()).limit(Integer.MAX_VALUE).build();
 		for (T hit : searcher.search(query)) {
 			final Map<String, Object> ctx = newHashMap();
@@ -70,6 +70,7 @@ public final class BulkUpdateOperation<T> implements Operation {
 			}
 			ctx.put("_source", mapper.convertValue(hit, Map.class));
 			final Binding binding = new Binding(ImmutableMap.of("ctx", ctx, "params", update.getParams()));
+			Script compiledScript = scriptEngine.compile(script);
 			compiledScript.setBinding(binding);
 			compiledScript.run();
 			final Map<String, Object> changed = (Map<String, Object>) ctx.get("_source");

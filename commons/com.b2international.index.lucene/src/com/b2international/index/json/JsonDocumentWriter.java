@@ -144,7 +144,7 @@ public class JsonDocumentWriter implements Writer {
 	@Override
 	public <T> void bulkUpdate(BulkUpdate<T> update) throws IOException {
 		this.withUpdate = true;
-		this.operations.add(new BulkUpdateOperation<T>(update, mapper, mappings));
+		this.operations.add(new BulkUpdateOperation<T>(update, mapper, mappings, admin));
 	}
 
 }
