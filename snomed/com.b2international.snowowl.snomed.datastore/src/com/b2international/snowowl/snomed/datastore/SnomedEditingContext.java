@@ -1199,13 +1199,11 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		}
 		
 		for (Relationship relationship : getInboundRelationships(concept.getId())) {
-			if (IS_A.equals(relationship.getType().getId())) {
-				if (relationship != null) {
-					deletionPlan = canDelete(relationship, deletionPlan);
-					if (deletionPlan.getRejectionReasons().size() > 0) {
-						deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_MESSAGE, toString(concept)));
-						return deletionPlan;
-					}
+			if (relationship != null) {
+				deletionPlan = canDelete(relationship, deletionPlan);
+				if (deletionPlan.getRejectionReasons().size() > 0) {
+					deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_MESSAGE, toString(concept)));
+					return deletionPlan;
 				}
 			}
 		}
