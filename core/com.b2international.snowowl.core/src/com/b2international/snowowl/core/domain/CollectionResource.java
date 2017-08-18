@@ -22,7 +22,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -79,7 +81,8 @@ public class CollectionResource<T> implements Serializable, Iterable<T> {
 	 * @param items
 	 * @return
 	 */
-	public static <T> CollectionResource<T> of(Collection<T> items) {
+	@JsonCreator
+	public static <T> CollectionResource<T> of(@JsonProperty("items") Collection<T> items) {
 		if (items instanceof List) {
 			return of((List<T>)items);
 		}

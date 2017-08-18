@@ -74,6 +74,13 @@ public abstract class SnomedClassificationRestRequests {
 				.get("/{path}/classifications/{id}/relationship-changes", branchPath.getPath(), classificationId)
 				.then();
 	}
+	
+	public static ValidatableResponse getEquivalentConceptSets(IBranchPath branchPath, String classificationId) {
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+				.queryParam("limit", 2000)
+				.get("/{path}/classifications/{id}/equivalent-concepts", branchPath.getPath(), classificationId)
+				.then();
+	}
 
 	public static ValidatableResponse waitForClassificationJob(IBranchPath branchPath, String classificationId) {
 		return waitForJob(branchPath, classificationId, CLASSIFICATION_EXIT_STATES);
