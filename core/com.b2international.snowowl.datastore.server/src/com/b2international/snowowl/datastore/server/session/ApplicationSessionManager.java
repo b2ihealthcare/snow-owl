@@ -56,8 +56,6 @@ import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.AlreadyLoggedInException;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.users.IAuthorizationService;
-import com.b2international.snowowl.core.users.Permission;
-import com.b2international.snowowl.core.users.PermissionIdConstant;
 import com.b2international.snowowl.core.users.Role;
 import com.b2international.snowowl.core.users.SpecialRole;
 import com.b2international.snowowl.core.users.SpecialUserStore;
@@ -214,12 +212,6 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 		final String userId = (String) currentSession.get(KEY_USER_ID);
 		final String sessionId = String.valueOf(currentSession.get(KEY_SESSION_ID));
 
-		final IAuthorizationService authorizationService = ApplicationContext.getInstance().getService(IAuthorizationService.class);
-		final Permission administrativeLoginPermission = new Permission(PermissionIdConstant.ADMINISTRATIVE_LOGIN);
-		if (!loginEnabled && !authorizationService.isAuthorized(userId, administrativeLoginPermission)) {
-			throw new SecurityException("Logging in for non-administrator users is temporarily disabled.");
-		}
-
 		if (null != getByUserId(userId)) {
 			throw new AlreadyLoggedInException();
 		}
@@ -235,6 +227,10 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 
 			final String password = new String(decryptedResponse, RANDOM_BYTES_LENGTH, decryptedResponse.length - RANDOM_BYTES_LENGTH, Charsets.UTF_8);
 			final Collection<Role> roles = authenticate(userId, password);
+			
+			if (!loginEnabled && !roles.contains(SpecialRole.ADMINISTRATOR)) {
+				throw new SecurityException("Logging in for non-administrator users is temporarily disabled.");
+			}
 
 			currentSession.remove(KEY_RANDOM_BYTES);
 			currentSession.remove(KEY_SERVER_PRIVATE_KEY);

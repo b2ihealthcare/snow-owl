@@ -82,7 +82,7 @@ public class MrcmCommandProvider implements CommandProvider {
 		}
 		
 		final IAuthorizationService authorizationService = ApplicationContext.getInstance().getService(IAuthorizationService.class);
-		final boolean isAuthorized = authorizationService.isAuthorized(authenticator.getUsername(), new Permission(PermissionIdConstant.MRCM_IMPORT));
+		final boolean isAuthorized = authorizationService.isAuthorized(authenticator.getUsername(), new Permission(PermissionIdConstant.IMPORT));
 		if (!isAuthorized) {
 			interpreter.print("User is unauthorized to import MRCM rules.");
 			return;
@@ -122,7 +122,7 @@ public class MrcmCommandProvider implements CommandProvider {
 		
 		final CommandLineAuthenticator authenticator = new CommandLineAuthenticator();
 		final IAuthorizationService authorizationService = ApplicationContext.getInstance().getService(IAuthorizationService.class);
-		if (authenticator.authenticate(interpreter) && !authorizationService.isAuthorized(authenticator.getUsername(), new Permission(PermissionIdConstant.MRCM_EXPORT))) {
+		if (authenticator.authenticate(interpreter) && !authorizationService.isAuthorized(authenticator.getUsername(), new Permission(PermissionIdConstant.EXPORT))) {
 			interpreter.print("User is not authorized to export MRCM rules.");
 			return;
 		}

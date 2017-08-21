@@ -53,19 +53,10 @@ public class CachingClientAuthorizationService implements IClientAuthorizationSe
 
 	@Override
 	public boolean isAuthorized(final Permission authorizable) {
-		if (Permission.PERMISSION_ALLOWED.equals(authorizable)) {
-			LOGGER.debug(MessageFormat.format("User ({0}) granted permission for [{1}]", getLoggedInUser().getUserName(), authorizable.getId()));
-			return true;
-		}
-
 		final Collection<Role> roles = getRoles();
 		for (final Role role : roles) {
 			final Collection<Permission> permissions = role.getPermissions();
 			for (final Permission permission : permissions) {
-				if (Permission.PERMISSION_ALLOWED.equals(permission)){
-					LOGGER.debug(MessageFormat.format("User ({0}) granted permission [{1}], user has allow-all permission", getLoggedInUser().getUserName(), authorizable.getId()));
-					return true; // allow everything if our role's permission: PermissionIdConstant.ALLOW_ALL
-				}
 				if (permission.getId().equals(authorizable.getId())) {
 					LOGGER.debug(MessageFormat.format("User ({0}) granted permission [{1}]", getLoggedInUser().getUserName(), authorizable.getId()));
 					return true;
