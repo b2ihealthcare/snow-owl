@@ -105,7 +105,7 @@ public class PromoteBranchAction extends AbstractCDOBranchAction {
 		final CDOBranch parentBranch = parentBranchPoint.getBranch();
 
 		LOGGER.info("Promoting changes from '{}' to '{}' in '{}'...", taskBranchPath, parentBranchPath, connection.getRepositoryName());
-		final CDOBranchMerger branchMerger = new CDOBranchMerger(CDOConflictProcessorBroker.INSTANCE.getProcessor(repositoryId), false);
+		final CDOBranchMerger branchMerger = new CDOBranchMerger(CDOConflictProcessorBroker.INSTANCE.getProcessor(repositoryId));
 
 		try {
 

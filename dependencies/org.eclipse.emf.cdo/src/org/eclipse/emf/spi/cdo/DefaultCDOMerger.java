@@ -81,30 +81,16 @@ public class DefaultCDOMerger implements CDOMerger
 
     preProcess();
     
-    Set<CDOID> taken = new HashSet<CDOID>();
-    for (Entry<CDOID, Object> entry : targetMap.entrySet())
-    {
-      CDOID id = entry.getKey();
-      Object targetData = entry.getValue();
-      Object sourceData = sourceMap.get(id);
-
-      if (merge(targetData, sourceData))
-      {
-        taken.add(id);
-      }
-    }
-
     for (Entry<CDOID, Object> entry : sourceMap.entrySet())
     {
       CDOID id = entry.getKey();
-      if (taken.add(id))
-      {
-        Object sourceData = entry.getValue();
-        Object targetData = targetMap.get(id);
-        merge(targetData, sourceData);
-      }
+      Object sourceData = entry.getValue();
+      Object targetData = targetMap.get(id);
+      merge(targetData, sourceData);
     }
 
+    // XXX: We only consider conflicts from the source changes' point of view
+    
     if (!conflicts.isEmpty())
     {
       throw new ConflictException("Merger could not resolve all conflicts: " + conflicts, this, result);
@@ -116,7 +102,7 @@ public class DefaultCDOMerger implements CDOMerger
   protected void preProcess() {
   }
 
-protected boolean merge(Object targetData, Object sourceData)
+  protected boolean merge(Object targetData, Object sourceData)
   {
     Object data = null;
     if (sourceData == null)

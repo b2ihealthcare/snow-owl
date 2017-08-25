@@ -344,7 +344,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
-		createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, conceptId);
+		String relationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, conceptId);
 		deleteComponent(a, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
 
 		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased deleted concept over new relationship")
@@ -356,8 +356,8 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
 
-		assertEquals(conceptId, conflict.getComponentId());
-		assertEquals("Concept", conflict.getComponentType());
+		assertEquals(relationshipId, conflict.getComponentId());
+		assertEquals("Relationship", conflict.getComponentType());
 		assertEquals(ConflictType.CAUSES_MISSING_REFERENCE, conflict.getType());
 	}
 
@@ -486,7 +486,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		 * XXX: Creating a new description on the concept itself would result in a DELETED_WHILE_CHANGED conflict;
 		 * by referring to it as the type, the deletion will generate a CAUSES_MISSING_REFERENCE conflict instead.
 		 */
-		createNewDescription(a, Concepts.ROOT_CONCEPT, conceptId);
+		String descriptionId = createNewDescription(a, Concepts.ROOT_CONCEPT, conceptId);
 
 		IBranchPath b = BranchPathUtils.createPath(branchPath, "b");
 		createBranch(b).statusCode(201);
@@ -502,8 +502,8 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
 
-		assertEquals(conceptId, conflict.getComponentId());
-		assertEquals("Concept", conflict.getComponentType());
+		assertEquals(descriptionId, conflict.getComponentId());
+		assertEquals("Description", conflict.getComponentType());
 		assertEquals(ConflictType.CAUSES_MISSING_REFERENCE, conflict.getType());
 		assertEquals(0, conflict.getConflictingAttributes().size());
 	}
@@ -515,7 +515,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		createBranch(a).statusCode(201);
 
-		createNewRelationship(a, Concepts.ROOT_CONCEPT, Concepts.PART_OF, conceptId);
+		String relationshipId = createNewRelationship(a, Concepts.ROOT_CONCEPT, Concepts.PART_OF, conceptId);
 
 		IBranchPath b = BranchPathUtils.createPath(branchPath, "b");
 		createBranch(b).statusCode(201);
@@ -531,8 +531,8 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
 
-		assertEquals(conceptId, conflict.getComponentId());
-		assertEquals("Concept", conflict.getComponentType());
+		assertEquals(relationshipId, conflict.getComponentId());
+		assertEquals("Relationship", conflict.getComponentType());
 		assertEquals(ConflictType.CAUSES_MISSING_REFERENCE, conflict.getType());
 		assertEquals(0, conflict.getConflictingAttributes().size());
 	}

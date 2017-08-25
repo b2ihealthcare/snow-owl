@@ -140,7 +140,7 @@ public class SynchronizeBranchAction extends AbstractCDOBranchAction {
 	private void applyChangeSet(final CDOTransaction transaction, final CDOBranch taskBranch) throws CustomConflictException {
 		
 		final String repositoryUuid = transaction.getSession().getRepositoryInfo().getUUID();
-		final CDOBranchMerger branchMerger = new CDOBranchMerger(CDOConflictProcessorBroker.INSTANCE.getProcessor(repositoryUuid), true);
+		final CDOBranchMerger branchMerger = new CDOBranchMerger(CDOConflictProcessorBroker.INSTANCE.getProcessor(repositoryUuid));
 
 		try {
 			
