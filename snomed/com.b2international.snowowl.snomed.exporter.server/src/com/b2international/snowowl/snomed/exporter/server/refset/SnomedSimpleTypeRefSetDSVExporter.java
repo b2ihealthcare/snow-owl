@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.refset;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.singleton;
@@ -303,8 +302,8 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							//FSN
 							if (descriptionTypeId.equals(Concepts.FULLY_SPECIFIED_NAME)) {
 								ISnomedDescription description = fsnMap.get(conceptCDOAndSnomedIds.get(conceptCDOId));
-								Collection<String> descriptionResult = descriptionIdExpected ? newArrayList(description.getId(), description.getTerm()) : singleton(description.getTerm()); 
-								stringBuffer.append(joinResultsWithDelimiters(descriptionResult, 1, delimiter, descriptionIdExpected));
+								Collection<String> descriptionResult = descriptionIdExpected ? singleton(description.getId() + delimiter + description.getTerm()) : singleton(description.getTerm()); 
+								stringBuffer.append(joinResultsWithDelimiters(descriptionResult, 1, descriptionIdExpected));
 							} else {
 								
 								Collection<ISnomedDescription> descriptions = otherDescriptions.get(conceptCDOAndSnomedIds.get(conceptCDOId));
@@ -316,16 +315,11 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 								}).transformAndConcat(new Function<ISnomedDescription, List<String>>() {
 									@Override
 									public List<String> apply(ISnomedDescription input) {
-										return descriptionIdExpected ? newArrayList(input.getId(), input.getTerm()) : singletonList(input.getTerm());
+										return descriptionIdExpected ? singletonList(input.getId() + delimiter + input.getTerm()) : singletonList(input.getTerm());
 									}
 								}).toList();
 								
-								int maxOccurences = exportItemMaxOccurences.get(descriptionTypeId);
-								if(descriptionIdExpected) {
-									maxOccurences = maxOccurences*2;
-								}
-								
-								stringBuffer.append(joinResultsWithDelimiters(results, maxOccurences, delimiter, descriptionIdExpected));
+								stringBuffer.append(joinResultsWithDelimiters(results, exportItemMaxOccurences.get(descriptionTypeId), descriptionIdExpected));
 							}
 							
 							break;
@@ -336,7 +330,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							final int relationshipOccurrences = exportItemMaxOccurences.get(relationshipTypeId);
 							
 							final Collection<String> relationships = executeRelationshipOrDatatypeQuery(QueryType.RELATIONSHIP, conceptCDOId, relationshipTypeId, true, 0);
-							stringBuffer.append(joinResultsWithDelimiters(relationships, relationshipOccurrences, delimiter, relationshipTargetIdExpected));
+							stringBuffer.append(joinResultsWithDelimiters(relationships, relationshipOccurrences, relationshipTargetIdExpected));
 							break;
 
 						case DATAYPE:
@@ -361,13 +355,13 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 								}
 							}
 
-							stringBuffer.append(joinResultsWithDelimiters(formattedDatatypeTerms, datatypeOccurrences, delimiter, false));
+							stringBuffer.append(joinResultsWithDelimiters(formattedDatatypeTerms, datatypeOccurrences, false));
 							break;
 
 						case PREFERRED_TERM:
 							ISnomedDescription pt = ptMap.get(conceptCDOAndSnomedIds.get(conceptCDOId));
-							Collection<String> descriptionResult = descriptionIdExpected ? newArrayList(pt.getId(), pt.getTerm()) : singleton(pt.getTerm()); 
-							stringBuffer.append(joinResultsWithDelimiters(descriptionResult, 1, delimiter, descriptionIdExpected));
+							Collection<String> descriptionResult = descriptionIdExpected ? singleton(pt.getId() + delimiter + pt.getTerm()) : singleton(pt.getTerm()); 
+							stringBuffer.append(joinResultsWithDelimiters(descriptionResult, 1, descriptionIdExpected));
 							break;
 
 						case CONCEPT_ID:
@@ -401,7 +395,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						TreeSet<String> relationships = Sets.newTreeSet();
 						relationships.addAll(executeRelationshipOrDatatypeQuery(QueryType.RELATIONSHIP, conceptCDOId, relationshipId, true, groupId));
 						stringBuffer
-								.append(joinResultsWithDelimiters(relationships, groupedRelationships.get(groupId).get(relationshipId), delimiter, relationshipTargetIdExpected));
+								.append(joinResultsWithDelimiters(relationships, groupedRelationships.get(groupId).get(relationshipId), relationshipTargetIdExpected));
 					}
 				}
 				stringBuffer.append(System.getProperty("line.separator"));
@@ -1016,24 +1010,30 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 	}
 
-	private String joinResultsWithDelimiters(Collection<String> results, int max, String delimiter, boolean descriptionAndDescriptionIdExpected) {
+	private String joinResultsWithDelimiters(Collection<String> results, int max, boolean idExpected) {
 		StringBuffer sb = new StringBuffer();
 		sb.append(Joiner.on(delimiter).join(results));
 
-		int start = 0;
-
-		if (sb.length() == 0) {
-			if (descriptionAndDescriptionIdExpected) {
+		if (max == 0) {
+			// when result is empty the delimiter separating export items acts as the first necessary delimeter
+			if (idExpected) {
 				sb.append(delimiter);
 			}
-			start = results.size() + 1;
 		} else {
-			start = results.size();
-		}
 
-		// fill the remaining slots with delimiters
-		for (int j = start; j < max; j++) {
-			sb.append(delimiter);
+			int start;
+			if (results.isEmpty()) {
+				start = 1; // since the first delimeter has been already appended
+			} else {
+				start = idExpected ? results.size() * 2 : results.size();
+			}
+			
+			max = idExpected ? max * 2 : max;
+
+			// fill the remaining slots with delimiters
+			for (int j = start; j < max; j++) {
+				sb.append(delimiter);
+			}
 		}
 		return sb.toString();
 	}
