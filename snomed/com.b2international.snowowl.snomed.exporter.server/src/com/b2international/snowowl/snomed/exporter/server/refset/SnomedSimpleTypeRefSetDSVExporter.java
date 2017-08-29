@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.exporter.server.refset;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -312,10 +311,10 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 									public boolean apply(ISnomedDescription input) {
 										return input.getTypeId().equals(descriptionTypeId);
 									}
-								}).transformAndConcat(new Function<ISnomedDescription, List<String>>() {
+								}).transform(new Function<ISnomedDescription, String>() {
 									@Override
-									public List<String> apply(ISnomedDescription input) {
-										return descriptionIdExpected ? singletonList(input.getId() + delimiter + input.getTerm()) : singletonList(input.getTerm());
+									public String apply(ISnomedDescription input) {
+										return descriptionIdExpected ? input.getId() + delimiter + input.getTerm() : input.getTerm();
 									}
 								}).toList();
 								
