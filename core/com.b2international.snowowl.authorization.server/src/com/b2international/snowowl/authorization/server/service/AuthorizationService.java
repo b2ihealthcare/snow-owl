@@ -38,10 +38,6 @@ public class AuthorizationService implements IAuthorizationService {
 
 	@Override
 	public boolean isAuthorized(final String userId, final Permission permission) {
-		if (Permission.PERMISSION_ALLOWED.equals(permission)) {
-			return true;
-		}
-
 		return strategy.hasPermission(userId, permission.getId());
 	}
 

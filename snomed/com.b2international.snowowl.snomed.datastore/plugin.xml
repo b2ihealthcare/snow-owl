@@ -377,18 +377,6 @@
       </repository>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.taskContext">
-      <context
-            class="com.b2international.snowowl.snomed.datastore.SnomedGeneralAuthoringTaskContext">
-      </context>
-      <context
-            class="com.b2international.snowowl.snomed.datastore.SnomedMappingRefSetAuthoringTaskContext">
-      </context>
-      <context
-            class="com.b2international.snowowl.snomed.datastore.SnomedRefSetAuthoringTaskContext">
-      </context>
-   </extension>
-   <extension
          point="com.b2international.snowowl.datastore.contentAvailabilityInfoProvider">
       <provider
             class="com.b2international.snowowl.snomed.datastore.SnomedAvailabilityInfoProvider">

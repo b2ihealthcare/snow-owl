@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@ package com.b2international.snowowl.authorization.serviceconfig;
 
 import com.b2international.snowowl.authorization.AuthorizationActivator;
 import com.b2international.snowowl.core.users.IAuthorizationService;
-import com.b2international.snowowl.core.users.IClientAuthorizationService;
-import com.b2international.snowowl.datastore.serviceconfig.ClientServiceConfigJob;
+import com.b2international.snowowl.datastore.serviceconfig.AbstractClientServiceConfigJob;
 
 /**
  * Client-side service config. job, registering {@link AuthorizationService} with the application context.  
  */
-public class AuthorizationServiceConfigJob extends ClientServiceConfigJob<IAuthorizationService, IClientAuthorizationService>{
+public class AuthorizationServiceConfigJob extends AbstractClientServiceConfigJob<IAuthorizationService>{
 
 	
 	public AuthorizationServiceConfigJob() {
@@ -31,19 +30,8 @@ public class AuthorizationServiceConfigJob extends ClientServiceConfigJob<IAutho
 	}
 
 	@Override
-	protected Class<IClientAuthorizationService> getTrackingClass() {
-		return IClientAuthorizationService.class;
-	}
-
-	@Override
-	protected IClientAuthorizationService createTrackingService(IAuthorizationService authorizationServerService) {
-		return new CachingClientAuthorizationService(authorizationServerService);
-	}
-
-	@Override
 	protected Class<IAuthorizationService> getServiceClass() {
 		return IAuthorizationService.class;
 	}
-
 
 }

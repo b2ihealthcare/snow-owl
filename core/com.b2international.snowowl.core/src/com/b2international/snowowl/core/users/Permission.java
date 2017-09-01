@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,15 +25,13 @@ import com.google.common.base.Strings;
  * A Plain Old Java Object, representing an application specific permission.
  * 
  */
-public class Permission implements Serializable {
+public final class Permission implements Serializable {
 
-	private static final long serialVersionUID = -2025537771702214582L;
+	private static final long serialVersionUID = -3448099568736188498L;
 
 	private final String id;
 
 	private final String name;
-
-	public static Permission PERMISSION_ALLOWED = new Permission(PermissionIdConstant.ALLOW_ALL);
 
 	/**
 	 * 

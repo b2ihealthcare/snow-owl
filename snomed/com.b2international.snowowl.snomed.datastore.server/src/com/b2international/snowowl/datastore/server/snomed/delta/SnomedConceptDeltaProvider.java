@@ -63,7 +63,6 @@ import com.b2international.snowowl.datastore.exception.UnresolvedPromoteblesExce
 import com.b2international.snowowl.datastore.server.CDOChangeSetDataProvider;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.ComponentDeltaProvider;
-import com.b2international.snowowl.datastore.tasks.PromoteException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedPackage;
@@ -294,7 +293,7 @@ public class SnomedConceptDeltaProvider extends ComponentDeltaProvider<Hierarchi
 					
 					final SnomedRefSetMember member = (SnomedRefSetMember) CDOUtils.getObjectIfExists(changeSetDataWithView.transaction, delta.getCdoId());
 					if (member == null) {
-						throw new PromoteException(String.format("Reference Set member '%s' was deleted before promotion. Please review your changes and try again!", delta.getLabel()));
+						throw new RuntimeException(String.format("Reference Set member '%s' was deleted before promotion. Please review your changes and try again!", delta.getLabel()));
 					}
 					member.eSet(SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_RefSet(), null);
 					detachObject(member);

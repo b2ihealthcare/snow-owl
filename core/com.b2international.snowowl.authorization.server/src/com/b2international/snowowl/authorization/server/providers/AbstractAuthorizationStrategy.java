@@ -40,11 +40,6 @@ public abstract class AbstractAuthorizationStrategy implements IAuthorizationStr
 
 			for (final Permission permission : permissions) {
 
-				if (Permission.PERMISSION_ALLOWED.equals(permission)) {
-					LOGGER.debug(MessageFormat.format("User ({0}) granted permission [{1}], user has allow-all permission", userId, permissionId));
-					return true;
-				}
-
 				if (permission.getId().equals(permissionId)) {
 					LOGGER.debug(MessageFormat.format("User ({0}) granted permission [{1}]", userId, permissionId));
 					return true;
