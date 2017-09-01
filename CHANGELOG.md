@@ -1,6 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.10.11
+
+### Changed
+- Replaced permission ID constants with six default permissions (https://github.com/b2ihealthcare/snow-owl/pull/163)
+
+### Removed
+- Deleted obsolete task context API
+
+### Bugs
+- Fixed performance issue in SNOMED CT Description/Language RefSet RF2 export (https://github.com/b2ihealthcare/snow-owl/pull/158)
+- Fixed memory leak in Lucene based index implementation (https://github.com/b2ihealthcare/snow-owl/pull/157)
+
 ## 5.10.10
 
 ### Bugs
