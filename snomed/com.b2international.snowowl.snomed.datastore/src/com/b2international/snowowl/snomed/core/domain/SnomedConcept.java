@@ -38,17 +38,18 @@ import com.google.common.collect.Multimap;
  * <p>
  * <ul>
  * <li>{@code pt()} - returns the <i>Preferred Term</i> for the </li> locale set by {@link BaseResourceRequestBuilder#setLocales(java.util.List)} method.
- * 
- * <li>{@code fsn()} - returns the <i>Fully Specified Name (fsn)</i> for the </li> locale set by {@link BaseResourceRequestBuilder#setLocales(java.util.List)} method.
- * .setLocales(languagePreference)</li>
+ * <li>{@code fsn()} - returns the <i>Fully Specified Name (fsn)</i> for the </li> locale set by {@link BaseResourceRequestBuilder#setLocales(java.util.List)} method.</li>
  * <li>{@code descriptions()} - returns the descriptions of the concept</li>
  * <li>{@code relationships()} - returns the relationships of the concept</li>
- * <li>{@code descendants(direct:true|false, form:"stated"|"inferred")} - returns the all or the only the direct descendants of the concept based on the stated or the inferred tree.</li> 
- * <li>{@code ancestors(direct:true|false, form:"stated"|"inferred")} - returns the all or the only the direct ancestors of the concept based on the stated or the inferred tree.</li>
+ * <li>{@code descendants(direct:true|false)} - returns the all or the only the direct descendants of the concept based on the inferred tree.</li> 
+ * <li>{@code ancestors(direct:true|false)} - returns the all or the only the direct ancestors of the concept based on the inferred tree.</li>
+ * <li>{@code statedDescendants(direct:true|false)} - returns the all or the only the direct descendants of the concept based on the stated tree.</li> 
+ * <li>{@code statedAncestors(direct:true|false)} - returns the all or the only the direct ancestors of the concept based on the stated tree.</li>
  * </ul>
  * 
- * The number of expanded fields can be controlled with the {@code limit:} directive. 
- * For example: {@code ancestors(direct:false, form:"inferred", limit:Integer.MAX_VALUE)}
+ * The number of expanded fields can be controlled with the {@code limit:} directive.
+ * <br>
+ * For example: {@code ancestors(direct:false, limit:1000)}
  * 
  * <p>
  * Expand parameters can be nested to further expand or filter the details returned. 
