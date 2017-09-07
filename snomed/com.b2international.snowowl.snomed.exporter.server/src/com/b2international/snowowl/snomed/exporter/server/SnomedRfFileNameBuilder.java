@@ -18,17 +18,21 @@ package com.b2international.snowowl.snomed.exporter.server;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.LANGUAGE;
 
 import java.util.Date;
+import java.util.List;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.LanguageConfiguration;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Utility class for building core release file names when publishing
@@ -42,7 +46,7 @@ public class SnomedRfFileNameBuilder {
 				.append(String.valueOf(type))
 				.append("s_")
 				.append(ComponentExportType.DESCRIPTION.equals(type) ? getLanguageCode() : "Core")
-				.append("_INT_")
+				.append(getCountryAndNameSpaceElement())
 				.append(getReleaseDate(configuration))
 				.append(".txt")
 				.toString();
@@ -55,7 +59,7 @@ public class SnomedRfFileNameBuilder {
 				.append(String.valueOf(configuration.getContentSubType()))
 				.append(ComponentExportType.DESCRIPTION.equals(type) ? "-" : "")
 				.append(ComponentExportType.DESCRIPTION.equals(type) ? getLanguageCode() : "")
-				.append("_INT_")
+				.append(getCountryAndNameSpaceElement())
 				.append(getReleaseDate(configuration))
 				.append(".txt")
 				.toString();
@@ -84,7 +88,7 @@ public class SnomedRfFileNameBuilder {
 				.append(String.valueOf(configuration.getContentSubType()))
 				.append(isLanguageType(refSet) ? "-" : "")
 				.append(isLanguageType(refSet) ? getLanguageCode(refSet) : "")
-				.append("_INT_")
+				.append(getCountryAndNameSpaceElement())
 				.append(getReleaseDate(configuration))
 				.append(".txt")
 				.toString();
@@ -146,6 +150,16 @@ public class SnomedRfFileNameBuilder {
 		case MODULE_DEPENDENCY: return "ss";
 		}
 		throw new IllegalArgumentException ("Unknown reference set type. Type: " + refSet.getType());
+	}
+	
+	public static String getCountryAndNameSpaceElement() {
+		final List<String> languageCodeParts = ImmutableList.copyOf(Splitter.on('-').split(getLanguageCode()));
+		final String countryCode = (languageCodeParts.size() > 1) ? languageCodeParts.get(1).toUpperCase() : "";
+		String countryAndNameSpaceElement = "_INT_";
+		if (countryCode.equals("SG")) {
+			countryAndNameSpaceElement = "_" + countryCode + SnomedConstants.SG_EXTENSION_NAMESPACE + "_";
+		}
+		return countryAndNameSpaceElement;
 	}
 	
 	private static String getSimpleMapPrefix(final SnomedRefSet refSet, final boolean includeMapTargetDescription) {

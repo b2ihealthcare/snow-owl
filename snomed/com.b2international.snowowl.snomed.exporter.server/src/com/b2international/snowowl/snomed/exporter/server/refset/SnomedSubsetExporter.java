@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
+import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 
 /**
@@ -66,7 +67,7 @@ public class SnomedSubsetExporter extends AbstractSnomedSubsetExporter {
 	public String getFileName() {
 		return new StringBuilder("der1_Subsets_")
 		.append(isLanguageType(getRefSetId()) ? getLanguageCode(getRefSetId()) : getFolderName())
-		.append("_INT_")
+		.append(SnomedRfFileNameBuilder.getCountryAndNameSpaceElement())
 		.append(Dates.formatByHostTimeZone(new Date(), DateFormats.SHORT)).append(".txt").toString();
 	}
 	

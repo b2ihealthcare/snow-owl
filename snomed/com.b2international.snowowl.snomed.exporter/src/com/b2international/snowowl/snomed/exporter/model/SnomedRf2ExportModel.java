@@ -49,6 +49,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSet
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
+import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
@@ -286,7 +287,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	private String initExportPath() {
 		final String token;
 		if (!singleRefSetExport) {
-			token = new StringBuilder().append("SnomedCT_Release_INT_").append(Dates.formatByHostTimeZone(new Date(), "yyyyMMdd-HHmm")).toString();
+			token = new StringBuilder().append("SnomedCT_Release").append(SnomedRfFileNameBuilder.getCountryAndNameSpaceElement()).append(Dates.formatByHostTimeZone(new Date(), "yyyyMMdd-HHmm")).toString();
 		} else {
 			token = CharMatcher.anyOf("\\/").removeFrom(StringUtil.capAll(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(clientBranch, Iterables.getOnlyElement(refSetIds))));
 		}
