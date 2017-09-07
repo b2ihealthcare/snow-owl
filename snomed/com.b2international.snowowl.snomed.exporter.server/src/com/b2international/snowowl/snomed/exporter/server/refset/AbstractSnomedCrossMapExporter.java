@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
+import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 
 /**
@@ -67,7 +68,7 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedRf1Exporte
 		.append(getFileNameprefix())
 		.append("_")
 		.append(label)
-		.append("_INT_")
+		.append(SnomedRfFileNameBuilder.getCountryAndNameSpaceElement())
 		.append(getExportTime(new Date()))
 		.append(".txt")
 		.toString();
