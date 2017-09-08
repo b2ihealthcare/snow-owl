@@ -12,5 +12,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.snomed.exporter.model,com.
  b2international.snowowl.snomed.exporter.service
-Import-Package: com.b2international.snowowl.snomed.exporter.server,
- org.slf4j;version="1.7.2"
+Import-Package: org.slf4j;version="1.7.2"
