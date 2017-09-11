@@ -203,7 +203,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		putSctIds(assignedSctIds);
 		
 		if (!problemSctIds.isEmpty()) {
-			throw new SctIdStatusException("Cannot publish %s component IDs because they are not assigned or already published.", problemSctIds);
+			LOGGER.warn("Cannot publish the following component IDs because they are not assigned or already published: {}", problemSctIds);
 		}
 	}
 
