@@ -32,6 +32,7 @@ public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 
 	private boolean includeDescriptionId;
 	private boolean includeRelationshipTargetId;
+	private boolean includeInactiveConcept;
 	private List<AbstractSnomedDsvExportItem> exportItems = Lists.newArrayList();
 	private String delimiter;
 	private long branchBase;
@@ -117,6 +118,13 @@ public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 		return includeRelationshipTargetId;
 	}
 	
+	public void setIncludeInactiveConcept(boolean includeInactiveConcept) {
+		this.includeInactiveConcept = includeInactiveConcept;
+	}
+	
+	public boolean includeInactiveConcept() {
+		return includeInactiveConcept;
+	}
 	
 	public void setBranchPath(String branchPath) {
 		this.branchPath = branchPath;
