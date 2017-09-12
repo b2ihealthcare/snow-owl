@@ -19,7 +19,9 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.eventbus
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Export-Package: com.b2international.snowowl.snomed.reasoner.server,com
- .b2international.snowowl.snomed.reasoner.server.ontology
+Export-Package: com.b2international.snowowl.snomed.reasoner.server,
+ com.b2international.snowowl.snomed.reasoner.server.diff,
+ com.b2international.snowowl.snomed.reasoner.server.diff.relationship,
+ com.b2international.snowowl.snomed.reasoner.server.ontology
 Service-Component: OSGI-INF/component.xml
 Import-Package: org.slf4j;version="1.7.2"
