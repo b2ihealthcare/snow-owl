@@ -53,6 +53,9 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 	private boolean relationshipTargetExpected;
 	
 	@JsonProperty
+	private boolean isActiveExcpected;
+	
+	@JsonProperty
 	private String delimiter;
 
 	@JsonProperty
@@ -98,6 +101,7 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 		model.setBranchBase(branch.baseTimestamp());
 		model.setBranchPath(context.branchPath());
 		model.setDelimiter(delimiter);
+		model.setIncludeInactiveConcept(isActiveExcpected);
 		model.setIncludeDescriptionId(descriptionIdExpected);
 		model.setLocales(locales);
 		model.setRefSetId(refSetId);
@@ -117,7 +121,11 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 	void setRelationshipTargetExpected(boolean relationshipTargetExpected) {
 		this.relationshipTargetExpected = relationshipTargetExpected;
 	}
-
+	
+	void setIsActiveExpected(boolean isActiveExpected) {
+		this.isActiveExcpected = isActiveExpected;
+	}
+	
 	void setDelimiter(String delimiter) {
 		this.delimiter = delimiter;
 	}
@@ -129,4 +137,5 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 	void setLocales(List<ExtendedLocale> locales) {
 		this.locales = locales;
 	}
+	
 }

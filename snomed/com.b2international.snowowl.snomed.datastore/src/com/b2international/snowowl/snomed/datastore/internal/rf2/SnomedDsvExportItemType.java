@@ -27,10 +27,10 @@ public enum SnomedDsvExportItemType {
 
 	PREFERRED_TERM("Preferred term"), 
 	CONCEPT_ID("Concept ID"), 
-	MODULE("Module"), 
-	EFFECTIVE_TIME("Effective time"), 
+	MODULE("Concept module"), 
+	EFFECTIVE_TIME("Concept effective time"), 
 	STATUS_ID("Status code"), 
-	STATUS_LABEL("Status label"), 
+	STATUS_LABEL("Concept status label"), 
 	DEFINITION_STATUS("Definition status"), 
 	REFERENCED_COMPONENT("Referenced component"), 
 	REFERENCED_COMPONENT_ID("Referenced component ID"), 
