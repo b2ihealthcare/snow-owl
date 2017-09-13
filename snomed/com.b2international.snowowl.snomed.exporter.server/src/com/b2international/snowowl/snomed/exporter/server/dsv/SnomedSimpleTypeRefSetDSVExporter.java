@@ -27,11 +27,9 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
@@ -42,23 +40,19 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
@@ -86,7 +80,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	private String refSetId;
 	private boolean includeDescriptionId;
 	private boolean includeRelationshipId;
-	private boolean includeInactiveConcept;
 	private Collection<AbstractSnomedDsvExportItem> exportItems;
 	private Collection<AbstractSnomedDsvExportItem> groupedOnlyItems;
 	private IBranchPath branchPath;
@@ -111,7 +104,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		this.refSetId = exportSetting.getRefSetId();
 		this.includeDescriptionId = exportSetting.includeDescriptionId();
 		this.includeRelationshipId = exportSetting.includeRelationshipTargetId();
-		this.includeInactiveConcept = exportSetting.includeInactiveConcept();
 		this.exportItems = exportSetting.getExportItems();
 		this.locales = exportSetting.getLocales();
 		this.delimiter = exportSetting.getDelimiter();
@@ -140,8 +132,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 			file.createNewFile();
 
-			SnomedConcepts referencedComponents = getReferencedComponentConcepts(refSetId,includeInactiveConcept);
-			
+			SnomedConcepts referencedComponents = getReferencedComponentConcepts(refSetId);
 			createHeaderList(referencedComponents);
 
 			// write the header to the file
@@ -169,7 +160,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			}
 			sb.append(System.getProperty("line.separator"));
 			os.writeBytes(sb.toString());
-			
+
 			async.stop();
 			async = null;
 			remainderMonitor = monitor.fork(20);
@@ -177,7 +168,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			// write data to the file row by row
 			for (SnomedConcept referencedComponent : referencedComponents) {
 				StringBuffer stringBuffer = new StringBuffer();
-				
+
 				for (AbstractSnomedDsvExportItem exportItem : exportItems) {
 					if (stringBuffer.length() > 0) {
 						stringBuffer.append(delimiter);
@@ -321,7 +312,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 	private List<String> getRelationshipTokens(SnomedConcept referencedComponent, String relationshipTypeId, int groupNumber) {
 		List<String> result = Lists.newArrayList();
-		List<SnomedRelationship> relationships = (referencedComponent).getRelationships().getItems();
+		List<SnomedRelationship> relationships = referencedComponent.getRelationships().getItems();
 		relationships.stream()
 						.filter(relationship -> relationship.getTypeId().equals(relationshipTypeId) )
 						.filter(relationship -> relationship.getGroup().equals(groupNumber))
@@ -339,7 +330,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 	private List<String> getDescriptionTokens(SnomedConcept referencedComponent, String descriptionTypeId) {
 		List<String> result = Lists.newArrayList();
-		List<SnomedDescription> descriptions = (referencedComponent).getDescriptions().getItems();
+		List<SnomedDescription> descriptions = referencedComponent.getDescriptions().getItems();
 		descriptions.stream()
 			.filter(description -> description.getTypeId().equals(descriptionTypeId))
 			.forEach(description -> {
@@ -680,30 +671,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			}
 		}
 		return sb.toString();
-	}
-	
-	public SnomedConcepts getReferencedComponentConcepts(String refSetId, boolean isActive) {
-		SnomedReferenceSetMembers members = SnomedRequests.prepareSearchMember()
-				.all()
-				.filterByRefSet(refSetId)
-				.filterByActive(isActive)
-				//.setExpand("referencedComponent(pt())")
-				//.setLocales(languagePreference)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
-				.execute(getEventBus())
-				.getSync();
-		
-		Set<String> referencedConcenptIds = members.getItems().stream().map(m -> m.getReferencedComponent().getId()).collect(Collectors.toSet());
-		SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept()
-				.filterByIds(referencedConcenptIds)
-				.filterByActive(true)
-				.setExpand("pt()")
-				.setLocales(locales)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
-				.execute(getEventBus())
-				.getSync();
-		return snomedConcepts;
-		
 	}
 
 	
