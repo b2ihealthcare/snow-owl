@@ -53,6 +53,9 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 	private boolean relationshipTargetExpected;
 	
 	@JsonProperty
+	private boolean includeInactiveMembersExpected;
+	
+	@JsonProperty
 	private String delimiter;
 
 	@JsonProperty
@@ -99,9 +102,10 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 		model.setBranchPath(context.branchPath());
 		model.setDelimiter(delimiter);
 		model.setIncludeDescriptionId(descriptionIdExpected);
+		model.setIncludeRelationshipTargetId(relationshipTargetExpected);
+		model.setIncludeInactiveMembers(includeInactiveMembersExpected);
 		model.setLocales(locales);
 		model.setRefSetId(refSetId);
-		model.setIncludeRelationshipTargetId(relationshipTargetExpected);
 		model.addExportItems(exportItems);
 		return model;
 	}
@@ -116,6 +120,10 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 
 	void setRelationshipTargetExpected(boolean relationshipTargetExpected) {
 		this.relationshipTargetExpected = relationshipTargetExpected;
+	}
+	
+	void setIncludeInactiveMembersExpected(boolean includeInactiveMembersExpected) {
+		this.includeInactiveMembersExpected = includeInactiveMembersExpected;
 	}
 
 	void setDelimiter(String delimiter) {
