@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -59,8 +60,8 @@ import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedD
 import com.b2international.snowowl.snomed.datastore.internal.rf2.ComponentIdSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.DatatypeSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportModel;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
@@ -80,6 +81,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	private String refSetId;
 	private boolean includeDescriptionId;
 	private boolean includeRelationshipId;
+	private boolean includeInactiveMembers;
 	private Collection<AbstractSnomedDsvExportItem> exportItems;
 	private Collection<AbstractSnomedDsvExportItem> groupedOnlyItems;
 	private IBranchPath branchPath;
@@ -104,6 +106,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		this.refSetId = exportSetting.getRefSetId();
 		this.includeDescriptionId = exportSetting.includeDescriptionId();
 		this.includeRelationshipId = exportSetting.includeRelationshipTargetId();
+		this.includeInactiveMembers = exportSetting.includeInactiveMembers();
 		this.exportItems = exportSetting.getExportItems();
 		this.locales = exportSetting.getLocales();
 		this.delimiter = exportSetting.getDelimiter();
@@ -132,7 +135,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 			file.createNewFile();
 
-			SnomedConcepts referencedComponents = getReferencedComponentConcepts(refSetId);
+			SnomedConcepts referencedComponents = getReferencedComponentConcepts(refSetId,includeInactiveMembers);
 			createHeaderList(referencedComponents);
 
 			// write the header to the file
@@ -144,7 +147,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				sb.append(metaHeaderListElement);
 			}
 
-			if (includeDescriptionId || includeRelationshipId) {
+			if (includeDescriptionId || includeRelationshipId || includeInactiveMembers) {
 				sb.append(System.getProperty("line.separator"));
 				// sb.length > 0 works not, because the first element of the meta header can be empty string.
 				boolean fistElement = true;
@@ -628,11 +631,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		return result;
 	}
 
-	private ISnomedConceptNameProvider getNameProvider() {
-		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class);
-	}
-
-
 	/**
 	 * This method implements a maximum search. It founds the maximum presence of a given description, relationship or concrete datatype.
 	 * @param occurenceByTypeId 
@@ -673,27 +671,45 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		return sb.toString();
 	}
 
-	
-	/**
+	/*
 	 * Fetch members of the specified refset identifier.
-	 * Don't include inactive members or members that are active BUT their identified component are inactive.
+	 * Don't include members that are active BUT their identified component are inactive.
 	 * @param refSetId
+	 * @param includeInactive
 	 * @return
 	 */
-	private SnomedConcepts getReferencedComponentConcepts(String refSetId) {
-		return SnomedRequests.prepareSearchConcept()
-								.all()
-								.filterByActive(true)
-								.filterByEcl(String.format("^%s", refSetId)) // memberOf refsetId
-								.setExpand("pt()")
-								.setLocales(locales)
-								.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-								.execute(getEventBus())
-								.then(concepts -> expandDescriptions(concepts))
-								.then(concepts -> expandRelationships(concepts))
-								.getSync();
+	private SnomedConcepts getReferencedComponentConcepts(String refSetId, boolean includeInactive) {
+		
+		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember()
+			.all()
+			.filterByRefSet(refSetId);
+		
+		if(!includeInactive) {
+			requestBuilder.filterByActive(true);
+		}
+		
+		return requestBuilder
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getEventBus())
+			.then(members ->  members.getItems().stream().map(m -> m.getReferencedComponent().getId()).collect(Collectors.toSet()))
+			.then(this::getReferencedConcepts)
+			.getSync();
 	}
-
+	
+	private SnomedConcepts getReferencedConcepts(Set<String> conceptIds) {
+		return SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByIds(conceptIds)
+				.filterByActive(true)
+				.setExpand("pt()")
+				.setLocales(locales)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.execute(getEventBus())
+				.then(concepts -> expandDescriptions(concepts))
+				.then(concepts -> expandRelationships(concepts))
+				.getSync();
+	}
+	
 	private SnomedConcepts expandRelationships(SnomedConcepts concepts) {
 		SnomedRequests.prepareSearchRelationship()
 						.all()

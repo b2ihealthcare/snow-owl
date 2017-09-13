@@ -34,6 +34,7 @@ public final class SnomedDSVExportRequestBuilder extends BaseRequestBuilder<Snom
 	private String refSetId;
 	private boolean descriptionIdExpected;
 	private boolean relationshipTargetExpected;
+	private boolean includeInactiveMembersExpected;
 	private List<ExtendedLocale> locales;
 	private String delimiter;
 	private List<AbstractSnomedDsvExportItem> exportItems;
@@ -54,7 +55,12 @@ public final class SnomedDSVExportRequestBuilder extends BaseRequestBuilder<Snom
 		this.relationshipTargetExpected = relationshipTargetExpected;
 		return getSelf();
 	}
-
+	
+	public SnomedDSVExportRequestBuilder setIncludeInactiveConceptsExpected(boolean includeInactiveMembersExpected) {
+		this.includeInactiveMembersExpected = includeInactiveMembersExpected;
+		return getSelf();
+	}
+	
 	public SnomedDSVExportRequestBuilder setLocales(List<ExtendedLocale> locales) {
 		this.locales = locales;
 		return getSelf();
@@ -76,6 +82,7 @@ public final class SnomedDSVExportRequestBuilder extends BaseRequestBuilder<Snom
 		req.setRefsetId(refSetId);
 		req.setDescriptionIdExpected(descriptionIdExpected);
 		req.setRelationshipTargetExpected(relationshipTargetExpected);
+		req.setIncludeInactiveMembersExpected(includeInactiveMembersExpected);
 		req.setLocales(locales);
 		req.setDelimiter(delimiter);
 		req.setExportItems(exportItems);
