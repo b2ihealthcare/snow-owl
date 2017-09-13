@@ -95,7 +95,6 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 		exportSetting.setRefSetId(in.readUTF());
 		exportSetting.setIncludeDescriptionId(in.readBoolean());
 		exportSetting.setIncludeRelationshipTargetId(in.readBoolean());
-		exportSetting.setIncludeInactiveConcept(in.readBoolean());
 		int exportItemsSize = in.readInt();
 		for (int i = 0; i < exportItemsSize; i++) {
 			// TODO supplying MAIN here, as the selected branch read later from the stream
