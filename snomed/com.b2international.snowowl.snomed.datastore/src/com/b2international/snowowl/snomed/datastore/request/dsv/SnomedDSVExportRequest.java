@@ -101,10 +101,10 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 		model.setBranchBase(branch.baseTimestamp());
 		model.setBranchPath(context.branchPath());
 		model.setDelimiter(delimiter);
-		model.setIncludeInactiveConcept(isActiveExcpected);
-		model.setIncludeDescriptionId(descriptionIdExpected);
 		model.setLocales(locales);
 		model.setRefSetId(refSetId);
+		model.setIncludeDescriptionId(descriptionIdExpected);
+		model.setIncludeInactiveConcept(isActiveExcpected);
 		model.setIncludeRelationshipTargetId(relationshipTargetExpected);
 		model.addExportItems(exportItems);
 		return model;
