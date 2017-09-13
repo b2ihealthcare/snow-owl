@@ -72,6 +72,7 @@ public class SnomedRefSetDSVExportClientRequest extends RequestWithMonitoring<Fi
 		out.writeUTF(exportModel.getRefSetId());
 		out.writeBoolean(exportModel.includeDescriptionId());
 		out.writeBoolean(exportModel.includeRelationshipTargetId());
+		out.writeBoolean(exportModel.includeInactiveConcept());
 		
 		out.writeInt(exportModel.getExportItems().size());
 		for (final AbstractSnomedDsvExportItem exportItem : exportModel.getExportItems()) {
