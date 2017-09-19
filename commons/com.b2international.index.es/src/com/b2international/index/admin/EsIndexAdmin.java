@@ -270,7 +270,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 	}
 	
 	public void refresh() {
-		log.info("Refreshing index '{}'", name);
+		log.trace("Refreshing index '{}'", name);
 		client().admin().indices().prepareRefresh(name).get();
 		waitForYellowHealth();
 	}

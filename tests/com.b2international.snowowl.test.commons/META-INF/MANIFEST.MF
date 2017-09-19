@@ -21,7 +21,9 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.snomed.common;visibility:=reexport
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Import-Package: com.b2international.snowowl.api.impl.codesystem.domain,
+Import-Package: ch.qos.logback.classic;version="1.0.7",
+ ch.qos.logback.core.spi;version="1.0.7",
+ com.b2international.snowowl.api.impl.codesystem.domain,
  com.b2international.snowowl.snomed.datastore.request,
  org.slf4j;version="1.7.2"
 Export-Package: com.b2international.snowowl.test.commons,
