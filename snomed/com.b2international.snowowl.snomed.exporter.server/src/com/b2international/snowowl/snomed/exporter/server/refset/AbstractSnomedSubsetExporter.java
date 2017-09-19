@@ -74,7 +74,7 @@ public abstract class AbstractSnomedSubsetExporter implements SnomedRf1Exporter 
 	private final String folderName;
 	private String label;
 	private short referencedComponentType;
-	private SnomedExportConfiguration configuration;
+	protected SnomedExportConfiguration configuration;
 	private String refSetId;
 
 	protected AbstractSnomedSubsetExporter(final SnomedExportConfiguration configuration, final String refSetId) {

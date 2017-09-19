@@ -94,7 +94,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 	private Set<String> modulesToExport;
 	private Date deltaExportStartEffectiveTime;
 	private Date deltaExportEndEffectiveTime;
-	private String clientNamespace;
+	private String countryNamespaceElement;
 	private boolean deltaExport;
 
 	// the number of the selected refset to export, if 0, no reference export
@@ -139,13 +139,6 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		releaseType = ContentSubType.getByValue(in.readInt());
 		unsetEffectiveTimeLabel = in.readUTF();
 		
-		configuration = new SnomedExportConfigurationImpl(
-				branchPath, 
-				releaseType, 
-				unsetEffectiveTimeLabel,
-				deltaExportStartEffectiveTime, 
-				deltaExportEndEffectiveTime);
-		
 		includeRf1 = in.readBoolean();
 		includeExtendedDescriptionTypes = in.readBoolean();
 
@@ -169,7 +162,15 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			modulesToExport.add(in.readUTF());
 		}
 		
-		clientNamespace = in.readUTF();
+		countryNamespaceElement = in.readUTF();
+		
+		configuration = new SnomedExportConfigurationImpl(
+				branchPath, 
+				releaseType, 
+				unsetEffectiveTimeLabel,
+				countryNamespaceElement,
+				deltaExportStartEffectiveTime, 
+				deltaExportEndEffectiveTime);
 		
 		LogUtils.logExportActivity(LOGGER, userId, branchPath, 
 				MessageFormat.format("SNOMED CT export{0}requested.", coreComponentExport ? " with core components " : " "));
@@ -276,7 +277,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 					deltaExport, 
 					deltaExportStartEffectiveTime, 
 					deltaExportEndEffectiveTime, 
-					clientNamespace);
+					countryNamespaceElement);
 
 			if (monitor.isCanceled()) {
 				processCancel();

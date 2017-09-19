@@ -60,6 +60,7 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 	private final IBranchPath currentBranchPath;
 	private final ContentSubType contentSubType;
 	private final String unsetEffectiveTimeLabel;
+	private final String countryAndNameSpaceElement;
 
 	private final Date deltaExportStartEffectiveTime;
 	private final Date deltaExportEndEffectiveTime;
@@ -109,12 +110,14 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 	public SnomedExportConfigurationImpl(final IBranchPath currentBranchPath,
 			final ContentSubType contentSubType,
 			final String unsetEffectiveTimeLabel,
+			final String countryAndNameSpaceElement,
 			@Nullable final Date deltaExportStartEffectiveTime, 
 			@Nullable final Date deltaExportEndEffectiveTime) {
 
 		this.currentBranchPath = checkNotNull(currentBranchPath, "currentBranchPath");
 		this.contentSubType = checkNotNull(contentSubType, "contentSubType");
 		this.unsetEffectiveTimeLabel = checkNotNull(unsetEffectiveTimeLabel, "unsetEffectiveTimeLabel");
+		this.countryAndNameSpaceElement = checkNotNull(countryAndNameSpaceElement, "countryAndNameSpaceElement");
 		this.deltaExportStartEffectiveTime = deltaExportStartEffectiveTime;
 		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
 	}
@@ -151,5 +154,10 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 	
 	private List<ICodeSystemVersion> getAllVersion() {
 		return getServiceForClass(CodeSystemService.class).getAllTagsWithHead(REPOSITORY_UUID);
+	}
+
+	@Override
+	public String getCountryAndNamespaceElement() {
+		return countryAndNameSpaceElement;
 	}
 }

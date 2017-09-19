@@ -37,7 +37,6 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedConcept;
@@ -45,8 +44,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
-import com.b2international.snowowl.snomed.datastore.LanguageConfiguration;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedModuleDependencyRefSetMemberFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
@@ -54,10 +51,8 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
@@ -173,6 +168,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		modulesToExport = Sets.newHashSet();
 		userId = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId();
 		unsetEffectiveTimeLabel = "";
+		namespace = SnomedExporterUtil.getCountryAndNameSpaceElement();
 		
 		SnomedRefSetIndexEntry indexEntry = getRefsetIndexEntry(refSetId);
 		
@@ -291,23 +287,12 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	private String initExportPath() {
 		final String token;
 		if (!singleRefSetExport) {
-			token = new StringBuilder().append("SnomedCT_Release").append(getCountryAndNameSpaceElement()).append(Dates.formatByHostTimeZone(new Date(), "yyyyMMdd-HHmm")).toString();
+			token = new StringBuilder().append("SnomedCT_Release").append(namespace).append(Dates.formatByHostTimeZone(new Date(), "yyyyMMdd-HHmm")).toString();
 		} else {
 			token = CharMatcher.anyOf("\\/").removeFrom(StringUtil.capAll(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(clientBranch, Iterables.getOnlyElement(refSetIds))));
 		}
 		final StringBuilder sb = new StringBuilder();
 		return sb.append(System.getProperty("user.home")).append(File.separatorChar).append(token).append(".zip").toString();
-	}
-
-	private Object getCountryAndNameSpaceElement() {
-		final LanguageConfiguration languageConfiguration = ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class).getLanguageConfiguration();
-		final List<String> languageCodeParts = ImmutableList.copyOf(Splitter.on('-').split(languageConfiguration.getLanguageCode()));
-		final String countryCode = (languageCodeParts.size() > 1) ? languageCodeParts.get(1).toUpperCase() : "";
-		String countryAndNameSpaceElement = "_INT_";
-		if (countryCode.equals("SG")) {
-			countryAndNameSpaceElement = "_" + countryCode + SnomedConstants.SG_EXTENSION_NAMESPACE + "_";
-		}
-		return countryAndNameSpaceElement;
 	}
 
 	public boolean isExportToRf1() {

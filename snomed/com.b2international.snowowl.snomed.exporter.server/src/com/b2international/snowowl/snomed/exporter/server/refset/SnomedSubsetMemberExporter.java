@@ -44,7 +44,6 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.Id2Rf1PropertyMapper;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
-import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
@@ -227,7 +226,7 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 	public String getFileName() {
 		return new StringBuilder("der1_SubsetMembers_")
 		.append(isLanguageType(getRefSetId()) ? getLanguageCode(getRefSetId()) : getFolderName())
-		.append(SnomedRfFileNameBuilder.getCountryAndNameSpaceElement())
+		.append(configuration.getCountryAndNamespaceElement())
 		.append(Dates.formatByHostTimeZone(new Date(), DateFormats.SHORT)).append(".txt").toString();
 	}
 
