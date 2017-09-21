@@ -287,7 +287,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	private String initExportPath() {
 		final String token;
 		if (!singleRefSetExport) {
-			token = new StringBuilder().append("SnomedCT_Release").append(namespace).append(Dates.formatByHostTimeZone(new Date(), "yyyyMMdd-HHmm")).toString();
+			token = new StringBuilder().append("SnomedCT_Release").append("_" + namespace + "_").append(Dates.formatByHostTimeZone(new Date(), "yyyyMMdd-HHmm")).toString();
 		} else {
 			token = CharMatcher.anyOf("\\/").removeFrom(StringUtil.capAll(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(clientBranch, Iterables.getOnlyElement(refSetIds))));
 		}

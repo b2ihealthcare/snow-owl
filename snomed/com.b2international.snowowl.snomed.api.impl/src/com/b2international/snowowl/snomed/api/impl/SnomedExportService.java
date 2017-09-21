@@ -96,7 +96,7 @@ public class SnomedExportService implements ISnomedExportService {
 		
 		final SnomedRf2ExportModel model = createExportModelWithAllRefSets(contentSubType, exportBranch);
 		
-		final String namespaceId = configuration.getNamespaceId();
+		final String namespaceId = configuration.getCountryAndNamespaceId();
 		model.setNamespace(namespaceId);
 		
 		if (configuration.getModuleIds().isEmpty()) {

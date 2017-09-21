@@ -31,7 +31,7 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 
 	private Rf2ReleaseType type;
 	private String branchPath;
-	private String namespaceId;
+	private String countryAndNamespaceId;
 	private Collection<String> moduleIds;
 	private Date deltaExportStartEffectiveTime;
 	private Date deltaExportEndEffectiveTime;
@@ -43,7 +43,7 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 			Date deltaExportStartEffectiveTime, Date deltaExportEndEffectiveTime, 
 			String transientEffectiveTime) {
 		this.type = checkNotNull(type, "type");
-		this.namespaceId = checkNotNull(namespaceId, "namespaceId");
+		this.countryAndNamespaceId = checkNotNull(countryAndNamespaceId, "countryAndNamespaceId");
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 		this.moduleIds = moduleIds == null ? Collections.<String>emptySet() : moduleIds;
 		this.deltaExportStartEffectiveTime = deltaExportStartEffectiveTime;
@@ -72,8 +72,8 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 	}
 	
 	@Override
-	public String getNamespaceId() {
-		return namespaceId;
+	public String getCountryAndNamespaceId() {
+		return countryAndNamespaceId;
 	}
 
 	@Override

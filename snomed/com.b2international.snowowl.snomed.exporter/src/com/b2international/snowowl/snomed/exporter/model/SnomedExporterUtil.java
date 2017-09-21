@@ -29,6 +29,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 
 public final class SnomedExporterUtil {
@@ -101,7 +102,7 @@ public final class SnomedExporterUtil {
 	public static String getCountryAndNameSpaceElement() {
 		String namespace = getNamespace();
 		String countryCode = getCountry().toUpperCase();
-		return  namespace.isEmpty() ? "_INT_" : "_" + countryCode + namespace + "_";
+		return  Strings.isNullOrEmpty(namespace) ? "INT" : countryCode + namespace;
 	}
 	
 	public static String getCountry() {

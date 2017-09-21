@@ -42,7 +42,7 @@ public class SnomedRfFileNameBuilder {
 				.append(String.valueOf(type))
 				.append("s_")
 				.append(ComponentExportType.DESCRIPTION.equals(type) ? getLanguageCode() : "Core")
-				.append(configuration.getCountryAndNamespaceElement())
+				.append("_" + configuration.getCountryAndNamespaceElement() + "_")
 				.append(getReleaseDate(configuration))
 				.append(".txt")
 				.toString();
@@ -55,7 +55,7 @@ public class SnomedRfFileNameBuilder {
 				.append(String.valueOf(configuration.getContentSubType()))
 				.append(ComponentExportType.DESCRIPTION.equals(type) ? "-" : "")
 				.append(ComponentExportType.DESCRIPTION.equals(type) ? getLanguageCode() : "")
-				.append(configuration.getCountryAndNamespaceElement())
+				.append("_" + configuration.getCountryAndNamespaceElement() + "_")
 				.append(getReleaseDate(configuration))
 				.append(".txt")
 				.toString();
@@ -85,7 +85,7 @@ public class SnomedRfFileNameBuilder {
 				.append(String.valueOf(configuration.getContentSubType()))
 				.append(isLanguageType(refSet) ? "-" : "")
 				.append(isLanguageType(refSet) ? getLanguageCode(refSet) : "")
-				.append(configuration.getCountryAndNamespaceElement())
+				.append("_" + configuration.getCountryAndNamespaceElement() + "_")
 				.append(getReleaseDate(configuration))
 				.append(".txt")
 				.toString();
