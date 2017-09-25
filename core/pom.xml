@@ -26,7 +26,6 @@
 		<module>com.b2international.snowowl.authentication</module>
 		<module>com.b2international.snowowl.authentication.file</module>
 		<module>com.b2international.snowowl.authentication.ldap</module>
-		<module>com.b2international.snowowl.authorization</module>
 		<module>com.b2international.snowowl.authorization.server</module>
 		
 		<!-- Core Modules -->

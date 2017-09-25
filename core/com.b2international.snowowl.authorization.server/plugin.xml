@@ -2,12 +2,10 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="com.b2international.snowowl.datastore.serviceConfigJob">
-      <serviceConfigJob
-            class="com.b2international.snowowl.authorization.server.serviceconfig.AuthorizationServerServiceConfigJob"
-            id="com.b2international.snowowl.authorization.server.AuthorizationServiceConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
+         point="com.b2international.snowowl.core.bootstrapFragments">
+      <bootstrapFragment
+            class="com.b2international.snowowl.authorization.server.AuthorizationBootstrap">
+      </bootstrapFragment>
    </extension>
 
 </plugin>
