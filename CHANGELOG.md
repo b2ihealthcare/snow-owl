@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.10.12
+
+### Added
+- `includeInactiveMembers` flag to include inactive reference set members in DSV exports
+- GC logging configuration to Windows and Linux startup scripts
+
+### Changed
+- Revert back to 5.9.x JVM GC configuration (default GC performs better than CMS in most of our use cases)
+
 ## 5.10.11
 
 ### Changed
