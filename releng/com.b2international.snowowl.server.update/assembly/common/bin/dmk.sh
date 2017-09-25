@@ -194,7 +194,7 @@ then
                     -Xmx12g \
                     -XX:+AlwaysPreTouch \
                     -Xss1m \
-                    -Xloggc:$KERNEL_HOME/serviceability/logs/`date +%F_%H%M-%S`-gc.log \
+                    -Xloggc:$KERNEL_HOME/`date +%F_%H%M-%S`-gc.log \
                     -XX:+PrintGCDetails \
 					-XX:+PrintGCDateStamps \
 					-XX:+PrintGCApplicationStoppedTime \
