@@ -192,10 +192,6 @@ then
         JAVA_OPTS="$JAVA_OPTS \
         			-Xms12g \
                     -Xmx12g \
-                    -XX:+UseConcMarkSweepGC \
-                    -XX:CMSInitiatingOccupancyFraction=75 \
-                    -XX:+UseCMSInitiatingOccupancyOnly \
-                    -XX:+DisableExplicitGC \
                     -XX:+AlwaysPreTouch \
                     -Xss1m \
                     -Xloggc:$KERNEL_HOME/serviceability/logs/`date +%F_%H%M-%S`-gc.log \
