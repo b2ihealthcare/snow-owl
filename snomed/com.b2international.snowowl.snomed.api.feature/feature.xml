@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.snomed.api.feature"
       label="Snow Owl SNOMED CT API Feature"
-      version="5.10.11"
+      version="5.10.12"
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
