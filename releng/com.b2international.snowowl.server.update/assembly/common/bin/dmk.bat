@@ -171,12 +171,18 @@ rem ------------------------------
 
 	set JAVA_OPTS=%JAVA_OPTS% -Xms12g
 	set JAVA_OPTS=%JAVA_OPTS% -Xmx12g
-	set JAVA_OPTS=%JAVA_OPTS% -XX:+UseConcMarkSweepGC
-	set JAVA_OPTS=%JAVA_OPTS% -XX:CMSInitiatingOccupancyFraction=75
-	set JAVA_OPTS=%JAVA_OPTS% -XX:+UseCMSInitiatingOccupancyOnly
-	set JAVA_OPTS=%JAVA_OPTS% -XX:+DisableExplicitGC
 	set JAVA_OPTS=%JAVA_OPTS% -XX:+AlwaysPreTouch
 	set JAVA_OPTS=%JAVA_OPTS% -Xss1m
+	set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintGCDetails
+	set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintGCDateStamps
+	set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintGCApplicationStoppedTime
+	set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintGCApplicationConcurrentTime
+	set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintTenuringDistribution
+	set JAVA_OPTS=%JAVA_OPTS% -XX:+PrintGCCause
+	set JAVA_OPTS=%JAVA_OPTS% -XX:+UseGCLogFileRotation
+	set JAVA_OPTS=%JAVA_OPTS% -XX:NumberOfGCLogFiles=10
+	set JAVA_OPTS=%JAVA_OPTS% -XX:GCLogFileSize=2M
+	set JAVA_OPTS=%JAVA_OPTS% -Xloggc:$KERNEL_HOME%\serviceability\logs\`date +%F_%H%M-%S`-gc.log \
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl 
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl 
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl

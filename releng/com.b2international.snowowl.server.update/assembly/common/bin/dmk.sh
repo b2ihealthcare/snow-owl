@@ -198,6 +198,16 @@ then
                     -XX:+DisableExplicitGC \
                     -XX:+AlwaysPreTouch \
                     -Xss1m \
+                    -Xloggc:$KERNEL_HOME/serviceability/logs/`date +%F_%H%M-%S`-gc.log \
+                    -XX:+PrintGCDetails \
+					-XX:+PrintGCDateStamps \
+					-XX:+PrintGCApplicationStoppedTime \
+					-XX:+PrintGCApplicationConcurrentTime \
+					-XX:+PrintTenuringDistribution \
+					-XX:+PrintGCCause \
+					-XX:+UseGCLogFileRotation \
+					-XX:NumberOfGCLogFiles=10 \
+					-XX:GCLogFileSize=2M \
                     -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl \
                     -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl \
                     -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl \
