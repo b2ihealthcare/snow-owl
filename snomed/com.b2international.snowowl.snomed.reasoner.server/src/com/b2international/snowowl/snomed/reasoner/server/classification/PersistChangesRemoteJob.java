@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 
+import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -77,16 +78,16 @@ import bak.pcj.set.LongSet;
  */
 public class PersistChangesRemoteJob extends AbstractRemoteJob {
 
+	private static final String NAMESPACE_ASSIGNER_EXTENSION = "com.b2international.snowowl.snomed.reasoner.server.namespaceAssigner";
 	private static final long LOCK_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(5L);
 	
-	private ReasonerTaxonomy taxonomy;
 	private final IBranchPath branchPath;
 	private final String userId;
 
+	private ReasonerTaxonomy taxonomy;
+	private NamespaceAndModuleAssigner namespaceAndModuleAssigner;
 	private DatastoreLockContext lockContext;
 	private IOperationLockTarget lockTarget;
-	
-	private NamespaceAndModuleAssigner namespaceAndModuleAssigner;
 
 	/**
 	 * @param name
@@ -94,12 +95,16 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 	 * @param branchPath
 	 * @param userId
 	 */
-	public PersistChangesRemoteJob(String name, ReasonerTaxonomy taxonomy, IBranchPath branchPath, String userId, final NamespaceAndModuleAssigner namespaceAndModuleAssigner) {
+	public PersistChangesRemoteJob(String name, ReasonerTaxonomy taxonomy, IBranchPath branchPath, String userId) {
 		super(name);
-		this.taxonomy = taxonomy;
 		this.branchPath = branchPath;
 		this.userId = userId;
-		this.namespaceAndModuleAssigner = namespaceAndModuleAssigner;
+		
+		this.taxonomy = taxonomy;
+		this.namespaceAndModuleAssigner = Extensions.getFirstPriorityExtension(NAMESPACE_ASSIGNER_EXTENSION, NamespaceAndModuleAssigner.class);
+		if (namespaceAndModuleAssigner == null) {
+			throw new NullPointerException("Could not find a namespace and module allocator in the extension registry");
+		}
 	}
 
 	private static IDatastoreOperationLockManager getLockManager() {
@@ -298,8 +303,9 @@ public class PersistChangesRemoteJob extends AbstractRemoteJob {
 			}
 
 		} finally {
-			lockContext = null;
 			lockTarget = null;
+			lockContext = null;
+			namespaceAndModuleAssigner = null;
 			taxonomy = null;
 		}		
 	}

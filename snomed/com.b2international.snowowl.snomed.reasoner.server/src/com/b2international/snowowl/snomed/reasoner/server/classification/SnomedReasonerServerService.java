@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.pcj.LongSets;
-import com.b2international.commons.platform.Extensions;
 import com.b2international.commons.status.SerializableStatus;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.IDisposableService;
@@ -99,7 +98,6 @@ import com.b2international.snowowl.snomed.reasoner.classification.entry.Relation
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.model.LongConcepts;
 import com.b2international.snowowl.snomed.reasoner.preferences.IReasonerPreferencesService;
-import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
@@ -182,19 +180,10 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	
 	private final RemoteJobResultRegistry<ReasonerTaxonomy> taxonomyResultRegistry;
 	
-	private NamespaceAndModuleAssigner namespaceAndModuleAssigner;
-	
 	public SnomedReasonerServerService(final int maximumReasonerCount, final int maximumReasonerResultsToKeep) {
 		super(maximumReasonerCount);
 		this.taxonomyResultRegistry = new RemoteJobResultRegistry<ReasonerTaxonomy>(maximumReasonerResultsToKeep);
-		
-		namespaceAndModuleAssigner = Extensions.getFirstPriorityExtension("com.b2international.snowowl.snomed.reasoner.server.namespaceAssigner", NamespaceAndModuleAssigner.class);
-		if (namespaceAndModuleAssigner == null) {
-			throw new NullPointerException("Could not find a namespace and module allocator in the extension registry");
-		}
-		
 		LOGGER.info("Initialized SNOMED CT reasoner server with maximum of {} reasoner(s) instances and {} result(s) to keep.", maximumReasonerCount, maximumReasonerResultsToKeep);
-		LOGGER.info("Reasoner service will use the {} class for relationship/concrete domain namespace and module assignment.", namespaceAndModuleAssigner.getClass().getSimpleName());
 	}
 
 	public void registerListeners() {
@@ -535,7 +524,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		sb.append("Persisting ontology changes on ");
 		sb.append(branchPath.getPath());
 		
-		final Job remoteJob = new PersistChangesRemoteJob(sb.toString(), taxonomy, branchPath, userId, namespaceAndModuleAssigner);
+		final Job remoteJob = new PersistChangesRemoteJob(sb.toString(), taxonomy, branchPath, userId);
 		remoteJob.setRule(new ReasonerRemoteJobKey(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath));
 		RemoteJobUtils.configureProperties(remoteJob, userId, null, persistenceId);
 		
