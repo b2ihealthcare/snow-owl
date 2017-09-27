@@ -33,7 +33,6 @@ import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionManager;
 import org.eclipse.emf.cdo.spi.server.InternalSession;
 import org.eclipse.emf.spi.cdo.InternalCDOSession;
 import org.eclipse.net4j.db.IDBConnectionProvider;
-import org.eclipse.net4j.jvm.JVMUtil;
 import org.eclipse.net4j.util.container.IPluginContainer;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.eclipse.net4j.util.om.monitor.Monitor;
@@ -68,14 +67,19 @@ public final class MigrateRequest implements Request<RepositoryContext, Boolean>
 	@NotEmpty
 	private final String remoteLocation;
 	
-	private long failedCommitTimestamp = 1;
+	private String scriptLocation;
+	private long commitTimestamp = 1;
 
 	MigrateRequest(String remoteLocation) {
 		this.remoteLocation = remoteLocation;
 	}
 	
-	void setFailedCommitTimestamp(final long failedCommitTimestamp) {
-		this.failedCommitTimestamp = failedCommitTimestamp;
+	void setScriptLocation(String scriptLocation) {
+		this.scriptLocation = scriptLocation;
+	}
+	
+	void setCommitTimestamp(final long commitTimestamp) {
+		this.commitTimestamp = commitTimestamp;
 	}
 	
 	@Override
@@ -114,7 +118,7 @@ public final class MigrateRequest implements Request<RepositoryContext, Boolean>
 		try {
 			repository.setHealth(Health.YELLOW, "Migration is in progress...");
 			features.enable(ReindexRequest.featureFor(context.id()));
-			final MigrationReplicationContext replicationContext = new MigrationReplicationContext(context, maxCdoBranchId, failedCommitTimestamp - 1, session);
+			final MigrationReplicationContext replicationContext = new MigrationReplicationContext(context, maxCdoBranchId, commitTimestamp - 1, session, scriptLocation);
 			
 			StoreThreadLocal.setSession(session);
 			remoteSession.getSessionProtocol().replicateRepository(replicationContext, new Monitor());

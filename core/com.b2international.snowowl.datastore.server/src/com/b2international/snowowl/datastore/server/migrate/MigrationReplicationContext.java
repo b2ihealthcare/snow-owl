@@ -15,10 +15,16 @@
  */
 package com.b2international.snowowl.datastore.server.migrate;
 
+import static com.google.common.collect.Maps.newHashMap;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
@@ -35,6 +41,8 @@ import org.eclipse.net4j.util.om.monitor.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.index.IndexException;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
@@ -43,6 +51,10 @@ import com.b2international.snowowl.datastore.server.reindex.OptimizeRequest;
 import com.b2international.snowowl.datastore.server.reindex.PurgeRequest;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
 import com.google.common.collect.Sets;
+
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
+import groovy.lang.Script;
 
 /**
  * @since 5.10.12
@@ -68,11 +80,19 @@ class MigrationReplicationContext implements CDOReplicationContext {
 
 	private boolean optimize = false;
 
-	MigrationReplicationContext(final RepositoryContext context, final int initialBranchId, final long initialLastCommitTime, final InternalSession session) {
+	private final GroovyShell shell = new GroovyShell();
+	private final Class<? extends Script> scriptClass;
+
+	MigrationReplicationContext(final RepositoryContext context, final int initialBranchId, final long initialLastCommitTime, final InternalSession session, final String scriptLocation) {
 		this.context = context;
 		this.initialBranchId = initialBranchId;
 		this.initialLastCommitTime = initialLastCommitTime;
 		this.replicatorSession = session;
+		try {
+			this.scriptClass = shell.getClassLoader().parseClass(new File(scriptLocation));
+		} catch (CompilationFailedException | IOException e) {
+			throw new SnowowlRuntimeException("Couldn't compile script", e);
+		}
 	}
 
 	@Override
@@ -251,6 +271,18 @@ class MigrationReplicationContext implements CDOReplicationContext {
 
 		MigratingCommitContext commitContext = new MigratingCommitContext(transaction, commitInfo);
 
+		// run a custom groovy script to manipulate each commit data before committing it
+		final Map<String, Object> ctx = newHashMap();
+		ctx.put("ctx", commitContext);
+		final Binding binding = new Binding(ctx);
+		try {
+			Script script = scriptClass.newInstance();
+			script.setBinding(binding);
+			script.run();
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new IndexException("Couldn't instantiate groovy script class", e);
+		}
+
 		commitContext.preWrite();
 		boolean success = false;
 		
@@ -259,8 +291,6 @@ class MigrationReplicationContext implements CDOReplicationContext {
 			commitContext.commit(new Monitor());
 			success = true;
 			processedCommits++;
-		} catch (Exception e) {
-			throw e;
 		} finally {
 			commitContext.postCommit(success);
 			transaction.close();

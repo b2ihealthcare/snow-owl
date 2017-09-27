@@ -29,14 +29,29 @@ import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
 public class MigrateRequestBuilder extends BaseRequestBuilder<MigrateRequestBuilder, RepositoryContext, Boolean> implements RepositoryRequestBuilder<Boolean> {
 
 	private final String remoteLocation;
+	private String scriptLocation;
+	private long commitTimestamp;
 	
 	MigrateRequestBuilder(String remoteLocation) {
 		this.remoteLocation = remoteLocation;
 	}
 	
+	public MigrateRequestBuilder setCommitTimestamp(long commitTimestamp) {
+		this.commitTimestamp = commitTimestamp;
+		return getSelf();
+	}
+	
+	public MigrateRequestBuilder setScriptLocation(String scriptLocation) {
+		this.scriptLocation = scriptLocation;
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<RepositoryContext, Boolean> doBuild() {
-		return new MigrateRequest(remoteLocation);
+		MigrateRequest req = new MigrateRequest(remoteLocation);
+		req.setCommitTimestamp(commitTimestamp);
+		req.setScriptLocation(scriptLocation);
+		return req;
 	}
 	
 	@Override
