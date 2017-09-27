@@ -199,7 +199,14 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 			final CDOFeatureDelta changeStatusDelta = revisionDelta.getFeatureDelta(SnomedPackage.Literals.COMPONENT__ACTIVE);
 			if (changeStatusDelta instanceof CDOSetFeatureDelta) {
 				CDOSetFeatureDelta delta = (CDOSetFeatureDelta) changeStatusDelta;
-				final Boolean oldValue = (Boolean) delta.getOldValue();
+				final Boolean oldValue;
+				if (delta.getOldValue() instanceof Boolean) {
+					oldValue = (Boolean) delta.getOldValue();
+				} else if (CDOSetFeatureDelta.UNSPECIFIED == delta.getOldValue()) {
+					oldValue = false;
+				} else {
+					throw new RuntimeException("Unknown old value type: " + delta.getOldValue());
+				}
 				final Boolean newValue = (Boolean) delta.getValue();
 				if (Boolean.TRUE == oldValue && Boolean.FALSE == newValue) {
 					//nothing can be dirty and new at the same time
