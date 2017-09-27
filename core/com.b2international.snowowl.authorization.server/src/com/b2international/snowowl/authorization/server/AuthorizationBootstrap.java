@@ -23,10 +23,12 @@ import com.b2international.snowowl.authorization.server.providers.ldap.LdapAutho
 import com.b2international.snowowl.authorization.server.service.AdminPartyAuthorizationService;
 import com.b2international.snowowl.authorization.server.service.AuthorizationService;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
 import com.b2international.snowowl.core.users.IAuthorizationService;
 import com.b2international.snowowl.rpc.RpcProtocol;
 import com.b2international.snowowl.rpc.RpcUtil;
@@ -34,10 +36,10 @@ import com.b2international.snowowl.rpc.RpcUtil;
 /**
  * @since 5.10.13
  */
-public class AuthorizationBootstrap extends DefaultBootstrapFragment {
+public class AuthorizationBootstrap extends DefaultBootstrapFragment implements PreRunCapableBootstrapFragment {
 
 	@Override
-	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
+	public void preRun(SnowOwlConfiguration configuration, Environment env) {
 		final IAuthorizationService service;
 		if (!env.isEmbedded()) {
 			// register proxy authorization service in embedded mode
@@ -60,7 +62,7 @@ public class AuthorizationBootstrap extends DefaultBootstrapFragment {
 	 * @throws SnowowlServiceException
 	 *             - if the given JAAS type is not available
 	 */
-	private IAuthorizationService createAuthorizationService(AuthenticationConfiguration conf) throws SnowowlServiceException {
+	private IAuthorizationService createAuthorizationService(AuthenticationConfiguration conf) {
 		if (conf.isAdminParty() && PlatformUtil.isDevVersion(AuthorizationServerActivator.PLUGIN_ID)) {
 			return new AdminPartyAuthorizationService();
 		} else {
@@ -74,7 +76,7 @@ public class AuthorizationBootstrap extends DefaultBootstrapFragment {
 				strategy = new LdapAuthorizationStrategy();
 				break;
 			default:
-				throw new SnowowlServiceException("Unknown authorization type: " + conf.getType());
+				throw new SnowowlRuntimeException("Unknown authorization type: " + conf.getType());
 			}
 			return new AuthorizationService(strategy);
 		}
