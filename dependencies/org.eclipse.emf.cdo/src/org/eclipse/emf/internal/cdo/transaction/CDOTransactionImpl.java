@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
@@ -945,32 +946,36 @@ public class CDOTransactionImpl extends CDOViewImpl implements InternalCDOTransa
       }
     }
     
-    CDOList list = goalRevision.getList(listFeatureDelta.getFeature());
-    
-	Set<Object> visited = new HashSet<>();
-	Iterator<Object> iterator = list.iterator();
-	
-	while (iterator.hasNext()) {
-		
-		Object listElement = iterator.next();
-		
-		if (!(listElement instanceof CDOID)) {
-			throw new RuntimeException(String.format("Unknown type in list feature (%s) delta: %s", listFeatureDelta.getFeature().getName(),
-					listElement.getClass().getSimpleName()));
-		}
-		
-		if (listFeatureDelta.getFeature().isUnique()) {
-			if (!visited.add(listElement)) {
-				iterator.remove();
-				continue;
-			}
-		}
-		
-		if (getObjectIfExists((CDOID) listElement) == null) {
-			iterator.remove();
-		}
-		
-	}
+    if (Objects.equals(System.getProperty("cdo.debug"), "true")) {
+    	
+    	CDOList list = goalRevision.getList(listFeatureDelta.getFeature());
+    	
+    	Set<Object> visited = new HashSet<>();
+    	Iterator<Object> iterator = list.iterator();
+    	
+    	while (iterator.hasNext()) {
+    		
+    		Object listElement = iterator.next();
+    		
+    		if (!(listElement instanceof CDOID)) {
+    			throw new RuntimeException(String.format("Unknown type in list feature (%s) delta: %s", listFeatureDelta.getFeature().getName(),
+    					listElement.getClass().getSimpleName()));
+    		}
+    		
+    		if (listFeatureDelta.getFeature().isUnique()) {
+    			if (!visited.add(listElement)) {
+    				iterator.remove();
+    				continue;
+    			}
+    		}
+    		
+    		if (getObjectIfExists((CDOID) listElement) == null) {
+    			iterator.remove();
+    		}
+    		
+    	}
+    	
+    }
     
   }
 
