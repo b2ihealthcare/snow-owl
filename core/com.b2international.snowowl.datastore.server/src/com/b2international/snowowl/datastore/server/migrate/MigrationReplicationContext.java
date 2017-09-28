@@ -35,6 +35,8 @@ import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
 import org.eclipse.emf.cdo.internal.server.DelegatingRepository;
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
 import org.eclipse.emf.cdo.spi.common.CDOReplicationContext;
+import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranch;
+import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranchManager;
 import org.eclipse.emf.cdo.spi.server.InternalRepository;
 import org.eclipse.emf.cdo.spi.server.InternalSession;
 import org.eclipse.emf.cdo.spi.server.InternalTransaction;
@@ -44,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.index.IndexException;
+import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
@@ -53,6 +56,7 @@ import com.b2international.snowowl.datastore.replicate.BranchReplicator.SkipBran
 import com.b2international.snowowl.datastore.server.reindex.OptimizeRequest;
 import com.b2international.snowowl.datastore.server.reindex.PurgeRequest;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
+import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 
 import groovy.lang.Binding;
@@ -83,18 +87,20 @@ class MigrationReplicationContext implements CDOReplicationContext {
 
 	private boolean optimize = false;
 
-	private final GroovyShell shell = new GroovyShell();
-	private final Class<? extends Script> scriptClass;
+	private final GroovyShell shell = new GroovyShell(MigrationReplicationContext.class.getClassLoader());
+	private Class<? extends Script> scriptClass;
 
 	MigrationReplicationContext(final RepositoryContext context, final int initialBranchId, final long initialLastCommitTime, final InternalSession session, final String scriptLocation) {
 		this.context = context;
 		this.initialBranchId = initialBranchId;
 		this.initialLastCommitTime = initialLastCommitTime;
 		this.replicatorSession = session;
-		try {
-			this.scriptClass = shell.getClassLoader().parseClass(new File(scriptLocation));
-		} catch (CompilationFailedException | IOException e) {
-			throw new SnowowlRuntimeException("Couldn't compile script", e);
+		if (!Strings.isNullOrEmpty(scriptLocation)) {
+			try {
+				this.scriptClass = shell.getClassLoader().parseClass(new File(scriptLocation));
+			} catch (CompilationFailedException | IOException e) {
+				throw new SnowowlRuntimeException("Couldn't compile script", e);
+			}
 		}
 	}
 
@@ -130,12 +136,24 @@ class MigrationReplicationContext implements CDOReplicationContext {
 			do {
 				final CDOBranch branch = currentBranchToReplicate.getValue();
 				LOGGER.info("Replicating branch: " + branch.getName() + " at " + branch.getBase().getTimeStamp());
+
+				com.b2international.snowowl.datastore.server.internal.InternalRepository internalRepository = (com.b2international.snowowl.datastore.server.internal.InternalRepository) context
+						.service(Repository.class);
+				InternalCDOBranchManager cdoBranchManager = (InternalCDOBranchManager) internalRepository
+						.getCdoBranchManager();				
+				
+				InternalCDOBranch replicatedBranch = cdoBranchManager.createBranch(branch.getID(), branch.getName(),
+						(InternalCDOBranch) branch.getBase().getBranch(), branch.getBase().getTimeStamp());
+
 				try {
-					context.service(BranchReplicator.class).replicateBranch(branch);
+					
+					context.service(BranchReplicator.class).replicateBranch(replicatedBranch);
+					
 				} catch (SkipBranchException e) {
-					LOGGER.warn("Skipping branch with all of its commits: {}", branch.getID());
-					skippedBranches.add(branch.getID());
+					LOGGER.warn("Skipping branch with all of its commits: {}", replicatedBranch.getID());
+					skippedBranches.add(replicatedBranch.getID());
 				}
+				
 				branchesByBasetimestamp.remove(currentBranchToReplicate.getKey());
 				
 				// check if there are more branches to create until this point
@@ -201,16 +219,18 @@ class MigrationReplicationContext implements CDOReplicationContext {
 
 		MigratingCommitContext commitContext = new MigratingCommitContext(delegatingTransaction, commitInfo);
 
-		// run a custom groovy script to manipulate each commit data before committing it
-		final Map<String, Object> ctx = newHashMap();
-		ctx.put("ctx", commitContext);
-		final Binding binding = new Binding(ctx);
-		try {
-			Script script = scriptClass.newInstance();
-			script.setBinding(binding);
-			script.run();
-		} catch (InstantiationException | IllegalAccessException e) {
-			throw new IndexException("Couldn't instantiate groovy script class", e);
+		if (scriptClass != null) {
+			// run a custom groovy script to manipulate each commit data before committing it
+			final Map<String, Object> ctx = newHashMap();
+			ctx.put("ctx", commitContext);
+			final Binding binding = new Binding(ctx);
+			try {
+				Script script = scriptClass.newInstance();
+				script.setBinding(binding);
+				script.run();
+			} catch (InstantiationException | IllegalAccessException e) {
+				throw new IndexException("Couldn't instantiate groovy script class", e);
+			}
 		}
 
 		commitContext.preWrite();
