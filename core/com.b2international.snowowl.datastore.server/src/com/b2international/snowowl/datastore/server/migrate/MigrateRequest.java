@@ -57,6 +57,7 @@ import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.server.internal.branch.InternalCDOBasedBranch;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.10
@@ -65,9 +66,13 @@ import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
 public final class MigrateRequest implements Request<RepositoryContext, Boolean> {
 
 	@NotEmpty
+	@JsonProperty
 	private final String remoteLocation;
 	
+	@JsonProperty
 	private String scriptLocation;
+	
+	@JsonProperty
 	private long commitTimestamp = 1;
 
 	MigrateRequest(String remoteLocation) {

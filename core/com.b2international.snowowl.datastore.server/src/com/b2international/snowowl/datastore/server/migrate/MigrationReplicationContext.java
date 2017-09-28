@@ -32,8 +32,10 @@ import org.eclipse.emf.cdo.common.lock.IDurableLockingManager.LockArea;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
+import org.eclipse.emf.cdo.internal.server.DelegatingRepository;
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
 import org.eclipse.emf.cdo.spi.common.CDOReplicationContext;
+import org.eclipse.emf.cdo.spi.server.InternalRepository;
 import org.eclipse.emf.cdo.spi.server.InternalSession;
 import org.eclipse.emf.cdo.spi.server.InternalTransaction;
 import org.eclipse.net4j.db.DBException;
@@ -45,6 +47,7 @@ import com.b2international.index.IndexException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
+import com.b2international.snowowl.datastore.cdo.DelegatingTransaction;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator.SkipBranchException;
 import com.b2international.snowowl.datastore.server.reindex.OptimizeRequest;
@@ -169,107 +172,34 @@ class MigrationReplicationContext implements CDOReplicationContext {
 			}
 		}
 		
-//		final InternalRepository repository = replicatorSession.getManager().getRepository();
-//		final InternalCDORevisionManager revisionManager = repository.getRevisionManager();
-//		final InternalRepository delegateRepository = new DelegatingRepository() {
-//			
-//			@Override
-//			public InternalCDORevisionManager getRevisionManager() {
-//				
-//				return new DelegatingCDORevisionManager() {
-//				
-//					@Override
-//					protected InternalCDORevisionManager getDelegate() {
-//						return revisionManager;
-//					}
-//
-//					@Override
-//					public EClass getObjectType(CDOID id, CDOBranchManager branchManagerForLoadOnDemand) {
-//						return revisionManager.getObjectType(id, branchManagerForLoadOnDemand);
-//					}
-//					
-//					/* (non-Javadoc)
-//					 * @see org.eclipse.emf.cdo.spi.common.revision.DelegatingCDORevisionManager#getRevision(org.eclipse.emf.cdo.common.id.CDOID, org.eclipse.emf.cdo.common.branch.CDOBranchPoint, int, int, boolean)
-//					 */
-//					@Override
-//					public InternalCDORevision getRevision(CDOID id, CDOBranchPoint branchPoint, int referenceChunk, int prefetchDepth, boolean loadOnDemand) {
-//						
-//						//future revisions are hidden (no -1)
-//						if (branchPoint.getTimeStamp() >= commitInfo.getTimeStamp()) {
-//							return null;
-//						}
-//						
-//						InternalCDORevision revision = super.getRevision(id, branchPoint, referenceChunk, prefetchDepth, loadOnDemand);
-//						InternalCDORevision copiedRevision = revision.copy();
-//						
-//						//we fake later revisions as brand new revision (revised=0)
-//						if (revision.getRevised() >= commitInfo.getTimeStamp() -1) {
-//							copiedRevision.setRevised(CDORevision.UNSPECIFIED_DATE);
-//						}
-//						return copiedRevision;
-//					}
-//					
-//					/* (non-Javadoc)
-//					 * @see org.eclipse.emf.cdo.spi.common.revision.DelegatingCDORevisionManager#getRevisionByVersion(org.eclipse.emf.cdo.common.id.CDOID, org.eclipse.emf.cdo.common.branch.CDOBranchVersion, int, boolean)
-//					 */
-//					@Override
-//					public InternalCDORevision getRevisionByVersion(CDOID id, CDOBranchVersion branchVersion, int referenceChunk, boolean loadOnDemand) {
-//						// first revisions are hidden
-//						if (!(branchVersion instanceof CDORevisionDelta) && branchVersion.getBranch().getID() == commitInfo.getBranch().getID() && branchVersion.getVersion() == CDOBranchVersion.FIRST_VERSION) {
-//							return null;
-//						}
-//						
-//						InternalCDORevision revisionByVersion = super.getRevisionByVersion(id, branchVersion, referenceChunk, loadOnDemand);
-//						
-//						InternalCDORevision copiedRevision = revisionByVersion.copy();
-//						
-//						//we fake later revisions as brand new revision
-//						if (revisionByVersion.getRevised() >= commitInfo.getTimeStamp()-1) {
-//							copiedRevision.setRevised(CDORevision.UNSPECIFIED_DATE);
-//						}
-//						return copiedRevision;
-//					}
-//					
-//				};
-//			}
-//			
-//			@Override
-//			protected InternalRepository getDelegate() {
-//				return repository;
-//			}
-//			
-//			@Override
-//			public void endCommit(long timeStamp) {
-//				//do nothing
-//			}
-//			
-//			@Override
-//			public void failCommit(long timestamp) {
-//				failedCommitTimestamp = timestamp;
-//				skippedCommits++;
-//			}
-//			
-//			@Override 
-//			public void sendCommitNotification(final InternalSession sender, final CDOCommitInfo commitInfo) {
-//				//do nothing, no post commit notifications are expected
-//			}
-//		};
+		final InternalRepository repository = replicatorSession.getManager().getRepository();
+		final InternalRepository delegateRepository = new DelegatingRepository() {
+			@Override
+			protected InternalRepository getDelegate() {
+				return repository;
+			}
+			
+			@Override
+			public void failCommit(long timestamp) {
+				failedCommitTimestamp = timestamp;
+				skippedCommits++;
+			}
+		};
 		
 		// this is not the actual HEAD of the particular branch!!
 		CDOBranch branch = commitInfo.getBranch();
 		CDOBranchPoint head = branch.getHead();
 
 		InternalTransaction transaction = replicatorSession.openTransaction(InternalSession.TEMP_VIEW_ID, head);
-//		DelegatingTransaction delegatingTransaction = new DelegatingTransaction(transaction) {
-//
-//			//Transaction needs to return the delegating repository as well
-//			@Override
-//			public InternalRepository getRepository() {
-//				return delegateRepository;
-//			}
-//		};
+		DelegatingTransaction delegatingTransaction = new DelegatingTransaction(transaction) {
+			//Transaction needs to return the delegating repository as well
+			@Override
+			public InternalRepository getRepository() {
+				return delegateRepository;
+			}
+		};
 
-		MigratingCommitContext commitContext = new MigratingCommitContext(transaction, commitInfo);
+		MigratingCommitContext commitContext = new MigratingCommitContext(delegatingTransaction, commitInfo);
 
 		// run a custom groovy script to manipulate each commit data before committing it
 		final Map<String, Object> ctx = newHashMap();

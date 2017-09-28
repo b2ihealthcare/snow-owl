@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor;
 /**
  * Commit context that does not actually write into the repository, only pretends to do so
  * in order to trigger notifications.
+ * @since 5.10.13
  */
 @SuppressWarnings("restriction")
 class MigratingCommitContext extends TransactionCommitContext {
@@ -68,15 +69,14 @@ class MigratingCommitContext extends TransactionCommitContext {
 
 	@Override
 	protected long[] createTimeStamp(OMMonitor monitor) {
-		return super.createTimeStamp(monitor);
-//		InternalRepository repository = getTransaction().getSession().getManager().getRepository();
-//
-//		long commitTimeStamp = commitInfo.getTimeStamp();
-//		if (commitTimeStamp == CDOBranchPoint.UNSPECIFIED_DATE) {
-//			commitTimeStamp = repository.getTimeStamp();
-//		}
-//
-//		return repository.forceCommitTimeStamp(commitInfo.getTimeStamp(), monitor);
+		InternalRepository repository = getTransaction().getSession().getManager().getRepository();
+
+		long commitTimeStamp = commitInfo.getTimeStamp();
+		if (commitTimeStamp == CDOBranchPoint.UNSPECIFIED_DATE) {
+			commitTimeStamp = repository.getTimeStamp();
+		}
+
+		return repository.forceCommitTimeStamp(commitInfo.getTimeStamp(), monitor);
 	}
 	
 	@Override
