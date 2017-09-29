@@ -63,7 +63,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @since 5.10
  */
 @SuppressWarnings("restriction")
-public final class MigrateRequest implements Request<RepositoryContext, Boolean> {
+public final class MigrateRequest implements Request<RepositoryContext, MigrationResult> {
 
 	@NotEmpty
 	@JsonProperty
@@ -88,7 +88,7 @@ public final class MigrateRequest implements Request<RepositoryContext, Boolean>
 	}
 	
 	@Override
-	public Boolean execute(RepositoryContext context) {
+	public MigrationResult execute(RepositoryContext context) {
 		final InternalRepository repository = (InternalRepository) context.service(Repository.class);
 		final FeatureToggles features = context.service(FeatureToggles.class);
 		
@@ -129,10 +129,8 @@ public final class MigrateRequest implements Request<RepositoryContext, Boolean>
 			StoreThreadLocal.setSession(session);
 			remoteSession.getSessionProtocol().replicateRepository(replicationContext, new Monitor());
 			
-			// update repository state after the re-indexing
-//			return new ReindexResult(replicationContext.getFailedCommitTimestamp(),
-//					replicationContext.getProcessedCommits(), replicationContext.getSkippedCommits(), replicationContext.getException());
-			return Boolean.TRUE;
+			return new MigrationResult(replicationContext.getFailedCommitTimestamp(),
+					replicationContext.getProcessedCommits(), replicationContext.getSkippedCommits(), replicationContext.getException());
 		} finally {
 			StoreThreadLocal.release();
 			session.close();

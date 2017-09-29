@@ -46,6 +46,7 @@ import com.b2international.snowowl.datastore.request.repository.RepositorySearch
 import com.b2international.snowowl.datastore.server.ServerDbUtils;
 import com.b2international.snowowl.datastore.server.migrate.MigrateRequest;
 import com.b2international.snowowl.datastore.server.migrate.MigrateRequestBuilder;
+import com.b2international.snowowl.datastore.server.migrate.MigrationResult;
 import com.b2international.snowowl.datastore.server.reindex.OptimizeRequest;
 import com.b2international.snowowl.datastore.server.reindex.PurgeRequest;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
@@ -338,9 +339,11 @@ public class MaintenanceCommandProvider implements CommandProvider {
 			
 		}
 		
-		req.build(repositoryId).execute(getBus()).getSync();
+		MigrationResult result = req.build(repositoryId)
+			.execute(getBus())
+			.getSync();
 		
-		interpreter.println(String.format("Migration of '%s' repository successfully completed from source '%s'.", repositoryId, remoteLocation));
+		interpreter.println(String.format("Migration of '%s' repository successfully completed from source '%s'. Result: %s", repositoryId, remoteLocation, result.getMessage()));
 	}
 
 	private static IEventBus getBus() {
