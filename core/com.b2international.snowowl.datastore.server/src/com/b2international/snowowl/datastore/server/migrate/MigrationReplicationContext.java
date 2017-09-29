@@ -33,7 +33,6 @@ import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
 import org.eclipse.emf.cdo.internal.server.DelegatingRepository;
-import org.eclipse.emf.cdo.server.StoreThreadLocal;
 import org.eclipse.emf.cdo.spi.common.CDOReplicationContext;
 import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranch;
 import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranchManager;
@@ -45,7 +44,6 @@ import org.eclipse.net4j.util.om.monitor.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.index.IndexException;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -218,6 +216,7 @@ class MigrationReplicationContext implements CDOReplicationContext {
 		};
 
 		MigratingCommitContext commitContext = new MigratingCommitContext(delegatingTransaction, commitInfo);
+		commitContext.preWrite();
 
 		if (scriptClass != null) {
 			// run a custom groovy script to manipulate each commit data before committing it
@@ -229,11 +228,10 @@ class MigrationReplicationContext implements CDOReplicationContext {
 				script.setBinding(binding);
 				script.run();
 			} catch (InstantiationException | IllegalAccessException e) {
-				throw new IndexException("Couldn't instantiate groovy script class", e);
+				throw new SnowowlRuntimeException("Couldn't instantiate groovy script class", e);
 			}
 		}
 
-		commitContext.preWrite();
 		boolean success = false;
 		
 		try {
@@ -244,7 +242,6 @@ class MigrationReplicationContext implements CDOReplicationContext {
 		} finally {
 			commitContext.postCommit(success);
 			transaction.close();
-			StoreThreadLocal.setSession(replicatorSession);
 		}
 	}
 

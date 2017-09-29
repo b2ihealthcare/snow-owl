@@ -22,6 +22,7 @@ import java.util.Map;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.CDORevisionCache;
 import org.eclipse.emf.cdo.common.revision.CDORevisionUtil;
+import org.eclipse.emf.cdo.internal.net4j.CDONet4jSessionImpl;
 import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
 import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
 import org.eclipse.emf.cdo.server.CDOServerUtil;
@@ -31,7 +32,6 @@ import org.eclipse.emf.cdo.server.db.IDBStore;
 import org.eclipse.emf.cdo.server.db.IIDHandler;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionManager;
 import org.eclipse.emf.cdo.spi.server.InternalSession;
-import org.eclipse.emf.spi.cdo.InternalCDOSession;
 import org.eclipse.net4j.db.IDBConnectionProvider;
 import org.eclipse.net4j.util.container.IPluginContainer;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
@@ -111,19 +111,20 @@ public final class MigrateRequest implements Request<RepositoryContext, Boolean>
 		
 		// open JVM based connections
 		final CDONet4jSessionConfiguration sessionConfiguration = CDONet4jUtil.createNet4jSessionConfiguration();
-		sessionConfiguration.setSignalTimeout(context.config().getModuleConfig(RepositoryConnectionConfiguration.class).getConnectionTimeout());
 		sessionConfiguration.setRevisionManager(CDORevisionUtil.createRevisionManager(CDORevisionCache.NOOP));
 		sessionConfiguration.setRepositoryName("replicated"+localRepository.getUUID());
 		sessionConfiguration.setConnector(context.service(ICDOConnectionManager.class).getConnector());
 		sessionConfiguration.getAuthenticator().setCredentialsProvider(new PasswordCredentialsProvider(SpecialUserStore.SYSTEM_USER.getUserName(), SpecialUserStore.SYSTEM_USER.getPassword()));
 		
 		final InternalSession session = localRepository.getSessionManager().openSession(null);
-		final InternalCDOSession remoteSession = (InternalCDOSession) sessionConfiguration.openNet4jSession();
+		final CDONet4jSessionImpl remoteSession = (CDONet4jSessionImpl) sessionConfiguration.openNet4jSession();
 		
 		try {
 			repository.setHealth(Health.YELLOW, "Migration is in progress...");
 			features.enable(ReindexRequest.featureFor(context.id()));
 			final MigrationReplicationContext replicationContext = new MigrationReplicationContext(context, maxCdoBranchId, commitTimestamp - 1, session, scriptLocation);
+			
+			remoteSession.setSignalTimeout(context.config().getModuleConfig(RepositoryConnectionConfiguration.class).getSignalTimeout());
 			
 			StoreThreadLocal.setSession(session);
 			remoteSession.getSessionProtocol().replicateRepository(replicationContext, new Monitor());
@@ -133,13 +134,13 @@ public final class MigrateRequest implements Request<RepositoryContext, Boolean>
 //					replicationContext.getProcessedCommits(), replicationContext.getSkippedCommits(), replicationContext.getException());
 			return Boolean.TRUE;
 		} finally {
-			features.disable(ReindexRequest.featureFor(context.id()));
 			StoreThreadLocal.release();
 			session.close();
 			repository.checkHealth();
 			// close the replicator source repository
 			remoteSession.close();
 			LifecycleUtil.deactivate(remoteRepository);
+			features.disable(ReindexRequest.featureFor(context.id()));
 		}
 	}
 
