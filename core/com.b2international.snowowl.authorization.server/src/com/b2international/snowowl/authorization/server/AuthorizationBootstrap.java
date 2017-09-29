@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.authorization.server;
 
+import org.eclipse.net4j.util.container.IPluginContainer;
+
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.authentication.AuthenticationConfiguration;
 import com.b2international.snowowl.authorization.server.providers.IAuthorizationStrategy;
@@ -31,6 +33,7 @@ import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
 import com.b2international.snowowl.core.users.IAuthorizationService;
 import com.b2international.snowowl.rpc.RpcProtocol;
+import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcUtil;
 
 /**
@@ -49,6 +52,8 @@ public class AuthorizationBootstrap extends DefaultBootstrapFragment implements 
 		} else {
 			final AuthenticationConfiguration authenticationConfiguration = configuration.getModuleConfig(AuthenticationConfiguration.class);
 			service = createAuthorizationService(authenticationConfiguration);
+			final RpcSession session = RpcUtil.getInitialServerSession(IPluginContainer.INSTANCE);
+			session.registerClassLoader(IAuthorizationService.class, service.getClass().getClassLoader());
 		}
 		ApplicationContext.getInstance().registerService(IAuthorizationService.class, service);
 	}
