@@ -29,8 +29,9 @@ import org.eclipse.emf.ecore.EReference
 def newCDOIds= ctx.newObjects.collect { it.getID() }
 def detachedCDOIds = ctx.detachedObjects.collect {it}
 
-println("Before:")
-ctx.dirtyObjectDeltas.each { println(it) }
+println("Processing commit on branch ${ctx.getBranchPoint().getBranch().getID()} - ${ctx.getBranchPoint().getBranch().getName()}")
+println("Dirty objects before:")
+ctx.dirtyObjectDeltas.each { println("\t" + it) }
 
 ctx.dirtyObjectDeltas.each{ delta ->
 	
@@ -51,7 +52,10 @@ ctx.dirtyObjectDeltas.each{ delta ->
 			
 			if (listChange instanceof CDOAddFeatureDelta && newCDOIds.contains(listChange.getValue())) {
 				
-				println("Changing add feature delta from index $listChange.index to ${originalListCopy.size()}: " + listChange)
+				if (listChange.index != originalListCopy.size()) {
+					println("Changing add feature delta from index $listChange.index to ${originalListCopy.size()}: " + listChange)
+				}
+				
 				listChange.index = originalListCopy.size()
 				originalListCopy.add(listChange.getValue())
 				fixedListFeature.add(listChange)
@@ -59,7 +63,11 @@ ctx.dirtyObjectDeltas.each{ delta ->
 			} else if (listChange instanceof CDORemoveFeatureDelta && detachedCDOIds.contains(listChange.getValue())) {
 				
 				def removeIndex = originalListCopy.indexOf(listChange.getValue())
-				println("Changing remove feature delta from index $listChange.index to $removeIndex: " + listChange)
+
+				if (listChange.index != removeIndex) {
+					println("Changing remove feature delta from index $listChange.index to $removeIndex: " + listChange)
+				}
+				
 				listChange.index = removeIndex
 				originalListCopy.remove(removeIndex)
 				fixedListFeature.add(listChange)
@@ -89,5 +97,5 @@ ctx.dirtyObjectDeltas = ctx.dirtyObjectDeltas.findAll {
 	}
 } as InternalCDORevisionDelta[]
 
-println("After: ")
-ctx.dirtyObjectDeltas.each { println(it) }
+println("Dirty objects after:")
+ctx.dirtyObjectDeltas.each { println("\t" + it) }
