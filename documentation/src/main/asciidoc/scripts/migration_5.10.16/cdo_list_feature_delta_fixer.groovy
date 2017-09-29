@@ -21,6 +21,7 @@ import org.eclipse.emf.cdo.internal.common.revision.delta.CDOListFeatureDeltaImp
 import org.eclipse.emf.cdo.internal.common.revision.delta.CDORemoveFeatureDeltaImpl
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDOList
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision
+import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionDelta;
 import org.eclipse.emf.ecore.EReference
 //import org.eclipse.emf.cdo.internal.server.TransactionCommitContext
 //TransactionCommitContext ctx = null
@@ -79,6 +80,14 @@ ctx.dirtyObjectDeltas.each{ delta ->
 	}
 	
 }
+
+ctx.dirtyObjectDeltas = ctx.dirtyObjectDeltas.findAll {
+	if (it.getFeatureDeltas().isEmpty()) {
+		println("Removing empty feature delta: " + it)
+	}  else {
+		return true
+	}
+} as InternalCDORevisionDelta[]
 
 println("After: ")
 ctx.dirtyObjectDeltas.each { println(it) }
