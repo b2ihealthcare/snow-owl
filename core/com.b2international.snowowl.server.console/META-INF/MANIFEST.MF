@@ -7,7 +7,9 @@ Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.datastore.server,
- com.b2international.snowowl.authentication
+ com.b2international.snowowl.authentication,
+ com.b2international.snowowl.snomed.datastore.server,
+ com.b2international.snowowl.datastore
 Service-Component: OSGI-INF/maintenanceCommandProvider.xml, 
  OSGI-INF/userSessionCommandProvider.xml,
  OSGI-INF/remoteJobsCommandProvider.xml
