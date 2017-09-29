@@ -89,13 +89,5 @@ ctx.dirtyObjectDeltas.each{ delta ->
 	
 }
 
-ctx.dirtyObjectDeltas = ctx.dirtyObjectDeltas.findAll {
-	if (it.getFeatureDeltas().isEmpty()) {
-		println("Removing empty feature delta: " + it)
-	}  else {
-		return true
-	}
-} as InternalCDORevisionDelta[]
-
 println("Dirty objects after:")
 ctx.dirtyObjectDeltas.each { println("\t" + it) }
