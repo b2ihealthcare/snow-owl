@@ -22,9 +22,8 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.net4j.util.om.monitor.EclipseMonitor;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.snomed.datastore.SnomedConfiguration;
 import com.b2international.snowowl.snomed.exporter.model.SnomedExportResult;
+import com.b2international.snowowl.snomed.exporter.model.SnomedExporterUtil;
 import com.b2international.snowowl.snomed.exporter.model.SnomedRf2ExportModel;
 
 /**
@@ -45,7 +44,7 @@ public class SnomedExportService {
 		monitor.beginTask("Exporting SNOMED CT into RF2 format...", IProgressMonitor.UNKNOWN);
 
 		if (StringUtils.isEmpty(model.getCountryAndNamespaceId())) {
-			model.setCountryAndNamespaceId(getNamespace());			
+			model.setCountryAndNamespaceId(SnomedExporterUtil.getCountryAndNameSpaceId()); 	
 		}
 		
 		final SnomedExportClientRequest snomedExportClientRequest = new SnomedExportClientRequest(SnomedClientProtocol.getInstance(), model);
@@ -63,18 +62,8 @@ public class SnomedExportService {
 		final File resultFile = snomedExportClientRequest.send(new EclipseMonitor(subMonitor));
 		final SnomedExportResult result = snomedExportClientRequest.getExportResult();
 		model.getExportResult().setResultAndMessage(result.getResult(), result.getMessage());
-
+		
 		return resultFile;
 	}
-
-	/**
-	 * Returns with the default namespace ID.
-	 * 
-	 * @return the namespace ID.
-	 */
-	protected String getNamespace() {
-		return ApplicationContext.getInstance().getService(SnomedConfiguration.class).getNamespaces()
-				.getDefaultChildKey();
-	}
-
+	
 }

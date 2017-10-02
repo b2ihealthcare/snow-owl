@@ -52,7 +52,7 @@ public class SnomedExporterFacade {
 	private final boolean includeExtendedDescriptionTypes;
 	private final Set<SnomedMapSetSetting> settings;
 	private final Set<String> modulesToExport;
-	private String clientNamespace;
+	private String countryAndNamespaceId;
 
 	// These fields are used for export activity logging
 	private final org.slf4j.Logger activityLogger;
@@ -66,7 +66,7 @@ public class SnomedExporterFacade {
 	 * @param module the module number to export
 	 * @param settings settings used for map set export.
 	 * @param deltaExport {@code true} if the export type is delta 
-	 * @param clientNamespace the SNOMED&nbsp;CT namespace configured at the client side. 
+	 * @param countryAndNamespace the country code and the SNOMED&nbsp;CT namespace configured at the client side, if any, else 'INT'. 
 	 */
 	public SnomedExporterFacade(final String userId,
 			final IBranchPath branchPath,
@@ -78,7 +78,7 @@ public class SnomedExporterFacade {
 			final boolean deltaExport, 
 			final Date deltaExportStartEffectiveTime, 
 			final Date deltaExportEndEffectiveTime, 
-			final String clientNamespace) {
+			final String countryAndNamespace) {
 		
 		this.userId = userId;
 		this.branchPath = branchPath;
@@ -88,7 +88,7 @@ public class SnomedExporterFacade {
 		this.includeExtendedDescriptionTypes = includeExtendedDescriptionTypes;
 		this.settings = settings;
 		this.modulesToExport = modulesToExport;
-		this.clientNamespace = clientNamespace;
+		this.countryAndNamespaceId = countryAndNamespace;
 	}
 	
 	public void executeCoreExport(final String workingDirectory, final SnomedExportConfiguration configuration, final OMMonitor monitor) throws IOException {
@@ -104,7 +104,7 @@ public class SnomedExporterFacade {
 		try {
 			async = monitor.forkAsync(2);
 			SnomedConceptExporter conceptExporter = new SnomedConceptExporter(configuration);
-			new SnomedExportExecutor(conceptExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+			new SnomedExportExecutor(conceptExporter, workingDirectory, modulesToExport, countryAndNamespaceId).execute();
 		} finally {
 			if (async != null) {
 				async.stop();
@@ -121,7 +121,7 @@ public class SnomedExporterFacade {
 		try {
 			async = monitor.forkAsync(2);
 			SnomedDescriptionExporter descriptionExporter = new SnomedDescriptionExporter(configuration);
-			new SnomedExportExecutor(descriptionExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+			new SnomedExportExecutor(descriptionExporter, workingDirectory, modulesToExport, countryAndNamespaceId).execute();
 		} finally {
 			if (async != null) {
 				async.stop();
@@ -138,7 +138,7 @@ public class SnomedExporterFacade {
 		try {
 			async = monitor.forkAsync(2);
 			SnomedExporter relationshipExporter = new SnomedRelationshipExporter(configuration);
-			new SnomedExportExecutor(relationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+			new SnomedExportExecutor(relationshipExporter, workingDirectory, modulesToExport, countryAndNamespaceId).execute();
 		} finally {
 			if (async != null) {
 				async.stop();
@@ -155,7 +155,7 @@ public class SnomedExporterFacade {
 		try {
 			async = monitor.forkAsync(2);
 			SnomedExporter statedRelationshipExporter = new SnomedStatedRelationshipExporter(configuration);
-			new SnomedExportExecutor(statedRelationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+			new SnomedExportExecutor(statedRelationshipExporter, workingDirectory, modulesToExport, countryAndNamespaceId).execute();
 		} finally {
 			if (async != null) {
 				async.stop();
@@ -176,7 +176,7 @@ public class SnomedExporterFacade {
 			try {
 				async = monitor.forkAsync(2);
 				SnomedRf1ConceptExporter rf1ConceptExporter = new SnomedRf1ConceptExporter(configuration, mapper);
-				new SnomedExportExecutor(rf1ConceptExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+				new SnomedExportExecutor(rf1ConceptExporter, workingDirectory, modulesToExport, countryAndNamespaceId).execute();
 			} finally {
 				if (async != null) {
 					async.stop();
@@ -193,7 +193,7 @@ public class SnomedExporterFacade {
 			try {
 				async = monitor.forkAsync(2);
 				SnomedRf1DescriptionExporter rf1DescriptionExporter = new SnomedRf1DescriptionExporter(configuration, mapper, includeExtendedDescriptionTypes);
-				final SnomedExportExecutor exportExecutor = new SnomedExportExecutor(rf1DescriptionExporter, workingDirectory, modulesToExport, clientNamespace);
+				final SnomedExportExecutor exportExecutor = new SnomedExportExecutor(rf1DescriptionExporter, workingDirectory, modulesToExport, countryAndNamespaceId);
 				exportExecutor.execute();
 				
 				if (includeExtendedDescriptionTypes) {
@@ -215,7 +215,7 @@ public class SnomedExporterFacade {
 			try {
 				async = monitor.forkAsync(2);
 				SnomedRf1RelationshipExporter rf1RelationshipExporter = new SnomedRf1RelationshipExporter(configuration, mapper);
-				new SnomedExportExecutor(rf1RelationshipExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+				new SnomedExportExecutor(rf1RelationshipExporter, workingDirectory, modulesToExport, countryAndNamespaceId).execute();
 			} finally {
 				if (async != null) {
 					async.stop();
@@ -254,7 +254,7 @@ public class SnomedExporterFacade {
 		}
 		
 		logActivity("Publishing SNOMED CT reference set into RF2 format. Reference set identifier concept ID: " + refSetId);
-		new SnomedExportExecutor(refSetExporter, workingDirectory, modulesToExport, clientNamespace).execute();
+		new SnomedExportExecutor(refSetExporter, workingDirectory, modulesToExport, countryAndNamespaceId).execute();
 
 		//RF1 export
 		if (includeRf1) {
@@ -266,7 +266,7 @@ public class SnomedExporterFacade {
 						logActivity("Publishing SNOMED CT reference set into RF1 format. Reference set identifier concept ID: " + refSetId);
 						alreadyLogged = true;
 					}
-					new SnomedExportExecutor(exporter, workingDirectory, modulesToExport, clientNamespace).execute();
+					new SnomedExportExecutor(exporter, workingDirectory, modulesToExport, countryAndNamespaceId).execute();
 				}
 			}
 			//RF1 map set exporter.
@@ -279,7 +279,7 @@ public class SnomedExporterFacade {
 							logActivity("Publishing SNOMED CT reference set into RF1 format. Reference set identifier concept ID: " + refSetId);
 							alreadyLogged = true;
 						}
-						new SnomedExportExecutor(exporter, workingDirectory, modulesToExport, clientNamespace).execute();
+						new SnomedExportExecutor(exporter, workingDirectory, modulesToExport, countryAndNamespaceId).execute();
 					}
 				}
 			}
