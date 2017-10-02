@@ -39,7 +39,7 @@ public class SnomedExportConfiguration implements ISnomedExportConfiguration {
 
 	public SnomedExportConfiguration(Rf2ReleaseType type, 
 			String branchPath, 
-			String namespaceId, Collection<String> moduleIds,
+			String countryAndNamespaceId, Collection<String> moduleIds,
 			Date deltaExportStartEffectiveTime, Date deltaExportEndEffectiveTime, 
 			String transientEffectiveTime) {
 		this.type = checkNotNull(type, "type");

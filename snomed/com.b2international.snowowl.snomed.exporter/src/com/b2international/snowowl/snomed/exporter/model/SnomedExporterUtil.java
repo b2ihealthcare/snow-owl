@@ -99,7 +99,7 @@ public final class SnomedExporterUtil {
 	
 	private SnomedExporterUtil() { }
 	
-	public static String getCountryAndNameSpaceElement() {
+	public static String getCountryAndNameSpaceId() {
 		String namespace = getNamespace();
 		String countryCode = getCountry().toUpperCase();
 		return  Strings.isNullOrEmpty(namespace) ? "INT" : countryCode + namespace;

@@ -44,8 +44,8 @@ public class SnomedExportService {
 	public File export(SnomedRf2ExportModel model, IProgressMonitor monitor) throws Exception {
 		monitor.beginTask("Exporting SNOMED CT into RF2 format...", IProgressMonitor.UNKNOWN);
 
-		if (StringUtils.isEmpty(model.getNamespace())) {
-			model.setNamespace(getNamespace());			
+		if (StringUtils.isEmpty(model.getCountryAndNamespaceId())) {
+			model.setCountryAndNamespaceId(getNamespace());			
 		}
 		
 		final SnomedExportClientRequest snomedExportClientRequest = new SnomedExportClientRequest(SnomedClientProtocol.getInstance(), model);
