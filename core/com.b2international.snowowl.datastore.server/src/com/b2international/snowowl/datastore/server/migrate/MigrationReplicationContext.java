@@ -67,19 +67,19 @@ import groovy.lang.Script;
 @SuppressWarnings("restriction")
 class MigrationReplicationContext implements CDOReplicationContext {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(MigrationReplicationContext.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger("migrate");
 
 	private final RepositoryContext context;
 	private final long initialLastCommitTime;
-	private final int initialBranchId;
 	private final InternalSession replicatorSession;
+	private final Set<Integer> skippedBranches = Sets.newHashSet();
 	
 	private TreeMap<Long, CDOBranch> branchesByBasetimestamp = new TreeMap<>();
 	
+	private int lastReplicatedBranchId;
 	private int skippedCommits = 0;
 	private int processedCommits = 0;
 	private long failedCommitTimestamp = -1;
-	private final Set<Integer> skippedBranches = Sets.newHashSet();
 
 	private Exception exception;
 
@@ -90,7 +90,7 @@ class MigrationReplicationContext implements CDOReplicationContext {
 
 	MigrationReplicationContext(final RepositoryContext context, final int initialBranchId, final long initialLastCommitTime, final InternalSession session, final String scriptLocation) {
 		this.context = context;
-		this.initialBranchId = initialBranchId;
+		this.lastReplicatedBranchId = initialBranchId;
 		this.initialLastCommitTime = initialLastCommitTime;
 		this.replicatorSession = session;
 		if (!Strings.isNullOrEmpty(scriptLocation)) {
@@ -269,7 +269,7 @@ class MigrationReplicationContext implements CDOReplicationContext {
 
 	@Override
 	public int getLastReplicatedBranchID() {
-		return initialBranchId;
+		return lastReplicatedBranchId;
 	}
 
 	@Override
@@ -285,6 +285,9 @@ class MigrationReplicationContext implements CDOReplicationContext {
 	@Override
 	public void handleBranch(CDOBranch branch) {
 		branchesByBasetimestamp.put(branch.getBase().getTimeStamp(), branch);
+		if (branch.getID() > getLastReplicatedBranchID()) {
+			lastReplicatedBranchId = branch.getID();
+		}
 	}
 
 	@Override

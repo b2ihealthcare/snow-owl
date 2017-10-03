@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.migrate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.CDORevisionCache;
@@ -122,15 +123,20 @@ public final class MigrateRequest implements Request<RepositoryContext, Migratio
 		try {
 			repository.setHealth(Health.YELLOW, "Migration is in progress...");
 			features.enable(ReindexRequest.featureFor(context.id()));
-			final MigrationReplicationContext replicationContext = new MigrationReplicationContext(context, maxCdoBranchId, commitTimestamp - 1, session, scriptLocation);
-			
+			MigrationReplicationContext delegate = new MigrationReplicationContext(context, maxCdoBranchId, commitTimestamp - 1, session, scriptLocation);
+			final AsyncReplicationContext replicationContext = new AsyncReplicationContext(delegate);
+
 			remoteSession.setSignalTimeout(context.config().getModuleConfig(RepositoryConnectionConfiguration.class).getSignalTimeout());
 			
 			StoreThreadLocal.setSession(session);
 			remoteSession.getSessionProtocol().replicateRepository(replicationContext, new Monitor());
 			
-			return new MigrationResult(replicationContext.getFailedCommitTimestamp(),
-					replicationContext.getProcessedCommits(), replicationContext.getSkippedCommits(), replicationContext.getException());
+			replicationContext.await(2L, TimeUnit.HOURS);
+			
+			localRepository.getStore().setLastBranchID(delegate.getLastReplicatedBranchID());
+			
+			return new MigrationResult(delegate.getFailedCommitTimestamp(), delegate.getProcessedCommits(), delegate.getSkippedCommits(),
+					delegate.getException());
 		} finally {
 			StoreThreadLocal.release();
 			session.close();
