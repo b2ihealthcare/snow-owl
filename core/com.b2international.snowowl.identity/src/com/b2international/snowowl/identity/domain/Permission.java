@@ -13,28 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.users;
+package com.b2international.snowowl.identity.domain;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
+import java.util.Objects;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 
 /**
- * A Plain Old Java Object, representing an application specific permission.
- * 
+ * Represents an application specific permission.
  */
 public final class Permission implements Serializable {
 
-	private static final long serialVersionUID = -3448099568736188498L;
+	private static final long serialVersionUID = 4297677944468219977L;
 
 	private final String id;
-
 	private final String name;
 
+	public Permission(final String permissionId) {
+		this(permissionId, "");
+	}
+	
 	/**
-	 * 
 	 * @param permissionId
 	 *            application specific permission id.
 	 * @param name
@@ -44,10 +47,6 @@ public final class Permission implements Serializable {
 	public Permission(final String permissionId, final String name) {
 		this.id = checkNotNull(permissionId, "permissionId");
 		this.name = Strings.nullToEmpty(name);
-	}
-
-	public Permission(final String permissionId) {
-		this(permissionId, "");
 	}
 
 	public String getId() {
@@ -60,31 +59,20 @@ public final class Permission implements Serializable {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		return result;
+		return Objects.hash(id);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
 		Permission other = (Permission) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		return true;
+		return Objects.equals(id, other.id);
 	}
 
 	@Override
 	public String toString() {
-		return "Permission [id=" + id + ", name=" + name + "]";
+		return MoreObjects.toStringHelper(Permission.class).add("id", id).add("name", name).toString();
 	}
 }

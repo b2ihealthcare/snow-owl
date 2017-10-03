@@ -13,29 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.users;
+package com.b2international.snowowl.identity.domain;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
+
+import com.google.common.collect.ImmutableSet;
 
 
 /**
- * Enum for user roles.
- * 
+ * Represent a custom role Users assigned to.
  */
 public final class Role implements Serializable {
 	
+	public static final Role UNSPECIFIED = new Role("Unspecified", Collections.emptySet());
+	public static final Role ADMINISTRATOR = new Role("Administrator", ImmutableSet.of(
+		new Permission(PermissionIdConstant.BROWSE),
+		new Permission(PermissionIdConstant.EDIT),
+		new Permission(PermissionIdConstant.EXPORT),
+		new Permission(PermissionIdConstant.IMPORT),
+		new Permission(PermissionIdConstant.VERSION),
+		new Permission(PermissionIdConstant.PROMOTE)
+	));
+	
 	private static final long serialVersionUID = 1601508745318826995L;
 
-	final private String name;
+	private final String name;
 	
-	final private Collection<Permission> permissions;
+	private final Collection<Permission> permissions;
 	
 	public Role(String name, Collection<Permission> permissions) {
 		this.name = name;
 		this.permissions = permissions;
 	}
-	
 	
 	public String getName() {
 		return name;
@@ -45,38 +57,23 @@ public final class Role implements Serializable {
 		return permissions;
 	}
 	
-	
 	@Override
 	public String toString() {
 		return name;
 	}
 
-
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		return result;
+		return Objects.hash(name);
 	}
-
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
 		Role other = (Role) obj;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		return true;
+		return Objects.equals(name, other.name);
 	}
-	
 	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.users;
+package com.b2international.snowowl.identity.domain;
 
 /**
- * Store for special, application specific / user related constants.
+ *  Central place for Permission IDs
  */
-public class SpecialUserStore {
+public abstract class PermissionIdConstant {
 
-	public static final String SYSTEM_USER_NAME = "System";
+	private PermissionIdConstant(){ /* Suppressing instantiation */ }
 
-	public static final User SYSTEM_USER = new User(SYSTEM_USER_NAME, SYSTEM_USER_NAME);
-
+	public static final String BROWSE = "browse:*";
+	public static final String EDIT = "edit:*";
+	public static final String IMPORT = "import:*";
+	public static final String EXPORT = "export:*";
+	public static final String VERSION = "version:*";
+	public static final String PROMOTE = "promote:*";
+	
 }
