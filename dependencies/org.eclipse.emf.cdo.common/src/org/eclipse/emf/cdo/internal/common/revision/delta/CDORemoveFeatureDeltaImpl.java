@@ -14,7 +14,6 @@ package org.eclipse.emf.cdo.internal.common.revision.delta;
 import java.io.IOException;
 
 import org.eclipse.emf.cdo.common.protocol.CDODataInput;
-import org.eclipse.emf.cdo.common.protocol.CDODataOutput;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDeltaVisitor;
@@ -38,18 +37,6 @@ public class CDORemoveFeatureDeltaImpl extends CDOSingleValueFeatureDeltaImpl im
   public CDORemoveFeatureDeltaImpl(CDODataInput in, EClass eClass) throws IOException
   {
     super(in, eClass);
-  }
-
-  @Override
-  protected void writeValue(CDODataOutput out, EClass eClass) throws IOException
-  {
-    // Do nothing
-  }
-
-  @Override
-  protected Object readValue(CDODataInput in, EClass eClass) throws IOException
-  {
-    return UNKNOWN_VALUE;
   }
 
   public Type getType()

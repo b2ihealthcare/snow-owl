@@ -15,6 +15,7 @@
  */
 
 import org.eclipse.emf.cdo.common.revision.delta.CDOAddFeatureDelta
+import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOListFeatureDelta
 import org.eclipse.emf.cdo.common.revision.delta.CDORemoveFeatureDelta
 import org.eclipse.emf.cdo.internal.common.revision.delta.CDOListFeatureDeltaImpl
@@ -50,27 +51,45 @@ ctx.dirtyObjectDeltas.each{ delta ->
 		
 		listFeature.getListChanges().each { listChange ->
 			
-			if (listChange instanceof CDOAddFeatureDelta && newCDOIds.contains(listChange.getValue())) {
+			if (listChange instanceof CDOAddFeatureDelta) {
 				
-				if (listChange.index != originalListCopy.size()) {
-					println("Changing add feature delta from index $listChange.index to ${originalListCopy.size()}: " + listChange)
+				if (listChange.getValue() == CDOFeatureDelta.UNKNOWN_VALUE) {
+					throw new RuntimeException("Unknown add feature delta value: " + listChange);
 				}
 				
-				listChange.index = originalListCopy.size()
-				originalListCopy.add(listChange.getValue())
-				fixedListFeature.add(listChange)
-				
-			} else if (listChange instanceof CDORemoveFeatureDelta && detachedCDOIds.contains(listChange.getValue())) {
-				
-				def removeIndex = originalListCopy.indexOf(listChange.getValue())
+				if (newCDOIds.contains(listChange.getValue())) {
 
-				if (listChange.index != removeIndex) {
-					println("Changing remove feature delta from index $listChange.index to $removeIndex: " + listChange)
+					if (listChange.index != originalListCopy.size()) {
+						println("Changing add feature delta from index $listChange.index to ${originalListCopy.size()}: " + listChange)
+					}
+					
+					listChange.index = originalListCopy.size()
+					originalListCopy.add(listChange.getValue())
+					fixedListFeature.add(listChange)
+					
 				}
 				
-				listChange.index = removeIndex
-				originalListCopy.remove(removeIndex)
-				fixedListFeature.add(listChange)
+			} else if (listChange instanceof CDORemoveFeatureDelta) {
+			
+				if (listChange.getValue() == CDOFeatureDelta.UNKNOWN_VALUE) {
+					throw new RuntimeException("Unknown remove feature delta value: " + listChange);
+				}
+				
+				if (detachedCDOIds.contains(listChange.getValue())) {
+
+					def removeIndex = originalListCopy.indexOf(listChange.getValue())
+					
+					if (removeIndex != -1) {
+						if (listChange.index != removeIndex) {
+							println("Changing remove feature delta from index $listChange.index to $removeIndex: " + listChange)
+						}
+					
+						listChange.index = removeIndex
+						originalListCopy.remove(removeIndex)
+						fixedListFeature.add(listChange)
+					}
+					
+				}
 				
 			}
 			
