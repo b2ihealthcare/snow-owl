@@ -42,7 +42,7 @@ public class SnomedRfFileNameBuilder {
 				.append(String.valueOf(type))
 				.append("s_")
 				.append(ComponentExportType.DESCRIPTION.equals(type) ? getLanguageCode() : "Core")
-				.append("_INT_")
+				.append("_" + configuration.getCountryAndNamespaceElement() + "_")
 				.append(getReleaseDate(configuration))
 				.append(".txt")
 				.toString();
@@ -55,7 +55,7 @@ public class SnomedRfFileNameBuilder {
 				.append(String.valueOf(configuration.getContentSubType()))
 				.append(ComponentExportType.DESCRIPTION.equals(type) ? "-" : "")
 				.append(ComponentExportType.DESCRIPTION.equals(type) ? getLanguageCode() : "")
-				.append("_INT_")
+				.append("_" + configuration.getCountryAndNamespaceElement() + "_")
 				.append(getReleaseDate(configuration))
 				.append(".txt")
 				.toString();
@@ -65,6 +65,7 @@ public class SnomedRfFileNameBuilder {
 	 * return the transient effective time if set, otherwise today's date
 	 */
 	private static String getReleaseDate(final SnomedExportConfiguration config) {
+		
 		String releaseDate = getExportTime();
 		if (!config.getUnsetEffectiveTimeLabel().isEmpty() && !config.getUnsetEffectiveTimeLabel().equals(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL)) {
 			releaseDate = config.getUnsetEffectiveTimeLabel();
@@ -84,7 +85,7 @@ public class SnomedRfFileNameBuilder {
 				.append(String.valueOf(configuration.getContentSubType()))
 				.append(isLanguageType(refSet) ? "-" : "")
 				.append(isLanguageType(refSet) ? getLanguageCode(refSet) : "")
-				.append("_INT_")
+				.append("_" + configuration.getCountryAndNamespaceElement() + "_")
 				.append(getReleaseDate(configuration))
 				.append(".txt")
 				.toString();
@@ -122,7 +123,8 @@ public class SnomedRfFileNameBuilder {
 
 	/*returns with the language code for the reference set*/
 	private static String getLanguageCode(final SnomedRefSet refSet) {
-		return com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping.getLanguageCode(refSet.getIdentifierId()); 
+		String languageCode = com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping.getLanguageCode(refSet.getIdentifierId());
+		return languageCode.length() > 2 ? languageCode.substring(0, 3) + languageCode.substring(3, 5).toUpperCase() : languageCode;
 	}
 
 	/*returns true if the reference set is a language type*/
@@ -159,7 +161,8 @@ public class SnomedRfFileNameBuilder {
 
 	/*returns with the language code*/
 	private static String getLanguageCode() {
-		return getLanguageConfiguration().getLanguageCode();
+		String languageCode = getLanguageConfiguration().getLanguageCode();
+		return languageCode.length() > 2 ? languageCode.substring(0, 3) + languageCode.substring(3, 5).toUpperCase() : languageCode;
 	}
 
 	/*returns with the current language configuration for the SNOMED CT terminology*/

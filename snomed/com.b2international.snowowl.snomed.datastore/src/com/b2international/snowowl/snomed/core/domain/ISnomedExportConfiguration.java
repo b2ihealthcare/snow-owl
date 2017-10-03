@@ -54,7 +54,7 @@ public interface ISnomedExportConfiguration extends ISnomedRF2Configuration {
 	 * 
 	 * @return the country/namespace element to use in exported file and folder names
 	 */
-	String getNamespaceId();
+	String getCountryAndNamespaceId();
 
 	/**
 	 * Returns a collection of SNOMED CT modules selected for export.

@@ -60,7 +60,7 @@ public class SnomedExportExecutor {
 	private File releaseFilePath;
 	private final SnomedExporter snomedExporter;
 	private final Set<String> modulesToExport;
-	private final String clientNamespace;
+	private final String countryAndNamespaceId;
 	private final Supplier<LongKeyLongMap> conceptIdToModuleIdSupplier = memoize(new Supplier<LongKeyLongMap>() {
 		public LongKeyLongMap get() {
 			return getServiceForClass(ISnomedComponentService.class).getConceptModuleMapping(configuration.getCurrentBranchPath());
@@ -70,14 +70,14 @@ public class SnomedExportExecutor {
 
 	private SnomedExportConfiguration configuration;
 
-	public SnomedExportExecutor(final SnomedExporter snomedExporter, final String workingDirectory, final Set<String> modulesToExport, final String clientNamespace) {
+	public SnomedExportExecutor(final SnomedExporter snomedExporter, final String workingDirectory, final Set<String> modulesToExport, final String countryAndNamespaceId) {
 		this.snomedExporter = snomedExporter;
 		this.modulesToExport = modulesToExport;
-		this.clientNamespace = clientNamespace;
+		this.countryAndNamespaceId = countryAndNamespaceId;
 		configuration = this.snomedExporter.getConfiguration();
 		visitedIdWithEffectiveTime = newHashSet();
 		
-		baseReleaseDir = new File(workingDirectory + File.separatorChar + RELEASE_BASE_DIRECTORY + clientNamespace);
+		baseReleaseDir = new File(workingDirectory + File.separatorChar + RELEASE_BASE_DIRECTORY + countryAndNamespaceId);
 		if (!baseReleaseDir.exists()) {
 			baseReleaseDir.mkdirs();
 		}
@@ -107,7 +107,7 @@ public class SnomedExportExecutor {
 				temporaryWorkingDirectory + 
 				File.separatorChar + 
 				RELEASE_BASE_DIRECTORY + 
-				clientNamespace + 
+				countryAndNamespaceId + 
 				File.separatorChar + 
 				snomedExporter.getRelativeDirectory() + 
 				File.separatorChar + 
@@ -215,7 +215,7 @@ public class SnomedExportExecutor {
 				temporaryWorkingDirectory + 
 				File.separatorChar + 
 				RELEASE_BASE_DIRECTORY + 
-				clientNamespace + 
+				countryAndNamespaceId + 
 				File.separatorChar + 
 				snomedExporter.getRelativeDirectory() + 
 				File.separatorChar + 

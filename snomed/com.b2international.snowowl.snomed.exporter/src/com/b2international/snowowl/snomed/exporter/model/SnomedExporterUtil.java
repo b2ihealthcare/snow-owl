@@ -19,13 +19,17 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Set;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.MapSetType;
+import com.b2international.snowowl.snomed.datastore.SnomedConfiguration;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 
 public final class SnomedExporterUtil {
@@ -94,5 +98,19 @@ public final class SnomedExporterUtil {
 	}
 	
 	private SnomedExporterUtil() { }
+	
+	public static String getCountryAndNameSpaceId() {
+		String namespace = getNamespace();
+		String countryCode = getCountry().toUpperCase();
+		return  Strings.isNullOrEmpty(namespace) ? "INT" : countryCode + namespace;
+	}
+	
+	public static String getCountry() {
+		return ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference().get(0).getCountry();
+	}
+	
+	public static String getNamespace() {
+		return ApplicationContext.getServiceForClass(SnomedConfiguration.class).getNamespaces().getDefaultChildKey();
+	}
 	
 }

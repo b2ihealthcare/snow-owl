@@ -68,4 +68,10 @@ public interface SnomedExportConfiguration {
 	 * @return the effective time label for unpublished components
 	 */
 	String getUnsetEffectiveTimeLabel();
+	
+	/**
+	 * Returns with "INT" in case no language preference is set, or with 
+	 * the combination of country code and namespace otherwise
+	 */
+	String getCountryAndNamespaceElement();
 }

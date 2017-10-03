@@ -66,7 +66,7 @@ public class SnomedSubsetExporter extends AbstractSnomedSubsetExporter {
 	public String getFileName() {
 		return new StringBuilder("der1_Subsets_")
 		.append(isLanguageType(getRefSetId()) ? getLanguageCode(getRefSetId()) : getFolderName())
-		.append("_INT_")
+		.append("_" + configuration.getCountryAndNamespaceElement() + "_")
 		.append(Dates.formatByHostTimeZone(new Date(), DateFormats.SHORT)).append(".txt").toString();
 	}
 	

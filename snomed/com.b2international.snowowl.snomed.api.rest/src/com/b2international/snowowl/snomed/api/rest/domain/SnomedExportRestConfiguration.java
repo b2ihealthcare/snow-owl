@@ -38,7 +38,7 @@ public class SnomedExportRestConfiguration {
 	private String branchPath;
 	
 	@NotEmpty
-	private String namespaceId = "INT";
+	private String countryAndNamespaceId = "INT";
 	
 	private Collection<String> moduleIds;
 	private Date deltaStartEffectiveTime;
@@ -103,12 +103,12 @@ public class SnomedExportRestConfiguration {
 	 * for the RF2 release format export.
 	 * @return the namespace ID.
 	 */
-	public String getNamespaceId() {
-		return namespaceId;
+	public String getCountryAndNamespaceId() {
+		return countryAndNamespaceId;
 	}
 	
-	public void setNamespaceId(String namespaceId) {
-		this.namespaceId = namespaceId;
+	public void setCountryAndNamespaceId(String countryAndNamespaceId) {
+		this.countryAndNamespaceId = countryAndNamespaceId;
 	}
 	
 	/**

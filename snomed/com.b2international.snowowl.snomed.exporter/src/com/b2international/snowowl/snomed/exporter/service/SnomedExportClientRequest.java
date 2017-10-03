@@ -141,7 +141,7 @@ public class SnomedExportClientRequest extends RequestWithMonitoring<File> {
 			out.writeUTF(moduleToExport);
 		}
 
-		out.writeUTF(model.getNamespace());
+		out.writeUTF(model.getCountryAndNamespaceId());
 	}
 
 	@Override

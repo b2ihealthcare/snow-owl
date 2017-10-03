@@ -67,7 +67,7 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedRf1Exporte
 		.append(getFileNameprefix())
 		.append("_")
 		.append(label)
-		.append("_INT_")
+		.append("_" + configuration.getCountryAndNamespaceElement() + "_")
 		.append(getExportTime(new Date()))
 		.append(".txt")
 		.toString();

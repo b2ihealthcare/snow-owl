@@ -318,6 +318,11 @@ public abstract class SnomedConstants {
 		public static final String CONCEPT_INACTIVATION_VALUE = "900000000000481005";
 	}
 	
+	// SG specific constants
+	public static final String SDD_EXTENSION_NAMESPACE = "1000133"; // Singapore Drug Dictionary Extension Namespace
+	public static final String SG_EXTENSION_NAMESPACE = "1000132"; // Singapore National Extension Namespace
+
+	
 	// RF2 effective time format
 	public static final String RF2_EFFECTIVE_TIME_FORMAT = "yyyyMMdd";
 }

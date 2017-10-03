@@ -83,7 +83,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	private Set<SnomedMapSetSetting> settings;
 	private Set<String> modulesToExport;
 
-	private String namespace;
+	private String countryAndNamespaceId;
 	private IBranchPath clientBranch;
 	private String userId;
 	private Collection<SnomedModuleDependencyRefSetMemberFragment> moduleDependencyMembers;
@@ -168,6 +168,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		modulesToExport = Sets.newHashSet();
 		userId = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId();
 		unsetEffectiveTimeLabel = "";
+		countryAndNamespaceId = SnomedExporterUtil.getCountryAndNameSpaceId();
 		
 		SnomedRefSetIndexEntry indexEntry = getRefsetIndexEntry(refSetId);
 		
@@ -286,7 +287,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	private String initExportPath() {
 		final String token;
 		if (!singleRefSetExport) {
-			token = new StringBuilder().append("SnomedCT_Release_INT_").append(Dates.formatByHostTimeZone(new Date(), "yyyyMMdd-HHmm")).toString();
+			token = new StringBuilder().append("SnomedCT_Release").append("_" + countryAndNamespaceId + "_").append(Dates.formatByHostTimeZone(new Date(), "yyyyMMdd-HHmm")).toString();
 		} else {
 			token = CharMatcher.anyOf("\\/").removeFrom(StringUtil.capAll(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(clientBranch, Iterables.getOnlyElement(refSetIds))));
 		}
@@ -346,12 +347,12 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		this.deltaExport = isDeltaExport;
 	}
 
-	public void setNamespace(String namespace) {
-		this.namespace = namespace;
+	public void setCountryAndNamespaceId(String countryAndNamespaceId) {
+		this.countryAndNamespaceId = countryAndNamespaceId;
 	}
 
-	public String getNamespace() {
-		return namespace;
+	public String getCountryAndNamespaceId() {
+		return countryAndNamespaceId;
 	}
 
 	public IBranchPath getClientBranch() {
