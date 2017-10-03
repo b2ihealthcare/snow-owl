@@ -18,9 +18,9 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
-import com.b2international.snowowl.datastore.request.SearchResourceRequest;
-import com.b2international.snowowl.datastore.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
 

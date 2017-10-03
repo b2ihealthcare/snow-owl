@@ -23,8 +23,8 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
-import com.b2international.snowowl.datastore.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequest.OptionKey;
 
 /**

@@ -13,26 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core.request;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.options.Options;
-import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.QueryBuilder;
-import com.b2international.index.query.SortBy;
-import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -65,16 +57,6 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		SORT_BY;
 	}
 
-	/**
-	 * Special field name for sorting based on the document's natural occurrence (document order). 
-	 */
-	public static final SortField DOC_ID = new SortField(DocumentMapping._ID, true);
-	
-	/**
-	 * Special field name for sorting based on the document score (relevance).
-	 */
-	public static final SortField SCORE = new SortField(SortBy.FIELD_SCORE, false);
-	
 	public static class SortField implements Serializable {
 		private final String field;
 		private final boolean ascending;
@@ -190,27 +172,6 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		} else {
 			return input;
 		}
-	}
-	
-	protected final ExpressionBuilder addIdFilter(ExpressionBuilder queryBuilder, Function<Collection<String>, Expression> expressionFactory) {
-		return applyIdFilter(queryBuilder, (qb, ids) -> qb.filter(expressionFactory.apply(ids)));
-	}
-	
-	protected final SortBy sortBy() {
-		if (containsKey(OptionKey.SORT_BY)) {
-			List<SortField> fields = getList(OptionKey.SORT_BY, SortField.class);
-			SortBy.Builder builder = SortBy.builder();
-			for (SortField sortField : fields) {
-				builder.add(sortField.getField(), sortField.isAscending() ? Order.ASC : Order.DESC);
-			}
-			return builder.build();
-		} else {
-			return SortBy.DOC_ID;
-		}		
-	}
-	
-	protected final <T> QueryBuilder<T> select(Class<T> select) {
-		return Query.selectPartial(select, fields());
 	}
 	
 	@Override

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core.request;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,8 +22,8 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.request.SearchResourceRequest.OptionKey;
-import com.b2international.snowowl.datastore.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.OptionKey;
+import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;

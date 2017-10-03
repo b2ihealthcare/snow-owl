@@ -20,7 +20,7 @@ import java.util.UUID;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.SystemRequestBuilder;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
 /**
  * A request builder that wraps existing {@link Request} instances to run them as jobs.

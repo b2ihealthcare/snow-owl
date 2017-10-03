@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.1
  */
-final class BranchSearchRequest extends SearchResourceRequest<RepositoryContext, Branches> {
+final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryContext, Branches> {
 
 	enum OptionKey {
 		

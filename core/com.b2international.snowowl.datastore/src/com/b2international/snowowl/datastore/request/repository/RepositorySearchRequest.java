@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.datastore.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.google.common.collect.ImmutableList;
 
 /**
