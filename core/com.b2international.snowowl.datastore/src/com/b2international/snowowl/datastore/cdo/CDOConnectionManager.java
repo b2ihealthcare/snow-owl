@@ -59,18 +59,16 @@ import com.b2international.snowowl.core.api.IBranchPoint;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.users.SpecialUserStore;
-import com.b2international.snowowl.core.users.User;
 import com.b2international.snowowl.datastore.Authenticator;
 import com.b2international.snowowl.datastore.ClientProtocolFactoryRegistry;
 import com.b2international.snowowl.datastore.DatastoreActivator;
-import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
 import com.b2international.snowowl.datastore.delta.IBranchPointCalculationStrategy;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.eventbus.net4j.EventBusNet4jUtil;
 import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.rpc.RpcProtocol;
 import com.b2international.snowowl.rpc.RpcUtil;
 import com.google.common.base.Preconditions;
@@ -91,18 +89,10 @@ import com.google.common.collect.Maps;
 	@Nullable private Authenticator authenticator;
 	@Nullable private IConnector connector;
 
-	static CDOConnectionManager create(final User user) {
-		return new CDOConnectionManager(user.getUserName(), user.getPassword(), user);
-	}
-
-	static CDOConnectionManager create(final String username, final String password) {
-		return new CDOConnectionManager(username, password, /*intentionally null. authentication is required.*/ null);
-	}
-	
-	CDOConnectionManager(final String username, final String password, @Nullable final User user) {
+	CDOConnectionManager(final String username, final String password) {
 		this.username = Preconditions.checkNotNull(username, "Username argument cannot be null.");
 		this.password = Preconditions.checkNotNull(password, "Password argument cannot be null.");
-		this.user = user;
+		this.user = User.SYSTEM.getUsername().equals(username) ? User.SYSTEM : null;
 		repositoryNameToConfiguration = Maps.newHashMap();
 	}
 
@@ -119,7 +109,7 @@ import com.google.common.collect.Maps;
 	 */
 	@Override
 	public String getUserId() {
-		return getUser().getUserName();
+		return getUser().getUsername();
 	}
 
 	/* (non-Javadoc)
@@ -313,9 +303,8 @@ import com.google.common.collect.Maps;
 		try {			
 			
 			final ClientPreferences clientConfiguration = getClientConfiguration();
-			final RepositoryConfiguration repositoryConfiguration = getRepositoryConfiguration();
 			final RepositoryConnectionConfiguration connectionConfiguration = getRepositoryConnectionConfiguration();
-			final boolean embedded = clientConfiguration.isClientEmbedded() || SpecialUserStore.SYSTEM_USER.equals(user);
+			final boolean embedded = clientConfiguration.isClientEmbedded() || User.isSystem(username);
 			
 			final PasswordCredentialsProvider credentials = new PasswordCredentialsProvider(new PasswordCredentials(username, password.toCharArray()));
 
@@ -386,10 +375,6 @@ import com.google.common.collect.Maps;
 
 	private RepositoryConnectionConfiguration getRepositoryConnectionConfiguration() {
 		return getSnowOwlConfiguration().getModuleConfig(RepositoryConnectionConfiguration.class);
-	}
-
-	private RepositoryConfiguration getRepositoryConfiguration() {
-		return getSnowOwlConfiguration().getModuleConfig(RepositoryConfiguration.class);
 	}
 
 	private SnowOwlConfiguration getSnowOwlConfiguration() {

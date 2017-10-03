@@ -26,7 +26,6 @@ import com.b2international.snowowl.api.admin.exception.RepositoryNotFoundExcepti
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.AllRepositoriesLockTarget;
@@ -35,6 +34,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryLockTarget;
+import com.b2international.snowowl.identity.domain.User;
 
 /**
  */
@@ -57,7 +57,7 @@ public class RepositoryServiceImpl implements InternalRepositoryService {
 	public void lockGlobal(final int timeoutMillis) {
 		checkValidTimeout(timeoutMillis);
 
-		final DatastoreLockContext context = new DatastoreLockContext(SpecialUserStore.SYSTEM_USER_NAME, 
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), 
 				DatastoreLockContextDescriptions.CREATE_BACKUP);
 
 		final IOperationLockTarget target = AllRepositoriesLockTarget.INSTANCE;
@@ -66,7 +66,7 @@ public class RepositoryServiceImpl implements InternalRepositoryService {
 
 	@Override
 	public void unlockGlobal() {
-		final DatastoreLockContext context = new DatastoreLockContext(SpecialUserStore.SYSTEM_USER_NAME, 
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), 
 				DatastoreLockContextDescriptions.CREATE_BACKUP);
 
 		final IOperationLockTarget target = AllRepositoriesLockTarget.INSTANCE;
@@ -78,7 +78,7 @@ public class RepositoryServiceImpl implements InternalRepositoryService {
 		checkValidRepositoryUuid(repositoryUuid);
 		checkValidTimeout(timeoutMillis);
 
-		final DatastoreLockContext context = new DatastoreLockContext(SpecialUserStore.SYSTEM_USER_NAME, 
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), 
 				DatastoreLockContextDescriptions.CREATE_REPOSITORY_BACKUP,
 				DatastoreLockContextDescriptions.CREATE_BACKUP);
 
@@ -90,7 +90,7 @@ public class RepositoryServiceImpl implements InternalRepositoryService {
 	public void unlockRepository(final String repositoryUuid) {
 		checkValidRepositoryUuid(repositoryUuid);
 
-		final DatastoreLockContext context = new DatastoreLockContext(SpecialUserStore.SYSTEM_USER_NAME, 
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), 
 				DatastoreLockContextDescriptions.CREATE_REPOSITORY_BACKUP,
 				DatastoreLockContextDescriptions.CREATE_BACKUP);
 

@@ -18,12 +18,13 @@ package com.b2international.snowowl.datastore;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.Arrays;
+import java.util.Collections;
 
 import com.b2international.commons.encoding.RSAUtils;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.users.User;
 import com.b2international.snowowl.datastore.session.AccessToken;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
+import com.b2international.snowowl.identity.domain.User;
 import com.google.common.base.Charsets;
 
 /**
@@ -68,8 +69,7 @@ public class Authenticator {
 			}
 
 			// TODO: set userId on client RPC session?
-			
-			return new User(userName, password);
+			return new User(userName, Collections.emptyList());
 		} catch (final Exception e) {
 			throw new SnowowlServiceException("Authentication failed!", e);
 		}

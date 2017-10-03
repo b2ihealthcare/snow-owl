@@ -55,14 +55,14 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.AlreadyLoggedInException;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.users.IAuthorizationService;
-import com.b2international.snowowl.core.users.Role;
-import com.b2international.snowowl.core.users.SpecialRole;
-import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.server.InternalApplicationSessionManager;
 import com.b2international.snowowl.datastore.session.AccessToken;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.domain.Role;
+import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.identity.request.UserRequests;
 import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcThreadLocal;
 import com.google.common.base.Charsets;
@@ -103,7 +103,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 			if (sessionToLogout.containsKey(KEY_USER_ID) && sessionToLogout.containsKey(KEY_SESSION_ID)) {
 
 				final String userId = String.valueOf(sessionToLogout.get(KEY_USER_ID));
-				if (!SpecialUserStore.SYSTEM_USER_NAME.equals(userId)) {
+				if (!User.isSystem(userId)) {
 
 					final String sessionId = String.valueOf(sessionToLogout.get(KEY_SESSION_ID));
 					//Log as a user activity
@@ -147,7 +147,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 		final RpcSession currentSession = RpcThreadLocal.getSession();
 		currentSession.put(KEY_USER_ID, userId);
 		currentSession.put(KEY_SESSION_ID, ID_PROVIDER.getAndIncrement());
-		currentSession.put(KEY_USER_ROLES, ImmutableSet.of(SpecialRole.UNSPECIFIED));
+		currentSession.put(KEY_USER_ROLES, ImmutableSet.of(Role.UNSPECIFIED));
 		currentSession.put(KEY_RANDOM_BYTES, randomBytes);
 		currentSession.put(KEY_SERVER_PRIVATE_KEY, serverKeyPair.getPrivate());
 		currentSession.put(KEY_IS_AUTHENTICATED, false);
@@ -187,7 +187,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 
 			if (!StringUtils.isEmpty(sessionId) && !StringUtils.isEmpty(userId)) {
 
-				if (!SpecialUserStore.SYSTEM_USER_NAME.equals(userId)) {
+				if (!User.isSystem(userId)) {
 					$.add(Pair.of(userId, sessionId));
 				}
 
@@ -226,15 +226,17 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 			}
 
 			final String password = new String(decryptedResponse, RANDOM_BYTES_LENGTH, decryptedResponse.length - RANDOM_BYTES_LENGTH, Charsets.UTF_8);
-			final Collection<Role> roles = authenticate(userId, password);
+			authenticate(userId, password);
 			
-			if (!loginEnabled && !roles.contains(SpecialRole.ADMINISTRATOR)) {
+			User user = UserRequests.prepareGet(userId).buildAsync().execute(ApplicationContext.getServiceForClass(IEventBus.class)).getSync();
+			
+			if (!loginEnabled && !user.isAdministrator()) {
 				throw new SecurityException("Logging in for non-administrator users is temporarily disabled.");
 			}
 
 			currentSession.remove(KEY_RANDOM_BYTES);
 			currentSession.remove(KEY_SERVER_PRIVATE_KEY);
-			currentSession.put(KEY_USER_ROLES, roles);
+			currentSession.put(KEY_USER_ROLES, user.getRoles());
 
 			acceptSession(currentSession, currentSession.getProtocol().getChannel().getMultiplexer());
 
@@ -246,25 +248,10 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 	}
 
 	@Override
-	public Collection<Role> authenticate(final String userId, final String password) throws LoginException {
+	public void authenticate(final String userId, final String password) throws LoginException {
 		authenticator.login(userId, password);
-		final Collection<Role> roles = collectRoles(ApplicationContext.getServiceForClass(IAuthorizationService.class), userId);
-		return roles;
 	}
 
-	private Collection<Role> collectRoles(final IAuthorizationService authorizationService, final String userId) {
-
-		if (!ApplicationContext.getInstance().isServerMode()) {
-			return Sets.newHashSet(SpecialRole.ADMINISTRATOR);
-		} else {
-			return authorizationService.getRoles(userId);
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.InternalApplicationSessionManager#connectSystemUser()
-	 */
 	@Override
 	public void connectSystemUser() {
 
@@ -282,11 +269,8 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 			throw new IllegalStateException("Current RPC session is not on the only local JVM connection.");
 		}
 
-//		LogUtils.logUserAccess(LOGGER, SpecialUserStore.SYSTEM_USER_NAME, "System login via connectSystemUser on connector " + currentMultiplexer);
-
-		// TODO: role name must be Administrator as checking permissions in AbstractTaskAwareContextHandler is expensive; all permissions were already granted. 
-		currentSession.put(KEY_USER_ROLES, Sets.newHashSet(SpecialRole.ADMINISTRATOR));
-		currentSession.put(KEY_USER_ID, SpecialUserStore.SYSTEM_USER_NAME);
+		currentSession.put(KEY_USER_ROLES, User.SYSTEM.getRoles());
+		currentSession.put(KEY_USER_ID, User.SYSTEM.getUsername());
 		acceptSession(currentSession, currentMultiplexer);
 	}
 
@@ -297,17 +281,6 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 		currentSession.put(KEY_IS_AUTHENTICATED, true);
 
 		fireLoginEvent(currentSession);
-	}
-
-	/**
-	 * (non-API)
-	 *
-	 * @param view
-	 * @return
-	 */
-	public Set<Role> getRoles(final IView view) {
-		final RpcSession session = getSession(Preconditions.checkNotNull(view, "Server view argument cannot be null."));
-		return getRoles(session);
 	}
 
 	/**

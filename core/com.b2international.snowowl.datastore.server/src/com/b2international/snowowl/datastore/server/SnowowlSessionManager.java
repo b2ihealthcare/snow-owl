@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,18 +30,15 @@ import org.eclipse.spi.net4j.Protocol;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.users.Role;
-import com.b2international.snowowl.core.users.SpecialRole;
 import com.b2international.snowowl.datastore.cdo.ImpersonatingSessionProtocol;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
+import com.b2international.snowowl.identity.domain.Role;
 import com.b2international.snowowl.rpc.RpcSession;
 import com.google.common.collect.Iterables;
 
 @SuppressWarnings("restriction")
 public class SnowowlSessionManager extends SessionManager {
-
-
 
 	private final ApplicationSessionManager applicationSessionManager;
 
@@ -119,7 +116,7 @@ public class SnowowlSessionManager extends SessionManager {
 		    	throw new SecurityException(MessageFormat.format("No roles are associated with user for ID ''{0}''. Please contact the administrator.", sessionUserId));
 		    }
 
-			if (1 == userRoles.size() && SpecialRole.UNSPECIFIED.equals(Iterables.getOnlyElement(userRoles))) {
+			if (1 == userRoles.size() && Role.UNSPECIFIED.equals(Iterables.getOnlyElement(userRoles))) {
 				throw new SecurityException(MessageFormat.format("No roles are associated with user for ID ''{0}''. Please contact the administrator.", sessionUserId));
 			}
 
