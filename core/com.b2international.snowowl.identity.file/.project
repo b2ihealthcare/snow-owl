@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>com.b2international.snowowl.authentication.file</name>
+	<name>com.b2international.snowowl.identity.file</name>
 	<comment></comment>
 	<projects>
 	</projects>

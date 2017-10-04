@@ -7,6 +7,6 @@
     <artifactId>core-parent</artifactId>
     <version>5.10.13</version>
   </parent>
-  <artifactId>com.b2international.snowowl.authentication.file</artifactId>
+  <artifactId>com.b2international.snowowl.identity.file</artifactId>
   <packaging>eclipse-plugin</packaging>
 </project>
