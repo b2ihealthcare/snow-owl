@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,16 +50,15 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.encoding.RSAUtils;
-import com.b2international.snowowl.authentication.login.ServerAuthenticator;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.AlreadyLoggedInException;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.server.InternalApplicationSessionManager;
 import com.b2international.snowowl.datastore.session.AccessToken;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.domain.Role;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.identity.request.UserRequests;
@@ -77,6 +76,7 @@ import com.google.common.collect.Sets;
  */
 public class ApplicationSessionManager extends Notifier implements IApplicationSessionManager, InternalApplicationSessionManager {
 
+	private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("auth");
 	private static final org.slf4j.Logger AUDIT_LOGGER = org.slf4j.LoggerFactory.getLogger(ApplicationSessionManager.class);
 	private static final AtomicLong ID_PROVIDER = new AtomicLong(1L);
 
@@ -128,10 +128,10 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 	private final ConcurrentMap<IChannelMultiplexer, RpcSession> knownSessions = new MapMaker().makeMap();
 
 	private final SecureRandom secureRandom = new SecureRandom();
-	private final ServerAuthenticator authenticator;
+	private final IdentityProvider identityProvider;
 
-	public ApplicationSessionManager(final SnowOwlConfiguration configuration) {
-		this.authenticator = new ServerAuthenticator(configuration);
+	public ApplicationSessionManager(final IdentityProvider identityProvider) {
+		this.identityProvider = identityProvider;
 	}
 	
 	/*
@@ -248,8 +248,13 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 	}
 
 	@Override
-	public void authenticate(final String userId, final String password) throws LoginException {
-		authenticator.login(userId, password);
+	public void authenticate(final String username, final String password) throws LoginException {
+		LogUtils.logUserAccess(LOG, username, "Authenticating: " + username);
+		boolean success = this.identityProvider.auth(username, password);
+		if (!success) {
+			throw new LoginException("Incorrect user name or password.");
+		}
+		LogUtils.logUserAccess(LOG, username, "Authentication succeeded");
 	}
 
 	@Override

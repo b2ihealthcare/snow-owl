@@ -66,6 +66,7 @@ import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.Pipe;
 import com.b2international.snowowl.eventbus.net4j.EventBusNet4jUtil;
+import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.rpc.RpcConfiguration;
 import com.b2international.snowowl.rpc.RpcProtocol;
@@ -110,7 +111,7 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			final Stopwatch serverStopwatch = Stopwatch.createStarted();
 			
 			RpcUtil.getInitialServerSession(container).registerServiceLookup(new RpcServerServiceLookup());
-			final ApplicationSessionManager manager = new ApplicationSessionManager(configuration);
+			final ApplicationSessionManager manager = new ApplicationSessionManager(env.service(IdentityProvider.class));
 			manager.addListener(new LogListener());
 			manager.addListener(new VersionProcessor());
 			
