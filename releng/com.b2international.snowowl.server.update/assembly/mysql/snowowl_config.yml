@@ -2,24 +2,15 @@
 # Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
 #
 
-authentication:
-  type: PROP_FILE
-
-# Default username and password for RESTful API authentication
-# NOTE: changing the default username/password is recommended for production environments
-fileAuth:
-  users:
-    -
-      username: snowowl
-      password: snowowl
+# Default identity provider is PROP_FILE
+# You can specify users in the configuration/users file in the form of <username>:<password>, where the password is BCrypt encrypted hash of the password
+# The default user is snowowl with the password of snowowl
+# NOTE: it is recommended to change the default username/password in production environments#identity:
+#  type: PROP_FILE
 
 repository:
   host: 0.0.0.0
   port: 2036
-
-  # Minutes to invalidate and close the unused indexes for tasks
-  # Default is 4 hours, setting it to 0 means infinite (turns the feature off)
-  # indexTimeout: 240
 
   database:
     type: b2i_mysql
