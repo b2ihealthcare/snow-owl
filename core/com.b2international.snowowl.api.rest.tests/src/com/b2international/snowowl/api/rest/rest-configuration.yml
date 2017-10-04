@@ -10,12 +10,3 @@ resourceDirectory: testing/rest/resources
 
 # necessary to connect one user to the system otherwise Snow Owl startup fails
 systemUser: true
-
-auth:
-  type: PROP_FILE
-
-fileAuth:
-  users:
-    -
-      username: snowowl
-      password: snowowl

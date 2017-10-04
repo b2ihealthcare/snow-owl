@@ -10,9 +10,6 @@ resourceDirectory: testing/rest/resources
 
 # necessary to connect one user to the system otherwise Snow Owl startup fails
 systemUser: true
-
-auth:
-  type: PROP_FILE
   
 snomed:
   # Disable concrete domains, we are going to import the required concepts to an extension
@@ -23,9 +20,3 @@ snomed:
   
 metrics:
   enabled: true
-
-fileAuth:
-  users:
-    -
-      username: snowowl
-      password: snowowl
