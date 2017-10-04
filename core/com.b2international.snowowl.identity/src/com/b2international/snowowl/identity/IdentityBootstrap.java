@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.identity;
 
+import com.b2international.commons.platform.PlatformUtil;
+import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
@@ -29,7 +31,10 @@ public class IdentityBootstrap extends DefaultBootstrapFragment {
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		final IdentityConfiguration conf = configuration.getModuleConfig(IdentityConfiguration.class);
-		final IdentityProvider identityProvider = IdentityProvider.Factory.createInstance(env, conf.getType(), conf.getProperties());
+		IdentityProvider identityProvider = IdentityProvider.Factory.createInstance(env, conf.getType(), conf.getProperties());
+		if (conf.isAdminParty() && PlatformUtil.isDevVersion(CoreActivator.PLUGIN_ID)) {
+			identityProvider = new AdminPartyIdentityProvider(identityProvider);
+		}
 		env.services().registerService(IdentityProvider.class, identityProvider);
 	}
 	

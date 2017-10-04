@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -27,9 +29,11 @@ import java.util.stream.Collectors;
 import org.mindrot.jbcrypt.BCrypt;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.identity.domain.Users;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
@@ -72,6 +76,18 @@ final class FileIdentityProvider implements IdentityProvider {
 		writeUsers(usersFile, users);
 	}
 	
+	@Override
+	public Promise<Users> searchUsers(Collection<String> usernames, int offset, int limit) {
+		final List<User> matches = users.values().stream()
+			.filter(user -> usernames.isEmpty() || usernames.contains(user.getUsername())) // match users by user name
+			.sorted()
+			.skip(offset)
+			.limit(limit)
+			.map(user -> new User(user.getUsername(), Collections.emptyList()))
+			.collect(Collectors.toList());
+		return Promise.immediate(new Users(matches, offset, limit, users.size()));
+	}
+	
 	private FileUser getFileUser(String username) {
 		return users.get(username);
 	}
@@ -98,7 +114,7 @@ final class FileIdentityProvider implements IdentityProvider {
 				.collect(Collectors.toConcurrentMap(FileUser::getUsername, Function.identity()));
 	}
 	
-	private static class FileUser {
+	private static class FileUser implements Comparable<FileUser> {
 
 		private final String username;
 		private final String hashedPassword;
@@ -114,6 +130,11 @@ final class FileIdentityProvider implements IdentityProvider {
 		
 		public String getHashedPassword() {
 			return hashedPassword;
+		}
+		
+		@Override
+		public int compareTo(FileUser o) {
+			return username.compareTo(o.username);
 		}
 		
 	}
