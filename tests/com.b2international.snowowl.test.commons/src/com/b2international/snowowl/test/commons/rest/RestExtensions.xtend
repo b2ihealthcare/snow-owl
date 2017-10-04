@@ -16,6 +16,9 @@
 package com.b2international.snowowl.test.commons.rest
 
 import com.b2international.commons.platform.PlatformUtil
+import com.b2international.snowowl.core.ApplicationContext
+import com.b2international.snowowl.identity.IdentityProvider
+import com.google.common.base.Joiner
 import com.google.common.base.Preconditions
 import com.google.common.base.Splitter
 import com.jayway.restassured.RestAssured
@@ -32,7 +35,7 @@ import org.hamcrest.CoreMatchers
 import static com.jayway.restassured.RestAssured.*
 
 import static extension com.b2international.snowowl.test.commons.json.JsonExtensions.*
-import com.google.common.base.Joiner
+import com.b2international.snowowl.core.exceptions.AlreadyExistsException
 
 /**
  * Useful extension methods when testing Snow Owl's RESTful API. High level REST related syntactic sugars and stuff like 
@@ -83,6 +86,13 @@ class RestExtensions {
 			
 			// Enable logging on failed requests
 			RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+			
+			// add the user to the current identity provider
+			try {
+				ApplicationContext.instance.getServiceChecked(IdentityProvider).addUser(USER, PASS)
+			} catch (AlreadyExistsException e) {
+				// ignore existing user
+			}
 		}
 		Preconditions.checkArgument(api.startsWith("/"), "Api param should start with a forward slash: '/'")
 		return given().port(getPort()).basePath(CONTEXT + api)
@@ -136,7 +146,7 @@ class RestExtensions {
 	 */
 	def static int getPort() {
 		val jettyPortProp = System.getProperty("jetty.port")
-		return if(jettyPortProp != null) Integer.valueOf(jettyPortProp) else 8080
+		return if(jettyPortProp !== null) Integer.valueOf(jettyPortProp) else 8080
 	}
 	
 	def static expectStatus(Response it, int expectedStatus) {
