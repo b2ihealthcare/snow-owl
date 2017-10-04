@@ -21,7 +21,9 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -147,7 +149,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 		final RpcSession currentSession = RpcThreadLocal.getSession();
 		currentSession.put(KEY_USER_ID, userId);
 		currentSession.put(KEY_SESSION_ID, ID_PROVIDER.getAndIncrement());
-		currentSession.put(KEY_USER_ROLES, ImmutableSet.of(Role.UNSPECIFIED));
+		currentSession.put(KEY_USER_ROLES, Collections.singletonList(Role.UNSPECIFIED));
 		currentSession.put(KEY_RANDOM_BYTES, randomBytes);
 		currentSession.put(KEY_SERVER_PRIVATE_KEY, serverKeyPair.getPrivate());
 		currentSession.put(KEY_IS_AUTHENTICATED, false);
@@ -294,7 +296,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 	 * @param session
 	 * @return
 	 */
-	public Set<Role> getRoles(final ISession session) {
+	public List<Role> getRoles(final ISession session) {
 		final RpcSession rpcSession = getSession(Preconditions.checkNotNull(session, "Server-side session argument cannot be null."));
 		return getRoles(rpcSession);
 	}
@@ -363,8 +365,8 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 
 	/*returns with the roles associated with the RPC session argument.*/
 	@SuppressWarnings("unchecked")
-	private Set<Role> getRoles(final RpcSession session) {
-		return (Set<Role>) Preconditions.checkNotNull(session, "RPC session argument cannot be null.").get(KEY_USER_ROLES);
+	private List<Role> getRoles(final RpcSession session) {
+		return (List<Role>) Preconditions.checkNotNull(session, "RPC session argument cannot be null.").get(KEY_USER_ROLES);
 	}
 
 	private void fireLoginEvent(final RpcSession session) {

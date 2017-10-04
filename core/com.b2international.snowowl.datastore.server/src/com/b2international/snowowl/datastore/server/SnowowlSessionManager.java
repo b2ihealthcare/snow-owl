@@ -16,7 +16,7 @@
 package com.b2international.snowowl.datastore.server;
 
 import java.text.MessageFormat;
-import java.util.Set;
+import java.util.List;
 
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.util.NotAuthenticatedException;
@@ -110,7 +110,7 @@ public class SnowowlSessionManager extends SessionManager {
 			final String sessionUserId = (String) multiplexerSession.get(IApplicationSessionManager.KEY_USER_ID);
 
 			@SuppressWarnings("unchecked")
-			final Set<Role> userRoles = (Set<Role>) multiplexerSession.get(IApplicationSessionManager.KEY_USER_ROLES);
+			final List<Role> userRoles = (List<Role>) multiplexerSession.get(IApplicationSessionManager.KEY_USER_ROLES);
 
 		    if (CompareUtils.isEmpty(userRoles)) {
 		    	throw new SecurityException(MessageFormat.format("No roles are associated with user for ID ''{0}''. Please contact the administrator.", sessionUserId));
