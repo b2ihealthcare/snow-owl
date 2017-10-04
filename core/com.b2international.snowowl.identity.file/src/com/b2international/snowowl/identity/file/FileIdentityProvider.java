@@ -44,8 +44,9 @@ import com.google.common.collect.ImmutableList;
  */
 final class FileIdentityProvider implements IdentityProvider {
 
-	private static final Splitter COLON_SPLITTER = Splitter.on(':');
-	private static final Joiner COLON_JOINER = Joiner.on(':');
+	private static final String COLON = ":";
+	private static final Splitter COLON_SPLITTER = Splitter.on(COLON);
+	private static final Joiner COLON_JOINER = Joiner.on(COLON);
 	
 	private final Map<String, FileUser> users;
 	private final Path usersFile;
@@ -109,9 +110,18 @@ final class FileIdentityProvider implements IdentityProvider {
 
 	private static Map<String, FileUser> readUsers(Path file) throws IOException {
 		return Files.lines(file, Charsets.UTF_8)
+				.filter(FileIdentityProvider::checkLine)
 				.map(COLON_SPLITTER::splitToList)
 				.map(values -> new FileUser(values.get(0), values.get(1)))
 				.collect(Collectors.toConcurrentMap(FileUser::getUsername, Function.identity()));
+	}
+	
+	private static boolean checkLine(String line) {
+		final boolean valid = line.contains(COLON);
+		if (!valid) {
+			IdentityProvider.LOG.warn("Skipping line '{}' due to invalid format", line);
+		}
+		return valid;
 	}
 	
 	private static class FileUser implements Comparable<FileUser> {
