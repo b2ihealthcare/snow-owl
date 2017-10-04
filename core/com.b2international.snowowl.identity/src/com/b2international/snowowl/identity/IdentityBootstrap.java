@@ -35,6 +35,7 @@ public class IdentityBootstrap extends DefaultBootstrapFragment {
 		if (conf.isAdminParty() && PlatformUtil.isDevVersion(CoreActivator.PLUGIN_ID)) {
 			identityProvider = new AdminPartyIdentityProvider(identityProvider);
 		}
+		IdentityProvider.LOG.info("Configured '{}' identity provider", conf.getType());
 		env.services().registerService(IdentityProvider.class, identityProvider);
 	}
 	
