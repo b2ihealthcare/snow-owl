@@ -17,13 +17,9 @@ package com.b2international.snowowl.snomed.datastore.escg;
 
 import java.io.Serializable;
 
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings;
 import com.b2international.snowowl.snomed.dsl.query.ast.AndClause;
 import com.b2international.snowowl.snomed.dsl.query.ast.ConceptRef;
@@ -86,10 +82,7 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 			
 			final RefSet refSet = (RefSet) expression;
 			final String refSetId = refSet.getId();
-			
-			mainQuery.add(createRefSetQuery(refSetId), Occur.MUST);
-			
-			return mainQuery;
+			throw new EscgParseFailedException("Refset search not handled: " +  refSetId);
 			
 		} else if (expression instanceof SubExpression) {
 			
@@ -161,22 +154,4 @@ public class IndexQueryQueryEvaluator implements Serializable, IQueryEvaluator<B
 		return mainQuery;
 	}
 	
-	private Term createRefSetTerm(String refSetId) {
-		return new Term(SnomedMappings.conceptReferringRefSetId().fieldName(), IndexUtils.longToPrefixCoded(refSetId));
-	}
-	
-	private Term createMappingRefSetTerm(String refSetId) {
-		return new Term(SnomedMappings.conceptReferringMappingRefSetId().fieldName(), IndexUtils.longToPrefixCoded(refSetId));
-	}
-	
-	private Query createRefSetQuery(String refSetId) {
-		final BooleanQuery refSetQuery = new BooleanQuery(true);
-		refSetQuery.add(new TermQuery(createRefSetTerm(refSetId)), Occur.SHOULD);
-		refSetQuery.add(new TermQuery(createMappingRefSetTerm(refSetId)), Occur.SHOULD);
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(refSetQuery, Occur.MUST);
-		query.add(SnomedMappings.newQuery().active().matchAll(), Occur.MUST);
-		return query;
-	}
-
 }

@@ -17,23 +17,19 @@ package com.b2international.snowowl.datastore.server.snomed.escg;
 
 import java.io.Serializable;
 
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.pcj.LongSets;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
-import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.index.LongDocValuesCollector;
 import com.b2international.snowowl.datastore.server.snomed.SnomedComponentService;
 import com.b2international.snowowl.datastore.server.snomed.index.SnomedIndexServerService;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.escg.IQueryEvaluator;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.b2international.snowowl.snomed.datastore.index.StatementObjectIdCollector;
@@ -48,6 +44,7 @@ import com.b2international.snowowl.snomed.dsl.query.ast.OrClause;
 import com.b2international.snowowl.snomed.dsl.query.ast.RValue;
 import com.b2international.snowowl.snomed.dsl.query.ast.RefSet;
 import com.b2international.snowowl.snomed.dsl.query.ast.SubExpression;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Preconditions;
 
 import bak.pcj.LongCollection;
@@ -142,9 +139,17 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 			final RefSet refSet = (RefSet) expression;
 			final String refSetId = refSet.getId();
 			
-			final Query query = SnomedMappings.newQuery().active().type(SnomedTerminologyComponentConstants.CONCEPT_NUMBER).and(createRefSetQuery(refSetId)).matchAll();
+			final Query query = SnomedMappings.newQuery()
+					.active()
+					.memberRefSetId(refSetId)
+					.and(SnomedMappings.newQuery()
+							.memberRefSetType(SnomedRefSetType.SIMPLE)
+							.memberRefSetType(SnomedRefSetType.SIMPLE_MAP)
+							.memberRefSetType(SnomedRefSetType.ATTRIBUTE_VALUE)
+							.matchAny())
+					.matchAll();
 			final SnomedIndexServerService service = getIndexService();
-			final LongDocValuesCollector collector = new LongDocValuesCollector(SnomedMappings.id().fieldName());
+			final LongDocValuesCollector collector = new LongDocValuesCollector(SnomedMappings.memberReferencedComponentId().fieldName());
 			service.search(branchPath, query, collector);
 			return new LongOpenHashSet(collector.getValues());
 			
@@ -226,21 +231,4 @@ public class ConceptIdQueryEvaluator2 implements Serializable, IQueryEvaluator<L
 		return SnomedMappings.newQuery().relationshipType(attributeId).matchAll();
 	}
 
-	private Term createRefSetTerm(String refSetId) {
-		return new Term(SnomedMappings.conceptReferringRefSetId().fieldName(), IndexUtils.longToPrefixCoded(refSetId));
-	}
-	
-	private Term createMappingRefSetTerm(String refSetId) {
-		return new Term(SnomedMappings.conceptReferringMappingRefSetId().fieldName(), IndexUtils.longToPrefixCoded(refSetId));
-	}
-	
-	private Query createRefSetQuery(String refSetId) {
-		final BooleanQuery refSetQuery = new BooleanQuery(true);
-		refSetQuery.add(new TermQuery(createRefSetTerm(refSetId)), Occur.SHOULD);
-		refSetQuery.add(new TermQuery(createMappingRefSetTerm(refSetId)), Occur.SHOULD);
-		final BooleanQuery query = new BooleanQuery(true);
-		query.add(refSetQuery, Occur.MUST);
-		return query;
-	}
-	
 }

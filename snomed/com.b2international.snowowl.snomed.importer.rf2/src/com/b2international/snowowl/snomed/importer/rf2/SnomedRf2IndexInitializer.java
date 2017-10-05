@@ -119,6 +119,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Maps;
@@ -1059,7 +1060,7 @@ public class SnomedRf2IndexInitializer extends Job {
 	}
 	
 	private Collection<String> getCurrentRefSetMemberships(final Collection<String> refSetIds, final Collection<RefSetMemberChange> changes) {
-		final Collection<String> refSetMemberships = Sets.newHashSet(refSetIds);
+		final Collection<String> refSetMemberships = HashMultiset.create(refSetIds);
 		
 		for (RefSetMemberChange change : changes) {
 			if (change.getChangeKind().equals(MemberChangeKind.REMOVED)) {
