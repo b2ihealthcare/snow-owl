@@ -15,23 +15,26 @@
  */
 package com.b2international.snowowl.identity.file;
 
-import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.identity.IdentityProvider;
-import com.b2international.snowowl.identity.IdentityProviderFactory;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import com.b2international.snowowl.identity.IdentityProviderConfig;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 
 /**
  * @since 5.11
  */
-public final class FileIdentityProviderFactory implements IdentityProviderFactory<FileIdentityProviderConfig> {
-
-	@Override
-	public IdentityProvider create(Environment env, FileIdentityProviderConfig configuration) throws Exception {
-		return new FileIdentityProvider(env.getConfigDirectory().toPath().resolve(configuration.getName()));
+@JsonTypeName(FileIdentityProvider.TYPE)
+public class FileIdentityProviderConfig implements IdentityProviderConfig {
+	
+	@NotEmpty
+	private String name;
+	
+	public String getName() {
+		return name;
 	}
-
-	@Override
-	public Class<FileIdentityProviderConfig> getConfigType() {
-		return FileIdentityProviderConfig.class;
+	
+	public void setName(String name) {
+		this.name = name;
 	}
-
+	
 }

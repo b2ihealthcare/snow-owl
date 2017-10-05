@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -32,6 +31,8 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.identity.IdentityProvider;
+import com.b2international.snowowl.identity.InternalIdentityProvider;
+import com.b2international.snowowl.identity.domain.Role;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.identity.domain.Users;
 import com.google.common.base.Charsets;
@@ -42,8 +43,9 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 5.11
  */
-final class FileIdentityProvider implements IdentityProvider {
+final class FileIdentityProvider implements InternalIdentityProvider {
 
+	static final String TYPE = "file";
 	private static final String COLON = ":";
 	private static final Splitter COLON_SPLITTER = Splitter.on(COLON);
 	private static final Joiner COLON_JOINER = Joiner.on(COLON);
@@ -84,9 +86,14 @@ final class FileIdentityProvider implements IdentityProvider {
 			.sorted()
 			.skip(offset)
 			.limit(limit)
-			.map(user -> new User(user.getUsername(), Collections.emptyList()))
+			.map(user -> new User(user.getUsername(), ImmutableList.of(Role.ADMINISTRATOR)))
 			.collect(Collectors.toList());
 		return Promise.immediate(new Users(matches, offset, limit, users.size()));
+	}
+	
+	@Override
+	public String getInfo() {
+		return String.format("%s@%s", TYPE, usersFile);
 	}
 	
 	private FileUser getFileUser(String username) {
