@@ -26,6 +26,7 @@ import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.BootstrapFragment;
+import com.google.common.base.Strings;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
@@ -72,12 +73,14 @@ public class SnowOwlAppRule extends ExternalResource {
 	private SnowOwlAppRule() {
 		
 		String requestLoggerLevelProperty = System.getProperty("request.logger.level");
-		LOGGER.info("Using the system property 'request.logger.level' to set the request logger level to {}. Default level is INFO.", requestLoggerLevelProperty);
-		Level requestLoggerLevel = Level.toLevel(requestLoggerLevelProperty, Level.INFO);
-		
-		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-		ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("request");
-		rootLogger.setLevel(requestLoggerLevel);
+		if (!Strings.isNullOrEmpty(requestLoggerLevelProperty)) {
+			LOGGER.info("Using the system property 'request.logger.level' to set the request logger level to {}. Default level is INFO.", requestLoggerLevelProperty);
+			Level requestLoggerLevel = Level.toLevel(requestLoggerLevelProperty, Level.INFO);
+			
+			LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+			ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("request");
+			rootLogger.setLevel(requestLoggerLevel);
+		}
 	}
 
 	/**
