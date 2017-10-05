@@ -137,6 +137,7 @@ public class CDOWidgetBeanProviderStrategy extends WidgetBeanProviderStrategy {
 			
 			final DataTypeWidgetModel matchingModel = groupModel.getFirstMatching(entry.getLabel(), entry.getDataType());
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getUuid(), member.isReleased());
+			widgetBean.setCharacteristicTypeId(entry.getCharacteristicTypeId());
 			widgetBean.setSelectedValue(entry.getSerializedValue());
 			widgetBean.setSelectedLabel(entry.getLabel());
 			widgetBean.setSelectedUom(member.getUomComponentId());
@@ -170,6 +171,7 @@ public class CDOWidgetBeanProviderStrategy extends WidgetBeanProviderStrategy {
 			
 			final DataTypeWidgetModel matchingModel = dataTypeModel.getFirstMatching(entry.getLabel(), entry.getDataType());
 			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getUuid(), member.isReleased());
+			widgetBean.setCharacteristicTypeId(entry.getCharacteristicTypeId());
 			widgetBean.setSelectedValue(entry.getSerializedValue());
 			widgetBean.setSelectedLabel(entry.getLabel());
 			beans.add(widgetBean);
