@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Stores user credentials, which includes the user's name, the password and the user's roles.
  * @since 5.11.0
@@ -44,6 +46,11 @@ public final class User implements Serializable {
 	
 	public List<Role> getRoles() {
 		return roles;
+	}
+	
+	@JsonIgnore
+	public List<Permission> getPermissions() {
+		return getRoles().stream().flatMap(role -> role.getPermissions().stream()).distinct().collect(Collectors.toList());
 	}
 	
 	@Override
@@ -75,5 +82,5 @@ public final class User implements Serializable {
 	public static boolean isSystem(String userId) {
 		return SYSTEM.getUsername().equals(userId);
 	}
-	
+
 }
