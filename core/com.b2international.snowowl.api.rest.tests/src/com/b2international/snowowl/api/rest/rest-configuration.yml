@@ -10,3 +10,8 @@ resourceDirectory: testing/rest/resources
 
 # necessary to connect one user to the system otherwise Snow Owl startup fails
 systemUser: true
+
+identity:
+  providers:
+    - file:
+        name: users
