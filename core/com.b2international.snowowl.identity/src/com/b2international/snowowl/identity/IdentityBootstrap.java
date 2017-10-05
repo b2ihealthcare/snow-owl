@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.identity;
 
-import com.b2international.commons.platform.PlatformUtil;
-import com.b2international.snowowl.core.CoreActivator;
+import java.util.List;
+
+import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 5.11
@@ -31,11 +33,21 @@ public class IdentityBootstrap extends DefaultBootstrapFragment {
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		final IdentityConfiguration conf = configuration.getModuleConfig(IdentityConfiguration.class);
-		IdentityProvider identityProvider = IdentityProvider.Factory.createInstance(env, conf.getType(), conf.getProperties());
-		if (conf.isAdminParty() && PlatformUtil.isDevVersion(CoreActivator.PLUGIN_ID)) {
+		final List<IdentityProvider> providers = IdentityProvider.Factory.createProviders(env, conf.getProviderConfigurations());
+		
+		IdentityProvider identityProvider = null; 
+		if (providers.isEmpty()) {
+			throw new SnowOwlApplication.InitializationException("No identity provider configured");
+		} else if (providers.size() == 1) {
+			identityProvider = Iterables.getOnlyElement(providers);
+		} else {
+			identityProvider = new MultiIdentityProvider(providers);
+		}
+		
+		if (conf.isAdminParty()) {
 			identityProvider = new AdminPartyIdentityProvider(identityProvider);
 		}
-		IdentityProvider.LOG.info("Configured '{}' identity provider", conf.getType());
+		IdentityProvider.LOG.info("Configured identity providers [{}]", identityProvider.getInfo());
 		env.services().registerService(IdentityProvider.class, identityProvider);
 	}
 	

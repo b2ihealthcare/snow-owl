@@ -30,7 +30,7 @@ import com.b2international.snowowl.identity.domain.Users;
  * 
  * @since 5.11
  */
-class AdminPartyIdentityProvider implements IdentityProvider {
+class AdminPartyIdentityProvider implements InternalIdentityProvider {
 
 	private static final List<Role> ADMINPARTY_ROLES = Collections.singletonList(Role.ADMINISTRATOR);
 
@@ -42,7 +42,9 @@ class AdminPartyIdentityProvider implements IdentityProvider {
 
 	@Override
 	public void addUser(String username, String password) {
-		delegate.addUser(username, password);
+		if (delegate instanceof InternalIdentityProvider) {
+			((InternalIdentityProvider) delegate).addUser(username, password);
+		}
 	}
 
 	@Override
@@ -62,6 +64,11 @@ class AdminPartyIdentityProvider implements IdentityProvider {
 							matches.getTotal()
 						);
 					});
+	}
+	
+	@Override
+	public String getInfo() {
+		return String.format("adminParty[%s]", delegate.getInfo());
 	}
 
 }

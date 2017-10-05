@@ -16,9 +16,11 @@
 package com.b2international.snowowl.identity.request;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.domain.Users;
 
 /**
@@ -35,7 +37,9 @@ final class UserSearchRequest extends SearchResourceRequest<ServiceProvider, Use
 
 	@Override
 	protected Users doExecute(ServiceProvider context) throws IOException {
-		return new Users(offset(), limit(), 0);
+		return context.service(IdentityProvider.class)
+				.searchUsers(getCollection(OptionKey.COMPONENT_IDS, String.class), offset(), limit())
+				.getSync(5, TimeUnit.MINUTES);
 	}
 
 }

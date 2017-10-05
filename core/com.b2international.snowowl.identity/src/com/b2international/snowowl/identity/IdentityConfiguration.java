@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,68 +15,40 @@
  */
 package com.b2international.snowowl.identity;
 
-import static com.google.common.collect.Maps.newHashMap;
-
-import java.util.Map;
+import java.util.Collections;
+import java.util.List;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Identity module configuration. Use to configure the underlying identity services (authentication, authorization, tokens, etc.). By default the
- * configuration selects the property file (PROP_FILE) based identity manager. To select a different provider specify the type of the provider in the
- * type field, like this:
- * <p>
- * Example:
+ * Identity module configuration. Use to configure the underlying identity services (authentication, authorization, tokens, etc.).
  * 
- * <pre>
- * authentication:
- *   type: LDAP
- * </pre>
- * </p>
- * 
- * @since 3.4
+ * @since 5.11
  */
 public class IdentityConfiguration {
 
-	@NotEmpty
-	private String type = "PROP_FILE";
-
 	private boolean adminParty = false;
 	
-	private Map<String, Object> properties = newHashMap();
-
-	@JsonProperty
-	public String getType() {
-		return type;
-	}
-
-	@JsonProperty
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	@JsonProperty
+	@NotEmpty
+	private List<IdentityProviderConfig> providerConfigurations = Collections.emptyList();
+	
 	public boolean isAdminParty() {
 		return adminParty;
 	}
 
-	@JsonProperty
 	public void setAdminParty(boolean adminParty) {
 		this.adminParty = adminParty;
 	}
 	
-	@JsonAnyGetter
-	public Map<String, Object> getProperties() {
-		return properties;
+	@JsonProperty("providers")
+	public List<IdentityProviderConfig> getProviderConfigurations() {
+		return providerConfigurations;
 	}
 	
-	@JsonAnySetter
-	public void setProperties(String key, Object value) {
-		this.properties.put(key, value);
+	public void setProviderConfigurations(List<IdentityProviderConfig> providerConfigurations) {
+		this.providerConfigurations = providerConfigurations;
 	}
-
+	
 }

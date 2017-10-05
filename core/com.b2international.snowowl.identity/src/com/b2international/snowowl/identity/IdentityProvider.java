@@ -15,11 +15,10 @@
  */
 package com.b2international.snowowl.identity;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
+import java.util.Optional;
 import java.util.ServiceLoader;
 
 import org.slf4j.Logger;
@@ -29,7 +28,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.identity.domain.Users;
-import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 5.11
@@ -58,20 +57,30 @@ public interface IdentityProvider {
 		 * Creates a new {@link IdentityProvider} instance based on the currently available {@link IdentityProviderFactory} instances provided by the fragments of this bundle.
 		 * @return
 		 */
-		public static IdentityProvider createInstance(Environment env, String type, Map<String, Object> configuration) {
-			checkArgument(!Strings.isNullOrEmpty(type), "Type argument cannot be null or empty");
+		public static List<IdentityProvider> createProviders(Environment env, Collection<IdentityProviderConfig> providerConfigurations) {
+			final ImmutableList.Builder<IdentityProvider> providers = ImmutableList.builder();
 			Iterator<IdentityProviderFactory> it = FACTORIES.iterator();
 			while (it.hasNext()) {
 				IdentityProviderFactory factory = it.next();
-				if (type.equals(factory.getType())) {
+				Optional<IdentityProviderConfig> providerConfig = providerConfigurations.stream().filter(conf -> conf.getClass() == factory.getConfigType()).findFirst();
+				if (providerConfig.isPresent()) {
 					try {
-						return factory.create(env, configuration);
+						providers.add(factory.create(env, providerConfig.get()));
 					} catch (Exception e) {
-						throw new SnowowlRuntimeException(String.format("Couldn't initialize '%s' identity provider", type), e);
+						throw new SnowowlRuntimeException(String.format("Couldn't initialize '{}''s identity provider", factory), e);
 					}
 				}
 			}
-			throw new IllegalArgumentException("No identity manager factory found with type: " + type);
+			return providers.build();
+		}
+
+		public static Collection<Class<? extends IdentityProviderConfig>> getAvailableConfigClasses() {
+			final ImmutableList.Builder<Class<? extends IdentityProviderConfig>> configs = ImmutableList.builder();
+			final Iterator<IdentityProviderFactory> it = FACTORIES.iterator();
+			while (it.hasNext()) {
+				configs.add(it.next().getConfigType());
+			}
+			return configs.build();
 		}
 		
 	}
@@ -88,13 +97,6 @@ public interface IdentityProvider {
 	boolean auth(String username, String token);
 	
 	/**
-	 * Add a user to the identity provider, so that the user can authenticate and access resources.
-	 * @param username
-	 * @param password
-	 */
-	void addUser(String username, String password);
-	
-	/**
 	 * Filters and return users based on the given filters. In case of no filters returns all users (paged response). 
 	 * @param usernames - filter by user name
 	 * @param offset - paging offset to specify where to start reading the users collection
@@ -102,5 +104,11 @@ public interface IdentityProvider {
 	 * @return
 	 */
 	Promise<Users> searchUsers(Collection<String> usernames, int offset, int limit);
+	
+	/**
+	 * Returns a summary like information about this {@link IdentityProvider}, usually it contains the type and some non-sensitive configuration values
+	 * @return 
+	 */
+	String getInfo();
 	
 }
