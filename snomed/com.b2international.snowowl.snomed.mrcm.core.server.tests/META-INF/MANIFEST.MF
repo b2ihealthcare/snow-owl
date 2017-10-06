@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: SNOMED CT MRCM Support Tests
 Bundle-SymbolicName: com.b2international.snowowl.snomed.mrcm.core.server.tests
-Bundle-Version: 4.6.12.qualifier
+Bundle-Version: 4.6.13.qualifier
 Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.snowowl.snomed.mrcm.core.server;bundle-version="4.4.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
