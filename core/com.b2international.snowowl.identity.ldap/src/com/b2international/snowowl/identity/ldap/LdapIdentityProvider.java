@@ -191,7 +191,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 
 			final List<User> users = resultBuilder.build().stream()
 					.sorted((u1, u2) -> u1.getUsername().compareTo(u2.getUsername()))
-					.filter(user -> usernames.contains(user.getUsername()))
+					.filter(user -> usernames.isEmpty() || usernames.contains(user.getUsername()))
 					.skip(offset)
 					.limit(limit)
 					.collect(Collectors.toList());
