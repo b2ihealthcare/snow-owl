@@ -46,9 +46,9 @@ import com.google.common.collect.ImmutableList;
 final class FileIdentityProvider implements InternalIdentityProvider {
 
 	static final String TYPE = "file";
-	private static final String COLON = ":";
-	private static final Splitter COLON_SPLITTER = Splitter.on(COLON);
-	private static final Joiner COLON_JOINER = Joiner.on(COLON);
+	private static final String USER_ENTRY_SEPARATOR = ":";
+	private static final Splitter USER_ENTRY_SPLITTER = Splitter.on(USER_ENTRY_SEPARATOR);
+	private static final Joiner USER_ENTRY_JOINER = Joiner.on(USER_ENTRY_SEPARATOR);
 	
 	private final Map<String, FileUser> users;
 	private final Path usersFile;
@@ -111,20 +111,20 @@ final class FileIdentityProvider implements InternalIdentityProvider {
 	private static List<String> toLines(Map<String, FileUser> users) {
 		return users.values().stream()
 				.map(user -> ImmutableList.of(user.getUsername(), user.getHashedPassword()))
-				.map(COLON_JOINER::join)
+				.map(USER_ENTRY_JOINER::join)
 				.collect(Collectors.toList());
 	}
 
 	private static Map<String, FileUser> readUsers(Path file) throws IOException {
 		return Files.lines(file, Charsets.UTF_8)
 				.filter(FileIdentityProvider::checkLine)
-				.map(COLON_SPLITTER::splitToList)
+				.map(USER_ENTRY_SPLITTER::splitToList)
 				.map(values -> new FileUser(values.get(0), values.get(1)))
 				.collect(Collectors.toConcurrentMap(FileUser::getUsername, Function.identity()));
 	}
 	
 	private static boolean checkLine(String line) {
-		final boolean valid = line.contains(COLON);
+		final boolean valid = line.contains(USER_ENTRY_SEPARATOR);
 		if (!valid) {
 			IdentityProvider.LOG.warn("Skipping line '{}' due to invalid format", line);
 		}
