@@ -30,7 +30,7 @@ public class LdapIdentityProviderConfig implements IdentityProviderConfig {
 	@NotEmpty private String uri;
 	@NotEmpty private String baseDn = "dc=snowowl,dc=b2international,dc=com";
 	@NotEmpty private String rootDn = "cn=admin,dc=snowowl,dc=b2international,dc=com";
-	@NotEmpty private String rootDnPassword = "adminpwd";
+	@NotEmpty private String rootDnPassword;
 	@NotEmpty private String userIdProperty = "uid";
 	
 	private boolean connectionPoolEnabled = false;

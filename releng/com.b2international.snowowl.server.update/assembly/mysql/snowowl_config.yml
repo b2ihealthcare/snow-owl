@@ -15,7 +15,7 @@ identity:
 #        uri: <ldap_uri>
 #        baseDn: dc=snowowl,dc=b2international,dc=com
 #        rootDn: cn=admin,dc=snowowl,dc=b2international,dc=com
-#        rootDnPassword: adminpwd
+#        rootDnPassword: <adminpwd>
 #        userIdProperty: uid
 #        usePool: false
 
