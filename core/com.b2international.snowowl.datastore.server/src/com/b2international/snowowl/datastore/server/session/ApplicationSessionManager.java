@@ -59,15 +59,14 @@ import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.server.InternalApplicationSessionManager;
 import com.b2international.snowowl.datastore.session.AccessToken;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.domain.Role;
 import com.b2international.snowowl.identity.domain.User;
-import com.b2international.snowowl.identity.request.UserRequests;
 import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcThreadLocal;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.MapMaker;
@@ -131,10 +130,8 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 
 	private final SecureRandom secureRandom = new SecureRandom();
 	private final IdentityProvider identityProvider;
-	private final IEventBus bus;
 
-	public ApplicationSessionManager(final IEventBus bus, final IdentityProvider identityProvider) {
-		this.bus = bus;
+	public ApplicationSessionManager(final IdentityProvider identityProvider) {
 		this.identityProvider = identityProvider;
 	}
 	
@@ -232,9 +229,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 			final String password = new String(decryptedResponse, RANDOM_BYTES_LENGTH, decryptedResponse.length - RANDOM_BYTES_LENGTH, Charsets.UTF_8);
 			authenticate(userId, password);
 			
-			User user = UserRequests.prepareGet(userId).buildAsync()
-					.execute(bus)
-					.getSync(1, TimeUnit.MINUTES);
+			User user = identityProvider.searchUsers(ImmutableList.of(userId), 0, 1).getSync(1, TimeUnit.MINUTES).first().get();
 			
 			if (!loginEnabled && !user.isAdministrator()) {
 				throw new SecurityException("Logging in for non-administrator users is temporarily disabled.");
