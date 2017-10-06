@@ -22,11 +22,10 @@
 		<module>com.b2international.snowowl.api.feature</module>
 		<module>com.b2international.snowowl.api.rest.feature</module>
 		
-		<!-- Auth modules -->
-		<module>com.b2international.snowowl.authentication</module>
-		<module>com.b2international.snowowl.authentication.file</module>
-		<module>com.b2international.snowowl.authentication.ldap</module>
-		<module>com.b2international.snowowl.authorization.server</module>
+		<!-- Identity modules -->
+		<module>com.b2international.snowowl.identity</module>
+		<module>com.b2international.snowowl.identity.file</module>
+		<module>com.b2international.snowowl.identity.ldap</module>
 		
 		<!-- Core Modules -->
 		<module>com.b2international.snowowl.core</module>
