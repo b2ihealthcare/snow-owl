@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * Stores user credentials, which includes the user's name, the password and the user's roles.
+ * Represents a logged in user in the system. A logged in user has access to his own username and assigned roles (and permissions).
  * @since 5.11.0
  */
 public final class User implements Serializable {

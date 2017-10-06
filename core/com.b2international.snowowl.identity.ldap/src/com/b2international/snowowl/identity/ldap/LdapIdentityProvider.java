@@ -45,56 +45,36 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 
 /**
- * JAAS login module, which uses an LDAP directory for authenticating users and determining their roles. This
- * implementation is only meant to be used inside an Equinox OSGi container, which has its internal JAAS-based
- * authentication framework. Login modules are to be registered through the
- * {@code org.eclipse.equinox.security.loginModule} extension point.
+ * IdentityProvider implementation, which uses an LDAP directory for authenticating users and determining their roles.
  * <p>
  * Authentication is based on a clear-text password (LDAP simple authentication mechanism).
  * </p>
  * <p>
- * This implementation does not use SSL by default because of the additional configuration involved in doing that. You
- * can enable SSL by adding {@code useSSL=true} to the JAAS configuration file. Using SSL requires the LDAP server to
- * have a trusted certificate. This can be a certificate issued by a well known Certification Authority, or a
+ * This implementation does not support SSL connections to the LDAP server yet. 
+ * 
+ * TODO: add SSL support
+ * You can enable SSL by using <code>ldaps://</code> as protocol in the {@link LdapIdentityProviderConfig}. 
+ * Using SSL requires the LDAP server to have a trusted certificate. This can be a certificate issued by a well known Certification Authority, or a
  * certificate that is manually added to the local KeyStore. See this blog post for details on how to do the latter: <a
  * href="http://nodsw.com/blog/leeland/2006/12/06-no-more-unable-find-valid-certification-path-requested-target">
  * http://nodsw.com/blog/leeland/2006/12/06-no-more-unable-find-valid-certification-path-requested-target </a>
  * </p>
- * <h3>Configuration options</h3>
- * <ul>
- * <li>extensionId: the ID of the {@code org.eclipse.equinox.security.loginModule} extension associated with this login
- * module.</li>
- * <li>useSSL: use SSL connections to the LDAP server, {@code true} or {@code false} (false by default).</li>
- * <li>usePool: use built-in LDAP connection pool for searching, {@code true} or {@code false} (false by default).</li>
- * <li>userProvider: the LDAP URL (<a href="http://www.ietf.org/rfc/rfc2255.txt">RFC 2255</a>) of the LDAP directory
- * that stores user and role entries.</li>
- * <li>snowOwlBase: the search base to use when searching for users and roles</li>
- * <li>bindDnUser: the connecting user's DN used for performing search</li>
- * <li>bindDnPassword: the connecting user's password used for performing search</li>
- * <li>allUser: the search filter for finding all registered users in the LDAP directory.</li>
- * <li>userFilter: the search filter for finding a user's entry in the LDAP directory. The <code>{userName}</code> token
- * will be substituted with the supplied username.</li>
- * <li>roleFilter: the search filter for finding the role entries for a given user in the LDAP directory. The
- * <code>{userDn}</code> token will be substituted with the user's distinguished name (DN).</li>
- * <li>permissionsBase: the search base to use when searching for permissions</li>
- * <li>permissionsForRoleQuery: the search filter for finding a single role in the LDAP directory by name. The
- * <code>{roleName}</code> token will be substituted with role's name.</li>
- * <li>permissionClassQuery: the search filter for finding a single permission in the LDAP directory by its identifier.
- * The <code>{permissionId}</code> token will be substituted with the identifier of the permission to look for.</li>
- * </ul>
- * <h3>Sample JAAS configuration</h3>
+ * <h3>Sample configuration node in snowowl_config.yml</h3>
  * <pre>
- * LDAP {
- *  useSSL=false
- *  usePool=false
- *  userProvider="ldap://localhost:10389/"
- *  snowOwlBase="dc=snowowl,dc=b2international,dc=com"
- *  bindDnUser="uid=admin,ou=system"
- *  bindDnPassword="secret"
- * };
+ * identity:
+ *   providers:
+ *     - ldap:
+ *         uri: ldap://localhost:10389
+ *         usePool: false
+ *         baseDn: dc=snowowl,dc=b2international,dc=com
+ *         rootDn: cn=admin,dc=snowowl,dc=b2international,dc=com
+ *         rootDnPassword: adminpwd
+ *         userIdProperty: uid
  * </pre>
  * 
  * @since 5.11
+ * @see LdapIdentityProviderConfig
+ * @see LdapIdentityProviderFactory
  */
 final class LdapIdentityProvider implements IdentityProvider {
 
