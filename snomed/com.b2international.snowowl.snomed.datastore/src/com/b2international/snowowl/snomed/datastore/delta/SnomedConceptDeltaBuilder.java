@@ -33,6 +33,7 @@ import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionDelta;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionManager;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.spi.cdo.InternalCDOSession;
 import org.eclipse.net4j.util.AdapterUtil;
 
@@ -51,7 +52,6 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.delta.AbstractHierarchicalComponentDeltaBuilder;
 import com.b2international.snowowl.datastore.delta.HierarchicalComponentDelta;
 import com.b2international.snowowl.datastore.index.AbstractIndexEntry;
-import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
@@ -270,7 +270,7 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 			//reference set members
 			} else if (SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember().isSuperTypeOf(eClass)) {
 				
-				final Object value = revision.getValue(SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_RefSet());
+				final Object value = revision.getContainerID();
 				
 				if (value instanceof CDOID) {
 					
@@ -329,11 +329,12 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 		} else if (object instanceof SnomedRefSetMember) {
 			
 			final SnomedRefSetMember member = (SnomedRefSetMember) object;
-			final SnomedRefSet refSet = member.getRefSet();
-			final String refSetIdentifierId = refSet.getIdentifierId();
-			final long conceptCdoId = getStorageKey(refSetIdentifierId, object.cdoView());
+			final EObject container = member.eContainer();
+			final Long storageKey = CDOUtils.getStorageKey((CDOObject) container);
+			final String conceptId = getComponentId(storageKey, object.cdoView());
+			final Long conceptStorageKey = getStorageKey(conceptId, view);
 			
-			final HierarchicalComponentDelta delta = createDelta(refSetIdentifierId, conceptCdoId, ChangeKind.UPDATED, view);
+			final HierarchicalComponentDelta delta = createDelta(conceptId, conceptStorageKey, ChangeKind.UPDATED, view);
 			put(delta).getRelatedCdoIds().add(CDOIDUtils.asLong(member.cdoID()));
 			
 			
@@ -467,14 +468,19 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 		if (StringUtils.isEmpty(componentId)) {
 			
 			CDOObject object = CDOUtils.getObjectIfExists(view, cdoId);
-			if (object instanceof Component) {
+			if (object instanceof Concept) {
 				
-				componentId = ((Component) object).getId();
+				componentId = ((Concept) object).getId();
 				storageKeyConceptIds.put(cdoId, componentId);
 				
 			} else if (object instanceof SnomedRefSet) {
 				
 				componentId = ((SnomedRefSet) object).getIdentifierId();
+				storageKeyConceptIds.put(cdoId, componentId);
+				
+			} else if (object instanceof Description || object instanceof Relationship) {
+				
+				componentId = getComponentId( CDOUtils.getStorageKey((CDOObject)object.eContainer()), view);
 				storageKeyConceptIds.put(cdoId, componentId);
 				
 			}

@@ -270,6 +270,8 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 				} else {
 					return "Unknown change on status feature for '" + changedObject + "'.";
 				}
+			} else {
+				return getDescription(changedObject, beforeView, currentView, "Change ", "");
 			}
 		} else if (changedObject instanceof SnomedComplexMapRefSetMember) {
 			if (CORRELATION_ID_FEATURE_NAME.equals(featureName)) {
