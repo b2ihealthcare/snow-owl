@@ -28,7 +28,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.datastore.request.SearchResourceRequest;
+import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
@@ -37,7 +37,7 @@ import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocumen
 /**
  * @since 4.7
  */
-final class SnomedConstraintSearchRequest extends SearchResourceRequest<BranchContext, SnomedConstraints> {
+final class SnomedConstraintSearchRequest extends SearchIndexResourceRequest<BranchContext, SnomedConstraints> {
 
 	public enum OptionKey {
 		

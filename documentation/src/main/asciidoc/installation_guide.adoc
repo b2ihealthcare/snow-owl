@@ -39,9 +39,8 @@ This section goes through the required installation steps to get a production re
 http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html[JDK8 download page]. Select the 
 "`Linux x64`" edition.
 .^|Database .^|MySQL .^|5.7 |Terminology contents are persisted using a MySQL database, downloadable from http://dev.mysql.com/downloads/repo/yum/[MySQL's yum repository]
-.^|LDAP .^|ApacheDS .^|2.0.M12| Authentication and authorization of browsers, terminology editors, reviewers and administrators is performed through an LDAP server. 
-The package to install can be located by following the download link after `ApacheDS 2.0.0-M12` on the http://directory.apache.org/apacheds/download-old-versions.html[Download Old Versions] page. The file to download is `apacheds-2.0.0-M12-x86_64.rpm`.
-Browsing and managing ApacheDS instances can be done through the *Apache Directory Studio* application. We recommend  installing the latest release from the corresponding  http://directory.apache.org/studio/download-old-versions.html[Downloads Old Versions] page on Apache's website. Download `Apache Directory Studio 2.0.0-M7` for a version compatible with the M12 release of the server.
+.^|LDAP .^|OpenLDAP .^|2.4.x| Authentication and authorization of browsers, terminology editors, reviewers and administrators is performed through an LDAP server. 
+Browsing and managing OpenLDAP instances can be done through the *Apache Directory Studio* application. We recommend  installing the latest release from the corresponding http://directory.apache.org/studio/[Download Versions] page on Apache's website.
 |=======================
 
 == Installing
@@ -223,91 +222,29 @@ Download the "`Linux X64`" edition, and install it with yum:
 
 === LDAP
 
-Download the 64-bit Linux RPM package, and install it with yum:
+Install the latest (2.4.x) OpenLDAP with yum:
 
 --------------------------
-# yum install apacheds-2.0.0-M12-x86_64.rpm
+# yum -y install openldap compat-openldap openldap-clients openldap-servers openldap-servers-sql openldap-devel
 --------------------------
 
-Start the service, check if it is running at startup:
+Start the service, and enable it to run when system boots up:
 
 --------------------------
-# service apacheds-2.0.0_M12-default start
-Starting ApacheDS - default...
-
-# service apacheds-2.0.0_M12-default status
-ApacheDS - default is running (1947).
-
-# chkconfig apacheds-2.0.0_M12-default on
-# chkconfig --list apacheds-2.0.0_M12-default
-apacheds-2.0.0_M12-default   0:off   1:off   2:on    3:on    4:on    5:on    6:off
-
-# reboot
+# systemctl start slapd.service
+# systemctl enable slapd.service
 --------------------------
 
-Check the log files in folder `/var/lib/apacheds-2.0.0_M12/default/log` for any errors. `wrapper.log` holds messages
-from the service wrapper running at startup and shutdown, while `apacheds.log` captures log output from the directory
-server itself.
+Next, run the `slappasswd` to create an LDAP root password. Please take note of this root password, the entire hashed value that is returned as output and starts {SSHA}, as you'll use it throughout this article.
+Afterwards, you can import the provided LDIF files via `ldapadd`/`ldapmodify` commands (Role and Permission schema).
 
 === Configuring LDAP
-
-==== Setting up a connection from Apache Directory Studio
-
-Open Apache Directory Studio, create a new connection using the first button on the "`Connections`" toolbar:
-
-image::ldap_new_connection.png[role="text-center"]
-
-Enter connection name, hostname, and port, then hit `Next >` to go to the next page in the wizard:
-
-image::ldap_new_connection_page1.png[role="text-center"]
-
-Set authentication method to `Simple Authentication`, enter Bind DN `uid=admin,ou=system` and password `secret`. Click
-`Check Authentication` to make sure the values are accepted, then dismiss the wizard with `Finish`:
-
-image::ldap_new_connection_page2.png[role="text-center"]
-
-After connecting, you are advised to change the default password for user `system`. In order to do so, expand node
-`ou=system` and select the person `admin`. The editor will now display related user information:
-
-image::ldap_admin_user_details.png[role="text-center"]
-
-Double click on `userPassword` to open the password change dialog, select `SSHA-512` as the hash method. To see the new
-password as it is being entered, check `Show next password details`:
-
-image::ldap_change_password.png[role="text-center"]
-
-To see if the password was changed successfully:
-
-* Close the connection using the third button on the lower left toolbar named `Close Connection`,
-* Right-click the item representing the connection to open its properties with the context menu item at the bottom,
-* Change the previously entered default bind password to the updated value on the `Authentication` tab,
-* Re-connect to the server using `Open Connection`.
-
-==== Creating a partition for Snow Owl Server
-
-Right-click on the item representing the connection, and select "Open Configuration":
-
-image::ldap_connection_context_menu.png[role="text-center"]
-
-An editor opens with the server configuration; select the `Partitions` tab. An `examples` partition is added by default,
-which should be removed. Add a new partition named `snowowl` and fill out the details (ID and suffix):
-
-image::ldap_configuration.png[role="text-center"]
-
-Save the editor and restart the server to apply changes in partitions.
-
---------------------------
-# service apacheds-2.0.0_M12-default restart
-Stopping ApacheDS - default...
-Stopped ApacheDS - default.
-Starting ApacheDS - default...
---------------------------
 
 ==== Using LDIF dumps
 
 B2i provided LDAP packages include the following content:
 
-schema.ldif:: LDAP schema to use for authorization (contains definitions for permissionId and role)
+permission_schema.ldif:: LDAP schema to use for authorization (contains definitions for permissions)
 permissions.ldif:: All available permissions in the system
 roles.ldif:: All available roles in the system
 pm.ldif:: Maps permissions to roles
@@ -327,8 +264,7 @@ Install the `openldap-clients` first to make use of the script:
 # yum install openldap-clients
 --------------------------
 
-Before updating the LDAP server, it is advised to shut down the service, and create a backup from the contents
-of folder `/var/lib/apacheds-2.0.0_M12/default`, so it can be restored easily if the script fails.
+Before updating the LDAP server, it is advised to shut down the service, and create a backup, so it can be restored easily if the script fails.
 
 Restart the server, then create a new ldif-<version> folder and unzip the contents of the LDIF archive into
 this folder. Finally, execute the script to update the contents of LDAP:
@@ -365,7 +301,22 @@ specifying the LDAP_URI parameter:
 # ./update.sh ldap://<host>:<port>
 --------------------------
 
-==== Creating a new user from Directory Studio
+==== Using Apache Directory Studio
+
+Open Apache Directory Studio, create a new connection using the first button on the "`Connections`" toolbar:
+
+image::ldap_new_connection.png[role="text-center"]
+
+Enter connection name, hostname, and port, then hit `Next >` to go to the next page in the wizard:
+
+image::ldap_new_connection_page1.png[role="text-center"]
+
+Set authentication method to `Simple Authentication`, enter Bind DN of your root user and its password. Click
+`Check Authentication` to make sure the values are accepted, then dismiss the wizard with `Finish`:
+
+image::ldap_new_connection_page2.png[role="text-center"]
+
+==== Creating a new user using Apache Directory Studio
 
 Go to LDAP Browser view, right click on the Domain component (DC) and add new entry via `New` > `New entry`:
 
@@ -417,11 +368,17 @@ on the created folder:
 
 ==== Update Snow Owl's Configuration
 
-Update `snowowl_config.yml` to use LDAP authentication and set the MySQL password for `snowowl`, created earlier:
+Update `snowowl_config.yml` to use LDAP as identity provider and set the MySQL password for `snowowl`, created earlier:
 
 --------------------------
-auth:
-  type: LDAP
+identity:
+  providers:
+    - ldap:
+        uri: ldap://<host>:<port>
+        baseDn: <your-base-dn>
+        rootDn: <DN of the ROOT user>
+        rootDnPassword: <password of the ROOT user>
+        usePool: false
 
 repository:
   ...
@@ -432,28 +389,6 @@ repository:
     password: snowowl // <1>
 --------------------------
 <1> Update MySQL username and password, if neccessary
-
-==== LDAP Authentication
-
-To use the configured LDAP instance, adjust `snowowl_jaas_configuration.properties` to
-include the host name of the LDAP server and the LDAP administrator password:
-
-./opt/snowowl-{edition}_{version}/configuration/snowowl_jaas_configuration.properties
---------------------------
-LDAP {
-    org.eclipse.equinox.security.auth.module.ExtensionLoginModule required
-        extensionId="com.b2international.snowowl.authentication.ldap.ldapLoginModule"
-        ...
-        userProvider="ldap://<ldap_host>:10389/" // <1>
-        usePool=false
-        snowOwlBase="dc=snowowl,dc=b2international,dc=com"
-        bindDnUser="uid=admin,ou=system"
-        bindDnPassword="secret" // <2>
-        ...
-};
---------------------------
-<1> Replace `<ldap_host>` with the host name of the LDAP server to connect to
-<2> Replace `secret` with the LDAP administrator's password
 
 ==== Memory settings
 

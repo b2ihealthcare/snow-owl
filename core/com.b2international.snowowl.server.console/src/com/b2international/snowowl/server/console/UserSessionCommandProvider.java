@@ -42,7 +42,6 @@ import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -60,6 +59,7 @@ import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryLockTar
 import com.b2international.snowowl.datastore.server.oplock.OperationLockInfo;
 import com.b2international.snowowl.datastore.server.oplock.impl.DatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
+import com.b2international.snowowl.identity.domain.User;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;
 
@@ -388,7 +388,7 @@ public class UserSessionCommandProvider implements CommandProvider {
 		}
 		
 		final IDatastoreOperationLockManager lockManager = ApplicationContext.getInstance().getService(IDatastoreOperationLockManager.class);
-		final DatastoreLockContext context = new DatastoreLockContext(SpecialUserStore.SYSTEM_USER_NAME, DatastoreLockContextDescriptions.MAINTENANCE);
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.MAINTENANCE);
 		
 		try {
 			lockManager.lock(context, 3000L, target);
@@ -409,7 +409,7 @@ public class UserSessionCommandProvider implements CommandProvider {
 		}
 
 		final IDatastoreOperationLockManager lockManager = ApplicationContext.getInstance().getService(IDatastoreOperationLockManager.class);
-		final DatastoreLockContext context = new DatastoreLockContext(SpecialUserStore.SYSTEM_USER_NAME, DatastoreLockContextDescriptions.MAINTENANCE);
+		final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.MAINTENANCE);
 
 		try {
 			lockManager.unlock(context, target);

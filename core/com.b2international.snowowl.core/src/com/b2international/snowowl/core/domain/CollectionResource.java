@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
@@ -97,6 +98,16 @@ public class CollectionResource<T> implements Serializable, Iterable<T> {
 	@JsonIgnore
 	public Optional<T> first() {
 		return Optional.ofNullable(Iterables.getFirst(getItems(), null));
+	}
+	
+	/**
+	 * Returns a sequential {@code Stream} with this collection resource as its source.
+	 * @return a {@link Stream} over the items of this collection resource
+	 * @since 5.12
+	 */
+	@JsonIgnore
+	public Stream<T> stream() {
+		return getItems().stream();
 	}
 
 }

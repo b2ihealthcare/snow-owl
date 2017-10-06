@@ -48,7 +48,6 @@ import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.merge.MergeConflict;
-import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
@@ -57,6 +56,7 @@ import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
+import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -270,7 +270,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
             if (targetTransaction.isDirty()) {
     			// FIXME: Using "System" user and "synchronize" description until a more suitable pair can be specified here
             	targetTransaction.setCommitComment(commitMessage);
-            	CDOCommitInfo commitInfo = new CDOServerCommitBuilder(SpecialUserStore.SYSTEM_USER_NAME, commitMessage, targetTransaction)
+            	CDOCommitInfo commitInfo = new CDOServerCommitBuilder(User.SYSTEM.getUsername(), commitMessage, targetTransaction)
             			.parentContextDescription(DatastoreLockContextDescriptions.SYNCHRONIZE)
             			.commitOne();
             	

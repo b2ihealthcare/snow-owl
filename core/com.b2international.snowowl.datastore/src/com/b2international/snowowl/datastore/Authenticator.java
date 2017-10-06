@@ -21,9 +21,9 @@ import java.util.Arrays;
 
 import com.b2international.commons.encoding.RSAUtils;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.users.User;
 import com.b2international.snowowl.datastore.session.AccessToken;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
+import com.b2international.snowowl.identity.domain.User;
 import com.google.common.base.Charsets;
 
 /**
@@ -46,7 +46,6 @@ public class Authenticator {
 	}
 
 	public User authenticate() throws SnowowlServiceException {
-		
 		try {
 			
 			final AccessToken accessToken = sessionManager.requestToken(userName, clientKeyPair.getPublic());
@@ -61,15 +60,7 @@ public class Authenticator {
 			
 			final byte[] encryptedResponseBytes = RSAUtils.rsaEncrypt(responseBytes, serverPublicKey);
 			
-			try {
-				sessionManager.loginWithResponse(encryptedResponseBytes);
-			} catch (final SecurityException e) {
-				throw e;
-			}
-
-			// TODO: set userId on client RPC session?
-			
-			return new User(userName, password);
+			return sessionManager.loginWithResponse(encryptedResponseBytes);
 		} catch (final Exception e) {
 			throw new SnowowlServiceException("Authentication failed!", e);
 		}

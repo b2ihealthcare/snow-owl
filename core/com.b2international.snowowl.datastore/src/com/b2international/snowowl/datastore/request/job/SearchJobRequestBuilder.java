@@ -16,12 +16,12 @@
 package com.b2international.snowowl.datastore.request.job;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
-import com.b2international.snowowl.datastore.request.SearchResourceRequest;
-import com.b2international.snowowl.datastore.request.SearchResourceRequestBuilder;
-import com.b2international.snowowl.datastore.request.SystemRequestBuilder;
 
 /**
  * A request builder that builds a request to search/list {@link RemoteJob job entries}.

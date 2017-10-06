@@ -15,11 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server;
 
-import java.util.Set;
-
 import org.eclipse.emf.cdo.server.IView;
 
-import com.b2international.snowowl.core.users.Role;
 import com.b2international.snowowl.rpc.RpcSession;
 
 /**
@@ -28,8 +25,6 @@ import com.b2international.snowowl.rpc.RpcSession;
 public interface InternalApplicationSessionManager {
 
 	void connectSystemUser();
-
-	Set<Role> getRoles(IView transaction);
 
 	RpcSession getSession(IView transaction);
 }

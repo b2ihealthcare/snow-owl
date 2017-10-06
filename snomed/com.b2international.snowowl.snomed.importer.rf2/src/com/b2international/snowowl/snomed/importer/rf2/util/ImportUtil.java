@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.importer.rf2.util;
 
 import static com.b2international.commons.CompareUtils.isEmpty;
-import static com.b2international.snowowl.core.users.SpecialUserStore.SYSTEM_USER_NAME;
 import static com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration.ImportSourceKind.FILES;
 import static com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType.CONCEPT;
 import static com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType.DESCRIPTION;
@@ -83,6 +82,7 @@ import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLock
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.importer.ImportException;
 import com.b2international.snowowl.importer.Importer;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -152,7 +152,7 @@ public final class ImportUtil {
 			final File releaseArchive,
 			final boolean shouldCreateVersions) throws Exception {
 		
-		return doImport(codeSystem, branchPath, contentSubType, releaseArchive, shouldCreateVersions, SYSTEM_USER_NAME, new NullProgressMonitor());
+		return doImport(codeSystem, branchPath, contentSubType, releaseArchive, shouldCreateVersions, User.SYSTEM.getUsername(), new NullProgressMonitor());
 	}
 	
 	public SnomedImportResult doImport(

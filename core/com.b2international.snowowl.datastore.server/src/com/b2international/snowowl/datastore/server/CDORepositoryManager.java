@@ -58,7 +58,6 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.cdo.CDOContainer;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -67,6 +66,7 @@ import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.net4j.TcpGZIPStreamWrapperInjector;
+import com.b2international.snowowl.identity.domain.User;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -340,7 +340,7 @@ import com.google.common.net.HostAndPort;
 				
 				final String userId = entry.getKey();
 
-				if (SpecialUserStore.SYSTEM_USER_NAME.equals(userId)) { //embedded client session always ignored
+				if (User.isSystem(userId)) { //embedded client session always ignored
 					return;
 				}
 				

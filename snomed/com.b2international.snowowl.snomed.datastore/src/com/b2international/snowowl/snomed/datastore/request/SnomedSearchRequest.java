@@ -25,7 +25,8 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
-import com.b2international.snowowl.datastore.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator2;
 import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
@@ -44,7 +45,7 @@ import com.google.common.collect.Iterables;
  * Abstract class for SNOMED CT search requests.
  * @since 4.5
  */
-public abstract class SnomedSearchRequest<R> extends SearchResourceRequest<BranchContext, R> {
+public abstract class SnomedSearchRequest<R> extends SearchIndexResourceRequest<BranchContext, R> {
 
 	enum OptionKey {
 		

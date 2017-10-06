@@ -25,12 +25,12 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.datastore.request.SearchResourceRequest;
+import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 
 /**
  * @since 4.7
  */
-final class CodeSystemSearchRequest extends SearchResourceRequest<RepositoryContext, CodeSystems> {
+final class CodeSystemSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CodeSystems> {
 
 	private static final long serialVersionUID = 1L;
 

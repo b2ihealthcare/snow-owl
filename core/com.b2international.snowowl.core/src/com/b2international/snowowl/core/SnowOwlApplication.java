@@ -40,7 +40,6 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.Bootstrap;
 import com.b2international.snowowl.core.setup.BootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.core.users.IUserManager;
 import com.b2international.snowowl.hibernate.validator.ValidationUtil;
 import com.google.common.base.Strings;
 
@@ -107,12 +106,6 @@ public enum SnowOwlApplication {
 			this.environment = new Environment(bootstrap, configuration);
 			logEnvironment();
 			this.bootstrap.init(this.configuration, this.environment);
-			// after init checks
-			try {
-				this.environment.service(IUserManager.class);
-			} catch (Exception e) {
-				throw new InitializationException("UserManager should be registered after the bootstrap process.");
-			}
 		}
 	}
 

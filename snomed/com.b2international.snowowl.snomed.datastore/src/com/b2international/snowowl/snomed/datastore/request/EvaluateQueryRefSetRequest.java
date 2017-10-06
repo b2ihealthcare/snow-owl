@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.request.ResourceRequest;
+import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluations;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;

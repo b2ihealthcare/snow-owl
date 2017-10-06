@@ -19,7 +19,7 @@ import java.util.Collection;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.datastore.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequest.OptionKey;

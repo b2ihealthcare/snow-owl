@@ -17,10 +17,6 @@
    <extension
          point="com.b2international.snowowl.datastore.server.protocolFactory">
       <protocolFactory
-            class="com.b2international.snowowl.datastore.server.net4j.UserManagementServerProtocol$Factory"
-            id="com.b2international.snowowl.datastore.server.net4j.UserManagementServerProtocol">
-      </protocolFactory>
-      <protocolFactory
             class="com.b2international.snowowl.datastore.server.net4j.push.PushServerProtocol$Factory"
             id="com.b2international.snowowl.datastore.server.net4j.push.PushServerProtocol$Factory">
       </protocolFactory>      

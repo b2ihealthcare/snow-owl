@@ -24,9 +24,9 @@ import org.eclipse.net4j.signal.ISignalProtocol;
 import org.eclipse.net4j.util.event.IListener;
 
 import com.b2international.snowowl.core.api.IBranchPoint;
-import com.b2international.snowowl.core.users.User;
 import com.b2international.snowowl.datastore.Authenticator;
 import com.b2international.snowowl.datastore.delta.IBranchPointCalculationStrategy;
+import com.b2international.snowowl.identity.domain.User;
 
 
 /**
@@ -88,5 +88,10 @@ public interface ICDOConnectionManager extends ICDOContainer<ICDOConnection> {
 	void subscribeForRemoteMessages(final IListener listener);
 	
 	void unsbscribeFromRemoteMessages(final IListener listener);
+
+	/**
+	 * @deprecated - to access the user provided password, TODO remove this method as soon as possible
+	 */ 
+	String getPassword();
 	
 }

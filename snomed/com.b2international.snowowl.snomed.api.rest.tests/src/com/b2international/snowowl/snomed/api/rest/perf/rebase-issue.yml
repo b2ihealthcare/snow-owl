@@ -11,9 +11,6 @@ resourceDirectory: testing/rest/resources
 # necessary to connect one user to the system otherwise Snow Owl startup fails
 systemUser: true
 
-auth:
-  type: PROP_FILE
-
 repository:
   database:
     type: b2i_mysql
@@ -32,9 +29,3 @@ snomed:
   
 metrics:
   enabled: true
-
-fileAuth:
-  users:
-    -
-      username: snowowl
-      password: snowowl

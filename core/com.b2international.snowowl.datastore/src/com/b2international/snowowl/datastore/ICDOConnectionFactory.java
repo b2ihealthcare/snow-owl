@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.config.ClientPreferences;
-import com.b2international.snowowl.core.users.User;
 
 /**
  * Interface for creating CDO specific connection between server and client.
@@ -36,16 +35,5 @@ public interface ICDOConnectionFactory {
 	 * @throws SnowowlServiceException if there was an error when connecting to CDO, or when the provided credentials are invalid
 	 */
 	void connect(final String username, final String password) throws SnowowlServiceException;
-	
-	/**
-	 * Creates a {@link CDOConnection} object and connects to the the CDO repository specified by the registered 
-	 * {@link ClientPreferences}. The specified {@link User} is supposed be already authenticated. The created 
-	 * connection will be automatically registered to the {@link ApplicationContext} as service.
-	 * @param user the authenticated user
-	 * @param repositoryName the name of the repository
-	 * @return the opened {@link CDOConnection}
-	 * @throws SnowowlServiceException
-	 */
-	void connect(final User user) throws SnowowlServiceException;
 	
 }

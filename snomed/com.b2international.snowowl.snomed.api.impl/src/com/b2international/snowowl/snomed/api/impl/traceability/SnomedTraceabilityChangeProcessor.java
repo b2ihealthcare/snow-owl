@@ -47,7 +47,6 @@ import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.events.metrics.MetricsThreadLocal;
 import com.b2international.snowowl.core.events.metrics.Timer;
-import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
@@ -56,6 +55,7 @@ import com.b2international.snowowl.datastore.index.ImmutableIndexCommitChangeSet
 import com.b2international.snowowl.datastore.index.IndexCommitChangeSet;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -194,7 +194,7 @@ public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 	}
 
 	private boolean isSystemCommit() {
-		return SpecialUserStore.SYSTEM_USER_NAME.equals(commitChangeSet.getUserId());
+		return User.isSystem(commitChangeSet.getUserId());
 	}
 	
 	private void processAddition(CDOObject newComponent) {

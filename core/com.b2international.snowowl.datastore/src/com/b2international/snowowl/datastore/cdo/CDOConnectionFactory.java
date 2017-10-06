@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.AlreadyLoggedInException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.users.User;
 import com.b2international.snowowl.datastore.ICDOConnectionFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -42,22 +41,9 @@ public class CDOConnectionFactory implements ICDOConnectionFactory {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(CDOConnectionFactory.class);
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.ICDOConnectionFactory#connect(com.b2international.snowowl.core.users.User)
-	 */
-	@Override
-	public void connect(final User user) throws SnowowlServiceException {
-		connect(CDOConnectionManager.create(user));
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.ICDOConnectionFactory#connect(java.lang.String, java.lang.String)
-	 */
 	@Override
 	public void connect(final String username, final String password) throws SnowowlServiceException {
-		connect(CDOConnectionManager.create(username, password));
+		connect(new CDOConnectionManager(username, password));
 	}
 
 	/*tries to activate the connection manager argument. in case of successful activation argument will be registered to the application context.*/

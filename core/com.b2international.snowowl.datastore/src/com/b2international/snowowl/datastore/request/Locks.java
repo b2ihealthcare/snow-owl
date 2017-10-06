@@ -19,13 +19,13 @@ import java.util.Map;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
+import com.b2international.snowowl.identity.domain.User;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -41,7 +41,7 @@ public class Locks implements AutoCloseable {
 	
 	public Locks(RepositoryContext context, Branch firstBranch, Branch... nextBranches) throws OperationLockException, InterruptedException {
 		// FIXME: Using "System" user and "synchronize" description until a more suitable pair can be specified here
-		this(context, SpecialUserStore.SYSTEM_USER_NAME, DatastoreLockContextDescriptions.SYNCHRONIZE, firstBranch, nextBranches);
+		this(context, User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.SYNCHRONIZE, firstBranch, nextBranches);
 	}
 	
 	public Locks(RepositoryContext context, String userId, String description, Branch firstBranch, Branch... nextBranches) throws OperationLockException, InterruptedException {

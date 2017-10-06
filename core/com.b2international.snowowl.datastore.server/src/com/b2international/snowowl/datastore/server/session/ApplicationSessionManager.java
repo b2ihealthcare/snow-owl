@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,13 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.security.auth.login.LoginException;
@@ -50,23 +53,20 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.encoding.RSAUtils;
-import com.b2international.snowowl.authentication.login.ServerAuthenticator;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.AlreadyLoggedInException;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.users.IAuthorizationService;
-import com.b2international.snowowl.core.users.Role;
-import com.b2international.snowowl.core.users.SpecialRole;
-import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.server.InternalApplicationSessionManager;
 import com.b2international.snowowl.datastore.session.AccessToken;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
+import com.b2international.snowowl.identity.IdentityProvider;
+import com.b2international.snowowl.identity.domain.Role;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcThreadLocal;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.MapMaker;
@@ -77,6 +77,7 @@ import com.google.common.collect.Sets;
  */
 public class ApplicationSessionManager extends Notifier implements IApplicationSessionManager, InternalApplicationSessionManager {
 
+	private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("auth");
 	private static final org.slf4j.Logger AUDIT_LOGGER = org.slf4j.LoggerFactory.getLogger(ApplicationSessionManager.class);
 	private static final AtomicLong ID_PROVIDER = new AtomicLong(1L);
 
@@ -103,7 +104,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 			if (sessionToLogout.containsKey(KEY_USER_ID) && sessionToLogout.containsKey(KEY_SESSION_ID)) {
 
 				final String userId = String.valueOf(sessionToLogout.get(KEY_USER_ID));
-				if (!SpecialUserStore.SYSTEM_USER_NAME.equals(userId)) {
+				if (!User.isSystem(userId)) {
 
 					final String sessionId = String.valueOf(sessionToLogout.get(KEY_SESSION_ID));
 					//Log as a user activity
@@ -128,10 +129,10 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 	private final ConcurrentMap<IChannelMultiplexer, RpcSession> knownSessions = new MapMaker().makeMap();
 
 	private final SecureRandom secureRandom = new SecureRandom();
-	private final ServerAuthenticator authenticator;
+	private final IdentityProvider identityProvider;
 
-	public ApplicationSessionManager(final SnowOwlConfiguration configuration) {
-		this.authenticator = new ServerAuthenticator(configuration);
+	public ApplicationSessionManager(final IdentityProvider identityProvider) {
+		this.identityProvider = identityProvider;
 	}
 	
 	/*
@@ -147,7 +148,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 		final RpcSession currentSession = RpcThreadLocal.getSession();
 		currentSession.put(KEY_USER_ID, userId);
 		currentSession.put(KEY_SESSION_ID, ID_PROVIDER.getAndIncrement());
-		currentSession.put(KEY_USER_ROLES, ImmutableSet.of(SpecialRole.UNSPECIFIED));
+		currentSession.put(KEY_USER_ROLES, Collections.singletonList(Role.UNSPECIFIED));
 		currentSession.put(KEY_RANDOM_BYTES, randomBytes);
 		currentSession.put(KEY_SERVER_PRIVATE_KEY, serverKeyPair.getPrivate());
 		currentSession.put(KEY_IS_AUTHENTICATED, false);
@@ -187,7 +188,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 
 			if (!StringUtils.isEmpty(sessionId) && !StringUtils.isEmpty(userId)) {
 
-				if (!SpecialUserStore.SYSTEM_USER_NAME.equals(userId)) {
+				if (!User.isSystem(userId)) {
 					$.add(Pair.of(userId, sessionId));
 				}
 
@@ -203,7 +204,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 	 * @see com.b2international.snowowl.datastore.session.ISessionManager#authenticate(byte[])
 	 */
 	@Override
-	public void loginWithResponse(final byte[] response) throws SecurityException {
+	public User loginWithResponse(final byte[] response) throws SecurityException {
 
 
 		final RpcSession currentSession = RpcThreadLocal.getSession();
@@ -226,45 +227,38 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 			}
 
 			final String password = new String(decryptedResponse, RANDOM_BYTES_LENGTH, decryptedResponse.length - RANDOM_BYTES_LENGTH, Charsets.UTF_8);
-			final Collection<Role> roles = authenticate(userId, password);
+			authenticate(userId, password);
 			
-			if (!loginEnabled && !roles.contains(SpecialRole.ADMINISTRATOR)) {
+			User user = identityProvider.searchUsers(ImmutableList.of(userId), 0, 1).getSync(1, TimeUnit.MINUTES).first().get();
+			
+			if (!loginEnabled && !user.isAdministrator()) {
 				throw new SecurityException("Logging in for non-administrator users is temporarily disabled.");
 			}
 
 			currentSession.remove(KEY_RANDOM_BYTES);
 			currentSession.remove(KEY_SERVER_PRIVATE_KEY);
-			currentSession.put(KEY_USER_ROLES, roles);
+			currentSession.put(KEY_USER_ROLES, user.getRoles());
 
 			acceptSession(currentSession, currentSession.getProtocol().getChannel().getMultiplexer());
 
 			LogUtils.logUserEvent(AUDIT_LOGGER, userId, "Session created: "+ sessionId);
 
+			return user;
 		} catch (final Exception e) {
 			throw new SecurityException(e);
 		}
 	}
 
 	@Override
-	public Collection<Role> authenticate(final String userId, final String password) throws LoginException {
-		authenticator.login(userId, password);
-		final Collection<Role> roles = collectRoles(ApplicationContext.getServiceForClass(IAuthorizationService.class), userId);
-		return roles;
-	}
-
-	private Collection<Role> collectRoles(final IAuthorizationService authorizationService, final String userId) {
-
-		if (!ApplicationContext.getInstance().isServerMode()) {
-			return Sets.newHashSet(SpecialRole.ADMINISTRATOR);
-		} else {
-			return authorizationService.getRoles(userId);
+	public void authenticate(final String username, final String password) throws LoginException {
+		LogUtils.logUserAccess(LOG, username, "Authenticating: " + username);
+		boolean success = this.identityProvider.auth(username, password);
+		if (!success) {
+			throw new LoginException("Incorrect user name or password.");
 		}
+		LogUtils.logUserAccess(LOG, username, "Authentication succeeded");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.server.InternalApplicationSessionManager#connectSystemUser()
-	 */
 	@Override
 	public void connectSystemUser() {
 
@@ -282,11 +276,8 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 			throw new IllegalStateException("Current RPC session is not on the only local JVM connection.");
 		}
 
-//		LogUtils.logUserAccess(LOGGER, SpecialUserStore.SYSTEM_USER_NAME, "System login via connectSystemUser on connector " + currentMultiplexer);
-
-		// TODO: role name must be Administrator as checking permissions in AbstractTaskAwareContextHandler is expensive; all permissions were already granted. 
-		currentSession.put(KEY_USER_ROLES, Sets.newHashSet(SpecialRole.ADMINISTRATOR));
-		currentSession.put(KEY_USER_ID, SpecialUserStore.SYSTEM_USER_NAME);
+		currentSession.put(KEY_USER_ROLES, User.SYSTEM.getRoles());
+		currentSession.put(KEY_USER_ID, User.SYSTEM.getUsername());
 		acceptSession(currentSession, currentMultiplexer);
 	}
 
@@ -302,21 +293,10 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 	/**
 	 * (non-API)
 	 *
-	 * @param view
-	 * @return
-	 */
-	public Set<Role> getRoles(final IView view) {
-		final RpcSession session = getSession(Preconditions.checkNotNull(view, "Server view argument cannot be null."));
-		return getRoles(session);
-	}
-
-	/**
-	 * (non-API)
-	 *
 	 * @param session
 	 * @return
 	 */
-	public Set<Role> getRoles(final ISession session) {
+	public List<Role> getRoles(final ISession session) {
 		final RpcSession rpcSession = getSession(Preconditions.checkNotNull(session, "Server-side session argument cannot be null."));
 		return getRoles(rpcSession);
 	}
@@ -385,8 +365,8 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 
 	/*returns with the roles associated with the RPC session argument.*/
 	@SuppressWarnings("unchecked")
-	private Set<Role> getRoles(final RpcSession session) {
-		return (Set<Role>) Preconditions.checkNotNull(session, "RPC session argument cannot be null.").get(KEY_USER_ROLES);
+	private List<Role> getRoles(final RpcSession session) {
+		return (List<Role>) Preconditions.checkNotNull(session, "RPC session argument cannot be null.").get(KEY_USER_ROLES);
 	}
 
 	private void fireLoginEvent(final RpcSession session) {
