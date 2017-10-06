@@ -174,13 +174,12 @@ final class LdapIdentityProvider implements IdentityProvider {
 			Collection<LdapRole> ldapRoles = getAllLdapRoles(context, baseDn);
 			
 			
-			searchResultEnumeration = context.search(baseDn, ALL_USER_QUERY, createSearchControls(limit, ATTRIBUTE_DN, uidProp));
+			searchResultEnumeration = context.search(baseDn, ALL_USER_QUERY, createSearchControls(ATTRIBUTE_DN, uidProp));
 			for (final SearchResult searchResult : ImmutableList.copyOf(Iterators.forEnumeration(searchResultEnumeration))) {
 				final Attributes attributes = searchResult.getAttributes();
 
 				if (hasAttribute(attributes, uidProp)) {
 					final String userName = (String) attributes.get(uidProp).get();
-
 					final List<Role> userRoles = ldapRoles.stream()
 							.filter(role -> role.getUniqueMembers().contains(searchResult.getNameInNamespace()))
 							.map(role -> new Role(role.getName(), role.getPermissions()))
@@ -190,7 +189,12 @@ final class LdapIdentityProvider implements IdentityProvider {
 				}
 			}
 
-			ImmutableList<User> users = resultBuilder.build();
+			final List<User> users = resultBuilder.build().stream()
+					.sorted((u1, u2) -> u1.getUsername().compareTo(u2.getUsername()))
+					.filter(user -> usernames.contains(user.getUsername()))
+					.skip(offset)
+					.limit(limit)
+					.collect(Collectors.toList());
 			return Promise.immediate(new Users(users, offset, limit, users.size()));
 
 		} catch (final NamingException e) {
