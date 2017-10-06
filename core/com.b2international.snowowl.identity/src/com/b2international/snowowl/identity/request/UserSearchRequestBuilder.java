@@ -25,7 +25,7 @@ import com.b2international.snowowl.identity.domain.Users;
  * @since 5.11
  */
 public final class UserSearchRequestBuilder
-		extends SearchResourceRequestBuilder<UserSearchRequestBuilder, com.b2international.snowowl.core.ServiceProvider, Users>
+		extends SearchResourceRequestBuilder<UserSearchRequestBuilder, ServiceProvider, Users>
 		implements SystemRequestBuilder<Users> {
 
 	UserSearchRequestBuilder() {}

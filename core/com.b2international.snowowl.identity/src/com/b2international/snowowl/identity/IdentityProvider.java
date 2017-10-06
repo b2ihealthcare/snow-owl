@@ -61,7 +61,7 @@ public interface IdentityProvider {
 			final ImmutableList.Builder<IdentityProvider> providers = ImmutableList.builder();
 			Iterator<IdentityProviderFactory> it = FACTORIES.iterator();
 			while (it.hasNext()) {
-				IdentityProviderFactory factory = it.next();
+				IdentityProviderFactory<IdentityProviderConfig> factory = it.next();
 				Optional<IdentityProviderConfig> providerConfig = providerConfigurations.stream().filter(conf -> conf.getClass() == factory.getConfigType()).findFirst();
 				if (providerConfig.isPresent()) {
 					try {
