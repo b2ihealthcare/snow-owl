@@ -111,7 +111,7 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			final Stopwatch serverStopwatch = Stopwatch.createStarted();
 			
 			RpcUtil.getInitialServerSession(container).registerServiceLookup(new RpcServerServiceLookup());
-			final ApplicationSessionManager manager = new ApplicationSessionManager(env.service(IdentityProvider.class));
+			final ApplicationSessionManager manager = new ApplicationSessionManager(env.service(IEventBus.class), env.service(IdentityProvider.class));
 			manager.addListener(new LogListener());
 			manager.addListener(new VersionProcessor());
 			

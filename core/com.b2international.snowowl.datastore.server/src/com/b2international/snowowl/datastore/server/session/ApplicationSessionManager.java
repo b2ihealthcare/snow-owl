@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.security.auth.login.LoginException;
@@ -52,7 +53,6 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.encoding.RSAUtils;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.AlreadyLoggedInException;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
@@ -131,8 +131,10 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 
 	private final SecureRandom secureRandom = new SecureRandom();
 	private final IdentityProvider identityProvider;
+	private final IEventBus bus;
 
-	public ApplicationSessionManager(final IdentityProvider identityProvider) {
+	public ApplicationSessionManager(final IEventBus bus, final IdentityProvider identityProvider) {
+		this.bus = bus;
 		this.identityProvider = identityProvider;
 	}
 	
@@ -205,7 +207,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 	 * @see com.b2international.snowowl.datastore.session.ISessionManager#authenticate(byte[])
 	 */
 	@Override
-	public void loginWithResponse(final byte[] response) throws SecurityException {
+	public User loginWithResponse(final byte[] response) throws SecurityException {
 
 
 		final RpcSession currentSession = RpcThreadLocal.getSession();
@@ -230,7 +232,9 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 			final String password = new String(decryptedResponse, RANDOM_BYTES_LENGTH, decryptedResponse.length - RANDOM_BYTES_LENGTH, Charsets.UTF_8);
 			authenticate(userId, password);
 			
-			User user = UserRequests.prepareGet(userId).buildAsync().execute(ApplicationContext.getServiceForClass(IEventBus.class)).getSync();
+			User user = UserRequests.prepareGet(userId).buildAsync()
+					.execute(bus)
+					.getSync(1, TimeUnit.MINUTES);
 			
 			if (!loginEnabled && !user.isAdministrator()) {
 				throw new SecurityException("Logging in for non-administrator users is temporarily disabled.");
@@ -244,6 +248,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 
 			LogUtils.logUserEvent(AUDIT_LOGGER, userId, "Session created: "+ sessionId);
 
+			return user;
 		} catch (final Exception e) {
 			throw new SecurityException(e);
 		}

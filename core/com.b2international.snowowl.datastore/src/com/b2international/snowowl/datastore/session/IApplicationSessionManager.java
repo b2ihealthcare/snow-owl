@@ -20,6 +20,7 @@ import java.security.PublicKey;
 import javax.security.auth.login.LoginException;
 
 import com.b2international.commons.Pair;
+import com.b2international.snowowl.identity.domain.User;
 
 /**
  * The service interface for the application-wide session manager.
@@ -55,8 +56,9 @@ public interface IApplicationSessionManager {
 	 * If the server does not accept the sequence, a new access token will need to be requested and a SecurityException runtime exception will be thrown.
 	 * 
 	 * @param response
+	 * @return the logged in users identity
 	 */
-	void loginWithResponse(final byte[] response) throws SecurityException;
+	User loginWithResponse(final byte[] response) throws SecurityException;
 	
 	/**
 	 * @param userId the user identifier (may not be {@code null}) 
