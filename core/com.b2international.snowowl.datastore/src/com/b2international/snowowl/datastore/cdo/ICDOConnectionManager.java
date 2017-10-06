@@ -88,5 +88,10 @@ public interface ICDOConnectionManager extends ICDOContainer<ICDOConnection> {
 	void subscribeForRemoteMessages(final IListener listener);
 	
 	void unsbscribeFromRemoteMessages(final IListener listener);
+
+	/**
+	 * @deprecated - to access the user provided password, TODO remove this method as soon as possible
+	 */ 
+	String getPassword();
 	
 }

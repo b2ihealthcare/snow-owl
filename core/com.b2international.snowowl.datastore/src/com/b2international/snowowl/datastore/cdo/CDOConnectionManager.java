@@ -111,6 +111,11 @@ import com.google.common.collect.Maps;
 	public String getUserId() {
 		return getUser().getUsername();
 	}
+	
+	@Override
+	public String getPassword() {
+		return password;
+	}
 
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.datastore.cdo.ICDOConnectionManager#isEmbedded()
