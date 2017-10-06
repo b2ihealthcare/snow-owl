@@ -47,7 +47,6 @@ public abstract class SnomedHistoryInfoConstants {
 	public static final String SOURCE_EFFECTIVE_TIME_FEATURE_NAME = "sourceEffectiveTime";
 	public static final String TARGET_EFFECTIVE_TIME_FEATURE_NAME = "targetEffectiveTime";
 	public static final String ACCEPTABILITY_ID_FEATURE_NAME = "acceptabilityId";
-	public static final String SERIALIZED_VALUE = "serializedValue";
 	
 	private SnomedHistoryInfoConstants() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");

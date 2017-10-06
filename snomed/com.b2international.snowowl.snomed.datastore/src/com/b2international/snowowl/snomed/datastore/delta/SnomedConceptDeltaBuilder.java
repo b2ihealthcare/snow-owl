@@ -271,7 +271,6 @@ public class SnomedConceptDeltaBuilder extends AbstractHierarchicalComponentDelt
 			} else if (SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember().isSuperTypeOf(eClass)) {
 				
 				final Object value = revision.getContainerID();
-				//Value(SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_RefSet());
 				
 				if (value instanceof CDOID) {
 					

@@ -270,8 +270,6 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 				} else {
 					return "Unknown change on status feature for '" + changedObject + "'.";
 				}
-			} else if (SERIALIZED_VALUE.equals(featureName)) {
-				return "";
 			} else {
 				return getDescription(changedObject, beforeView, currentView, "Change ", "");
 			}
