@@ -30,7 +30,7 @@ import com.b2international.snowowl.identity.domain.Users;
  * 
  * @since 5.11
  */
-class AdminPartyIdentityProvider implements InternalIdentityProvider {
+class AdminPartyIdentityProvider implements IdentityProvider, IdentityWriter {
 
 	private static final List<Role> ADMINPARTY_ROLES = Collections.singletonList(Role.ADMINISTRATOR);
 
@@ -42,8 +42,8 @@ class AdminPartyIdentityProvider implements InternalIdentityProvider {
 
 	@Override
 	public void addUser(String username, String password) {
-		if (delegate instanceof InternalIdentityProvider) {
-			((InternalIdentityProvider) delegate).addUser(username, password);
+		if (delegate instanceof IdentityWriter) {
+			((IdentityWriter) delegate).addUser(username, password);
 		}
 	}
 

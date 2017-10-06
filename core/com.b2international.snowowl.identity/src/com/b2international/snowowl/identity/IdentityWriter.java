@@ -16,9 +16,11 @@
 package com.b2international.snowowl.identity;
 
 /**
+ * An {@link IdentityProvider} can additionally implement this interface to provide a way to change the underlying identities (add/modify/delete/etc.).
+ * 
  * @since 5.11
  */
-public interface InternalIdentityProvider extends IdentityProvider {
+public interface IdentityWriter {
 
 	/**
 	 * Add a user to the identity provider, so that the user can authenticate and access resources.

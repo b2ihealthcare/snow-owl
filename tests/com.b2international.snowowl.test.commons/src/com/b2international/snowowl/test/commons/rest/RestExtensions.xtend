@@ -17,7 +17,9 @@ package com.b2international.snowowl.test.commons.rest
 
 import com.b2international.commons.platform.PlatformUtil
 import com.b2international.snowowl.core.ApplicationContext
+import com.b2international.snowowl.core.exceptions.AlreadyExistsException
 import com.b2international.snowowl.identity.IdentityProvider
+import com.b2international.snowowl.identity.IdentityWriter
 import com.google.common.base.Joiner
 import com.google.common.base.Preconditions
 import com.google.common.base.Splitter
@@ -35,8 +37,6 @@ import org.hamcrest.CoreMatchers
 import static com.jayway.restassured.RestAssured.*
 
 import static extension com.b2international.snowowl.test.commons.json.JsonExtensions.*
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException
-import com.b2international.snowowl.identity.InternalIdentityProvider
 
 /**
  * Useful extension methods when testing Snow Owl's RESTful API. High level REST related syntactic sugars and stuff like 
@@ -90,7 +90,7 @@ class RestExtensions {
 			
 			// add the user to the current identity provider
 			try {
-				(ApplicationContext.instance.getServiceChecked(IdentityProvider) as InternalIdentityProvider).addUser(USER, PASS)
+				(ApplicationContext.instance.getServiceChecked(IdentityProvider) as IdentityWriter).addUser(USER, PASS)
 			} catch (AlreadyExistsException e) {
 				// ignore existing user
 			}

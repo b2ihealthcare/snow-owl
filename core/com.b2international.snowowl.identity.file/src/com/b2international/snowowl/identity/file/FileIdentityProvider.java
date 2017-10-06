@@ -31,7 +31,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.identity.IdentityProvider;
-import com.b2international.snowowl.identity.InternalIdentityProvider;
+import com.b2international.snowowl.identity.IdentityWriter;
 import com.b2international.snowowl.identity.domain.Role;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.identity.domain.Users;
@@ -43,7 +43,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 5.11
  */
-final class FileIdentityProvider implements InternalIdentityProvider {
+final class FileIdentityProvider implements IdentityProvider, IdentityWriter {
 
 	static final String TYPE = "file";
 	private static final String USER_ENTRY_SEPARATOR = ":";

@@ -28,7 +28,7 @@ import com.google.common.collect.Iterables;
 /**
  * @since 5.11
  */
-final class MultiIdentityProvider implements InternalIdentityProvider {
+final class MultiIdentityProvider implements IdentityProvider, IdentityWriter {
 
 	private final List<IdentityProvider> providers;
 
@@ -40,8 +40,8 @@ final class MultiIdentityProvider implements InternalIdentityProvider {
 	public void addUser(String username, String password) {
 		// add the user to the first internal identity provider
 		providers.stream()
-			.filter(InternalIdentityProvider.class::isInstance)
-			.map(InternalIdentityProvider.class::cast)
+			.filter(IdentityWriter.class::isInstance)
+			.map(IdentityWriter.class::cast)
 			.findFirst()
 			.ifPresent(provider -> provider.addUser(username, password));
 	}
