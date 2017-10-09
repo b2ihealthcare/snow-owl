@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Index Diff
 Bundle-SymbolicName: com.b2international.snowowl.index.diff
-Bundle-Version: 4.6.13.qualifier
+Bundle-Version: 4.6.14.qualifier
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: com.b2international.org.apache.lucene,
  com.google.guava;bundle-version="[15.0.0,16.0.0)",
