@@ -48,6 +48,7 @@ import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.net4j.db.DBUtil;
 import org.eclipse.net4j.db.IDBAdapter;
 import org.eclipse.net4j.db.IDBConnectionProvider;
+import org.eclipse.net4j.util.CheckUtil;
 import org.eclipse.net4j.util.container.IManagedContainer;
 import org.eclipse.net4j.util.container.IPluginContainer;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
@@ -69,7 +70,7 @@ import com.google.common.base.Preconditions;
  *
  *
  */
-/*default*/ class CDORepository extends CDOManagedItem<ICDORepository> implements ICDORepository {
+public class CDORepository extends CDOManagedItem<ICDORepository> implements ICDORepository {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CDORepository.class);
 
@@ -77,7 +78,7 @@ import com.google.common.base.Preconditions;
 	private final RepositoryConfiguration configuration;
 	private InternalRepository repository;
 
-	/*default*/ CDORepository(final String repositoryUuid, @Nullable final String repositoryName, final byte namespaceId, @Nullable final String toolingId, 
+	public CDORepository(final String repositoryUuid, @Nullable final String repositoryName, final byte namespaceId, @Nullable final String toolingId, 
 			final RepositoryConfiguration configuration, @Nullable final String dependsOnRepositoryUuid, final boolean meta) {
 		
 		super(repositoryUuid, repositoryName, namespaceId, toolingId, dependsOnRepositoryUuid, meta);
@@ -138,7 +139,7 @@ import com.google.common.base.Preconditions;
 	protected void doActivate() throws Exception {
 		final IDBConnectionProvider connectionProvider = createConnectionProvider(configuration.getDatasourceProperties(getUuid()));
 
-		final IDBStore dbStore = createDBStore(connectionProvider);
+		final IDBStore dbStore = createDBStore(connectionProvider, configuration);
 		final IIDHandler idHandler =
 				new org.eclipse.emf.cdo.server.internal.db.LongIDHandler((org.eclipse.emf.cdo.server.internal.db.DBStore) dbStore);
 
@@ -173,12 +174,12 @@ import com.google.common.base.Preconditions;
 		LifecycleUtil.deactivate(repository);
 	}
 
-	private IDBConnectionProvider createConnectionProvider(final Map<Object, Object> properties) {
+	public static IDBConnectionProvider createConnectionProvider(final Map<Object, Object> properties) {
 		final DataSource dataSource = DBUtil.createDataSource(properties, "");
 		return DBUtil.createConnectionProvider(dataSource);
 	}
 
-	private IDBStore createDBStore(final IDBConnectionProvider connectionProvider) {
+	public static IDBStore createDBStore(final IDBConnectionProvider connectionProvider, RepositoryConfiguration configuration) {
 
 		// with ranges, audit and branching
 		final IMappingStrategy mappingStrategy = CDODBUtil.createHorizontalMappingStrategy(true, true, true);
@@ -189,7 +190,7 @@ import com.google.common.base.Preconditions;
 
 		final String databaseType = configuration.getDatabaseConfiguration().getType();
 		final IDBAdapter dbAdapter = DBUtil.getDBAdapter(databaseType);
-		checkArg(dbAdapter, "DB adapter not found for id: " + databaseType);
+		CheckUtil.checkState(dbAdapter, "DB adapter not found for id: " + databaseType);
 	    return (DBStore) CDODBUtil.createStore(mappingStrategy, dbAdapter, connectionProvider);
 	}
 	
