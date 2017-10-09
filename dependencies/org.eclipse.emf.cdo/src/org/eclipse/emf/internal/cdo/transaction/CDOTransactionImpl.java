@@ -15,6 +15,29 @@
  */
 package org.eclipse.emf.internal.cdo.transaction;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOState;
 import org.eclipse.emf.cdo.common.CDOCommonRepository;
@@ -109,35 +132,6 @@ import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.util.LegacyModeNotEnabledException;
 import org.eclipse.emf.cdo.util.ObjectNotFoundException;
 import org.eclipse.emf.cdo.view.CDOView;
-
-import org.eclipse.emf.internal.cdo.CDOObjectImpl;
-import org.eclipse.emf.internal.cdo.bundle.OM;
-import org.eclipse.emf.internal.cdo.messages.Messages;
-import org.eclipse.emf.internal.cdo.object.CDONotificationBuilder;
-import org.eclipse.emf.internal.cdo.object.CDOObjectMerger;
-import org.eclipse.emf.internal.cdo.object.CDOObjectWrapper;
-import org.eclipse.emf.internal.cdo.query.CDOQueryImpl;
-import org.eclipse.emf.internal.cdo.util.CommitIntegrityCheck;
-import org.eclipse.emf.internal.cdo.util.CompletePackageClosure;
-import org.eclipse.emf.internal.cdo.util.IPackageClosure;
-import org.eclipse.emf.internal.cdo.view.CDOStateMachine;
-import org.eclipse.emf.internal.cdo.view.CDOViewImpl;
-
-import org.eclipse.net4j.util.CheckUtil;
-import org.eclipse.net4j.util.ObjectUtil;
-import org.eclipse.net4j.util.WrappedException;
-import org.eclipse.net4j.util.collection.ByteArrayWrapper;
-import org.eclipse.net4j.util.collection.ConcurrentArray;
-import org.eclipse.net4j.util.collection.Pair;
-import org.eclipse.net4j.util.concurrent.IRWLockManager.LockType;
-import org.eclipse.net4j.util.event.IEvent;
-import org.eclipse.net4j.util.event.IListener;
-import org.eclipse.net4j.util.io.ExtendedDataInputStream;
-import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
-import org.eclipse.net4j.util.om.trace.ContextTracer;
-import org.eclipse.net4j.util.options.OptionsEvent;
-import org.eclipse.net4j.util.transaction.TransactionException;
-
 import org.eclipse.emf.common.notify.NotificationChain;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
@@ -154,6 +148,18 @@ import org.eclipse.emf.ecore.resource.Resource.Internal;
 import org.eclipse.emf.ecore.util.EContentsEList.FeatureIterator;
 import org.eclipse.emf.ecore.util.ECrossReferenceEList;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.internal.cdo.CDOObjectImpl;
+import org.eclipse.emf.internal.cdo.bundle.OM;
+import org.eclipse.emf.internal.cdo.messages.Messages;
+import org.eclipse.emf.internal.cdo.object.CDONotificationBuilder;
+import org.eclipse.emf.internal.cdo.object.CDOObjectMerger;
+import org.eclipse.emf.internal.cdo.object.CDOObjectWrapper;
+import org.eclipse.emf.internal.cdo.query.CDOQueryImpl;
+import org.eclipse.emf.internal.cdo.util.CommitIntegrityCheck;
+import org.eclipse.emf.internal.cdo.util.CompletePackageClosure;
+import org.eclipse.emf.internal.cdo.util.IPackageClosure;
+import org.eclipse.emf.internal.cdo.view.CDOStateMachine;
+import org.eclipse.emf.internal.cdo.view.CDOViewImpl;
 import org.eclipse.emf.spi.cdo.CDOSessionProtocol;
 import org.eclipse.emf.spi.cdo.CDOSessionProtocol.CommitTransactionResult;
 import org.eclipse.emf.spi.cdo.CDOTransactionStrategy;
@@ -163,29 +169,20 @@ import org.eclipse.emf.spi.cdo.InternalCDOSavepoint;
 import org.eclipse.emf.spi.cdo.InternalCDOSession;
 import org.eclipse.emf.spi.cdo.InternalCDOTransaction;
 import org.eclipse.emf.spi.cdo.InternalCDOViewSet;
-
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import org.eclipse.net4j.util.CheckUtil;
+import org.eclipse.net4j.util.ObjectUtil;
+import org.eclipse.net4j.util.WrappedException;
+import org.eclipse.net4j.util.collection.ByteArrayWrapper;
+import org.eclipse.net4j.util.collection.ConcurrentArray;
+import org.eclipse.net4j.util.collection.Pair;
+import org.eclipse.net4j.util.concurrent.IRWLockManager.LockType;
+import org.eclipse.net4j.util.event.IEvent;
+import org.eclipse.net4j.util.event.IListener;
+import org.eclipse.net4j.util.io.ExtendedDataInputStream;
+import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
+import org.eclipse.net4j.util.om.trace.ContextTracer;
+import org.eclipse.net4j.util.options.OptionsEvent;
+import org.eclipse.net4j.util.transaction.TransactionException;
 
 /**
  * @author Eike Stepper
@@ -857,6 +854,18 @@ public class CDOTransactionImpl extends CDOViewImpl implements InternalCDOTransa
           ((InternalCDOObject)addFeatureDelta.getValue()).cdoInternalSetView(this);
         }
 
+       	if (addFeatureDelta.getFeature().isUnique()) {
+       		if (list.contains(addFeatureDelta.getValue())) {
+       			featureIterator.remove();
+       			continue;
+       		}
+       	}
+       	
+       	if (getObjectIfExists((CDOID) addFeatureDelta.getValue()) == null) {
+       		featureIterator.remove();
+       		continue;
+       	}
+       	
         // XXX (apeteri): Always add to the end of the list
         list.add(addFeatureDelta.getValue());
         ((CDOAddFeatureDeltaImpl)addFeatureDelta).setIndex(list.size() - 1);
@@ -936,6 +945,38 @@ public class CDOTransactionImpl extends CDOViewImpl implements InternalCDOTransa
         adjustedRemoveIndex = -1;
       }
     }
+    
+    if (Objects.equals(System.getProperty("cdo.debug"), "true")) {
+    	
+    	CDOList list = goalRevision.getList(listFeatureDelta.getFeature());
+    	
+    	Set<Object> visited = new HashSet<>();
+    	Iterator<Object> iterator = list.iterator();
+    	
+    	while (iterator.hasNext()) {
+    		
+    		Object listElement = iterator.next();
+    		
+    		if (!(listElement instanceof CDOID)) {
+    			throw new RuntimeException(String.format("Unknown type in list feature (%s) delta: %s", listFeatureDelta.getFeature().getName(),
+    					listElement.getClass().getSimpleName()));
+    		}
+    		
+    		if (listFeatureDelta.getFeature().isUnique()) {
+    			if (!visited.add(listElement)) {
+    				iterator.remove();
+    				continue;
+    			}
+    		}
+    		
+    		if (getObjectIfExists((CDOID) listElement) == null) {
+    			iterator.remove();
+    		}
+    		
+    	}
+    	
+    }
+    
   }
 
   private boolean differentValue(Object value, CDOList list, int index)
