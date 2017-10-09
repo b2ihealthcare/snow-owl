@@ -75,6 +75,7 @@ public final class User implements Serializable {
 		return getRoles().stream()
 			.map(Role::getPermissions)
 			.flatMap(Collection::stream)
+			.map(Permission::getId)
 			.collect(Collectors.toSet())
 			.contains(permission);
 	}
