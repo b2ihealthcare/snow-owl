@@ -35,7 +35,7 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor;
 /**
  * Commit context that does not actually write into the repository, only pretends to do so
  * in order to trigger notifications.
- * @since 5.10.13
+ * @since 5.11
  */
 @SuppressWarnings("restriction")
 class MigratingCommitContext extends TransactionCommitContext {

@@ -61,7 +61,7 @@ import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @since 5.10
+ * @since 5.11
  */
 @SuppressWarnings("restriction")
 public final class MigrateRequest implements Request<RepositoryContext, MigrationResult> {

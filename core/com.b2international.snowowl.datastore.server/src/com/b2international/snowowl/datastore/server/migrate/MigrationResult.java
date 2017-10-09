@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.server.migrate;
 import java.io.Serializable;
 
 /**
- * @since 5.10.16
+ * @since 5.11
  */
 public class MigrationResult implements Serializable {
 

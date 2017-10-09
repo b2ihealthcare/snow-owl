@@ -62,7 +62,7 @@ import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 
 /**
- * @since 5.10.12
+ * @since 5.11
  */
 @SuppressWarnings("restriction")
 class MigrationReplicationContext implements CDOReplicationContext {

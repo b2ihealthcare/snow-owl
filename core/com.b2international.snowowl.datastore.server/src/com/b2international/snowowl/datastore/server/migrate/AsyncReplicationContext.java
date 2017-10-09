@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @since 5.10.17
+ * @since 5.11
  */
 public final class AsyncReplicationContext implements CDOReplicationContext {
 

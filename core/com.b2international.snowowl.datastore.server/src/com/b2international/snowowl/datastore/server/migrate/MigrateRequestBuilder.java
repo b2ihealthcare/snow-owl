@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
 
 /**
- * @since 5.10
+ * @since 5.11
  */
 public class MigrateRequestBuilder extends BaseRequestBuilder<MigrateRequestBuilder, RepositoryContext, MigrationResult> implements RepositoryRequestBuilder<MigrationResult> {
 
