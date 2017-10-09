@@ -47,7 +47,6 @@ import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
-import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.cdo.FilteringErrorLoggingStrategy;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.config.DatabaseConfiguration;
@@ -58,6 +57,7 @@ import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.server.internal.branch.InternalCDOBasedBranch;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
+import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -115,7 +115,7 @@ public final class MigrateRequest implements Request<RepositoryContext, Migratio
 		sessionConfiguration.setRevisionManager(CDORevisionUtil.createRevisionManager(CDORevisionCache.NOOP));
 		sessionConfiguration.setRepositoryName("replicated"+localRepository.getUUID());
 		sessionConfiguration.setConnector(context.service(ICDOConnectionManager.class).getConnector());
-		sessionConfiguration.getAuthenticator().setCredentialsProvider(new PasswordCredentialsProvider(SpecialUserStore.SYSTEM_USER.getUserName(), SpecialUserStore.SYSTEM_USER.getPassword()));
+		sessionConfiguration.getAuthenticator().setCredentialsProvider(new PasswordCredentialsProvider(User.SYSTEM.getUsername(), ""));
 		
 		final InternalSession session = localRepository.getSessionManager().openSession(null);
 		final CDONet4jSessionImpl remoteSession = (CDONet4jSessionImpl) sessionConfiguration.openNet4jSession();
