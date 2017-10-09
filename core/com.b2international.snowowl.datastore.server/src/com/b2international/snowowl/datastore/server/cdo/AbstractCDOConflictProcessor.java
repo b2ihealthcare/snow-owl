@@ -19,7 +19,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +36,8 @@ import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
+import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInSourceAndDetachedInTargetConflict;
+import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInSourceAndTargetConflict;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInTargetAndDetachedInSourceConflict;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
@@ -44,11 +45,14 @@ import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.b2international.snowowl.core.merge.MergeConflict;
+import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
+import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -94,24 +98,9 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	public Object addedInSource(final CDORevision sourceRevision, final Map<CDOID, Object> targetMap) {
 		return sourceRevision;
 	}
-
-	/**
-	 * {@inheritDoc}
-	 * <p>
-	 * The default case will allow the add by returning {@code targetRevision} (a {@link CDORevision}).
-	 */
-	@Override
-	public Object addedInTarget(final CDORevision targetRevision, final Map<CDOID, Object> sourceMap) {
-		return targetRevision;
-	}
 	
 	@Override
 	public Object detachedInSource(CDOID id) {
-		return id;
-	}
-	
-	@Override
-	public Object detachedInTarget(CDOID id) {
 		return id;
 	}
 
@@ -124,19 +113,113 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	}
 
 	@Override
-	public Collection<MergeConflict> handleCDOConflicts(final CDOView sourceView, final CDOView targetView, final Map<CDOID, Conflict> conflicts) {
-		if (!conflicts.isEmpty()) {
-			return FluentIterable.from(conflicts.values()).transform(new Function<Conflict, MergeConflict>() {
-				@Override public MergeConflict apply(Conflict input) {
-					return ConflictMapper.convert(input);
-				}
-			}).toList();
+	public final Collection<MergeConflict> handleCDOConflicts(final CDOView sourceView, final CDOView targetView, final Map<CDOID, Conflict> conflicts, final boolean invertConflicts) {
+		ImmutableList.Builder<MergeConflict> results = ImmutableList.builder();
+		
+		for (Conflict conflict : conflicts.values()) {
+			if (invertConflicts) {
+				conflict = invert(conflict);
+			}
+			
+			final MergeConflict convertedConflict;
+			if (invertConflicts) {
+				// In this case, the values on the conflict object are already reversed, so the views must be swapped as well
+				convertedConflict = convert(conflict, targetView, sourceView);
+			} else {
+				convertedConflict = convert(conflict, sourceView, targetView);
+			}
+			
+			results.add(convertedConflict);
 		}
-		return Collections.emptySet();
+		
+		return results.build();
 	}
 	
+	protected Conflict invert(final Conflict conflict) {
+		if (conflict instanceof ChangedInSourceAndDetachedInTargetConflict) {
+			final ChangedInSourceAndDetachedInTargetConflict oldConflict = (ChangedInSourceAndDetachedInTargetConflict) conflict;
+			return new ChangedInTargetAndDetachedInSourceConflict(oldConflict.getSourceDelta());
+		} else if (conflict instanceof ChangedInTargetAndDetachedInSourceConflict) {
+			final ChangedInTargetAndDetachedInSourceConflict oldConflict = (ChangedInTargetAndDetachedInSourceConflict) conflict;
+			return new ChangedInSourceAndDetachedInTargetConflict(oldConflict.getTargetDelta());
+		} else if (conflict instanceof ChangedInSourceAndTargetConflict) {
+			final ChangedInSourceAndTargetConflict oldConflict = (ChangedInSourceAndTargetConflict) conflict;
+			return new ChangedInSourceAndTargetConflict(oldConflict.getTargetDelta(), oldConflict.getSourceDelta());
+		} else if (conflict instanceof AddedInSourceAndDetachedInTargetConflict) {
+			final AddedInSourceAndDetachedInTargetConflict oldConflict = (AddedInSourceAndDetachedInTargetConflict) conflict;
+			return new AddedInTargetAndDetachedInSourceConflict(oldConflict.getTargetId(), oldConflict.getSourceId(), oldConflict.getFeatureName());
+		} else if (conflict instanceof AddedInTargetAndDetachedInSourceConflict) {
+			final AddedInTargetAndDetachedInSourceConflict oldConflict = (AddedInTargetAndDetachedInSourceConflict) conflict;
+			return new AddedInSourceAndDetachedInTargetConflict(oldConflict.getTargetId(), oldConflict.getSourceId(), oldConflict.getFeatureName());
+		} else if (conflict instanceof AddedInSourceAndTargetConflict) {
+			AddedInSourceAndTargetConflict oldConflict = (AddedInSourceAndTargetConflict) conflict;
+			return new AddedInSourceAndTargetConflict(oldConflict.getTargetId(), oldConflict.getSourceId(), oldConflict.getMessage());
+		}
+		return conflict;
+	}
+
+	
+	protected MergeConflict convert(final Conflict conflict, final CDOView sourceView, final CDOView targetView) {
+		if (conflict instanceof ChangedInSourceAndTargetConflict) {
+			return convert((ChangedInSourceAndTargetConflict) conflict, sourceView, targetView);
+		} else if (conflict instanceof ChangedInSourceAndDetachedInTargetConflict) {
+			return convert((ChangedInSourceAndDetachedInTargetConflict) conflict, sourceView, targetView);
+		} else if (conflict instanceof ChangedInTargetAndDetachedInSourceConflict) {
+			return convert((ChangedInTargetAndDetachedInSourceConflict) conflict, sourceView, targetView);
+		} else if (conflict instanceof AddedInSourceAndTargetConflict) {
+			return convert((AddedInSourceAndTargetConflict) conflict, sourceView, targetView);
+		} else if (conflict instanceof AddedInSourceAndDetachedInTargetConflict) {
+			return convert((AddedInSourceAndDetachedInTargetConflict) conflict, sourceView, targetView);
+		} else if (conflict instanceof AddedInTargetAndDetachedInSourceConflict) {
+			return convert((AddedInTargetAndDetachedInSourceConflict) conflict, sourceView, targetView);
+		}
+		throw new IllegalArgumentException("Unknown conflict type: " + conflict);
+	}
+	
+	protected MergeConflict convert(final ChangedInSourceAndTargetConflict conflict, final CDOView sourceView, final CDOView targetView) {
+		return MergeConflictImpl.builder()
+				.componentId(conflict.getTargetDelta().getID().toString())
+				.type(ConflictType.CONFLICTING_CHANGE)
+				.build();
+	}
+	
+	protected MergeConflict convert(final ChangedInSourceAndDetachedInTargetConflict conflict, final CDOView sourceView, final CDOView targetView) {
+		return MergeConflictImpl.builder()
+				.componentId(conflict.getSourceDelta().getID().toString())
+				.type(ConflictType.DELETED_WHILE_CHANGED)
+				.build();
+	}
+	
+	protected MergeConflict convert(final ChangedInTargetAndDetachedInSourceConflict conflict, final CDOView sourceView, final CDOView targetView) {
+		return MergeConflictImpl.builder()
+				.componentId(conflict.getTargetDelta().getID().toString())
+				.type(ConflictType.CHANGED_WHILE_DELETED)
+				.build();
+	}
+	
+	protected MergeConflict convert(final AddedInSourceAndTargetConflict conflict, final CDOView sourceView, final CDOView targetView) {
+		return MergeConflictImpl.builder()
+				.componentId(conflict.getTargetId().toString())
+				.type(ConflictType.CONFLICTING_CHANGE)
+				.build();
+	}
+	
+	protected MergeConflict convert(final AddedInSourceAndDetachedInTargetConflict conflict, final CDOView sourceView, final CDOView targetView) {
+		return MergeConflictImpl.builder()
+				.componentId(conflict.getTargetId().toString())
+				.type(ConflictType.CAUSES_MISSING_REFERENCE)
+				.build();
+	}
+	
+	protected MergeConflict convert(final AddedInTargetAndDetachedInSourceConflict conflict, final CDOView sourceView, final CDOView targetView) {
+		return MergeConflictImpl.builder()
+				.componentId(conflict.getTargetId().toString())
+				.type(ConflictType.HAS_MISSING_REFERENCE)
+				.build();
+	}	
+	
 	@Override
-	public void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap, boolean isRebase) {
+	public void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap) {
 	}
 	
 	@Override

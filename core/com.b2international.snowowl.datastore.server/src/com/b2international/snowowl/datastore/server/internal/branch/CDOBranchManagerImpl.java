@@ -247,7 +247,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
     	final CDOBranch sourceBranch = getCDOBranch(from);
     	final CDOBranch targetBranch = getCDOBranch(to);
     	final ICDOConnection connection = repository.getConnection();
-    	final CDOBranchMerger merger = new CDOBranchMerger(repository.getConflictProcessor(), isRebase);
+    	final CDOBranchMerger merger = new CDOBranchMerger(repository.getConflictProcessor());
     	final CDOTransaction targetTransaction = connection.createTransaction(targetBranch);
 
     	try {
@@ -257,7 +257,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
     		return targetTransaction;
     	} catch (CDOMerger.ConflictException e) {
     		CDOView sourceView = connection.createView(sourceBranch);
-    		Collection<MergeConflict> conflicts = merger.handleCDOConflicts(sourceView, targetTransaction);
+    		Collection<MergeConflict> conflicts = merger.handleCDOConflicts(sourceView, targetTransaction, isRebase);
     		LifecycleUtil.deactivate(targetTransaction);
     		LifecycleUtil.deactivate(sourceView);
 			throw new MergeConflictException(conflicts, String.format("Could not resolve all conflicts while applying changeset on '%s' from '%s'.", to.path(), from.path()));

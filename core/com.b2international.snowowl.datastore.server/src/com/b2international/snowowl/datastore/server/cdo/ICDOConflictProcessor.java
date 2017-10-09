@@ -86,26 +86,10 @@ public interface ICDOConflictProcessor {
 	 * </ul>
 	 */
 	Object changedInTargetAndDetachedInSource(CDORevisionDelta targetDelta);
-
-	/**
-	 * Checks if the specified {@link CDORevision} from the source change set conflicts with any changes on the target.
-	 * 
-	 * @param targetRevision the new {@link CDORevision} from the target change set
-	 * @param sourceMap the computed change set for the target branch, indexed by {@link CDOID}
-	 * @return <ul>
-	 * <li>{@code null} if the add should be ignored;
-	 * <li>a {@link CDORevision} if an addition should take place;
-	 * <li>a {@link CDOID} if an object should be removed;
-	 * <li>a {@link Conflict} if a merge conflict should be reported.
-	 * </ul>
-	 */
-	Object addedInTarget(CDORevision targetRevision, Map<CDOID, Object> sourceMap);
 	
 	Object detachedInSource(CDOID id);
 	
-	Object detachedInTarget(CDOID id);
-	
-	void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap, boolean isRebase);
+	void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap);
 
 	/**
 	 * Post-processes the resulting change set. This usually removes cross-references from objects queued for removal
@@ -123,7 +107,8 @@ public interface ICDOConflictProcessor {
 	 * @param sourceView
 	 * @param targetView
 	 * @param conflicts
+	 * @param invertConflicts 
 	 * @return
 	 */
-	Collection<MergeConflict> handleCDOConflicts(final CDOView sourceView, final CDOView targetView, final Map<CDOID, Conflict> conflicts);
+	Collection<MergeConflict> handleCDOConflicts(final CDOView sourceView, final CDOView targetView, final Map<CDOID, Conflict> conflicts, boolean invertConflicts);
 }
