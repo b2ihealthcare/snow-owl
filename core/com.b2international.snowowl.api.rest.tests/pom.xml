@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>core-parent</artifactId>
-		<version>5.10.13</version>
+		<version>5.11.0</version>
 	</parent>
 
 	<build>
@@ -47,7 +47,7 @@
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>
-								<id>com.b2international.snowowl.authentication.file</id>
+								<id>com.b2international.snowowl.identity.file</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
 							<requirement>
