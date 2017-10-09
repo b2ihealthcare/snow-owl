@@ -16,10 +16,10 @@
 package com.b2international.snowowl.terminologyregistry.core.request;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.request.RepositoryIndexRequestBuilder;
-import com.b2international.snowowl.datastore.request.SearchResourceRequest;
-import com.b2international.snowowl.datastore.request.SearchResourceRequestBuilder;
 
 /**
  * @since 4.7

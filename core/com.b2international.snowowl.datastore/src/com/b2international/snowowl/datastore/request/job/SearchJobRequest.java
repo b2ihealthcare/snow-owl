@@ -27,12 +27,12 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
-import com.b2international.snowowl.datastore.request.SearchResourceRequest;
+import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 
 /**
  * @since 5.7
  */
-final class SearchJobRequest extends SearchResourceRequest<ServiceProvider, RemoteJobs> {
+final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider, RemoteJobs> {
 
 	SearchJobRequest() {
 	}

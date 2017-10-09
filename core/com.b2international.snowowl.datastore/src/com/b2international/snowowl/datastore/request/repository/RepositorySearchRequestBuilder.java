@@ -17,9 +17,9 @@ package com.b2international.snowowl.datastore.request.repository;
 
 import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.datastore.request.SearchResourceRequest;
-import com.b2international.snowowl.datastore.request.SearchResourceRequestBuilder;
-import com.b2international.snowowl.datastore.request.SystemRequestBuilder;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
 /**
  * @since 5.8

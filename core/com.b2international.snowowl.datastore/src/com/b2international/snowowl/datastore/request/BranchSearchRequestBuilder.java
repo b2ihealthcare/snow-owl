@@ -19,6 +19,8 @@ import java.util.Collection;
 
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.google.common.collect.ImmutableSet;
 
 /**

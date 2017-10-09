@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
@@ -31,10 +32,10 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.users.IAuthorizationService;
-import com.b2international.snowowl.core.users.Permission;
-import com.b2international.snowowl.core.users.PermissionIdConstant;
-import com.b2international.snowowl.core.users.SpecialUserStore;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.domain.PermissionIdConstant;
+import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.identity.request.UserRequests;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
 import com.b2international.snowowl.snomed.mrcm.core.io.MrcmExportFormat;
 import com.google.common.collect.Sets;
@@ -81,9 +82,8 @@ public class MrcmCommandProvider implements CommandProvider {
 			return;
 		}
 		
-		final IAuthorizationService authorizationService = ApplicationContext.getInstance().getService(IAuthorizationService.class);
-		final boolean isAuthorized = authorizationService.isAuthorized(authenticator.getUsername(), new Permission(PermissionIdConstant.IMPORT));
-		if (!isAuthorized) {
+		final User user = getUser(authenticator.getUsername());
+		if (!user.hasPermission(PermissionIdConstant.IMPORT)) {
 			interpreter.print("User is unauthorized to import MRCM rules.");
 			return;
 		}
@@ -95,6 +95,10 @@ public class MrcmCommandProvider implements CommandProvider {
 			interpreter.printStackTrace(e);
 		}
 		
+	}
+
+	private User getUser(final String username) {
+		return UserRequests.prepareGet(username).buildAsync().execute(ApplicationContext.getServiceForClass(IEventBus.class)).getSync(1, TimeUnit.MINUTES);
 	}
 
 	public synchronized void _export(final CommandInterpreter interpreter) {
@@ -121,14 +125,18 @@ public class MrcmCommandProvider implements CommandProvider {
 		}
 		
 		final CommandLineAuthenticator authenticator = new CommandLineAuthenticator();
-		final IAuthorizationService authorizationService = ApplicationContext.getInstance().getService(IAuthorizationService.class);
-		if (authenticator.authenticate(interpreter) && !authorizationService.isAuthorized(authenticator.getUsername(), new Permission(PermissionIdConstant.EXPORT))) {
+		
+		if (!authenticator.authenticate(interpreter)) {
+			return;
+		}
+		
+		final User user = getUser(authenticator.getUsername());
+		if (!user.hasPermission(PermissionIdConstant.EXPORT)) {
 			interpreter.print("User is not authorized to export MRCM rules.");
 			return;
 		}
 		
-		// final String userId = authenticator.getUsername();
-		final String user = SpecialUserStore.SYSTEM_USER_NAME;
+		final String username = User.SYSTEM.getUsername();
 
 		interpreter.println("Exporting MRCM rules (" + selectedFormat.name() + ")...");
 		
@@ -138,9 +146,9 @@ public class MrcmCommandProvider implements CommandProvider {
 		
 		try (final OutputStream stream = Files.newOutputStream(exportPath, StandardOpenOption.CREATE)) {
 			if (selectedFormat == MrcmExportFormat.XMI) {
-				new XMIMrcmExporter().doExport(user, stream);
+				new XMIMrcmExporter().doExport(username, stream);
 			} else if (selectedFormat == MrcmExportFormat.CSV) {
-				new CsvMrcmExporter().doExport(user, stream);
+				new CsvMrcmExporter().doExport(username, stream);
 			}
 			interpreter.println("Exported MRCM rules to " + exportPath + " in " 
 			+ selectedFormat.name() + " format.");

@@ -42,7 +42,6 @@ import com.b2international.snowowl.core.events.util.ApiRequestHandler;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
-import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.cdo.CDOConnectionFactoryProvider;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
@@ -67,6 +66,8 @@ import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.Pipe;
 import com.b2international.snowowl.eventbus.net4j.EventBusNet4jUtil;
+import com.b2international.snowowl.identity.IdentityProvider;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.rpc.RpcConfiguration;
 import com.b2international.snowowl.rpc.RpcProtocol;
 import com.b2international.snowowl.rpc.RpcUtil;
@@ -110,7 +111,7 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			final Stopwatch serverStopwatch = Stopwatch.createStarted();
 			
 			RpcUtil.getInitialServerSession(container).registerServiceLookup(new RpcServerServiceLookup());
-			final ApplicationSessionManager manager = new ApplicationSessionManager(configuration);
+			final ApplicationSessionManager manager = new ApplicationSessionManager(env.service(IdentityProvider.class));
 			manager.addListener(new LogListener());
 			manager.addListener(new VersionProcessor());
 			
@@ -231,6 +232,6 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		clientProtocol.open(connector);
 
 		RpcUtil.getRpcClientProxy(InternalApplicationSessionManager.class).connectSystemUser();
-		CDOConnectionFactoryProvider.INSTANCE.getConnectionFactory().connect(SpecialUserStore.SYSTEM_USER);
+		CDOConnectionFactoryProvider.INSTANCE.getConnectionFactory().connect(User.SYSTEM.getUsername(), "" /*fake password*/);
 	}
 }

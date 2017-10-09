@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.10.13
+
+### Removed
+- `com.b2international.snowowl.authorization` module has been removed
+
+### Fixed
+- Invalid Lucene startup script after reverting back to 5.9.x GC settings
+- Initialization issue in authorization module (32d3e11a313b1f060601693c7df05d0e343c2192, a00d40c255635e4ba258d04b74a2f69655165bc7)
+
 ## 5.10.12
 
 ### Added

@@ -16,7 +16,9 @@ Snow Owl Server refuses to start if the configuration file contains syntactical 
 problem can be found in the `log.log` file, or in the console if you've redirected the output of the server's startup
 process.
 
-== Authentication
+== Identity Providers
+
+Snow Owl supports multiple identity provider configurations (by default File and LDAP are available, but others can be added as well). 
 
 [cols="3*", options="header"]
 |===
@@ -24,15 +26,92 @@ process.
 |Default
 |Description
 
-|type
-|`LDAP`
-|`PROP_FILE`, `LDAP` - choose which type of authentication method you want.
+|providers
+|`[]`
+|`file`, `ldap` - choose the enabled identity providers, you can select multiple options as well.
 |===
 
 --------------------------
-authentication:
-  type: PROP_FILE
+identity:
+  providers:
+    - <provider_type>:
+        <provider_config_key>: <provider_config_value>
 --------------------------
+
+To configure an identity provider you must add its configuration to the list of available providers (`identity.providers` config node).
+The providers list ensures ordered execution of the various providers, the first (top) provider will be invoked first, then the second and so forth.
+See the next sections on how to configure File and LDAP identity providers.
+
+=== File Identity Provider
+
+File identity provider supports authentication of a set of users available in the specified configuration file. 
+You can specify the name of the configuration file, which should be placed in the server's configuration directory.
+Example configuration to use File identity provider based on a property file at `${SERVER_HOME}/configuration/users`:
+
+--------------------------
+identity:
+  providers:
+    - file:
+        name: users
+--------------------------
+
+File identity provider does *NOT* support authorization features (such as Roles and Permissions). We recommend the LDAP identity provider for such deployments.
+To allow a user to authenticate with the File identity provider you must declare the user's username and hashed (with BCrypt hash algorithm) password in the property file in the following form:
+
+Example property file content for File identity provider:
+
+--------------------------
+snowowl:$2a$10$RtnN9fxuxjz3W7drWtxpT.2BblCxsJ0WL2Fl14XBCjMrMaqq.uenW
+--------------------------
+
+=== LDAP Identity Provider
+
+LDAP identity provider uses an external LDAP server (preferably OpenLDAP) to authenticate and retrieve user identities. This provider does support authorization features, such as Roles and Permissions.
+Example configuration to use LDAP identity provider:
+
+--------------------------
+identity:
+  providers:
+    - ldap:
+        uri: ldap://localhost:10389
+        baseDn: dc=snowowl,dc=b2international,dc=com
+        rootDn: cn=admin,dc=snowowl,dc=b2international,dc=com
+        rootDnPassword: <adminpwd>
+        userIdProperty: uid
+--------------------------
+
+Configuration options:
+
+[cols="3*", options="header"]
+|===
+|Name
+|Default
+|Description
+
+|uri
+|``
+|`ldap://<host>:<port>` - LDAP host and port
+
+|baseDn
+|`dc=snowowl,dc=b2international,dc=com`
+|Base Dn value of the organization from which user identities will be retrieved.
+
+|rootDn
+|`cn=admin,dc=snowowl,dc=b2international,dc=com`
+|The root user's DN value, to bind to the LDAP server with.
+
+|rootDnPassword
+|``
+|The root user's password, to bind to the LDAP server with.
+
+|userIdProperty
+|``
+|The user ID property which will contain the unique identifier of your users (usually uid, which represent an email address).
+
+|usePool
+|`false`
+|To use a connection pool under the hood when connecting to the external LDAP server or not.  
+|===
 
 == Repository
 

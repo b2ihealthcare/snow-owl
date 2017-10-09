@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Elasticsearch implementation of Index API
 Bundle-SymbolicName: com.b2international.index.es;singleton:=true
-Bundle-Version: 5.10.12
+Bundle-Version: 5.10.13
 Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.index.api
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

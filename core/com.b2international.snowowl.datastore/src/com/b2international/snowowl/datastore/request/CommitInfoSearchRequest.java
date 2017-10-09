@@ -39,7 +39,7 @@ import com.google.common.collect.Lists;
 /**
  * @since 5.2
  */
-final class CommitInfoSearchRequest extends SearchResourceRequest<RepositoryContext, CommitInfos> {
+final class CommitInfoSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CommitInfos> {
 
 	private static final long serialVersionUID = 1L;
 	

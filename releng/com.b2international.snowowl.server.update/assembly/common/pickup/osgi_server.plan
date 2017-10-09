@@ -17,11 +17,11 @@
         <artifact type="bundle" name="com.b2international.org.apache.lucene" version="0.0.0"/>
         
         <artifact type="bundle" name="com.b2international.snowowl.core" version="0.0.0"/>
-        <artifact type="bundle" name="com.b2international.snowowl.authentication" version="0.0.0"/>
-
-        <!-- Replace auth.file with auth.ldap for LDAP based authentication, and change config.yml -->
-        <artifact type="bundle" name="com.b2international.snowowl.authentication.file" version="0.0.0"/>
-        <!--<artifact type="bundle" name="com.b2international.snowowl.authentication.ldap" version="0.0.0"/>-->
+        <artifact type="bundle" name="com.b2international.snowowl.identity" version="0.0.0"/>
+        <artifact type="bundle" name="com.b2international.snowowl.identity.file" version="0.0.0"/>
+        <artifact type="bundle" name="com.b2international.snowowl.identity.ldap" version="0.0.0"/>
+        <!-- Add new identity provider here and change the identity.type to appropriate property value in snowowl_config.yml file -->
+        
         <artifact type="bundle" name="com.b2international.snowowl.datastore" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.authorization.server" version="0.0.0"/>
 

@@ -16,12 +16,11 @@
 package com.b2international.snowowl.datastore.session;
 
 import java.security.PublicKey;
-import java.util.Collection;
 
 import javax.security.auth.login.LoginException;
 
 import com.b2international.commons.Pair;
-import com.b2international.snowowl.core.users.Role;
+import com.b2international.snowowl.identity.domain.User;
 
 /**
  * The service interface for the application-wide session manager.
@@ -57,16 +56,17 @@ public interface IApplicationSessionManager {
 	 * If the server does not accept the sequence, a new access token will need to be requested and a SecurityException runtime exception will be thrown.
 	 * 
 	 * @param response
+	 * @return the logged in users identity
 	 */
-	void loginWithResponse(final byte[] response) throws SecurityException;
+	User loginWithResponse(final byte[] response) throws SecurityException;
 	
 	/**
 	 * @param userId the user identifier (may not be {@code null}) 
 	 * @param password the user's password (may not be {@code null})
-	 * @return a collection of associated {@link Role}s for the user
+	 * @return the object representing the logged in user
 	 * @throws LoginException if the user identifier and/or the password was given incorrectly
 	 */
-	Collection<Role> authenticate(String userId, String password) throws LoginException;
+	void authenticate(String userId, String password) throws LoginException;
 
 	/**Returns with an iterable of user ID with session ID of all connected sessions.*/
 	Iterable<Pair<String, String>> getConnectedSessionInfo();

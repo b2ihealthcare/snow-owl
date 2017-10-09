@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.server.core.feature"
       label="Snow Owl Common Server Core"
-      version="5.10.12"
+      version="5.10.13"
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
@@ -31,13 +31,6 @@ Visit us at http://b2i.sg
 
    <plugin
          id="com.b2international.commons"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.b2international.snowowl.authentication"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -79,20 +72,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="com.b2international.snowowl.authentication.ldap"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.b2international.snowowl.authentication.file"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="com.b2international.snowowl.terminologyregistry.core.server"
          download-size="0"
          install-size="0"
@@ -105,13 +84,6 @@ Visit us at http://b2i.sg
          install-size="0"
          version="0.0.0"
          fragment="true"
-         unpack="false"/>
-
-   <plugin
-         id="com.b2international.snowowl.authorization.server"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
          unpack="false"/>
 
    <plugin
@@ -194,6 +166,29 @@ Visit us at http://b2i.sg
 
    <plugin
          id="com.b2international.index.es"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="com.b2international.snowowl.identity"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.b2international.snowowl.identity.file"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="com.b2international.snowowl.identity.ldap"
          download-size="0"
          install-size="0"
          version="0.0.0"

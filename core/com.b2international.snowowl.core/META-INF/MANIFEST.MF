@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Core
 Bundle-SymbolicName: com.b2international.snowowl.core;singleton:=true
-Bundle-Version: 5.10.12
+Bundle-Version: 5.10.13
 Bundle-Activator: com.b2international.snowowl.core.CoreActivator
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
@@ -47,9 +47,9 @@ Export-Package: com.b2international.snowowl.core,
  com.b2international.snowowl.core.merge,
  com.b2international.snowowl.core.propertyhelper,
  com.b2international.snowowl.core.propertytester,
+ com.b2international.snowowl.core.request,
  com.b2international.snowowl.core.setup,
  com.b2international.snowowl.core.terminology,
  com.b2international.snowowl.core.uri,
- com.b2international.snowowl.core.users,
  com.b2international.snowowl.core.validation
 Import-Package: org.slf4j;version="1.7.2"

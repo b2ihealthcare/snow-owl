@@ -39,12 +39,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.http.AcceptHeader;	
+import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.request.SearchResourceRequest;
-import com.b2international.snowowl.datastore.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedDescriptionRestInput;
@@ -140,8 +140,8 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		}
 		
 		final SortField sortField = StringUtils.isEmpty(termFilter) 
-				? SearchResourceRequest.DOC_ID 
-				: SearchResourceRequest.SCORE;
+				? SearchIndexResourceRequest.DOC_ID 
+				: SearchIndexResourceRequest.SCORE;
 		
 		return DeferredResults.wrap(
 				SnomedRequests

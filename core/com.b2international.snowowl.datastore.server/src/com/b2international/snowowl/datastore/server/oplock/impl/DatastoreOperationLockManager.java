@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.b2international.snowowl.core.IDisposableService;
-import com.b2international.snowowl.core.users.SpecialUserStore;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
@@ -27,6 +26,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockE
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.server.oplock.IOperationLock;
 import com.b2international.snowowl.datastore.server.oplock.ReentrantOperationLockManager;
+import com.b2international.snowowl.identity.domain.User;
 
 /**
  * Controls cross-cutting exclusive write access to the terminology stores.
@@ -60,7 +60,7 @@ public class DatastoreOperationLockManager extends ReentrantOperationLockManager
 		if (!isDisposed()) {
 			super.canContextLockTargets(context, targets, alreadyLockedTargets);
 		} else {
-			final DatastoreLockContext disposedContext = new DatastoreLockContext(SpecialUserStore.SYSTEM_USER_NAME, DatastoreLockContextDescriptions.DISPOSE_LOCK_MANAGER);
+			final DatastoreLockContext disposedContext = new DatastoreLockContext(User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.DISPOSE_LOCK_MANAGER);
 			for (final IOperationLockTarget target : targets) {
 				alreadyLockedTargets.put(target, disposedContext);
 			}
