@@ -1,6 +1,26 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.11
+
+### Added
+- `snowowl migrate` command to migrate terminology content from an external CDO repository (https://github.com/b2ihealthcare/snow-owl/pull/170)
+- `UserRequests` Java API to fetch available User identities and their Roles/Permissions (https://github.com/b2ihealthcare/snow-owl/pull/168)
+- Allow multiple identity providers (not just a single one)
+- `com.b2international.snowowl.identity` has been added
+- `com.b2international.snowowl.identity.file` has been added
+- `com.b2international.snowowl.identity.ldap` has been added
+
+### Removed
+- Snow Owl JAAS file has been removed in favor of the new YAML based identity provider configuration (see the updated `documentation/src/main/asciidoc/configuration_reference.adoc`)
+- `com.b2international.snowowl.authentication` module has been removed
+- `com.b2international.snowowl.authentication.file` module has been removed
+- `com.b2international.snowowl.authentication.ldap` module has been removed
+- `com.b2international.snowowl.authorization.server` module has been removed
+
+### Bugs
+- Fixed inconsistent and exponentially growing CDO list indexes (https://github.com/b2ihealthcare/snow-owl/pull/171)
+
 ## 5.10.13
 
 ### Removed
