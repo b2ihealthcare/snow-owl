@@ -117,13 +117,14 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 
 import bak.pcj.map.LongKeyFloatMap;
@@ -855,12 +856,10 @@ public class SnomedRf2IndexInitializer extends Job {
 				}
 				
 				final SnomedDescriptionIndexEntry description = new SnomedDescriptionLookupService().getComponent(branchPath, descriptionId);
-				final Multimap<Acceptability, String> invertedAcceptabilityMap;
+				final Multimap<Acceptability, String> invertedAcceptabilityMap = ArrayListMultimap.create();
 				
 				if (description != null) {
-					invertedAcceptabilityMap = description.getAcceptabilityMap().asMultimap().inverse();
-				} else {
-					invertedAcceptabilityMap = ImmutableMultimap.of();
+					Multimaps.invertFrom(Multimaps.forMap(description.getAcceptabilityMap()), invertedAcceptabilityMap);				
 				}
 				
 				final Collection<String> preferredRefSetIds = invertedAcceptabilityMap.get(Acceptability.PREFERRED);
@@ -934,7 +933,8 @@ public class SnomedRf2IndexInitializer extends Job {
 			final SnomedDescriptionIndexEntry description = new SnomedDescriptionLookupService().getComponent(branchPath, descriptionIdString);
 			if (description != null) {
 				
-				final Multimap<Acceptability, String> invertedAcceptabilityMap = description.getAcceptabilityMap().asMultimap().inverse();
+				final Multimap<Acceptability, String> invertedAcceptabilityMap = ArrayListMultimap.create();
+				Multimaps.invertFrom(Multimaps.forMap(description.getAcceptabilityMap()), invertedAcceptabilityMap);
 				
 				final Collection<String> preferredRefSetIds = invertedAcceptabilityMap.get(Acceptability.PREFERRED);
 				final Collection<String> updatedPreferredRefSetIds = getCurrentRefSetMemberships(preferredRefSetIds, preferredMemberChanges.get(descriptionIdString));
