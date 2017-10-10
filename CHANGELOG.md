@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.11.1
+
+### Bugs
+- Fixed CDO versions (builds now contain 4.1.10.b2i version of CDO bundles)
+
 ## 5.11
 
 ### Added
