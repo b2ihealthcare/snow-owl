@@ -25,10 +25,14 @@ public class SnomedContentRule extends ExternalResource {
 	private String languageRefSetId;
 	private ContentSubType contentType;
 	
-	public SnomedContentRule(String importArchivePath, String languageRefSetId, ContentSubType contentType) {
+	public SnomedContentRule(File importArchive, String languageRefSetId, ContentSubType contentType) {
 		this.contentType = checkNotNull(contentType, "contentType");
-		this.importArchive = new File(PlatformUtil.toAbsolutePathBundleEntry(SnomedContentRule.class, importArchivePath));
+		this.importArchive = checkNotNull(importArchive, "importArchive");
 		this.languageRefSetId = checkNotNull(languageRefSetId, "languageRefSetId");
+	}
+	
+	public SnomedContentRule(String importArchivePath, String languageRefSetId, ContentSubType contentType) {
+		this(new File(PlatformUtil.toAbsolutePathBundleEntry(SnomedContentRule.class, importArchivePath)), languageRefSetId, contentType);
 	}
 
 	@Override
