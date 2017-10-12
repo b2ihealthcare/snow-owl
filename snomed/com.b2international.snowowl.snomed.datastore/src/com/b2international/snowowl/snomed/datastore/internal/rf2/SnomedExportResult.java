@@ -29,13 +29,11 @@ public class SnomedExportResult implements Serializable {
 	private static final String DEFAULT_SUCCESSFUL_MESSAGE = "SNOMED CT export successfully finished.";
 	private static final String DEFAULT_EXCEPTION_MESSAGE = "An error occurred while exporting SNOMED CT components: exception during export.";
 	private static final String DEFAULT_CANCELED_MESSAGE = "SNOMED CT export was canceled.";
-	private static final String DEFAULT_IN_PROGRESS_MESSAGE = "SNOMED CT publication is already in progress.";
 	
 	public enum Result {
 		SUCCESSFUL,
 		EXCEPTION,
-		CANCELED,
-		IN_PROGRESS
+		CANCELED
 	}
 	
 	private Result result;
@@ -84,9 +82,6 @@ public class SnomedExportResult implements Serializable {
 			break;
 		case CANCELED:
 			this.message = DEFAULT_CANCELED_MESSAGE;
-			break;
-		case IN_PROGRESS:
-			this.message = DEFAULT_IN_PROGRESS_MESSAGE;
 			break;
 		}
 	}

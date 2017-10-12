@@ -31,6 +31,7 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
  */
 public final class SnomedRf2ExportRequestBuilder extends BaseRequestBuilder<SnomedRf2ExportRequestBuilder, BranchContext, UUID> implements RevisionIndexRequestBuilder<UUID> {
 
+	private String userId;
 	private String codeSystem = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
 	private boolean includeUnpublished;
 	private String startEffectiveTime;
@@ -41,8 +42,14 @@ public final class SnomedRf2ExportRequestBuilder extends BaseRequestBuilder<Snom
 	private boolean extensionOnly;
 	private String namespace;
 	private Collection<String> refSets = Collections.emptySet();
+	private Collection<String> componentTypes = Collections.emptySet();
 	
 	SnomedRf2ExportRequestBuilder() {}
+	
+	public SnomedRf2ExportRequestBuilder setUserId(String userId) {
+		this.userId = userId;
+		return getSelf();
+	}
 	
 	public SnomedRf2ExportRequestBuilder setCodeSystem(String codeSystem) {
 		this.codeSystem = codeSystem;
@@ -93,11 +100,17 @@ public final class SnomedRf2ExportRequestBuilder extends BaseRequestBuilder<Snom
 		this.refSets = refSets;
 		return getSelf();
 	}
+	
+	public SnomedRf2ExportRequestBuilder setComponentTypes(Collection<String> componentTypes) {
+		this.componentTypes = componentTypes;
+		return getSelf();
+	}
 
 	@Override
 	protected Request<BranchContext, UUID> doBuild() {
 		SnomedRf2ExportRequest req = new SnomedRf2ExportRequest();
 		req.setReleaseType(releaseType);
+		req.setUserId(userId);
 		req.setCodeSystem(codeSystem);
 		req.setIncludeUnpublished(includeUnpublished);
 		req.setExtensionOnly(extensionOnly);
@@ -107,6 +120,7 @@ public final class SnomedRf2ExportRequestBuilder extends BaseRequestBuilder<Snom
 		req.setTransientEffectiveTime(transientEffectiveTime);
 		req.setNamespace(namespace);
 		req.setRefSets(refSets);
+		req.setComponentTypes(componentTypes);
 		return req;
 	}
 

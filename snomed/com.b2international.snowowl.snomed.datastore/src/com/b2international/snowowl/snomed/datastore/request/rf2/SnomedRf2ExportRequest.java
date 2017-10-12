@@ -50,6 +50,7 @@ import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.ContentSubType;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedClientProtocol;
@@ -60,6 +61,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 5.7
@@ -67,6 +69,10 @@ import com.google.common.collect.ImmutableMap;
 final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 
 	private static final long serialVersionUID = 1L;
+	
+	@JsonProperty
+	@NotEmpty
+	private String userId;
 	
 	@JsonProperty
 	@NotEmpty
@@ -99,8 +105,15 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 	
 	@JsonProperty
 	private Collection<String> refSets;
+	
+	@JsonProperty
+	private Collection<String> componentTypes;
 
 	SnomedRf2ExportRequest() {}
+	
+	void setUserId(String userId) {
+		this.userId = userId;
+	}
 	
 	void setCodeSystem(String codeSystem) {
 		this.codeSystem = codeSystem;
@@ -138,8 +151,12 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 		this.namespace = namespace;
 	}
 	
-	public void setRefSets(Collection<String> refSets) {
+	void setRefSets(Collection<String> refSets) {
 		this.refSets = Collections3.toImmutableSet(refSets);
+	}
+	
+	void setComponentTypes(Collection<String> componentTypes) {
+		this.componentTypes = componentTypes;
 	}
 	
 	@Override
@@ -184,7 +201,7 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 			.build()
 			.execute(context);
 				
-		final SnomedRf2ExportModel model = SnomedRf2ExportModel.createExportModelWithAllRefSets(contentSubType, branch, namespace);
+		final SnomedRf2ExportModel model = new SnomedRf2ExportModel(userId, branch, contentSubType, namespace, refSets, isSingleRefsetExport());
 
 		if (CompareUtils.isEmpty(modules)) {
 			final SnomedConcepts allModules = SnomedRequests.prepareSearchConcept()
@@ -220,11 +237,18 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 		
 		model.setCodeSystemShortName(codeSystem);
 		model.setExtensionOnly(extensionOnly);
-		model.getRefSetIds().addAll(refSets);
 
 		return model; 
 	}
 	
+	/**
+	 * Single reference set export if we only export a single refset and its members. 
+	 * @return
+	 */
+	private boolean isSingleRefsetExport() {
+		return refSets.size() == 1 && componentTypes.size() == 1 && SnomedTerminologyComponentConstants.REFSET_MEMBER.equals(Iterables.getOnlyElement(componentTypes));
+	}
+
 	private static final Map<Rf2ReleaseType, ContentSubType> TYPE_MAPPING = ImmutableMap.of(
 			Rf2ReleaseType.DELTA, DELTA, 
 			Rf2ReleaseType.SNAPSHOT, SNAPSHOT, 
