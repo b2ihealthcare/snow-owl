@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
 
@@ -27,15 +28,12 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
@@ -76,68 +74,24 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	private String codeSystemShortName;
 	private boolean extensionOnly;
 
-	/**
-	 * Creates a new RF2 export model for exporting all core components and reference sets on a given branch 
-	 * with the desired {@link ContentSubType release type}.
-	 * @param contentSubType the desired release type.
-	 * @param branch the branch path for the export.
-	 * @return a new model instance 
-	 */
-	public static SnomedRf2ExportModel createExportModelWithAllRefSets(final ContentSubType contentSubType, final Branch branch, final String namespace) {
-		
-		checkNotNull(contentSubType, "contentSubType");
-		checkNotNull(branch, "branchPath");
-		
-		final SnomedRf2ExportModel model = new SnomedRf2ExportModel(branch, contentSubType, namespace);
-		
-		final SnomedReferenceSets referenceSets = SnomedRequests.prepareSearchRefSet()
-			.all()
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.path())
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-			.getSync();
-		
-		for (SnomedReferenceSet refSet : referenceSets) {
-			model.getRefSetIds().add(refSet.getId());
-		}
-		
-		return model;
-	}
-	
-	/**
-	 * Creates a new RF2 export model for exporting one single reference set on the given branch
-	 * with the desired {@link ContentSubType release type}. 
-	 * @param refSetId the reference set ID to export.
-	 * @param contentSubType the desired release type.
-	 * @param branch the branch path for the export.
-	 * @return a new export model instance for a single reference set export.
-	 */
-	public static SnomedRf2ExportModel createExportModelForSingleRefSet(final String refSetId, final ContentSubType contentSubType,
-			final Branch branch, String namespace) {
-		checkNotNull(contentSubType, "contentSubType");
-		checkNotNull(refSetId, "refSetId");
-		
-		final SnomedRf2ExportModel model = new SnomedRf2ExportModel(branch, contentSubType, namespace, true);
-		model.getRefSetIds().add(refSetId);
-		return model;
-	}
-	
-	public SnomedRf2ExportModel(final Branch branch, final ContentSubType contentSubtype, String namespace) {
-		this(branch, contentSubtype, namespace, false);
-	}
-	
-	public SnomedRf2ExportModel(final Branch branch, final ContentSubType contentSubtype, String namespace, boolean isSingleRefsetExport) {
+	public SnomedRf2ExportModel(final String userId, 
+			final Branch branch, 
+			final ContentSubType contentSubtype, 
+			final String namespace, 
+			final Collection<String> refSets, 
+			final boolean isSingleRefsetExport) {
 		super();
 		releaseType = contentSubtype;
 		this.branch = checkNotNull(branch, "branch");
 
-		refSetIds = newHashSet();
 		singleRefSetExport = isSingleRefsetExport;
 		
 		settings = newHashSet();
 		modulesToExport = newHashSet();
-		userId = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId();
+		this.userId = userId;
 		unsetEffectiveTimeLabel = "";
 		this.namespace = namespace;
+		this.refSetIds = newHashSet(refSets);
 		setExportPath(initExportPath());
 	}
 

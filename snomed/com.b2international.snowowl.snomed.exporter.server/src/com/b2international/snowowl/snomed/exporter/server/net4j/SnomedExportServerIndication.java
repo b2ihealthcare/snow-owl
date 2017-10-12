@@ -31,7 +31,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.net4j.signal.IndicationWithMonitoring;
 import org.eclipse.net4j.signal.SignalProtocol;
@@ -105,15 +104,6 @@ import com.google.common.primitives.Longs;
  * 
  */
 public class SnomedExportServerIndication extends IndicationWithMonitoring {
-
-	/* 
-	 * XXX: reference equality (==) is required by AtomicReference, so use this exact string, not an equal empty one! The string contains 
-	 * the text 'another user' to avoid confusing log messages if the publication finishes before the "winner" (the person who started
-	 * an export before receiving this indication) can be retrieved from the AtomicReference. 
-	 */
-	private static final String NO_USER = "another user";
-
-	private static final AtomicReference<String> ACTIVE_FULL_RF2_PUBLICATION_USER = new AtomicReference<String>(NO_USER);
 
 	private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SnomedExportServerIndication.class);
 
@@ -238,23 +228,19 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			
 			monitor.begin(calculateProgressMonitorStep());
 			
-			checkOtherPublication();
+				
+			// obtain the index service here to ensure a consistent view of the data during the export process
+			RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
+			RevisionIndex revisionIndex = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
+			file = doExport(revisionIndex, monitor);
 			
-			if (Result.IN_PROGRESS != result.getResult()) {
-				
-				// obtain the index service here to ensure a consistent view of the data during the export process
-				RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
-				RevisionIndex revisionIndex = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
-				file = doExport(revisionIndex, monitor);
-				
-				logActivity("Transferring export result...");
-				
-				sendResult(out, file, monitor);
-				
-				logActivity(String.format("SNOMED CT export finished in %s", TimeUtil.toString(stopwatch)));
+			logActivity("Transferring export result...");
+			
+			sendResult(out, file, monitor);
+			
+			logActivity(String.format("SNOMED CT export finished in %s", TimeUtil.toString(stopwatch)));
 
-				monitor.worked(1);
-			}
+			monitor.worked(1);
 			
 		}  catch (Exception e) {
 			
@@ -279,9 +265,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			 * If we couldn't set userId on the AtomicReference at the beginning somehow, this will have no effect, which is good -- we 
 			 * don't want to destroy another user's export directory if currentTimeMillis returned the same value for both users, for example.
 			 */
-			if (ACTIVE_FULL_RF2_PUBLICATION_USER.compareAndSet(userId, NO_USER)) {
-				FileUtils.deleteDirectory(tempDir.toFile());
-			}
+			FileUtils.deleteDirectory(tempDir.toFile());
 		}
 	}
 
@@ -320,18 +304,6 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		
 	}
 
-	private void checkOtherPublication() {
-		if (coreComponentExport) {
-			if (!ACTIVE_FULL_RF2_PUBLICATION_USER.compareAndSet(NO_USER, userId)) {
-				final String publishingUserId = ACTIVE_FULL_RF2_PUBLICATION_USER.get();
-				
-				logActivity(String.format("SNOMED CT export is already in progress by %s.", publishingUserId));
-				
-				result.setResult(Result.IN_PROGRESS);
-			}
-		}
-	}
-	
 	private File doExport(final RevisionIndex revisionIndex, final OMMonitor monitor) throws Exception {
 		
 		switch (exportContext.getContentSubType()) {
