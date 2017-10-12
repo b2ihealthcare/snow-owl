@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +38,6 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * A transfer object representing a SNOMED CT description.
@@ -137,7 +137,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 		private String typeId;
 		private String typeLabel;
 		private String caseSignificanceId;
-		private final ImmutableMap.Builder<String, Acceptability> acceptabilityMapBuilder = ImmutableMap.builder();
+		private final Map<String, Acceptability> acceptabilityMapBuilder = new HashMap<>();
 
 		private Builder() {
 			// Disallow instantiation outside static method
@@ -204,7 +204,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 					typeId,
 					typeLabel == null ? typeId : typeLabel,
 					caseSignificanceId,
-					acceptabilityMapBuilder.build());
+					acceptabilityMapBuilder);
 		}
 	}
 
@@ -213,7 +213,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 	private final String term;
 	private final String typeId;
 	private final String caseSignificanceId;
-	private final ImmutableMap<String, Acceptability> acceptabilityMap;
+	private final Map<String, Acceptability> acceptabilityMap;
 	private final String typeLabel;
 
 	private SnomedDescriptionIndexEntry(final String id,
@@ -230,7 +230,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 			final String typeId,
 			final String typeLabel,
 			final String caseSignificanceId,
-			final ImmutableMap<String, Acceptability> acceptabilityMap) {
+			final Map<String, Acceptability> acceptabilityMap) {
 
 		super(id,
 				label,
@@ -296,7 +296,7 @@ public class SnomedDescriptionIndexEntry extends SnomedIndexEntry implements ICo
 	/**
 	 * @return the map of active acceptability values for the description, keyed by language reference set identifier
 	 */
-	public ImmutableMap<String, Acceptability> getAcceptabilityMap() {
+	public Map<String, Acceptability> getAcceptabilityMap() {
 		return acceptabilityMap;
 	}
 	
