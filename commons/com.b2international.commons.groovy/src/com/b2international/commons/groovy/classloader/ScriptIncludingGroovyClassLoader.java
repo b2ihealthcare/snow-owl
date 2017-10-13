@@ -108,8 +108,8 @@ public class ScriptIncludingGroovyClassLoader extends GroovyClassLoader {
 			final String clazzName = clazz.getName();
 			definePackage(clazzName);
 			setClassCacheEntry(clazz);
+			if (clazzName.equals(mainClass)) {
 				answer = clazz;
-				if (clazzName.equals(mainClass)) {
 			}
 		}
 		return answer;
