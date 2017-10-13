@@ -19,6 +19,7 @@ import static com.b2international.snowowl.snomed.common.ContentSubType.DELTA;
 import static com.b2international.snowowl.snomed.common.ContentSubType.FULL;
 import static com.b2international.snowowl.snomed.common.ContentSubType.SNAPSHOT;
 import static com.google.common.base.Strings.nullToEmpty;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,6 +54,8 @@ import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedClientProtocol;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportClientRequest;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult;
@@ -200,8 +203,17 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 			.prepareGet(context.branchPath())
 			.build()
 			.execute(context);
+		
+		final Set<String> referenceSetsToExport = newHashSet(refSets);
+		
+		if (referenceSetsToExport.isEmpty()) {
+			final SnomedReferenceSets referenceSets = SnomedRequests.prepareSearchRefSet().all().build().execute(context);
+			for (SnomedReferenceSet refSet : referenceSets) {
+				referenceSetsToExport.add(refSet.getId());
+			}
+		}
 				
-		final SnomedRf2ExportModel model = new SnomedRf2ExportModel(userId, branch, contentSubType, namespace, refSets, isSingleRefsetExport());
+		final SnomedRf2ExportModel model = new SnomedRf2ExportModel(userId, branch, contentSubType, namespace, referenceSetsToExport, isSingleRefsetExport());
 
 		if (CompareUtils.isEmpty(modules)) {
 			final SnomedConcepts allModules = SnomedRequests.prepareSearchConcept()
