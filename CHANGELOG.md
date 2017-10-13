@@ -1,6 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.11.2
+
+### Added
+- `componentTypes` to SNOMED CT RF2 Export API configuration (https://github.com/b2ihealthcare/snow-owl/pull/173)
+
+### Changed
+- Allow multiple simultaneous RF2 exports (https://github.com/b2ihealthcare/snow-owl/pull/173)
+
+### Bugs
+- Exporting a single reference set with their members should export only members (https://github.com/b2ihealthcare/snow-owl/pull/173)
+
 ## 5.11.1
 
 ### Bugs
