@@ -262,6 +262,7 @@ public final class RemoteJobTracker implements IDisposableService {
 				LOG.trace("Completed job {}", jobId);
 				final RemoteJobEntry jobEntry = get(jobId);
 				if (jobEntry == null) {
+					LOG.warn("Missing job entry in RemoteJobTracker#done '{}'", jobId);
 					return;
 				}
 				final IStatus result = job.getResult();
