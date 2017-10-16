@@ -161,8 +161,10 @@ public final class RemoteJobTracker implements IDisposableService {
 			// if the job still running or scheduled, then mark it deleted and the done handler will delete it
 			LOG.trace("Deleting jobs {}", remoteJobsToDelete);
 			writer.removeAll(ImmutableMap.of(RemoteJobEntry.class, remoteJobsToDelete));
-			LOG.trace("Marking deletable jobs {}", remoteJobsToCancel);
-			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, Expressions.matchAny(DocumentMapping._ID, remoteJobsToCancel), RemoteJobEntry.Fields.ID, RemoteJobEntry.WITH_DELETED));
+			if (!remoteJobsToCancel.isEmpty()) {
+				LOG.trace("Marking deletable jobs {}", remoteJobsToCancel);
+				writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, Expressions.matchAny(DocumentMapping._ID, remoteJobsToCancel), RemoteJobEntry.Fields.ID, RemoteJobEntry.WITH_DELETED));
+			}
 			writer.commit();
 			return null;
 		});
