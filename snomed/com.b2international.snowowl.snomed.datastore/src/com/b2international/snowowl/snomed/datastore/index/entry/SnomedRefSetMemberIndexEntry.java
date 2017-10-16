@@ -301,6 +301,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static Expression mapTargets(Collection<String> mapTargets) {
 			return matchAny(Fields.MAP_TARGET, mapTargets);
 		}
+		
+		public static Expression mapTargetDescriptions(Collection<String> mapTargetDescriptions) {
+			return matchAny(Fields.MAP_TARGET_DESCRIPTION, mapTargetDescriptions);
+		}
 
 		public static Expression referencedComponentIds(Collection<String> referencedComponentIds) {
 			return matchAny(Fields.REFERENCED_COMPONENT_ID, referencedComponentIds);
