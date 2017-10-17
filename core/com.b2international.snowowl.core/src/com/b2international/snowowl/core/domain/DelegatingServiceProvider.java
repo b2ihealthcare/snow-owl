@@ -71,6 +71,18 @@ public class DelegatingServiceProvider implements ServiceProvider, IDisposableSe
 	protected final <T> void bind(Class<T> type, T object) {
 		registry.put(type, object);
 	}
+	
+	/**
+	 * Method to bind all bindings available in the given {@link Map}. Mainly used by the builder, but subclasses are allowed to change the underlying
+	 * registry.
+	 * 
+	 * @param type
+	 * @param object
+	 * @return
+	 */
+	protected final void bindAll(Map<Class<?>, Object> bindings) {
+		registry.putAll(bindings);
+	}
 
 	@Override
 	public <T> T service(Class<T> type) {
@@ -116,7 +128,12 @@ public class DelegatingServiceProvider implements ServiceProvider, IDisposableSe
 			provider.bind(type, object);
 			return this;
 		}
-
+		
+		public final Builder<C> bindAll(DelegatingServiceProvider other) {
+			provider.bindAll(other.registry);
+			return this;
+		}
+		
 		public C build() {
 			return provider;
 		}

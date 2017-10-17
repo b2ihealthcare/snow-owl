@@ -18,6 +18,8 @@ package com.b2international.snowowl.datastore.request;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.DelegatingRepositoryContext;
+import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
@@ -39,6 +41,12 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 	
 	@Override
 	public B execute(final ServiceProvider context) {
-		return next(context.service(RepositoryContextProvider.class).get(repositoryId));
+		RepositoryContext repositoryContext = context.service(RepositoryContextProvider.class).get(repositoryId);
+		if (context instanceof DelegatingServiceProvider) {
+			repositoryContext = DelegatingRepositoryContext.basedOn(repositoryContext)
+				.bindAll((DelegatingServiceProvider) context)
+				.build();
+		}
+		return next(repositoryContext);
 	}
 }
