@@ -30,7 +30,7 @@ import java.util.UUID;
 
 import javax.validation.constraints.NotNull;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.net4j.util.om.monitor.EclipseMonitor;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -165,7 +165,7 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 	@Override
 	public UUID execute(BranchContext context) {
 		try {
-			final File file = doExport(toExportModel(context));
+			final File file = doExport(toExportModel(context), context.service(IProgressMonitor.class));
 			final UUID fileId = UUID.randomUUID();
 			context.service(FileRegistry.class).upload(fileId, new FileInputStream(file));
 			file.delete();
@@ -175,7 +175,7 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 		}
 	}
 
-	private File doExport(final SnomedRf2ExportModel model) throws Exception {
+	private File doExport(final SnomedRf2ExportModel model, final IProgressMonitor monitor) throws Exception {
 		final SnomedExportClientRequest snomedExportClientRequest = new SnomedExportClientRequest(SnomedClientProtocol.getInstance(), model);
 		final StringBuilder sb = new StringBuilder("Performing SNOMED CT publication into ");
 		
@@ -185,7 +185,7 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 		
 		sb.append("RF2 release format...");
 		
-		final SubMonitor subMonitor = SubMonitor.convert(new NullProgressMonitor(), sb.toString(), 1000).newChild(1000, SubMonitor.SUPPRESS_ALL_LABELS);
+		final SubMonitor subMonitor = SubMonitor.convert(monitor, sb.toString(), 1000).newChild(1000, SubMonitor.SUPPRESS_ALL_LABELS);
 		subMonitor.worked(5);
 		
 		final File resultFile = snomedExportClientRequest.send(new EclipseMonitor(subMonitor));
