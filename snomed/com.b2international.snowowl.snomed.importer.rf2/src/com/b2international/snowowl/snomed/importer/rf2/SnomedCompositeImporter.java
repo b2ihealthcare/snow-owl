@@ -68,7 +68,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
-import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilderResult;
+import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyStatus;
 import com.b2international.snowowl.snomed.importer.rf2.model.AbstractSnomedImporter;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportUnit;
@@ -357,7 +357,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 		inferredTaxonomyBuilder.applyNodeChanges(conceptFilePath);
 		inferredTaxonomyBuilder.applyEdgeChanges(relationshipFilePath);
-		final SnomedTaxonomyBuilderResult inferredTaxonomyResult = inferredTaxonomyBuilder.build();
+		final SnomedTaxonomyStatus inferredTaxonomyResult = inferredTaxonomyBuilder.build();
 		
 		if (null == statedTaxonomyBuilder) {
 			// First iteration: initialize release file-based builder with existing contents (if any)
@@ -366,7 +366,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 		statedTaxonomyBuilder.applyNodeChanges(conceptFilePath);
 		statedTaxonomyBuilder.applyEdgeChanges(statedRelationshipFilePath);
-		final SnomedTaxonomyBuilderResult statedTaxonomyResult = statedTaxonomyBuilder.build();
+		final SnomedTaxonomyStatus statedTaxonomyResult = statedTaxonomyBuilder.build();
 		
 		if (!inferredTaxonomyResult.getStatus().isOK() || !statedTaxonomyResult.getStatus().isOK()) {
 			throw new IncompleteTaxonomyException(ImmutableList.<InvalidRelationship> builder()

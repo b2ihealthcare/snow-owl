@@ -28,11 +28,13 @@ public final class Taxonomy {
 	private final LongSet newEdges;
 	private final LongSet changedEdges;
 	private final LongSet detachedEdges;
+	private final SnomedTaxonomyStatus status;
 
-	public Taxonomy(ISnomedTaxonomyBuilder newTaxonomy, ISnomedTaxonomyBuilder oldTaxonomy, LongSet newEdges, LongSet changedEdges, LongSet detachedEdges) {
+	public Taxonomy(ISnomedTaxonomyBuilder newTaxonomy, ISnomedTaxonomyBuilder oldTaxonomy, SnomedTaxonomyStatus status, LongSet newEdges, LongSet changedEdges, LongSet detachedEdges) {
 		this.newTaxonomy = newTaxonomy;
 		Preconditions.checkState(!newTaxonomy.isDirty(), "Builder for representing the new state of the taxonomy has dirty state.");
 		this.oldTaxonomy = oldTaxonomy;
+		this.status = status;
 		this.newEdges = newEdges;
 		this.changedEdges = changedEdges;
 		this.detachedEdges = detachedEdges;
@@ -44,6 +46,10 @@ public final class Taxonomy {
 	
 	public ISnomedTaxonomyBuilder getOldTaxonomy() {
 		return oldTaxonomy;
+	}
+	
+	public SnomedTaxonomyStatus getStatus() {
+		return status;
 	}
 
 	public LongSet getNewEdges() {

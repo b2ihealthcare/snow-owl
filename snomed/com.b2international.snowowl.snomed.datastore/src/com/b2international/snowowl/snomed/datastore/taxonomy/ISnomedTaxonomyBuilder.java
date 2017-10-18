@@ -29,7 +29,7 @@ public interface ISnomedTaxonomyBuilder {
 
 	void clear();
 
-	SnomedTaxonomyBuilderResult build();
+	SnomedTaxonomyStatus build();
 
 	void addEdge(final TaxonomyBuilderEdge edge);
 

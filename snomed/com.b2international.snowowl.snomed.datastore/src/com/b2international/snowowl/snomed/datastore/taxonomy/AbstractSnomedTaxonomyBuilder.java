@@ -97,7 +97,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	}
 	
 	@Override
-	public SnomedTaxonomyBuilderResult build() {
+	public SnomedTaxonomyStatus build() {
 		final List<InvalidRelationship> invalidRelationships = Lists.newArrayList();
 
 		// allocate data
@@ -149,7 +149,7 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 			count++;
 		}
 
-		final SnomedTaxonomyBuilderResult result;
+		final SnomedTaxonomyStatus result;
 		if (isEmpty(invalidRelationships)) {
 			
 			for (int i = 0; i < conceptCount; i++) {
@@ -173,10 +173,10 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 	
 			}
 			
-			result = new SnomedTaxonomyBuilderResult(Statuses.ok());
+			result = new SnomedTaxonomyStatus(Statuses.ok());
 		} else {
 			LOGGER.warn("Missing concepts from relationships");
-			result = new SnomedTaxonomyBuilderResult(Statuses.error("Missing concepts from relationships."), invalidRelationships);
+			result = new SnomedTaxonomyStatus(Statuses.error("Missing concepts from relationships."), invalidRelationships);
 		}
 
 		dirty = false;

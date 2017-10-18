@@ -39,7 +39,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship.MissingConcept;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
-import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilderResult;
+import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyStatus;
 import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedIncompleteTaxonomyValidationDefect;
@@ -166,7 +166,7 @@ public class SnomedTaxonomyValidator {
 				builder.applyEdgeChanges(relationshipFilePath);
 			}
 			
-			final SnomedTaxonomyBuilderResult result = builder.build();
+			final SnomedTaxonomyStatus result = builder.build();
 			if (!result.getStatus().isOK()) {
 				invalidRelationships.putAll("", result.getInvalidRelationships());
 			}
@@ -192,7 +192,7 @@ public class SnomedTaxonomyValidator {
 				
 				builder.applyNodeChanges(getFilePath(conceptFile));
 				builder.applyEdgeChanges(getFilePath(relationshipFile));
-				final SnomedTaxonomyBuilderResult result = builder.build();
+				final SnomedTaxonomyStatus result = builder.build();
 				if (!result.getStatus().isOK()) {
 					invalidRelationships.putAll(effectiveTime, result.getInvalidRelationships());
 				}

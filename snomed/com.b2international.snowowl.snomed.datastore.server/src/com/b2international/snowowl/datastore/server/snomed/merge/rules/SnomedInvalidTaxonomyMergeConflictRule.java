@@ -45,7 +45,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
 import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship.MissingConcept;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
-import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilderResult;
+import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyStatus;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyUpdateRunnable;
 import com.google.common.collect.ImmutableList;
 
@@ -86,9 +86,9 @@ public class SnomedInvalidTaxonomyMergeConflictRule extends AbstractSnomedMergeC
 					final SnomedTaxonomyUpdateRunnable taxonomyRunnable = new SnomedTaxonomyUpdateRunnable(searcher, transaction, taxonomyBuilder, characteristicTypeId);
 					taxonomyRunnable.run();
 					
-					final SnomedTaxonomyBuilderResult result = taxonomyRunnable.getTaxonomyBuilderResult();
-					if (!result.getStatus().isOK()) {
-						for (InvalidRelationship invalidRelationship : result.getInvalidRelationships()) {
+					final SnomedTaxonomyStatus status = taxonomyRunnable.getTaxonomyBuilderResult();
+					if (!status.getStatus().isOK()) {
+						for (InvalidRelationship invalidRelationship : status.getInvalidRelationships()) {
 							
 							String relationshipId = String.valueOf(invalidRelationship.getRelationshipId());
 							String sourceId = String.valueOf(invalidRelationship.getSourceId());

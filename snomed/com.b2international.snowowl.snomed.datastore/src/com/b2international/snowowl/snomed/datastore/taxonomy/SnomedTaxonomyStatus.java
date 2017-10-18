@@ -23,16 +23,16 @@ import org.eclipse.core.runtime.IStatus;
 /**
  * @since 5.0
  */
-public class SnomedTaxonomyBuilderResult {
+public final class SnomedTaxonomyStatus {
 
 	private final IStatus status;
 	private final Collection<InvalidRelationship> invalidRelationships;
 
-	public SnomedTaxonomyBuilderResult(final IStatus status) {
+	public SnomedTaxonomyStatus(final IStatus status) {
 		this(status, Collections.<InvalidRelationship> emptyList());
 	}
 
-	public SnomedTaxonomyBuilderResult(final IStatus status, final Collection<InvalidRelationship> invalidRelationships) {
+	public SnomedTaxonomyStatus(final IStatus status, final Collection<InvalidRelationship> invalidRelationships) {
 		this.status = status;
 		this.invalidRelationships = invalidRelationships;
 	}

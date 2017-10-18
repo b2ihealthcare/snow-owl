@@ -75,7 +75,8 @@ public final class Taxonomies {
 			final SnomedTaxonomyBuilder newTaxonomy = new SnomedTaxonomyBuilder(conceptIds, hits.getHits());
 			newTaxonomy.setCheckCycles(checkCycles);
 			oldTaxonomy.build();
-			new SnomedTaxonomyUpdateRunnable(searcher, commitChangeSet, newTaxonomy, characteristicTypeId).run();
+			SnomedTaxonomyUpdateRunnable taxonomyUpdate = new SnomedTaxonomyUpdateRunnable(searcher, commitChangeSet, newTaxonomy, characteristicTypeId);
+			taxonomyUpdate.run();
 			final LongSet newKeys = newTaxonomy.getEdges().keySet();
 			final LongSet oldKeys = oldTaxonomy.getEdges().keySet();
 			
@@ -96,7 +97,7 @@ public final class Taxonomies {
 			// detached edges
 			final LongSet detachedEdges = LongSets.difference(oldKeys, newKeys);
 			
-			return new Taxonomy(newTaxonomy, oldTaxonomy, newEdges, changedEdges, detachedEdges);
+			return new Taxonomy(newTaxonomy, oldTaxonomy, taxonomyUpdate.getTaxonomyBuilderResult(), newEdges, changedEdges, detachedEdges);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);
 		}
