@@ -46,7 +46,6 @@ public class SnomedMergeConflictRuleProvider implements IMergeConflictRuleProvid
 		List<IMergeConflictRule> rules = newArrayList();
 		rules.add(new SnomedRefsetMemberReferencingDetachedComponentRule());
 		rules.add(new SnomedLanguageRefsetMembersMergeConflictRule());
-		rules.add(new SnomedInvalidTaxonomyMergeConflictRule(getIndex(getRepositoryUUID())));
 		rules.add(new SnomedInvalidRelationshipMergeConflictRule());
 		return rules;
 	}
