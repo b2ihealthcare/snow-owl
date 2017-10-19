@@ -98,6 +98,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 			Map<String, Object> typeMapping = ImmutableMap.of(type,
 				ImmutableMap.builder()
 					.put("_all", ImmutableMap.of("enabled", false))
+					.put("date_detection", "false")
+					.put("numeric_detection", "false")
 					.putAll(toProperties(mapping))
 					.build()
 			);
