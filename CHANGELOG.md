@@ -1,6 +1,22 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.11.3
+
+### Added
+- Support filter members by `mapTargetDescription` field (774bc0bf9463840db08f539b5d2e88b54032f2ce)
+
+### Removed
+- `com.b2international.snowowl.emf.compare` module
+
+### Bugs
+- Fixed missing remote job documents issue (00ca848f624b0879bbeba27995be98116506d0b0)
+- Fixed IOOBE issues when sending bulk delete requests (9a9b166d5b86c110d6a0bc86d63d0e630305ebe7)
+- Remote jobs now properly track progress via the monitor available in the given context (8524e0e0d179e6bba331919c69bd616029282fb7, 83debbec4f1e86e35910d910d9f1a3fb299ae4d7)
+
+### Performance
+- Improve rebase/merge performance significantly by disabling unnecessary taxonomy check rule (9cd76b9342cf014346aa3e6d125bb6d314cf99f1)
+
 ## 5.11.2
 
 ### Added
