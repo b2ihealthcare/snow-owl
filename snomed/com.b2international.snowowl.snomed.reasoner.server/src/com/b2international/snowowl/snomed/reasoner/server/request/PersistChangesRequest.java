@@ -178,7 +178,9 @@ public class PersistChangesRequest implements Request<ServiceProvider, ApiError>
 				}
 			}
 
-			new EquivalentConceptMerger(editingContext, equivalenciesToFix).fixEquivalencies();
+			if (!equivalenciesToFix.isEmpty()) {
+				new EquivalentConceptMerger(editingContext, equivalenciesToFix).fixEquivalencies();
+			}
 
 			CDOTransaction editingContextTransaction = editingContext.getTransaction();
 			editingContext.preCommit();
