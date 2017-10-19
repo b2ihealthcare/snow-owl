@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.b2international.commons.ClassUtils;
 import com.b2international.index.Doc;
 import com.b2international.index.Script;
 import com.b2international.index.mapping.DocumentMapping;
@@ -35,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 @Doc(type = "job")
@@ -271,10 +270,6 @@ public final class RemoteJobEntry implements Serializable {
 		return result;
 	}
 	
-	public <T> T getResultAs(Class<T> type) {
-		return ClassUtils.checkAndCast(result, type);
-	}
-	
 	// Frequently used domain specific methods
 
 	@JsonIgnore
@@ -287,57 +282,6 @@ public final class RemoteJobEntry implements Serializable {
 		return getState().oneOf(RemoteJobState.CANCELED, RemoteJobState.CANCEL_REQUESTED);
 	}
 	
-//	public String getFormattedScheduleDate() {
-//		return getScheduleDate() == null ? "Unknown" : Dates.formatByHostTimeZone(getScheduleDate(), DateFormats.MEDIUM);
-//	}
-	
-//	public String getFormattedStartDate() {
-//		return getStartDate() == null ? "" : Dates.formatByHostTimeZone(getStartDate(), DateFormats.MEDIUM);
-//	}
-	
-//	public String getFormattedFinishDate() {
-//		return getFinishDate() == null ? "N/A" : Dates.formatByHostTimeZone(getFinishDate(), DateFormats.MEDIUM);
-//	}
-
-//	@JsonIgnore
-//	public void setCompletionPercent(final int newCompletionPercent) {
-//		final int limitedNewCompletionLevel = limitLevel(newCompletionPercent);
-//		if (limitedNewCompletionLevel > completionLevel) {
-//			completionLevel = limitedNewCompletionLevel;
-//		}
-//	}
-	
-//	public void setStartDate(final Date newStartDate) {
-//		this.startDate = newStartDate;
-//	}
-
-//	public void setState(final RemoteJobState newState) {
-//		this.state = newState;
-//	}
-	
-	// XXX (apeteri): this setter does not broadcast notifications
-//	public void setFinishDate(final Date newFinishDate) {
-//		if (dateSetFirst(finishDate, newFinishDate)) {
-//			finishDate = newFinishDate;
-//		}
-//	}
-
-//	private boolean dateSetFirst(final Date oldStartDate, final Date newStartDate) {
-//		return null == oldStartDate && null != newStartDate;
-//	}
-	
-	/**
-	 * Cancels this job entry by setting its state to CANCEL_REQUESTED and its finish date to now.
-	 */
-//	public void cancel() {
-//		setState(RemoteJobState.CANCEL_REQUESTED);
-//		setFinishDate(new Date());
-//	}
-	
-//	private int limitLevel(final int completionLevel) {
-//		return Math.max(MIN_COMPLETION_LEVEL, Math.min(MAX_COMPLETION_LEVEL, completionLevel));
-//	}
-
 	@Override
 	public int hashCode() {
 		return 31 + id.hashCode();
@@ -363,7 +307,7 @@ public final class RemoteJobEntry implements Serializable {
 
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add("id", id)
 				.add("description", description)
 				.add("user", user)
