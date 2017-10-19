@@ -134,6 +134,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private String nameSpace;
 	private boolean uniquenessCheckEnabled = true;
 	private Set<String> newComponentIds = Collections.synchronizedSet(Sets.<String>newHashSet());
+	private SnomedDeletionPlan deletionPlan;
 
 	/**
 	 * Returns with a pair, identifying a preferred term associated with the specified SNOMED&nbsp;CT concept.
@@ -975,43 +976,38 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	private void delete(Concept concept, boolean force) {
-		SnomedDeletionPlan deletionPlan = canDelete(concept, null, force);
+		deletionPlan = canDelete(concept, deletionPlan, force);
 		if(deletionPlan.isRejected()) {
 			throw new ConflictException(deletionPlan.getRejectionReasons().toString());
 		}
-		delete(deletionPlan);
 	}
 
 	private void delete(Description description, boolean force) {
-		SnomedDeletionPlan deletionPlan = canDelete(description, null, force);
+		deletionPlan = canDelete(description, deletionPlan, force);
 		if(deletionPlan.isRejected()) {
 			throw new ConflictException(deletionPlan.getRejectionReasons().toString());
 		}
-		delete(deletionPlan);
 	}
 
 	private void delete(Relationship relationship, boolean force) {
-		SnomedDeletionPlan deletionPlan = canDelete(relationship, null, force);
+		deletionPlan = canDelete(relationship, deletionPlan, force);
 		if(deletionPlan.isRejected()) {
 			throw new ConflictException(deletionPlan.getRejectionReasons().toString());
 		}
-		delete(deletionPlan);
 	}
 
 	private void delete(SnomedRefSet refSet, boolean force) {
-		SnomedDeletionPlan deletionPlan = canDelete(refSet, null, force);
+		deletionPlan = canDelete(refSet, deletionPlan, force);
 		if (deletionPlan.isRejected()) {
 			throw new ConflictException(deletionPlan.getRejectionReasons().toString());
 		}
-		delete(deletionPlan);
 	}
 	
 	private void delete(SnomedRefSetMember member, boolean force) {
-		SnomedDeletionPlan deletionPlan = canDelete(member, null, force);
+		deletionPlan = canDelete(member, deletionPlan, force);
 		if (deletionPlan.isRejected()) {
 			throw new ConflictException(deletionPlan.getRejectionReasons().toString());
 		}
-		delete(deletionPlan);
 	}
 	
 	public SnomedDeletionPlan canDelete(Concept concept, SnomedDeletionPlan deletionPlan, boolean force) {
@@ -1395,7 +1391,9 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
 	@Override
 	public void preCommit() {
-		
+		if (deletionPlan != null) {
+			delete(deletionPlan);
+		}
 		/* Ensure that all new components (concepts, descriptions and relationships) have unique 
 		 * IDs both among themselves and the components already persisted in the database.
 		 * Non-unique IDs will be overwritten with ones which are guaranteed to be unique 

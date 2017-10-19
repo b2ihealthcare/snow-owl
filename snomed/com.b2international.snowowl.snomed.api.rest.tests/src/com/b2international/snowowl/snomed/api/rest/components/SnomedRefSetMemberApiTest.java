@@ -23,8 +23,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.Map;
@@ -32,12 +31,19 @@ import java.util.Map;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.bulk.BulkRequest;
+import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableMap;
@@ -204,6 +210,48 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 
 		executeSyncAction(memberId);
 		checkReferencedComponentIds(conceptIds, simpleRefSetId);
+	}
+	
+	/**
+	 * Removals are sent in a BulkRequest which includes individual DeleteRequests for each member to be deleted. The version of SnomedEditingContext prior to the fix, however, used
+	 * a server-side query to determine the list index for each member, and the list index reported by the database become misaligned with the actual
+	 * contents if the members were not removed in decreasing index order. This test verifies that order of delete requests inside a bulk request does not matter.
+	 */
+	@Test
+	public void issue_SO_2501_ioobe_during_member_deletion() throws Exception {
+		String simpleRefSetId = createNewRefSet(branchPath);
+		
+		final Map<?, ?> memberRequest = ImmutableMap.<String, Object>builder()
+				.put(SnomedRf2Headers.FIELD_MODULE_ID, Concepts.MODULE_SCT_CORE)
+				.put("referenceSetId", simpleRefSetId)
+				.put(SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, simpleRefSetId)
+				.put("commitComment", "Created new simple reference set member")
+				.build();
+		
+		final String member1Id = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, memberRequest)
+				.statusCode(201)
+				.extract().header("Location"));
+		
+		final String member2Id = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, memberRequest)
+				.statusCode(201)
+				.extract().header("Location"));
+		
+		final String member3Id = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, memberRequest)
+				.statusCode(201)
+				.extract().header("Location"));
+		
+		final BulkRequestBuilder<TransactionContext> bulk = BulkRequest.create();
+		
+		bulk.add(SnomedRequests.prepareDeleteMember(member1Id));
+		bulk.add(SnomedRequests.prepareDeleteMember(member3Id));
+
+		SnomedRequests.prepareCommit()
+			.setBody(bulk)
+			.setCommitComment("Delete reference set members in ascending index order")
+			.setUserId("test")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync();
 	}
 
 	private void executeSyncAction(final String memberId) {
