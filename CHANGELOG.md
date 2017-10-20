@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.11.5
+
+### Changed
+- Use ECL when creating/evaluating query type refsets (b433de3ff7af35ef8654b806e6fb774cf628c779)
+
+### Bugs
+- Fix TaxonomyDefect serialization issue (b44b90ab3d8f13bd9c33b6eef12dd1c697730552)
+
 ## 5.11.4
 
 ### Changed
