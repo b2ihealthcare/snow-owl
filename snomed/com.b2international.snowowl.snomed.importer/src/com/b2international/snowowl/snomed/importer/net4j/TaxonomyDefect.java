@@ -15,10 +15,12 @@
  */
 package com.b2international.snowowl.snomed.importer.net4j;
 
+import java.io.Serializable;
+
 /**
  * @since 5.4
  */
-public final class TaxonomyDefect {
+public final class TaxonomyDefect implements Serializable {
 
 	public enum Type {
 		MISSING_SOURCE,
