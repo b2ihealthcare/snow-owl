@@ -310,6 +310,17 @@ public abstract class SnomedConstants {
 		public static final String MODULE_B2I_EXTENSION = "636635721000154103";
 		public static final String CORE_NAMESPACE = "373872000";
 		public static final String B2I_NAMESPACE = "1000154";
+		
+		// UK modules
+		public static final String UK_MAINTAINED_CLINICAL_MODULE = "999003121000000100";
+		public static final String UK_EDITION_MODULE = "999000041000000102";
+		public static final String UK_EDITION_REFERENCE_SET_MODULE = "999000031000000106";
+		public static final String UK_CLINICAL_EXTENSION_MODULE = "999000011000000103";
+		public static final String UK_CLINICAL_EXTENSION_REFERENCE_SET_MODULE = "999000021000000109";
+		
+		public static final String UK_MAINTAINED_PHARMACY_MODULE = "999000871000001102";
+		public static final String UK_DRUG_EXTENSION_MODULE = "999000011000001104";
+		public static final String UK_DRUG_EXTENSION_REFERENCE_SET_MODULE = "999000021000001108";
 
 		// SG specific concepts
 		public static final String GENERATED_SINGAPORE_MEDICINAL_PRODUCT = "551000991000133100";
