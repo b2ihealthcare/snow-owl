@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.server.dependencies.feature"
       label="Snow Owl Server Dependencies"
-      version="5.11.3"
+      version="5.11.4"
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
