@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Datastore Tests
 Bundle-SymbolicName: com.b2international.snowowl.datastore.server.tests
-Bundle-Version: 5.11.4
+Bundle-Version: 5.11.5
 Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.snowowl.datastore.server;bundle-version="4.1.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
