@@ -16,7 +16,7 @@
 package com.b2international.snowowl.datastore.server.snomed.index;
 
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.active;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.module;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.modules;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.refSetTypes;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds;
@@ -66,8 +66,6 @@ import com.google.common.collect.Lists;
  */
 public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuilder {
 
-	private static final String UK_DRUG_MODULE = "999000011000001104";
-	
 	private final class GetActiveIsAStatementsRunnable implements Runnable {
 
 		private final String taskName;
@@ -88,7 +86,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 							.filter(active())
 							.filter(typeId(Concepts.IS_A))
 							.filter(characteristicTypeIds(getAllowedCharacteristicTypes()))
-							.mustNot(module(UK_DRUG_MODULE))
+							.mustNot(modules(Concepts.UK_MODULES))
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();
@@ -133,7 +131,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 					.where(Expressions.builder()
 							.filter(active())
 							.filter(additionalClause)
-							.mustNot(module(UK_DRUG_MODULE))
+							.mustNot(modules(Concepts.UK_MODULES))
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();
@@ -173,7 +171,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
 					.where(Expressions.builder()
 							.filter(active())
-							.mustNot(module(UK_DRUG_MODULE))
+							.mustNot(modules(Concepts.UK_MODULES))
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();
@@ -308,7 +306,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 							.filter(referencedComponentIds(LongSets.toStringSet(componentIds)))
 							.filter(refSetTypes(Collections.singleton(SnomedRefSetType.CONCRETE_DATA_TYPE)))
 							.filter(characteristicTypeIds(characteristicTypes))
-							.mustNot(module(UK_DRUG_MODULE))
+							.mustNot(modules(Concepts.UK_MODULES))
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();
@@ -378,7 +376,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 					.where(Expressions.builder()
 							.filter(active())
 							.filter(characteristicTypeIds(characteristicTypes))
-							.mustNot(module(UK_DRUG_MODULE))
+							.mustNot(modules(Concepts.UK_MODULES))
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();

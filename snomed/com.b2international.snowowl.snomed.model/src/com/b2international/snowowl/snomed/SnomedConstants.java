@@ -321,6 +321,16 @@ public abstract class SnomedConstants {
 		public static final String UK_MAINTAINED_PHARMACY_MODULE = "999000871000001102";
 		public static final String UK_DRUG_EXTENSION_MODULE = "999000011000001104";
 		public static final String UK_DRUG_EXTENSION_REFERENCE_SET_MODULE = "999000021000001108";
+		public static final Set<String> UK_MODULES = ImmutableSet.of(
+			UK_MAINTAINED_CLINICAL_MODULE, 
+			UK_EDITION_MODULE,
+			UK_EDITION_REFERENCE_SET_MODULE,
+			UK_CLINICAL_EXTENSION_MODULE,
+			UK_CLINICAL_EXTENSION_REFERENCE_SET_MODULE,
+			UK_MAINTAINED_PHARMACY_MODULE,
+			UK_DRUG_EXTENSION_MODULE,
+			UK_DRUG_EXTENSION_REFERENCE_SET_MODULE
+		);
 
 		// SG specific concepts
 		public static final String GENERATED_SINGAPORE_MEDICINAL_PRODUCT = "551000991000133100";
@@ -350,6 +360,7 @@ public abstract class SnomedConstants {
 		public static final String REFINABILITY_VALUE = "900000000000226000";
 		public static final String DESCRIPTION_INACTIVATION_VALUE = "900000000000493001";
 		public static final String CONCEPT_INACTIVATION_VALUE = "900000000000481005";
+
 	}
 	
 	// RF2 effective time format
