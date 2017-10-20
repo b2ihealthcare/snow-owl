@@ -65,7 +65,7 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 		final String targetReferenceSet = member.getReferencedComponent().getId();
 
 		// GET matching members of a query
-		final SnomedConcepts matchingConcepts = SnomedRequests.prepareSearchConcept().filterByEscg(query).all().build().execute(context);
+		final SnomedConcepts matchingConcepts = SnomedRequests.prepareSearchConcept().filterByEcl(query).all().build().execute(context);
 		
 		final Map<String, SnomedConcept> conceptsToAdd = newHashMap();
 		final Collection<SnomedReferenceSetMember> membersToRemove = newHashSet();

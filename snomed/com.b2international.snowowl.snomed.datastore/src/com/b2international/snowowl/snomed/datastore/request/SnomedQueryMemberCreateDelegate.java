@@ -63,7 +63,7 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 		// add all matching members 
 		final SnomedConcepts queryResults = SnomedRequests.prepareSearchConcept()
 				.all()
-				.filterByEscg(getProperty(SnomedRf2Headers.FIELD_QUERY))
+				.filterByEcl(getProperty(SnomedRf2Headers.FIELD_QUERY))
 				.build()
 				.execute(context);
 
