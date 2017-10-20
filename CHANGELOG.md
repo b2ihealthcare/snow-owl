@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 5.11.4
+
+### Changed
+- Disable classification of UK module entirely (81987250976baa11e4eff21d1310438c4c2bde90)
+
+### Bugs
+- Fix concept effective time issue when updating concept's components via concept update request (5ea826daf38c9cedd8a59110403e2e23ca9f0610)
+
 ## 5.11.3
 
 ### Added
