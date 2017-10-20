@@ -8,5 +8,6 @@ B2i Healthcare <support@b2i.sg>
 include::introduction.adoc[]
 include::installation_guide.adoc[]
 include::administration_guide.adoc[]
+include::ldap_uac_guide.adoc[]
 include::administrative_console_reference.adoc[]
 include::configuration_reference.adoc[]
