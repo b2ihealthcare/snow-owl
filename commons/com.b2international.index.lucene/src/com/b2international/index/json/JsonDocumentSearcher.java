@@ -441,7 +441,7 @@ public class JsonDocumentSearcher implements Searcher {
 			SortField luceneSortField = toLuceneSortField(mapping, nonSortedField, false);
 			SortField fetchOnlySortField = new SortField(nonSortedField, new FieldComparatorSource() {
 				@Override
-				public FieldComparator<?> newComparator(String fieldname, int numHits, int sortPos, boolean reversed) throws IOException {
+				public FieldComparator<?> newComparator(String fieldname, int numHits, int sortPos, boolean reversed) {
 					return new DelegatingFieldComparator(luceneSortField.getComparator(numHits, sortPos)) {
 						@Override public int compare(int slot1, int slot2) { return 0; }
 						@Override public int compareValues(Object first, Object second) { return 0; }

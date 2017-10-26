@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Apache Lucene and Elasticsearch
 Bundle-SymbolicName: com.b2international.org.apache.lucene
-Bundle-Version: 5.5.2.b2i
+Bundle-Version: 6.6.1.b2i
 Bundle-ClassPath: .,
  lib-es5/elasticsearch-5.6.3.jar,
  lib-es5/HdrHistogram-2.1.9.jar,

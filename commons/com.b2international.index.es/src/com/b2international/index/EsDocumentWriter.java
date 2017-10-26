@@ -119,13 +119,34 @@ public class EsDocumentWriter implements Writer {
 				.setRouting(mapping.typeAsString());
 			BulkByScrollResponse r = ubqrb
 			    .script(script)
+			    .setSlices(getConcurrencyLevel())
 			    .filter(query)
 			    .get();
-			if (r.getUpdated() > 0) {
-				admin.log().info("Updated {} {} documents with script '{}', params({})", r.getUpdated(), mapping.typeAsString(), update.getScript(), update.getParams());
-			} else {
-				admin.log().warn("Couldn't update any {} documents with script '{}', params({}), no-ops ({}), conflicts ({})", mapping.typeAsString(), update.getScript(), update.getParams(), r.getNoops(), r.getVersionConflicts());
+			
+			boolean created = r.getCreated() > 0;
+			if (created) {
+				admin.log().info("Created {} {} documents with script '{}', params({})", r.getCreated(), mapping.typeAsString(), update.getScript(), update.getParams());
 			}
+			
+			boolean updated = r.getUpdated() > 0;
+			if (updated) {
+				admin.log().info("Updated {} {} documents with script '{}', params({})", r.getUpdated(), mapping.typeAsString(), update.getScript(), update.getParams());
+			}
+			
+			boolean deleted = r.getDeleted() > 0;
+			if (deleted) {
+				admin.log().info("Deleted {} {} documents with script '{}', params({})", r.getDeleted(), mapping.typeAsString(), update.getScript(), update.getParams());
+			}
+			
+			if (!created && !updated && !deleted) {
+				admin.log().warn("Couldn't bulk update '{}' documents with script '{}', params({}), no-ops ({}), conflicts ({})", 
+						mapping.typeAsString(), 
+						update.getScript(), 
+						update.getParams(), 
+						r.getNoops(), 
+						r.getVersionConflicts());
+			}
+			
 			checkState(r.getVersionConflicts() == 0, "There were unknown version conflicts during bulk updates");
 			checkState(r.getSearchFailures().isEmpty(), "There were search failure during bulk updates");
 			if (!r.getBulkFailures().isEmpty()) {
@@ -163,7 +184,7 @@ public class EsDocumentWriter implements Writer {
 					}
 				}
 			})
-			.setConcurrentRequests((int) admin.settings().get(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL))
+			.setConcurrentRequests(getConcurrencyLevel())
 			.setBulkActions(5000)
 			.build();
 
@@ -198,6 +219,10 @@ public class EsDocumentWriter implements Writer {
 		}
 		// refresh the index if there were only updates
 		admin.refresh();
+	}
+
+	private int getConcurrencyLevel() {
+		return (int) admin.settings().get(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL);
 	}
 
 	/*
