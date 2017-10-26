@@ -84,13 +84,13 @@ public interface IdentityProviderConfig {
 
 	    @Override
 		public JavaType typeFromId(DatabindContext context, String type) {
-	    	return typeFromId(type);
+	    	checkArgument(subTypeCache.containsKey(type), "Cannot resolve configuration object type: " + type);
+	    	return TypeFactory.defaultInstance().constructSpecializedType(baseType, subTypeCache.get(type));
 	    }
 
 	    @Override
-	    public JavaType typeFromId(String type) {
-	    	checkArgument(subTypeCache.containsKey(type), "Cannot resolve configuration object type: " + type);
-	    	return TypeFactory.defaultInstance().constructSpecializedType(baseType, subTypeCache.get(type));
+	    public String getDescForKnownTypeIds() {
+	    	return subTypeCache.keySet().stream().collect(Collectors.joining(","));
 	    }
 	    
 		private boolean isValid(Class<?> clazz) {

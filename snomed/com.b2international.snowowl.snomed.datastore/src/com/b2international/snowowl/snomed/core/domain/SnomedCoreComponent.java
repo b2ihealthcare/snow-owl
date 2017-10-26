@@ -82,12 +82,12 @@ public abstract class SnomedCoreComponent extends SnomedComponent {
 	    }
 
 	    @Override
-		public JavaType typeFromId(DatabindContext context, String type) {
-	    	return typeFromId(type);
+	    public String getDescForKnownTypeIds() {
+	    	return null;
 	    }
-
+	    
 	    @Override
-	    public JavaType typeFromId(String type) {
+		public JavaType typeFromId(DatabindContext context, String type) {
 	    	final Class<? extends SnomedCoreComponent> clazz;
 	    	switch (SnomedIdentifiers.getComponentCategory(type)) {
 	    	case CONCEPT:
@@ -103,7 +103,7 @@ public abstract class SnomedCoreComponent extends SnomedComponent {
 	    	}
 	    	return TypeFactory.defaultInstance().constructSpecializedType(baseType, clazz);
 	    }
-	    
+
 	}
 	
 }
