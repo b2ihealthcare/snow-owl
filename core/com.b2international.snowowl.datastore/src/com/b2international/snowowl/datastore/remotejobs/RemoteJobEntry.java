@@ -40,7 +40,10 @@ import com.google.common.collect.ImmutableSet;
 @Doc(type = "job")
 @JsonDeserialize(builder=RemoteJobEntry.Builder.class)
 @Script(name=RemoteJobEntry.WITH_DELETED, script="ctx._source.deleted = true")
-@Script(name=RemoteJobEntry.WITH_STATE, script="ctx._source.state = params.state")
+@Script(name=RemoteJobEntry.WITH_STATE, script=""
+		+ "if (ctx._source.state == params.expectedState) {"
+		+ " ctx._source.state = params.newState; "
+		+ "}")
 @Script(name=RemoteJobEntry.WITH_COMPLETION_LEVEL, script="ctx._source.completionLevel = params.completionLevel")
 @Script(name=RemoteJobEntry.WITH_RUNNING, script="ctx._source.state = params.state;ctx._source.startDate = params.startDate")
 @Script(name=RemoteJobEntry.WITH_DONE, script="ctx._source.state = params.state;ctx._source.finishDate = params.finishDate;ctx._source.result = params.result")

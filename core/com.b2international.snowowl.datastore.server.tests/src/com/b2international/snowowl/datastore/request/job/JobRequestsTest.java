@@ -84,7 +84,7 @@ public class JobRequestsTest {
 		final String jobId = schedule("scheduleAndWaitDone", context -> RESULT);
 		final RemoteJobEntry entry = waitDone(jobId);
 		assertEquals(RemoteJobState.FINISHED, entry.getState());
-		assertEquals(RESULT, entry.getResult());
+		assertEquals(RESULT, entry.getResult().get("value"));
 		// verify job events
 		// 1 added
 		// 1 changed - RUNNING
@@ -95,10 +95,10 @@ public class JobRequestsTest {
 	@Test
 	public void scheduleAndCancel() throws Exception {
 		final String jobId = schedule("scheduleAndCancel", context -> {
-			// wait 50 ms, then throw cancelled if monitor is cancelled or return the result, so the main thread have time to actually initiate the cancel request
+			// wait 1000 ms, then throw cancelled if monitor is cancelled or return the result, so the main thread have time to actually initiate the cancel request
 			final IProgressMonitor monitor = context.service(IProgressMonitor.class);
 			try {
-				Thread.sleep(50);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
@@ -193,6 +193,11 @@ public class JobRequestsTest {
 	private RemoteJobEntry waitDone(final String jobId) {
 		RemoteJobEntry entry = null;
 		do {
+			try {
+				Thread.sleep(20);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
 			entry = get(jobId);
 		} while (!entry.isDone());
 		return entry;

@@ -137,7 +137,7 @@ public final class RemoteJobTracker implements IDisposableService {
 		final RemoteJobEntry job = get(jobId);
 		if (job != null && !job.isCancelled()) {
 			LOG.trace("Cancelling job {}", jobId);
-			update(jobId, RemoteJobEntry.WITH_STATE, ImmutableMap.of("state", RemoteJobState.CANCEL_REQUESTED));
+			update(jobId, RemoteJobEntry.WITH_STATE, ImmutableMap.of("expectedState", RemoteJobState.RUNNING, "newState", RemoteJobState.CANCEL_REQUESTED));
 			Job.getJobManager().cancel(SingleRemoteJobFamily.create(jobId));
 		}
 	}
