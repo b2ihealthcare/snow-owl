@@ -251,7 +251,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 
 	/*package*/ final Collection<Branch> getChildren(BranchImpl branchImpl) {
-		final Collection<InternalBranch> values = search(Query.select(InternalBranch.class).where(Expressions.prefixMatch(DocumentMapping._ID, branchImpl.path() + Branch.SEPARATOR)).limit(Integer.MAX_VALUE).build());
+		final Collection<InternalBranch> values = search(Query.select(InternalBranch.class).where(Expressions.prefixMatch("path", branchImpl.path() + Branch.SEPARATOR)).limit(Integer.MAX_VALUE).build());
 		initialize(values);
 		return ImmutableList.copyOf(values);
 	}

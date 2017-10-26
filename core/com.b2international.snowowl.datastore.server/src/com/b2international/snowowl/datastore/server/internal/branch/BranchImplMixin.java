@@ -61,6 +61,9 @@ public abstract class BranchImplMixin implements MetadataHolderMixin {
 	@JsonProperty
 	public abstract String parentPath();
 	
+	@JsonProperty
+	public abstract String path();
+	
 	@JsonIgnore
 	public abstract BranchManagerImpl getBranchManager();
 	

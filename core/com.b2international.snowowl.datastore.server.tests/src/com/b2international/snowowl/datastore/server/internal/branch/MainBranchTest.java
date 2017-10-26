@@ -121,7 +121,7 @@ public class MainBranchTest {
 	public void serializationTest() throws Exception {
 		main.metadata().put("key", "value");
 		final String json = serializer.writeValueAsString(main);
-		assertEquals("{\"type\":\"MainBranchImpl\",\"baseTimestamp\":0,\"headTimestamp\":0,\"metadata\":{\"key\":\"value\"},\"name\":\"MAIN\",\"parentPath\":\"\",\"deleted\":false}", json);
+		assertEquals("{\"type\":\"MainBranchImpl\",\"baseTimestamp\":0,\"headTimestamp\":0,\"metadata\":{\"key\":\"value\"},\"name\":\"MAIN\",\"parentPath\":\"\",\"deleted\":false,\"path\":\"MAIN\"}", json);
 	}
 	
 	@Test

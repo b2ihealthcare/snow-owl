@@ -50,11 +50,6 @@ public class MainBranchImpl extends BranchImpl {
 	}
 	
 	@Override
-	public String path() {
-		return name();
-	}
-	
-	@Override
 	public Branch parent() {
 		return this;
 	}
