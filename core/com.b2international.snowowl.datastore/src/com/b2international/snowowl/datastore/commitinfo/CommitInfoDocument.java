@@ -23,7 +23,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 
-import com.b2international.index.Analyzed;
+import com.b2international.index.Text;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.WithId;
@@ -130,8 +130,8 @@ public final class CommitInfoDocument implements WithId, WithScore {
 	
 	private final String branch;
 	private final String userId;
-	@Analyzed(analyzer=Analyzers.TOKENIZED)
-	@Analyzed(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
+	@Text(analyzer=Analyzers.TOKENIZED)
+	@Text(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
 	private final String comment;
 	private final long timeStamp;
 	

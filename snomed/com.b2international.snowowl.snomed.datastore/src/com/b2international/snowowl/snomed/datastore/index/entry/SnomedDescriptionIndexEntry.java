@@ -29,9 +29,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.b2international.index.Analyzed;
+import com.b2international.index.Text;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.Keyword;
+import com.b2international.index.Normalizers;
 import com.b2international.index.Script;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.index.query.Expression;
@@ -359,9 +361,9 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	private final String conceptId;
 	private final String languageCode;
 	
-	@Analyzed(analyzer=Analyzers.TOKENIZED)
-	@Analyzed(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
-	@Analyzed(alias="exact", analyzer=Analyzers.EXACT)
+	@Text(analyzer=Analyzers.TOKENIZED)
+	@Text(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
+	@Keyword(alias="exact", normalizer=Normalizers.LOWER_ASCII)
 	private final String term;
 	
 	private final String typeId;
