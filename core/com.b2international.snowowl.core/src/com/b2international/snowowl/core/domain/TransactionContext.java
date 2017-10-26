@@ -80,4 +80,9 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 */
 	<T extends EObject> T lookup(String componentId, Class<T> type);
 
+	/**
+	 * Clears the entire content of the repository this context belongs to.
+	 */
+	void clearContents();
+
 }

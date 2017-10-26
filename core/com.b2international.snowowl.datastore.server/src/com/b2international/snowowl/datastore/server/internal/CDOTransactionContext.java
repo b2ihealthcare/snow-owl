@@ -114,4 +114,9 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 		}
 	}
 
+	@Override
+	public void clearContents() {
+		editingContext.clearContents();
+	}
+
 }

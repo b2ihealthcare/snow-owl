@@ -138,6 +138,11 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 	public <T extends EObject> T lookup(final String componentId, final Class<T> type) {
 		return editingContext.lookup(componentId, type);
 	}
+	
+	@Override
+	public void clearContents() {
+		editingContext.clearContents();
+	}
 
 	public SnomedEditingContext getEditingContext() {
 		return editingContext;
