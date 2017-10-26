@@ -15,18 +15,28 @@
  */
 package com.b2international.index;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
- * @since 5.10
+ * Supported normalizers are listed here. Use with the {@link Keyword} annotation on {@link String} fields.
+ * 
+ * @since 5.12.0
  */
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface AnalyzedFields {
+public enum Normalizers {
 
-	Analyzed[] value() default {};
+	/**
+	 * "exact": {
+	 *		"type": "custom",
+	 *		"char_filter": [],
+	 *		"filter": [
+	 *			"lowercase",
+	 *			"asciifolding"
+	 *		]
+	 *	}
+	 */
+	LOWER_ASCII,
+	
+	/**
+	 * Use the default normalizer specified in the index module implementation.
+	 */
+	NONE
 	
 }

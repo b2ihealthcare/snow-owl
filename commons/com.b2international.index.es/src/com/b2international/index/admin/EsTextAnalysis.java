@@ -16,16 +16,17 @@
 package com.b2international.index.admin;
 
 import com.b2international.index.Analyzers;
+import com.b2international.index.Normalizers;
 
 /**
- * Provides the supported analyzer identifier for an {@link Analyzers} enum literal.
+ * Provides the supported analyzer, normalizer identifier for an {@link Analyzers} or {@link Normalizers} enum literal.
  * 
  * @since 5.10
- * @see analysis.json file for analyzer definitions
+ * @see analysis.json file for analyzer and normalizer definitions
  */
-public final class EsAnalyzers {
+public final class EsTextAnalysis {
 
-	private EsAnalyzers() {}
+	private EsTextAnalysis() {}
 	
 	public static String getAnalyzer(Analyzers analyzer) {
 		switch (analyzer) {
@@ -40,6 +41,14 @@ public final class EsAnalyzers {
 		case CASE_SENSITIVE_PREFIX: return "case_sensitive_prefix";
 		case PREFIX: return "prefix";
 		default: throw new UnsupportedOperationException("Unsupported analyzer: " + analyzer);
+		}
+	}
+	
+	public static String getNormalizer(Normalizers normalizer) {
+		switch (normalizer) {
+		case LOWER_ASCII: return "lowerascii";
+		case NONE: return null;
+		default: throw new UnsupportedOperationException("Unsupported normalizer: " + normalizer);
 		}
 	}
 	

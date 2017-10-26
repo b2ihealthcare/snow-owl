@@ -47,7 +47,7 @@ import org.apache.lucene.util.QueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.index.Analyzed;
+import com.b2international.index.Text;
 import com.b2international.index.AnalyzerImpls;
 import com.b2international.index.Analyzers;
 import com.b2international.index.IndexClientFactory;
@@ -268,7 +268,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	private Analyzer getIndexAnalyzer() {
 		final Map<String, Analyzer> fieldAnalyzers = newHashMap();
 		for (DocumentMapping mapping : mappings.getMappings()) {
-			for (Entry<String, Analyzed> entry : mapping.getAnalyzedFields().entrySet()) {
+			for (Entry<String, Text> entry : mapping.getTextFields().entrySet()) {
 				final Analyzers analyzer = entry.getValue().analyzer();
 				if (Analyzers.DEFAULT != analyzer) {
 					fieldAnalyzers.put(entry.getKey(), AnalyzerImpls.getAnalyzer(analyzer));
@@ -281,7 +281,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	private Analyzer getSearchAnalyzer() {
 		final Map<String, Analyzer> fieldAnalyzers = newHashMap();
 		for (DocumentMapping mapping : mappings.getMappings()) {
-			for (Entry<String, Analyzed> entry : mapping.getAnalyzedFields().entrySet()) {
+			for (Entry<String, Text> entry : mapping.getTextFields().entrySet()) {
 				final Analyzers indexAnalyzer = entry.getValue().analyzer();
 				final Analyzers searchAnalyzer = entry.getValue().searchAnalyzer();
 				if (Analyzers.INDEX == searchAnalyzer) {
