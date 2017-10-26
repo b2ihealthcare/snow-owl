@@ -107,11 +107,12 @@ public class QueryBuilderBase<Q extends QueryBuilderBase<Q>> {
 		if (size == 1) {
 			return Iterables.getOnlyElement(queries);
 		} else {
-			final BooleanQuery query = new BooleanQuery(true);
+			final BooleanQuery.Builder query = new BooleanQuery.Builder();
 			for (Query q : queries) {
 				query.add(q, occur);
 			}
-			return query;
+			query.setDisableCoord(true);
+			return query.build();
 		}
 	}
 

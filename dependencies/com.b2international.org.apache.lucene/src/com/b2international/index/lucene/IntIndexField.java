@@ -18,11 +18,12 @@ package com.b2international.index.lucene;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.IntField;
+import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.IntPoint;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.lucene.util.NumericUtils;
 
 /**
@@ -39,13 +40,23 @@ public class IntIndexField extends IndexFieldBase<Integer> {
 	}
 	
 	@Override
+	public void addTo(Document doc, Integer value) {
+		super.addTo(doc, value);
+		if (Store.YES == isStored()) {
+			doc.add(new StoredField(fieldName(), value));
+		}
+	}
+	
+	@Override
 	protected IndexableField toField(Integer value) {
-		return new IntField(fieldName(), value, isStored());
+		return new IntPoint(fieldName(), value);
 	}
 	
 	@Override
 	protected BytesRef toBytesRef(Integer value) {
-		return _toBytesRef(value);
+		byte[] packed = new byte[Integer.BYTES];
+		NumericUtils.intToSortableBytes(value, packed, 0);
+	    return new BytesRef(packed);
 	}
 	
 	@Override
@@ -66,15 +77,4 @@ public class IntIndexField extends IndexFieldBase<Integer> {
 		return checkNotNull(field.numericValue(), "Cannot get numeric value from field '%s'");
 	}
 	
-	/**
-	 * @param value
-	 * @return
-	 * @deprecated - if possible don't use this API, use {@link Fields} or {@link #IntIndexField(String) constructor} instead.
-	 */
-	public static BytesRef _toBytesRef(Integer value) {
-		final BytesRefBuilder bytesRef = new BytesRefBuilder();
-		NumericUtils.intToPrefixCoded(value, 0, bytesRef);
-		return bytesRef.toBytesRef();
-	}
-
 }

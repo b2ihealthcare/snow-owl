@@ -26,12 +26,12 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermsQuery;
 import org.apache.lucene.search.MatchNoDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
+import org.apache.lucene.search.TermInSetQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.util.BytesRef;
@@ -122,7 +122,7 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 			for (T value : values) {
 				uniqueBytesRefs.add(toBytesRef(value));
 			}
-			return new TermsQuery(fieldName(), uniqueBytesRefs);
+			return new TermInSetQuery(fieldName(), uniqueBytesRefs);
 		}
 	}
 	

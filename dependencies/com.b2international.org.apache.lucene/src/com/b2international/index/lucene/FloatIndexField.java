@@ -15,7 +15,10 @@
  */
 package com.b2international.index.lucene;
 
-import org.apache.lucene.document.FloatField;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.FloatPoint;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
@@ -44,8 +47,16 @@ public class FloatIndexField extends IndexFieldBase<Float> {
 	}
 
 	@Override
+	public void addTo(Document doc, Float value) {
+		super.addTo(doc, value);
+		if (Store.YES == isStored()) {
+			doc.add(new StoredField(fieldName(), value));
+		}
+	}
+	
+	@Override
 	protected IndexableField toField(Float value) {
-		return new FloatField(fieldName(), value, isStored());
+		return new FloatPoint(fieldName(), value);
 	}
 
 	@Override

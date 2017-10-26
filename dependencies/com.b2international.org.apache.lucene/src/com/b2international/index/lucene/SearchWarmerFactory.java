@@ -40,9 +40,9 @@ public class SearchWarmerFactory extends SearcherFactory {
 		IndexSearcher searcher = super.newSearcher(reader, previousReader);
 
 		// TODO: experiment with different queries (MatchAllDocs, a set of "typical" queries, etc.)
-		final BooleanQuery query = new BooleanQuery();
+		final BooleanQuery.Builder query = new BooleanQuery.Builder();
 		query.add(new TermQuery(new Term(EMPTY_STRING, EMPTY_STRING)), Occur.MUST);
-		searcher.search(query, new TotalHitCountCollector());
+		searcher.search(query.build(), new TotalHitCountCollector());
 
 		return searcher;
 	}
