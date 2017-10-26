@@ -177,6 +177,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 					final String esType = toEsType(fieldType);
 					if (!Strings.isNullOrEmpty(esType)) {
 						prop.put("type", esType);
+						properties.put(property, prop);
 					}
 				} else {
 					checkState(String.class.isAssignableFrom(fieldType), "Only String fields can have Text and Keyword annotation. Found them on '%s'", property);
@@ -236,9 +237,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 					if (!fields.isEmpty()) {
 						prop.put("fields", fields);
 					}
+					properties.put(property, prop);
 				}
 				
-				properties.put(property, prop);
 			}
 		}
 		return ImmutableMap.of("properties", properties);
