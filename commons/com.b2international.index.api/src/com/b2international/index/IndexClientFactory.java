@@ -59,7 +59,7 @@ public interface IndexClientFactory {
 	 * Configuration key to specify the maximum number of documents to retrieve
 	 * in a single call from the index.
 	 */
-	String RESULT_WINDOW_KEY = "max_result_window";
+	String RESULT_WINDOW_KEY = "index.max_result_window";
 	
 	/**
 	 * Configuration key to specify the number of shards for the index.

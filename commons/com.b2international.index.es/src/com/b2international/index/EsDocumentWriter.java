@@ -27,18 +27,19 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.elasticsearch.action.DocWriteRequest.OpType;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse.Failure;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.index.IndexRequest.OpType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.reindex.BulkIndexByScrollResponse;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.UpdateByQueryAction;
 import org.elasticsearch.index.reindex.UpdateByQueryRequestBuilder;
-import org.elasticsearch.script.ScriptService.ScriptType;
+import org.elasticsearch.script.ScriptType;
 
 import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
@@ -109,14 +110,14 @@ public class EsDocumentWriter implements Writer {
 			UpdateByQueryRequestBuilder ubqrb = UpdateByQueryAction.INSTANCE.newRequestBuilder(client);
 
 			final String rawScript = mapping.getScript(update.getScript()).script();
-			org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(rawScript, ScriptType.INLINE, "groovy", ImmutableMap.of("params", update.getParams()));
+			org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "groovy", rawScript, ImmutableMap.of("params", update.getParams()));
 
 			ubqrb.source()
 				.setSize(1000)
 				.setIndices(admin.name())
 				.setTypes(mapping.typeAsString())
 				.setRouting(mapping.typeAsString());
-			BulkIndexByScrollResponse r = ubqrb
+			BulkByScrollResponse r = ubqrb
 			    .script(script)
 			    .filter(query)
 			    .get();
@@ -127,9 +128,9 @@ public class EsDocumentWriter implements Writer {
 			}
 			checkState(r.getVersionConflicts() == 0, "There were unknown version conflicts during bulk updates");
 			checkState(r.getSearchFailures().isEmpty(), "There were search failure during bulk updates");
-			if (!r.getIndexingFailures().isEmpty()) {
+			if (!r.getBulkFailures().isEmpty()) {
 				Throwable t = null;
-				for (Failure failure : r.getIndexingFailures()) {
+				for (Failure failure : r.getBulkFailures()) {
 					if (t == null) {
 						t = failure.getCause();
 					}
@@ -175,7 +176,7 @@ public class EsDocumentWriter implements Writer {
 					processor.add(client
 							.prepareIndex(admin.name(), mapping.typeAsString(), id)
 							.setOpType(OpType.INDEX)
-							.setSource(_source)
+							.setSource(_source, XContentType.JSON)
 							.setRouting(mapping.typeAsString())
 							.request());
 				}

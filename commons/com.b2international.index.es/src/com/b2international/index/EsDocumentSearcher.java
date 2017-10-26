@@ -77,8 +77,8 @@ public class EsDocumentSearcher implements Searcher {
 				.setFetchSource(true)
 				.get();
 		if (response.isExists()) {
-			final BytesReference bytesRef = response.getSourceAsBytesRef();
-			return mapper.readValue(bytesRef.array(), bytesRef.arrayOffset(), bytesRef.length(), type);
+			final byte[] bytes = BytesReference.toBytes(response.getSourceAsBytesRef());
+			return mapper.readValue(bytes, 0, bytes.length, type);
 		} else {
 			return null;
 		}
@@ -114,7 +114,7 @@ public class EsDocumentSearcher implements Searcher {
 			req.setFetchSource(true);
 		} else {
 			if (query.isDocIdOnly()) {
-				req.setNoFields();
+				req.setFetchSource(false);
 			} else {
 				req.setFetchSource(query.getFields().toArray(new String[]{}), null);
 			}
@@ -169,13 +169,13 @@ public class EsDocumentSearcher implements Searcher {
 				final T value;
 				if (Primitives.isWrapperType(query.getSelect()) || String.class.isAssignableFrom(query.getSelect())) {
 					if (query.isDocIdOnly()) {
-						value = (T) hit.id();
+						value = (T) hit.getId();
 					} else {
 						value = (T) hit.getSource().get(Iterables.getOnlyElement(query.getFields()));
 					}
 				} else {
-					final BytesReference bytesRef = hit.sourceRef();
-					value = reader.readValue(bytesRef.array(), bytesRef.arrayOffset(), bytesRef.length());
+					final byte[] bytes = BytesReference.toBytes(hit.getSourceRef());
+					value = reader.readValue(bytes, 0, bytes.length);
 				}
 				if (value instanceof WithId) {
 					((WithId) value).set_id(hit.getId());
@@ -216,6 +216,7 @@ public class EsDocumentSearcher implements Searcher {
                 break;
             case DocumentMapping._ID: //$FALL-THROUGH$
             	sortById = true;
+            	field = DocumentMapping._UID;
             default:
             	req.addSort(SortBuilders.fieldSort(field).order(order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC));
             }
@@ -223,7 +224,7 @@ public class EsDocumentSearcher implements Searcher {
 		
 		// add _id field as tiebreaker if not defined in the original SortBy
 		if (!sortById) {
-			req.addSort(SortBuilders.fieldSort(DocumentMapping._ID).order(SortOrder.DESC));
+			req.addSort(SortBuilders.fieldSort(DocumentMapping._UID).order(SortOrder.DESC));
 		}
 	}
 

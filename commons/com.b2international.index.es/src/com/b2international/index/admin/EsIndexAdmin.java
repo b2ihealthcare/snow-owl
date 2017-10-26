@@ -129,7 +129,12 @@ public final class EsIndexAdmin implements IndexAdmin {
 			"analysis", 
 			Settings.builder().loadFromStream("analysis.json", Resources.getResource(getClass(), "analysis.json").openStream()).build().getAsStructuredMap(),
 			"number_of_shards",
-			String.valueOf(settings().getOrDefault(IndexClientFactory.NUMBER_OF_SHARDS, "1"))
+			String.valueOf(settings().getOrDefault(IndexClientFactory.NUMBER_OF_SHARDS, "1")),
+			"number_of_replicas", "0",
+			// disable es refresh, we will do it manually on each commit
+			"refresh_interval", "-1",
+			IndexClientFactory.RESULT_WINDOW_KEY,
+			String.valueOf(settings().getOrDefault(IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW))
 		);
 	}
 	
