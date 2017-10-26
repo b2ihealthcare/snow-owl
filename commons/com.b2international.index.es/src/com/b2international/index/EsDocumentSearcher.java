@@ -60,7 +60,7 @@ public class EsDocumentSearcher implements Searcher {
 	public EsDocumentSearcher(EsIndexAdmin admin, ObjectMapper mapper) {
 		this.admin = admin;
 		this.mapper = mapper;
-		this.resultWindow = IndexClientFactory.DEFAULT_RESULT_WINDOW;
+		this.resultWindow = Integer.parseInt((String) admin.settings().get(IndexClientFactory.RESULT_WINDOW_KEY));
 	}
 
 	@Override

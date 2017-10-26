@@ -90,7 +90,7 @@ public class OffsetLimitTest extends BaseIndexTest {
 	@Override
 	protected Map<String, Object> getSettings() {
 		Map<String, Object> settings = newHashMap(super.getSettings());
-		settings.put(IndexClientFactory.RESULT_WINDOW_KEY, SMALL_WINDOW);
+		settings.put(IndexClientFactory.RESULT_WINDOW_KEY, ""+SMALL_WINDOW);
 		return ImmutableMap.copyOf(settings);
 	}
 	
