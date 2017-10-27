@@ -24,7 +24,6 @@ import org.elasticsearch.index.reindex.ReindexPlugin;
 import org.elasticsearch.node.InternalSettingsPreparer;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.painless.PainlessPlugin;
-import org.elasticsearch.script.groovy.GroovyPlugin;
 import org.elasticsearch.transport.Netty4Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +92,6 @@ public final class EsNode extends Node {
 		putSettingIfAbsent(esSettings, "path.home", directory.toPath().resolve(CLUSTER_NAME).toString());
 		putSettingIfAbsent(esSettings, "cluster.name", CLUSTER_NAME);
 		putSettingIfAbsent(esSettings, "node.name", CLUSTER_NAME);
-		putSettingIfAbsent(esSettings, "script.inline", true);
 		
 		// local mode if not set
 		putSettingIfAbsent(esSettings, "node.master", true);
@@ -110,7 +108,7 @@ public final class EsNode extends Node {
 	}
 
 	protected EsNode(Settings settings) {
-		super(InternalSettingsPreparer.prepareEnvironment(settings, null), ImmutableList.of(Netty4Plugin.class, ReindexPlugin.class, GroovyPlugin.class, PainlessPlugin.class));
+		super(InternalSettingsPreparer.prepareEnvironment(settings, null), ImmutableList.of(Netty4Plugin.class, ReindexPlugin.class, PainlessPlugin.class));
 	}
 	
 }
