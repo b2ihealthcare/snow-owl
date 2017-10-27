@@ -94,6 +94,11 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 	private Object waitDone(String jobId) {
 		RemoteJobEntry job;
 		do {
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
 			job = JobRequests.prepareGet(jobId).buildAsync().execute(getBus()).getSync();
 		} while (!job.isDone());
 		return null;
