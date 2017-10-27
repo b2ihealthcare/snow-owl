@@ -22,9 +22,12 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.IntPoint;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.NumericUtils;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.3
@@ -37,6 +40,16 @@ public class IntIndexField extends IndexFieldBase<Integer> {
 	
 	public IntIndexField(String fieldName, boolean store) {
 		super(fieldName, store);
+	}
+	
+	@Override
+	public Query toQuery(Integer value) {
+		return IntPoint.newExactQuery(fieldName(), value);
+	}
+	
+	@Override
+	protected Query toSetQuery(Iterable<Integer> values) {
+		return IntPoint.newSetQuery(fieldName(), ImmutableSet.copyOf(values));
 	}
 	
 	@Override

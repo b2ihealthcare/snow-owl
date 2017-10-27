@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
@@ -32,7 +33,9 @@ import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.util.BytesRef;
 
+import com.b2international.index.Keyword;
 import com.b2international.index.Searcher;
+import com.b2international.index.Text;
 import com.b2international.index.lucene.Fields;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Revision;
@@ -186,17 +189,30 @@ public final class Index implements Operation {
 			}
 			break;
 		case STRING:
-			if (mapping.isText(name)) {
-				for (String analyzedFieldName : mapping.getAnalyzers(name).keySet()) {
-					Fields.searchOnlyTextField(analyzedFieldName).addTo(doc, node.textValue());
+			
+			Map<String, Text> textFields = mapping.getTextFields(name);
+			for (String analyzedFieldName : textFields.keySet()) {
+				Fields.searchOnlyTextField(analyzedFieldName).addTo(doc, node.textValue());
+				if (docValues) {
+					doc.add(new BinaryDocValuesField(analyzedFieldName, new BytesRef(node.textValue())));
 				}
-			} else {
-				Fields.searchOnlyStringField(name).addTo(doc, node.textValue());
 			}
 			
-			if (docValues) {
-				doc.add(new BinaryDocValuesField(name, new BytesRef(node.textValue())));
+			Map<String, Keyword> keywordFields = mapping.getKeywordFields(name);
+			for (String analyzedFieldName : keywordFields.keySet()) {
+				Fields.searchOnlyStringField(analyzedFieldName).addTo(doc, node.textValue());
+				if (docValues) {
+					doc.add(new BinaryDocValuesField(analyzedFieldName, new BytesRef(node.textValue())));
+				}
 			}
+			
+			if (!textFields.containsKey(name) && !keywordFields.containsKey(name)) {
+				Fields.searchOnlyStringField(name).addTo(doc, node.textValue());
+				if (docValues) {
+					doc.add(new BinaryDocValuesField(name, new BytesRef(node.textValue())));
+				}
+			}
+			
 			break;
 		case BOOLEAN:
 			Fields.searchOnlyBoolField(name).addTo(doc, node.booleanValue());

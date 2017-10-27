@@ -18,6 +18,7 @@ package com.b2international.index.revision;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -214,6 +215,7 @@ public abstract class BaseRevisionIndexTest {
 	}
 	
 	protected void assertDocEquals(Object expected, Object actual) {
+		assertNotNull("Actual document is missing from index", actual);
 		for (Field f : mappings.getMapping(expected.getClass()).getFields()) {
 			if (Revision.REPLACED_INS.equals(f.getName()) 
 					|| Revision.SEGMENT_ID.equals(f.getName())

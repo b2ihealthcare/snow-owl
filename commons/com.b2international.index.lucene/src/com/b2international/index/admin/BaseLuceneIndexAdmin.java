@@ -124,7 +124,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 		}
 		
 		if (!this.settings.containsKey(IndexClientFactory.RESULT_WINDOW_KEY)) {
-			this.settings.put(IndexClientFactory.RESULT_WINDOW_KEY, IndexClientFactory.DEFAULT_RESULT_WINDOW);
+			this.settings.put(IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW);
 		}
 	}
 	
@@ -208,7 +208,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 			
 			// TODO configure warmer???
 			executor = Executors.newFixedThreadPool(Math.max(2, Math.min(16, Runtime.getRuntime().availableProcessors())));
-			manager = new SearcherManager(writer, true, new SearcherFactory() {
+			manager = new SearcherManager(writer, true, true, new SearcherFactory() {
 				@Override
 				public IndexSearcher newSearcher(IndexReader reader, IndexReader previousReader) throws IOException {
 					return new IndexSearcher(reader, executor);

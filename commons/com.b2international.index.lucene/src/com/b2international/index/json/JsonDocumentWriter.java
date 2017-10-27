@@ -136,7 +136,7 @@ public class JsonDocumentWriter implements Writer {
 			final Set<String> keys = entry.getValue();
 			final DocumentMapping mapping = mappings.getMapping(type);
 			for (String key : keys) {
-				this.operations.add(new Delete(mapping.toUid(key)));
+				this.operations.add(new Delete(mapping.type().getName(), key, mapping.toUid(key)));
 			}
 		}
 	}

@@ -27,9 +27,10 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.document.IntPoint;
+import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.CustomScoreQuery;
-import org.apache.lucene.queries.TermsQuery;
 import org.apache.lucene.queries.function.FunctionQuery;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.lucene.queries.function.valuesource.BytesRefFieldSource;
@@ -47,9 +48,9 @@ import org.apache.lucene.search.DisjunctionMaxQuery;
 import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.MatchNoDocsQuery;
-import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermInSetQuery;
 import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.join.QueryBitSetProducer;
 import org.apache.lucene.search.join.ScoreMode;
@@ -356,7 +357,7 @@ public final class LuceneQueryBuilder {
 		for (BigDecimal decimal : predicate.values()) {
 			terms.add(new BytesRef(DecimalUtils.encode(decimal)));
 		}
-		final Query filter = new TermsQuery(predicate.getField(), terms);
+		final Query filter = new TermInSetQuery(predicate.getField(), terms);
 		deque.push(filter);
 	}
 	
@@ -381,12 +382,36 @@ public final class LuceneQueryBuilder {
 	}
 
 	private void visit(LongRangePredicate range) {
-		final Query filter = NumericRangeQuery.newLongRange(range.getField(), range.lower(), range.upper(), range.isIncludeLower(), range.isIncludeUpper());
+		final long lower;
+		if (range.lower() == null) {
+			lower = Long.MIN_VALUE;
+		} else {
+			lower = range.isIncludeLower() ? range.lower() : Math.addExact(range.lower(), 1L);
+		}
+		final long upper;
+		if (range.upper() == null) {
+			upper = Long.MAX_VALUE;
+		} else {
+			upper = range.isIncludeUpper() ? range.upper() : Math.subtractExact(range.upper(), 1L);
+		}
+		final Query filter = LongPoint.newRangeQuery(range.getField(), lower, upper);
 		deque.push(filter);
 	}
 	
 	private void visit(IntRangePredicate range) {
-		final Query filter = NumericRangeQuery.newIntRange(range.getField(), range.lower(), range.upper(), range.isIncludeLower(), range.isIncludeUpper());
+		final int lower;
+		if (range.lower() == null) {
+			lower = Integer.MIN_VALUE;
+		} else {
+			lower = range.isIncludeLower() ? range.lower() : Math.addExact(range.lower(), 1);
+		}
+		final int upper;
+		if (range.upper() == null) {
+			upper = Integer.MAX_VALUE;
+		} else {
+			upper = range.isIncludeUpper() ? range.upper() : Math.subtractExact(range.upper(), 1);
+		}
+		final Query filter = IntPoint.newRangeQuery(range.getField(), lower, upper);
 		deque.push(filter);
 	}
 	

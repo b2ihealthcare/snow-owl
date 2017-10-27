@@ -22,6 +22,7 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.NumericUtils;
@@ -31,6 +32,7 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.3
@@ -44,7 +46,17 @@ public class LongIndexField extends IndexFieldBase<Long> implements LongCollecti
 	public LongIndexField(String fieldName, boolean stored) {
 		super(fieldName, stored);
 	}
-
+	
+	@Override
+	public Query toQuery(Long value) {
+		return LongPoint.newExactQuery(fieldName(), value);
+	}
+	
+	@Override
+	protected Query toSetQuery(Iterable<Long> values) {
+		return LongPoint.newSetQuery(fieldName(), ImmutableSet.copyOf(values));
+	}
+	
 	@Override
 	public void addTo(Document doc, Long value) {
 		super.addTo(doc, value);
