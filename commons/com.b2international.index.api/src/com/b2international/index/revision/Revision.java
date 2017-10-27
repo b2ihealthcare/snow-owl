@@ -40,7 +40,10 @@ import com.google.common.collect.ImmutableSet;
 /**
  * @since 4.7
  */
-@Script(name=Revision.UPDATE_REPLACED_INS, script="ctx._source.replacedIns += params.segmentId")
+@Script(name=Revision.UPDATE_REPLACED_INS, script=""
+		+ "if (!ctx._source.replacedIns.contains(params.segmentId)) {"
+		+ "    ctx._source.replacedIns.add(params.segmentId);"
+		+ "}")
 public abstract class Revision implements WithId {
 
 	public static class Views {

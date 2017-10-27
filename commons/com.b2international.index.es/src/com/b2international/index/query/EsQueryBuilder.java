@@ -151,7 +151,7 @@ public final class EsQueryBuilder {
 		final QueryBuilder innerQuery = deque.pop();
 		
 		final String rawScript = mapping.getScript(expression.scriptName()).script();
-		org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "groovy", rawScript, ImmutableMap.of("params", expression.getParams()));
+		org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, ImmutableMap.copyOf(expression.getParams()));
 		needsScoring = true;
 		deque.push(QueryBuilders
 				.functionScoreQuery(innerQuery, ScoreFunctionBuilders.scriptFunction(script))

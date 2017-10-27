@@ -111,7 +111,7 @@ public class EsDocumentWriter implements Writer {
 			final DocumentMapping mapping = admin.mappings().getMapping(update.getType());
 			final QueryBuilder query = new EsQueryBuilder(mapping).build(update.getFilter());
 			final String rawScript = mapping.getScript(update.getScript()).script();
-			org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "groovy", rawScript, ImmutableMap.of("params", update.getParams()));
+			org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, ImmutableMap.copyOf(update.getParams()));
 			
 			long versionConflicts = 0;
 			do {
