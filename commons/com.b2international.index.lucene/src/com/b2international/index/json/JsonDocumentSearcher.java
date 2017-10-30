@@ -55,6 +55,8 @@ import com.b2international.index.Searcher;
 import com.b2international.index.WithHash;
 import com.b2international.index.WithId;
 import com.b2international.index.WithScore;
+import com.b2international.index.aggregations.Aggregation;
+import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.lucene.DelegatingFieldComparator;
 import com.b2international.index.lucene.IndexField;
 import com.b2international.index.mapping.DocumentMapping;
@@ -116,6 +118,11 @@ public class JsonDocumentSearcher implements Searcher {
 	@Override
 	public void close() throws Exception {
 		searchers.release(searcher);
+	}
+	
+	@Override
+	public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {
+		throw new UnsupportedOperationException("Aggregation Feature is not support in Lucene Index Module");
 	}
 
 	@Override

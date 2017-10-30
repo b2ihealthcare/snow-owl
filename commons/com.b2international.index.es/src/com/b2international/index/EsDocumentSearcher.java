@@ -15,9 +15,11 @@
  */
 package com.b2international.index;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import org.elasticsearch.action.get.GetResponse;
@@ -27,12 +29,21 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.terms.support.IncludeExclude;
+import org.elasticsearch.search.aggregations.metrics.tophits.TopHits;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
 import com.b2international.index.admin.EsIndexAdmin;
+import com.b2international.index.aggregations.Aggregation;
+import com.b2international.index.aggregations.AggregationBuilder;
+import com.b2international.index.aggregations.Bucket;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.EsQueryBuilder;
 import com.b2international.index.query.Query;
@@ -42,8 +53,10 @@ import com.b2international.index.query.SortBy.SortByField;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Primitives;
@@ -86,9 +99,6 @@ public class EsDocumentSearcher implements Searcher {
 
 	@Override
 	public <T> Hits<T> search(Query<T> query) throws IOException {
-		final Class<T> select = query.getSelect();
-		final Class<?> from = query.getFrom();
-
 		final Client client = admin.client();
 		final DocumentMapping mapping = admin.mappings().getDocumentMapping(query);
 		
@@ -155,9 +165,7 @@ public class EsDocumentSearcher implements Searcher {
 		
 		final ImmutableList.Builder<T> result = ImmutableList.builder();
 		
-		final ObjectReader reader = select != from 
-				? mapper.readerFor(select).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) 
-				: mapper.readerFor(select);
+		final ObjectReader reader = getResultObjectReader(query.getSelect(), query.getFrom());
 		
 		int remainingLimit = query.getLimit();
 		outer: for (SearchHits hits : allHits.build()) {
@@ -193,6 +201,12 @@ public class EsDocumentSearcher implements Searcher {
 		return new Hits<T>(result.build(), offset, limit, totalHits);
 	}
 
+	private ObjectReader getResultObjectReader(final Class<?> select, final Class<?> from) {
+		return select != from 
+				? mapper.readerFor(select).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) 
+				: mapper.readerFor(select);
+	}
+
 	private void addSort(SearchRequestBuilder req, SortBy sortBy) {
 		final List<SortBy> items = newArrayList();
 
@@ -226,6 +240,82 @@ public class EsDocumentSearcher implements Searcher {
 		if (!sortById) {
 			req.addSort(SortBuilders.fieldSort(DocumentMapping._UID).order(SortOrder.DESC));
 		}
+	}
+	
+	@Override
+	public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {
+		final String aggregationName = aggregation.getName();
+		final Client client = admin.client();
+		final DocumentMapping mapping = admin.mappings().getMapping(aggregation.getFrom());
+		
+		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping);
+		final QueryBuilder esQuery = esQueryBuilder.build(aggregation.getQuery());
+		
+		final SearchRequestBuilder req = client.prepareSearch(admin.name())
+			.addAggregation(toEsAggregation(mapping, aggregation))
+			.setRouting(mapping.typeAsString())
+			.setTypes(mapping.typeAsString())
+			.setQuery(esQuery)
+			.setSize(0)
+			.setTrackScores(false);
+		
+		SearchResponse response = null; 
+		try {
+			response = req.get();
+		} catch (Exception e) {
+			admin.log().error("Couldn't execute aggregation", e);
+			throw new IndexException("Couldn't execute aggregation: " + e.getMessage(), null);
+		}
+		
+		final ObjectReader reader = getResultObjectReader(aggregation.getFrom(), aggregation.getFrom());
+		
+		ImmutableMap.Builder<Object, Bucket<T>> buckets = ImmutableMap.builder();
+		Terms aggregationResult = response.getAggregations().<Terms>get(aggregationName);
+		for (org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket bucket : aggregationResult.getBuckets()) {
+			final TopHits topHits = bucket.getAggregations().get(topHitsAggName(aggregation));
+			
+			ImmutableList.Builder<T> hits = ImmutableList.builder();
+			
+			final SearchHits topSearchHits = topHits.getHits();
+			for (SearchHit hit : topSearchHits) {
+				final byte[] bytes = BytesReference.toBytes(hit.getSourceRef());
+				T value = reader.readValue(bytes, 0, bytes.length);
+				hits.add(value);
+			}
+			
+			buckets.put(bucket.getKey(), new Bucket<>(bucket.getKey(), new Hits<>(hits.build(), 0, aggregation.getBucketHitsLimit(), (int) topSearchHits.getTotalHits())));
+		}
+		
+		return new Aggregation<>(aggregationName, buckets.build());
+	}
+
+	private org.elasticsearch.search.aggregations.AggregationBuilder toEsAggregation(DocumentMapping mapping, AggregationBuilder<?> aggregation) {
+		final TermsAggregationBuilder termsAgg = AggregationBuilders
+				.terms(aggregation.getName())
+				.minDocCount(aggregation.getMinBucketSize())
+				.size(Integer.MAX_VALUE);
+		boolean isFieldAgg = !Strings.isNullOrEmpty(aggregation.getField());
+		boolean isScriptAgg = !Strings.isNullOrEmpty(aggregation.getScript());
+		if (isFieldAgg) {
+			checkArgument(!isScriptAgg, "Specify either field or script parameter, not both");
+			termsAgg.field(aggregation.getField());
+		} else if (isScriptAgg) {
+			final String rawScript = mapping.getScript(aggregation.getScript()).script();
+			termsAgg.script(new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, Collections.emptyMap()));
+		} else {
+			throw new IllegalArgumentException("Specify either field or script parameter");
+		}
+		
+		// add top hits agg to get the top N items for each bucket
+		termsAgg.subAggregation(AggregationBuilders.topHits(topHitsAggName(aggregation))
+				.fetchSource(true)
+				.size(aggregation.getBucketHitsLimit()));
+		
+		return termsAgg;
+	}
+
+	private String topHitsAggName(AggregationBuilder<?> aggregation) {
+		return aggregation.getName() + "-top-hits";
 	}
 
 }

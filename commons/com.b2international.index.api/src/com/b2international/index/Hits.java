@@ -18,6 +18,7 @@ package com.b2international.index;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @since 4.7
@@ -55,6 +56,10 @@ public final class Hits<T> implements Iterable<T> {
 	
 	public int getTotal() {
 		return total;
+	}
+	
+	public Stream<T> stream() {
+		return hits.stream();
 	}
 
 	public static <T> Hits<T> empty(int offset, int limit) {

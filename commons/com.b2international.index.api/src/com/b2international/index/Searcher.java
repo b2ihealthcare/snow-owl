@@ -17,6 +17,8 @@ package com.b2international.index;
 
 import java.io.IOException;
 
+import com.b2international.index.aggregations.Aggregation;
+import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.query.Query;
 
 /**
@@ -46,5 +48,14 @@ public interface Searcher extends AutoCloseable {
 	 *             - if something goes wrong during the execution of the query
 	 */
 	<T> Hits<T> search(Query<T> query) throws IOException;
+	
+	/**
+	 * Execute an aggregation among all stored documents.
+	 * 
+	 * @param aggregation
+	 * @return
+	 * @throws IOException
+	 */
+	<T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException;
 
 }
