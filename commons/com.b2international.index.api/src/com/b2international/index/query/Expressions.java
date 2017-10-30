@@ -205,6 +205,10 @@ public class Expressions {
 		return new TextPredicate(field, term, MatchType.PARSED);
 	}
 	
+	public static Expression matchTextRegexp(String field, String regexp) {
+		return new TextPredicate(field, regexp, MatchType.REGEXP);
+	}
+	
 	public static Expression dismax(Collection<Expression> disjuncts) {
 		return new DisMaxPredicate(disjuncts, 0.0f);
 	}

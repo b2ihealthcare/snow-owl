@@ -50,6 +50,7 @@ import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.MatchNoDocsQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.RegexpQuery;
 import org.apache.lucene.search.TermInSetQuery;
 import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.join.QueryBitSetProducer;
@@ -58,6 +59,7 @@ import org.apache.lucene.search.join.ToChildBlockJoinQuery;
 import org.apache.lucene.search.join.ToParentBlockJoinQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.QueryBuilder;
+import org.apache.lucene.util.automaton.RegExp;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.Script;
@@ -319,6 +321,9 @@ public final class LuceneQueryBuilder {
 			} catch (ParseException e) {
 				throw new QueryParseException(e.getMessage());
 			}
+			break;
+		case REGEXP:
+			query = new RegexpQuery(new Term(field, term), RegExp.ALL, 10_000); 
 			break;
 		default: throw new UnsupportedOperationException("Unexpected text match type: " + type);
 		}

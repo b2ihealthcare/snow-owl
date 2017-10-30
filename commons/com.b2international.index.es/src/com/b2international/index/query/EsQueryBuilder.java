@@ -224,19 +224,13 @@ public final class EsQueryBuilder {
 		QueryBuilder query;
 		switch (type) {
 		case PHRASE:
-			{
-				query = QueryBuilders.matchPhraseQuery(field, term);
-			}
+			query = QueryBuilders.matchPhraseQuery(field, term);
 			break;
 		case ALL:
-			{
-				query = QueryBuilders.matchQuery(field, term).operator(Operator.AND);
-			}
+			query = QueryBuilders.matchQuery(field, term).operator(Operator.AND);
 			break;
 		case ANY:
-			{
-				query = QueryBuilders.matchQuery(field, term).operator(Operator.OR);
-			}
+			query = QueryBuilders.matchQuery(field, term).operator(Operator.OR);
 			break;
 		case FUZZY:
 			query = QueryBuilders.fuzzyQuery(field, term).fuzziness(Fuzziness.ONE).prefixLength(1);
@@ -248,6 +242,9 @@ public final class EsQueryBuilder {
 						.useDisMax(true)
 						.allowLeadingWildcard(true)
 						.defaultOperator(Operator.AND);
+			break;
+		case REGEXP:
+			query = QueryBuilders.regexpQuery(field, term);
 			break;
 		default: throw new UnsupportedOperationException("Unexpected text match type: " + type);
 		}

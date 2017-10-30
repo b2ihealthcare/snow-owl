@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.Maps;
 
 /**
@@ -195,6 +196,24 @@ public class Fixtures {
 					longWrapper, 
 					intWrapper, 
 					shortWrapper);
+		}
+		
+		@Override
+		public String toString() {
+			return MoreObjects.toStringHelper(getClass())
+					.add("analyzedField", analyzedField)
+					.add("bigDecimalField", bigDecimalField)
+					.add("field1", field1)
+					.add("field2", field2)
+					.add("floatField", floatField)
+					.add("floatWrapper", floatWrapper)
+					.add("intField", intField)
+					.add("intWrapper", intWrapper)
+					.add("longField", longField)
+					.add("longWrapper", longWrapper)
+					.add("shortField", shortField)
+					.add("shortWrapper", shortWrapper)
+					.toString();
 		}
 		
 	}
