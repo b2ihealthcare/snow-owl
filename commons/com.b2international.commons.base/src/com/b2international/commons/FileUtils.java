@@ -45,17 +45,12 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 
 public final class FileUtils {
 
 	private static final int DEFAULT_BUFFER_SIZE = 4096;
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(FileUtils.class);
 
 	public static final String TEMP_DIR_PROPERTY = "java.io.tmpdir";
 
@@ -94,8 +89,7 @@ public final class FileUtils {
 		try (final InputStream is = url.openStream()) {
 			return copyContentToTempFile(is, getFileName(url));
 		} catch (final IOException e) {
-			LOGGER.error("Error while creating temporary file from URL: " + url, e);
-			return null;
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -125,8 +119,7 @@ public final class FileUtils {
 			}.copyTo(Files.asByteSink(tmpFile));
 			return tmpFile;
 		} catch (final IOException e) {
-			LOGGER.error("Error while creating temporary file from input stream with file name: " + fileName, e);
-			return null;
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -346,57 +339,8 @@ public final class FileUtils {
 		// Prevent instantiation
 	}
 
-    /**
-     * Attempts to show a File using the native operating
-     * system file view, for example the Finder on a Mac,
-     * or Explorer on Windows.  This may not work on all
-     * platforms.
-     * @param file The file to be shown
-     */
-    public static void showFile(final File file) {
-    	try {
-	        if (SystemUtils.isMac()) {
-	            showInFinder(file);
-	        } else if (SystemUtils.isWindows()) {
-	            showInExplorer(file);
-	        } else {
-	            LOGGER.debug("showFile not implemented for " + SystemUtils.getProperty(SystemUtils.OS_NAME));
-	        }
-    	} catch (final IOException e) {
-    		LOGGER.error("Error while opening file. [" + file.getPath() + "]");
-    	}
-    }
-
-
-    /**
-     * Attempts to show a file in the Finder on a Mac.
-     * @param file The file to be shown
-     */
-    private static void showInFinder(final File file) throws IOException {
-        // Use applescript to show the item in the Finder
-        final String[] params = new String[]{"osascript", "-e", "set p to \"" + file.getCanonicalPath() + "\"", "-e", "tell application \"Finder\"", "-e", "reveal (POSIX file p) as alias", "-e", "activate", "-e", "end tell",};
-        Runtime.getRuntime().exec(params);
-    }
-
-
-    /**
-     * Attempts to show a file in the Explorer on Windows.
-     * @param file The file to be shown.
-     */
-    private static void showInExplorer(final File file) throws IOException {
-        String path = file.getCanonicalPath();
-        if (path.indexOf(" ") != -1) {
-            // The path contains spaces, so we must surround it with quotes
-            path = "\"" + path + "\"";
-        }
-		final String[] params = new String[] { "explorer", "/n,/select," + path };
-
-        Runtime.getRuntime().exec(params);
-    }
-
 	/**
 	 * Collects the occurences into the passed Set (recursively)
-	 *
 	 */
 	public static void search(final File rootPath, final String fileName, final Set<File> occuranceCollectorSet) {
 		if (!rootPath.exists()) {
