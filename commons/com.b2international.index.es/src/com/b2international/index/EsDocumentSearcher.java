@@ -15,6 +15,7 @@
  */
 package com.b2international.index;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.IOException;
@@ -28,10 +29,10 @@ import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.EsQueryBuilder;
@@ -42,6 +43,7 @@ import com.b2international.index.query.SortBy.SortByField;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
@@ -51,7 +53,7 @@ import com.google.common.primitives.Primitives;
 /**
  * @since 5.10
  */
-public class EsDocumentSearcher implements Searcher {
+public class EsDocumentSearcher implements DocSearcher {
 
 	private final EsIndexAdmin admin;
 	private final ObjectMapper mapper;
@@ -86,14 +88,10 @@ public class EsDocumentSearcher implements Searcher {
 
 	@Override
 	public <T> Hits<T> search(Query<T> query) throws IOException {
-		final Class<T> select = query.getSelect();
-		final Class<?> from = query.getFrom();
-
 		final Client client = admin.client();
 		final DocumentMapping mapping = admin.mappings().getDocumentMapping(query);
 		
 		// Restrict variables to the theoretical maximum
-		int offset = query.getOffset();
 		final int limit = query.getLimit();
 		final int toRead = Ints.min(limit, resultWindow);
 		
@@ -106,10 +104,10 @@ public class EsDocumentSearcher implements Searcher {
 			.setRouting(mapping.typeAsString())
 			.setTypes(mapping.typeAsString())
 			.setSize(toRead)
-			.setScroll(scrollTime)
 			.setQuery(esQuery)
 			.setTrackScores(esQueryBuilder.needsScoring());
 		
+		// field selection
 		if (query.getFields().isEmpty()) {
 			req.setFetchSource(true);
 		} else {
@@ -120,8 +118,20 @@ public class EsDocumentSearcher implements Searcher {
 			}
 		}
 		
+		// sorting
 		addSort(req, query.getSortBy());
-	
+		
+		// scrolling
+		final boolean isScrolled = !Strings.isNullOrEmpty(query.getScrollKeepAlive());
+		if (limit > resultWindow) {
+			checkArgument(!isScrolled, "Cannot fetch more than '%s' items when scrolling is specified. You requested '%s' items.", resultWindow, limit);
+			req.setScroll(scrollTime);
+		} else if (isScrolled) {
+			req.setScroll(query.getScrollKeepAlive());
+		}
+		
+		
+		// fetch phase
 		SearchResponse response = null; 
 		try {
 			response = req.get();
@@ -129,70 +139,78 @@ public class EsDocumentSearcher implements Searcher {
 			admin.log().error("Couldn't execute query", e);
 			throw new IndexException("Couldn't execute query: " + e.getMessage(), null);
 		}
-		final Builder<SearchHits> allHits = ImmutableList.builder();
+		
 		final int totalHits = (int) response.getHits().getTotalHits();
 
-		int numDocsToFetch = query.getOffset() + query.getLimit();
-		numDocsToFetch -= response.getHits().getHits().length;
-		allHits.add(response.getHits());
+		int numDocsToFetch = query.getLimit() - response.getHits().getHits().length;
 		
-		if (numDocsToFetch <= 0) {
-			// quickly cancel the scroll to free up resources
-			client.prepareClearScroll().addScrollId(response.getScrollId()).get();
-		} else {
-			while (numDocsToFetch > 0) {
-				response = client.prepareSearchScroll(response.getScrollId())
-					.setScroll(scrollTime)
-					.get();
-				final int fetchedHits = response.getHits().getHits().length;
-				if (fetchedHits == 0) {
-					break;
-				}
-				numDocsToFetch -= fetchedHits;
-				allHits.add(response.getHits());
+		final Builder<SearchHit> allHits = ImmutableList.builder();
+		allHits.add(response.getHits().getHits());
+
+		while (numDocsToFetch > 0 && limit > resultWindow) {
+			response = client.prepareSearchScroll(response.getScrollId()).setScroll(scrollTime).get();
+			int fetchedDocs = response.getHits().getHits().length;
+			if (fetchedDocs == 0) {
+				break;
 			}
+			numDocsToFetch -= fetchedDocs;
+			allHits.add(response.getHits().getHits());
 		}
 		
-		final ImmutableList.Builder<T> result = ImmutableList.builder();
+		// clear the custom local scroll
+		if (limit > resultWindow) {
+			client.prepareClearScroll().addScrollId(response.getScrollId()).get();
+		}
 		
+		final Class<T> select = query.getSelect();
+		final Class<?> from = query.getFrom();
+		
+		return toHits(select, from, limit, totalHits, response.getScrollId(), allHits.build());
+	}
+
+	@Override
+	public <T> Hits<T> scroll(Scroll<T> scroll) throws IOException {
+		final SearchResponse response = admin.client()
+				.prepareSearchScroll(scroll.getScrollId())
+				.setScroll(scroll.getKeepAlive())
+				.get();
+		return toHits(scroll.getSelect(), scroll.getFrom(), response.getHits().getHits().length, (int) response.getHits().getTotalHits(), response.getScrollId(), response.getHits());
+	}
+	
+	@Override
+	public void cancelScroll(String scrollId) {
+		admin.client().prepareClearScroll().addScrollId(scrollId).get();
+	}
+	
+	private <T> Hits<T> toHits(Class<T> select, Class<?> from, final int limit, final int totalHits, final String scrollId, final Iterable<SearchHit> hits) throws IOException {
 		final ObjectReader reader = select != from 
 				? mapper.readerFor(select).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) 
 				: mapper.readerFor(select);
 		
-		int remainingLimit = query.getLimit();
-		outer: for (SearchHits hits : allHits.build()) {
-			for (SearchHit hit : hits) {
-				if (offset != 0) {
-					offset--;
-					continue;
-				}
-				final T value;
-				if (Primitives.isWrapperType(query.getSelect()) || String.class.isAssignableFrom(query.getSelect())) {
-					if (query.isDocIdOnly()) {
-						value = (T) hit.getId();
-					} else {
-						value = (T) hit.getSource().get(Iterables.getOnlyElement(query.getFields()));
-					}
+		final ImmutableList.Builder<T> result = ImmutableList.builder();
+		for (SearchHit hit : hits) {
+			final T value;
+			if (Primitives.isWrapperType(select) || String.class.isAssignableFrom(select)) {
+				if (CompareUtils.isEmpty(hit.getSource())) {
+					value = (T) hit.getId();
 				} else {
-					final byte[] bytes = BytesReference.toBytes(hit.getSourceRef());
-					value = reader.readValue(bytes, 0, bytes.length);
+					value = (T) hit.getSource().get(Iterables.getOnlyElement(hit.getSource().keySet()));
 				}
-				if (value instanceof WithId) {
-					((WithId) value).set_id(hit.getId());
-				}
-				if (value instanceof WithScore) {
-					((WithScore) value).setScore(Float.isNaN(hit.getScore()) ? 0.0f : hit.getScore());
-				}
-				result.add(value);
-				remainingLimit--;
-				if (remainingLimit == 0) {
-					break outer;
-				}
+			} else {
+				final byte[] bytes = BytesReference.toBytes(hit.getSourceRef());
+				value = reader.readValue(bytes, 0, bytes.length);
 			}
+			if (value instanceof WithId) {
+				((WithId) value).set_id(hit.getId());
+			}
+			if (value instanceof WithScore) {
+				((WithScore) value).setScore(Float.isNaN(hit.getScore()) ? 0.0f : hit.getScore());
+			}
+			result.add(value);
 		}
-		return new Hits<T>(result.build(), offset, limit, totalHits);
+		return new Hits<T>(result.build(), scrollId, limit, totalHits);
 	}
-
+	
 	private void addSort(SearchRequestBuilder req, SortBy sortBy) {
 		final List<SortBy> items = newArrayList();
 

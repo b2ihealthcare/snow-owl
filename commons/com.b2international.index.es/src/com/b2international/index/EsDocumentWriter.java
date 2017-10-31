@@ -58,7 +58,7 @@ import com.google.common.collect.Multimap;
 public class EsDocumentWriter implements Writer {
 
 	private final EsIndexAdmin admin;
-	private final Searcher searcher;
+	private final DocSearcher searcher;
 
 	private final Random random = new Random();
 	private final Map<String, Object> indexOperations = newHashMap();
@@ -66,7 +66,7 @@ public class EsDocumentWriter implements Writer {
 	private final ObjectMapper mapper;
 	private List<BulkUpdate<?>> updateOperations = newArrayList();
  	
-	public EsDocumentWriter(EsIndexAdmin admin, Searcher searcher, ObjectMapper mapper) {
+	public EsDocumentWriter(EsIndexAdmin admin, DocSearcher searcher, ObjectMapper mapper) {
 		this.admin = admin;
 		this.searcher = searcher;
 		this.mapper = mapper;
@@ -264,7 +264,7 @@ public class EsDocumentWriter implements Writer {
 	}
 
 	@Override
-	public Searcher searcher() {
+	public DocSearcher searcher() {
 		return searcher;
 	}
 
