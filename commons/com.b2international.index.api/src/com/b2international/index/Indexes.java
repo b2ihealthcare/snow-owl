@@ -32,7 +32,12 @@ public class Indexes {
 	private static ServiceLoader<IndexClientFactory> FACTORIES;
 	
 	static {
-		FACTORIES = ServiceLoader.load(IndexClientFactory.class, Indexes.class.getClassLoader());
+		initFactories(Indexes.class.getClassLoader());
+	}
+	
+	/* For testing purposes only! */
+	public static void initFactories(ClassLoader classLoader) {
+		FACTORIES = ServiceLoader.load(IndexClientFactory.class, classLoader);
 	}
 	
 	private Indexes() {
