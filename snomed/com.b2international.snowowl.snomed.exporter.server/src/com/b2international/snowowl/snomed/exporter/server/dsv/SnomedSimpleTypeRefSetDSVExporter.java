@@ -729,7 +729,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		ImmutableListMultimap<String, SnomedRelationship> relationshipsBySourceId = Multimaps.index(relationships.getItems(), (relationship) -> relationship.getSourceId());
 		concepts.forEach(concept -> {
 			List<SnomedRelationship> collection = relationshipsBySourceId.get(concept.getId());
-			concept.setRelationships(new SnomedRelationships(collection, 0, collection.size(), collection.size()));
+			concept.setRelationships(new SnomedRelationships(collection, null, collection.size(), collection.size()));
 		});
 		return relationships;
 	}
@@ -758,7 +758,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		
 		concepts.forEach(concept -> {
 			List<SnomedDescription> descriptions = descriptionsByOwnerConceptId.get(concept.getId());
-			concept.setDescriptions(new SnomedDescriptions(descriptions, 0, descriptions.size(), descriptions.size()));
+			concept.setDescriptions(new SnomedDescriptions(descriptions, null, descriptions.size(), descriptions.size()));
 		});
 		
 		return resultDescriptions;

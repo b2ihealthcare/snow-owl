@@ -46,6 +46,7 @@ import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.functions.LongToStringFunction;
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
+import com.b2international.index.Scroll;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
@@ -229,18 +230,23 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			}
 		}
 		
-		final Query<SnomedRefSetMemberIndexEntry> query = select(SnomedRefSetMemberIndexEntry.class)
-			.where(queryBuilder.build())
-			.sortBy(sortBy())
-			.offset(offset())
-			.limit(limit())
-			.build();
-
-		final Hits<SnomedRefSetMemberIndexEntry> hits = searcher.search(query);
-		if (limit() < 1 || hits.getTotal() < 1) {
-			return new SnomedReferenceSetMembers(offset(), limit(), hits.getTotal());
+		final Hits<SnomedRefSetMemberIndexEntry> hits;
+		if (isScrolled()) {
+			hits = searcher.scroll(new Scroll<>(SnomedRefSetMemberIndexEntry.class, scrollId()));
 		} else {
-			return SnomedConverters.newMemberConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), hits.getTotal());
+			final Query<SnomedRefSetMemberIndexEntry> query = select(SnomedRefSetMemberIndexEntry.class)
+					.where(queryBuilder.build())
+					.sortBy(sortBy())
+					.scroll(scrollKeepAlive())
+					.limit(limit())
+					.build();
+			hits = searcher.search(query);
+		}
+		
+		if (limit() < 1 || hits.getTotal() < 1) {
+			return new SnomedReferenceSetMembers(limit(), hits.getTotal());
+		} else {
+			return SnomedConverters.newMemberConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), limit(), hits.getTotal());
 		}
 
 	}
@@ -252,8 +258,8 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 	}
 	
 	@Override
-	protected SnomedReferenceSetMembers createEmptyResult(int offset, int limit) {
-		return new SnomedReferenceSetMembers(offset, limit, 0);
+	protected SnomedReferenceSetMembers createEmptyResult(int limit) {
+		return new SnomedReferenceSetMembers(limit, 0);
 	}
 
 }

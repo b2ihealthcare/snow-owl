@@ -66,7 +66,7 @@ class MembersExpander {
 			});
 			for (SnomedCoreComponent component : results) {
 				final Collection<SnomedReferenceSetMember> members = membersByReferencedComponentId.get(component.getId());
-				((SnomedCoreComponent) component).setMembers(new SnomedReferenceSetMembers(ImmutableList.copyOf(members), 0, members.size(), members.size()));
+				((SnomedCoreComponent) component).setMembers(new SnomedReferenceSetMembers(ImmutableList.copyOf(members), null, members.size(), members.size()));
 			}
 		}
 	}

@@ -407,7 +407,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	
 	private SnomedConcepts getConcepts(final IBranchPath branchPath, final Set<String> destinationConceptIds) {
 		if (destinationConceptIds.isEmpty()) {
-			return new SnomedConcepts(0, 0, 0);
+			return new SnomedConcepts(0, 0);
 		}
 		return SnomedRequests.prepareSearchConcept()
 				.all()
@@ -528,7 +528,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	}
 
 	@Override
-	public List<ISnomedBrowserDescriptionResult> getDescriptions(final IStorageRef storageRef, final String query, final List<ExtendedLocale> locales, final ISnomedBrowserDescriptionResult.TermType resultConceptTermType, final int offset, final int limit) {
+	public List<ISnomedBrowserDescriptionResult> getDescriptions(final IStorageRef storageRef, final String query, final List<ExtendedLocale> locales, final ISnomedBrowserDescriptionResult.TermType resultConceptTermType, final String scrollKeepAlive, final String scrollId, final int limit) {
 		checkNotNull(storageRef, "Storage reference may not be null.");
 		checkNotNull(query, "Query may not be null.");
 		checkArgument(query.length() >= 3, "Query must be at least 3 characters long.");
@@ -540,7 +540,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final DescriptionService descriptionService = new DescriptionService(bus, storageRef.getBranchPath());
 		
 		final Collection<SnomedDescription> descriptions = SnomedRequests.prepareSearchDescription()
-			.setOffset(offset)
+			.setScroll(scrollKeepAlive)
+			.setScrollId(scrollId)
 			.setLimit(limit)
 			.filterByTerm(query)
 			.sortBy(SearchIndexResourceRequest.SCORE)

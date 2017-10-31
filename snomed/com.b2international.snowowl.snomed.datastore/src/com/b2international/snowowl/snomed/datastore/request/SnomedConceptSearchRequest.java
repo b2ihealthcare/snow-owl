@@ -30,6 +30,7 @@ import java.util.Map;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.Hits;
+import com.b2international.index.Scroll;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -226,7 +227,7 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 			}
 			
 			if (conceptScoreMap.isEmpty()) {
-				return new SnomedConcepts(offset(), limit(), 0);
+				return new SnomedConcepts(limit(), 0);
 			}
 			
 			queryBuilder.filter(RevisionDocument.Expressions.ids(conceptScoreMap.keySet()));
@@ -240,23 +241,29 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 			queryExpression = addSearchProfile(searchProfileQuery, queryBuilder.build());
 		}
 
-		final Hits<SnomedConceptDocument> hits = searcher.search(select(SnomedConceptDocument.class)
-				.where(queryExpression)
-				.offset(offset())
-				.limit(limit())
-				.sortBy(sortBy())
-				.withScores(containsKey(OptionKey.TERM) || containsKey(OptionKey.USE_DOI))
-				.build());
-		if (limit() < 1 || hits.getTotal() < 1) {
-			return new SnomedConcepts(offset(), limit(), hits.getTotal());
+		final Hits<SnomedConceptDocument> hits;
+		if (isScrolled()) {
+			hits = searcher.scroll(new Scroll<>(SnomedConceptDocument.class, scrollId()));
 		} else {
-			return SnomedConverters.newConceptConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), hits.getTotal());
+			hits = searcher.search(select(SnomedConceptDocument.class)
+					.where(queryExpression)
+					.scroll(scrollKeepAlive())
+					.limit(limit())
+					.sortBy(sortBy())
+					.withScores(containsKey(OptionKey.TERM) || containsKey(OptionKey.USE_DOI))
+					.build());
+		}
+		
+		if (limit() < 1 || hits.getTotal() < 1) {
+			return new SnomedConcepts(limit(), hits.getTotal());
+		} else {
+			return SnomedConverters.newConceptConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), limit(), hits.getTotal());
 		}
 	}
 	
 	@Override
-	protected SnomedConcepts createEmptyResult(int offset, int limit) {
-		return new SnomedConcepts(offset, limit, 0);
+	protected SnomedConcepts createEmptyResult(int limit) {
+		return new SnomedConcepts(limit, 0);
 	}
 
 	private Expression addSearchProfile(final Expression searchProfileQuery, final Expression query) {

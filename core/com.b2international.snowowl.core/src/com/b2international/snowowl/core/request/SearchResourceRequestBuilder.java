@@ -47,12 +47,22 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	}
 	
 	/**
-	 * Sets the offset for the paging of the result set. 
-	 * @param offset for paging the result set returned
+	 * Sets the scroll keep alive value to the specified value to start a scroll based on the query of this request. 
+	 * @param scrollKeepAlive
 	 * @return this builder instance
 	 */
 	public final B setScroll(String scrollKeepAlive) {
 		this.scrollKeepAlive = scrollKeepAlive;
+		return getSelf();
+	}
+	
+	/**
+	 * Sets the scroll Id to continue a previously started scroll.
+	 * @param scrollId
+	 * @return
+	 */
+	public final B setScrollId(String scrollId) {
+		this.scrollId = scrollId;
 		return getSelf();
 	}
 	

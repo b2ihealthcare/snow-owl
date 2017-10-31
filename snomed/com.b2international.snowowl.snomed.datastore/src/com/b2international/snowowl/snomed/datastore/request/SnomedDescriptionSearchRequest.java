@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.b2international.index.Hits;
+import com.b2international.index.Scroll;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -97,23 +98,29 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 			queryBuilder.must(exactTerm(getString(OptionKey.EXACT_TERM)));
 		}
 
-		final Hits<SnomedDescriptionIndexEntry> hits = searcher.search(select(SnomedDescriptionIndexEntry.class)
-				.where(queryBuilder.build())
-				.offset(offset())
-				.limit(limit())
-				.sortBy(sortBy())
-				.withScores(containsKey(OptionKey.TERM))
-				.build());
-		if (limit() < 1 || hits.getTotal() < 1) {
-			return new SnomedDescriptions(offset(), limit(), hits.getTotal());
+		final Hits<SnomedDescriptionIndexEntry> hits;
+		if (isScrolled()) {
+			hits = searcher.scroll(new Scroll<>(SnomedDescriptionIndexEntry.class, scrollId()));
 		} else {
-			return SnomedConverters.newDescriptionConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), hits.getTotal());
+			hits = searcher.search(select(SnomedDescriptionIndexEntry.class)
+					.where(queryBuilder.build())
+					.scroll(scrollKeepAlive())
+					.limit(limit())
+					.sortBy(sortBy())
+					.withScores(containsKey(OptionKey.TERM))
+					.build());
+		}
+		
+		if (limit() < 1 || hits.getTotal() < 1) {
+			return new SnomedDescriptions(limit(), hits.getTotal());
+		} else {
+			return SnomedConverters.newDescriptionConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), limit(), hits.getTotal());
 		}
 	}
 	
 	@Override
-	protected SnomedDescriptions createEmptyResult(int offset, int limit) {
-		return new SnomedDescriptions(offset, limit, 0);
+	protected SnomedDescriptions createEmptyResult(int limit) {
+		return new SnomedDescriptions(limit, 0);
 	}
 	
 	private Expression toDescriptionTermQuery(final String searchTerm) {

@@ -291,9 +291,13 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			@RequestParam(value="query")
 			final String query,
 
-			@ApiParam(value="The starting offset in the list")
-			@RequestParam(value="offset", defaultValue="0", required=false)
-			final int offset,
+			@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
+			@RequestParam(value="scrollKeepAlive", required=false) 
+			final String scrollKeepAlive,
+			
+			@ApiParam(value="A scrollId to continue scrolling a previous query")
+			@RequestParam(value="scrollId", required=false) 
+			final String scrollId,
 
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false)
@@ -314,7 +318,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 		}
 		
 		final StorageRef ref = new StorageRef(repositoryId, branchPath);
-		return browserService.getDescriptions(ref, query, extendedLocales, ISnomedBrowserDescriptionResult.TermType.FSN, offset, limit);
+		return browserService.getDescriptions(ref, query, extendedLocales, ISnomedBrowserDescriptionResult.TermType.FSN, scrollKeepAlive, scrollId, limit);
 	}
 
 	@ApiOperation(
@@ -337,9 +341,13 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			@RequestParam(value="query")
 			final String query,
 
-			@ApiParam(value="The starting offset in the list")
-			@RequestParam(value="offset", defaultValue="0", required=false)
-			final int offset,
+			@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
+			@RequestParam(value="scrollKeepAlive", required=false) 
+			final String scrollKeepAlive,
+			
+			@ApiParam(value="A scrollId to continue scrolling a previous query")
+			@RequestParam(value="scrollId", required=false) 
+			final String scrollId,
 
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false)
@@ -360,7 +368,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 		}
 		
 		final StorageRef ref = new StorageRef(repositoryId, branchPath);
-		return browserService.getDescriptions(ref, query, extendedLocales, ISnomedBrowserDescriptionResult.TermType.PT, offset, limit);
+		return browserService.getDescriptions(ref, query, extendedLocales, ISnomedBrowserDescriptionResult.TermType.PT, scrollKeepAlive, scrollId, limit);
 	}
 
 	@ApiOperation(
