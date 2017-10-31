@@ -72,7 +72,6 @@ public final class RemoteJobTracker implements IDisposableService {
 									.filter(RemoteJobEntry.Expressions.done())
 									.build()
 							)
-							.offset(0)
 							.limit(Integer.MAX_VALUE)
 							.build());
 					if (hits.getTotal() > 0) {
@@ -107,11 +106,11 @@ public final class RemoteJobTracker implements IDisposableService {
 		Holder.CLEANUP_TIMER.schedule(cleanUp, remoteJobCleanUpInterval, remoteJobCleanUpInterval);
 	}
 	
-	public RemoteJobs search(Expression query, int offset, int limit) {
-		return search(query, ImmutableSet.of(), SortBy.DOC_ID, offset, limit); 
+	public RemoteJobs search(Expression query, int limit) {
+		return search(query, ImmutableSet.of(), SortBy.DOC_ID, limit); 
 	}
 	
-	public RemoteJobs search(Expression query, Set<String> fields, SortBy sortBy, int offset, int limit) {
+	public RemoteJobs search(Expression query, Set<String> fields, SortBy sortBy, int limit) {
 		return index.read(searcher -> {
 			final Hits<RemoteJobEntry> hits = searcher.search(
 					Query.selectPartial(RemoteJobEntry.class, fields)
@@ -120,11 +119,10 @@ public final class RemoteJobTracker implements IDisposableService {
 								.filter(query)
 								.build())
 						.sortBy(sortBy)
-						.offset(offset)
 						.limit(limit)
 						.build()
 					);
-			return new RemoteJobs(hits.getHits(), hits.getOffset(), hits.getLimit(), hits.getTotal());
+			return new RemoteJobs(hits.getHits(), null, hits.getLimit(), hits.getTotal());
 		});
 	}
 	
@@ -143,7 +141,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	}
 	
 	public void requestDeletes(Collection<String> jobIds) {
-		final RemoteJobs jobEntries = search(Expressions.matchAny(DocumentMapping._ID, jobIds), 0, jobIds.size());
+		final RemoteJobs jobEntries = search(Expressions.matchAny(DocumentMapping._ID, jobIds), jobIds.size());
 		final Set<String> existingJobIds = FluentIterable.from(jobEntries).transform(RemoteJobEntry::getId).toSet();
 		Job[] existingJobs = Job.getJobManager().find(SingleRemoteJobFamily.create(existingJobIds));
 		// mark existing jobs as deleted and cancel them

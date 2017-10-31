@@ -37,7 +37,7 @@ final class GetJobRequest implements Request<ServiceProvider, RemoteJobEntry> {
 	
 	@Override
 	public RemoteJobEntry execute(ServiceProvider context) {
-		RemoteJobEntry entry = Iterables.getOnlyElement(context.service(RemoteJobTracker.class).search(RemoteJobEntry.Expressions.id(id), 0, 2), null);
+		RemoteJobEntry entry = Iterables.getOnlyElement(context.service(RemoteJobTracker.class).search(RemoteJobEntry.Expressions.id(id), 2), null);
 		if (entry == null) {
 			throw new NotFoundException("job", id);
 		} else {
