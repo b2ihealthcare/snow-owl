@@ -20,10 +20,10 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
+import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
-import com.b2international.index.Searcher;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -93,7 +93,7 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 		private SctId getLastSctId(final String namespace, final ComponentCategory category) {
 			return store.read(new IndexRead<SctId>() {
 				@Override
-				public SctId execute(final Searcher index) throws IOException {
+				public SctId execute(final DocSearcher index) throws IOException {
 					
 					final Expression idsByNamespaceAndType = Expressions.builder()
 							.filter(SctId.Expressions.namespace(namespace))
@@ -103,7 +103,6 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 					final Hits<SctId> hits = index.search(Query.select(SctId.class)
 							.where(idsByNamespaceAndType)
 							.sortBy(SortBy.field(SctId.Fields.SEQUENCE, Order.DESC))
-							.offset(0)
 							.limit(1)
 							.build());
 

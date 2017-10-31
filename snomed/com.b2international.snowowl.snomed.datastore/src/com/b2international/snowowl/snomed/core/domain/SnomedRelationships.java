@@ -27,17 +27,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public final class SnomedRelationships extends PageableCollectionResource<SnomedRelationship> {
 
-	public SnomedRelationships(int offset, int limit, int total) {
-		super(Collections.emptyList(), offset, limit, total);
+	public SnomedRelationships(int limit, int total) {
+		super(Collections.emptyList(), null, limit, total);
 	}
 
 	@JsonCreator
 	public SnomedRelationships(
 			@JsonProperty("items") List<SnomedRelationship> items, 
-			@JsonProperty("offset") int offset, 
+			@JsonProperty("scrollId") String scrollId, 
 			@JsonProperty("limit") int limit, 
 			@JsonProperty("total") int total) {
-		super(items, offset, limit, total);
+		super(items, scrollId, limit, total);
 	}
 
 }

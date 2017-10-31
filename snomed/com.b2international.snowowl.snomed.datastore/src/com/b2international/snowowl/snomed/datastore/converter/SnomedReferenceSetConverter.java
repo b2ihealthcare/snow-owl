@@ -39,8 +39,8 @@ final class SnomedReferenceSetConverter extends BaseRevisionResourceConverter<Sn
 	}
 
 	@Override
-	protected SnomedReferenceSets createCollectionResource(List<SnomedReferenceSet> results, int offset, int limit, int total) {
-		return new SnomedReferenceSets(results, offset, limit, total);
+	protected SnomedReferenceSets createCollectionResource(List<SnomedReferenceSet> results, String scrollId, int limit, int total) {
+		return new SnomedReferenceSets(results, scrollId, limit, total);
 	}
 	
 	@Override
@@ -57,10 +57,6 @@ final class SnomedReferenceSetConverter extends BaseRevisionResourceConverter<Sn
 						.filterByRefSet(refSet.getId())
 						.setLocales(locales())
 						.setExpand(expandOptions.get("expand", Options.class));
-				
-				if (expandOptions.containsKey("offset")) {
-					req.setOffset(expandOptions.get("offset", Integer.class));
-				}
 				
 				if (expandOptions.containsKey("limit")) {
 					req.setLimit(expandOptions.get("limit", Integer.class));

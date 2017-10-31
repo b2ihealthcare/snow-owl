@@ -27,17 +27,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public final class SnomedReferenceSets extends PageableCollectionResource<SnomedReferenceSet> {
 
-	public SnomedReferenceSets(int offset, int limit, int total) {
-		super(Collections.<SnomedReferenceSet>emptyList(), offset, limit, total);
+	public SnomedReferenceSets(int limit, int total) {
+		super(Collections.emptyList(), null, limit, total);
 	}
 	
 	@JsonCreator
 	public SnomedReferenceSets(
 			@JsonProperty("items") List<SnomedReferenceSet> items, 
-			@JsonProperty("offset") int offset, 
+			@JsonProperty("scrollId") String scrollId, 
 			@JsonProperty("limit") int limit, 
 			@JsonProperty("total") int total) {
-		super(items, offset, limit, total);
+		super(items, scrollId, limit, total);
 	}
 
 }

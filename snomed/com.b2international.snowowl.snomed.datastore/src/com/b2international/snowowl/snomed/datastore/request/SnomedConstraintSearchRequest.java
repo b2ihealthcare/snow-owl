@@ -23,6 +23,7 @@ import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraint
 import java.io.IOException;
 
 import com.b2international.index.Hits;
+import com.b2international.index.Scroll;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
@@ -86,21 +87,26 @@ final class SnomedConstraintSearchRequest extends SearchIndexResourceRequest<Bra
 			queryBuilder.filter(types(getCollection(OptionKey.TYPE, PredicateType.class)));
 		}
 		
+		final Hits<SnomedConstraintDocument> hits;
+		if (isScrolled()) {
+			hits = searcher.scroll(new Scroll<>(SnomedConstraintDocument.class, scrollId()));
+		} else {
+			final Query<SnomedConstraintDocument> query = select(SnomedConstraintDocument.class)
+					.where(queryBuilder.build())
+					.sortBy(sortBy())
+					.scroll(scrollKeepAlive())
+					.limit(limit())
+					.build();
+			hits = searcher.search(query);
+		}
 		
-		final Query<SnomedConstraintDocument> query = select(SnomedConstraintDocument.class)
-				.where(queryBuilder.build())
-				.sortBy(sortBy())
-				.offset(offset())
-				.limit(limit())
-				.build();
-		
-		final Hits<SnomedConstraintDocument> hits = searcher.search(query);
-		return SnomedConverters.newConstraintConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), hits.getTotal());
+		return SnomedConverters.newConstraintConverter(context, expand(), locales())
+				.convert(hits.getHits(), hits.getScrollId(), limit(), hits.getTotal());
 	}
 	
 	@Override
-	protected SnomedConstraints createEmptyResult(int offset, int limit) {
-		return new SnomedConstraints(offset, limit, 0);
+	protected SnomedConstraints createEmptyResult(int limit) {
+		return new SnomedConstraints(limit, 0);
 	}
 
 }
