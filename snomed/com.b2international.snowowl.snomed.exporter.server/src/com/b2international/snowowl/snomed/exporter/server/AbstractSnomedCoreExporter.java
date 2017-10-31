@@ -43,16 +43,16 @@ import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
 public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> implements SnomedExporter {
 
 	// scroll page size for the query
-	protected static final int PAGE_SIZE = 100000;
+	protected static final int PAGE_SIZE = 10000;
 	
 	private final SnomedExportContext exportContext;
 	private final RevisionSearcher searcher;
-	private final Query<T> exportQuery;
+	private final Class<T> clazz;
 
 	protected AbstractSnomedCoreExporter(final SnomedExportContext exportContext, final Class<T> clazz, final RevisionSearcher revisionSearcher) {
+		this.clazz = clazz;
 		this.exportContext = checkNotNull(exportContext, "exportContext");
 		this.searcher = checkNotNull(revisionSearcher, "revisionSearcher");
-		this.exportQuery = Query.select(clazz).where(getQueryExpression()).scroll().limit(PAGE_SIZE).build();
 	}
 	
 	protected final RevisionSearcher getSearcher() {
@@ -75,6 +75,7 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 	
 	@Override
 	public final void writeLines(Consumer<String> lineProcessor) throws IOException {
+		final Query<T> exportQuery = Query.select(clazz).where(getQueryExpression()).scroll().limit(PAGE_SIZE).build();
 		for (Hits<T> hits : searcher.scroll(exportQuery)) {
 			for (T hit : filter(hits)) {
 				lineProcessor.accept(convertToString(hit));

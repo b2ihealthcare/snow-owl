@@ -243,6 +243,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			monitor.worked(1);
 			
 		}  catch (Exception e) {
+			LOGGER.error("Failed to perform export", e);
 			
 			final String reason = null != e.getMessage() ? " Reason: '" + e.getMessage() + "'" : "";
 			logActivity("Caught exception while exporting SNOMED CT terminology." + reason);
