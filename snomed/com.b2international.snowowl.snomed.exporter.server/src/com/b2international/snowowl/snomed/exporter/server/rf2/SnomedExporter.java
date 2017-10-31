@@ -15,20 +15,29 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.rf2;
 
+import static com.google.common.base.Charsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.function.Consumer;
 
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.google.common.base.Ascii;
 import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
 
 /**
  * Representation of an exporter for SNOMED&nbsp;CT ontology.
  *
  */
-public interface SnomedExporter extends Iterator<String>, Iterable<String> {
+public interface SnomedExporter {
 	
 	/**Horizontal tab.*/
 	String HT = new String(new byte [] { Ascii.HT }, Charsets.US_ASCII);
@@ -64,6 +73,41 @@ public interface SnomedExporter extends Iterator<String>, Iterable<String> {
 	
 	SnomedExportContext getExportContext();
 	
-	void execute() throws IOException;
+	default void execute() throws IOException {
+		Path workingDirPath = getExportContext().getReleaseRootPath().resolve(getRelativeDirectory());
+		
+		if (Files.notExists(workingDirPath)) {
+			Files.createDirectories(workingDirPath);
+		}
+		
+		Path filePath = workingDirPath.resolve(getFileName());
+		
+		if (Files.notExists(filePath)) {
+			Files.createFile(filePath);
+		}
+
+		try (RandomAccessFile randomAccessFile = new RandomAccessFile(filePath.toFile(), "rw")) {
+			try (FileChannel fileChannel = randomAccessFile.getChannel()) {
+					
+				if (randomAccessFile.length() == 0L) {
+					fileChannel.write(ByteBuffer.wrap(Joiner.on("\t").join(getColumnHeaders()).trim().getBytes(UTF_8)));
+					fileChannel.write(ByteBuffer.wrap(SnomedExporter.CR_LF.getBytes(UTF_8)));
+				}
+				
+				fileChannel.position(fileChannel.size());
+
+				writeLines(line -> {
+					try {
+						fileChannel.write(ByteBuffer.wrap(line.getBytes(UTF_8)));
+						fileChannel.write(ByteBuffer.wrap(SnomedExporter.CR_LF.getBytes(UTF_8)));
+					} catch (IOException e) {
+						throw new SnowowlRuntimeException(e);
+					}
+				});
+			}
+		}
+	}
+
+	void writeLines(Consumer<String> lineProcessor) throws IOException;
 	
 }

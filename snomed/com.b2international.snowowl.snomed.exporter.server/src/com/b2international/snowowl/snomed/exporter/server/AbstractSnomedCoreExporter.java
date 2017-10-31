@@ -18,9 +18,8 @@ package com.b2international.snowowl.snomed.exporter.server;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.CompareUtils;
@@ -30,7 +29,6 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.ContentSubType;
@@ -47,22 +45,18 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 	// scroll page size for the query
 	protected static final int PAGE_SIZE = 100000;
 	
-	private int currentIndex;
-	private int currentOffset;
-	private Hits<T> hits;
-	
-	private final Class<T> clazz;
 	private final SnomedExportContext exportContext;
-	private final RevisionSearcher revisionSearcher;
+	private final RevisionSearcher searcher;
+	private final Query<T> exportQuery;
 
 	protected AbstractSnomedCoreExporter(final SnomedExportContext exportContext, final Class<T> clazz, final RevisionSearcher revisionSearcher) {
 		this.exportContext = checkNotNull(exportContext, "exportContext");
-		this.clazz = checkNotNull(clazz, "clazz");
-		this.revisionSearcher = checkNotNull(revisionSearcher, "revisionSearcher");
-		
-		this.hits = new Hits<T>(Collections.<T>emptyList(), 0, 0, -1);
-		this.currentIndex = 0;
-		this.currentOffset = 0;
+		this.searcher = checkNotNull(revisionSearcher, "revisionSearcher");
+		this.exportQuery = Query.select(clazz).where(getQueryExpression()).scroll().limit(PAGE_SIZE).build();
+	}
+	
+	protected final RevisionSearcher getSearcher() {
+		return searcher;
 	}
 	
 	/**
@@ -75,82 +69,21 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 	public abstract String convertToString(final T snomedDocument);
 
 	@Override
-	public Iterator<String> iterator() {
-		return this;
-	}
-	
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public boolean hasNext() {
-		
-		if (currentIndex == hits.getHits().size() && currentOffset != hits.getTotal()) {
-			
-			try {
-				
-				final Query<T> exportQuery = Query.select(clazz).where(getQueryExpression()).offset(currentOffset).limit(PAGE_SIZE).build();
-				hits = revisionSearcher.search(exportQuery);
-				
-				currentIndex = 0;
-				currentOffset += hits.getHits().size();
-				
-			} catch (IOException e) {
-				throw new SnowowlRuntimeException(e);
-			}
-			
-		}
-		
-		return hits.getHits().size() > 0 && currentIndex < hits.getHits().size();
-	}
-	
-	@Override
-	public String next() {
-		return convertToString(hits.getHits().get(currentIndex++));
-	}
-	
-	@Override
-	public SnomedExportContext getExportContext() {
+	public final SnomedExportContext getExportContext() {
 		return exportContext;
 	}
-
+	
 	@Override
-	public void execute() throws IOException {
-		new SnomedExportExecutor(this).execute();
+	public final void writeLines(Consumer<String> lineProcessor) throws IOException {
+		for (Hits<T> hits : searcher.scroll(exportQuery)) {
+			for (T hit : filter(hits)) {
+				lineProcessor.accept(convertToString(hit));
+			}
+		}		
 	}
 	
-	protected RevisionSearcher getRevisionSearcher() {
-		return revisionSearcher;
-	}
-	
-	protected int getCurrentIndex() {
-		return currentIndex;
-	}
-
-	protected void setCurrentIndex(int currentIndex) {
-		this.currentIndex = currentIndex;
-	}
-
-	protected int getCurrentOffset() {
-		return currentOffset;
-	}
-
-	protected void setCurrentOffset(int currentOffset) {
-		this.currentOffset = currentOffset;
-	}
-
-	protected Hits<T> getHits() {
+	protected Hits<T> filter(Hits<T> hits) throws IOException {
 		return hits;
-	}
-
-	protected void setHits(Hits<T> hits) {
-		this.hits = hits;
-	}
-	
-	protected Class<T> getClazz() {
-		return clazz;
 	}
 
 	protected void appendExpressionConstraint(ExpressionBuilder builder) {
@@ -165,7 +98,7 @@ public abstract class AbstractSnomedCoreExporter<T extends SnomedDocument> imple
 		return BooleanUtils.toString(isActive);
 	}
 
-	protected Expression getQueryExpression() {
+	private final Expression getQueryExpression() {
 		
 		ExpressionBuilder builder = Expressions.builder();
 		

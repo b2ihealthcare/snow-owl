@@ -83,7 +83,7 @@ public class SnomedRefSetExporterFactory {
 			case LANGUAGE: //$FALL-THROUGH$
 			case SIMPLE: 
 				final SnomedSubsetMemberExporter memberExporter = new SnomedSubsetMemberExporter(configuration, refset.getId(), revisionSearcher);
-				final SnomedSubsetExporter subsetExporter = new SnomedSubsetExporter(configuration, refset.getId(), memberExporter, revisionSearcher);
+				final SnomedSubsetExporter subsetExporter = new SnomedSubsetExporter(configuration, refset.getId(), revisionSearcher, memberExporter.getVersion());
 				return Sets.<SnomedExporter>newHashSet(memberExporter, subsetExporter);
 			default: return emptySet();
 		}

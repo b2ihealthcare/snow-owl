@@ -147,7 +147,7 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1CoreExporter<
 						
 			Hits<SnomedRefSetMemberIndexEntry> snomedRefSetMemberIndexEntrys;
 			try {
-				snomedRefSetMemberIndexEntrys = getRevisionSearcher().search(query);
+				snomedRefSetMemberIndexEntrys = getSearcher().search(query);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}

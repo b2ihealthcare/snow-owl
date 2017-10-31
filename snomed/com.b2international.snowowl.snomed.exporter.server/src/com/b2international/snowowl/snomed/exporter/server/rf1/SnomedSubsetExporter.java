@@ -16,10 +16,10 @@
 package com.b2international.snowowl.snomed.exporter.server.rf1;
 
 import static com.b2international.snowowl.snomed.exporter.server.rf1.SnomedRf1ReleaseFileHeaders.RF1_SUBSETS_HEADER;
-import static java.util.Collections.singletonList;
 
+import java.io.IOException;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.function.Consumer;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -38,29 +38,15 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
  */
 public class SnomedSubsetExporter extends AbstractSnomedSubsetExporter {
 
-	private Iterator<String> itr;
-	
-	public SnomedSubsetExporter(final SnomedExportContext configuration, 
-			final String refSetId, final SnomedSubsetMemberExporter memberExporter, final RevisionSearcher revisionSearcher) {
-		super(configuration,refSetId, revisionSearcher);
-		
-		itr = singletonList(new StringBuilder()
-			.append(getRefSetId())
-			.append(HT)
-			.append(getRefSetId())
-			.append(HT)
-			.append(memberExporter.getVersion())
-			.append(HT)
-			.append(getLabel())
-			.append(HT)
-			.append(isLanguageType(getRefSetId()) ? "1" : getSubsetType())
-			.append(HT)
-			.append(isLanguageType(getRefSetId()) ? getLanguageCode(getRefSetId()) : "0")
-			.append(HT)
-			.append("0")
-			.append(HT)
-			.append("0").toString()).iterator();
-		
+	private final int version;
+
+	public SnomedSubsetExporter(
+			final SnomedExportContext configuration, 
+			final String refSetId, 
+			final RevisionSearcher revisionSearcher,
+			final int version) {
+		super(configuration, refSetId, revisionSearcher);
+		this.version = version;
 	}
 	
 	@Override
@@ -82,18 +68,23 @@ public class SnomedSubsetExporter extends AbstractSnomedSubsetExporter {
 	}
 
 	@Override
-	public boolean hasNext() {
-		return itr.hasNext();
-	}
-
-	@Override
-	public String next() {
-		return itr.next();
-	}
-
-	@Override
-	public Iterator<String> iterator() {
-		return itr;
+	public void writeLines(Consumer<String> lineProcessor) throws IOException {
+		new StringBuilder()
+		.append(getRefSetId())
+		.append(HT)
+		.append(getRefSetId())
+		.append(HT)
+		.append(version)
+		.append(HT)
+		.append(getLabel())
+		.append(HT)
+		.append(isLanguageType(getRefSetId()) ? "1" : getSubsetType())
+		.append(HT)
+		.append(isLanguageType(getRefSetId()) ? getLanguageCode(getRefSetId()) : "0")
+		.append(HT)
+		.append("0")
+		.append(HT)
+		.append("0").toString();
 	}
 	
 }

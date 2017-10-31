@@ -30,7 +30,7 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.exporter.server.AbstractFilteredSnomedCoreExporter;
+import com.b2international.snowowl.snomed.exporter.server.AbstractSnomedCoreExporter;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
@@ -41,7 +41,7 @@ import com.google.common.collect.Multimap;
 /**
  * Exporter for language type reference sets.
  */
-public class SnomedLanguageRefSetExporter extends AbstractFilteredSnomedCoreExporter<SnomedRefSetMemberIndexEntry> {
+public class SnomedLanguageRefSetExporter extends AbstractSnomedCoreExporter<SnomedRefSetMemberIndexEntry> {
 
 	private String languageCode;
 
@@ -126,13 +126,13 @@ public class SnomedLanguageRefSetExporter extends AbstractFilteredSnomedCoreExpo
 			.limit(referencedComponentToMemberMap.keySet().size())
 			.build();
 				
-		List<String> descriptionIdsWithLanguageCode = getRevisionSearcher().search(query).getHits();
+		List<String> descriptionIdsWithLanguageCode = getSearcher().search(query).getHits();
 		
 		List<SnomedRefSetMemberIndexEntry> filteredMembers = descriptionIdsWithLanguageCode.stream()
 				.flatMap(id -> referencedComponentToMemberMap.get(id).stream())
 				.collect(toList());
 
-		return new Hits<SnomedRefSetMemberIndexEntry>(filteredMembers, allResults.getOffset(), allResults.getLimit(), allResults.getTotal());
+		return new Hits<SnomedRefSetMemberIndexEntry>(filteredMembers, null, allResults.getLimit(), allResults.getTotal());
 	}
 
 }

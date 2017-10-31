@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,25 +19,18 @@ import static com.b2international.snowowl.snomed.exporter.server.rf1.SnomedRf1Re
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.revision.RevisionIndex;
-import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 
 /**
@@ -51,10 +44,6 @@ import com.google.common.collect.Sets;
  */
 public class SnomedCrossMapExporter extends AbstractSnomedCrossMapExporter {
 
-	private boolean complex;
-
-	private Iterator<String> itr;
-	
 	private static final String FILE_NAME_PREFIX = "CrossMaps";
 	
 	/**
@@ -63,65 +52,54 @@ public class SnomedCrossMapExporter extends AbstractSnomedCrossMapExporter {
 	 * @param refSetId
 	 * @param mapSetSetting
 	 */
-	public SnomedCrossMapExporter(final SnomedExportContext configuration, final String refSetId, 
-			final SnomedMapSetSetting mapSetSetting, final RevisionSearcher revisionSearcher) {
+	public SnomedCrossMapExporter(
+			final SnomedExportContext configuration, 
+			final String refSetId, 
+			final SnomedMapSetSetting mapSetSetting, 
+			final RevisionSearcher revisionSearcher) {
 		super(configuration, refSetId, mapSetSetting, revisionSearcher);
-		complex = getMapSetSetting().isComplex();
-		itr = Iterators.transform(createResultSet().iterator(), new Function<MapTargetEntry, String>() {
-			@Override
-			public String apply(final MapTargetEntry input) {
-				return new StringBuilder(refSetId).append(HT)
-					.append(input.mapSource).append(HT)
-					.append(complex ? StringUtils.valueOfOrEmptyString(input.group) : "0").append(HT)
-					.append(complex ? StringUtils.valueOfOrEmptyString(input.priority) : "0").append(HT)
-					.append(StringUtils.valueOfOrEmptyString(input.mapTarget))
-					.append(complex ? StringUtils.valueOfOrEmptyString(input.rule) : "").append(HT)
-					.append(complex ? StringUtils.valueOfOrEmptyString(input.advice) : "").append(HT)
-					.toString();
-			}
-		});
 	}
 
 	@Override
 	protected String getFileNameprefix() {
 		return FILE_NAME_PREFIX;
 	}
+	
+	private String toLine(MapTargetEntry input) {
+		return new StringBuilder(getRefSetId()).append(HT)
+				.append(input.mapSource).append(HT)
+				.append(isComplex() ? StringUtils.valueOfOrEmptyString(input.group) : "0").append(HT)
+				.append(isComplex() ? StringUtils.valueOfOrEmptyString(input.priority) : "0").append(HT)
+				.append(StringUtils.valueOfOrEmptyString(input.mapTarget))
+				.append(isComplex() ? StringUtils.valueOfOrEmptyString(input.rule) : "").append(HT)
+				.append(isComplex() ? StringUtils.valueOfOrEmptyString(input.advice) : "").append(HT)
+				.toString();
+	}
+	
+	private Collection<MapTargetEntry> fetchResultSet() throws IOException {
+		//we need every target, limit needs to be set as the default is 50 hits
+		Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build();
+		Hits<SnomedRefSetMemberIndexEntry> hits = revisionSearcher.search(query);
 
-	private Collection<MapTargetEntry> createResultSet() {
+		Set<MapTargetEntry> mapTargetEntries = Sets.newHashSet();
 		
-		RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
-		RevisionIndex revisionIndexService = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
-		
-		return revisionIndexService.read(getBranchPath().getPath(), new RevisionIndexRead<Collection<MapTargetEntry>>() {
-
-			@Override
-			public Collection<MapTargetEntry> execute(RevisionSearcher index) throws IOException {
-				//we need every target, limit needs to be set as the default is 50 hits
-				Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build();
-				Hits<SnomedRefSetMemberIndexEntry> hits = index.search(query);
-
-				Set<MapTargetEntry> mapTargetEntries = Sets.newHashSet();
+		for (SnomedRefSetMemberIndexEntry snomedRefSetMemberIndexEntry : hits) {
+			
+			final MapTargetEntry mapTargetEntry = new MapTargetEntry();
+			mapTargetEntry.mapSource = snomedRefSetMemberIndexEntry.getReferencedComponentId();
+			mapTargetEntry.mapTarget = snomedRefSetMemberIndexEntry.getMapTarget();
+			
+			if (isComplex()) {
+				mapTargetEntry.rule = snomedRefSetMemberIndexEntry.getMapRule();
+				mapTargetEntry.advice = snomedRefSetMemberIndexEntry.getMapAdvice();
 				
-				for (SnomedRefSetMemberIndexEntry snomedRefSetMemberIndexEntry : hits) {
-					
-					final MapTargetEntry mapTargetEntry = new MapTargetEntry();
-					mapTargetEntry.mapSource = snomedRefSetMemberIndexEntry.getReferencedComponentId();
-					mapTargetEntry.mapTarget = snomedRefSetMemberIndexEntry.getMapTarget();
-					
-					if (complex) {
-						mapTargetEntry.rule = snomedRefSetMemberIndexEntry.getMapRule();
-						mapTargetEntry.advice = snomedRefSetMemberIndexEntry.getMapAdvice();
-						
-						//nulls are converted to empty strings when writing it out
-						mapTargetEntry.group = String.valueOf(snomedRefSetMemberIndexEntry.getMapGroup());
-						mapTargetEntry.priority = String.valueOf(snomedRefSetMemberIndexEntry.getMapPriority()); 
-					}
-					mapTargetEntries.add(mapTargetEntry);
-				}
-				return mapTargetEntries;
+				//nulls are converted to empty strings when writing it out
+				mapTargetEntry.group = String.valueOf(snomedRefSetMemberIndexEntry.getMapGroup());
+				mapTargetEntry.priority = String.valueOf(snomedRefSetMemberIndexEntry.getMapPriority()); 
 			}
-		});
-		
+			mapTargetEntries.add(mapTargetEntry);
+		}
+		return mapTargetEntries;
 	}
 	
 	@Override
@@ -133,20 +111,10 @@ public class SnomedCrossMapExporter extends AbstractSnomedCrossMapExporter {
 	public ComponentExportType getType() {
 		return ComponentExportType.REF_SET;
 	}
-
+	
 	@Override
-	public boolean hasNext() {
-		return itr.hasNext();
-	}
-
-	@Override
-	public String next() {
-		return itr.next();
-	}
-
-	@Override
-	public Iterator<String> iterator() {
-		return itr;
+	public void writeLines(Consumer<String> lineProcessor) throws IOException {
+		fetchResultSet().stream().map(this::toLine).forEach(lineProcessor);
 	}
 
 }

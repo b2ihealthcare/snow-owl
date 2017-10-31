@@ -18,18 +18,15 @@ package com.b2international.snowowl.snomed.exporter.server.rf1;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
-import com.b2international.snowowl.snomed.exporter.server.SnomedExportExecutor;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
 
 /**
@@ -51,22 +48,13 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedExporter {
 		this.exportContext = checkNotNull(exportContext, "exportContext");
 		this.mapSetSetting = checkNotNull(mapSetSetting);
 		this.revisionSearcher = checkNotNull(revisionSearcher);
-		label = ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(getBranchPath(), refSetId);
+		label = ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(exportContext.getCurrentBranchPath(), refSetId);
 	}
 
-	protected IBranchPath getBranchPath() {
-		return exportContext.getCurrentBranchPath();
-	}
-	
 	public String getRefSetId() {
 		return refSetId;
 	}
 	
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
-	}
-
 	@Override
 	public String getRelativeDirectory() {
 		return RF1_CROSSMAP_RELATIVE_DIRECTORY + File.separatorChar + label;
@@ -89,11 +77,6 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedExporter {
 		return exportContext;
 	}
 	
-	@Override
-	public void execute() throws IOException {
-		new SnomedExportExecutor(this).execute();
-	}
-	
 	/**
 	 * Returns with the file name prefix. E.g.: <b>CrossMaps</b>, <b>CrossMapSets</b>, <b>CrossMapTargets</b>
 	 * <p>Clients must implement this method.</p>
@@ -105,8 +88,12 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedExporter {
 	 * Returns with the per-configured map set settings.
 	 * @return the map set setting for the cross map publication.
 	 */
-	protected SnomedMapSetSetting getMapSetSetting() {
+	protected final SnomedMapSetSetting getMapSetSetting() {
 		return mapSetSetting;
+	}
+	
+	protected final boolean isComplex() {
+		return getMapSetSetting().isComplex();
 	}
 	
 	/*returns with the previously configured release time in yyyyMMdd format*/
