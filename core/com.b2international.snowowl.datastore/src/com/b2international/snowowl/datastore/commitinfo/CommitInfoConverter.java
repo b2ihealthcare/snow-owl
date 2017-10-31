@@ -32,8 +32,8 @@ public final class CommitInfoConverter extends BaseResourceConverter<CommitInfoD
 	}
 
 	@Override
-	protected CommitInfos createCollectionResource(final List<CommitInfo> results, final int offset, final int limit, final int total) {
-		return new CommitInfos(results, context().id(), offset, limit, total);
+	protected CommitInfos createCollectionResource(final List<CommitInfo> results, final String scrollId, final int limit, final int total) {
+		return new CommitInfos(results, context().id(), scrollId, limit, total);
 	}
 
 	@Override
