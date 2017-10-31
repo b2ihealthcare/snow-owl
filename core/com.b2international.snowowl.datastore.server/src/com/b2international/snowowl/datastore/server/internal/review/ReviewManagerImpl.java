@@ -38,11 +38,11 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
-import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -397,7 +397,7 @@ public class ReviewManagerImpl implements ReviewManager {
 	public Review getReview(final String id) {
 		final Review review= store.read(new IndexRead<Review>() {
 			@Override
-			public Review execute(Searcher index) throws IOException {
+			public Review execute(DocSearcher index) throws IOException {
 				return index.get(ReviewImpl.class, id);
 			}
 		});
@@ -414,7 +414,7 @@ public class ReviewManagerImpl implements ReviewManager {
 	public ConceptChanges getConceptChanges(final String id) {
 		final ConceptChanges conceptChanges = store.read(new IndexRead<ConceptChanges>() {
 			@Override
-			public ConceptChanges execute(Searcher index) throws IOException {
+			public ConceptChanges execute(DocSearcher index) throws IOException {
 				return index.get(ConceptChanges.class, id);
 			}
 		});

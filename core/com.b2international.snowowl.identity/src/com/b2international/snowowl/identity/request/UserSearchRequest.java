@@ -31,14 +31,14 @@ final class UserSearchRequest extends SearchResourceRequest<ServiceProvider, Use
 	UserSearchRequest() {}
 	
 	@Override
-	protected Users createEmptyResult(int offset, int limit) {
-		return new Users(offset, limit, 0);
+	protected Users createEmptyResult(int limit) {
+		return new Users(limit, 0);
 	}
 
 	@Override
 	protected Users doExecute(ServiceProvider context) throws IOException {
 		return context.service(IdentityProvider.class)
-				.searchUsers(getCollection(OptionKey.COMPONENT_IDS, String.class), offset(), limit())
+				.searchUsers(getCollection(OptionKey.COMPONENT_IDS, String.class), limit())
 				.getSync(5, TimeUnit.MINUTES);
 	}
 

@@ -80,15 +80,14 @@ final class FileIdentityProvider implements IdentityProvider, IdentityWriter {
 	}
 	
 	@Override
-	public Promise<Users> searchUsers(Collection<String> usernames, int offset, int limit) {
+	public Promise<Users> searchUsers(Collection<String> usernames, int limit) {
 		final List<User> matches = users.values().stream()
 			.filter(user -> usernames.isEmpty() || usernames.contains(user.getUsername())) // match users by user name
 			.sorted()
-			.skip(offset)
 			.limit(limit)
 			.map(user -> new User(user.getUsername(), ImmutableList.of(Role.ADMINISTRATOR)))
 			.collect(Collectors.toList());
-		return Promise.immediate(new Users(matches, offset, limit, users.size()));
+		return Promise.immediate(new Users(matches, limit, users.size()));
 	}
 	
 	@Override

@@ -57,8 +57,8 @@ final class MultiIdentityProvider implements IdentityProvider, IdentityWriter {
 	}
 
 	@Override
-	public Promise<Users> searchUsers(Collection<String> usernames, int offset, int limit) {
-		return Promise.all(providers.stream().map(provider -> provider.searchUsers(usernames, offset, limit)).collect(Collectors.toList()))
+	public Promise<Users> searchUsers(Collection<String> usernames, int limit) {
+		return Promise.all(providers.stream().map(provider -> provider.searchUsers(usernames, limit)).collect(Collectors.toList()))
 					.then(responses -> {
 						final ImmutableList.Builder<User> users = ImmutableList.builder();
 						int total = 0;
@@ -66,7 +66,7 @@ final class MultiIdentityProvider implements IdentityProvider, IdentityWriter {
 							users.addAll(matches); 
 							total += matches.getTotal();
 						}
-						return new Users(users.build(), offset, limit, total);
+						return new Users(users.build(), limit, total);
 					});
 	}
 	

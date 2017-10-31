@@ -34,7 +34,7 @@ class RepositorySearchRequest extends SearchResourceRequest<ServiceProvider, Rep
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	protected Repositories createEmptyResult(int offset, int limit) {
+	protected Repositories createEmptyResult(int limit) {
 		return new Repositories();
 	}
 

@@ -229,7 +229,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 			final String password = new String(decryptedResponse, RANDOM_BYTES_LENGTH, decryptedResponse.length - RANDOM_BYTES_LENGTH, Charsets.UTF_8);
 			authenticate(userId, password);
 			
-			User user = identityProvider.searchUsers(ImmutableList.of(userId), 0, 1).getSync(1, TimeUnit.MINUTES).first().get();
+			User user = identityProvider.searchUsers(ImmutableList.of(userId), 1).getSync(1, TimeUnit.MINUTES).first().get();
 			
 			if (!loginEnabled && !user.isAdministrator()) {
 				throw new SecurityException("Logging in for non-administrator users is temporarily disabled.");
