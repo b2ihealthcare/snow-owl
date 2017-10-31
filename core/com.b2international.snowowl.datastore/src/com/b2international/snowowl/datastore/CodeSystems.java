@@ -22,12 +22,12 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 /**
  * @since 4.7
  */
-public class CodeSystems extends PageableCollectionResource<CodeSystemEntry> {
+public final class CodeSystems extends PageableCollectionResource<CodeSystemEntry> {
 
 	private static final long serialVersionUID = 1L;
 
-	public CodeSystems(List<CodeSystemEntry> items, int offset, int limit, int total) {
-		super(items, offset, limit, total);
+	public CodeSystems(List<CodeSystemEntry> items, String scrollId, int limit, int total) {
+		super(items, scrollId, limit, total);
 	}
 
 }

@@ -20,6 +20,7 @@ import java.util.Collections;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Hits;
+import com.b2international.index.Scroll;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -63,19 +64,24 @@ final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<Re
 		
 		final Searcher searcher = context.service(Searcher.class);
 		
-		final Hits<CodeSystemVersionEntry> hits = searcher.search(select(CodeSystemVersionEntry.class)
-				.where(query.build())
-				.sortBy(sortBy())
-				.offset(offset())
-				.limit(limit())
-				.build());
+		final Hits<CodeSystemVersionEntry> hits;
+		if (isScrolled()) {
+			hits = searcher.scroll(new Scroll<>(CodeSystemVersionEntry.class, scrollId()));
+		} else {
+			hits = searcher.search(select(CodeSystemVersionEntry.class)
+					.where(query.build())
+					.sortBy(sortBy())
+					.scroll(scrollKeepAlive())
+					.limit(limit())
+					.build());
+		}
 		
-		return new CodeSystemVersions(hits.getHits(), offset(), limit(), hits.getTotal());
+		return new CodeSystemVersions(hits.getHits(), hits.getScrollId(), limit(), hits.getTotal());
 	}
 	
 	@Override
-	protected CodeSystemVersions createEmptyResult(int offset, int limit) {
-		return new CodeSystemVersions(Collections.emptyList(), offset, limit, 0);
+	protected CodeSystemVersions createEmptyResult(int limit) {
+		return new CodeSystemVersions(Collections.emptyList(), null, limit, 0);
 	}
 
 }
