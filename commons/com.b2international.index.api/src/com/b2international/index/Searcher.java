@@ -16,25 +16,14 @@
 package com.b2international.index;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import com.b2international.index.query.Query;
 
 /**
  * @since 4.7
  */
-public interface Searcher extends AutoCloseable {
-
-	/**
-	 * Fetch an object by type and key from the index.
-	 * 
-	 * @param type
-	 *            - the object's type to retrieve
-	 * @param key
-	 *            - the unique identifier of the object
-	 * @return the object
-	 * @throws IOException
-	 */
-	<T> T get(Class<T> type, String key) throws IOException;
+public interface Searcher {
 
 	/**
 	 * Execute the given query among all stored items.
@@ -46,5 +35,36 @@ public interface Searcher extends AutoCloseable {
 	 *             - if something goes wrong during the execution of the query
 	 */
 	<T> Hits<T> search(Query<T> query) throws IOException;
+	
+	/**
+	 * Scrolls to the next page of a query using the given {@link Scroll} configuration.
+	 * 
+	 * @param scroll
+	 * @return
+	 * @throws IOException
+	 */
+	<T> Hits<T> scroll(Scroll<T> scroll) throws IOException;
 
+	/**
+	 * Cancels an ongoing scroll using the scrollId.
+	 * @param scrollId
+	 */
+	void cancelScroll(String scrollId);
+	
+	/**
+	 * Returns an {@link Iterable} to scroll through all matches of the given query. If the query does not specify scroll keep alive, then the
+	 * implementation will use the default {@link Query#DEFAULT_SCROLL_KEEP_ALIVE} value.
+	 * 
+	 * @param query
+	 * @return
+	 */
+	default <T> Iterable<Hits<T>> scroll(Query<T> query) {
+		return new Iterable<Hits<T>>() {
+			@Override
+			public Iterator<Hits<T>> iterator() {
+				return new ScrollingIterator<T>(Searcher.this, query);
+			}
+		};
+	}
+	
 }

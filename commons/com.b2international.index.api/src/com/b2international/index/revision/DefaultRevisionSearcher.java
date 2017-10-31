@@ -21,7 +21,8 @@ import java.io.IOException;
 import java.util.Collections;
 
 import com.b2international.index.Hits;
-import com.b2international.index.Searcher;
+import com.b2international.index.DocSearcher;
+import com.b2international.index.Scroll;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.google.common.collect.Iterables;
@@ -32,15 +33,15 @@ import com.google.common.collect.Iterables;
 public class DefaultRevisionSearcher implements RevisionSearcher {
 
 	private final RevisionBranch branch;
-	private final Searcher searcher;
+	private final DocSearcher searcher;
 
-	public DefaultRevisionSearcher(RevisionBranch branch, Searcher searcher) {
+	public DefaultRevisionSearcher(RevisionBranch branch, DocSearcher searcher) {
 		this.branch = branch;
 		this.searcher = searcher;
 	}
 	
 	@Override
-	public Searcher searcher() {
+	public DocSearcher searcher() {
 		return searcher;
 	}
 	
@@ -71,7 +72,7 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 					.build())
 			.sortBy(query.getSortBy())
 			.limit(query.getLimit())
-			.offset(query.getOffset())
+			.scroll(query.getScrollKeepAlive())
 			.withScores(query.isWithScores())
 			.build();
 		} else {
@@ -84,11 +85,21 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 							.build())
 					.sortBy(query.getSortBy())
 					.limit(query.getLimit())
-					.offset(query.getOffset())
+					.scroll(query.getScrollKeepAlive())
 					.withScores(query.isWithScores())
 					.build();
 		}
 		return searcher.search(query);
+	}
+	
+	@Override
+	public <T> Hits<T> scroll(Scroll<T> scroll) throws IOException {
+		return searcher.scroll(scroll);
+	}
+	
+	@Override
+	public void cancelScroll(String scrollId) {
+		searcher.cancelScroll(scrollId);
 	}
 	
 	@Override

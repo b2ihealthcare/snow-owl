@@ -84,7 +84,7 @@ public abstract class BaseIndexTest {
 	protected final <T> T getDocument(final Class<T> type, final String key) {
 		return index().read(new IndexRead<T>() {
 			@Override
-			public T execute(Searcher index) throws IOException {
+			public T execute(DocSearcher index) throws IOException {
 				return index.get(type, key);
 			}
 		});
@@ -115,7 +115,7 @@ public abstract class BaseIndexTest {
 	protected final <T> Hits<T> search(final Query<T> query) {
 		return index().read(new IndexRead<Hits<T>>() {
 			@Override
-			public Hits<T> execute(Searcher index) throws IOException {
+			public Hits<T> execute(DocSearcher index) throws IOException {
 				return index.search(query);
 			}
 		});

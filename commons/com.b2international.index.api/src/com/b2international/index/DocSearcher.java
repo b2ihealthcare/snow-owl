@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,23 +18,20 @@ package com.b2international.index;
 import java.io.IOException;
 
 /**
- * Read operation over a single {@link Index}.
- * 
- * @since 4.7
- * @param <T>
- *            - the return type of the read op
- * @see Index#read(IndexRead)
+ * @since 6.0
  */
-public interface IndexRead<T> {
+public interface DocSearcher extends Searcher, AutoCloseable {
 
 	/**
-	 * Execute this read transaction.
+	 * Fetch an object by type and key from the index.
 	 * 
-	 * @param index
-	 *            - a {@link Searcher} instance to execute various read operations over a single consistent index.
-	 * @return
+	 * @param type
+	 *            - the object's type to retrieve
+	 * @param key
+	 *            - the unique identifier of the object
+	 * @return the object
 	 * @throws IOException
 	 */
-	T execute(DocSearcher index) throws IOException;
-
+	<T> T get(Class<T> type, String key) throws IOException;
+	
 }

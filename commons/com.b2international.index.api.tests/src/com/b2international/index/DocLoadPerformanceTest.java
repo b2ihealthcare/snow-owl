@@ -64,7 +64,7 @@ public class DocLoadPerformanceTest extends BaseIndexTest {
 			w.reset().start();
 			final Hits<Data> hits = index().read(new IndexRead<Hits<Data>>() {
 				@Override
-				public Hits<Data> execute(Searcher index) throws IOException {
+				public Hits<Data> execute(DocSearcher index) throws IOException {
 					return index.search(Query.select(Data.class)
 							.where(Expressions.matchAll())
 							.limit(Integer.MAX_VALUE)

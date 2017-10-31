@@ -17,8 +17,10 @@ package com.b2international.index.query;
 
 import java.util.Set;
 
+import com.b2international.index.Searcher;
 import com.b2international.index.mapping.DocumentMapping;
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -28,6 +30,8 @@ import com.google.common.collect.ImmutableSet;
  */
 public final class Query<T> {
 
+	public static final String DEFAULT_SCROLL_KEEP_ALIVE = "60s";
+	
 	/**
 	 * @since 4.7
 	 */
@@ -39,16 +43,37 @@ public final class Query<T> {
 	 * @since 4.7
 	 */
 	public interface AfterWhereBuilder<T> extends Buildable<Query<T>> {
-		AfterWhereBuilder<T> offset(int offset);
-
+		
+		/**
+		 * Keeps the context of the search alive with a default <code>60s</code> keep alive time value.
+		 *  
+		 * @param scrollKeepAlive
+		 * @return
+		 * @see #scroll(String)
+		 */
+		default AfterWhereBuilder<T> scroll() {
+			return scroll(DEFAULT_SCROLL_KEEP_ALIVE);
+		}
+		
+		/**
+		 * A keep alive time value to pass to the query. This will keep the context of the search alive until the specified time value to scroll the
+		 * results in subsequent {@link Searcher#scroll(String)} calls. 
+		 * <br/ >
+		 * Example values are <code>15s</code>, <code>1m</code>, <code>1h</code>.
+		 * 
+		 * @param scrollKeepAlive
+		 * @return
+		 */
+		AfterWhereBuilder<T> scroll(String scrollKeepAlive);
+		
 		AfterWhereBuilder<T> limit(int limit);
 
 		AfterWhereBuilder<T> sortBy(SortBy sortBy);
 		
 		AfterWhereBuilder<T> withScores(boolean withScores);
 	}
-	
-	private int offset;
+
+	private String scrollKeepAlive;
 	private int limit;
 	private Class<T> select;
 	private Class<?> from;
@@ -59,14 +84,6 @@ public final class Query<T> {
 	private Set<String> fields;
 
 	Query() {}
-
-	public int getOffset() {
-		return offset;
-	}
-
-	void setOffset(int offset) {
-		this.offset = offset;
-	}
 
 	public int getLimit() {
 		return limit;
@@ -132,6 +149,14 @@ public final class Query<T> {
 		this.fields = fields;
 	}
 	
+	public String getScrollKeepAlive() {
+		return scrollKeepAlive;
+	}
+	
+	public void setScrollKeepAlive(String scrollKeepAlive) {
+		this.scrollKeepAlive = scrollKeepAlive;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -142,8 +167,8 @@ public final class Query<T> {
 			sb.append(" SORT BY " + sortBy);
 		}
 		sb.append(" LIMIT " + limit);
-		if (offset != 0) {
-			sb.append(" OFFSET " + offset);
+		if (!Strings.isNullOrEmpty(scrollKeepAlive)) {
+			sb.append(" SCROLL("+scrollKeepAlive+") ");
 		}
 		if (parentType != null) {
 			sb.append(" HAS_PARENT(" + DocumentMapping.getType(parentType) + ")");

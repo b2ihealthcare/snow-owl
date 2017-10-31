@@ -18,6 +18,7 @@ package com.b2international.index;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @since 4.7
@@ -25,13 +26,13 @@ import java.util.List;
 public final class Hits<T> implements Iterable<T> {
 
 	private final List<T> hits;
-	private final int offset;
+	private final String scrollId;
 	private final int limit;
 	private final int total;
 
-	public Hits(List<T> hits, int offset, int limit, int total) {
+	public Hits(List<T> hits, String scrollId, int limit, int total) {
 		this.hits = hits;
-		this.offset = offset;
+		this.scrollId = scrollId;
 		this.limit = limit;
 		this.total = total;
 	}
@@ -41,24 +42,32 @@ public final class Hits<T> implements Iterable<T> {
 		return getHits().iterator();
 	}
 	
+	public Stream<T> stream() {
+		return hits.stream();
+	}
+	
+	public boolean isEmpty() {
+		return hits.isEmpty();
+	}
+	
 	public List<T> getHits() {
 		return hits;
+	}
+	
+	public String getScrollId() {
+		return scrollId;
 	}
 	
 	public int getLimit() {
 		return limit;
 	}
 	
-	public int getOffset() {
-		return offset;
-	}
-	
 	public int getTotal() {
 		return total;
 	}
 
-	public static <T> Hits<T> empty(int offset, int limit) {
-		return new Hits<>(Collections.<T>emptyList(), offset, limit, 0);
+	public static <T> Hits<T> empty(int limit) {
+		return new Hits<>(Collections.<T>emptyList(), null, limit, 0);
 	}
-	
+
 }

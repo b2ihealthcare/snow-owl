@@ -36,6 +36,6 @@ public interface Writer extends AutoCloseable {
 
 	void commit() throws IOException;
 
-	Searcher searcher();
+	DocSearcher searcher();
 	
 }
