@@ -15,13 +15,17 @@
  */
 package com.b2international.snowowl.datastore.server.snomed;
 
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta.Type;
@@ -31,8 +35,6 @@ import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.merge.MergeConflict;
@@ -41,11 +43,11 @@ import com.b2international.snowowl.datastore.cdo.AddedInSourceAndDetachedInTarge
 import com.b2international.snowowl.datastore.cdo.AddedInSourceAndTargetConflict;
 import com.b2international.snowowl.datastore.cdo.AddedInTargetAndDetachedInSourceConflict;
 import com.b2international.snowowl.datastore.cdo.ICDOConflictProcessor;
+import com.b2international.snowowl.datastore.cdo.IMergeConflictRule;
 import com.b2international.snowowl.datastore.server.snomed.merge.SnomedMergeConflictMapper;
-import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedDonatedComponentResolverRule;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -56,6 +58,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 /**
  * An {@link ICDOConflictProcessor} implementation handling conflicts specific to the SNOMED CT terminology model.
@@ -87,8 +90,6 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 			SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__SOURCE_EFFECTIVE_TIME,
 			SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__TARGET_EFFECTIVE_TIME);
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedCDOConflictProcessor.class);
-	
 	private Map<String, CDOID> newComponentIdsInSource;
 	private Set<CDOID> detachedSourceIds;
 	private Map<String, CDOID> newComponentIdsInTarget;
@@ -98,6 +99,9 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 
 	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> newSourceRevisionIdToFeatureIdMap;
 	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> newTargetRevisionIdToFeatureIdMap;
+
+	private Map<CDOID, CDOID> donatedComponentsMap = newHashMap(); // key -> extension component's CDO ID, value -> INT component's CDO ID
+	private Set<String> donatedComponentIds = newHashSet(); // set of SNOMED CT IDs to donate
 
 	public SnomedCDOConflictProcessor() {
 		super(SnomedDatastoreActivator.REPOSITORY_UUID, RELEASED_ATTRIBUTE_MAP);
@@ -225,8 +229,79 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		newComponentIdsInSource = extractNewComponentIds(newSourceComponentRevisions);
 		newComponentIdsInTarget = extractNewComponentIds(newTargetComponentRevisions);
 		
+		collectDonatedComponents(newSourceComponentRevisions, newTargetComponentRevisions);
+		
 		detachedSourceIds = getDetachedIdsInTarget(sourceMap);
 		detachedTargetIds = getDetachedIdsInTarget(targetMap);
+	}
+
+	private void collectDonatedComponents(Collection<InternalCDORevision> newSourceComponentRevisions,
+			Collection<InternalCDORevision> newTargetComponentRevisions) {
+	
+		for (String id : Sets.intersection(newComponentIdsInSource.keySet(), newComponentIdsInTarget.keySet())) {
+			
+			CDOID sourceCDOId = newComponentIdsInSource.get(id);
+			CDOID targetCDOId = newComponentIdsInTarget.get(id);
+			
+			if (!CDOIDUtil.equals(sourceCDOId, targetCDOId)) {
+				
+				Optional<InternalCDORevision> sourceRevision = newSourceComponentRevisions.stream()
+						.filter(revision -> CDOIDUtil.equals(revision.getID(), sourceCDOId)).findFirst();
+				Optional<InternalCDORevision> targetRevision = newTargetComponentRevisions.stream()
+						.filter(revision -> CDOIDUtil.equals(revision.getID(), targetCDOId)).findFirst();
+				
+				if (sourceRevision.isPresent() && targetRevision.isPresent()) {
+					
+					InternalCDORevision sourceRevisionComponent = sourceRevision.get();
+					InternalCDORevision targetRevisionComponent = targetRevision.get();
+					
+					CDOID sourceModule = (CDOID) sourceRevisionComponent.getValue(SnomedPackage.Literals.COMPONENT__MODULE);
+					CDOID targetModule = (CDOID) targetRevisionComponent.getValue(SnomedPackage.Literals.COMPONENT__MODULE);
+					
+					if (!CDOIDUtil.equals(sourceModule, targetModule)) {
+						
+						if (isDescription(sourceRevisionComponent) && isDescription(targetRevisionComponent)) {
+							
+							CDOID sourceConcept = (CDOID) sourceRevisionComponent.getContainerID();
+							CDOID targetConcept = (CDOID) targetRevisionComponent.getContainerID();
+							
+							if (CDOIDUtil.equals(sourceConcept, targetConcept)) {
+								
+								donatedComponentsMap.put(sourceCDOId, targetCDOId);
+								donatedComponentIds.add(id);
+								
+							}
+							
+						} else if (isRelationship(sourceRevisionComponent) && isRelationship(targetRevisionComponent)) {
+							
+							CDOID sourceConcept = (CDOID) sourceRevisionComponent.getContainerID();
+							CDOID targetConcept = (CDOID) targetRevisionComponent.getContainerID();
+							
+							if (CDOIDUtil.equals(sourceConcept, targetConcept)) {
+								
+								donatedComponentsMap.put(sourceCDOId, targetCDOId);
+								donatedComponentIds.add(id);
+								
+							}
+							
+						} else { // must be concepts
+							
+							donatedComponentsMap.put(sourceCDOId, targetCDOId);
+							donatedComponentIds.add(id);
+							
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	@Override
+	public Collection<IMergeConflictRule> getConflictRules() {
+		if (!donatedComponentsMap.isEmpty()) {
+			super.getConflictRules().add(new SnomedDonatedComponentResolverRule(donatedComponentsMap));
+		}
+		return super.getConflictRules();
 	}
 	
 	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> extractNewRevisionIdToFeatureIdMap(Collection<InternalCDORevision> newComponentRevisions) {
@@ -259,26 +334,13 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		return newComponentIdsMap;
 	}
 	
-	@Override
-	protected void unlinkObject(final CDOObject object) {
-	
-		if (object instanceof Relationship) {
-			((Relationship) object).setSource(null);
-			((Relationship) object).setDestination(null);
-		} else if (object instanceof SnomedRefSetMember) {
-			super.unlinkObject(object);
-		} else {
-			LOGGER.warn("Unexpected CDO object not unlinked: {}.", object);
-		}
-	}
-
 	private Conflict checkDuplicateComponentIds(final CDORevision revision, final Map<String, CDOID> newComponentIdsMap) {
 
 		if (isComponent(revision)) {
 			final String newComponentId = getComponentId((InternalCDORevision) revision);
 			final CDOID conflictingNewId = newComponentIdsMap.get(newComponentId);
 
-			if (null != conflictingNewId) {
+			if (null != conflictingNewId && !donatedComponentIds.contains(newComponentId)) {
 				return new AddedInSourceAndTargetConflict(revision.getID(), conflictingNewId, String.format(
 						"Two SNOMED CT %ss are using the same '%s' identifier.", revision.getEClass().getName(), newComponentId));
 			}
@@ -289,6 +351,14 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 
 	private boolean isComponent(final CDORevision revision) {
 		return isComponent(revision.getEClass());
+	}
+	
+	private boolean isDescription(final CDORevision revision) {
+		return revision.getEClass().equals(SnomedPackage.Literals.DESCRIPTION);
+	}
+	
+	private boolean isRelationship(final CDORevision revision) {
+		return revision.getEClass().equals(SnomedPackage.Literals.RELATIONSHIP);
 	}
 
 	private boolean isComponent(final EClass eClass) {

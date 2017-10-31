@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.cdo;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -24,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
@@ -35,7 +33,6 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInTargetAndDetachedInSourceConflict;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
@@ -61,7 +58,6 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 
 	private final String repositoryUuid;
 	private final Map<EClass, EAttribute> releasedAttributeMap;
-	private final Set<CDOID> idsToUnlink = newHashSet();
 	
 	private final IMergeConflictRuleProvider conflictRuleProvider;
 
@@ -141,14 +137,7 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	@Override
 	public void postProcess(final CDOTransaction transaction) throws ConflictException {
 		
-		for (final CDOID idToUnlink : idsToUnlink) {
-			final CDOObject objectIfExists = CDOUtils.getObjectIfExists(transaction, idToUnlink);
-			if (objectIfExists != null) {
-				unlinkObject(objectIfExists);
-			}
-		}
-		
-		List<MergeConflict> conflicts = FluentIterable.from(conflictRuleProvider.getRules())
+		List<MergeConflict> conflicts = FluentIterable.from(getConflictRules())
 				.transformAndConcat(new Function<IMergeConflictRule, Collection<MergeConflict>>() {
 					@Override
 					public Collection<MergeConflict> apply(IMergeConflictRule input) {
@@ -161,8 +150,9 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 		}
 	}
 
-	protected void unlinkObject(final CDOObject object) {
-		EcoreUtil.remove(object);
+	@Override
+	public Collection<IMergeConflictRule> getConflictRules() {
+		return conflictRuleProvider.getRules();
 	}
 
 	/**

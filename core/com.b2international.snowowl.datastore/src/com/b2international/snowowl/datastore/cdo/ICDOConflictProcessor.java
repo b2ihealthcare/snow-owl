@@ -126,4 +126,9 @@ public interface ICDOConflictProcessor {
 	 * @return
 	 */
 	Collection<MergeConflict> handleCDOConflicts(final CDOView sourceView, final CDOView targetView, final Map<CDOID, Conflict> conflicts);
+	
+	/**
+	 * Returns a set of conflict rules to validate against
+	 */
+	Collection<IMergeConflictRule> getConflictRules();
 }

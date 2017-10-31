@@ -36,6 +36,15 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
  */
 public class SnomedMergeConflictRuleProvider implements IMergeConflictRuleProvider {
 
+	private List<IMergeConflictRule> rules = newArrayList();
+
+	public SnomedMergeConflictRuleProvider() {
+		rules.add(new SnomedRefsetMemberReferencingDetachedComponentRule());
+		rules.add(new SnomedLanguageRefsetMembersMergeConflictRule());
+		rules.add(new SnomedInvalidTaxonomyMergeConflictRule(getIndex(getRepositoryUUID())));
+		rules.add(new SnomedInvalidRelationshipMergeConflictRule());
+	}
+	
 	@Override
 	public String getRepositoryUUID() {
 		return SnomedDatastoreActivator.REPOSITORY_UUID;
@@ -43,10 +52,6 @@ public class SnomedMergeConflictRuleProvider implements IMergeConflictRuleProvid
 
 	@Override
 	public Collection<IMergeConflictRule> getRules() {
-		List<IMergeConflictRule> rules = newArrayList();
-		rules.add(new SnomedRefsetMemberReferencingDetachedComponentRule());
-		rules.add(new SnomedLanguageRefsetMembersMergeConflictRule());
-		rules.add(new SnomedInvalidRelationshipMergeConflictRule());
 		return rules;
 	}
 
