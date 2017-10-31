@@ -120,7 +120,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	@JsonIgnore
 	protected final boolean isScrolled() {
-		return Strings.isNullOrEmpty(scrollId());
+		return !Strings.isNullOrEmpty(scrollId());
 	}
 
 	@JsonProperty
