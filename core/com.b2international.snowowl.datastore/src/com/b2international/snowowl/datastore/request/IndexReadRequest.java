@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.request;
 
 import java.io.IOException;
 
+import com.b2international.index.DocSearcher;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.Searcher;
@@ -46,7 +47,7 @@ public final class IndexReadRequest<R> extends DelegatingRequest<RepositoryConte
 	public R execute(final RepositoryContext context) {
 		return context.service(Index.class).read(new IndexRead<R>() {
 			@Override
-			public R execute(Searcher index) throws IOException {
+			public R execute(DocSearcher index) throws IOException {
 				try {
 					return next(DelegatingRepositoryContext
 							.basedOn(context)

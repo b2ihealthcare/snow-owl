@@ -38,6 +38,6 @@ public interface ResourceConverter<T, R, CR extends CollectionResource<R>> {
 	 * @param components
 	 * @return
 	 */
-	CR convert(Collection<T> components, int offset, int limit, int total);
+	CR convert(Collection<T> components, String scrollId, int limit, int total);
 	
 }

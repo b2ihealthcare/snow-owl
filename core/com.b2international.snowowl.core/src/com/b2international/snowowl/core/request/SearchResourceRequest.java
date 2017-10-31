@@ -27,7 +27,9 @@ import javax.validation.constraints.NotNull;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 
 /**
  * @since 5.2
@@ -89,8 +91,8 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		LESS_THAN_EQUALS,
 	}
 	
-	@Min(0)
-	private int offset;
+	private String scrollId;
+	private String scrollKeepAlive;
 
 	@Min(0)
 	private int limit;
@@ -100,21 +102,35 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	protected SearchResourceRequest() {}
 	
-	void setLimit(int limit) {
-		this.limit = limit;
+	void setScrollId(String scrollId) {
+		this.scrollId = scrollId;
 	}
 	
-	void setOffset(int offset) {
-		this.offset = offset;
+	void setScrollKeepAlive(String scrollKeepAlive) {
+		this.scrollKeepAlive = scrollKeepAlive;
+	}
+	
+	void setLimit(int limit) {
+		this.limit = limit;
 	}
 	
 	void setOptions(Options options) {
 		this.options = options;
 	}
 	
+	@JsonIgnore
+	protected final boolean isScrolled() {
+		return Strings.isNullOrEmpty(scrollId());
+	}
+
 	@JsonProperty
-	protected final int offset() {
-		return offset;
+	protected final String scrollId() {
+		return scrollId;
+	}
+	
+	@JsonProperty
+	protected final String scrollKeepAlive() {
+		return scrollKeepAlive;
 	}
 	
 	@JsonProperty
@@ -179,7 +195,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		try {
 			return doExecute(context);
 		} catch (NoResultException e) {
-			return createEmptyResult(offset, limit);
+			return createEmptyResult(limit);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Caught exception while executing search request.", e);
 		}
@@ -191,7 +207,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	 * @param limit
 	 * @return
 	 */
-	protected abstract B createEmptyResult(int offset, int limit);
+	protected abstract B createEmptyResult(int limit);
 
 	/**
 	 * Executes this search request.
