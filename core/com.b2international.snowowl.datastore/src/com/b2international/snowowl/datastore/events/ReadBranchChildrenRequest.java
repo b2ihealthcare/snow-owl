@@ -36,7 +36,7 @@ public final class ReadBranchChildrenRequest extends BranchRequest<Branches> {
 	public Branches execute(RepositoryContext context) {
 		final Branch branch = context.service(BranchManager.class).getBranch(getBranchPath());
 		final List<Branch> children = ImmutableList.copyOf(branch.children());
-		return new Branches(children, 0, children.size(), children.size());
+		return new Branches(children, null, children.size(), children.size());
 	}
 
 }

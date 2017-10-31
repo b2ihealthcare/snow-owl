@@ -50,8 +50,8 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 	BranchSearchRequest() {}
 	
 	@Override
-	protected Branches createEmptyResult(int offset, int limit) {
-		return new Branches(offset, limit, 0);
+	protected Branches createEmptyResult(int limit) {
+		return new Branches(limit, 0);
 	}
 
 	@Override
@@ -71,7 +71,7 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 		
 		final Hits<InternalBranch> matches = searcher.search(select(InternalBranch.class)
 				.where(queryBuilder.build())
-				.offset(offset())
+				.scroll(scrollKeepAlive())
 				.limit(limit())
 				.sortBy(sortBy())
 				.build());
@@ -81,7 +81,7 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 			branch.setBranchManager(branchManager);
 		}
 		
-		return new Branches(ImmutableList.<Branch>copyOf(matches), offset(), limit(), matches.getTotal());
+		return new Branches(ImmutableList.<Branch>copyOf(matches), matches.getScrollId(), limit(), matches.getTotal());
 	}
 
 }
