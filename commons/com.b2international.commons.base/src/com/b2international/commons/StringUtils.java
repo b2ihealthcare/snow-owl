@@ -359,13 +359,15 @@ public class StringUtils {
 	 */
 	public static <T> String limitedToString(Iterable<T> values, int limit) {
 		final StringBuilder builder = new StringBuilder("[");
-		
+
+		int remaining = limit;
 		Iterator<T> it = values.iterator();
-		while (it.hasNext() && limit > 0) {
+		while (it.hasNext() && remaining > 0) {
 			if (builder.length() != 1) {
 				builder.append(", ");
 			}
 			builder.append(it.next());
+			remaining--;
 		}
 
 		builder.append(String.format("... %d more items", Iterables.size(values) - limit));
