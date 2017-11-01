@@ -50,7 +50,7 @@ import com.google.common.collect.Sets;
  */
 public final class DefaultRevisionIndex implements InternalRevisionIndex {
 
-	private static final int PURGE_LIMIT = 10000;
+	private static final int PURGE_LIMIT = 100_000;
 	private final Index index;
 	private final RevisionBranchProvider branchProvider;
 

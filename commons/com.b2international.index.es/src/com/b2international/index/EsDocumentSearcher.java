@@ -95,8 +95,6 @@ public class EsDocumentSearcher implements DocSearcher {
 		final int limit = query.getLimit();
 		final int toRead = Ints.min(limit, resultWindow);
 		
-		final TimeValue scrollTime = TimeValue.timeValueSeconds(60);
-		
 		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping);
 		final QueryBuilder esQuery = esQueryBuilder.build(query.getWhere());
 		
@@ -122,6 +120,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		addSort(req, query.getSortBy());
 		
 		// scrolling
+		final TimeValue scrollTime = TimeValue.timeValueSeconds(60);
 		final boolean isScrolled = !Strings.isNullOrEmpty(query.getScrollKeepAlive());
 		if (limit > resultWindow) {
 			checkArgument(!isScrolled, "Cannot fetch more than '%s' items when scrolling is specified. You requested '%s' items.", resultWindow, limit);
