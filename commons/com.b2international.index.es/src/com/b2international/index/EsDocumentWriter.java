@@ -118,7 +118,7 @@ public class EsDocumentWriter implements Writer {
 				UpdateByQueryRequestBuilder ubqrb = UpdateByQueryAction.INSTANCE.newRequestBuilder(client);
 				
 				ubqrb.source()
-					.setSize(1000)
+					.setSize(IndexClientFactory.DEFAULT_RESULT_WINDOW)
 					.setIndices(admin.name())
 					.setTypes(mapping.typeAsString())
 					.setRouting(mapping.typeAsString());
@@ -196,7 +196,7 @@ public class EsDocumentWriter implements Writer {
 				
 				@Override
 				public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
-					admin.log().debug("Successfully processed bulk request");
+					admin.log().debug("Successfully processed bulk request ({}) in {}.", request.numberOfActions(), response.getTook());
 					if (response.hasFailures()) {
 						for (BulkItemResponse itemResponse : response.getItems()) {
 							checkState(!itemResponse.isFailed(), "Failed to commit bulk request in index '%s', %s", admin.name(), itemResponse.getFailureMessage());
@@ -205,7 +205,7 @@ public class EsDocumentWriter implements Writer {
 				}
 			})
 			.setConcurrentRequests(getConcurrencyLevel())
-			.setBulkActions(5000)
+			.setBulkActions(10_000)
 			.build();
 
 			for (Entry<String, Object> entry : indexOperations.entrySet()) {
