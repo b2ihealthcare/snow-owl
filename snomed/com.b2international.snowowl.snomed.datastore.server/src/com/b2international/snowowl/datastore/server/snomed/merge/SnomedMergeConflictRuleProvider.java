@@ -20,13 +20,9 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.b2international.index.revision.RevisionIndex;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.datastore.cdo.IMergeConflictRule;
 import com.b2international.snowowl.datastore.cdo.IMergeConflictRuleProvider;
 import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedInvalidRelationshipMergeConflictRule;
-import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedInvalidTaxonomyMergeConflictRule;
 import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedLanguageRefsetMembersMergeConflictRule;
 import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedRefsetMemberReferencingDetachedComponentRule;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -41,7 +37,6 @@ public class SnomedMergeConflictRuleProvider implements IMergeConflictRuleProvid
 	public SnomedMergeConflictRuleProvider() {
 		rules.add(new SnomedRefsetMemberReferencingDetachedComponentRule());
 		rules.add(new SnomedLanguageRefsetMembersMergeConflictRule());
-		rules.add(new SnomedInvalidTaxonomyMergeConflictRule(getIndex(getRepositoryUUID())));
 		rules.add(new SnomedInvalidRelationshipMergeConflictRule());
 	}
 	
@@ -54,9 +49,5 @@ public class SnomedMergeConflictRuleProvider implements IMergeConflictRuleProvid
 	public Collection<IMergeConflictRule> getRules() {
 		return rules;
 	}
-
-	private RevisionIndex getIndex(String repositoryId) {
-		return ApplicationContext.getServiceForClass(RepositoryManager.class).get(repositoryId).service(RevisionIndex.class);
-	}
-
+	
 }
