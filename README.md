@@ -19,9 +19,9 @@ Required Eclipse plug-ins (install the listed features):
 *Note: you may have to untick the `Show only the latest versions of the available software` checkbox to get older versions of a feature. Please use the exact version specified below, not the latest point release.*
 
 * Xtext/Xtend (http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/)
- * MWE 2 language SDK 2.9.0 (MWE)
- * Xtend IDE 2.11.0 (Xtext)
- * Xtext Complete SDK 2.11.0 (Xtext)
+  * MWE 2 language SDK 2.9.0 (MWE)
+  * Xtend IDE 2.11.0 (Xtext)
+  * Xtext Complete SDK 2.11.0 (Xtext)
 * Optional: Maven integration (http://download.eclipse.org/technology/m2e/releases) 
  
 ### Eclipse Preferences
