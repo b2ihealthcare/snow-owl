@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.api.impl.domain.classification;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChange;
@@ -25,9 +24,18 @@ import com.b2international.snowowl.snomed.api.domain.classification.IRelationshi
  */
 public class RelationshipChangeList implements IRelationshipChangeList {
 
-	private List<IRelationshipChange> changes = Collections.emptyList();
-	private int total;
+	private final List<IRelationshipChange> changes;
+	private final int offset;
+	private final int limit;
+	private final int total;
 
+	public RelationshipChangeList(List<IRelationshipChange> changes, int offset, int limit, int total) {
+		this.changes = changes;
+		this.offset = offset;
+		this.limit = limit;
+		this.total = total;
+	}
+	
 	public List<IRelationshipChange> getChanges() {
 		return changes;
 	}
@@ -36,12 +44,14 @@ public class RelationshipChangeList implements IRelationshipChangeList {
 		return total;
 	}
 
-	public void setChanges(final List<IRelationshipChange> changes) {
-		this.changes = changes;
+	@Override
+	public int getOffSet() {
+		return offset;
 	}
-
-	public void setTotal(final int total) {
-		this.total = total;
+	
+	@Override
+	public int getLimit() {
+		return limit;
 	}
 
 	@Override

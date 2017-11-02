@@ -40,7 +40,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.ISnomedClassificationService;
@@ -48,7 +47,6 @@ import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConce
 import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
 import com.b2international.snowowl.snomed.api.domain.classification.IClassificationRun;
 import com.b2international.snowowl.snomed.api.domain.classification.IEquivalentConceptSet;
-import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChange;
 import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChangeList;
 import com.b2international.snowowl.snomed.api.rest.domain.ClassificationRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.ClassificationRunRestUpdate;
@@ -185,7 +183,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
 	@RequestMapping(value="/{path:**}/classifications/{classificationId}/relationship-changes", method=RequestMethod.GET, produces={"application/json", "text/csv"})
-	public @ResponseBody PageableCollectionResource<IRelationshipChange> getRelationshipChanges(
+	public @ResponseBody IRelationshipChangeList getRelationshipChanges(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path") 
 			final String branchPath,
@@ -204,8 +202,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 
 			final Principal principal) {
 
-		final IRelationshipChangeList relationshipChangeList = delegate.getRelationshipChanges(branchPath, classificationId, principal.getName(), offset, limit);
-		return PageableCollectionResource.of(relationshipChangeList.getChanges(), offset, limit, relationshipChangeList.getTotal());
+		return delegate.getRelationshipChanges(branchPath, classificationId, principal.getName(), offset, limit);
 	}
 
 	@ApiOperation(

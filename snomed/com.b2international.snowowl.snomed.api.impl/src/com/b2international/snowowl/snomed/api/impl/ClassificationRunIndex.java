@@ -356,12 +356,9 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	public IRelationshipChangeList getRelationshipChanges(final StorageRef storageRef, final String classificationId, final String sourceConceptId, final String userId, final int offset, final int limit) throws IOException {
 
 		final Query query = createClassQuery(RelationshipChange.class.getSimpleName(), classificationId, storageRef, sourceConceptId, userId);
-		final RelationshipChangeList result = new RelationshipChangeList();
-
-		result.setTotal(getHitCount(query));
-		result.setChanges(this.<IRelationshipChange>search(query, RelationshipChange.class, offset, limit));
-
-		return result;
+		final int total = getHitCount(query);
+		final List<IRelationshipChange> changes = this.search(query, RelationshipChange.class, offset, limit);
+		return new RelationshipChangeList(changes, offset, limit, total);
 	}
 
 	private <T> void indexResult(final String id, final IBranchPath branchPath, final String userId, final long creationDate,

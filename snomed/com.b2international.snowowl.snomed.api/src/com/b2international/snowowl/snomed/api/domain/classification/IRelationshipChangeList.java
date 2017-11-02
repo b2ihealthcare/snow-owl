@@ -36,4 +36,16 @@ public interface IRelationshipChangeList {
 	 * @return the total number of changes
 	 */
 	int getTotal();
+	
+	/**
+	 * Returns the requested limit number of relationship changes. 
+	 * @return
+	 */
+	int getLimit();
+	
+	/**
+	 * Returns the offset of this collection-like resource
+	 * @return
+	 */
+	int getOffSet();
 }
