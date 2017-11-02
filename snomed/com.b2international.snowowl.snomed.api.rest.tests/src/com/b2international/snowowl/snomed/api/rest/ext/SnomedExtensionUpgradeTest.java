@@ -28,8 +28,10 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.mer
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.stream.Collectors.toSet;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -50,6 +52,7 @@ import com.b2international.snowowl.snomed.api.rest.BranchBase;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -185,7 +188,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void upgradeWithDonatedContent() {
+	public void upgradeWithDonatedConcept() {
 		
 		// create extension concept on extension's current branch
 		
@@ -296,6 +299,102 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		assertTrue(relationshipIds.contains(intInferredIsaId));
 		assertTrue(relationshipIds.contains(extensionStatedIsaId));
 		assertTrue(relationshipIds.contains(extensionInferredIsaId));
+	}
+	
+	@Test
+	public void upgradeWithDonatedDescription() {
+		
+		String descriptionTerm = "Donated synonym of root concept";
+		
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("conceptId", Concepts.ROOT_CONCEPT)
+				.put("namespace", Concepts.B2I_NAMESPACE)
+				.put("moduleId", Concepts.MODULE_B2I_EXTENSION)
+				.put("typeId", Concepts.SYNONYM)
+				.put("term", descriptionTerm)
+				.put("languageCode", "en")
+				.put("acceptability", SnomedApiTestConstants.US_ACCEPTABLE_MAP)
+				.put("caseSignificance", CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE)
+				.put("commitComment", "Created new extension synonym")
+				.build();
+
+		String extensionDescriptionId = lastPathSegment(createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		SnomedDescription extensionDescription = getComponent(branchPath, SnomedComponentType.DESCRIPTION, extensionDescriptionId)
+				.statusCode(200)
+				.extract().as(SnomedDescription.class);
+		
+		assertEquals(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE, extensionDescription.getCaseSignificance());
+		assertThat(extensionDescription.getAcceptabilityMap().containsKey(Concepts.REFSET_LANGUAGE_TYPE_US));
+		assertEquals(Acceptability.ACCEPTABLE, extensionDescription.getAcceptabilityMap().get(Concepts.REFSET_LANGUAGE_TYPE_US));
+		assertFalse(extensionDescription.getAcceptabilityMap().containsKey(Concepts.REFSET_LANGUAGE_TYPE_UK));
+		
+		// create new version on MAIN
+		
+		String effectiveDate = getNextAvailableEffectiveDateAsString(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+		String versionId = "v6";
+		createVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, versionId, effectiveDate).statusCode(201);
+		
+		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(
+				Branch.MAIN_PATH, 
+				versionId, 
+				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
+
+		createBranch(targetPath).statusCode(201);
+		
+		// create INT concept with same ID but different description and relationship IDs on version branch
+		
+		Map<?, ?> intRequestBody = ImmutableMap.builder()
+				.put("id", extensionDescriptionId)
+				.put("conceptId", Concepts.ROOT_CONCEPT)
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("typeId", Concepts.SYNONYM)
+				.put("term", descriptionTerm)
+				.put("languageCode", "en")
+				.put("acceptability", SnomedApiTestConstants.UK_ACCEPTABLE_MAP)
+				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
+				.put("commitComment", "Created new donated synonym")
+				.build();
+
+		String donatedDescriptionId = lastPathSegment(createComponent(targetPath, SnomedComponentType.DESCRIPTION, intRequestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+		
+		assertEquals(extensionDescriptionId, donatedDescriptionId);
+		
+		SnomedDescription donatedDescription = getComponent(targetPath, SnomedComponentType.DESCRIPTION, donatedDescriptionId)
+				.statusCode(200)
+				.extract().as(SnomedDescription.class);
+		
+		assertEquals(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE, donatedDescription.getCaseSignificance());
+		assertThat(donatedDescription.getAcceptabilityMap().containsKey(Concepts.REFSET_LANGUAGE_TYPE_UK));
+		assertEquals(Acceptability.ACCEPTABLE, donatedDescription.getAcceptabilityMap().get(Concepts.REFSET_LANGUAGE_TYPE_UK));
+		assertFalse(donatedDescription.getAcceptabilityMap().containsKey(Concepts.REFSET_LANGUAGE_TYPE_US));
+		
+		// upgrade extension to new INT version
+		
+		merge(branchPath, targetPath, "Upgraded B2i extension to v6").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		Map<?, ?> updateRequest = ImmutableMap.builder()
+				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
+				.put("branchPath", targetPath.getPath())
+				.build();
+
+		updateCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME, updateRequest).statusCode(204);
+		getCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME).statusCode(200).body("branchPath", equalTo(targetPath.getPath()));
+
+		SnomedDescription donatedDescriptionInExtension = getComponent(targetPath, SnomedComponentType.DESCRIPTION, extensionDescriptionId)
+				.statusCode(200)
+				.extract().as(SnomedDescription.class);
+		
+		assertEquals(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE, donatedDescriptionInExtension.getCaseSignificance());
+		assertThat(donatedDescriptionInExtension.getAcceptabilityMap().containsKey(Concepts.REFSET_LANGUAGE_TYPE_US));
+		assertEquals(Acceptability.ACCEPTABLE, donatedDescriptionInExtension.getAcceptabilityMap().get(Concepts.REFSET_LANGUAGE_TYPE_US));
+		assertThat(donatedDescriptionInExtension.getAcceptabilityMap().containsKey(Concepts.REFSET_LANGUAGE_TYPE_UK));
+		assertEquals(Acceptability.ACCEPTABLE, donatedDescriptionInExtension.getAcceptabilityMap().get(Concepts.REFSET_LANGUAGE_TYPE_UK));
+		
 	}
 	
 	@AfterClass

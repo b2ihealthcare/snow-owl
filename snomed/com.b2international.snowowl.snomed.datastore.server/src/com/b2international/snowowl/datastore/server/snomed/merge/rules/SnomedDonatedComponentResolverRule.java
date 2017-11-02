@@ -98,7 +98,7 @@ public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConfl
 						donatedConcept.getOutboundRelationships().add(extensionRelationship);
 					}
 
-					LOGGER.info("Fix donated component for id: {}", extensionConcept.getId());
+					LOGGER.info("Processed donated concept with id: {}", extensionConcept.getId());
 
 				} else if (sourceComponent.get() instanceof Description && targetComponent.get() instanceof Description) {
 
@@ -116,6 +116,8 @@ public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConfl
 					donatedDescription.getLanguageRefSetMembers().addAll(extensionDescription.getLanguageRefSetMembers().stream()
 							.filter(member -> !intLanguageRefsetIds.contains(member.getRefSetIdentifierId()))
 							.collect(toList()));
+					
+					LOGGER.info("Processed donated description with id: {}", extensionDescription.getId());
 
 				} else if (sourceComponent.get() instanceof Relationship && targetComponent.get() instanceof Relationship) {
 
@@ -125,6 +127,7 @@ public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConfl
 
 					// concrete domain members?
 
+					LOGGER.info("Processed donated relationship with id: {}", sourceRelationship.getId());
 				}
 
 			}
