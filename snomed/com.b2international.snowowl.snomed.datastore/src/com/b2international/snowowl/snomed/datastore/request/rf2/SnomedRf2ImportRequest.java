@@ -15,14 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -31,19 +31,14 @@ import java.util.zip.ZipFile;
 
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
-import org.mapdb.Serializer;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.internal.file.InternalFileRegistry;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -51,6 +46,10 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Ordering;
 
 /**
  * @since 6.0.0
@@ -58,6 +57,8 @@ import com.google.common.base.Stopwatch;
 public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 
 	private final UUID rf2ArchiveId;
+	
+	private Map<String/*effectiveTimeKey*/, EffectiveTimeSlice> effectiveTimeSlices = newHashMap();
 	
 	SnomedRf2ImportRequest(UUID rf2ArchiveId) {
 		this.rf2ArchiveId = rf2ArchiveId;
@@ -74,16 +75,38 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 	}
 
 	void doImport(final File rf2Archive) {
-		final DB db = createDb();
-		
-		read(rf2Archive, db);
-		
-		int total = 0;
-		for (String name : db.getAllNames()) {
-			total += db.<Map<String, SnomedConcept>>get(name).size();
+		try (final DB db = createDb()) {
+			Stopwatch w = Stopwatch.createStarted();
+			read(rf2Archive, db);
+			System.err.println("Read RF2 took: " + w);
+			w.reset().start();
+
+			
+			for (String effectiveTime : Ordering.natural().immutableSortedCopy(effectiveTimeSlices.keySet())) {
+				final Multiset<Class<?>> numberOfComponentRevisions = HashMultiset.create();
+				final EffectiveTimeSlice slice = effectiveTimeSlices.get(effectiveTime);
+				for (SnomedComponent concept : slice.getComponentsByContainer(IComponent.ROOT_ID)) {
+					ImmutableList.Builder<SnomedComponent> conceptAndRelatedComponents = ImmutableList.builder();
+					conceptAndRelatedComponents.add(concept);
+					// add concept descriptions, relationships, members
+					for (SnomedComponent relatedComponent : slice.getComponentsByContainer(concept.getId())) {
+						conceptAndRelatedComponents.add(relatedComponent);
+						// add description and relationship members
+						conceptAndRelatedComponents.addAll(slice.getComponentsByContainer(relatedComponent.getId()));
+					}
+					conceptAndRelatedComponents.build().stream()
+						.map(Object::getClass)
+						.forEach(numberOfComponentRevisions::add);
+				}
+				
+				System.err.println(effectiveTime);
+				for (com.google.common.collect.Multiset.Entry<Class<?>> entry : numberOfComponentRevisions.entrySet()) {
+					System.err.println("\tTotal number of "+ entry.getElement().getSimpleName() +" revisions: " + entry.getCount());
+				}
+			}
+			
+			System.err.println("Read RF2.db took: " + w);
 		}
-		System.err.println("Total number of concepts: " + total);
-		
 	}
 
 	private void read(File rf2Archive, DB db) {
@@ -110,51 +133,44 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);
 		}
+		
+		// flush any tmp maps to disk
+		effectiveTimeSlices.values().forEach(EffectiveTimeSlice::flush);
 	}
 
 	private void readFile(ZipEntry entry, final InputStream in, final ObjectReader oReader, DB db)
 			throws IOException, JsonProcessingException {
 		boolean header = true;
-		Rf2ContentResolver resolver = null;
+		Rf2ContentType<?> resolver = null;
 		
-		final Map<String, Map<String, SnomedConcept>> effectiveTimeBatches = newHashMap();
 		MappingIterator<String[]> mi = oReader.readValues(in);
 		while (mi.hasNext()) {
 			String[] line = mi.next();
 			
 			if (header) {
-				if (Arrays.equals(SnomedRf2Headers.CONCEPT_HEADER, line)) {
-					resolver = new Rf2ConceptContentResolver();
-					header = false;
-				} else {
+				for (Rf2ContentType<?> contentType : Rf2Format.getContentTypes()) {
+					if (contentType.canResolve(line)) {
+						resolver = contentType;
+						break;
+					}
+				}
+
+				if (resolver == null) {
 					System.err.println("Unrecognized RF2 file: " + entry.getName());
 					break;
 				}
+				
+				header = false;
 			} else {
 				final String effectiveTime = line[1];
-				if (!effectiveTimeBatches.containsKey(effectiveTime)) {
-					effectiveTimeBatches.put(effectiveTime, newHashMapWithExpectedSize(5000));
+				if (!effectiveTimeSlices.containsKey(effectiveTime)) {
+					 effectiveTimeSlices.put(effectiveTime, new EffectiveTimeSlice(db, effectiveTime));
 				}
-				Map<String, SnomedConcept> effectiveTimeBatch = effectiveTimeBatches.get(effectiveTime);
-				resolver.resolve(line, effectiveTimeBatch);
-				if (effectiveTimeBatch.size() >= 5000) {
-					writeBatch(db, effectiveTime, effectiveTimeBatch);
-					effectiveTimeBatch.clear();
-				}
+				resolver.register(line, effectiveTimeSlices.get(effectiveTime));
 			}
 
 		}
-		
-		// write the remaining items in the batches
-		effectiveTimeBatches.forEach((effectiveTime, batch) -> writeBatch(db, effectiveTime, batch));
-	}
 
-	private void writeBatch(DB db, final String effectiveTime, Map<String, SnomedConcept> effectiveTimeBatch) {
-		Map<String, SnomedConcept> effectiveTimeStore = db.get(effectiveTime);
-		if (effectiveTimeStore == null) {
-			effectiveTimeStore = db.hashMap(effectiveTime, Serializer.STRING, Serializer.JAVA).create();
-		}
-		effectiveTimeStore.putAll(effectiveTimeBatch);
 	}
 
 	private DB createDb() {
@@ -168,8 +184,8 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 					// That can cause JVM crash if file is accessed after it was unmapped
 					// (there is possible race condition).
 					.cleanerHackEnable()
-					.allocateStartSize(1 * 1024*1024*1024)  // 1GB
-				    .allocateIncrement(512 * 1024*1024)     // 512MB
+					.allocateStartSize(256 * 1024*1024)  // 256MB
+				    .allocateIncrement(128 * 1024*1024)  // 128MB
 					.make();
 			
 			// preload file content into disk cache
@@ -180,25 +196,4 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		}
 	}
 	
-	interface Rf2ContentResolver {
-		
-		void resolve(String[] values, Map<String, SnomedConcept> conceptsById);
-		
-	}
-	
-	class Rf2ConceptContentResolver implements Rf2ContentResolver {
-		
-		@Override
-		public void resolve(String[] values, Map<String, SnomedConcept> conceptsById) {
-			final SnomedConcept concept = new SnomedConcept();
-			concept.setId(values[0]);
-			concept.setEffectiveTime(EffectiveTimes.parse(values[1], DateFormats.SHORT));
-			concept.setActive("1".equals(values[2]));
-			concept.setModuleId(values[3]);
-			concept.setDefinitionStatus(Concepts.PRIMITIVE.equals(values[4]) ? DefinitionStatus.PRIMITIVE : DefinitionStatus.FULLY_DEFINED);
-			conceptsById.put(concept.getId(), concept);
-		}
-		
-	}
-
 }
