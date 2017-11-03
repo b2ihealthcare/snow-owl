@@ -75,6 +75,11 @@ public final class FloatArrayListWrapper extends FloatCollectionWrapper implemen
 		return delegate().set(index, value);
 	}
 	
+	@Override
+	public float removeFloat(int index) {
+		return delegate().removeFloat(index);
+	}
+	
 	public static FloatList create(FloatCollection collection) {
 		if (collection instanceof FloatArrayListWrapper) {
 			final it.unimi.dsi.fastutil.floats.FloatList sourceDelegate = ((FloatArrayListWrapper) collection).delegate();

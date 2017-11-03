@@ -31,4 +31,6 @@ public interface IntList extends PrimitiveList, IntCollection {
 	IntListIterator listIterator(int startIndex);
 
 	int set(int index, int value);
+	
+	int removeInt(int index);
 }

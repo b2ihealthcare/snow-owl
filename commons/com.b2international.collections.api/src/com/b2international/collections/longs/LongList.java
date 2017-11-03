@@ -31,4 +31,6 @@ public interface LongList extends PrimitiveList, LongCollection {
 	LongListIterator listIterator(int startIndex);
 
 	long set(int index, long value);
+	
+	long removeLong(int index);
 }

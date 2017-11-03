@@ -75,6 +75,11 @@ public class LongArrayListWrapper extends LongCollectionWrapper implements LongL
 		return delegate().set(index, value);
 	}
 	
+	@Override
+	public long removeLong(int index) {
+		return delegate().removeLong(index);
+	}
+	
 	// Builder methods
 	public static LongList create(LongCollection source) {
 		if (source instanceof LongArrayListWrapper) {

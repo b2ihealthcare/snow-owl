@@ -76,6 +76,11 @@ public class IntArrayListWrapper extends IntCollectionWrapper implements IntList
 		return delegate().set(index, value);
 	}
 	
+	@Override
+	public int removeInt(int index) {
+		return delegate().removeInt(index);
+	}
+	
 	public static IntList create(IntCollection collection) {
 		if (collection instanceof IntArrayListWrapper) {
 			final it.unimi.dsi.fastutil.ints.IntList sourceDelegate = ((IntArrayListWrapper) collection).delegate();

@@ -76,6 +76,11 @@ public final class ByteArrayListWrapper extends ByteCollectionWrapper implements
 		return delegate().set(index, value);
 	}
 	
+	@Override
+	public byte removeByte(int index) {
+		return delegate().removeByte(index);
+	}
+	
 	// Builder methods
 	
 	public static ByteList create(ByteCollection collection) {
