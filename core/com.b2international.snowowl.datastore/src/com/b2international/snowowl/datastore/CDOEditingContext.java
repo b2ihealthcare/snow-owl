@@ -231,8 +231,10 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		if (!unresolvedComponentIds.isEmpty()) {
 			LongValueMap<String> storageKeyById = getStorageKeys(unresolvedComponentIds, type);
 			for (String componentId : storageKeyById.keySet()) {
-				long storageKey = storageKeyById.get(componentId);
-				resolvedComponentsById.put(componentId, type.cast(lookup(storageKey)));
+				final long storageKey = storageKeyById.get(componentId);
+				final T object = type.cast(lookup(storageKey));
+				resolvedComponentsById.put(componentId, object);
+				resolvedObjectsById.put(createComponentKey(componentId, type), object);
 			}
 		}
 		
