@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.b2international.commons.VerhoeffCheck;
+import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 
 public abstract class SnomedTerminologyComponentConstants {
@@ -119,7 +120,10 @@ public abstract class SnomedTerminologyComponentConstants {
 	}
 
 	public static short getTerminologyComponentIdValueSafe(final String referencedComponentId) {
-
+		if (Strings.isNullOrEmpty(referencedComponentId)) {
+			return -1;
+		}
+		
 		if (!PATTERN.matcher(referencedComponentId).matches() || referencedComponentId.length() < 6 || referencedComponentId.length() > 18) {
 			return -1;
 		}
