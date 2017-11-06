@@ -88,7 +88,7 @@ public final class SnomedDescriptionBuilder extends SnomedComponentBuilder<Snome
 	}
 
 	@Override
-	protected void init(Description component, TransactionContext context) {
+	public void init(Description component, TransactionContext context) {
 		super.init(component, context);
 		component.setCaseSignificance(context.lookup(caseSignificance.getConceptId(), Concept.class));
 		component.setType(context.lookup(type, Concept.class));

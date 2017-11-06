@@ -15,30 +15,29 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import javax.validation.constraints.NotNull;
+
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.internal.file.InternalFileRegistry;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -46,9 +45,6 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 
 /**
@@ -56,12 +52,18 @@ import com.google.common.collect.Ordering;
  */
 public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 
+	@NotNull
 	private final UUID rf2ArchiveId;
 	
-	private Map<String/*effectiveTimeKey*/, EffectiveTimeSlice> effectiveTimeSlices = newHashMap();
-	
+	@NotNull
+	private Rf2ReleaseType type;
+
 	SnomedRf2ImportRequest(UUID rf2ArchiveId) {
 		this.rf2ArchiveId = rf2ArchiveId;
+	}
+	
+	void setReleaseType(Rf2ReleaseType type) {
+		this.type = type;
 	}
 	
 	@Override
@@ -69,47 +71,32 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		final InternalFileRegistry fileReg = (InternalFileRegistry) context.service(FileRegistry.class);
 		final File rf2Archive = fileReg.getFile(rf2ArchiveId);
 
-		doImport(rf2Archive);
-		
-		return Boolean.TRUE;
-	}
-
-	void doImport(final File rf2Archive) {
-		try (final DB db = createDb()) {
-			Stopwatch w = Stopwatch.createStarted();
-			read(rf2Archive, db);
-			System.err.println("Read RF2 took: " + w);
-			w.reset().start();
-
-			
-			for (String effectiveTime : Ordering.natural().immutableSortedCopy(effectiveTimeSlices.keySet())) {
-				final Multiset<Class<?>> numberOfComponentRevisions = HashMultiset.create();
-				final EffectiveTimeSlice slice = effectiveTimeSlices.get(effectiveTime);
-				for (SnomedComponent concept : slice.getComponentsByContainer(IComponent.ROOT_ID)) {
-					ImmutableList.Builder<SnomedComponent> conceptAndRelatedComponents = ImmutableList.builder();
-					conceptAndRelatedComponents.add(concept);
-					// add concept descriptions, relationships, members
-					for (SnomedComponent relatedComponent : slice.getComponentsByContainer(concept.getId())) {
-						conceptAndRelatedComponents.add(relatedComponent);
-						// add description and relationship members
-						conceptAndRelatedComponents.addAll(slice.getComponentsByContainer(relatedComponent.getId()));
-					}
-					conceptAndRelatedComponents.build().stream()
-						.map(Object::getClass)
-						.forEach(numberOfComponentRevisions::add);
-				}
-				
-				System.err.println(effectiveTime);
-				for (com.google.common.collect.Multiset.Entry<Class<?>> entry : numberOfComponentRevisions.entrySet()) {
-					System.err.println("\tTotal number of "+ entry.getElement().getSimpleName() +" revisions: " + entry.getCount());
-				}
-			}
-			
-			System.err.println("Read RF2.db took: " + w);
+		try {
+			doImport(context, rf2Archive);
+			return Boolean.TRUE;
+		} catch (Exception e) {
+			throw new SnowowlRuntimeException(e);
 		}
 	}
 
-	private void read(File rf2Archive, DB db) {
+	void doImport(final BranchContext context, final File rf2Archive) throws Exception {
+		try (final DB db = createDb()) {
+			final Map<String/*effectiveTimeKey*/, Rf2EffectiveTimeSlice> effectiveTimeSlices = newHashMap();
+			Stopwatch w = Stopwatch.createStarted();
+			read(rf2Archive, db, effectiveTimeSlices);
+			System.err.println("Preparing RF2 import took: " + w);
+			w.reset().start();
+			
+			for (String effectiveTime : Ordering.natural().immutableSortedCopy(effectiveTimeSlices.keySet())) {
+				final Rf2EffectiveTimeSlice slice = effectiveTimeSlices.get(effectiveTime);
+				slice.doImport(context);
+			}
+			
+			System.err.println("RF2 import took: " + w);
+		}
+	}
+
+	private void read(File rf2Archive, DB db, Map<String, Rf2EffectiveTimeSlice> effectiveTimeSlices) {
 		final CsvMapper csvMapper = new CsvMapper();
 		csvMapper.enable(CsvParser.Feature.WRAP_AS_ARRAY);
 		final CsvSchema schema = CsvSchema.emptySchema()
@@ -125,7 +112,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 					w.reset().start();
 					System.err.println(entry.getName());
 					try (final InputStream in = zip.getInputStream(entry)) {
-						readFile(entry, in, oReader, db);
+						readFile(entry, in, oReader, db, effectiveTimeSlices);
 					}
 					System.err.println(entry.getName() + " - " + w);
 				}
@@ -135,10 +122,10 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		}
 		
 		// flush any tmp maps to disk
-		effectiveTimeSlices.values().forEach(EffectiveTimeSlice::flush);
+		effectiveTimeSlices.values().forEach(Rf2EffectiveTimeSlice::flush);
 	}
 
-	private void readFile(ZipEntry entry, final InputStream in, final ObjectReader oReader, DB db)
+	private void readFile(ZipEntry entry, final InputStream in, final ObjectReader oReader, DB db, Map<String, Rf2EffectiveTimeSlice> effectiveTimeSlices)
 			throws IOException, JsonProcessingException {
 		boolean header = true;
 		Rf2ContentType<?> resolver = null;
@@ -164,7 +151,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 			} else {
 				final String effectiveTime = line[1];
 				if (!effectiveTimeSlices.containsKey(effectiveTime)) {
-					 effectiveTimeSlices.put(effectiveTime, new EffectiveTimeSlice(db, effectiveTime));
+					 effectiveTimeSlices.put(effectiveTime, new Rf2EffectiveTimeSlice(db, effectiveTime));
 				}
 				resolver.register(line, effectiveTimeSlices.get(effectiveTime));
 			}
@@ -175,7 +162,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 
 	private DB createDb() {
 		try {
-			DB db = DBMaker
+			DB db = DBMaker 
 					.fileDB(Files.createTempDirectory(rf2ArchiveId.toString()).resolve("rf2-import.db").toFile())
 					.fileDeleteAfterClose()
 					.fileMmapEnable()
@@ -195,5 +182,5 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 			throw new SnowowlRuntimeException("Couldn't create temporary db", e);
 		}
 	}
-	
+
 }

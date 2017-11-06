@@ -89,7 +89,7 @@ public final class SnomedConceptBuilder extends SnomedComponentBuilder<SnomedCon
 	}
 
 	@Override
-	protected void init(Concept component, TransactionContext context) {
+	public void init(Concept component, TransactionContext context) {
 		super.init(component, context);
 		component.setDefinitionStatus(context.lookup(definitionStatus.getConceptId(), Concept.class));
 		component.setExhaustive(exhaustive);

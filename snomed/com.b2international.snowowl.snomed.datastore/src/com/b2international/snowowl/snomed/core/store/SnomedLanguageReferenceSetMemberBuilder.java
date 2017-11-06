@@ -47,7 +47,7 @@ public final class SnomedLanguageReferenceSetMemberBuilder extends SnomedMemberB
 	}
 
 	@Override
-	protected void init(SnomedLanguageRefSetMember component, TransactionContext context) {
+	public void init(SnomedLanguageRefSetMember component, TransactionContext context) {
 		super.init(component, context);
 		component.setAcceptabilityId(acceptability.getConceptId());
 	}

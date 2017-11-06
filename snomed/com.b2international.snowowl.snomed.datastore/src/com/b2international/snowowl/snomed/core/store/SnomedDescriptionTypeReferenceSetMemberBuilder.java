@@ -43,7 +43,7 @@ public final class SnomedDescriptionTypeReferenceSetMemberBuilder extends Snomed
 	}
 
 	@Override
-	protected void init(SnomedDescriptionTypeRefSetMember component, TransactionContext context) {
+	public void init(SnomedDescriptionTypeRefSetMember component, TransactionContext context) {
 		super.init(component, context);
 		component.setDescriptionFormat(descriptionFormatId);
 		component.setDescriptionLength(descriptionLength);

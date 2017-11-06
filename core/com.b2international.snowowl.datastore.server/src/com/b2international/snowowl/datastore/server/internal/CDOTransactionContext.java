@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.datastore.server.internal;
 
+import java.util.Collection;
 import java.util.ConcurrentModificationException;
+import java.util.Map;
 
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.util.CommitException;
@@ -56,6 +58,16 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 	@Override
 	public <T extends EObject> T lookup(String componentId, Class<T> type) {
 		return editingContext.lookup(componentId, type);
+	}
+	
+	@Override
+	public <T extends EObject> T lookupIfExists(String componentId, Class<T> type) {
+		return editingContext.lookupIfExists(componentId, type);
+	}
+	
+	@Override
+	public <T extends EObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
+		return editingContext.lookup(componentIds, type);
 	}
 	
 	@Override

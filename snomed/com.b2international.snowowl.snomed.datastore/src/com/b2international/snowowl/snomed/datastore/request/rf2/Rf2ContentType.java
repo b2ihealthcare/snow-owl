@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request.rf2;
 
 import java.util.Arrays;
 
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
@@ -26,9 +27,14 @@ import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
  */
 interface Rf2ContentType<T extends SnomedComponent> {
 
-	default void register(String[] values, EffectiveTimeSlice slice) {
+	default void register(String[] values, Rf2EffectiveTimeSlice slice) {
 		final String containerId = getContainerId(values);
 		slice.register(containerId, getType(), values);
+		slice.registerDependencies(getDependentComponentId(values), getDependencies(values));
+	}
+
+	default long getDependentComponentId(String[] values) {
+		return Long.parseLong(values[0]);
 	}
 
 	default T resolve(String[] values) {
@@ -41,6 +47,12 @@ interface Rf2ContentType<T extends SnomedComponent> {
 		return component;
 	}
 
+	default boolean canResolve(String[] header) {
+		return Arrays.equals(getHeaderColumns(), header);
+	}
+	
+	LongSet getDependencies(String[] values);
+	
 	String getType();
 
 	String getContainerId(String[] values);
@@ -49,10 +61,6 @@ interface Rf2ContentType<T extends SnomedComponent> {
 
 	T create();
 
-	default boolean canResolve(String[] header) {
-		return Arrays.equals(getHeaderColumns(), header);
-	}
-
 	String[] getHeaderColumns();
-
+	
 }

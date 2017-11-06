@@ -65,13 +65,18 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
+import com.b2international.collections.PrimitiveMaps;
+import com.b2international.collections.longs.LongValueMap;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
+import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -99,6 +104,7 @@ import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeC
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
@@ -417,6 +423,56 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		}
 	}
 	
+	@Override
+	protected <T extends EObject> LongValueMap<String> getStorageKeys(Collection<String> componentIds, Class<T> type) {
+		if (type.isAssignableFrom(Concept.class)) {
+			return SnomedRequests.prepareSearchConcept()
+					.all()
+					.filterByIds(componentIds)
+					.setFields(SnomedRelationshipIndexEntry.Fields.ID, Revision.STORAGE_KEY)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.then(this::toStorageKeyMap)
+					.getSync();
+		} else if (type.isAssignableFrom(Description.class)) {
+			return SnomedRequests.prepareSearchDescription()
+					.all()
+					.filterByIds(componentIds)
+					.setFields(SnomedRelationshipIndexEntry.Fields.ID, Revision.STORAGE_KEY)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.then(this::toStorageKeyMap)
+					.getSync();
+		} else if (type.isAssignableFrom(Relationship.class)) {
+			return SnomedRequests.prepareSearchRelationship()
+					.all()
+					.filterByIds(componentIds)
+					.setFields(SnomedRelationshipIndexEntry.Fields.ID, Revision.STORAGE_KEY)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.then(this::toStorageKeyMap)
+					.getSync();
+		} else if (type.isAssignableFrom(SnomedRefSetMember.class)) {
+			return SnomedRequests.prepareSearchMember()
+					.all()
+					.filterByIds(componentIds)
+					.setFields(SnomedRelationshipIndexEntry.Fields.ID, Revision.STORAGE_KEY)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.then(this::toStorageKeyMap)
+					.getSync();
+		}
+		throw new UnsupportedOperationException("Cannot get storage keys for " + type);
+	}
+	
+	private LongValueMap<String> toStorageKeyMap(CollectionResource<? extends IComponent> resources) {
+		final LongValueMap<String> storageKeysById = PrimitiveMaps.newObjectKeyLongOpenHashMap();
+		for (IComponent component : resources) {
+			storageKeysById.put(component.getId(), component.getStorageKey());
+		}
+		return storageKeysById;
+	}
+	
 	public void releaseIds() {
 		if (!newComponentIds.isEmpty()) {
 			final IEventBus bus = ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
@@ -429,7 +485,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			newComponentIds.clear();
 		}
 	}
-
+	
 	/**
 	 * Unlike {@link CDOEditingContext#getContents()} this method returns with
 	 * the {@link Concepts#getConcepts() concepts container} of the default

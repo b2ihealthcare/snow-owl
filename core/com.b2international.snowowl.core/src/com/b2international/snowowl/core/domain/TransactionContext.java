@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import java.util.Collection;
+import java.util.Map;
+
 import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -32,14 +35,16 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	void add(EObject o);
 
 	/**
-	 * Removes the given EObject from the transaction context and from the store as well.
+	 * Removes the given EObject from the transaction context and from the store as
+	 * well.
 	 * 
 	 * @param o
 	 */
 	void delete(EObject o);
-	
+
 	/**
-	 * Forcefully removes the given EObject from the transaction context and from the store as well.
+	 * Forcefully removes the given EObject from the transaction context and from
+	 * the store as well.
 	 * 
 	 * @param o
 	 */
@@ -57,8 +62,9 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 *            - the owner of the commit
 	 * @param commitComment
 	 *            - a message for the commit
-	 * @param parentContextDescription 
-	 *            - the description of the lock context already held, for nested locking
+	 * @param parentContextDescription
+	 *            - the description of the lock context already held, for nested
+	 *            locking
 	 * 
 	 * @return - the timestamp of the successful commit
 	 */
@@ -70,7 +76,8 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	void rollback();
 
 	/**
-	 * Returns a persisted component from the store with the given component id and type.
+	 * Returns a persisted component from the store with the given component id and
+	 * type.
 	 * 
 	 * @param componentId
 	 * @param type
@@ -78,7 +85,19 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * @throws ComponentNotFoundException
 	 *             - if the component cannot be found
 	 */
-	<T extends EObject> T lookup(String componentId, Class<T> type);
+	<T extends EObject> T lookup(String componentId, Class<T> type) throws ComponentNotFoundException;
+
+	/**
+	 * Returns a persisted component from the store with the given component id and
+	 * type or <code>null</code> if does not exist.
+	 * 
+	 * @param componentId
+	 * @param type
+	 * @return
+	 */
+	<T extends EObject> T lookupIfExists(String componentId, Class<T> type);
+	
+	<T extends EObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type);
 
 	/**
 	 * Clears the entire content of the repository this context belongs to.

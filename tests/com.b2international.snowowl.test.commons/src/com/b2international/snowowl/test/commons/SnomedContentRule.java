@@ -18,10 +18,11 @@ package com.b2international.snowowl.test.commons;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.util.UUID;
 
 import org.junit.rules.ExternalResource;
 
-import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -29,12 +30,13 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystems;
+import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
 /**
@@ -64,26 +66,39 @@ public class SnomedContentRule extends ExternalResource {
 	protected void before() throws Throwable {
 		checkBranch();
 		createCodeSystemIfNotExist();
-		new ImportUtil().doImport(codeSystem, "info@b2international.com", contentType, branchPath, importArchive, true, new ConsoleProgressMonitor());
+		// upload RF2 archive to file registry
+		final UUID rf2ArchiveId = UUID.randomUUID();
+		try (FileInputStream in = new FileInputStream(importArchive)) {
+			ApplicationContext.getServiceForClass(FileRegistry.class).upload(rf2ArchiveId, in);
+		}
+		
+		SnomedRequests.rf2().prepareImport()
+			.setRf2ArchiveId(rf2ArchiveId)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
+			.execute(getBus())
+			.getSync();
+//		new ImportUtil().doImport(codeSystem, "info@b2international.com", contentType, branchPath, importArchive, true, new ConsoleProgressMonitor());
 	}
 
 	private void checkBranch() {
 		if (!IBranchPath.MAIN_BRANCH.equals(branchPath) && !BranchPathUtils.exists(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)) {
 			final IBranchPath parentBranchPath = BranchPathUtils.createPath(branchPath.substring(0, branchPath.lastIndexOf('/')));
-			final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
-			
 			RepositoryRequests.branching().prepareCreate()
 				.setParent(parentBranchPath.getPath())
 				.setName(codeSystem.getShortName())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(eventBus)
+				.execute(getBus())
 				.getSync();
 		}
 	}
 
+	private IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
+
 	private void createCodeSystemIfNotExist() {
 		if (!SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME.equals(codeSystem.getShortName())) {
-			final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
+			final IEventBus eventBus = getBus();
 			
 			CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
 				.filterById(codeSystem.getShortName())

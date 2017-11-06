@@ -32,4 +32,9 @@ interface Rf2RefSetContentType extends Rf2ContentType<SnomedReferenceSetMember> 
 		return values[5];
 	}
 	
+	@Override
+	default long getDependentComponentId(String[] values) {
+		return Long.parseLong(getContainerId(values));
+	}
+	
 }

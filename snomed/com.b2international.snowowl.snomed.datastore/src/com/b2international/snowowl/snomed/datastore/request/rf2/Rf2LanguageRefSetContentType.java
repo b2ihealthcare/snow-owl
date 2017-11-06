@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
+import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -32,6 +35,7 @@ final class Rf2LanguageRefSetContentType implements Rf2RefSetContentType {
 	
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
+		component.setType(SnomedRefSetType.LANGUAGE);
 		component.setReferenceSetId(values[4]);
 		component.setReferencedComponent(new SnomedDescription(values[5]));
 		component.setProperties(ImmutableMap.of(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, values[6]));
@@ -40,6 +44,15 @@ final class Rf2LanguageRefSetContentType implements Rf2RefSetContentType {
 	@Override
 	public String getType() {
 		return "language-member";
+	}
+	
+	@Override
+	public LongSet getDependencies(String[] values) {
+		return PrimitiveSets.newLongOpenHashSet(
+			Long.parseLong(values[3]),
+			Long.parseLong(values[4]),
+			Long.parseLong(values[6])
+		);
 	}
 	
 }

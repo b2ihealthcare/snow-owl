@@ -29,7 +29,9 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 /**
  * @since 5.7
  */
-public final class SnomedRf2ExportRequestBuilder extends BaseRequestBuilder<SnomedRf2ExportRequestBuilder, BranchContext, UUID> implements RevisionIndexRequestBuilder<UUID> {
+public final class SnomedRf2ExportRequestBuilder 
+		extends BaseRequestBuilder<SnomedRf2ExportRequestBuilder, BranchContext, UUID> 
+		implements RevisionIndexRequestBuilder<UUID> {
 
 	private String userId;
 	private String codeSystem = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;

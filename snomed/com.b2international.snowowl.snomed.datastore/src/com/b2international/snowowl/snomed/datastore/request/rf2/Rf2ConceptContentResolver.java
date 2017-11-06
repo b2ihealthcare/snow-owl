@@ -15,11 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
+import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 
 /**
  * @since 6.0.0
@@ -34,6 +37,7 @@ final class Rf2ConceptContentType implements Rf2ContentType<SnomedConcept> {
 	@Override
 	public void resolve(SnomedConcept component, String[] values) {
 		component.setDefinitionStatus(Concepts.PRIMITIVE.equals(values[4]) ? DefinitionStatus.PRIMITIVE : DefinitionStatus.FULLY_DEFINED);
+		component.setSubclassDefinitionStatus(SubclassDefinitionStatus.NON_DISJOINT_SUBCLASSES);
 	}
 
 	@Override
@@ -49,6 +53,11 @@ final class Rf2ConceptContentType implements Rf2ContentType<SnomedConcept> {
 	@Override
 	public String getType() {
 		return "concept";
+	}
+	
+	@Override
+	public LongSet getDependencies(String[] values) {
+		return PrimitiveSets.newLongOpenHashSet(Long.parseLong(values[3]), Long.parseLong(values[4]));
 	}
 
 }

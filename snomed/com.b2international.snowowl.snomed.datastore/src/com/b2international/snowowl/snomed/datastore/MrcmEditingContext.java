@@ -15,10 +15,13 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import java.util.Collection;
 import java.util.UUID;
 
 import org.eclipse.emf.cdo.CDOState;
+import org.eclipse.emf.ecore.EObject;
 
+import com.b2international.collections.longs.LongValueMap;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
@@ -83,6 +86,11 @@ public class MrcmEditingContext extends BaseSnomedEditingContext {
 		super(branchPath);
 	}
 
+	@Override
+	protected <T extends EObject> LongValueMap<String> getStorageKeys(Collection<String> componentIds, Class<T> type) {
+		throw new UnsupportedOperationException("Cannot fetch storage keys for " + type);
+	}
+	
 	/*creates and returns with a new concept model instance.*/
 	private ConceptModel createConceptModel() {
 		return MrcmFactory.eINSTANCE.createConceptModel();

@@ -68,7 +68,7 @@ public final class SnomedConcreteDomainReferenceSetMemberBuilder extends SnomedM
 	}
 
 	@Override
-	protected void init(SnomedConcreteDataTypeRefSetMember component, TransactionContext context) {
+	public void init(SnomedConcreteDataTypeRefSetMember component, TransactionContext context) {
 		super.init(component, context);
 		component.setUomComponentId(uomId);
 		component.setOperatorComponentId(operatorId);

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
+import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -51,6 +53,16 @@ final class Rf2DescriptionContentType implements Rf2ContentType<SnomedDescriptio
 	@Override
 	public String getType() {
 		return "description";
+	}
+	
+	@Override
+	public LongSet getDependencies(String[] values) {
+		return PrimitiveSets.newLongOpenHashSet(
+			Long.parseLong(values[3]), 
+			Long.parseLong(values[4]),
+			Long.parseLong(values[6]),
+			Long.parseLong(values[8])
+		);
 	}
 
 }

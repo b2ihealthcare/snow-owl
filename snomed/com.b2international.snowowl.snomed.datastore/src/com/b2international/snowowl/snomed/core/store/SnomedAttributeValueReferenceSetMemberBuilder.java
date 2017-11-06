@@ -43,7 +43,7 @@ public final class SnomedAttributeValueReferenceSetMemberBuilder extends SnomedM
 	}
 	
 	@Override
-	protected void init(SnomedAttributeValueRefSetMember component, TransactionContext context) {
+	public void init(SnomedAttributeValueRefSetMember component, TransactionContext context) {
 		super.init(component, context);
 		component.setValueId(valueId);
 	}

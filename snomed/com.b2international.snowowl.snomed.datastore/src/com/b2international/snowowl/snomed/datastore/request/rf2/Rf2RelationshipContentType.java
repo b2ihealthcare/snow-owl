@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
+import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
@@ -45,14 +47,27 @@ final class Rf2RelationshipContentType implements Rf2ContentType<SnomedRelations
 		component.setSourceId(values[4]);
 		component.setDestinationId(values[5]);
 		component.setGroup(Integer.parseInt(values[6]));
-		component.setTypeId(values[8]);
+		component.setTypeId(values[7]);
 		component.setCharacteristicType(CharacteristicType.getByConceptId(values[8]));
 		component.setModifier(RelationshipModifier.getByConceptId(values[9]));
+		component.setUnionGroup(0);
 	}
 
 	@Override
 	public String getType() {
 		return "relationship";
+	}
+	
+	@Override
+	public LongSet getDependencies(String[] values) {
+		return PrimitiveSets.newLongOpenHashSet(
+			Long.parseLong(values[3]), 
+			Long.parseLong(values[4]),
+			Long.parseLong(values[5]),
+			Long.parseLong(values[7]),
+			Long.parseLong(values[8]),
+			Long.parseLong(values[9])
+		);
 	}
 
 }
