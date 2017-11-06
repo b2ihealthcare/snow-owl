@@ -35,6 +35,7 @@ import org.mapdb.DBMaker;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.internal.file.InternalFileRegistry;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -68,14 +69,20 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 	
 	@Override
 	public Boolean execute(BranchContext context) {
+		final FeatureToggles features = context.service(FeatureToggles.class);
+		final String feature = context.id() + ".import";
+
 		final InternalFileRegistry fileReg = (InternalFileRegistry) context.service(FileRegistry.class);
 		final File rf2Archive = fileReg.getFile(rf2ArchiveId);
 
 		try {
+			features.enable(feature);
 			doImport(context, rf2Archive);
 			return Boolean.TRUE;
 		} catch (Exception e) {
 			throw new SnowowlRuntimeException(e);
+		} finally {
+			features.disable(feature);
 		}
 	}
 
