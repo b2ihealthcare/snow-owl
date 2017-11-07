@@ -31,7 +31,6 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 5.9
@@ -112,7 +111,9 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 	}
 
 	private Query<String> createMatchAllReturnIdsQuery(Class<? extends Revision> revisionType) {
-		return Query.selectPartial(String.class, revisionType, ImmutableSet.of(RevisionDocument.Fields.ID))
+		return Query.select(String.class)
+			.from(revisionType)
+			.fields(RevisionDocument.Fields.ID)
 			.where(Expressions.matchAll())
 			.limit(Integer.MAX_VALUE)
 			.build();

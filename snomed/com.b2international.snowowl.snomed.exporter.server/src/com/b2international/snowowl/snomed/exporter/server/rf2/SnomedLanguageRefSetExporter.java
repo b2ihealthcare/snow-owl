@@ -118,13 +118,15 @@ public class SnomedLanguageRefSetExporter extends AbstractSnomedCoreExporter<Sno
 		Multimap<String, SnomedRefSetMemberIndexEntry> referencedComponentToMemberMap = ArrayListMultimap.create();
 		allResults.getHits().forEach(m -> referencedComponentToMemberMap.put(m.getReferencedComponentId(), m));
 		
-		Query<String> query = Query.selectPartial(String.class, SnomedDescriptionIndexEntry.class, singleton(SnomedDescriptionIndexEntry.Fields.ID))
-			.where(Expressions.builder()
-				.filter(SnomedDescriptionIndexEntry.Expressions.ids(referencedComponentToMemberMap.keySet()))
-				.filter(SnomedDescriptionIndexEntry.Expressions.languageCode(languageCode))
-				.build())
-			.limit(referencedComponentToMemberMap.keySet().size())
-			.build();
+		Query<String> query = Query.select(String.class)
+				.from(SnomedDescriptionIndexEntry.class)
+				.fields(SnomedDescriptionIndexEntry.Fields.ID)
+				.where(Expressions.builder()
+					.filter(SnomedDescriptionIndexEntry.Expressions.ids(referencedComponentToMemberMap.keySet()))
+					.filter(SnomedDescriptionIndexEntry.Expressions.languageCode(languageCode))
+					.build())
+				.limit(referencedComponentToMemberMap.keySet().size())
+				.build();
 				
 		List<String> descriptionIdsWithLanguageCode = getSearcher().search(query).getHits();
 		

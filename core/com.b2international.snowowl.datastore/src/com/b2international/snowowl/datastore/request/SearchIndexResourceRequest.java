@@ -62,7 +62,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B> e
 	}
 	
 	protected final <T> QueryBuilder<T> select(Class<T> select) {
-		return Query.selectPartial(select, fields());
+		return Query.select(select).fields(fields());
 	}
 	
 }

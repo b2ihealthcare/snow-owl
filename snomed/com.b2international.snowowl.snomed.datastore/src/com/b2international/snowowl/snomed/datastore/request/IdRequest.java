@@ -221,7 +221,8 @@ final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C
 		
 		try {
 			
-			final Query<? extends SnomedComponentDocument> getComponentsById = Query.selectPartial(documentClass, RevisionDocument.Fields.ID)
+			final Query<? extends SnomedComponentDocument> getComponentsById = Query.select(documentClass)
+					.fields(RevisionDocument.Fields.ID)
 					.where(RevisionDocument.Expressions.ids(ids))
 					.limit(ids.size())
 					.build();

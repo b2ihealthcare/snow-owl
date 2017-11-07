@@ -27,10 +27,10 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 public final class RepositoryState {
 
 	private final LongCollection conceptIds;
-	private final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> statedStatements;
-	private final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> inferredStatements;
+	private final Collection<SnomedRelationshipIndexEntry> statedStatements;
+	private final Collection<SnomedRelationshipIndexEntry> inferredStatements;
 
-	public RepositoryState(LongCollection conceptIds, Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> statedStatements, Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> inferredStatements) {
+	public RepositoryState(LongCollection conceptIds, Collection<SnomedRelationshipIndexEntry> statedStatements, Collection<SnomedRelationshipIndexEntry> inferredStatements) {
 		this.conceptIds = conceptIds;
 		this.statedStatements = statedStatements;
 		this.inferredStatements = inferredStatements;
@@ -40,11 +40,11 @@ public final class RepositoryState {
 		return conceptIds;
 	}
 	
-	public Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> getInferredStatements() {
+	public Collection<SnomedRelationshipIndexEntry> getInferredStatements() {
 		return inferredStatements;
 	}
 	
-	public Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> getStatedStatements() {
+	public Collection<SnomedRelationshipIndexEntry> getStatedStatements() {
 		return statedStatements;
 	}
 	

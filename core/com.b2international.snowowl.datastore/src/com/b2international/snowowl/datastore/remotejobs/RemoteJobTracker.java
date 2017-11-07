@@ -113,7 +113,8 @@ public final class RemoteJobTracker implements IDisposableService {
 	public RemoteJobs search(Expression query, Set<String> fields, SortBy sortBy, int limit) {
 		return index.read(searcher -> {
 			final Hits<RemoteJobEntry> hits = searcher.search(
-					Query.selectPartial(RemoteJobEntry.class, fields)
+					Query.select(RemoteJobEntry.class)
+						.fields(fields)
 						.where(Expressions.builder()
 								.filter(RemoteJobEntry.Expressions.deleted(false))
 								.filter(query)

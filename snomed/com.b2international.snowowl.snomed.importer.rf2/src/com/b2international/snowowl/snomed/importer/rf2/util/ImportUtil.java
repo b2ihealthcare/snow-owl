@@ -239,13 +239,14 @@ public final class ImportUtil {
 
 	private RepositoryState loadRepositoryState(RevisionSearcher searcher) throws IOException {
 		final LongCollection conceptIds = getConceptIds(searcher);
-		final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> statedStatements = getStatements(searcher, Concepts.STATED_RELATIONSHIP);
-		final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> inferredStatements = getStatements(searcher, Concepts.INFERRED_RELATIONSHIP);
+		final Collection<SnomedRelationshipIndexEntry> statedStatements = getStatements(searcher, Concepts.STATED_RELATIONSHIP);
+		final Collection<SnomedRelationshipIndexEntry> inferredStatements = getStatements(searcher, Concepts.INFERRED_RELATIONSHIP);
 		return new RepositoryState(conceptIds, statedStatements, inferredStatements);
 	}
 
-	private Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> getStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
-		final Query<SnomedRelationshipIndexEntry.Views.StatementWithId> query = Query.selectPartial(SnomedRelationshipIndexEntry.Views.StatementWithId.class, SnomedRelationshipIndexEntry.class)
+	private Collection<SnomedRelationshipIndexEntry> getStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
+		final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
+				
 				.where(Expressions.builder()
 						.filter(SnomedRelationshipIndexEntry.Expressions.active(true))
 						.filter(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))
@@ -257,7 +258,8 @@ public final class ImportUtil {
 	}
 	
 	private LongCollection getConceptIds(RevisionSearcher searcher) throws IOException {
-		final Query<SnomedConceptDocument> query = Query.selectPartial(SnomedConceptDocument.class, SnomedDocument.Fields.ID)
+		final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
+				.fields(SnomedDocument.Fields.ID)
 				.where(Expressions.matchAll())
 				.limit(Integer.MAX_VALUE)
 				.build();

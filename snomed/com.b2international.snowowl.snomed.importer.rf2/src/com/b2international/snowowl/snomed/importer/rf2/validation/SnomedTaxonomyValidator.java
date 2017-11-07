@@ -80,7 +80,7 @@ public class SnomedTaxonomyValidator {
 	// current store state
 	private final String characteristicType;
 	private final LongCollection conceptIds;
-	private final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> statements;
+	private final Collection<SnomedRelationshipIndexEntry> statements;
 
 	public SnomedTaxonomyValidator(final ImportConfiguration configuration,
 			final RepositoryState repositoryState,

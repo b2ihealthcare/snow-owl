@@ -55,7 +55,6 @@ import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
@@ -267,7 +266,9 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		Collection<CDOID> detachedConcepts = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT);
 		Set<Long> detachedConceptStorageKeys = ImmutableSet.copyOf(CDOIDUtils.createCdoIdToLong(detachedConcepts));
 		
-		final Query<SnomedConceptDocument> query = Query.selectPartial(SnomedConceptDocument.class, RevisionDocument.Fields.ID)
+		final Query<String> query = Query.select(String.class)
+				.from(SnomedConceptDocument.class)
+				.fields(RevisionDocument.Fields.ID)
 				.where(Expressions.builder()
 						.filter(SnomedConceptDocument.Expressions.refSetStorageKeys(detachedRefSetStorageKeys))
 						.mustNot(Expressions.matchAnyLong(Revision.STORAGE_KEY, detachedConceptStorageKeys))
@@ -275,9 +276,9 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				.limit(detachedRefSets.size())
 				.build();
 
-		final Hits<SnomedConceptDocument> hits = searcher.search(query);
-		FluentIterable.from(hits).transform(SnomedComponentDocument::getId).copyInto(dirtyConceptIds);
-
+		final Hits<String> hits = searcher.search(query);
+		dirtyConceptIds.addAll(hits.getHits());
+		
 		// remove all new concept IDs
 		dirtyConceptIds.removeAll(FluentIterable.from(commitChangeSet.getNewComponents(Concept.class)).transform(GET_CONCEPT_ID).toSet());
 		

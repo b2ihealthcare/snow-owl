@@ -54,7 +54,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRef
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 /**
@@ -118,7 +117,9 @@ public class SnomedModuleDependencyRefSetService {
 	private LongSet getPublishedModuleDependencyMembers(IBranchPath branchPath, String moduleId, RevisionSearcher searcher) throws IOException {
 		final Expression expression = createPublishedMembersQueryExpression(moduleId);
 		final Query<Long> query = Query
-				.selectPartial(Long.class, SnomedRefSetMemberIndexEntry.class, ImmutableSet.of(Revision.STORAGE_KEY))
+				.select(Long.class)
+				.from(SnomedRefSetMemberIndexEntry.class)
+				.fields(Revision.STORAGE_KEY)
 				.where(expression)
 				.limit(Integer.MAX_VALUE)
 				.build();

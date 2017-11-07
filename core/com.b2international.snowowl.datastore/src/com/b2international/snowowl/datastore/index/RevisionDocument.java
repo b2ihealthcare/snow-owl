@@ -28,11 +28,8 @@ import com.b2international.index.WithScore;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.api.component.IconIdProvider;
-import com.b2international.snowowl.core.api.component.IdProvider;
 import com.b2international.snowowl.core.api.index.IIndexEntry;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 
@@ -41,26 +38,6 @@ import com.google.common.base.Objects.ToStringHelper;
  */
 public abstract class RevisionDocument extends Revision implements IIndexEntry, IconIdProvider<String>, WithScore {
 
-	public static abstract class Views {
-		
-		public static class IdOnly implements IdProvider<String> {
-			
-			private String id;
-			
-			@JsonCreator
-			public IdOnly(@JsonProperty("id") String id) {
-				this.id = id;
-			}
-			
-			@Override
-			public String getId() {
-				return id;
-			}
-			
-		}
-		
-	}
-	
 	public static abstract class Expressions {
 
 		protected Expressions() {

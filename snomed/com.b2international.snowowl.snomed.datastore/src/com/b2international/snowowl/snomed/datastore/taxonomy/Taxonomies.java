@@ -37,6 +37,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
@@ -58,7 +59,8 @@ public final class Taxonomies {
 	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, CharacteristicType characteristicType, boolean checkCycles) {
 		try {
 			final String characteristicTypeId = characteristicType.getConceptId();
-			final Query<SnomedRelationshipIndexEntry.Views.StatementWithId> query = Query.selectPartial(SnomedRelationshipIndexEntry.Views.StatementWithId.class, SnomedRelationshipIndexEntry.class)
+			final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
+					.fields(SnomedDocument.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
 					.where(Expressions.builder()
 							.filter(active())
 							.filter(typeId(Concepts.IS_A))
@@ -68,7 +70,7 @@ public final class Taxonomies {
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();
-			final Hits<SnomedRelationshipIndexEntry.Views.StatementWithId> hits = searcher.search(query);
+			final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(query);
 			
 			final SnomedTaxonomyBuilder oldTaxonomy = new SnomedTaxonomyBuilder(conceptIds, hits.getHits());
 			oldTaxonomy.setCheckCycles(checkCycles);

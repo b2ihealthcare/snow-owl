@@ -381,7 +381,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 
 	private Rf2BasedSnomedTaxonomyBuilder buildTaxonomy(final String characteristicType) {
 		final LongCollection conceptIds = repositoryState.getConceptIds();
-		final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> statements = Concepts.INFERRED_RELATIONSHIP.equals(characteristicType) ? repositoryState.getInferredStatements() : repositoryState.getStatedStatements();
+		final Collection<SnomedRelationshipIndexEntry> statements = Concepts.INFERRED_RELATIONSHIP.equals(characteristicType) ? repositoryState.getInferredStatements() : repositoryState.getStatedStatements();
 		return Rf2BasedSnomedTaxonomyBuilder.newInstance(new SnomedTaxonomyBuilder(conceptIds, statements), characteristicType);
 	}
 

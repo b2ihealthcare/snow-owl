@@ -62,7 +62,7 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 
 	private SnomedTaxonomyBuilder() {}
 	
-	public SnomedTaxonomyBuilder(final LongCollection conceptIds, final Collection<SnomedRelationshipIndexEntry.Views.StatementWithId> isAStatements) {
+	public SnomedTaxonomyBuilder(final LongCollection conceptIds, final Collection<SnomedRelationshipIndexEntry> isAStatements) {
 		nodes = new LongBidiMapWithInternalId(conceptIds.size());
 		for (final LongIterator itr = conceptIds.iterator(); itr.hasNext(); /**/) {
 			final long id = itr.next();
@@ -75,7 +75,7 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 				? PrimitiveMaps.<long[]>newLongKeyOpenHashMapWithExpectedSize(isAStatements.size()) 
 				: PrimitiveMaps.<long[]>newLongKeyOpenHashMap();
 
-		for (final SnomedRelationshipIndexEntry.Views.StatementWithId statement : isAStatements) {
+		for (final SnomedRelationshipIndexEntry statement : isAStatements) {
 			edges.put(Long.parseLong(statement.getId()), new long[] { Long.parseLong(statement.getDestinationId()), Long.parseLong(statement.getSourceId()) });
 		}
 		
