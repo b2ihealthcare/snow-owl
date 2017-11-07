@@ -31,6 +31,8 @@ public final class SnomedRf2ImportRequestBuilder
 		implements RevisionIndexRequestBuilder<Boolean> {
 
 	private UUID rf2ArchiveId;
+	private Rf2ReleaseType releaseType;
+	private boolean createVersions;
 	
 	SnomedRf2ImportRequestBuilder() {
 	}
@@ -39,12 +41,23 @@ public final class SnomedRf2ImportRequestBuilder
 		this.rf2ArchiveId = rf2ArchiveId;
 		return getSelf();
 	}
+
+	public SnomedRf2ImportRequestBuilder setReleaseType(Rf2ReleaseType releaseType) {
+		this.releaseType = releaseType;
+		return getSelf();
+	}
+	
+	public SnomedRf2ImportRequestBuilder setCreateVersions(boolean createVersions) {
+		this.createVersions = createVersions;
+		return getSelf();
+	}
 	
 	@Override
 	protected Request<BranchContext, Boolean> doBuild() {
 		final SnomedRf2ImportRequest req = new SnomedRf2ImportRequest(rf2ArchiveId);
-		req.setReleaseType(Rf2ReleaseType.FULL);
+		req.setReleaseType(releaseType);
+		req.setCreateVersions(createVersions);
 		return req;
 	}
-	
+
 }

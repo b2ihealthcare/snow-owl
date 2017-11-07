@@ -62,45 +62,39 @@ public class SnomedRefSetLookupService extends AbstractLookupService<String, Sno
 	public SnomedRefSet getComponent(final String identifierConceptId, final CDOView view) {
 		checkArgument(!StringUtils.isEmpty(identifierConceptId), "Identifier SNOMED CT concept ID cannot be null or empty.");
 
-		final long refSetStorageKey = getStorageKey(BranchPathUtils.createPath(view), identifierConceptId);
 		CDOObject cdoObject = null;
 
-		notFoundRefSetLoop:
-
+		// try to get reference set from the underlying transaction first
+		for (final SnomedRefSet newRefSet : ComponentUtils2.getNewObjects(view, SnomedRefSet.class)) {
+			if (identifierConceptId.equals(newRefSet.getIdentifierId())) {
+				cdoObject = newRefSet;
+				break;
+			}
+		}
+		
+		if (cdoObject == null) {
+			final long refSetStorageKey = getStorageKey(BranchPathUtils.createPath(view), identifierConceptId);
+			
 			if (CDOUtils.NO_STORAGE_KEY == refSetStorageKey) {
-
-				//try to get reference set from the underlying transaction
-				for (final SnomedRefSet newRefSet : ComponentUtils2.getNewObjects(view, SnomedRefSet.class)) {
-					if (identifierConceptId.equals(newRefSet.getIdentifierId())) {
-						cdoObject = newRefSet;
-						break notFoundRefSetLoop;
-					}
-				}
-
 				for (final String tableName : REFSET_TABLE_NAMES) {
-
+					
 					final String sqlGetRefsetByIdentifierConceptId = String.format(SnomedTerminologyQueries.SQL_GET_REFSET_BY_IDENTIFIER_CONCEPT_ID, tableName);
 					final CDOQuery cdoQuery = view.createQuery("sql", sqlGetRefsetByIdentifierConceptId);
 					cdoQuery.setParameter("identifierConceptId", identifierConceptId);
-
+					
 					final List<SnomedRefSet> result = CDOQueryUtils.getViewResult(cdoQuery, SnomedRefSet.class);
-
+					
 					if (!CompareUtils.isEmpty(result)) {
 						return Iterables.getOnlyElement(result);
 					}
 				}
-
+				
 				return null;
 			}
-
-		if (null == cdoObject) {
+			
 			cdoObject = CDOUtils.getObjectIfExists(view, refSetStorageKey);
 		}
-
-		if (null == cdoObject) {
-			return null;
-		}
-
+		
 		return (SnomedRefSet) cdoObject;
 	}
 

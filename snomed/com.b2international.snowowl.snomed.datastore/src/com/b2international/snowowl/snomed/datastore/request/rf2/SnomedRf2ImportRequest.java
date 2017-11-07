@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -53,11 +54,15 @@ import com.google.common.collect.Ordering;
  */
 public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 
+	private static final String TXT_EXT = ".txt";
+
 	@NotNull
 	private final UUID rf2ArchiveId;
 	
 	@NotNull
 	private Rf2ReleaseType type;
+
+	private boolean createVersions = true;
 
 	SnomedRf2ImportRequest(UUID rf2ArchiveId) {
 		this.rf2ArchiveId = rf2ArchiveId;
@@ -65,6 +70,10 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 	
 	void setReleaseType(Rf2ReleaseType type) {
 		this.type = type;
+	}
+	
+	void setCreateVersions(boolean createVersions) {
+		this.createVersions = createVersions;
 	}
 	
 	@Override
@@ -96,7 +105,9 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 			
 			for (String effectiveTime : Ordering.natural().immutableSortedCopy(effectiveTimeSlices.keySet())) {
 				final Rf2EffectiveTimeSlice slice = effectiveTimeSlices.get(effectiveTime);
-				slice.doImport(context);
+				slice.doImport(context, createVersions);
+				// throw away this slice so we can free up memory
+				effectiveTimeSlices.remove(effectiveTime).close();
 			}
 			
 			System.err.println("RF2 import took: " + w);
@@ -115,7 +126,8 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		Stopwatch w = Stopwatch.createStarted();
 		try (final ZipFile zip = new ZipFile(rf2Archive)) {
 			for (ZipEntry entry : Collections.list(zip.entries())) {
-				if (entry.getName().contains("Full/") && entry.getName().contains(".txt")) {
+				final String fileName = Paths.get(entry.getName()).getFileName().toString().toLowerCase();
+				if (fileName.contains(type.toString().toLowerCase()) && fileName.endsWith(TXT_EXT)) {
 					w.reset().start();
 					System.err.println(entry.getName());
 					try (final InputStream in = zip.getInputStream(entry)) {
