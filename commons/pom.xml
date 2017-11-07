@@ -23,7 +23,6 @@
 		<module>com.b2international.index.api</module>
 		<module>com.b2international.index.api.tests</module>
 		<module>com.b2international.index.api.tests.tools</module>
-		<module>com.b2international.index.lucene</module>
 		<module>com.b2international.index.es</module>
 	</modules>
 	
