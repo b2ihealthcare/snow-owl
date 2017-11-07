@@ -13,39 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.reindex;
+package com.b2international.snowowl.datastore.request.repository;
 
 import com.b2international.index.revision.Purge;
-import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
 
 /**
  * @since 5.0
  */
-public final class PurgeRequest implements Request<RepositoryContext, Boolean> {
+public final class PurgeRequestBuilder extends BaseRequestBuilder<PurgeRequestBuilder, RepositoryContext, Boolean> implements RepositoryRequestBuilder<Boolean> {
 
 	private String branchPath;
-	private Purge purge;
+	private Purge purge = Purge.LATEST;
+
+	PurgeRequestBuilder() {}
 	
-	PurgeRequest() {}
-	
-	void setBranchPath(String branchPath) {
+	public PurgeRequestBuilder setBranchPath(String branchPath) {
 		this.branchPath = branchPath;
+		return getSelf();
 	}
 	
-	void setPurge(Purge purge) {
+	public PurgeRequestBuilder setPurge(Purge purge) {
 		this.purge = purge;
+		return getSelf();
 	}
 	
 	@Override
-	public Boolean execute(RepositoryContext context) {
-		context.service(RevisionIndex.class).purge(branchPath, purge);
-		return Boolean.TRUE;
+	protected Request<RepositoryContext, Boolean> doBuild() {
+		PurgeRequest req = new PurgeRequest();
+		req.setBranchPath(branchPath);
+		req.setPurge(purge );
+		return req;
 	}
-
-	public static PurgeRequestBuilder builder() {
-		return new PurgeRequestBuilder();
-	}
-
+	
 }

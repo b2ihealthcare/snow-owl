@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,33 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.reindex;
+package com.b2international.snowowl.datastore.request.repository;
 
-import com.b2international.index.Index;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
 
 /**
  * @since 4.7
  */
-public final class OptimizeRequest implements Request<RepositoryContext, Boolean> {
+public final class OptimizeRequestBuilder extends BaseRequestBuilder<OptimizeRequestBuilder, RepositoryContext, Boolean> implements RepositoryRequestBuilder<Boolean> {
 
-	private int maxSegments;
+	private int maxSegments = 1;
 	
-	OptimizeRequest() {}
+	OptimizeRequestBuilder() {}
 	
-	void setMaxSegments(int maxSegments) {
+	public OptimizeRequestBuilder setMaxSegments(int maxSegments) {
 		this.maxSegments = maxSegments;
+		return getSelf();
 	}
 	
 	@Override
-	public Boolean execute(RepositoryContext context) {
-		context.service(Index.class).admin().optimize(maxSegments);
-		return Boolean.TRUE;
-	}
-
-	public static OptimizeRequestBuilder builder() {
-		return new OptimizeRequestBuilder();
+	protected Request<RepositoryContext, Boolean> doBuild() {
+		OptimizeRequest req = new OptimizeRequest();
+		req.setMaxSegments(maxSegments);
+		return req;
 	}
 
 }
