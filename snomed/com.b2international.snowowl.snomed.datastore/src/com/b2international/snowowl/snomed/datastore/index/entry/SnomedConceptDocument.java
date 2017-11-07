@@ -63,9 +63,9 @@ import com.google.common.collect.FluentIterable;
 @Script(
 	name="doiFactor", 
 	script=
-	"interest = params.useDoi ? (doc.doi.value - params.minDoi) / (params.maxDoi - params.minDoi) : 0\n"
-	+ "id = doc.id.value\n" 
-	+ "return params.termScores.containsKey(id) ? params.termScores.get(id) + interest : 0.0", 
+	"float interest = params.useDoi ? (doc.doi.value - params.minDoi) / (params.maxDoi - params.minDoi) : 0;\n"
+	+ "String id = doc.id.value;\n" 
+	+ "return params.termScores.containsKey(id) ? params.termScores.get(id) + interest : 0.0;", 
 	fields={SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.DOI})
 @Script(name="doi", script="return doc.doi.value", fields={SnomedConceptDocument.Fields.DOI})
 public class SnomedConceptDocument extends SnomedComponentDocument implements ITreeComponent {
