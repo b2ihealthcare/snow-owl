@@ -57,7 +57,7 @@ final class Rf2ModuleDependencyRefSetContentType implements Rf2RefSetContentType
 		return PrimitiveSets.newLongOpenHashSet(
 			Long.parseLong(values[3]),
 			Long.parseLong(values[4]),
-			Long.parseLong(values[6])
+			Long.parseLong(values[5])
 		);
 	}
 	

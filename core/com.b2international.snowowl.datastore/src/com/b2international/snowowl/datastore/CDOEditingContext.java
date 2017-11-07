@@ -348,8 +348,15 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 */
 	@Override
 	public void close() {
-		resolvedObjectsById.clear();
+		clearCache();
 		transaction.close();
+	}
+
+	/**
+	 * Clears resolved objects cache.
+	 */
+	public void clearCache() {
+		resolvedObjectsById.clear();
 	}
 	
 	/**
