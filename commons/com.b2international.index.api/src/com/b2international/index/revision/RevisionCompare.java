@@ -178,7 +178,9 @@ public final class RevisionCompare {
 		while (queryStorageKeys.hasNext()) {
 			storageKeys.add(queryStorageKeys.next());
 		}
-		return Query.selectPartial(query.getSelect(), query.getFrom(), query.getFields())
+		return Query.select(query.getSelect())
+				.from(query.getFrom())
+				.fields(query.getFields())
 				.where(Expressions.builder()
 						.must(query.getWhere())
 						.filter(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys))

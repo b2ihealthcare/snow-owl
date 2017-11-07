@@ -63,7 +63,8 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		data2.setField2("field2_2");
 		indexDocument(KEY2, data2);
 		
-		final Query<PartialData> query = Query.selectPartial(PartialData.class, Data.class)
+		final Query<PartialData> query = Query.select(PartialData.class)
+				.from(Data.class)
 				.where(Expressions.matchAll())
 				.build();
 
@@ -86,7 +87,8 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		data2.setField2("field2_2");
 		indexDocument(KEY2, data2);
 		
-		final Query<Data> query = Query.selectPartial(Data.class, "field1")
+		final Query<Data> query = Query.select(Data.class)
+				.fields("field1")
 				.where(Expressions.matchAll())
 				.build();
 		
@@ -112,7 +114,8 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		data2.setField1("field1_2");
 		indexDocument(KEY2, data2);
 		
-		final Query<Data> query = Query.selectPartial(Data.class, "analyzedField")
+		final Query<Data> query = Query.select(Data.class)
+				.fields("analyzedField")
 				.where(Expressions.matchAll())
 				.build();
 		
@@ -138,7 +141,8 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		data2.setField1("field1_2");
 		indexDocument(KEY2, data2);
 		
-		final Query<Data> query = Query.selectPartial(Data.class, "bigDecimalField")
+		final Query<Data> query = Query.select(Data.class)
+				.fields("bigDecimalField")
 				.where(Expressions.matchAll())
 				.build();
 		
@@ -166,7 +170,8 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		data2.setField1("field1_2");
 		indexDocument(KEY2, data2);
 		
-		final Query<Data> query = Query.selectPartial(Data.class, "floatField", "floatWrapper")
+		final Query<Data> query = Query.select(Data.class)
+				.fields("floatField", "floatWrapper")
 				.where(Expressions.matchAll())
 				.build();
 		
@@ -196,7 +201,8 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		data2.setField1("field1_2");
 		indexDocument(KEY2, data2);
 		
-		final Query<Data> query = Query.selectPartial(Data.class, "longField", "longWrapper")
+		final Query<Data> query = Query.select(Data.class)
+				.fields("longField", "longWrapper")
 				.where(Expressions.matchAll())
 				.build();
 		
@@ -226,7 +232,8 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		data2.setField1("field1_2");
 		indexDocument(KEY2, data2);
 		
-		final Query<Data> query = Query.selectPartial(Data.class, "intField", "intWrapper")
+		final Query<Data> query = Query.select(Data.class)
+				.fields("intField", "intWrapper")
 				.where(Expressions.matchAll())
 				.build();
 		
@@ -256,7 +263,8 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		data2.setField1("field1_2");
 		indexDocument(KEY2, data2);
 		
-		final Query<Data> query = Query.selectPartial(Data.class, "shortField", "shortWrapper")
+		final Query<Data> query = Query.select(Data.class)
+				.fields("shortField", "shortWrapper")
 				.where(Expressions.matchAll())
 				.build();
 		
@@ -287,7 +295,8 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		data2.setField1("field1_2");
 		indexDocument(KEY2, data2);
 		
-		final Query<Data> query = Query.selectPartial(Data.class, "intField", "intWrapper")
+		final Query<Data> query = Query.select(Data.class)
+				.fields("intField", "intWrapper")
 				.where(Expressions.matchAll())
 				.sortBy(SortBy.field("field1", Order.DESC))
 				.build();
@@ -319,7 +328,9 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		data2.setField1("field1_2");
 		indexDocument(KEY2, data2);
 		
-		final Query<Integer> query = Query.selectPartial(Integer.class, Data.class, ImmutableSet.of("intField"))
+		final Query<Integer> query = Query.select(Integer.class)
+				.from(Data.class)
+				.fields("intField")
 				.where(Expressions.matchAll())
 				.build();
 		

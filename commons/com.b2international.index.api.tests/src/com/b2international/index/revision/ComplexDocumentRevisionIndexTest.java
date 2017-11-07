@@ -63,7 +63,7 @@ public class ComplexDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, STORAGE_KEY1, data);
 		indexRevision(MAIN, STORAGE_KEY2, data2);
 		
-		final Query<NestedData> query = Query.select(NestedData.class, DeeplyNestedData.class).where(Expressions.exactMatch("field2", "field2")).build();
+		final Query<NestedData> query = Query.select(NestedData.class).from(DeeplyNestedData.class).where(Expressions.exactMatch("field2", "field2")).build();
 		final Iterable<NestedData> matches = search(MAIN, query);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(nestedData);

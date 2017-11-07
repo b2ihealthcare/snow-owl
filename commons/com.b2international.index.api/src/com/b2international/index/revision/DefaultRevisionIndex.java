@@ -24,11 +24,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
-import com.b2international.index.DocSearcher;
 import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
 import com.b2international.index.admin.IndexAdmin;
@@ -39,7 +39,6 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionCompare.Builder;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
@@ -138,7 +137,9 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 				// query all registered revision types for new, changed and deleted components
 				for (Class<? extends Revision> typeToCompare : typesToCompare) {
 					final Query<Revision.Views.StorageKeyAndHash> newOrChangedQuery = Query
-							.selectPartial(Revision.Views.StorageKeyAndHash.class, typeToCompare, ImmutableSet.of(Revision.STORAGE_KEY, DocumentMapping._HASH))
+							.select(Revision.Views.StorageKeyAndHash.class)
+							.from(typeToCompare)
+							.fields(Revision.STORAGE_KEY, DocumentMapping._HASH)
 							.where(Revision.branchSegmentFilter(segmentsToCompare))
 							.limit(Integer.MAX_VALUE)
 							.build();
@@ -149,7 +150,9 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 					
 					// any revision counts as changed or deleted which has segmentID in the common path, but replaced in the compared path
 					final Query<Revision.Views.StorageKeyAndHash> deletedOrChangedQuery = Query
-							.selectPartial(Revision.Views.StorageKeyAndHash.class, typeToCompare, ImmutableSet.of(Revision.STORAGE_KEY, DocumentMapping._HASH))
+							.select(Revision.Views.StorageKeyAndHash.class)
+							.from(typeToCompare)
+							.fields(Revision.STORAGE_KEY, DocumentMapping._HASH)
 							.where(Expressions.builder()
 									.filter(matchAnyInt(Revision.SEGMENT_ID, commonPath))
 									.filter(matchAnyInt(Revision.REPLACED_INS, segmentsToCompare))
@@ -243,7 +246,9 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 		for (Class<? extends Revision> revisionType : typesToPurge) {
 			final String type = DocumentMapping.getType(revisionType);
 			
-			final Query<String> query = Query.selectPartial(String.class, revisionType, ImmutableSet.of(DocumentMapping._ID))
+			final Query<String> query = Query.select(String.class)
+				.from(revisionType)
+				.fields(DocumentMapping._ID)
 				.where(purgeQuery.build())
 				.scroll()
 				.limit(PURGE_LIMIT)

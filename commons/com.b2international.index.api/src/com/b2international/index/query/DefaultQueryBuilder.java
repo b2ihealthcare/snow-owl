@@ -29,8 +29,9 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 	private static final int DEFAULT_LIMIT = 50;
 
 	private final Class<T> select;
-	private final Class<?> from;
-	private final Class<?> scope;
+	
+	private Class<?> from;
+	private Class<?> scope;
 	
 	private String scrollKeepAlive;
 	private int limit = DEFAULT_LIMIT;
@@ -40,17 +41,29 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 
 	private Set<String> fields = Collections.emptySet();
 
-	DefaultQueryBuilder(Class<T> select, Class<?> from, Class<?> scope) {
+	DefaultQueryBuilder(Class<T> select) {
 		this.select = select;
-		this.from = from;
-		this.scope = scope;
+		this.from = select;
 	}
 	
-	QueryBuilder<T> fields(Set<String> fields) {
+	@Override
+	public QueryBuilder<T> from(Class<?> from) {
+		this.from = from;
+		return this;
+	}
+	
+	@Override
+	public QueryBuilder<T> parent(Class<?> parent) {
+		this.scope = parent;
+		return this;
+	}
+	
+	@Override
+	public QueryBuilder<T> fields(Set<String> fields) {
 		this.fields = fields;
 		return this;
 	}
-
+	
 	@Override
 	public AfterWhereBuilder<T> scroll(String scrollKeepAlive) {
 		this.scrollKeepAlive = scrollKeepAlive;

@@ -36,9 +36,19 @@ public final class Query<T> {
 	 * @since 4.7
 	 */
 	public interface QueryBuilder<T> {
+		QueryBuilder<T> from(Class<?> from);
+		
+		QueryBuilder<T> parent(Class<?> parent);
+
+		default QueryBuilder<T> fields(String...fields) {
+			return fields(ImmutableSet.copyOf(fields));
+		}
+		
+		QueryBuilder<T> fields(Set<String> fields);
+		
 		AfterWhereBuilder<T> where(Expression expression);
 	}
-
+	
 	/**
 	 * @since 4.7
 	 */
@@ -180,32 +190,12 @@ public final class Query<T> {
 		return fields != null && !fields.isEmpty() ? Joiner.on(",").join(fields) : select == from ? "*" : select.toString();
 	}
 
-	public static <T> QueryBuilder<T> select(Class<T> select) {
-		return selectPartial(select, select);
-	}
-	
-	public static <T> QueryBuilder<T> selectPartial(Class<T> select, Class<?> from) {
-		return new DefaultQueryBuilder<T>(select, from, null);
-	}
-	
-	public static <T> QueryBuilder<T> selectPartial(Class<T> select, Class<?> from, Set<String> fields) {
-		return new DefaultQueryBuilder<T>(select, from, null).fields(fields);
-	}
-	
-	public static <T> QueryBuilder<T> selectPartial(Class<T> select, Set<String> fields) {
-		return new DefaultQueryBuilder<T>(select, select, null).fields(fields);
-	}
-	
-	public static <T> QueryBuilder<T> selectPartial(Class<T> select, String...fields) {
-		return selectPartial(select, ImmutableSet.copyOf(fields));
-	}
-	
-	public static <T> QueryBuilder<T> select(Class<T> select, Class<?> scope) {
-		return new DefaultQueryBuilder<T>(select, select, scope);
-	}
-
 	public boolean isDocIdOnly() {
 		return getFields().size() == 1 && getFields().contains(DocumentMapping._ID);
 	}
-
+	
+	public static <T> QueryBuilder<T> select(Class<T> select) {
+		return new DefaultQueryBuilder<>(select);
+	}
+	
 }

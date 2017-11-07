@@ -55,7 +55,7 @@ public class NestedDocumentIndexTest extends BaseIndexTest {
 		assertThat(parentDocs).isEmpty();
 		
 		// query to get nested child document, should be none
-		final Query<NestedData> nestedDataQuery = Query.select(NestedData.class, ParentData.class).where(Expressions.matchAll()).build();
+		final Query<NestedData> nestedDataQuery = Query.select(NestedData.class).parent(ParentData.class).where(Expressions.matchAll()).build();
 		final Iterable<NestedData> nestedDocs = search(nestedDataQuery);
 		assertThat(nestedDocs).isEmpty();
 	}
