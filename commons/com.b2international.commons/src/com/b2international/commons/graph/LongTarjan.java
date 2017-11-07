@@ -111,10 +111,6 @@ public final class LongTarjan {
 
 			} else {
 
-				if (currentSize() > 0) {
-					flushBatch();
-				}
-
 				addToCurrent(sccMember);
 
 				do {
