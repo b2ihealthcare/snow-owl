@@ -246,8 +246,4 @@ final class Rf2EffectiveTimeSlice {
 		}
 	}
 
-	public void close() {
-		componentsById.close();
-	}
-
 }

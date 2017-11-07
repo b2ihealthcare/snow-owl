@@ -107,7 +107,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 				final Rf2EffectiveTimeSlice slice = effectiveTimeSlices.get(effectiveTime);
 				slice.doImport(context, createVersions);
 				// throw away this slice so we can free up memory
-				effectiveTimeSlices.remove(effectiveTime).close();
+				effectiveTimeSlices.remove(effectiveTime);
 			}
 			
 			System.err.println("RF2 import took: " + w);
