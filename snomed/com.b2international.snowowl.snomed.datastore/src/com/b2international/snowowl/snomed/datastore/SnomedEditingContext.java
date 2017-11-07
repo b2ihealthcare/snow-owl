@@ -103,8 +103,9 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
@@ -429,7 +430,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return SnomedRequests.prepareSearchConcept()
 					.all()
 					.filterByIds(componentIds)
-					.setFields(SnomedRelationshipIndexEntry.Fields.ID, Revision.STORAGE_KEY)
+					.setFields(SnomedDocument.Fields.ID, Revision.STORAGE_KEY)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.then(this::toStorageKeyMap)
@@ -438,7 +439,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return SnomedRequests.prepareSearchDescription()
 					.all()
 					.filterByIds(componentIds)
-					.setFields(SnomedRelationshipIndexEntry.Fields.ID, Revision.STORAGE_KEY)
+					.setFields(SnomedDocument.Fields.ID, Revision.STORAGE_KEY)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.then(this::toStorageKeyMap)
@@ -447,7 +448,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return SnomedRequests.prepareSearchRelationship()
 					.all()
 					.filterByIds(componentIds)
-					.setFields(SnomedRelationshipIndexEntry.Fields.ID, Revision.STORAGE_KEY)
+					.setFields(SnomedDocument.Fields.ID, Revision.STORAGE_KEY)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.then(this::toStorageKeyMap)
@@ -456,7 +457,16 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return SnomedRequests.prepareSearchMember()
 					.all()
 					.filterByIds(componentIds)
-					.setFields(SnomedRelationshipIndexEntry.Fields.ID, Revision.STORAGE_KEY)
+					.setFields(SnomedDocument.Fields.ID, Revision.STORAGE_KEY)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.then(this::toStorageKeyMap)
+					.getSync();
+		} else if (type.isAssignableFrom(SnomedRefSet.class)) {
+			return SnomedRequests.prepareSearchRefSet()
+					.all()
+					.filterByIds(componentIds)
+					.setFields(SnomedDocument.Fields.ID, SnomedConceptDocument.Fields.REFSET_STORAGEKEY)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.then(this::toStorageKeyMap)
