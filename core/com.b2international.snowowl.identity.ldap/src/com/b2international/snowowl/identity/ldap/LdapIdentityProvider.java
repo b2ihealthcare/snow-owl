@@ -160,7 +160,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 	}
 
 	@Override
-	public Promise<Users> searchUsers(Collection<String> usernames, int offset, int limit) {
+	public Promise<Users> searchUsers(Collection<String> usernames, int limit) {
 		final ImmutableList.Builder<User> resultBuilder = ImmutableList.builder();
 
 		final String baseDn = conf.getBaseDn();
@@ -192,10 +192,9 @@ final class LdapIdentityProvider implements IdentityProvider {
 			final List<User> users = resultBuilder.build().stream()
 					.sorted((u1, u2) -> u1.getUsername().compareTo(u2.getUsername()))
 					.filter(user -> usernames.isEmpty() || usernames.contains(user.getUsername()))
-					.skip(offset)
 					.limit(limit)
 					.collect(Collectors.toList());
-			return Promise.immediate(new Users(users, offset, limit, users.size()));
+			return Promise.immediate(new Users(users, limit, users.size()));
 
 		} catch (final NamingException e) {
 			throw new SnowowlRuntimeException(e);

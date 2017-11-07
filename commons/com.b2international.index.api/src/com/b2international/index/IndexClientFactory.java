@@ -83,9 +83,9 @@ public interface IndexClientFactory {
 	long DEFAULT_TRANSLOG_SYNC_INTERVAL = TimeUnit.SECONDS.toMillis(5L);
 
 	/**
-	 * The default result window (~10k items)
+	 * The default result window (~100k items)
 	 */
-	int DEFAULT_RESULT_WINDOW = 10_099;
+	int DEFAULT_RESULT_WINDOW = 100_099;
 	
 	/**
 	 * The default concurrency level for the bulk operations depends on the number of cores you have <code>max(1, cores / 4)</code>.

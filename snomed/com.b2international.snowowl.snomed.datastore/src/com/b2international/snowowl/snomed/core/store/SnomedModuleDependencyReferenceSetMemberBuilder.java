@@ -46,7 +46,7 @@ public final class SnomedModuleDependencyReferenceSetMemberBuilder extends Snome
 	}
 
 	@Override
-	protected void init(SnomedModuleDependencyRefSetMember component, TransactionContext context) {
+	public void init(SnomedModuleDependencyRefSetMember component, TransactionContext context) {
 		super.init(component, context);
 		component.setSourceEffectiveTime(sourceEffectiveTime);
 		component.setTargetEffectiveTime(targetEffectiveTime);

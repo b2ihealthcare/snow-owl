@@ -24,10 +24,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.b2international.index.BulkUpdate;
+import com.b2international.index.DocSearcher;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
-import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
@@ -251,7 +251,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 
 	/*package*/ final Collection<Branch> getChildren(BranchImpl branchImpl) {
-		final Collection<InternalBranch> values = search(Query.select(InternalBranch.class).where(Expressions.prefixMatch(DocumentMapping._ID, branchImpl.path() + Branch.SEPARATOR)).limit(Integer.MAX_VALUE).build());
+		final Collection<InternalBranch> values = search(Query.select(InternalBranch.class).where(Expressions.prefixMatch("path", branchImpl.path() + Branch.SEPARATOR)).limit(Integer.MAX_VALUE).build());
 		initialize(values);
 		return ImmutableList.copyOf(values);
 	}
@@ -259,7 +259,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 	private Collection<InternalBranch> search(final Query<InternalBranch> query) {
 		return ImmutableList.copyOf(branchStore.read(new IndexRead<Iterable<InternalBranch>>() {
 			@Override
-			public Iterable<InternalBranch> execute(Searcher index) throws IOException {
+			public Iterable<InternalBranch> execute(DocSearcher index) throws IOException {
 				return index.search(query);
 			}
 		}));
@@ -268,7 +268,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 	private InternalBranch get(final String path) {
 		return branchStore.read(new IndexRead<InternalBranch>() {
 			@Override
-			public InternalBranch execute(Searcher index) throws IOException {
+			public InternalBranch execute(DocSearcher index) throws IOException {
 				return index.get(InternalBranch.class, path);
 			}
 		});

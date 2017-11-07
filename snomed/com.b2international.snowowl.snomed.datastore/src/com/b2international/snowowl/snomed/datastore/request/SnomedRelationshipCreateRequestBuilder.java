@@ -32,7 +32,7 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 	private boolean destinationNegated;
 	private int group = 0;
 	private RelationshipModifier modifier = RelationshipModifier.EXISTENTIAL;
-	private int unionGroup = 0;
+	private Integer unionGroup = 0;
 	private String typeId;
 
 	SnomedRelationshipCreateRequestBuilder() { 
@@ -59,8 +59,8 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 		return getSelf();
 	}
 	
-	public SnomedRelationshipCreateRequestBuilder setGroup(int group) {
-		this.group = group;
+	public SnomedRelationshipCreateRequestBuilder setGroup(Integer group) {
+		this.group = group == null ? 0 : group;
 		return getSelf();
 	}
 	
@@ -74,8 +74,8 @@ public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponen
 		return getSelf();
 	}
 	
-	public SnomedRelationshipCreateRequestBuilder setUnionGroup(int unionGroup) {
-		this.unionGroup = unionGroup;
+	public SnomedRelationshipCreateRequestBuilder setUnionGroup(Integer unionGroup) {
+		this.unionGroup = unionGroup == null ? 0 : unionGroup;
 		return getSelf();
 	}
 	

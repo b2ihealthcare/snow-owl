@@ -26,8 +26,8 @@ public final class CodeSystemVersions extends PageableCollectionResource<CodeSys
 
 	private static final long serialVersionUID = 1L;
 	
-	public CodeSystemVersions(final List<CodeSystemVersionEntry> items, int offset, int limit, int total) {
-		super(items, offset, limit, total);
+	public CodeSystemVersions(final List<CodeSystemVersionEntry> items, String scrollId, int limit, int total) {
+		super(items, scrollId, limit, total);
 	}
 
 }

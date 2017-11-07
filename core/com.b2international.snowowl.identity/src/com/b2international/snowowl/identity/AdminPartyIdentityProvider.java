@@ -53,13 +53,12 @@ class AdminPartyIdentityProvider implements IdentityProvider, IdentityWriter {
 	}
 
 	@Override
-	public Promise<Users> searchUsers(Collection<String> usernames, int offset, int limit) {
-		return delegate.searchUsers(usernames, offset, limit)
+	public Promise<Users> searchUsers(Collection<String> usernames, int limit) {
+		return delegate.searchUsers(usernames, limit)
 					.then(matches -> {
 						// override roles
 						return new Users(
 							matches.stream().map(user -> new User(user.getUsername(), ADMINPARTY_ROLES)).collect(Collectors.toList()), 
-							matches.getOffset(), 
 							matches.getLimit(), 
 							matches.getTotal()
 						);

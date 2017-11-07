@@ -23,9 +23,9 @@ import java.util.Collection;
 
 import org.junit.Test;
 
+import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.IndexRead;
-import com.b2international.index.Searcher;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionFixtures.Data;
@@ -90,7 +90,7 @@ public class RevisionTransactionalityTest extends BaseRevisionIndexTest {
 		// assert that the previous revision of the document has replacedIns set for both segment 1 and 2
 		final Data replacedRevision = rawIndex().read(new IndexRead<Data>() {
 			@Override
-			public Data execute(Searcher index) throws IOException {
+			public Data execute(DocSearcher index) throws IOException {
 				final Hits<Data> hits = index.search(Query.select(Data.class)
 						// only a single revision exists in segment 0
 						.where(Expressions.match(Revision.SEGMENT_ID, 0))

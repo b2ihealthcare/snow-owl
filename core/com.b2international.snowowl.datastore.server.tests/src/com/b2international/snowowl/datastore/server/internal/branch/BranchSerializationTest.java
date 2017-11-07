@@ -44,14 +44,14 @@ public class BranchSerializationTest {
 	@Test
 	public void serializeBranchWithoutMetadata() throws Exception {
 		final String json = mapper.writeValueAsString(branch);
-		assertEquals("{\"type\":\"BranchImpl\",\"name\":\"name\",\"parentPath\":\"parent\",\"baseTimestamp\":0,\"headTimestamp\":0,\"deleted\":false,\"metadata\":{}}", json);
+		assertEquals("{\"type\":\"BranchImpl\",\"name\":\"name\",\"parentPath\":\"parent\",\"baseTimestamp\":0,\"headTimestamp\":0,\"deleted\":false,\"metadata\":{},\"path\":\"parent/name\"}", json);
 	}
 	
 	@Test
 	public void serializeBranchWithMetadata() throws Exception {
 		branch.metadata().put("description", "Project A branch");
 		final String json = mapper.writeValueAsString(branch);
-		assertEquals("{\"type\":\"BranchImpl\",\"name\":\"name\",\"parentPath\":\"parent\",\"baseTimestamp\":0,\"headTimestamp\":0,\"deleted\":false,\"metadata\":{\"description\":\"Project A branch\"}}", json);
+		assertEquals("{\"type\":\"BranchImpl\",\"name\":\"name\",\"parentPath\":\"parent\",\"baseTimestamp\":0,\"headTimestamp\":0,\"deleted\":false,\"metadata\":{\"description\":\"Project A branch\"},\"path\":\"parent/name\"}", json);
 	}
 	
 	@Test
@@ -76,7 +76,7 @@ public class BranchSerializationTest {
 	@Test
 	public void serializeCDOBranchImpl() throws Exception {
 		final String json = mapper.writeValueAsString(cdoBranch);
-		assertEquals("{\"type\":\"CDOBranchImpl\",\"name\":\"name\",\"parentPath\":\"parent\",\"baseTimestamp\":0,\"headTimestamp\":0,\"deleted\":false,\"metadata\":{},\"segmentId\":0,\"segments\":[0],\"parentSegments\":[0],\"cdoBranchId\":1}", json);
+		assertEquals("{\"type\":\"CDOBranchImpl\",\"name\":\"name\",\"parentPath\":\"parent\",\"baseTimestamp\":0,\"headTimestamp\":0,\"deleted\":false,\"metadata\":{},\"segmentId\":0,\"segments\":[0],\"parentSegments\":[0],\"path\":\"parent/name\",\"cdoBranchId\":1}", json);
 	}
 	
 	@Test
@@ -89,7 +89,7 @@ public class BranchSerializationTest {
 	public void serializeCDOMainBranchImpl() throws Exception {
 		final CDOMainBranchImpl mainCdoBranch = new CDOMainBranchImpl(0L, 2L, new MetadataImpl(), 0, Collections.singleton(0));
 		final String json = mapper.writeValueAsString(mainCdoBranch);
-		assertEquals("{\"type\":\"CDOMainBranchImpl\",\"baseTimestamp\":0,\"headTimestamp\":2,\"metadata\":{},\"segmentId\":0,\"segments\":[0],\"name\":\"MAIN\",\"parentPath\":\"\",\"deleted\":false,\"cdoBranchId\":0}", json);
+		assertEquals("{\"type\":\"CDOMainBranchImpl\",\"baseTimestamp\":0,\"headTimestamp\":2,\"metadata\":{},\"segmentId\":0,\"segments\":[0],\"name\":\"MAIN\",\"parentPath\":\"\",\"deleted\":false,\"path\":\"MAIN\",\"cdoBranchId\":0}", json);
 		final CDOMainBranchImpl actual = mapper.readValue(json, CDOMainBranchImpl.class);
 		assertEquals(mainCdoBranch.cdoBranchId(), actual.cdoBranchId());
 		

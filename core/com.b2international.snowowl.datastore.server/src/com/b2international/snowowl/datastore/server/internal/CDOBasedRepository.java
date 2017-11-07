@@ -39,6 +39,7 @@ import org.eclipse.emf.cdo.net4j.CDONet4jSession;
 
 import com.b2international.commons.platform.Extensions;
 import com.b2international.index.DefaultIndex;
+import com.b2international.index.DocSearcher;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClient;
 import com.b2international.index.IndexClientFactory;
@@ -429,7 +430,7 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		final RepositoryContext repositoryContext = new DefaultRepositoryContext(this, this);
 		return getIndex().read(new IndexRead<CommitInfos>() {
 			@Override
-			public CommitInfos execute(Searcher index) throws IOException {
+			public CommitInfos execute(DocSearcher index) throws IOException {
 				return RepositoryRequests.commitInfos().prepareSearchCommitInfo()
 					.all()
 					.build()

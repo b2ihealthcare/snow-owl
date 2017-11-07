@@ -834,12 +834,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="com.b2international.org.apache.lucene"
-         download-size="0"
-         install-size="0"
-         version="5.5.2.b2i"/>
-
-   <plugin
          id="org.emfjson.core"
          download-size="0"
          install-size="0"
@@ -959,14 +953,62 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="com.ning.compress-lzf"
+         id="com.b2international.org.apache.lucene"
+         download-size="0"
+         install-size="0"
+         version="6.6.1.b2i"/>
+
+   <plugin
+         id="io.netty.buffer"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="org.jboss.netty"
+         id="io.netty.codec"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="io.netty.codec-http"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="io.netty.common"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="io.netty.handler"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="io.netty.resolver"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="io.netty.transport"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.fasterxml.jackson.dataformat.jackson-dataformat-cbor"
          download-size="0"
          install-size="0"
          version="0.0.0"

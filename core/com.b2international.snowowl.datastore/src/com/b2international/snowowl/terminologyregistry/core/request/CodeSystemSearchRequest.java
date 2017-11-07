@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Collections;
 
 import com.b2international.index.Hits;
+import com.b2international.index.Scroll;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -48,19 +49,25 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 		
 		final Searcher searcher = context.service(Searcher.class);
 
-		final Hits<CodeSystemEntry> hits = searcher.search(select(CodeSystemEntry.class)
-				.where(queryBuilder.build())
-				.sortBy(sortBy())
-				.offset(offset())
-				.limit(limit())
-				.build());
-
-		return new CodeSystems(hits.getHits(), offset(), limit(), hits.getTotal());
+		final Hits<CodeSystemEntry> hits;
+		
+		if (isScrolled()) {
+			hits = searcher.scroll(new Scroll<>(CodeSystemEntry.class, scrollId()));
+		} else {
+			hits = searcher.search(select(CodeSystemEntry.class)
+					.where(queryBuilder.build())
+					.sortBy(sortBy())
+					.scroll(scrollKeepAlive())
+					.limit(limit())
+					.build());
+		}
+		
+		return new CodeSystems(hits.getHits(), hits.getScrollId(), limit(), hits.getTotal());
 	}
 	
 	@Override
-	protected CodeSystems createEmptyResult(int offset, int limit) {
-		return new CodeSystems(Collections.emptyList(), offset, limit, 0);
+	protected CodeSystems createEmptyResult(int limit) {
+		return new CodeSystems(Collections.emptyList(), null, limit, 0);
 	}
 
 }

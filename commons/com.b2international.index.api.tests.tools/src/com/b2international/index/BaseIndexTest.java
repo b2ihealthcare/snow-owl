@@ -15,7 +15,6 @@
  */
 package com.b2international.index;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
@@ -82,54 +81,39 @@ public abstract class BaseIndexTest {
 	}
 	
 	protected final <T> T getDocument(final Class<T> type, final String key) {
-		return index().read(new IndexRead<T>() {
-			@Override
-			public T execute(Searcher index) throws IOException {
-				return index.get(type, key);
-			}
-		});
+		return index().read(index -> index.get(type, key));
 	}
 	
 	protected final void indexDocument(final String key, final Object doc) {
-		index().write(new IndexWrite<Void>() {
-			@Override
-			public Void execute(Writer index) throws IOException {
-				index.put(key, doc);
-				index.commit();
-				return null;
-			}
+		index().write(index -> {
+			index.put(key, doc);
+			index.commit();
+			return null;
 		});
 	}
 	
 	protected final <T> void indexDocuments(final Map<String, T> docs) {
-		index().write(new IndexWrite<Void>() {
-			@Override
-			public Void execute(Writer index) throws IOException {
-				index.putAll(docs);
-				index.commit();
-				return null;
-			}
+		index().write(index -> {
+			index.putAll(docs);
+			index.commit();
+			return null;
 		});
 	}
 	
 	protected final <T> Hits<T> search(final Query<T> query) {
-		return index().read(new IndexRead<Hits<T>>() {
-			@Override
-			public Hits<T> execute(Searcher index) throws IOException {
-				return index.search(query);
-			}
-		});
+		return index().read(index -> index.search(query));
 	}
 	
 	protected final void deleteDocument(final Class<?> type, final String key) {
-		index().write(new IndexWrite<Void>() {
-			@Override
-			public Void execute(Writer index) throws IOException {
-				index.remove(type, key);
-				index.commit();
-				return null;
-			}
+		index().write(index -> {
+			index.remove(type, key);
+			index.commit();
+			return null;
 		});
+	}
+	
+	protected final <T> Iterable<Hits<T>> scroll(final Query<T> query) {
+		return index().read(index -> index.scroll(query));
 	}
 	
 }

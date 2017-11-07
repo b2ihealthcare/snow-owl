@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,25 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import static com.google.common.base.Strings.nullToEmpty;
+
 /**
  * Enumerates available RF2 release formats for the SNOMED CT ontology.
  */
 public enum Rf2ReleaseType {
 
 	/**
-	 * Delta RF2 publication format.
-	 * Contains the most recent changes.
+	 * Delta RF2 publication format. Contains the most recent changes.
 	 */
 	DELTA("Delta"),
 
 	/**
-	 * Snapshot RF2 publication format.
-	 * Contains all component with their latest state.
+	 * Snapshot RF2 publication format. Contains all component with their latest state.
 	 */
 	SNAPSHOT("Snapshot"),
 
 	/**
-	 * Full RF2 publication format.
-	 * Contains everything.
+	 * Full RF2 publication format. Contains everything.
 	 */
 	FULL("Full");
 
@@ -47,5 +46,21 @@ public enum Rf2ReleaseType {
 	@Override
 	public String toString() {
 		return name;
+	}
+
+	/**
+	 * Returns with the RF2 release type identified by the specified value.
+	 * 
+	 * @param value
+	 *            the value of the release type
+	 * @return the release type, never <code>null</code>
+	 */
+	public static Rf2ReleaseType getByNameIgnoreCase(String name) {
+		for (final Rf2ReleaseType type : values()) {
+			if (nullToEmpty(name).equalsIgnoreCase(type.name)) {
+				return type;
+			}
+		}
+		throw new IllegalArgumentException("Unknown type for name: " + name);
 	}
 }

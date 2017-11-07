@@ -44,8 +44,7 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		return ImmutableSet.<Class<?>>of(Data.class);
 	}
 	
-	private void checkHits(final Hits<?> hits, int offset, int limit, int total, int returned) {
-		assertEquals(offset, hits.getOffset());
+	private void checkHits(final Hits<?> hits, int limit, int total, int returned) {
 		assertEquals(limit, hits.getLimit());
 		assertEquals(total, hits.getTotal());
 		assertEquals(returned, Iterables.size(hits));
@@ -70,7 +69,7 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 
 		final Hits<PartialData> hits = search(query);
 		
-		checkHits(hits, 0, DEFAULT_LIMIT, 2, 2);
+		checkHits(hits, DEFAULT_LIMIT, 2, 2);
 		assertEquals(data1.getField1(), hits.getHits().get(0).getField1());
 		assertEquals(data2.getField1(), hits.getHits().get(1).getField1());
 	}
@@ -93,7 +92,7 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		
 		final Hits<Data> hits = search(query);
 		
-		checkHits(hits, 0, DEFAULT_LIMIT, 2, 2);
+		checkHits(hits, DEFAULT_LIMIT, 2, 2);
 		assertEquals(data1.getField1(), hits.getHits().get(0).getField1());
 		assertEquals(data2.getField1(), hits.getHits().get(1).getField1());
 		
@@ -119,7 +118,7 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		
 		final Hits<Data> hits = search(query);
 		
-		checkHits(hits, 0, DEFAULT_LIMIT, 2, 2);
+		checkHits(hits, DEFAULT_LIMIT, 2, 2);
 		assertEquals(data1.getAnalyzedField(), hits.getHits().get(0).getAnalyzedField());
 		assertEquals(data2.getAnalyzedField(), hits.getHits().get(1).getAnalyzedField());
 		
@@ -145,7 +144,7 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		
 		final Hits<Data> hits = search(query);
 		
-		checkHits(hits, 0, DEFAULT_LIMIT, 2, 2);
+		checkHits(hits, DEFAULT_LIMIT, 2, 2);
 		assertEquals(data1.getBigDecimalField(), hits.getHits().get(0).getBigDecimalField());
 		assertEquals(data2.getBigDecimalField(), hits.getHits().get(1).getBigDecimalField());
 		
@@ -173,7 +172,7 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		
 		final Hits<Data> hits = search(query);
 		
-		checkHits(hits, 0, DEFAULT_LIMIT, 2, 2);
+		checkHits(hits, DEFAULT_LIMIT, 2, 2);
 		assertEquals(Float.floatToRawIntBits(data1.getFloatField()), Float.floatToRawIntBits(hits.getHits().get(0).getFloatField()));
 		assertEquals(Float.floatToRawIntBits(data2.getFloatField()), Float.floatToRawIntBits(hits.getHits().get(1).getFloatField()));
 		assertEquals(data1.getFloatWrapper(), hits.getHits().get(0).getFloatWrapper()); // Float is already doing bitwise comparison in equals
@@ -203,7 +202,7 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		
 		final Hits<Data> hits = search(query);
 		
-		checkHits(hits, 0, DEFAULT_LIMIT, 2, 2);
+		checkHits(hits, DEFAULT_LIMIT, 2, 2);
 		assertEquals(data1.getLongField(), hits.getHits().get(0).getLongField());
 		assertEquals(data2.getLongField(), hits.getHits().get(1).getLongField());
 		assertEquals(data1.getLongWrapper(), hits.getHits().get(0).getLongWrapper());
@@ -233,7 +232,7 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		
 		final Hits<Data> hits = search(query);
 		
-		checkHits(hits, 0, DEFAULT_LIMIT, 2, 2);
+		checkHits(hits, DEFAULT_LIMIT, 2, 2);
 		assertEquals(data1.getIntField(), hits.getHits().get(0).getIntField());
 		assertEquals(data2.getIntField(), hits.getHits().get(1).getIntField());
 		assertEquals(data1.getIntWrapper(), hits.getHits().get(0).getIntWrapper());
@@ -263,7 +262,7 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		
 		final Hits<Data> hits = search(query);
 		
-		checkHits(hits, 0, DEFAULT_LIMIT, 2, 2);
+		checkHits(hits, DEFAULT_LIMIT, 2, 2);
 		assertEquals(data1.getShortField(), hits.getHits().get(0).getShortField());
 		assertEquals(data2.getShortField(), hits.getHits().get(1).getShortField());
 		assertEquals(data1.getShortWrapper(), hits.getHits().get(0).getShortWrapper());
@@ -295,7 +294,7 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		
 		final Hits<Data> hits = search(query);
 		
-		checkHits(hits, 0, DEFAULT_LIMIT, 2, 2);
+		checkHits(hits, DEFAULT_LIMIT, 2, 2);
 		
 		// Results are now inverted: the second document should appear first
 		assertEquals(data2.getIntField(), hits.getHits().get(0).getIntField());
@@ -326,7 +325,7 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		
 		final Hits<Integer> hits = search(query);
 		
-		checkHits(hits, 0, DEFAULT_LIMIT, 2, 2);
+		checkHits(hits, DEFAULT_LIMIT, 2, 2);
 		assertEquals(data1.getIntField(), hits.getHits().get(0).intValue());
 		assertEquals(data2.getIntField(), hits.getHits().get(1).intValue());
 	}

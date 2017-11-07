@@ -124,9 +124,13 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@RequestParam(value="unionGroup", required=false) 
 			final Integer unionGroupFilter,
 			
-			@ApiParam(value="The starting offset in the list")
-			@RequestParam(value="offset", defaultValue="0", required=false) 
-			final int offset,
+			@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
+			@RequestParam(value="scrollKeepAlive", required=false) 
+			final String scrollKeepAlive,
+			
+			@ApiParam(value="A scrollId to continue scrolling a previous query")
+			@RequestParam(value="scrollId", required=false) 
+			final String scrollId,
 
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
@@ -154,7 +158,8 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 				SnomedRequests
 					.prepareSearchRelationship()
 					.setLimit(limit)
-					.setOffset(offset)
+					.setScroll(scrollKeepAlive)
+					.setScrollId(scrollId)
 					.filterByActive(activeFilter)
 					.filterByModule(moduleFilter)
 					.filterByNamespace(namespaceFilter)

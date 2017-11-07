@@ -26,10 +26,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
-import com.b2international.index.Analyzed;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.Keyword;
 import com.b2international.index.Script;
+import com.b2international.index.Text;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.util.Reflections;
@@ -68,7 +69,8 @@ public final class DocumentMapping {
 	private final String typeAsString;
 	private final Map<String, Field> fieldMap;
 	private final Map<Class<?>, DocumentMapping> nestedTypes;
-	private final TreeMap<String, Analyzed> analyzedFields;
+	private final TreeMap<String, Text> textFields;
+	private final TreeMap<String, Keyword> keywordFields;
 	private final DocumentMapping parent;
 	private final Map<String, Script> scripts;
 
@@ -89,19 +91,28 @@ public final class DocumentMapping {
 				}
 			}).uniqueIndex(GET_NAME);
 		
-		final Builder<String, Analyzed> analyzedFields = ImmutableSortedMap.naturalOrder();
+		final Builder<String, Text> textFields = ImmutableSortedMap.naturalOrder();
+		final Builder<String, Keyword> keywordFields = ImmutableSortedMap.naturalOrder();
 
 		for (Field field : getFields()) {
-			for (Analyzed analyzer : field.getAnnotationsByType(Analyzed.class)) {
+			for (Text analyzer : field.getAnnotationsByType(Text.class)) {
 				if (Strings.isNullOrEmpty(analyzer.alias())) {
-					analyzedFields.put(field.getName(), analyzer);
+					textFields.put(field.getName(), analyzer);
 				} else {
-					analyzedFields.put(DELIMITER_JOINER.join(field.getName(), analyzer.alias()), analyzer);
+					textFields.put(DELIMITER_JOINER.join(field.getName(), analyzer.alias()), analyzer);
+				}
+			}
+			for (Keyword analyzer : field.getAnnotationsByType(Keyword.class)) {
+				if (Strings.isNullOrEmpty(analyzer.alias())) {
+					keywordFields.put(field.getName(), analyzer);
+				} else {
+					keywordFields.put(DELIMITER_JOINER.join(field.getName(), analyzer.alias()), analyzer);
 				}
 			}
 		}
 		
-		this.analyzedFields = new TreeMap<>(analyzedFields.build());
+		this.textFields = new TreeMap<>(textFields.build());
+		this.keywordFields = new TreeMap<>(keywordFields.build());
 				
 		this.nestedTypes = FluentIterable.from(getFields())
 			.transform(new Function<Field, Class<?>>() {
@@ -202,12 +213,20 @@ public final class DocumentMapping {
 		return ImmutableList.copyOf(fieldMap.values());
 	}
 	
-	public boolean isAnalyzed(String field) {
-		return analyzedFields.containsKey(field);
+	public boolean isText(String field) {
+		return textFields.containsKey(field);
 	}
 	
-	public Map<String, Analyzed> getAnalyzedFields() {
-		return analyzedFields;
+	public boolean isKeyword(String field) {
+		return keywordFields.containsKey(field);
+	}
+	
+	public Map<String, Text> getTextFields() {
+		return textFields;
+	}
+	
+	public Map<String, Keyword> getKeywordFields() {
+		return keywordFields;
 	}
 
 	public Class<?> type() {
@@ -280,12 +299,16 @@ public final class DocumentMapping {
 		return doc == null ? false : doc.nested();
 	}
 
-	public Map<String, Analyzed> getAnalyzers(String fieldName) {
-		return analyzedFields.subMap(fieldName, fieldName + Character.MAX_VALUE);
+	public Map<String, Text> getTextFields(String fieldName) {
+		return textFields.subMap(fieldName, fieldName + Character.MAX_VALUE);
+	}
+	
+	public Map<String, Keyword> getKeywordFields(String fieldName) {
+		return keywordFields.subMap(fieldName, fieldName + Character.MAX_VALUE);
 	}
 	
 	public Analyzers getSearchAnalyzer(String fieldName) {
-		final Analyzed analyzed = getAnalyzedFields().get(fieldName);
+		final Text analyzed = getTextFields().get(fieldName);
 		return analyzed.searchAnalyzer() == Analyzers.INDEX ? analyzed.analyzer() : analyzed.searchAnalyzer();
 	}
 

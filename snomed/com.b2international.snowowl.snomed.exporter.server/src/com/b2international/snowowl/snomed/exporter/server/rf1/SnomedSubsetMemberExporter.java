@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import static com.b2international.snowowl.snomed.exporter.server.rf1.SnomedRf1Re
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.PrimitiveSets;
@@ -38,8 +38,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 
 /**
@@ -62,78 +61,63 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 	private final Id2Rf1PropertyMapper mapper;
 	private final LongSet distinctEffectiveTimeSet;
 
-	private Iterator<String> itr;
-
 	public SnomedSubsetMemberExporter(final SnomedExportContext configuration, final String refSetId, final RevisionSearcher revisionSearcher) {
 		super(configuration, refSetId, revisionSearcher);
 		mapper = new Id2Rf1PropertyMapper();
 		languageType = isLanguageType(refSetId);
 		distinctEffectiveTimeSet = PrimitiveSets.newLongOpenHashSet();
-		itr = Iterators.transform(createResultSet().iterator(), new Function<ReferencedComponentIdStatus, String>() {
-			@Override
-			public String apply(ReferencedComponentIdStatus input) {
-				return new StringBuilder(getRefSetId()).append(HT).append(input.referencedComponentId).append(HT).append(input.status).append(HT).toString();
-			}
-		});
 	}
 
-	private Collection<ReferencedComponentIdStatus> createResultSet() {
+	private Collection<ReferencedComponentIdStatus> createResultSet() throws IOException {
 
 		LongKeyLongMap descriptionIdTypeMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
-
-		try {
-			// get referenced component's (description) ID to description type ID mapping
-			if (languageType) {
-				Query<SnomedDescriptionIndexEntry> allDescriptionsQuery = Query.select(SnomedDescriptionIndexEntry.class)
-						.where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build();
-				Hits<SnomedDescriptionIndexEntry> allDescriptionsHits;
-				allDescriptionsHits = revisionSearcher.search(allDescriptionsQuery);
-
-				for (SnomedDescriptionIndexEntry snomedDescriptionIndexEntry : allDescriptionsHits) {
-					descriptionIdTypeMap.put(Long.parseLong(snomedDescriptionIndexEntry.getId()), Long.parseLong(snomedDescriptionIndexEntry.getTypeId()));
-				}
-			}
-			// we need every target, limit needs to be set as the default is 50
-			// hits
-			Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
+		// get referenced component's (description) ID to description type ID mapping
+		if (languageType) {
+			Query<SnomedDescriptionIndexEntry> allDescriptionsQuery = Query.select(SnomedDescriptionIndexEntry.class)
 					.where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build();
-			Hits<SnomedRefSetMemberIndexEntry> hits = revisionSearcher.search(query);
+			Hits<SnomedDescriptionIndexEntry> allDescriptionsHits;
+			allDescriptionsHits = revisionSearcher.search(allDescriptionsQuery);
 
-			Set<ReferencedComponentIdStatus> referencedComponentIdStatuses = Sets.newHashSet();
-
-			for (SnomedRefSetMemberIndexEntry snomedRefSetMemberIndexEntry : hits) {
-
-				final ReferencedComponentIdStatus referencedComponentIdStatus = new ReferencedComponentIdStatus();
-				referencedComponentIdStatus.referencedComponentId = snomedRefSetMemberIndexEntry.getReferencedComponentId();
-
-				if (!languageType) {
-					referencedComponentIdStatus.status = snomedRefSetMemberIndexEntry.isActive() ? "1" : "0";
-				} else {
-					final String acceptabilityId = snomedRefSetMemberIndexEntry.getAcceptabilityId();
-
-					if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId)) {
-
-						// if the referenced component was an FSN, it cannot be
-						// preferred
-						if (Concepts.FULLY_SPECIFIED_NAME.equals(descriptionIdTypeMap.get(Long.parseLong(referencedComponentIdStatus.referencedComponentId)))) {
-							referencedComponentIdStatus.status = "3"; // non preferred FSN code
-						} else {
-							referencedComponentIdStatus.status = "1"; // preferred member is always 1
-						}
-					} else {
-						final String descriptionType = mapper
-								.getDescriptionType(Long.toString(descriptionIdTypeMap.get(Long.parseLong(referencedComponentIdStatus.referencedComponentId))));
-						referencedComponentIdStatus.status = null == descriptionType ? "0" : descriptionType;
-					}
-				}
-				referencedComponentIdStatuses.add(referencedComponentIdStatus);
+			for (SnomedDescriptionIndexEntry snomedDescriptionIndexEntry : allDescriptionsHits) {
+				descriptionIdTypeMap.put(Long.parseLong(snomedDescriptionIndexEntry.getId()), Long.parseLong(snomedDescriptionIndexEntry.getTypeId()));
 			}
-			return referencedComponentIdStatuses;
-
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
+		// we need every target, limit needs to be set as the default is 50
+		// hits
+		Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
+				.where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build();
+		Hits<SnomedRefSetMemberIndexEntry> hits = revisionSearcher.search(query);
 
+		Set<ReferencedComponentIdStatus> referencedComponentIdStatuses = Sets.newHashSet();
+
+		for (SnomedRefSetMemberIndexEntry snomedRefSetMemberIndexEntry : hits) {
+
+			final ReferencedComponentIdStatus referencedComponentIdStatus = new ReferencedComponentIdStatus();
+			referencedComponentIdStatus.referencedComponentId = snomedRefSetMemberIndexEntry.getReferencedComponentId();
+
+			if (!languageType) {
+				referencedComponentIdStatus.status = snomedRefSetMemberIndexEntry.isActive() ? "1" : "0";
+			} else {
+				final String acceptabilityId = snomedRefSetMemberIndexEntry.getAcceptabilityId();
+
+				if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(acceptabilityId)) {
+
+					// if the referenced component was an FSN, it cannot be
+					// preferred
+					if (Concepts.FULLY_SPECIFIED_NAME.equals(Long.toString(descriptionIdTypeMap.get(Long.parseLong(referencedComponentIdStatus.referencedComponentId))))) {
+						referencedComponentIdStatus.status = "3"; // non preferred FSN code
+					} else {
+						referencedComponentIdStatus.status = "1"; // preferred member is always 1
+					}
+				} else {
+					final String descriptionType = mapper
+							.getDescriptionType(Long.toString(descriptionIdTypeMap.get(Long.parseLong(referencedComponentIdStatus.referencedComponentId))));
+					referencedComponentIdStatus.status = null == descriptionType ? "0" : descriptionType;
+				}
+			}
+			referencedComponentIdStatuses.add(referencedComponentIdStatus);
+		}
+		return referencedComponentIdStatuses;
 	}
 
 	private static final class ReferencedComponentIdStatus {
@@ -166,18 +150,11 @@ public class SnomedSubsetMemberExporter extends AbstractSnomedSubsetExporter {
 	}
 
 	@Override
-	public boolean hasNext() {
-		return itr.hasNext();
-	}
-
-	@Override
-	public String next() {
-		return itr.next();
-	}
-
-	@Override
-	public Iterator<String> iterator() {
-		return itr;
+	public void writeLines(Consumer<String> lineProcessor) throws IOException {
+		createResultSet()
+			.stream()
+			.map(input -> Joiner.on(HT).join(getRefSetId(), input.referencedComponentId, input.status))
+			.forEach(lineProcessor);
 	}
 	
 }

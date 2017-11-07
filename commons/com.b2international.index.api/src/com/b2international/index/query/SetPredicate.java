@@ -15,12 +15,11 @@
  */
 package com.b2international.index.query;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import com.b2international.commons.StringUtils;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 
 /**
  * @since 5.0
@@ -58,24 +57,10 @@ public abstract class SetPredicate<T> extends Predicate {
 	}
 	
 	private String sublist() {
-		if (values.size() <= 10) {
+		if (values.size() < 10) {
 			return values.toString();
 		} else {
-			final StringBuilder builder = new StringBuilder("[");
-			final List<T> valuesList = Lists.newArrayList(values);
-			
-			for (int i = 0; i < 10; i++) {
-				if (builder.length() != 1) {
-					builder.append(", ");
-				}
-				
-				builder.append(valuesList.get(i));
-			}
-			
-			builder.append(String.format("... %d more items", values.size() - 10));
-			builder.append("]");
-			
-			return builder.toString();
+			return StringUtils.limitedToString(values, 10);
 		}
 	}
 

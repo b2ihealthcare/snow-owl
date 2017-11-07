@@ -38,8 +38,8 @@ final class SnomedConstraintConverter extends BaseResourceConverter<SnomedConstr
 	}
 
 	@Override
-	protected SnomedConstraints createCollectionResource(List<SnomedConstraint> results, int offset, int limit, int total) {
-		return new SnomedConstraints(results, offset, limit, total);
+	protected SnomedConstraints createCollectionResource(List<SnomedConstraint> results, String scrollId, int limit, int total) {
+		return new SnomedConstraints(results, scrollId, limit, total);
 	}
 
 	@Override

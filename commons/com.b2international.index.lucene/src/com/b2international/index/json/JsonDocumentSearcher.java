@@ -104,7 +104,7 @@ public class JsonDocumentSearcher implements Searcher {
 		this.searchers = admin.getManager();
 		this.luceneQueryBuilder = admin.getQueryBuilder();
 		this.slowLogConfig = (SlowLogConfig) admin.settings().get(IndexClientFactory.SLOW_LOG_KEY);
-		this.resultWindow = (int) admin.settings().get(IndexClientFactory.RESULT_WINDOW_KEY);
+		this.resultWindow = Integer.parseInt((String) admin.settings().get(IndexClientFactory.RESULT_WINDOW_KEY));
 
 		try {
 			searcher = searchers.acquire();
@@ -441,7 +441,7 @@ public class JsonDocumentSearcher implements Searcher {
 			SortField luceneSortField = toLuceneSortField(mapping, nonSortedField, false);
 			SortField fetchOnlySortField = new SortField(nonSortedField, new FieldComparatorSource() {
 				@Override
-				public FieldComparator<?> newComparator(String fieldname, int numHits, int sortPos, boolean reversed) throws IOException {
+				public FieldComparator<?> newComparator(String fieldname, int numHits, int sortPos, boolean reversed) {
 					return new DelegatingFieldComparator(luceneSortField.getComparator(numHits, sortPos)) {
 						@Override public int compare(int slot1, int slot2) { return 0; }
 						@Override public int compareValues(Object first, Object second) { return 0; }
@@ -456,6 +456,10 @@ public class JsonDocumentSearcher implements Searcher {
 	}
 	
 	private SortField toLuceneSortField(DocumentMapping mapping, String sortField, boolean reverse) {
+		if (mapping.isKeyword(sortField)) {
+			return new SortField(sortField, Type.STRING_VAL, reverse);
+		}
+		
 		final Class<?> fieldType = mapping.getFieldType(sortField);
 
 		if (NumericClassUtils.isCollection(fieldType)) {

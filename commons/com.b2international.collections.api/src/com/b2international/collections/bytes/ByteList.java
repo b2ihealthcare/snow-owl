@@ -31,4 +31,6 @@ public interface ByteList extends PrimitiveList, ByteCollection {
 	ByteListIterator listIterator(int startIndex);
 
 	byte set(int index, byte value);
+	
+	byte removeByte(int index);
 }

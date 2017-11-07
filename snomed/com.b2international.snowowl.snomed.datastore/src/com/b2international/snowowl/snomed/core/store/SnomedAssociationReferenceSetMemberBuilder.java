@@ -42,7 +42,7 @@ public final class SnomedAssociationReferenceSetMemberBuilder extends SnomedMemb
 	}
 
 	@Override
-	protected void init(SnomedAssociationRefSetMember component, TransactionContext context) {
+	public void init(SnomedAssociationRefSetMember component, TransactionContext context) {
 		super.init(component, context);
 		component.setTargetComponentId(targetComponentId);
 	}

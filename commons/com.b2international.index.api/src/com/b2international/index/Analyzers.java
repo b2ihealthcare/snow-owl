@@ -16,7 +16,7 @@
 package com.b2international.index;
 
 /**
- * Supported analyzers are listed here.
+ * Supported analyzers are listed here. Use with {@link Text} annotation on String fields.
  * 
  * @since 5.0
  */

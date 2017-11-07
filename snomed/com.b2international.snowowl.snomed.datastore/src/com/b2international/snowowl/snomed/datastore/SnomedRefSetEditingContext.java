@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -31,6 +32,7 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.spi.cdo.FSMUtil;
 
+import com.b2international.collections.longs.LongValueMap;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -198,6 +200,11 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		super(snomedEditingContext.getTransaction());
 		this.snomedEditingContext = snomedEditingContext;
 		this.transactionTextProvider = new CdoViewComponentTextProvider(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class), snomedEditingContext.getTransaction());
+	}
+	
+	@Override
+	protected <T extends EObject> LongValueMap<String> getStorageKeys(Collection<String> componentIds, Class<T> type) {
+		return getSnomedEditingContext().getStorageKeys(componentIds, type);
 	}
 
 	public SnomedEditingContext getSnomedEditingContext() {
@@ -820,7 +827,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 					@Override
 					public SnomedReferenceSetMembers apply(BulkResponse input) {
 						final List<SnomedReferenceSetMember> items = ImmutableList.copyOf(Iterables.concat(input.getResponses(SnomedReferenceSetMembers.class)));
-						return new SnomedReferenceSetMembers(items, 0, items.size(), items.size());
+						return new SnomedReferenceSetMembers(items, null, items.size(), items.size());
 					}
 				})
 				.getSync();

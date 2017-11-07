@@ -35,6 +35,6 @@ public interface IndexRead<T> {
 	 * @return
 	 * @throws IOException
 	 */
-	T execute(Searcher index) throws IOException;
+	T execute(DocSearcher index) throws IOException;
 
 }

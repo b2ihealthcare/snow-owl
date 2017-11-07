@@ -22,6 +22,7 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 import static java.text.MessageFormat.format;
 
 import java.io.File;
@@ -31,6 +32,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -57,6 +59,7 @@ import org.eclipse.xtext.util.Tuples;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.longs.LongValueMap;
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -181,22 +184,22 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		return -1;
 	}
 	
-	public EObject lookup(final long storageKey) {
+	public final EObject lookup(final long storageKey) {
 		return transaction.getObject(CDOIDUtil.createLong(storageKey));
 	}
 	
-	public EObject lookupIfExists(final long storageKey) {
+	public final EObject lookupIfExists(final long storageKey) {
 		return CDOUtils.getObjectIfExists(transaction, storageKey);
 	}
 	
-	public <T extends EObject> T lookup(final String componentId, Class<T> type) {
+	public final <T extends EObject> T lookup(final String componentId, Class<T> type) {
 		if (Strings.isNullOrEmpty(componentId)) {
 			throw new ComponentNotFoundException(type.getSimpleName(), componentId);
 		} else if (CodeSystem.class.isAssignableFrom(type)) {
 			return type.cast(getCodeSystem(componentId));
 		}
 
-		final Pair<String, Class<?>> key = Tuples.<String, Class<?>>pair(componentId, type);
+		final Pair<String, Class<?>> key = createComponentKey(componentId, type);
 		if (resolvedObjectsById.containsKey(key)) {
 			return type.cast(resolvedObjectsById.get(key));
 		}
@@ -207,6 +210,46 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		resolvedObjectsById.put(key, component);
 		return component;
 	}
+
+	private <T extends EObject> Pair<String, Class<?>> createComponentKey(final String componentId, Class<T> type) {
+		return Tuples.<String, Class<?>>pair(componentId, type);
+	}
+	
+	public final <T extends EObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
+		final Map<String, T> resolvedComponentsById = newHashMap();
+		final Set<String> unresolvedComponentIds = newHashSet();
+		
+		for (String componentId : componentIds) {
+			Pair<String, Class<?>> key = createComponentKey(componentId, type);
+			if (resolvedObjectsById.containsKey(key)) {
+				resolvedComponentsById.put(componentId, type.cast(resolvedObjectsById.get(key)));
+			} else {
+				unresolvedComponentIds.add(componentId);
+			}
+		}
+		
+		if (!unresolvedComponentIds.isEmpty()) {
+			LongValueMap<String> storageKeyById = getStorageKeys(unresolvedComponentIds, type);
+			for (String componentId : storageKeyById.keySet()) {
+				final long storageKey = storageKeyById.get(componentId);
+				final T object = type.cast(lookup(storageKey));
+				resolvedComponentsById.put(componentId, object);
+				resolvedObjectsById.put(createComponentKey(componentId, type), object);
+			}
+		}
+		
+		return resolvedComponentsById;
+	}
+	
+	protected abstract <T extends EObject> LongValueMap<String> getStorageKeys(Collection<String> componentIds, Class<T> type);
+
+	public final <T extends EObject> T lookupIfExists(String componentId, Class<T> type) {
+		try {
+			return lookup(componentId, type);
+		} catch (ComponentNotFoundException e) {
+			return null;
+		}
+ 	}
 	
 	protected <T> ILookupService<String, T, CDOView> getComponentLookupService(Class<T> type) {
 		throw new UnsupportedOperationException("Lookup not supported for type: " + type.getName());
@@ -305,8 +348,15 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 */
 	@Override
 	public void close() {
-		resolvedObjectsById.clear();
+		clearCache();
 		transaction.close();
+	}
+
+	/**
+	 * Clears resolved objects cache.
+	 */
+	public void clearCache() {
+		resolvedObjectsById.clear();
 	}
 	
 	/**
@@ -579,5 +629,5 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	private static ApplicationContext getApplicationContext() {
 		return ApplicationContext.getInstance();
 	}
-	
+
 }

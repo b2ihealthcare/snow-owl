@@ -31,4 +31,6 @@ public interface FloatList extends PrimitiveList, FloatCollection {
 	FloatListIterator listIterator(int startIndex);
 	
 	float set(int index, float value);
+	
+	float removeFloat(int index);
 }

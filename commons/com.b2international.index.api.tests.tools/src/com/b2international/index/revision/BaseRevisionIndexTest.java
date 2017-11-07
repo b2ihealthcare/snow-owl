@@ -18,6 +18,7 @@ package com.b2international.index.revision;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -32,11 +33,11 @@ import org.junit.After;
 import org.junit.Before;
 
 import com.b2international.index.DefaultIndex;
+import com.b2international.index.DocSearcher;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClient;
 import com.b2international.index.IndexRead;
 import com.b2international.index.Indexes;
-import com.b2international.index.Searcher;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Query;
@@ -207,13 +208,14 @@ public abstract class BaseRevisionIndexTest {
 	protected final <T> Iterable<T> searchRaw(final Query<T> query) {
 		return rawIndex().read(new IndexRead<Iterable<T>>() {
 			@Override
-			public Iterable<T> execute(Searcher index) throws IOException {
+			public Iterable<T> execute(DocSearcher index) throws IOException {
 				return index.search(query);
 			}
 		});
 	}
 	
 	protected void assertDocEquals(Object expected, Object actual) {
+		assertNotNull("Actual document is missing from index", actual);
 		for (Field f : mappings.getMapping(expected.getClass()).getFields()) {
 			if (Revision.REPLACED_INS.equals(f.getName()) 
 					|| Revision.SEGMENT_ID.equals(f.getName())

@@ -103,7 +103,7 @@ public interface IdentityProvider {
 	 * @param limit - paging limit to specify how many users should we read from the users collection
 	 * @return
 	 */
-	Promise<Users> searchUsers(Collection<String> usernames, int offset, int limit);
+	Promise<Users> searchUsers(Collection<String> usernames, int limit);
 	
 	/**
 	 * Returns a summary like information about this {@link IdentityProvider}, usually it contains the type and some non-sensitive configuration values

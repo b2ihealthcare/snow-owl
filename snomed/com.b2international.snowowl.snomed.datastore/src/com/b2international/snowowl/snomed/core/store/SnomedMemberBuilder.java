@@ -73,7 +73,7 @@ public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B, T>, T
 
 	@Override
 	@OverridingMethodsMustInvokeSuper
-	protected void init(T component, TransactionContext context) {
+	public void init(T component, TransactionContext context) {
 		super.init(component, context);
 		component.setReferencedComponentId(referencedComponent);
 		final SnomedRefSet refSet = context.lookup(referenceSetId, SnomedRefSet.class);

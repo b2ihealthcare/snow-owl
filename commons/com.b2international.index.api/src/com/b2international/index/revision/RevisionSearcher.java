@@ -18,20 +18,21 @@ package com.b2international.index.revision;
 import java.io.IOException;
 
 import com.b2international.index.Hits;
+import com.b2international.index.DocSearcher;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.Query;
 
 /**
  * @since 4.7
  */
-public interface RevisionSearcher {
+public interface RevisionSearcher extends Searcher {
 
 	/**
 	 * Returns the searcher instance used by this revision searcher.
 	 * 
 	 * @return
 	 */
-	Searcher searcher();
+	DocSearcher searcher();
 
 	/**
 	 * Get the latest revision of an object from the index with the given type and storageKey as identifier.

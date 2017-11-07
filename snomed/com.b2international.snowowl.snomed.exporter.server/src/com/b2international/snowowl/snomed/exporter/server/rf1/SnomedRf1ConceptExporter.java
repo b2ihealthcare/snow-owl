@@ -113,7 +113,7 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1CoreExporter<Snom
 				Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(condition).build();
 							
 				Hits<SnomedRefSetMemberIndexEntry> snomedRefSetMemberIndexEntrys;
-					snomedRefSetMemberIndexEntrys = getRevisionSearcher().search(query);
+					snomedRefSetMemberIndexEntrys = getSearcher().search(query);
 				
 				//there should be only one max
 				for (SnomedRefSetMemberIndexEntry snomedRefSetMemberIndexEntry : snomedRefSetMemberIndexEntrys) {
@@ -127,7 +127,7 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1CoreExporter<Snom
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
 			
 			Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class).where(condition).build();
-			Hits<SnomedRefSetMemberIndexEntry> snomedRefSetMemberIndexEntrys = getRevisionSearcher().search(query);
+			Hits<SnomedRefSetMemberIndexEntry> snomedRefSetMemberIndexEntrys = getSearcher().search(query);
 			
 			//there should be only one max
 			for (SnomedRefSetMemberIndexEntry snomedRefSetMemberIndexEntry : snomedRefSetMemberIndexEntrys) {
@@ -140,7 +140,7 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1CoreExporter<Snom
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.active()).build();
 			
 			query = Query.select(SnomedRefSetMemberIndexEntry.class).where(condition).build();
-			snomedRefSetMemberIndexEntrys = getRevisionSearcher().search(query);
+			snomedRefSetMemberIndexEntrys = getSearcher().search(query);
 			
 			//there should be only one max
 			for (SnomedRefSetMemberIndexEntry snomedRefSetMemberIndexEntry : snomedRefSetMemberIndexEntrys) {

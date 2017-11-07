@@ -43,7 +43,7 @@ public final class SnomedQueryReferenceSetMemberBuilder extends SnomedMemberBuil
 	}
 
 	@Override
-	protected void init(SnomedQueryRefSetMember component, TransactionContext context) {
+	public void init(SnomedQueryRefSetMember component, TransactionContext context) {
 		super.init(component, context);
 		component.setQuery(query);
 	}

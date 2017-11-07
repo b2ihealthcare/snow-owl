@@ -15,10 +15,16 @@
  */
 package com.b2international.index.lucene;
 
-import org.apache.lucene.document.FloatField;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.FloatPoint;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.3
@@ -32,6 +38,16 @@ public class FloatIndexField extends IndexFieldBase<Float> {
 	public FloatIndexField(String fieldName, boolean store) {
 		super(fieldName, store);
 	}
+	
+	@Override
+	public Query toQuery(Float value) {
+		return FloatPoint.newExactQuery(fieldName(), value);
+	}
+	
+	@Override
+	protected Query toSetQuery(Iterable<Float> values) {
+		return FloatPoint.newSetQuery(fieldName(), ImmutableSet.copyOf(values));
+	}
 
 	@Override
 	protected Float getValue(IndexableField field) {
@@ -44,8 +60,16 @@ public class FloatIndexField extends IndexFieldBase<Float> {
 	}
 
 	@Override
+	public void addTo(Document doc, Float value) {
+		super.addTo(doc, value);
+		if (Store.YES == isStored()) {
+			doc.add(new StoredField(fieldName(), value));
+		}
+	}
+	
+	@Override
 	protected IndexableField toField(Float value) {
-		return new FloatField(fieldName(), value, isStored());
+		return new FloatPoint(fieldName(), value);
 	}
 
 	@Override

@@ -47,12 +47,12 @@ final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider,
 			queryBuilder.filter(user(options().getString(USER)));
 		}
 		
-		return context.service(RemoteJobTracker.class).search(queryBuilder.build(), fields(), sortBy(), offset(), limit());
+		return context.service(RemoteJobTracker.class).search(queryBuilder.build(), fields(), sortBy(), limit());
 	}
 
 	@Override
-	protected RemoteJobs createEmptyResult(int offset, int limit) {
-		return new RemoteJobs(Collections.emptyList(), offset, limit, 0);
+	protected RemoteJobs createEmptyResult(int limit) {
+		return new RemoteJobs(Collections.emptyList(), null, limit, 0);
 	}
 	
 }

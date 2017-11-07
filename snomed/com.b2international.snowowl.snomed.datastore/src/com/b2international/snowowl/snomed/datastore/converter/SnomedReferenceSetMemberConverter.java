@@ -62,8 +62,8 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 	}
 
 	@Override
-	protected SnomedReferenceSetMembers createCollectionResource(List<SnomedReferenceSetMember> results, int offset, int limit, int total) {
-		return new SnomedReferenceSetMembers(results, offset, limit, total);
+	protected SnomedReferenceSetMembers createCollectionResource(List<SnomedReferenceSetMember> results, String scrollId, int limit, int total) {
+		return new SnomedReferenceSetMembers(results, scrollId, limit, total);
 	}
 	
 	@Override
@@ -204,7 +204,9 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 		member.setScore(entry.getScore());
 
 		final Map<String, Object> props = newHashMap(entry.getAdditionalFields());
-		switch (entry.getReferenceSetType()) {
+		// XXX refset type can be null if the document was loaded partially
+		if (entry.getReferenceSetType() != null) {
+			switch (entry.getReferenceSetType()) {
 			case ASSOCIATION:
 				// convert ID to resources where possible to override value with nested object in JSON
 				props.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, convertToResource(entry.getTargetComponent()));
@@ -220,9 +222,10 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 				break;
 			default:
 				break;
+			}
+			
+			member.setProperties(props);
 		}
-
-		member.setProperties(props);
 		
 		setReferencedComponent(member, entry.getReferencedComponentId(), entry.getReferencedComponentType());
 		return member;
@@ -253,6 +256,10 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 		case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
 			component = new SnomedRelationship();
 			((SnomedRelationship) component).setId(referencedComponentId);
+			break;
+		// XXX partial field loading support
+		case 0:
+			component = null;
 			break;
 		default: throw new UnsupportedOperationException("UnsupportedReferencedComponentType: " + referencedComponentType);
 		}

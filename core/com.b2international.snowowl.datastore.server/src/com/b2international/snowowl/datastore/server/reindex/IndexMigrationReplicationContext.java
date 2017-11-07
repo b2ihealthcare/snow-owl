@@ -50,6 +50,8 @@ import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.DelegatingTransaction;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator.SkipBranchException;
+import com.b2international.snowowl.datastore.request.repository.OptimizeRequest;
+import com.b2international.snowowl.datastore.request.repository.PurgeRequest;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
 import com.google.common.collect.Sets;
 

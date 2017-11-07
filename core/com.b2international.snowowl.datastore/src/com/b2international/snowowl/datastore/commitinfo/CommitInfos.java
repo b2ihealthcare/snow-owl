@@ -23,18 +23,18 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 /**
  * @since 5.2
  */
-public class CommitInfos extends PageableCollectionResource<CommitInfo> {
+public final class CommitInfos extends PageableCollectionResource<CommitInfo> {
 
 	private static final long serialVersionUID = 1L;
 	
 	private final String repositoryId;
 
-	public CommitInfos(String repositoryId, int offset, int limit, int total) {
-		this(Collections.emptyList(), repositoryId, offset, limit, total);
+	public CommitInfos(String repositoryId, int limit, int total) {
+		this(Collections.emptyList(), repositoryId, null, limit, total);
 	}
 
-	public CommitInfos(List<CommitInfo> items, String repositoryId, int offset, int limit, int total) {
-		super(items, offset, limit, total);
+	public CommitInfos(List<CommitInfo> items, String repositoryId, String scrollId, int limit, int total) {
+		super(items, scrollId, limit, total);
 		this.repositoryId = repositoryId;
 	}
 	

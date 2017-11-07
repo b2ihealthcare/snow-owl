@@ -15,24 +15,22 @@
  */
 package com.b2international.index;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 
-import org.elasticsearch.Version;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.reindex.ReindexPlugin;
+import org.elasticsearch.node.InternalSettingsPreparer;
 import org.elasticsearch.node.Node;
-import org.elasticsearch.node.internal.InternalSettingsPreparer;
-import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
-import org.elasticsearch.plugins.Plugin;
-import org.elasticsearch.script.groovy.GroovyPlugin;
+import org.elasticsearch.painless.PainlessPlugin;
+import org.elasticsearch.transport.Netty4Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.FileUtils;
 import com.b2international.index.admin.AwaitPendingTasks;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 5.10
@@ -49,30 +47,39 @@ public final class EsNode extends Node {
 		if (INSTANCE == null) {
 			synchronized (EsNode.class) {
 				if (INSTANCE == null) {
-					final Settings esSettings = configureSettings(configPath.resolve(CONFIG_FILE), directory);
-					final Node node = new EsNode(esSettings, GroovyPlugin.class, ReindexPlugin.class, DeleteByQueryPlugin.class);
-					node.start();
-					AwaitPendingTasks.await(node.client(), LOG);
-					INSTANCE = node;
-					Runtime.getRuntime().addShutdownHook(new Thread() {
-						@Override
-						public void run() {
-							AwaitPendingTasks.await(INSTANCE.client(), LOG);
-							INSTANCE.client().close();
-							INSTANCE.close();
-							if (!persistent) {
-								FileUtils.deleteDirectory(directory);
+					try {
+						System.setProperty("es.logs.base_path", configPath.toString());
+						final Settings esSettings = configureSettings(configPath.resolve(CONFIG_FILE), directory);
+						final Node node = new EsNode(esSettings);
+						node.start();
+						AwaitPendingTasks.await(node.client(), LOG);
+						INSTANCE = node;
+						Runtime.getRuntime().addShutdownHook(new Thread() {
+							@Override
+							public void run() {
+								AwaitPendingTasks.await(INSTANCE.client(), LOG);
+								INSTANCE.client().close();
+								try {
+									INSTANCE.close();
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+								if (!persistent) {
+									FileUtils.deleteDirectory(directory);
+								}
 							}
-						}
-					});
-					LOG.info("Embedded elasticsearch is up and running.");
+						});
+						LOG.info("Embedded elasticsearch is up and running.");
+					} catch (Exception e) {
+						throw new IndexException("Couldn't start embedded elasticsearch", e);
+					}
 				}
 			}
 		}
 		return INSTANCE;
 	}
 	
-	private static Settings configureSettings(Path configPath, File directory) {
+	private static Settings configureSettings(Path configPath, File directory) throws IOException {
 		final Settings.Builder esSettings;
 		if (configPath.toFile().exists()) {
 			LOG.info("Loading configuration settings from file {}", configPath);
@@ -81,21 +88,16 @@ public final class EsNode extends Node {
 			esSettings = Settings.builder();
 		}
 
-		putSettingIfAbsent(esSettings, IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW);
-		// disable es refresh, we will do it manually on each commit
-		putSettingIfAbsent(esSettings, "refresh_interval", "-1");
 		// configure es home directory
 		putSettingIfAbsent(esSettings, "path.home", directory.toPath().resolve(CLUSTER_NAME).toString());
 		putSettingIfAbsent(esSettings, "cluster.name", CLUSTER_NAME);
 		putSettingIfAbsent(esSettings, "node.name", CLUSTER_NAME);
-		putSettingIfAbsent(esSettings, "index.number_of_shards", 1);
-		putSettingIfAbsent(esSettings, "index.number_of_replicas", 0);
-		putSettingIfAbsent(esSettings, "script.inline", true);
-		putSettingIfAbsent(esSettings, "script.indexed", true);
 		
 		// local mode if not set
-		putSettingIfAbsent(esSettings, "node.client", false);
-		putSettingIfAbsent(esSettings, "node.local", true);
+		putSettingIfAbsent(esSettings, "node.master", true);
+		putSettingIfAbsent(esSettings, "transport.type", "local");
+		putSettingIfAbsent(esSettings, "http.type", "netty4");
+		
 		return esSettings.build();
 	}
 	
@@ -105,9 +107,8 @@ public final class EsNode extends Node {
 		}
 	}
 
-	@SafeVarargs
-	private EsNode(Settings settings, Class<? extends Plugin>...classpathPlugins) {
-		super(InternalSettingsPreparer.prepareEnvironment(settings, null), Version.CURRENT, newArrayList(classpathPlugins));
+	protected EsNode(Settings settings) {
+		super(InternalSettingsPreparer.prepareEnvironment(settings, null), ImmutableList.of(Netty4Plugin.class, ReindexPlugin.class, PainlessPlugin.class));
 	}
 	
 }

@@ -277,7 +277,6 @@ public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 				
 				final SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
 					.filterByIds(conceptIds)
-					.setOffset(0)
 					.setLimit(entry.getChanges().size())
 					.setExpand("descriptions(),relationships(expand(destination()))")
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)

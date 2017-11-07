@@ -22,16 +22,17 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Deque;
 
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.BoostableQueryBuilder;
+import org.elasticsearch.index.query.BoostingQueryBuilder;
 import org.elasticsearch.index.query.DisMaxQueryBuilder;
+import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.QueryStringQueryBuilder.Operator;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
-import org.elasticsearch.script.ScriptService.ScriptType;
+import org.elasticsearch.script.ScriptType;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.compat.TextConstants;
@@ -150,7 +151,7 @@ public final class EsQueryBuilder {
 		final QueryBuilder innerQuery = deque.pop();
 		
 		final String rawScript = mapping.getScript(expression.scriptName()).script();
-		org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(rawScript, ScriptType.INLINE, "groovy", ImmutableMap.of("params", expression.getParams()));
+		org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, ImmutableMap.copyOf(expression.getParams()));
 		needsScoring = true;
 		deque.push(QueryBuilders
 				.functionScoreQuery(innerQuery, ScoreFunctionBuilders.scriptFunction(script))
@@ -201,7 +202,7 @@ public final class EsQueryBuilder {
 		nestedQueryBuilder.visit(predicate.getExpression());
 		needsScoring = nestedQueryBuilder.needsScoring;
 		final QueryBuilder nestedQuery = nestedQueryBuilder.deque.pop();
-		deque.push(QueryBuilders.nestedQuery(nestedPath, nestedQuery));
+		deque.push(QueryBuilders.nestedQuery(nestedPath, nestedQuery, ScoreMode.None));
 	}
 
 	private String toFieldPath(Predicate predicate) {
@@ -229,12 +230,12 @@ public final class EsQueryBuilder {
 			break;
 		case ALL:
 			{
-				query = QueryBuilders.matchQuery(field, term).operator(org.elasticsearch.index.query.MatchQueryBuilder.Operator.AND);
+				query = QueryBuilders.matchQuery(field, term).operator(Operator.AND);
 			}
 			break;
 		case ANY:
 			{
-				query = QueryBuilders.matchQuery(field, term).operator(org.elasticsearch.index.query.MatchQueryBuilder.Operator.OR);
+				query = QueryBuilders.matchQuery(field, term).operator(Operator.OR);
 			}
 			break;
 		case FUZZY:
@@ -305,8 +306,8 @@ public final class EsQueryBuilder {
 	private void visit(BoostPredicate boost) {
 		visit(boost.expression());
 		QueryBuilder qb = deque.pop();
-		if (qb instanceof BoostableQueryBuilder) {
-			((BoostableQueryBuilder) qb).boost(boost.boost());
+		if (qb instanceof BoostingQueryBuilder) {
+			((BoostingQueryBuilder) qb).boost(boost.boost());
 		}
 		deque.push(qb);
 	}

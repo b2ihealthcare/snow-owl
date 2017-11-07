@@ -18,8 +18,9 @@ package com.b2international.snowowl.snomed.exporter.server.rf1;
 import static com.b2international.snowowl.snomed.exporter.server.rf1.SnomedRf1ReleaseFileHeaders.RF1_CROSS_MAP_SETS_HEADER;
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.function.Consumer;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
@@ -38,12 +39,13 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 public class SnomedCrossMapSetExporter extends AbstractSnomedCrossMapExporter {
 
 	private static final String FILE_NAME_PREFIX = "CrossMapSets";
-	private Iterator<String> itr;
 
-	public SnomedCrossMapSetExporter(final SnomedExportContext configuration, 
-			final String refSetId, final SnomedMapSetSetting mapSetSetting, final RevisionSearcher revisionSearcher) {
+	public SnomedCrossMapSetExporter(
+			final SnomedExportContext configuration, 
+			final String refSetId, 
+			final SnomedMapSetSetting mapSetSetting, 
+			final RevisionSearcher revisionSearcher) {
 		super(configuration, refSetId, mapSetSetting, revisionSearcher);
-		itr = createResultSet().iterator();
 	}
 
 	@Override
@@ -81,18 +83,8 @@ public class SnomedCrossMapSetExporter extends AbstractSnomedCrossMapExporter {
 	}
 
 	@Override
-	public boolean hasNext() {
-		return itr.hasNext();
+	public void writeLines(Consumer<String> lineProcessor) throws IOException {
+		createResultSet().forEach(lineProcessor);
 	}
-
-	@Override
-	public String next() {
-		return itr.next();
-	}
-
-	@Override
-	public Iterator<String> iterator() {
-		return itr;
-	}
-
+	
 }

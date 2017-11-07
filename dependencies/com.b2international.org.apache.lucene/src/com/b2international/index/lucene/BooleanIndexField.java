@@ -15,9 +15,16 @@
  */
 package com.b2international.index.lucene;
 
+import static com.google.common.collect.Sets.newTreeSet;
+
+import java.util.SortedSet;
+
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField.Type;
+import org.apache.lucene.search.TermInSetQuery;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
 /**
@@ -34,6 +41,20 @@ public class BooleanIndexField extends IndexFieldBase<Boolean> {
 	}
 
 	@Override
+	public Query toQuery(Boolean value) {
+		return new TermQuery(toTerm(value));
+	}
+	
+	@Override
+	protected Query toSetQuery(Iterable<Boolean> values) {
+		final SortedSet<BytesRef> uniqueBytesRefs = newTreeSet();
+		for (Boolean value : values) {
+			uniqueBytesRefs.add(toBytesRef(value));
+		}
+		return new TermInSetQuery(fieldName(), uniqueBytesRefs);
+	}
+	
+	@Override
 	protected Boolean getValue(IndexableField field) {
 		return convertFromString(field.stringValue());
 	}
@@ -47,7 +68,7 @@ public class BooleanIndexField extends IndexFieldBase<Boolean> {
 	protected IndexableField toField(Boolean value) {
 		return new StringField(fieldName(), convertToString(value), isStored());
 	}
-
+	
 	@Override
 	protected Type getSortFieldType() {
 		return Type.STRING;

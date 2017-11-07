@@ -25,12 +25,12 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
  */
 public final class Users extends PageableCollectionResource<User> {
 
-	public Users(int offset, int limit, int total) {
-		super(Collections.emptyList(), offset, limit, total);
+	public Users(int limit, int total) {
+		this(Collections.emptyList(), limit, total);
 	}
 	
-	public Users(List<User> items, int offset, int limit, int total) {
-		super(items, offset, limit, total);
+	public Users(List<User> items, int limit, int total) {
+		super(items, null, limit, total);
 	}
 
 }

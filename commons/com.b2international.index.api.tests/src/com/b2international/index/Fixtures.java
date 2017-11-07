@@ -38,8 +38,8 @@ public class Fixtures {
 	@Script(name="floatField", script="return doc.floatField.value", fields={"floatField"})
 	public static class Data {
 
-		@Analyzed(analyzer=Analyzers.CASE_SENSITIVE)
-		@Analyzed(alias="exact", analyzer=Analyzers.EXACT)
+		@Text(analyzer=Analyzers.CASE_SENSITIVE)
+		@Keyword(alias="exact")
 		private String analyzedField;
 		
 		private String field1;

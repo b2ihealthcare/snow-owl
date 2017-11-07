@@ -36,7 +36,8 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	private static final int MAX_LIMIT = Integer.MAX_VALUE - 1;
 	
-	private int offset = 0;
+	private String scrollKeepAlive;
+	private String scrollId;
 	private int limit = 50;
 	
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
@@ -46,12 +47,22 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	}
 	
 	/**
-	 * Sets the offset for the paging of the result set. 
-	 * @param offset for paging the result set returned
+	 * Sets the scroll keep alive value to the specified value to start a scroll based on the query of this request. 
+	 * @param scrollKeepAlive
 	 * @return this builder instance
 	 */
-	public final B setOffset(int offset) {
-		this.offset = offset;
+	public final B setScroll(String scrollKeepAlive) {
+		this.scrollKeepAlive = scrollKeepAlive;
+		return getSelf();
+	}
+	
+	/**
+	 * Sets the scroll Id to continue a previously started scroll.
+	 * @param scrollId
+	 * @return
+	 */
+	public final B setScrollId(String scrollId) {
+		this.scrollId = scrollId;
 		return getSelf();
 	}
 	
@@ -117,7 +128,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B all() {
-		return setOffset(0).setLimit(MAX_LIMIT);
+		return setScroll(null).setLimit(MAX_LIMIT);
 	}
 	
 	/**
@@ -125,7 +136,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B one() {
-		return setOffset(0).setLimit(1);
+		return setScroll(null).setLimit(1);
 	}
 	
 	// XXX: Does not allow empty-ish values
@@ -143,8 +154,9 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	@Override
 	protected ResourceRequest<C, R> create() {
 		final SearchResourceRequest<C, R> req = createSearch();
-		req.setOffset(offset);
-		req.setLimit(Math.min(limit, MAX_LIMIT - offset));
+		req.setScrollId(scrollId);
+		req.setScrollKeepAlive(scrollKeepAlive);
+		req.setLimit(Math.min(limit, MAX_LIMIT));
 		req.setOptions(optionsBuilder.build());
 		return req;
 	}

@@ -29,11 +29,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.VerhoeffCheck;
+import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
-import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
@@ -343,7 +343,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	private SctId readSctId(final String id) {
 		return store.read(new IndexRead<SctId>() {
 			@Override
-			public SctId execute(Searcher index) throws IOException {
+			public SctId execute(DocSearcher index) throws IOException {
 				return index.get(SctId.class, id);
 			}
 		});

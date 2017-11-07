@@ -59,6 +59,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedClientProtocol;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportClientRequest;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult.Result;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRf2ExportModel;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -165,7 +166,11 @@ final class SnomedRf2ExportRequest implements Request<BranchContext, UUID> {
 	@Override
 	public UUID execute(BranchContext context) {
 		try {
-			final File file = doExport(toExportModel(context), context.service(IProgressMonitor.class));
+			SnomedRf2ExportModel model = toExportModel(context);
+			final File file = doExport(model, context.service(IProgressMonitor.class));
+			if (file == null || model.getExportResult().getResult() == Result.EXCEPTION) {
+				throw new SnowowlRuntimeException(model.getExportResult().getMessage());
+			}
 			final UUID fileId = UUID.randomUUID();
 			context.service(FileRegistry.class).upload(fileId, new FileInputStream(file));
 			file.delete();

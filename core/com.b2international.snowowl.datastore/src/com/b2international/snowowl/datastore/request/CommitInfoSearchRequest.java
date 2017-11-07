@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.b2international.index.Hits;
+import com.b2international.index.Scroll;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -65,25 +66,30 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		addCommentClause(builder);
 		addTimeStampClause(builder);
 		
-		final Query<CommitInfoDocument> query = select(CommitInfoDocument.class)
-				.where(builder.build())
-				.withScores(containsKey(OptionKey.COMMENT))
-				.sortBy(sortBy())
-				.offset(offset())
-				.limit(limit())
-				.build();
+		final Hits<CommitInfoDocument> hits;
+		if (isScrolled()) {
+			hits = searcher.scroll(new Scroll<>(CommitInfoDocument.class, scrollId()));
+		} else {
+			final Query<CommitInfoDocument> query = select(CommitInfoDocument.class)
+					.where(builder.build())
+					.withScores(containsKey(OptionKey.COMMENT))
+					.sortBy(sortBy())
+					.scroll(scrollKeepAlive())
+					.limit(limit())
+					.build();
+			hits = searcher.search(query);
+		}
 		
-		final Hits<CommitInfoDocument> hits = searcher.search(query);
 		
 		if (limit() < 1 || hits.getTotal() < 1) {
-			return new CommitInfos(context.id(), offset(), limit(), hits.getTotal());
+			return new CommitInfos(context.id(), limit(), hits.getTotal());
 		} else {
-			return new CommitInfoConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), hits.getTotal());
+			return new CommitInfoConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), limit(), hits.getTotal());
 		}
 	}
 	
 	@Override
-	protected CommitInfos createEmptyResult(int offset, int limit) {
+	protected CommitInfos createEmptyResult(int limit) {
 		throw new UnsupportedOperationException("Missing repositoryId parameter at this point");
 	}
 	

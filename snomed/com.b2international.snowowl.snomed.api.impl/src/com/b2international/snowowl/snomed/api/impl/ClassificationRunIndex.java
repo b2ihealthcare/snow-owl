@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
@@ -106,7 +106,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		}
 		
 		final Date lastCreationDate = lastRunToKeep.getCreationDate();
-		final Query trimmingQuery = NumericRangeQuery.newLongRange(FIELD_CREATION_DATE, null, lastCreationDate.getTime(), false, false);
+		final Query trimmingQuery = LongPoint.newRangeQuery(FIELD_CREATION_DATE, Long.MIN_VALUE, lastCreationDate.getTime());
 		writer.deleteDocuments(trimmingQuery);
 		commit();
 	}
@@ -140,7 +140,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 				return;
 			}
 			
-			final TopDocs docs = searcher.search(query, null, docsToRetrieve, Sort.INDEXORDER, false, false);
+			final TopDocs docs = searcher.search(query, docsToRetrieve, Sort.INDEXORDER, false, false);
 			final ScoreDoc[] scoreDocs = docs.scoreDocs;
 
 			final ObjectReader reader = objectMapper.reader(ClassificationRun.class);
@@ -356,12 +356,9 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	public IRelationshipChangeList getRelationshipChanges(final StorageRef storageRef, final String classificationId, final String sourceConceptId, final String userId, final int offset, final int limit) throws IOException {
 
 		final Query query = createClassQuery(RelationshipChange.class.getSimpleName(), classificationId, storageRef, sourceConceptId, userId);
-		final RelationshipChangeList result = new RelationshipChangeList();
-
-		result.setTotal(getHitCount(query));
-		result.setChanges(this.<IRelationshipChange>search(query, RelationshipChange.class, offset, limit));
-
-		return result;
+		final int total = getHitCount(query);
+		final List<IRelationshipChange> changes = this.search(query, RelationshipChange.class, offset, limit);
+		return new RelationshipChangeList(changes, offset, limit, total);
 	}
 
 	private <T> void indexResult(final String id, final IBranchPath branchPath, final String userId, final long creationDate,
@@ -430,7 +427,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 				return resultBuilder.build();
 			}
 			
-			final TopDocs docs = searcher.search(query, null, docsToRetrieve, sort, false, false);
+			final TopDocs docs = searcher.search(query, docsToRetrieve, sort, false, false);
 			final ScoreDoc[] scoreDocs = docs.scoreDocs;
 
 			final ObjectReader reader = objectMapper.reader(sourceClass);
@@ -457,7 +454,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 		try {
 
 			searcher = manager.acquire();
-			final TopDocs docs = searcher.search(query, null, limit, Sort.INDEXORDER, false, false);
+			final TopDocs docs = searcher.search(query, limit, Sort.INDEXORDER, false, false);
 			final ImmutableList.Builder<Document> resultBuilder = ImmutableList.builder();
 
 			for (final ScoreDoc scoreDoc : docs.scoreDocs) {

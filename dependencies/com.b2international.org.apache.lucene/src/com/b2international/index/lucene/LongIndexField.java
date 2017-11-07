@@ -18,11 +18,13 @@ package com.b2international.index.lucene;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.LongPoint;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.lucene.util.NumericUtils;
 
 import com.b2international.collections.PrimitiveLists;
@@ -30,6 +32,7 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.3
@@ -43,17 +46,35 @@ public class LongIndexField extends IndexFieldBase<Long> implements LongCollecti
 	public LongIndexField(String fieldName, boolean stored) {
 		super(fieldName, stored);
 	}
-
+	
+	@Override
+	public Query toQuery(Long value) {
+		return LongPoint.newExactQuery(fieldName(), value);
+	}
+	
+	@Override
+	protected Query toSetQuery(Iterable<Long> values) {
+		return LongPoint.newSetQuery(fieldName(), ImmutableSet.copyOf(values));
+	}
+	
+	@Override
+	public void addTo(Document doc, Long value) {
+		super.addTo(doc, value);
+		if (Store.YES == isStored()) {
+			doc.add(new StoredField(fieldName(), value));
+		}
+	}
+	
 	@Override
 	protected IndexableField toField(Long value) {
-		return new LongField(fieldName(), value, isStored());
+		return new LongPoint(fieldName(), value);
 	}
 
 	@Override
 	protected BytesRef toBytesRef(Long value) {
-		final BytesRefBuilder bytesRef = new BytesRefBuilder();
-		NumericUtils.longToPrefixCoded(value, 0, bytesRef);
-		return bytesRef.toBytesRef();
+		byte[] packed = new byte[Long.BYTES];
+		NumericUtils.longToSortableBytes(value, packed, 0);
+	    return new BytesRef(packed);
 	}
 	
 	@Override

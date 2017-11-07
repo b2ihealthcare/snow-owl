@@ -21,20 +21,19 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.LongField;
-import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
-import org.elasticsearch.cache.recycler.PageCacheRecycler;
-import org.elasticsearch.common.bytes.BytesArray;
+import org.elasticsearch.Version;
+import org.elasticsearch.cluster.metadata.IndexMetaData;
+import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.util.BigArrays;
-import org.elasticsearch.index.engine.Engine;
-import org.elasticsearch.index.mapper.ParseContext.Document;
-import org.elasticsearch.index.mapper.ParsedDocument;
+import org.elasticsearch.common.util.PageCacheRecycler;
+import org.elasticsearch.index.IndexSettings;
 import org.elasticsearch.index.shard.ShardId;
 import org.elasticsearch.index.translog.Translog;
 import org.elasticsearch.index.translog.Translog.Snapshot;
@@ -69,21 +68,37 @@ public class EsTransactionLog implements TransactionLog {
 		this.mappings = mappings;
 		this.logger = logger;
 		
-		final ShardId shardId = new ShardId(indexName, 0);
+		final String indexUUID = UUID.randomUUID().toString();
+		final ShardId shardId = new ShardId(indexName, indexUUID, 0);
 		
 		final Settings indexSettings = Settings.builder()
-			.put(PageCacheRecycler.TYPE, PageCacheRecycler.Type.NONE.name())
+			.put(PageCacheRecycler.TYPE_SETTING.getKey(), PageCacheRecycler.Type.NONE.name())
+			.put(IndexMetaData.SETTING_VERSION_CREATED, Version.V_5_6_3_UNRELEASED)
+			.put(IndexMetaData.SETTING_INDEX_UUID, indexUUID)
 			.build();
 		
-		final TranslogConfig translogConfig = new TranslogConfig(shardId, translogPath, indexSettings, Translog.Durabilty.REQUEST,
-				BigArrays.NON_RECYCLING_INSTANCE, null);
+		final TranslogConfig translogConfig = new TranslogConfig(
+			shardId, 
+			translogPath, 
+			new IndexSettings(
+				IndexMetaData.builder(indexName)
+					.creationDate(new Date().getTime())
+					.settings(indexSettings)
+					.numberOfShards(1)
+					.numberOfReplicas(0)
+					.build(), 
+				indexSettings
+			), 
+			BigArrays.NON_RECYCLING_INSTANCE
+		);
 		
+		TranslogGeneration translogGeneration = null;
 		if (commitData.containsKey(Translog.TRANSLOG_GENERATION_KEY)) {
 			final long generation = Long.parseLong(commitData.get(Translog.TRANSLOG_GENERATION_KEY));
-			translogConfig.setTranslogGeneration(new TranslogGeneration(commitData.get(Translog.TRANSLOG_UUID_KEY), generation));
+			translogGeneration = new TranslogGeneration(commitData.get(Translog.TRANSLOG_UUID_KEY), generation);
 		}
 		
-		this.translog = new Translog(translogConfig); 
+		this.translog = new Translog(translogConfig, translogGeneration); 
 	}
 
 	@Override
@@ -131,24 +146,22 @@ public class EsTransactionLog implements TransactionLog {
 	}
 	
 	private Translog.Index toTranslogIndexOperation(final Index op) {
-		final String opUid = op.uid();
-		final StringField uid = new StringField("_uid", opUid, Store.NO);
-		final LongField version = new LongField("_version", 0, Store.NO);
-		final String type = op.mapping().type().getName();
-		final BytesArray bytesArray = new BytesArray(op.source());
-		
-		final ParsedDocument document = new ParsedDocument(uid, version, op.key(), type, null, 
-				0, 0, Collections.<Document> emptyList(), bytesArray, null);
-		final Engine.Index index = new Engine.Index(new Term(opUid), document);
+//		final String opUid = op.uid();
+//		final StringField uid = new StringField("_uid", opUid, Store.NO);
+//		final LongPoint version = new LongPoint("_version", 0);
+//		final BytesArray bytesArray = new BytesArray(op.source());
+//		
+//		final ParsedDocument document = new ParsedDocument(version, , null, 
+//				0, 0, Collections.<Document> emptyList(), bytesArray, XContentType.JSON, null);
+//		final Engine.Index index = new Engine.Index(new Term(opUid), document);
 
-		return new Translog.Index(index);
+		final String type = op.mapping().type().getName();
+		return new Translog.Index(type, op.key(), op.source());
 	}
 	
 	private Translog.Delete toTranslogDeleteOperation(final Delete op) {
 		final Term uid = JsonDocumentMapping._uid().toTerm(op.uid());
-		final Engine.Delete delete = new Engine.Delete(null, null, uid);
-		
-		return new Translog.Delete(delete);
+		return new Translog.Delete(op.type(), op.key(), uid);
 	}
 	
 	private Collection<Translog.Operation> toTranslogIndexOperations(final BulkUpdateOperation<?> op) {
@@ -174,7 +187,7 @@ public class EsTransactionLog implements TransactionLog {
 			operation.execute(writer, searcher);
 		}
 		
-		final int recoveredOps = snapshot.estimatedTotalOperations();
+		final int recoveredOps = snapshot.totalOperations();
 		
 		if (recoveredOps == 0) {
 			logger.info("No operations were found to recover.");
@@ -186,12 +199,12 @@ public class EsTransactionLog implements TransactionLog {
 
 	private Operation toOperation(final Translog.Operation op) {
 		switch (op.opType()) {
-		case SAVE:
+		case INDEX:
 			final Translog.Index index = (Translog.Index) op;
-			return new Index(index.id(), index.source().toBytes(), mapper, mappings.getByType(index.type()));
+			return new Index(index.id(), BytesReference.toBytes(index.source()), mapper, mappings.getByType(index.type()));
 		case DELETE:
 			final Translog.Delete delete = (Translog.Delete) op;
-			return new Delete(delete.uid().text());
+			return new Delete(delete.type(), delete.id(), delete.uid().text());
 		default:
 			throw new IllegalArgumentException(String.format("Unhandled translog operation type %s.", op.opType().name()));
 		}

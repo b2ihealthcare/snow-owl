@@ -34,10 +34,11 @@ import org.elasticsearch.common.settings.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.index.Analyzed;
 import com.b2international.index.Analyzers;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
+import com.b2international.index.Keyword;
+import com.b2international.index.Text;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.util.NumericClassUtils;
@@ -66,6 +67,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		this.settings = newHashMap(settings);
 		this.log = LoggerFactory.getLogger(String.format("index.%s", this.name));
 		this.settings.putIfAbsent(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, IndexClientFactory.DEFAULT_COMMIT_CONCURRENCY_LEVEL);
+		this.settings.putIfAbsent(IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW);
 	}
 	
 	@Override
@@ -129,7 +131,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 			"analysis", 
 			Settings.builder().loadFromStream("analysis.json", Resources.getResource(getClass(), "analysis.json").openStream()).build().getAsStructuredMap(),
 			"number_of_shards",
-			String.valueOf(settings().getOrDefault(IndexClientFactory.NUMBER_OF_SHARDS, "1"))
+			String.valueOf(settings().getOrDefault(IndexClientFactory.NUMBER_OF_SHARDS, "1")),
+			"number_of_replicas", "0",
+			// disable es refresh, we will do it manually on each commit
+			"refresh_interval", "-1",
+			IndexClientFactory.RESULT_WINDOW_KEY, settings().get(IndexClientFactory.RESULT_WINDOW_KEY)
 		);
 	}
 	
@@ -162,50 +168,78 @@ public final class EsIndexAdmin implements IndexAdmin {
 				prop.putAll(toProperties(mapping.getNestedMapping(fieldType)));
 				properties.put(property, prop);
 			} else {
-				final String esType = toEsType(fieldType);
-				if (!Strings.isNullOrEmpty(esType)) {
-					final Map<String, Object> prop = newHashMap();
-					if (!mapping.isAnalyzed(field.getName())) {
+				final Map<String, Object> prop = newHashMap();
+				
+				final Map<String, Text> textFields = mapping.getTextFields(property);
+				final Map<String, Keyword> keywordFields = mapping.getKeywordFields(property);
+				
+				if (textFields.isEmpty() && keywordFields.isEmpty()) {
+					final String esType = toEsType(fieldType);
+					if (!Strings.isNullOrEmpty(esType)) {
 						prop.put("type", esType);
-						prop.put("index", "not_analyzed");
-					} else {
-						final Map<String, Analyzed> analyzers = mapping.getAnalyzers(property);
-
-						final Analyzed fieldAnalyzer = analyzers.get(property);
-						prop.put("type", esType);
-						if (fieldAnalyzer != null) {
-							prop.put("index", "analyzed");
-							prop.put("analyzer", EsAnalyzers.getAnalyzer(fieldAnalyzer.analyzer()));
-							if (fieldAnalyzer.searchAnalyzer() != Analyzers.INDEX) {
-								prop.put("search_analyzer", EsAnalyzers.getAnalyzer(fieldAnalyzer.searchAnalyzer()));
+						properties.put(property, prop);
+					}
+				} else {
+					checkState(String.class.isAssignableFrom(fieldType), "Only String fields can have Text and Keyword annotation. Found them on '%s'", property);
+					
+					final Text textMapping = textFields.get(property);
+					final Keyword keywordMapping = keywordFields.get(property);
+					checkState(textMapping == null || keywordMapping == null, "Cannot declare both Text and Keyword annotation on same field '%s'", property);
+					
+					if (textMapping != null) {
+						prop.put("type", "text");
+						prop.put("analyzer", EsTextAnalysis.getAnalyzer(textMapping.analyzer()));
+						if (textMapping.searchAnalyzer() != Analyzers.INDEX) {
+							prop.put("search_analyzer", EsTextAnalysis.getAnalyzer(textMapping.searchAnalyzer()));
+						}
+					}
+					
+					if (keywordMapping != null) {
+						String normalizer = EsTextAnalysis.getNormalizer(keywordMapping.normalizer());
+						if (!Strings.isNullOrEmpty(normalizer)) {
+							prop.put("normalizer", normalizer);
+						}
+					}
+					
+					// put extra text fields into fields object
+					final Map<String, Object> fields = newHashMapWithExpectedSize(textFields.size() + keywordFields.size());
+					for (Entry<String, Text> analyzer : textFields.entrySet()) {
+						final String extraField = analyzer.getKey();
+						final String[] extraFieldParts = extraField.split(Pattern.quote(DocumentMapping.DELIMITER));
+						if (extraFieldParts.length > 1) {
+							final Text analyzed = analyzer.getValue();
+							final Map<String, Object> fieldProps = newHashMap();
+							fieldProps.put("type", "text");
+							fieldProps.put("analyzer", EsTextAnalysis.getAnalyzer(analyzed.analyzer()));
+							if (analyzed.searchAnalyzer() != Analyzers.INDEX) {
+								fieldProps.put("search_analyzer", EsTextAnalysis.getAnalyzer(analyzed.searchAnalyzer()));
 							}
-						} else {
-							prop.put("index", "not_analyzed");
+							fields.put(extraFieldParts[1], fieldProps);
 						}
-						
-						// put extra fields into fields object
-						final Map<String, Object> fields = newHashMapWithExpectedSize(analyzers.size());
-						for (Entry<String, Analyzed> analyzer : analyzers.entrySet()) {
-							final String extraField = analyzer.getKey();
-							final String[] extraFieldParts = extraField.split(Pattern.quote(DocumentMapping.DELIMITER));
-							if (extraFieldParts.length > 1) {
-								final Analyzed analyzed = analyzer.getValue();
-								final Map<String, Object> fieldProps = newHashMap();
-								fieldProps.put("type", esType);
-								fieldProps.put("index", "analyzed");
-								fieldProps.put("analyzer", EsAnalyzers.getAnalyzer(analyzed.analyzer()));
-								if (analyzed.searchAnalyzer() != Analyzers.INDEX) {
-									fieldProps.put("search_analyzer", EsAnalyzers.getAnalyzer(analyzed.searchAnalyzer()));
-								}
-								fields.put(extraFieldParts[1], fieldProps);
+					}
+					
+					// put extra keyword fields into fields object
+					for (Entry<String, Keyword> analyzer : keywordFields.entrySet()) {
+						final String extraField = analyzer.getKey();
+						final String[] extraFieldParts = extraField.split(Pattern.quote(DocumentMapping.DELIMITER));
+						if (extraFieldParts.length > 1) {
+							final Keyword analyzed = analyzer.getValue();
+							final Map<String, Object> fieldProps = newHashMap();
+							fieldProps.put("type", "keyword");
+							String normalizer = EsTextAnalysis.getNormalizer(analyzed.normalizer());
+							if (!Strings.isNullOrEmpty(normalizer)) {
+								fieldProps.put("normalizer", normalizer);
 							}
+							fields.put(extraFieldParts[1], fieldProps);
 						}
-						if (!fields.isEmpty()) {
-							prop.put("fields", fields);
-						}
+					}
+					
+					if (!fields.isEmpty()) {
+						prop.put("fields", fields);
 					}
 					properties.put(property, prop);
 				}
+				
 			}
 		}
 		return ImmutableMap.of("properties", properties);
@@ -213,7 +247,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 	private String toEsType(Class<?> fieldType) {
 		if (Enum.class.isAssignableFrom(fieldType) || NumericClassUtils.isBigDecimal(fieldType) || String.class.isAssignableFrom(fieldType)) {
-			return "string";
+			return "keyword";
 		} else if (NumericClassUtils.isFloat(fieldType)) {
 			return "float";
 		} else if (NumericClassUtils.isInt(fieldType)) {

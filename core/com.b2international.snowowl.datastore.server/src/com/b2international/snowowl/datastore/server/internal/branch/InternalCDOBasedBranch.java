@@ -23,7 +23,11 @@ import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 /**
  * @since 4.1
  */
-@Script(name=InternalCDOBasedBranch.WITH_SEGMENTID, script="ctx._source.segmentId = params.segmentId;ctx._source.segments << params.segmentId;")
+@Script(name=InternalCDOBasedBranch.WITH_SEGMENTID, script=""
+		+ "ctx._source.segmentId = params.segmentId;"
+		+ "if (!ctx._source.segments.contains(params.segmentId)) {"
+		+ "    ctx._source.segments.add(params.segmentId);"
+		+ "}")
 public interface InternalCDOBasedBranch extends InternalBranch {
 	
 	String WITH_SEGMENTID = "withSegmentId";

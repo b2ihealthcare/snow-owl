@@ -146,7 +146,7 @@ public final class SnomedRelationshipBuilder extends SnomedComponentBuilder<Snom
 	}
 
 	@Override
-	protected void init(Relationship component, TransactionContext context) {
+	public void init(Relationship component, TransactionContext context) {
 		super.init(component, context);
 		component.setCharacteristicType(context.lookup(characteristicType.getConceptId(), Concept.class));
 		component.setModifier(context.lookup(modifier.getConceptId(), Concept.class));

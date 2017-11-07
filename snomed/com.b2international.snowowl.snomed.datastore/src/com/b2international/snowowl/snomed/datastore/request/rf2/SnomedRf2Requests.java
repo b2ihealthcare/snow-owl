@@ -24,4 +24,8 @@ public final class SnomedRf2Requests {
 		return new SnomedRf2ExportRequestBuilder();
 	}
 	
+	public SnomedRf2ImportRequestBuilder prepareImport() {
+		return new SnomedRf2ImportRequestBuilder();
+	}
+	
 }

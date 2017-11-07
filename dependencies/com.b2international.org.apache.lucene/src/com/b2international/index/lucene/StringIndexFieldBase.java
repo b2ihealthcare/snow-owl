@@ -15,8 +15,15 @@
  */
 package com.b2international.index.lucene;
 
+import static com.google.common.collect.Sets.newTreeSet;
+
+import java.util.SortedSet;
+
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField.Type;
+import org.apache.lucene.search.TermInSetQuery;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
 
@@ -31,6 +38,20 @@ public abstract class StringIndexFieldBase extends IndexFieldBase<String> {
 	
 	public StringIndexFieldBase(String fieldName, boolean stored) {
 		super(fieldName, stored);
+	}
+	
+	@Override
+	public final Query toQuery(String value) {
+		return new TermQuery(toTerm(value));
+	}
+	
+	@Override
+	protected Query toSetQuery(Iterable<String> values) {
+		final SortedSet<BytesRef> uniqueBytesRefs = newTreeSet();
+		for (String value : values) {
+			uniqueBytesRefs.add(toBytesRef(value));
+		}
+		return new TermInSetQuery(fieldName(), uniqueBytesRefs);
 	}
 	
 	@Override

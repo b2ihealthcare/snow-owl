@@ -43,7 +43,7 @@ public final class SnomedSimpleMapReferenceSetMemberBuilder extends SnomedMember
 	}
 
 	@Override
-	protected void init(SnomedSimpleMapRefSetMember component, TransactionContext context) {
+	public void init(SnomedSimpleMapRefSetMember component, TransactionContext context) {
 		super.init(component, context);
 		component.setMapTargetComponentId(mapTargetId);
 		component.setMapTargetComponentDescription(mapTargetDescription);

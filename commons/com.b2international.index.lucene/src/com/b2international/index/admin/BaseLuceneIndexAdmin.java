@@ -47,7 +47,7 @@ import org.apache.lucene.util.QueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.index.Analyzed;
+import com.b2international.index.Text;
 import com.b2international.index.AnalyzerImpls;
 import com.b2international.index.Analyzers;
 import com.b2international.index.IndexClientFactory;
@@ -124,7 +124,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 		}
 		
 		if (!this.settings.containsKey(IndexClientFactory.RESULT_WINDOW_KEY)) {
-			this.settings.put(IndexClientFactory.RESULT_WINDOW_KEY, IndexClientFactory.DEFAULT_RESULT_WINDOW);
+			this.settings.put(IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW);
 		}
 	}
 	
@@ -208,7 +208,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 			
 			// TODO configure warmer???
 			executor = Executors.newFixedThreadPool(Math.max(2, Math.min(16, Runtime.getRuntime().availableProcessors())));
-			manager = new SearcherManager(writer, true, new SearcherFactory() {
+			manager = new SearcherManager(writer, true, true, new SearcherFactory() {
 				@Override
 				public IndexSearcher newSearcher(IndexReader reader, IndexReader previousReader) throws IOException {
 					return new IndexSearcher(reader, executor);
@@ -268,7 +268,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	private Analyzer getIndexAnalyzer() {
 		final Map<String, Analyzer> fieldAnalyzers = newHashMap();
 		for (DocumentMapping mapping : mappings.getMappings()) {
-			for (Entry<String, Analyzed> entry : mapping.getAnalyzedFields().entrySet()) {
+			for (Entry<String, Text> entry : mapping.getTextFields().entrySet()) {
 				final Analyzers analyzer = entry.getValue().analyzer();
 				if (Analyzers.DEFAULT != analyzer) {
 					fieldAnalyzers.put(entry.getKey(), AnalyzerImpls.getAnalyzer(analyzer));
@@ -281,7 +281,7 @@ public abstract class BaseLuceneIndexAdmin implements LuceneIndexAdmin {
 	private Analyzer getSearchAnalyzer() {
 		final Map<String, Analyzer> fieldAnalyzers = newHashMap();
 		for (DocumentMapping mapping : mappings.getMappings()) {
-			for (Entry<String, Analyzed> entry : mapping.getAnalyzedFields().entrySet()) {
+			for (Entry<String, Text> entry : mapping.getTextFields().entrySet()) {
 				final Analyzers indexAnalyzer = entry.getValue().analyzer();
 				final Analyzers searchAnalyzer = entry.getValue().searchAnalyzer();
 				if (Analyzers.INDEX == searchAnalyzer) {

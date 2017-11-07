@@ -89,7 +89,7 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	 * @return
 	 */
 	@OverridingMethodsMustInvokeSuper
-	protected void init(T t, TransactionContext context) {
+	public void init(T t, TransactionContext context) {
 		if (t instanceof Component) {
 			final Component component = (Component) t;
 			component.setId(id);

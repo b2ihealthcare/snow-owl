@@ -32,7 +32,7 @@ public final class DefaultIndex implements Index {
 	
 	@Override
 	public <T> T read(IndexRead<T> read) {
-		try (Searcher searcher = client.searcher()) {
+		try (DocSearcher searcher = client.searcher()) {
 			return read.execute(searcher);
 		} catch (RuntimeException e) {
 			throw e;

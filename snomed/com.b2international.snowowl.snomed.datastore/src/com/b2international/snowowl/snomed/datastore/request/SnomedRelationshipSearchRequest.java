@@ -22,6 +22,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRel
 import java.io.IOException;
 
 import com.b2international.index.Hits;
+import com.b2international.index.Scroll;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.RevisionSearcher;
@@ -76,23 +77,27 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 			queryBuilder.filter(unionGroup(get(OptionKey.UNION_GROUP, Integer.class)));
 		}
 		
-		final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(select(SnomedRelationshipIndexEntry.class)
-				.where(queryBuilder.build())
-				.sortBy(sortBy())
-				.offset(offset())
-				.limit(limit())
-				.build());
-		final int totalHits = hits.getTotal();
-		
-		if (limit() < 1 || totalHits < 1) {
-			return new SnomedRelationships(offset(), limit(), totalHits);
+		final Hits<SnomedRelationshipIndexEntry> hits;
+		if (isScrolled()) {
+			hits = searcher.scroll(new Scroll<>(SnomedRelationshipIndexEntry.class, scrollId()));
+		} else {
+			hits = searcher.search(select(SnomedRelationshipIndexEntry.class)
+					.where(queryBuilder.build())
+					.sortBy(sortBy())
+					.scroll(scrollKeepAlive())
+					.limit(limit())
+					.build());
 		}
 		
-		return SnomedConverters.newRelationshipConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), totalHits);
+		final int totalHits = hits.getTotal();
+		if (limit() < 1 || totalHits < 1) {
+			return new SnomedRelationships(limit(), totalHits);
+		}
+		return SnomedConverters.newRelationshipConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), limit(), totalHits);
 	}
 	
 	@Override
-	protected SnomedRelationships createEmptyResult(int offset, int limit) {
-		return new SnomedRelationships(offset, limit, 0);
+	protected SnomedRelationships createEmptyResult(int limit) {
+		return new SnomedRelationships(limit, 0);
 	}
 }

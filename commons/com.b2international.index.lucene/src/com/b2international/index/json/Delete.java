@@ -26,9 +26,13 @@ import com.b2international.index.Searcher;
  */
 public final class Delete implements Operation {
 
+	private final String type;
 	private final String uid;
+	private final String key;
 
-	public Delete(String uid) {
+	public Delete(String type, String key, String uid) {
+		this.type = type;
+		this.key = key;
 		this.uid = uid;
 	}
 	
@@ -39,6 +43,14 @@ public final class Delete implements Operation {
 	
 	public String uid() {
 		return uid;
+	}
+	
+	public String type() {
+		return type;
+	}
+	
+	public String key() {
+		return key;
 	}
 
 }

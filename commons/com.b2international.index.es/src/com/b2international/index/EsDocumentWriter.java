@@ -24,21 +24,24 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.elasticsearch.action.DocWriteRequest.OpType;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse.Failure;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.index.IndexRequest.OpType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.reindex.BulkIndexByScrollResponse;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.UpdateByQueryAction;
 import org.elasticsearch.index.reindex.UpdateByQueryRequestBuilder;
-import org.elasticsearch.script.ScriptService.ScriptType;
+import org.elasticsearch.rest.RestStatus;
+import org.elasticsearch.script.ScriptType;
 
 import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
@@ -55,14 +58,15 @@ import com.google.common.collect.Multimap;
 public class EsDocumentWriter implements Writer {
 
 	private final EsIndexAdmin admin;
-	private final Searcher searcher;
+	private final DocSearcher searcher;
 
+	private final Random random = new Random();
 	private final Map<String, Object> indexOperations = newHashMap();
 	private final Multimap<Class<?>, String> deleteOperations = HashMultimap.create();
 	private final ObjectMapper mapper;
 	private List<BulkUpdate<?>> updateOperations = newArrayList();
  	
-	public EsDocumentWriter(EsIndexAdmin admin, Searcher searcher, ObjectMapper mapper) {
+	public EsDocumentWriter(EsIndexAdmin admin, DocSearcher searcher, ObjectMapper mapper) {
 		this.admin = admin;
 		this.searcher = searcher;
 		this.mapper = mapper;
@@ -106,37 +110,75 @@ public class EsDocumentWriter implements Writer {
 		for (BulkUpdate<?> update : updateOperations) {
 			final DocumentMapping mapping = admin.mappings().getMapping(update.getType());
 			final QueryBuilder query = new EsQueryBuilder(mapping).build(update.getFilter());
-			UpdateByQueryRequestBuilder ubqrb = UpdateByQueryAction.INSTANCE.newRequestBuilder(client);
-
 			final String rawScript = mapping.getScript(update.getScript()).script();
-			org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(rawScript, ScriptType.INLINE, "groovy", ImmutableMap.of("params", update.getParams()));
-
-			ubqrb.source()
-				.setSize(1000)
-				.setIndices(admin.name())
-				.setTypes(mapping.typeAsString())
-				.setRouting(mapping.typeAsString());
-			BulkIndexByScrollResponse r = ubqrb
-			    .script(script)
-			    .filter(query)
-			    .get();
-			if (r.getUpdated() > 0) {
-				admin.log().info("Updated {} {} documents with script '{}', params({})", r.getUpdated(), mapping.typeAsString(), update.getScript(), update.getParams());
-			} else {
-				admin.log().warn("Couldn't update any {} documents with script '{}', params({}), no-ops ({}), conflicts ({})", mapping.typeAsString(), update.getScript(), update.getParams(), r.getNoops(), r.getVersionConflicts());
-			}
-			checkState(r.getVersionConflicts() == 0, "There were unknown version conflicts during bulk updates");
-			checkState(r.getSearchFailures().isEmpty(), "There were search failure during bulk updates");
-			if (!r.getIndexingFailures().isEmpty()) {
-				Throwable t = null;
-				for (Failure failure : r.getIndexingFailures()) {
-					if (t == null) {
-						t = failure.getCause();
-					}
-					admin.log().error("Index failure during bulk update", failure.getCause());
+			org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, ImmutableMap.copyOf(update.getParams()));
+			
+			long versionConflicts = 0;
+			do {
+				UpdateByQueryRequestBuilder ubqrb = UpdateByQueryAction.INSTANCE.newRequestBuilder(client);
+				
+				ubqrb.source()
+					.setSize(IndexClientFactory.DEFAULT_RESULT_WINDOW)
+					.setIndices(admin.name())
+					.setTypes(mapping.typeAsString())
+					.setRouting(mapping.typeAsString());
+				BulkByScrollResponse r = ubqrb
+					.script(script)
+					.setSlices(getConcurrencyLevel())
+					.filter(query)
+					.get();
+				
+				boolean created = r.getCreated() > 0;
+				if (created) {
+					admin.log().info("Created {} {} documents with script '{}', params({})", r.getCreated(), mapping.typeAsString(), update.getScript(), update.getParams());
 				}
-				throw new IllegalStateException("There were indexing failures during bulk updates. See logs for all failures.", t);
-			}
+				
+				boolean updated = r.getUpdated() > 0;
+				if (updated) {
+					admin.log().info("Updated {} {} documents with script '{}', params({})", r.getUpdated(), mapping.typeAsString(), update.getScript(), update.getParams());
+				}
+				
+				boolean deleted = r.getDeleted() > 0;
+				if (deleted) {
+					admin.log().info("Deleted {} {} documents with script '{}', params({})", r.getDeleted(), mapping.typeAsString(), update.getScript(), update.getParams());
+				}
+				
+				if (!created && !updated && !deleted) {
+					admin.log().warn("Couldn't bulk update '{}' documents with script '{}', params({}), no-ops ({}), conflicts ({})", 
+							mapping.typeAsString(), 
+							update.getScript(), 
+							update.getParams(), 
+							r.getNoops(), 
+							r.getVersionConflicts());
+				}
+				
+				checkState(r.getSearchFailures().isEmpty(), "There were search failures during bulk updates");
+				if (!r.getBulkFailures().isEmpty()) {
+					boolean versionConflictsOnly = true;
+					Throwable t = null;
+					for (Failure failure : r.getBulkFailures()) {
+						if (failure.getStatus() != RestStatus.CONFLICT) {
+							versionConflictsOnly = false;
+							if (t == null) {
+								t = failure.getCause();
+							}
+							admin.log().error("Index failure during bulk update", failure.getCause());
+						}
+					}
+					if (!versionConflictsOnly) {
+						throw new IllegalStateException("There were indexing failures during bulk updates. See logs for all failures.", t);
+					}
+				}
+				
+				versionConflicts = r.getVersionConflicts();
+				if (versionConflicts > 0) {
+					try {
+						Thread.sleep(100 + random.nextInt(900));
+					} catch (InterruptedException e) {
+						throw new IndexException("Interrupted", e);
+					}
+				}
+			} while (versionConflicts > 0);
 		}
 		
 		// then bulk indexes/deletes
@@ -154,7 +196,7 @@ public class EsDocumentWriter implements Writer {
 				
 				@Override
 				public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
-					admin.log().debug("Successfully processed bulk request");
+					admin.log().debug("Successfully processed bulk request ({}) in {}.", request.numberOfActions(), response.getTook());
 					if (response.hasFailures()) {
 						for (BulkItemResponse itemResponse : response.getItems()) {
 							checkState(!itemResponse.isFailed(), "Failed to commit bulk request in index '%s', %s", admin.name(), itemResponse.getFailureMessage());
@@ -162,8 +204,8 @@ public class EsDocumentWriter implements Writer {
 					}
 				}
 			})
-			.setConcurrentRequests((int) admin.settings().get(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL))
-			.setBulkActions(5000)
+			.setConcurrentRequests(getConcurrencyLevel())
+			.setBulkActions(10_000)
 			.build();
 
 			for (Entry<String, Object> entry : indexOperations.entrySet()) {
@@ -175,7 +217,7 @@ public class EsDocumentWriter implements Writer {
 					processor.add(client
 							.prepareIndex(admin.name(), mapping.typeAsString(), id)
 							.setOpType(OpType.INDEX)
-							.setSource(_source)
+							.setSource(_source, XContentType.JSON)
 							.setRouting(mapping.typeAsString())
 							.request());
 				}
@@ -199,6 +241,10 @@ public class EsDocumentWriter implements Writer {
 		admin.refresh();
 	}
 
+	private int getConcurrencyLevel() {
+		return (int) admin.settings().get(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL);
+	}
+
 	/*
 	 * Testing only, dumps a text representation of all operations to the console
 	 */
@@ -218,7 +264,7 @@ public class EsDocumentWriter implements Writer {
 	}
 
 	@Override
-	public Searcher searcher() {
+	public DocSearcher searcher() {
 		return searcher;
 	}
 

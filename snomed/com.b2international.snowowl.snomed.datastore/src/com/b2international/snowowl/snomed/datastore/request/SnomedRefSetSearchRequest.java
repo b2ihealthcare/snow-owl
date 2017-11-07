@@ -21,6 +21,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCon
 import java.io.IOException;
 
 import com.b2international.index.Hits;
+import com.b2international.index.Scroll;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
@@ -69,25 +70,30 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 			queryBuilder.filter(referencedComponentTypes(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, Integer.class)));
 		}
 		
-		final Query<SnomedConceptDocument> query = select(SnomedConceptDocument.class)
-				.where(queryBuilder.build())
-				.sortBy(sortBy())
-				.offset(offset())
-				.limit(limit())
-				.build();
-		
-		final Hits<SnomedConceptDocument> hits = searcher.search(query);
+		final Hits<SnomedConceptDocument> hits;
+		if (isScrolled()) {
+			hits = searcher.scroll(new Scroll<>(SnomedConceptDocument.class, scrollId()));
+		} else {
+			final Query<SnomedConceptDocument> query = select(SnomedConceptDocument.class)
+					.where(queryBuilder.build())
+					.sortBy(sortBy())
+					.scroll(scrollKeepAlive())
+					.limit(limit())
+					.build();
+			
+			hits = searcher.search(query);
+		}
 		
 		if (limit() < 1 || hits.getTotal() < 1) {
-			return new SnomedReferenceSets(offset(), limit(), hits.getTotal());
+			return new SnomedReferenceSets(limit(), hits.getTotal());
 		} else {
-			return SnomedConverters.newRefSetConverter(context, expand(), locales()).convert(hits.getHits(), offset(), limit(), hits.getTotal());
+			return SnomedConverters.newRefSetConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), limit(), hits.getTotal());
 		}
 	}
 	
 	@Override
-	protected SnomedReferenceSets createEmptyResult(int offset, int limit) {
-		return new SnomedReferenceSets(offset, limit, 0);
+	protected SnomedReferenceSets createEmptyResult(int limit) {
+		return new SnomedReferenceSets(limit, 0);
 	}
 	
 }

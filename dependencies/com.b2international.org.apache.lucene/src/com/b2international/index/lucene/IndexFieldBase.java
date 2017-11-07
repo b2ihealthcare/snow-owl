@@ -16,23 +16,19 @@
 package com.b2international.index.lucene;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Sets.newTreeSet;
 
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermsQuery;
 import org.apache.lucene.search.MatchNoDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.util.BytesRef;
 
@@ -109,23 +105,19 @@ public abstract class IndexFieldBase<T> implements IndexField<T> {
 	}
 	
 	@Override
-	public final Query toQuery(T value) {
-		return new TermQuery(toTerm(value));
-	}
+	public abstract Query toQuery(T value);
 	
 	@Override
 	public final Query toQuery(Iterable<T> values) {
 		if (values == null || Iterables.isEmpty(values)) {
 			return new MatchNoDocsQuery(); 
 		} else {
-			final SortedSet<BytesRef> uniqueBytesRefs = newTreeSet();
-			for (T value : values) {
-				uniqueBytesRefs.add(toBytesRef(value));
-			}
-			return new TermsQuery(fieldName(), uniqueBytesRefs);
+			return toSetQuery(values);
 		}
 	}
 	
+	protected abstract Query toSetQuery(Iterable<T> values);
+
 	@Override
 	public final Query toExistsQuery() {
 		return new TermRangeQuery(fieldName(), null, null, true, true);

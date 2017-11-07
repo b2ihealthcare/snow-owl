@@ -28,6 +28,7 @@ import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
+import com.b2international.index.DocSearcher;
 import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
 import com.b2international.index.admin.IndexAdmin;
@@ -49,7 +50,7 @@ import com.google.common.collect.Sets;
  */
 public final class DefaultRevisionIndex implements InternalRevisionIndex {
 
-	private static final int PURGE_LIMIT = 100000;
+	private static final int PURGE_LIMIT = 100_000;
 	private final Index index;
 	private final RevisionBranchProvider branchProvider;
 
@@ -89,7 +90,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	public <T> T read(final RevisionBranch branch, final RevisionIndexRead<T> read) {
 		return index.read(new IndexRead<T>() {
 			@Override
-			public T execute(Searcher index) throws IOException {
+			public T execute(DocSearcher index) throws IOException {
 				return read.execute(new DefaultRevisionSearcher(branch, index));
 			}
 		});
@@ -123,7 +124,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	private RevisionCompare compare(final RevisionBranch base, final RevisionBranch compare) {
 		return index.read(new IndexRead<RevisionCompare>() {
 			@Override
-			public RevisionCompare execute(Searcher searcher) throws IOException {
+			public RevisionCompare execute(DocSearcher searcher) throws IOException {
 				final Set<Integer> commonPath = Sets.intersection(compare.segments(), base.segments());
 				final Set<Integer> segmentsToCompare = Sets.difference(compare.segments(), base.segments());
 				final RevisionBranch baseOfCompareBranch = new RevisionBranch(base.path(), Ordering.natural().max(commonPath), commonPath);
@@ -240,32 +241,22 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 				.build());
 		}
 		for (Class<? extends Revision> revisionType : typesToPurge) {
-			// execute hit count query first
-			final int totalRevisionsToPurge = searcher.search(Query
-					.select(revisionType)
-					.where(purgeQuery.build())
-					.limit(0)
-					.build()).getTotal();
-			if (totalRevisionsToPurge > 0) {
-				admin().log().info("Purging {} '{}' documents...", totalRevisionsToPurge, DocumentMapping.getType(revisionType));
-				// partition the total hit number by the current threshold
-				int offset = 0;
-				do {
-					final Hits<String> revisionsToPurge = searcher.search(Query
-							.selectPartial(String.class, revisionType, ImmutableSet.of(DocumentMapping._ID))
-							.where(purgeQuery.build())
-							.offset(offset)
-							.limit(PURGE_LIMIT)
-							.build());
-					
-					writer.removeAll(ImmutableMap.of(revisionType, newHashSet(revisionsToPurge)));
-					
-					// register processed items in the offset, and check if we reached the limit, if yes break
-					offset += PURGE_LIMIT;
-					// commit the batch
-					writer.commit();
-				} while (offset <= totalRevisionsToPurge);
+			final String type = DocumentMapping.getType(revisionType);
+			
+			final Query<String> query = Query.selectPartial(String.class, revisionType, ImmutableSet.of(DocumentMapping._ID))
+				.where(purgeQuery.build())
+				.scroll()
+				.limit(PURGE_LIMIT)
+				.build();
+			
+			int purged = 0;
+			for (Hits<String> revisionsToPurge : searcher.scroll(query)) {
+				purged += revisionsToPurge.getHits().size();
+				admin().log().info("Purging {}/{} '{}' documents...", purged, revisionsToPurge.getTotal(), type);
+				writer.removeAll(ImmutableMap.of(revisionType, newHashSet(revisionsToPurge)));
+				writer.commit();
 			}
+			
 		}
 	}
 

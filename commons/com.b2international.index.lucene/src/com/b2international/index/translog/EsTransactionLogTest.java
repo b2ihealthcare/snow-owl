@@ -110,7 +110,10 @@ final class EsTransactionLogTest {
 
 		private EsTransactionLogTestAdmin(final SearcherManager manager) {
 			this.manager = manager;
-			this.settings = ImmutableMap.<String, Object>of(IndexClientFactory.SLOW_LOG_KEY, new SlowLogConfig(Maps.<String, Object>newHashMap()));
+			this.settings = ImmutableMap.<String, Object>of(
+				IndexClientFactory.SLOW_LOG_KEY, new SlowLogConfig(Maps.<String, Object>newHashMap()),
+				IndexClientFactory.RESULT_WINDOW_KEY, 100
+			);
 		}
 
 		@Override
@@ -298,7 +301,7 @@ final class EsTransactionLogTest {
 			tlog.addOperation(index);
 			tlog.commit(writer);
 
-			final Delete delete = new Delete(mapping.toUid(key));
+			final Delete delete = new Delete(mapping.typeAsString(), key, mapping.toUid(key));
 			delete.execute(writer, searcher);
 			writer.commit();
 
@@ -370,8 +373,8 @@ final class EsTransactionLogTest {
 
 			final Map<String, String> commitData = writer.getCommitData();
 
-			final Delete delete1 = new Delete(mapping.toUid(key1));
-			final Delete delete2 = new Delete(mapping.toUid(key2));
+			final Delete delete1 = new Delete(mapping.typeAsString(), key1, mapping.toUid(key1));
+			final Delete delete2 = new Delete(mapping.typeAsString(), key2, mapping.toUid(key2));
 
 			delete1.execute(writer, searcher);
 			delete2.execute(writer, searcher);
@@ -388,7 +391,7 @@ final class EsTransactionLogTest {
 			tlog.addOperation(index3);
 			tlog.addOperation(index4);
 
-			final Delete delete3 = new Delete(mapping.toUid(key3));
+			final Delete delete3 = new Delete(mapping.typeAsString(), key3, mapping.toUid(key3));
 			delete3.execute(writer, searcher);
 
 			tlog.addOperation(delete3);
@@ -441,7 +444,7 @@ final class EsTransactionLogTest {
 	}
 
 	private SearcherManager newSearcherManager(final IndexWriter writer, final ExecutorService executor) throws IOException {
-		return new SearcherManager(writer, true, new SearcherFactory() {
+		return new SearcherManager(writer, true, true, new SearcherFactory() {
 			@Override
 			public IndexSearcher newSearcher(IndexReader reader, IndexReader previousReader) throws IOException {
 				return new IndexSearcher(reader, executor);
@@ -451,7 +454,9 @@ final class EsTransactionLogTest {
 
 	private void close(final AutoCloseable... closeables) throws Exception {
 		for (final AutoCloseable closeable : closeables) {
-			closeable.close();
+			if (closeable != null) {
+				closeable.close();
+			}
 		}
 	}
 

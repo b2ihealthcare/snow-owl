@@ -38,7 +38,7 @@ public final class EsIndexClient implements IndexClient {
 	}
 
 	@Override
-	public Searcher searcher() {
+	public DocSearcher searcher() {
 		return new EsDocumentSearcher(admin, mapper);
 	}
 

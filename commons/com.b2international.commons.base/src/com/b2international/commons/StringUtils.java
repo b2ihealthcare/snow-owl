@@ -23,6 +23,7 @@ import java.util.Iterator;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 
 /**
  * Contains utility methods for manipulating strings. 
@@ -346,5 +347,32 @@ public class StringUtils {
 	 */
 	public static String valueOfOrEmptyString(final Object object) {
 		return null == object ? EMPTY_STRING : String.valueOf(object);
+	}
+
+	/**
+	 * Creates a toString value from the given values but limiting the output to limit number of items in the form of [1, 2, 3, , limit... x more
+	 * items], where x is the remaining number of items in the given {@link Iterable}.
+	 * 
+	 * @param values
+	 * @param limit
+	 * @return
+	 */
+	public static <T> String limitedToString(Iterable<T> values, int limit) {
+		final StringBuilder builder = new StringBuilder("[");
+
+		int remaining = limit;
+		Iterator<T> it = values.iterator();
+		while (it.hasNext() && remaining > 0) {
+			if (builder.length() != 1) {
+				builder.append(", ");
+			}
+			builder.append(it.next());
+			remaining--;
+		}
+
+		builder.append(String.format("... %d more items", Iterables.size(values) - limit));
+		builder.append("]");
+		
+		return builder.toString();
 	}
 }

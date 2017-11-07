@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -51,8 +52,10 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
     private final long baseTimestamp;
     private final long headTimestamp;
     private final boolean deleted;
+    private final String path;
 
     private String _id;
+
     
     protected BranchImpl(String name, String parentPath, long baseTimestamp, Metadata metadata) {
     	this(name, parentPath, baseTimestamp, baseTimestamp, metadata);
@@ -69,6 +72,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
         checkArgument(headTimestamp >= baseTimestamp, "Head timestamp may not be smaller than base timestamp.");
 		this.name = name;
 		this.parentPath = parentPath;
+		this.path = Strings.isNullOrEmpty(parentPath) ? name : parentPath + SEPARATOR + name;
 		this.baseTimestamp = baseTimestamp;
 		this.headTimestamp = headTimestamp;
 		this.deleted = deleted;
@@ -226,23 +230,23 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	}
 	
     @Override
-	public long baseTimestamp() {
+	public final long baseTimestamp() {
         return baseTimestamp;
     }
 
     @Override
-	public long headTimestamp() {
+	public final long headTimestamp() {
         return headTimestamp;
     }
 
     @Override
-    public boolean isDeleted() {
+    public final boolean isDeleted() {
     	return deleted;
     }
 
 	@Override
-	public String path() {
-        return parentPath + SEPARATOR + name;
+	public final String path() {
+        return path;
     }
 	
 	@Override
