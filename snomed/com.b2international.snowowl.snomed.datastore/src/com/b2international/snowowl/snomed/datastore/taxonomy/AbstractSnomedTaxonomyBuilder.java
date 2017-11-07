@@ -150,7 +150,6 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		}
 
 		final SnomedTaxonomyStatus result;
-		if (isEmpty(invalidRelationships)) {
 			
 			for (int i = 0; i < conceptCount; i++) {
 	
@@ -168,11 +167,14 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 				final int subjectId = _conceptInternalIds[i][0];
 				final int objectId = _conceptInternalIds[i][1];
 	
-				ancestors[subjectId][tailsSuperTypes[subjectId]++] = objectId;
-				descendants[objectId][tailsSubTypes[objectId]++] = subjectId;
+				if (objectId != -1 && subjectId != -1) {
+					ancestors[subjectId][tailsSuperTypes[subjectId]++] = objectId;
+					descendants[objectId][tailsSubTypes[objectId]++] = subjectId;
+				}
 	
 			}
 			
+		if (isEmpty(invalidRelationships)) {
 			result = new SnomedTaxonomyStatus(Statuses.ok());
 		} else {
 			LOGGER.warn("Missing concepts from relationships");
