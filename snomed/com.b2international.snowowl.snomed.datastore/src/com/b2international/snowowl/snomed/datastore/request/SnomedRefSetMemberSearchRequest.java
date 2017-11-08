@@ -232,9 +232,10 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		
 		final Hits<SnomedRefSetMemberIndexEntry> hits;
 		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(SnomedRefSetMemberIndexEntry.class, scrollId()));
+			hits = searcher.scroll(new Scroll<>(SnomedRefSetMemberIndexEntry.class, fields(), scrollId()));
 		} else {
 			final Query<SnomedRefSetMemberIndexEntry> query = select(SnomedRefSetMemberIndexEntry.class)
+					.fields(fields())
 					.where(queryBuilder.build())
 					.sortBy(sortBy())
 					.scroll(scrollKeepAlive())

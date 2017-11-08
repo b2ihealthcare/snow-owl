@@ -68,9 +68,10 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		
 		final Hits<CommitInfoDocument> hits;
 		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(CommitInfoDocument.class, scrollId()));
+			hits = searcher.scroll(new Scroll<>(CommitInfoDocument.class, fields(), scrollId()));
 		} else {
 			final Query<CommitInfoDocument> query = select(CommitInfoDocument.class)
+					.fields(fields())
 					.where(builder.build())
 					.withScores(containsKey(OptionKey.COMMENT))
 					.sortBy(sortBy())

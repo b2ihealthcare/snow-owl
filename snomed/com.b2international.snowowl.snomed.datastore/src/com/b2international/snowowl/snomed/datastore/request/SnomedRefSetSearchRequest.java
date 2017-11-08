@@ -72,9 +72,10 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 		
 		final Hits<SnomedConceptDocument> hits;
 		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(SnomedConceptDocument.class, scrollId()));
+			hits = searcher.scroll(new Scroll<>(SnomedConceptDocument.class, fields(), scrollId()));
 		} else {
 			final Query<SnomedConceptDocument> query = select(SnomedConceptDocument.class)
+					.fields(fields())
 					.where(queryBuilder.build())
 					.sortBy(sortBy())
 					.scroll(scrollKeepAlive())

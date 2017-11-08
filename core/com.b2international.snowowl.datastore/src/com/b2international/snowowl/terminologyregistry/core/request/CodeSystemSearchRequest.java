@@ -52,7 +52,7 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 		final Hits<CodeSystemEntry> hits;
 		
 		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(CodeSystemEntry.class, scrollId()));
+			hits = searcher.scroll(new Scroll<>(CodeSystemEntry.class, fields(), scrollId()));
 		} else {
 			hits = searcher.search(select(CodeSystemEntry.class)
 					.where(queryBuilder.build())

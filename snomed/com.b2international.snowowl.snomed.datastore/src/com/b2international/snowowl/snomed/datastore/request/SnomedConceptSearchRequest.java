@@ -243,9 +243,10 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 
 		final Hits<SnomedConceptDocument> hits;
 		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(SnomedConceptDocument.class, scrollId()));
+			hits = searcher.scroll(new Scroll<>(SnomedConceptDocument.class, fields(), scrollId()));
 		} else {
 			hits = searcher.search(select(SnomedConceptDocument.class)
+					.fields(fields())
 					.where(queryExpression)
 					.scroll(scrollKeepAlive())
 					.limit(limit())

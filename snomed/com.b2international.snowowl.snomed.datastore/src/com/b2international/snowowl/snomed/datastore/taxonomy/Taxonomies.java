@@ -59,7 +59,8 @@ public final class Taxonomies {
 	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, CharacteristicType characteristicType, boolean checkCycles) {
 		try {
 			final String characteristicTypeId = characteristicType.getConceptId();
-			final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
+			final Query<String[]> query = Query.select(String[].class)
+					.from(SnomedRelationshipIndexEntry.class)
 					.fields(SnomedDocument.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
 					.where(Expressions.builder()
 							.filter(active())
@@ -70,7 +71,7 @@ public final class Taxonomies {
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();
-			final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(query);
+			final Hits<String[]> hits = searcher.search(query);
 			
 			final SnomedTaxonomyBuilder oldTaxonomy = new SnomedTaxonomyBuilder(conceptIds, hits.getHits());
 			oldTaxonomy.setCheckCycles(checkCycles);

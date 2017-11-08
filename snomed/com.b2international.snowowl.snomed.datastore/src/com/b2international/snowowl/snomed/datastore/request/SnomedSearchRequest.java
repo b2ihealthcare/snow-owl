@@ -38,7 +38,6 @@ import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 import com.b2international.snowowl.snomed.ecl.Ecl;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 /**
@@ -151,7 +150,7 @@ public abstract class SnomedSearchRequest<R> extends SearchIndexResourceRequest<
 				SnomedConcepts matchingConcepts = SnomedRequests.prepareSearchConcept()
 					.all()
 					.filterByEcl(expression)
-					.setFields(ImmutableSet.of(SnomedConceptDocument.Fields.ID))
+					.setFields(SnomedConceptDocument.Fields.ID)
 					.build()
 					.execute(context);
 				idFilter = FluentIterable.from(matchingConcepts).transform(IComponent.ID_FUNCTION).toSet();

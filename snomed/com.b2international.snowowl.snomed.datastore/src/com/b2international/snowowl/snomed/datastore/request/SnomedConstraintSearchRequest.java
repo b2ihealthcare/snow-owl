@@ -89,9 +89,10 @@ final class SnomedConstraintSearchRequest extends SearchIndexResourceRequest<Bra
 		
 		final Hits<SnomedConstraintDocument> hits;
 		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(SnomedConstraintDocument.class, scrollId()));
+			hits = searcher.scroll(new Scroll<>(SnomedConstraintDocument.class, fields(), scrollId()));
 		} else {
 			final Query<SnomedConstraintDocument> query = select(SnomedConstraintDocument.class)
+					.fields(fields())
 					.where(queryBuilder.build())
 					.sortBy(sortBy())
 					.scroll(scrollKeepAlive())

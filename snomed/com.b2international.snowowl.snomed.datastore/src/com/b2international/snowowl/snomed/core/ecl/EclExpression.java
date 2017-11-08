@@ -24,8 +24,8 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -33,7 +33,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.Ecl;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 5.4
@@ -63,7 +62,7 @@ final class EclExpression {
 		if (promise == null) {
 			promise = SnomedRequests.prepareSearchConcept()
 					.all()
-					.setFields(ImmutableSet.of(SnomedConceptDocument.Fields.ID))
+					.setFields(SnomedConceptDocument.Fields.ID)
 					.filterByEcl(ecl)
 					.build(context.id(), context.branchPath())
 					.execute(context.service(IEventBus.class))
@@ -124,7 +123,7 @@ final class EclExpression {
 					.filterByCharacteristicTypes(SnomedEclRefinementEvaluator.ALLOWED_CHARACTERISTIC_TYPES)
 					.filterBySource(ecl)
 					.filterByGroup(1, Integer.MAX_VALUE)
-					.setFields(ImmutableSet.of(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID))
+					.setFields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID)
 					.build(context.id(), context.branchPath())
 					.execute(context.service(IEventBus.class))
 					.then(new Function<SnomedRelationships, Set<String>>() {

@@ -15,10 +15,8 @@
  */
 package com.b2international.snowowl.core.request;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
@@ -27,7 +25,7 @@ import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 /**
@@ -37,7 +35,7 @@ public abstract class ResourceRequestBuilder<B extends ResourceRequestBuilder<B,
 
 	private Options expand = OptionsBuilder.newBuilder().build();
 	private List<ExtendedLocale> locales = Collections.emptyList();
-	private Set<String> fields = Collections.emptySet();
+	private List<String> fields = Collections.emptyList();
 
 	protected ResourceRequestBuilder() {}
 	
@@ -76,9 +74,9 @@ public abstract class ResourceRequestBuilder<B extends ResourceRequestBuilder<B,
 		return setFields(Lists.asList(first, rest));
 	}
 	
-	public final B setFields(Collection<String> fields) {
+	public final B setFields(List<String> fields) {
 		if (!CompareUtils.isEmpty(fields)) {
-			this.fields = ImmutableSet.copyOf(fields);
+				this.fields = ImmutableList.copyOf(fields);
 		}
 		return getSelf();
 	}

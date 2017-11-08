@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
 import java.util.Collection;
+import java.util.Map;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongCollection;
@@ -62,7 +63,7 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 
 	private SnomedTaxonomyBuilder() {}
 	
-	public SnomedTaxonomyBuilder(final LongCollection conceptIds, final Collection<SnomedRelationshipIndexEntry> isAStatements) {
+	public SnomedTaxonomyBuilder(final LongCollection conceptIds, final Collection<String[]> isAStatements) {
 		nodes = new LongBidiMapWithInternalId(conceptIds.size());
 		for (final LongIterator itr = conceptIds.iterator(); itr.hasNext(); /**/) {
 			final long id = itr.next();
@@ -75,8 +76,8 @@ public class SnomedTaxonomyBuilder extends AbstractSnomedTaxonomyBuilder {
 				? PrimitiveMaps.<long[]>newLongKeyOpenHashMapWithExpectedSize(isAStatements.size()) 
 				: PrimitiveMaps.<long[]>newLongKeyOpenHashMap();
 
-		for (final SnomedRelationshipIndexEntry statement : isAStatements) {
-			edges.put(Long.parseLong(statement.getId()), new long[] { Long.parseLong(statement.getDestinationId()), Long.parseLong(statement.getSourceId()) });
+		for (final String[] statement : isAStatements) {
+			edges.put(Long.parseLong(statement[0]), new long[] { Long.parseLong(statement[2]), Long.parseLong(statement[1]) });
 		}
 		
 		setDirty(true);

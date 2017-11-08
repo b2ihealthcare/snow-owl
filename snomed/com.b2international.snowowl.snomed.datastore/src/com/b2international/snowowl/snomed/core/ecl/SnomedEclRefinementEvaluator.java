@@ -80,6 +80,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -610,7 +611,7 @@ final class SnomedEclRefinementEvaluator {
 			final Collection<String> destinationFilter,
 			final boolean groupedRelationshipsOnly) {
 
-		final ImmutableSet.Builder<String> fieldsToLoad = ImmutableSet.builder();
+		final ImmutableList.Builder<String> fieldsToLoad = ImmutableList.builder();
 		fieldsToLoad.add(ID, SOURCE_ID,	DESTINATION_ID);
 		if (groupedRelationshipsOnly) {
 			fieldsToLoad.add(GROUP);

@@ -79,9 +79,10 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 		
 		final Hits<SnomedRelationshipIndexEntry> hits;
 		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(SnomedRelationshipIndexEntry.class, scrollId()));
+			hits = searcher.scroll(new Scroll<>(SnomedRelationshipIndexEntry.class, fields(), scrollId()));
 		} else {
 			hits = searcher.search(select(SnomedRelationshipIndexEntry.class)
+					.fields(fields())
 					.where(queryBuilder.build())
 					.sortBy(sortBy())
 					.scroll(scrollKeepAlive())

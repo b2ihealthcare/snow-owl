@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.remotejobs;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
@@ -45,8 +46,8 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 /**
@@ -107,10 +108,10 @@ public final class RemoteJobTracker implements IDisposableService {
 	}
 	
 	public RemoteJobs search(Expression query, int limit) {
-		return search(query, ImmutableSet.of(), SortBy.DOC_ID, limit); 
+		return search(query, ImmutableList.of(), SortBy.DOC_ID, limit); 
 	}
 	
-	public RemoteJobs search(Expression query, Set<String> fields, SortBy sortBy, int limit) {
+	public RemoteJobs search(Expression query, List<String> fields, SortBy sortBy, int limit) {
 		return index.read(searcher -> {
 			final Hits<RemoteJobEntry> hits = searcher.search(
 					Query.select(RemoteJobEntry.class)

@@ -239,14 +239,15 @@ public final class ImportUtil {
 
 	private RepositoryState loadRepositoryState(RevisionSearcher searcher) throws IOException {
 		final LongCollection conceptIds = getConceptIds(searcher);
-		final Collection<SnomedRelationshipIndexEntry> statedStatements = getStatements(searcher, Concepts.STATED_RELATIONSHIP);
-		final Collection<SnomedRelationshipIndexEntry> inferredStatements = getStatements(searcher, Concepts.INFERRED_RELATIONSHIP);
+		final Collection<String[]> statedStatements = getStatements(searcher, Concepts.STATED_RELATIONSHIP);
+		final Collection<String[]> inferredStatements = getStatements(searcher, Concepts.INFERRED_RELATIONSHIP);
 		return new RepositoryState(conceptIds, statedStatements, inferredStatements);
 	}
 
-	private Collection<SnomedRelationshipIndexEntry> getStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
-		final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
-				
+	private Collection<String[]> getStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
+		final Query<String[]> query = Query.select(String[].class)
+				.from(SnomedRelationshipIndexEntry.class)
+				.fields(SnomedDocument.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
 				.where(Expressions.builder()
 						.filter(SnomedRelationshipIndexEntry.Expressions.active(true))
 						.filter(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))

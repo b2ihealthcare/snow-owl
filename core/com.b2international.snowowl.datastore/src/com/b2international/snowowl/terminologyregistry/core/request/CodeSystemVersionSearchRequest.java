@@ -66,9 +66,10 @@ final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<Re
 		
 		final Hits<CodeSystemVersionEntry> hits;
 		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(CodeSystemVersionEntry.class, scrollId()));
+			hits = searcher.scroll(new Scroll<>(CodeSystemVersionEntry.class, fields(), scrollId()));
 		} else {
 			hits = searcher.search(select(CodeSystemVersionEntry.class)
+					.fields(fields())
 					.where(query.build())
 					.sortBy(sortBy())
 					.scroll(scrollKeepAlive())

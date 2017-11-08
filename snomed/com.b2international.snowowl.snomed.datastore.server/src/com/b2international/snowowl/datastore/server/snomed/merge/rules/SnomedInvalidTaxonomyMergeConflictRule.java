@@ -83,7 +83,7 @@ public class SnomedInvalidTaxonomyMergeConflictRule extends AbstractSnomedMergeC
 				final List<MergeConflict> conflicts = newArrayList();
 				
 				for (final String characteristicTypeId : ImmutableList.of(Concepts.STATED_RELATIONSHIP, Concepts.INFERRED_RELATIONSHIP)) {
-					final Collection<SnomedRelationshipIndexEntry> statements = getActiveStatements(searcher, characteristicTypeId);
+					final Collection<String[]> statements = getActiveStatements(searcher, characteristicTypeId);
 					final SnomedTaxonomyBuilder taxonomyBuilder = new SnomedTaxonomyBuilder(conceptIds, statements);
 					final SnomedTaxonomyUpdateRunnable taxonomyRunnable = new SnomedTaxonomyUpdateRunnable(searcher, transaction, taxonomyBuilder, characteristicTypeId);
 					taxonomyRunnable.run();
@@ -119,8 +119,9 @@ public class SnomedInvalidTaxonomyMergeConflictRule extends AbstractSnomedMergeC
 		});
 	}
 	
-	private Collection<SnomedRelationshipIndexEntry> getActiveStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
-		final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
+	private Collection<String[]> getActiveStatements(RevisionSearcher searcher, String characteristicTypeId) throws IOException {
+		final Query<String[]> query = Query.select(String[].class)
+				.from(SnomedRelationshipIndexEntry.class)
 				.fields(SnomedDocument.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
 				.where(Expressions.builder()
 						.filter(SnomedRelationshipIndexEntry.Expressions.active())

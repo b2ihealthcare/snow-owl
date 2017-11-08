@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.request;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
@@ -38,7 +37,7 @@ public abstract class ResourceRequest<C extends ServiceProvider, R> implements R
 	@NotNull
 	private Options expand;
 
-	private Set<String> fields = Collections.emptySet();
+	private List<String> fields = Collections.emptyList();
 	
 	@JsonProperty
 	protected final List<ExtendedLocale> locales() {
@@ -51,7 +50,7 @@ public abstract class ResourceRequest<C extends ServiceProvider, R> implements R
 	}
 	
 	@JsonProperty
-	protected final Set<String> fields() {
+	protected final List<String> fields() {
 		return fields;
 	}
 	
@@ -63,7 +62,7 @@ public abstract class ResourceRequest<C extends ServiceProvider, R> implements R
 		this.expand = expand;
 	}
 	
-	final void setFields(Set<String> fields) {
+	final void setFields(List<String> fields) {
 		this.fields = fields;
 	}
 	

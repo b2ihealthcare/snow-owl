@@ -100,9 +100,10 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 
 		final Hits<SnomedDescriptionIndexEntry> hits;
 		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(SnomedDescriptionIndexEntry.class, scrollId()));
+			hits = searcher.scroll(new Scroll<>(SnomedDescriptionIndexEntry.class, fields(), scrollId()));
 		} else {
 			hits = searcher.search(select(SnomedDescriptionIndexEntry.class)
+					.fields(fields())
 					.where(queryBuilder.build())
 					.scroll(scrollKeepAlive())
 					.limit(limit())
