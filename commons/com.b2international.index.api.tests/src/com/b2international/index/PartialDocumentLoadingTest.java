@@ -15,11 +15,11 @@
  */
 package com.b2international.index;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -50,6 +50,59 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		assertEquals(returned, Iterables.size(hits));
 		assertEquals(returned, hits.getHits().size());
 	}
+	
+	@Test
+	public void selectPartialWithMap() throws Exception {
+		final Data data1 = new Data();
+		data1.setField1("field1_1"); 
+		data1.setField2("field2_1");
+		indexDocument(KEY1, data1);
+		
+		final Data data2 = new Data();
+		data2.setField1("field1_2"); 
+		data2.setField2("field2_2");
+		indexDocument(KEY2, data2);
+		
+		final Query<Map> query = Query.select(Map.class)
+				.from(Data.class)
+				.where(Expressions.matchAll())
+				.build();
+
+		final Hits<Map> hits = search(query);
+		
+		checkHits(hits, DEFAULT_LIMIT, 2, 2);
+		assertEquals(data1.getField1(), hits.getHits().get(0).get("field1"));
+		assertEquals(data1.getField2(), hits.getHits().get(0).get("field2"));
+		assertEquals(data2.getField1(), hits.getHits().get(1).get("field1"));
+		assertEquals(data2.getField2(), hits.getHits().get(1).get("field2"));
+	}
+	
+	@Test
+	public void selectPartialWithStringArray() throws Exception {
+		final Data data1 = new Data();
+		data1.setField1("field1_1"); 
+		data1.setField2("field2_1");
+		indexDocument(KEY1, data1);
+		
+		final Data data2 = new Data();
+		data2.setField1("field1_2"); 
+		data2.setField2("field2_2");
+		indexDocument(KEY2, data2);
+		
+		final Query<String[]> query = Query.select(String[].class)
+				.from(Data.class)
+				.fields("field1", "field2")
+				.where(Expressions.matchAll())
+				.build();
+
+		final Hits<String[]> hits = search(query);
+		
+		checkHits(hits, DEFAULT_LIMIT, 2, 2);
+		assertEquals(data1.getField1(), hits.getHits().get(0)[0]);
+		assertEquals(data1.getField2(), hits.getHits().get(0)[1]);
+		assertEquals(data2.getField1(), hits.getHits().get(1)[0]);
+		assertEquals(data2.getField2(), hits.getHits().get(1)[1]);
+	}
 
 	@Test
 	public void selectPartialWithClass() throws Exception {
@@ -59,7 +112,7 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		indexDocument(KEY1, data1);
 		
 		final Data data2 = new Data();
-		data2.setField2("field1_2"); 
+		data2.setField1("field1_2"); 
 		data2.setField2("field2_2");
 		indexDocument(KEY2, data2);
 		

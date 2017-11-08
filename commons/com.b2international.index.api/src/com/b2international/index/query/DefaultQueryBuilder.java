@@ -16,7 +16,7 @@
 package com.b2international.index.query;
 
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
 
 import com.b2international.index.query.Query.AfterWhereBuilder;
 import com.b2international.index.query.Query.QueryBuilder;
@@ -39,7 +39,7 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 	private SortBy sortBy = SortBy.DOC_ID;
 	private boolean withScores = false;
 
-	private Set<String> fields = Collections.emptySet();
+	private List<String> fields = Collections.emptyList();
 
 	DefaultQueryBuilder(Class<T> select) {
 		this.select = select;
@@ -59,7 +59,7 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 	}
 	
 	@Override
-	public QueryBuilder<T> fields(Set<String> fields) {
+	public QueryBuilder<T> fields(List<String> fields) {
 		this.fields = fields;
 		return this;
 	}

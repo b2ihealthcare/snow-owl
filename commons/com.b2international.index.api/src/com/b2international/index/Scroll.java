@@ -15,6 +15,8 @@
  */
 package com.b2international.index;
 
+import java.util.List;
+
 import com.b2international.index.query.Query;
 
 /**
@@ -26,20 +28,22 @@ public final class Scroll<T> {
 	private final Class<?> from;
 	private final String scrollId;
 	private final String keepAlive;
+	private final List<String> fields;
 
-	public Scroll(Class<T> select, String scrollId) {
-		this(select, select, scrollId);
+	public Scroll(Class<T> select, List<String> fields, String scrollId) {
+		this(select, select, fields, scrollId);
 	}
 	
-	public Scroll(Class<T> select, Class<?> from, String scrollId) {
-		this(select, from, scrollId, Query.DEFAULT_SCROLL_KEEP_ALIVE);
+	public Scroll(Class<T> select, Class<?> from, List<String> fields, String scrollId) {
+		this(select, from, fields, scrollId, Query.DEFAULT_SCROLL_KEEP_ALIVE);
 	}
 	
-	public Scroll(Class<T> select, Class<?> from, String scrollId, String keepAlive) {
+	public Scroll(Class<T> select, Class<?> from, List<String> fields, String scrollId, String keepAlive) {
 		this.select = select;
 		this.from = from;
 		this.scrollId = scrollId;
 		this.keepAlive = keepAlive;
+		this.fields = fields;
 	}
 	
 	public Class<T> getSelect() {
@@ -56,6 +60,10 @@ public final class Scroll<T> {
 	
 	public String getKeepAlive() {
 		return keepAlive;
+	}
+	
+	public List<String> getFields() {
+		return fields;
 	}
 	
 }

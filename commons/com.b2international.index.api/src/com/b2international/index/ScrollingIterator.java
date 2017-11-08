@@ -54,7 +54,7 @@ public final class ScrollingIterator<T> implements Iterator<Hits<T>> {
 			if (hits == null) {
 				hits = searcher.search(query);
 			} else {
-				hits = searcher.scroll(new Scroll<>(query.getSelect(), query.getFrom(), hits.getScrollId(), query.getScrollKeepAlive()));
+				hits = searcher.scroll(new Scroll<>(query.getSelect(), query.getFrom(), query.getFields(), hits.getScrollId(), query.getScrollKeepAlive()));
 			}
 		} catch (IOException e) {
 			throw new IndexException("Failed to load next page of scrolled documents", e);

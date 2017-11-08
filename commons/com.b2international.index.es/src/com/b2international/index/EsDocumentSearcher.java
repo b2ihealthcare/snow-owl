@@ -20,6 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -164,7 +165,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		final Class<T> select = query.getSelect();
 		final Class<?> from = query.getFrom();
 		
-		return toHits(select, from, limit, totalHits, response.getScrollId(), allHits.build());
+		return toHits(select, from, query.getFields(), limit, totalHits, response.getScrollId(), allHits.build());
 	}
 
 	@Override
@@ -173,7 +174,7 @@ public class EsDocumentSearcher implements DocSearcher {
 				.prepareSearchScroll(scroll.getScrollId())
 				.setScroll(scroll.getKeepAlive())
 				.get();
-		return toHits(scroll.getSelect(), scroll.getFrom(), response.getHits().getHits().length, (int) response.getHits().getTotalHits(), response.getScrollId(), response.getHits());
+		return toHits(scroll.getSelect(), scroll.getFrom(), scroll.getFields(), response.getHits().getHits().length, (int) response.getHits().getTotalHits(), response.getScrollId(), response.getHits());
 	}
 	
 	@Override
@@ -181,7 +182,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		admin.client().prepareClearScroll().addScrollId(scrollId).get();
 	}
 	
-	private <T> Hits<T> toHits(Class<T> select, Class<?> from, final int limit, final int totalHits, final String scrollId, final Iterable<SearchHit> hits) throws IOException {
+	private <T> Hits<T> toHits(Class<T> select, Class<?> from, final List<String> fields, final int limit, final int totalHits, final String scrollId, final Iterable<SearchHit> hits) throws IOException {
 		final ObjectReader reader = select != from 
 				? mapper.readerFor(select).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) 
 				: mapper.readerFor(select);
@@ -195,6 +196,15 @@ public class EsDocumentSearcher implements DocSearcher {
 				} else {
 					value = (T) hit.getSource().get(Iterables.getOnlyElement(hit.getSource().keySet()));
 				}
+			} else if (Map.class.isAssignableFrom(select)) {
+				value = select.cast(hit.getSource());
+			} else if (String[].class.isAssignableFrom(select)) {
+				final String[] val = new String[fields.size()];
+				for (int i = 0; i < fields.size(); i++) {
+					String field = fields.get(i);
+					val[i] = String.valueOf(hit.getSource().get(field));
+				}
+				value = select.cast(val);
 			} else {
 				final byte[] bytes = BytesReference.toBytes(hit.getSourceRef());
 				value = reader.readValue(bytes, 0, bytes.length);

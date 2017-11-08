@@ -15,13 +15,13 @@
  */
 package com.b2international.index.query;
 
-import java.util.Set;
+import java.util.List;
 
 import com.b2international.index.Searcher;
 import com.b2international.index.mapping.DocumentMapping;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Represents a generic query on any kind of storage and model.
@@ -41,10 +41,10 @@ public final class Query<T> {
 		QueryBuilder<T> parent(Class<?> parent);
 
 		default QueryBuilder<T> fields(String...fields) {
-			return fields(ImmutableSet.copyOf(fields));
+			return fields(ImmutableList.copyOf(fields));
 		}
 		
-		QueryBuilder<T> fields(Set<String> fields);
+		QueryBuilder<T> fields(List<String> fields);
 		
 		AfterWhereBuilder<T> where(Expression expression);
 	}
@@ -91,7 +91,7 @@ public final class Query<T> {
 	private SortBy sortBy = SortBy.DOC_ID;
 	private Class<?> parentType;
 	private boolean withScores;
-	private Set<String> fields;
+	private List<String> fields;
 
 	Query() {}
 
@@ -151,11 +151,11 @@ public final class Query<T> {
 		this.withScores = withScores;
 	}
 	
-	public Set<String> getFields() {
+	public List<String> getFields() {
 		return fields;
 	}
 	
-	void setFields(Set<String> fields) {
+	void setFields(List<String> fields) {
 		this.fields = fields;
 	}
 	
