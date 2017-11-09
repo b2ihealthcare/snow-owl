@@ -38,7 +38,6 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.graph.LongTarjan;
-import com.b2international.index.revision.Purge;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -46,7 +45,6 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContextProvider;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.datastore.request.repository.PurgeRequest;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
@@ -80,13 +78,20 @@ final class Rf2EffectiveTimeSlice {
 	private final Map<String, String[]> tmpComponentsById;
 	private final HTreeMap<String, String[]> componentsById;
 	
-	public Rf2EffectiveTimeSlice(DB db, String effectiveTime) {
+	private final Map<String, Long> storageKeysByComponent;
+	private final Map<String, Long> storageKeysByRefSet;
+	private final boolean loadOnDemand;
+	
+	public Rf2EffectiveTimeSlice(DB db, String effectiveTime, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet, boolean loadOnDemand) {
 		this.effectiveDate = EffectiveTimes.parse(effectiveTime, DateFormats.SHORT);
 		this.effectiveTime = EffectiveTimes.format(effectiveDate, DateFormats.DEFAULT);
+		this.storageKeysByComponent = storageKeysByComponent;
+		this.storageKeysByRefSet = storageKeysByRefSet;
 		this.componentsById = db.hashMap(effectiveTime, Serializer.STRING, Serializer.ELSA).create();
 		this.tmpComponentsById = newHashMapWithExpectedSize(BATCH_SIZE);
 		this.dependenciesByComponent = PrimitiveMaps.newLongKeyOpenHashMap();
 		this.membersByContainer = PrimitiveMaps.newLongKeyOpenHashMap();
+		this.loadOnDemand = loadOnDemand;
 	}
 
 	private <T extends SnomedComponent> T getComponent(String componentId) {
@@ -155,7 +160,7 @@ final class Rf2EffectiveTimeSlice {
 	public void doImport(BranchContext context, boolean createVersions) throws Exception {
 		Stopwatch w = Stopwatch.createStarted();
 		System.err.println("Importing components from " + effectiveTime);
-		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.service(TransactionContextProvider.class).get(context))) {
+		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.service(TransactionContextProvider.class).get(context), storageKeysByComponent, storageKeysByRefSet, loadOnDemand)) {
 			final Iterator<LongSet> importPlan = getImportPlan().iterator();
 			while (importPlan.hasNext()) {
 				LongSet componentsToImportInBatch = importPlan.next();
@@ -199,12 +204,14 @@ final class Rf2EffectiveTimeSlice {
 			}
 			
 			if (createVersions) {
-				// purge index
-				PurgeRequest.builder()
-					.setBranchPath(context.branch().path())
-					.setPurge(Purge.LATEST)
-					.build()
-					.execute(context);
+				// TODO add all content to the index
+				
+//				// purge index
+//				PurgeRequest.builder()
+//					.setBranchPath(context.branch().path())
+//					.setPurge(Purge.LATEST)
+//					.build()
+//					.execute(context);
 				
 				// do actually create a branch with the effective time name
 				RepositoryRequests

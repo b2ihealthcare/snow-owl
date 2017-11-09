@@ -20,6 +20,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.server.CDOChangeProcessorFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -33,9 +34,19 @@ public class SnomedCDOChangeProcessorFactory implements CDOChangeProcessorFactor
 
 	@Override
 	public ICDOChangeProcessor createChangeProcessor(final IBranchPath branchPath) throws SnowowlServiceException {
-		final ApplicationContext context = ApplicationContext.getInstance();
-		final RevisionIndex index = context.getService(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
-		return new SnomedCDOChangeProcessor(branchPath, index);
+		if (isImportInProgress()) {
+			return ICDOChangeProcessor.NULL_IMPL;
+		} else {
+			final ApplicationContext context = ApplicationContext.getInstance();
+			final RevisionIndex index = context.getService(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
+			return new SnomedCDOChangeProcessor(branchPath, index);
+		}
+	}
+	
+	private boolean isImportInProgress() {
+		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
+		final String feature = SnomedDatastoreActivator.REPOSITORY_UUID + ".import";
+		return features.exists(feature) && features.check(feature);
 	}
 
 	@Override

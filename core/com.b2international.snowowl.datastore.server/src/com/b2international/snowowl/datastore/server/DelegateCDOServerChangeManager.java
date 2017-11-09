@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.datastore.server;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newConcurrentHashSet;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.annotation.Nullable;
 
@@ -80,10 +80,9 @@ public class DelegateCDOServerChangeManager {
 	private final IBranchPath branchPath;
 	private final String repositoryUuid;
 	private final boolean isCommitNotificationEnabled;
+	private final Collection<ICDOChangeProcessor> changeProcessors = newArrayList();
 	
 	private @Nullable IOperationLockTarget lockTarget;
-	private @Nullable Collection<ICDOChangeProcessor> changeProcessors;
-
 	
 	public DelegateCDOServerChangeManager(final ICDOCommitChangeSet commitChangeSet, final Collection<CDOChangeProcessorFactory> factories, final boolean copySession, boolean isCommitNotificationEnabled) {
 		this.isCommitNotificationEnabled = isCommitNotificationEnabled;
@@ -165,7 +164,7 @@ public class DelegateCDOServerChangeManager {
 
 	public void handleTransactionRollback() {
 		
-		if (null == changeProcessors) {
+		if (changeProcessors.isEmpty()) {
 			return;
 		}
 		
@@ -173,7 +172,7 @@ public class DelegateCDOServerChangeManager {
 		
 		try {
 			rollbackAll(changeProcessors);
-			changeProcessors = null;
+			changeProcessors.clear();
 		} catch (final Exception e) {
 			caughtException = new SnowowlRuntimeException("Error when rolling back change processors on branch: " + branchPath, e);
 		} finally {
@@ -186,11 +185,7 @@ public class DelegateCDOServerChangeManager {
 	 * @param monitor
 	 */
 	public void handleTransactionAfterCommitted() {
-		
-		if (null == changeProcessors) {
-			throw new IllegalStateException("Change processor collection is null for branch: " + branchPath);
-		}
-		
+		if (changeProcessors.isEmpty()) return;
 		RuntimeException caughtException = null;
 		final Collection<ICDOChangeProcessor> committedChangeProcessors = newConcurrentHashSet();
 		final Collection<IndexCommitChangeSet> indexCommitChangeSets = newConcurrentHashSet();
@@ -325,30 +320,12 @@ public class DelegateCDOServerChangeManager {
 	
 	/*initialize all the change processors created via the registered change processor factories.*/
 	private void createProcessors(final IBranchPath branchPath) throws Exception {
-		
-		changeProcessors = null;
-		final List<ICDOChangeProcessor> processors = new CopyOnWriteArrayList<ICDOChangeProcessor>();
-		final Collection<Job> processorInitializerJobs = Sets.newHashSetWithExpectedSize(factories.size());
-		
 		for (final CDOChangeProcessorFactory factory : factories) {
-			
-			processorInitializerJobs.add(new Job("Creating change processor with " + factory.getFactoryName()) {
-				
-				@Override protected IStatus run(final IProgressMonitor monitor) {
-					try {
-						processors.add(factory.createChangeProcessor(branchPath));
-						return Status.OK_STATUS;
-					} catch (final SnowowlServiceException e) {
-						final StringBuilder messageBuilder = new StringBuilder("Error while creating change processor for ").append(factory.getFactoryName()).append(" on ").append(branchPath).append(".");
-						return new Status(IStatus.ERROR, DatastoreServerActivator.PLUGIN_ID, messageBuilder.toString(), e);
-					}
-				}
-			});
-			
+			ICDOChangeProcessor processor = factory.createChangeProcessor(branchPath);
+			if (ICDOChangeProcessor.NULL_IMPL != processor) {
+				changeProcessors.add(processor);
+			}
 		}
-		
-		ForkJoinUtils.runJobsInParallelWithErrorHandling(processorInitializerJobs, null);
-		changeProcessors = processors;
 	}
 	
 	private void lockBranch() {

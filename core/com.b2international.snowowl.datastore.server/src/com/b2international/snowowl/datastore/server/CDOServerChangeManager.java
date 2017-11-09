@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
@@ -119,19 +120,18 @@ public class CDOServerChangeManager extends ObjectWriteAccessHandler {
 	public void handleTransactionAfterCommitted(final OMMonitor monitor, final TransactionCommitContext commitContext) {
 		try {
 			final String commitContextInfo = getCommitContextInfo(commitContext);
-			LOGGER.info("Changes have been successfully persisted into repository. {}", commitContextInfo);
-			LOGGER.info("Flushing changes into semantic indexes... {}", commitContextInfo);
 			final DelegateCDOServerChangeManager delegate = activeChangeManagers.remove(commitContext);
+//			LOGGER.info("Changes have been successfully persisted into repository. {}", commitContextInfo);
+//			LOGGER.info("Flushing changes into semantic indexes... {}", commitContextInfo);
 			delegate.handleTransactionAfterCommitted();
+//			LOGGER.info("Changes have been successfully persisted into semantic indexes. {}", commitContextInfo);
 			closeChangeSetView(commitContext, delegate);
-			LOGGER.info("Changes have been successfully persisted into semantic indexes. {}", commitContextInfo);
 		} catch (final Throwable e) {
 			throw SnowowlRuntimeException.wrap(e);
 		}
 	}
 
 	private void closeChangeSetView(final TransactionCommitContext commitContext, final DelegateCDOServerChangeManager delegate) {
-		
 		final CDOView changeSetView = delegate.getCommitChangeSet().getView();
 		
 		if (changeSetView.isClosed()) {

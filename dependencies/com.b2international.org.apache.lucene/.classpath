@@ -11,7 +11,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/reindex/httpcore-4.4.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/reindex/httpcore-nio-4.4.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/reindex/reindex-5.6.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-5.6.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-5.6.3.jar" sourcepath="C:/Users/mczotter/.m2/repository/org/elasticsearch/elasticsearch/5.6.3/elasticsearch-5.6.3-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/HdrHistogram-2.1.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hppc-0.7.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jna-4.4.0-1.jar"/>

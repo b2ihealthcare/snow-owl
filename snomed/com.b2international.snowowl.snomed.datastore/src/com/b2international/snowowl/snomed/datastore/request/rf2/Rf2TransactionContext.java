@@ -28,16 +28,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.xtext.util.Pair;
-import org.eclipse.xtext.util.Tuples;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -61,6 +59,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -70,11 +69,20 @@ import com.google.common.collect.Multimaps;
  */
 final class Rf2TransactionContext extends DelegatingBranchContext implements TransactionContext {
 
-	private final Map<Pair<String, Class<? extends EObject>>, CDOObject> newComponents = newHashMap();
+	private final Map<String, CDOObject> newComponents = newHashMap();
+	private final Map<String, SnomedRefSet> newRefSets = newHashMap();
 	
-	Rf2TransactionContext(TransactionContext context) {
+	private final SnomedEditingContext editingContext;
+	private final Map<String, Long> storageKeysByComponent;
+	private final Map<String, Long> storageKeysByRefSet;
+	private final boolean loadOnDemand;
+	
+	Rf2TransactionContext(TransactionContext context, final Map<String, Long> storageKeysByComponent, final Map<String, Long> storageKeysByRefSet, final boolean loadOnDemand) {
 		super(context);
-		((SnomedEditingContext) context.service(CDOEditingContext.class)).setUniquenessCheckEnabled(false);
+		this.editingContext = service(SnomedEditingContext.class);
+		this.storageKeysByComponent = storageKeysByComponent;
+		this.storageKeysByRefSet = storageKeysByRefSet;
+		this.loadOnDemand = loadOnDemand;
 	}
 
 	@Override
@@ -94,16 +102,30 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	
 	@Override
 	public long commit(String userId, String commitComment, String parentContextDescription) {
-		CDOEditingContext context = service(CDOEditingContext.class);
 		try {
-			if (context.isDirty()) {
+			if (this.editingContext.isDirty()) {
 				System.err.println("Pushing changes: " + commitComment);
 				return getDelegate().commit(userId, commitComment, parentContextDescription);
 			} else {
 				return -1L;
 			}
 		} finally {
-			context.clearCache();
+			newComponents.values().forEach(component -> {
+				if (component instanceof Component) {
+					storageKeysByComponent.put(((Component) component).getId(), CDOIDUtil.getLong(component.cdoID()));
+				} else if (component instanceof SnomedRefSetMember) {
+					storageKeysByComponent.put(((SnomedRefSetMember) component).getUuid(), CDOIDUtil.getLong(component.cdoID()));
+				}
+			});
+			
+			newRefSets.values().forEach(refSet -> {
+				storageKeysByRefSet.put(refSet.getIdentifierId(), CDOIDUtil.getLong(refSet.cdoID()));
+			});
+			
+			this.newComponents.clear();
+			this.newRefSets.clear();
+			
+			this.editingContext.clearCache();
 		} 
 	}
 	
@@ -135,25 +157,33 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	@Override
 	public void preCommit() {
 		// add concepts to tx context
-		for (Pair<String, Class<? extends EObject>> key : newComponents.keySet()) {
-			if (Concept.class.isAssignableFrom(key.getSecond())) {
-				final Concept newConcept = (Concept) newComponents.get(key);
-				add(newConcept);
+		for (CDOObject component : newComponents.values()) {
+			if (component instanceof Concept) {
+				add(component);
 			}
 		}
 		
-		newComponents.clear();
-		
+		// XXX refsets were already added by the add method
 		// XXX do NOT invoke preCommit on the delegate, RF2 import does not check ID uniqueness and module dependencies the standard way
 	}
 	
 	@Override
 	public <T extends EObject> T lookup(String componentId, Class<T> type) throws ComponentNotFoundException {
-		final Pair<String, Class<? extends EObject>> key = createComponentKey(componentId, type);
-		if (newComponents.containsKey(key)) {
-			return type.cast(newComponents.get(key));
+		if (SnomedRefSet.class.isAssignableFrom(type) && newRefSets.containsKey(componentId)) {
+			return type.cast(newRefSets.get(componentId));
+		} else if (!SnomedRefSet.class.isAssignableFrom(type) && newComponents.containsKey(componentId)) {
+			return type.cast(newComponents.get(componentId));
+		} else if (SnomedRefSet.class.isAssignableFrom(type) && storageKeysByRefSet.containsKey(componentId)) {
+			return type.cast(editingContext.lookup(storageKeysByRefSet.get(componentId)));
+		} else if (!SnomedRefSet.class.isAssignableFrom(type) && storageKeysByComponent.containsKey(componentId)) {
+			return type.cast(editingContext.lookup(storageKeysByComponent.get(componentId)));
 		} else {
-			return getDelegate().lookup(componentId, type);
+			// XXX allow only newly created refsets to lookup using the transaction, or allow all if loadOnDemand is enabled
+			if (SnomedRefSet.class.isAssignableFrom(type) || CodeSystem.class.isAssignableFrom(type) || loadOnDemand) {
+				return getDelegate().lookup(componentId, type);
+			} else {
+				throw new IllegalArgumentException("Missing component from maps: " + componentId);
+			}
 		}
 	}
 	
@@ -161,26 +191,42 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	public <T extends EObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
 		final Map<String, T> resolvedComponentById = newHashMap();
 		Set<String> unresolvedComponentIds = newHashSet();
-		
+
+		// resolve by new components first
 		for (String componentId : componentIds) {
-			final Pair<String, Class<? extends EObject>> key = createComponentKey(componentId, type);
-			if (newComponents.containsKey(key)) {
-				resolvedComponentById.put(componentId, type.cast(newComponents.get(key)));
+			if (SnomedRefSet.class.isAssignableFrom(type) && newRefSets.containsKey(componentId)) {
+				resolvedComponentById.put(componentId, type.cast(newRefSets.get(componentId)));
+			} else if (!SnomedRefSet.class.isAssignableFrom(type) && newComponents.containsKey(componentId)) {
+				resolvedComponentById.put(componentId, type.cast(newComponents.get(componentId)));
+			} else if (SnomedRefSet.class.isAssignableFrom(type) && storageKeysByRefSet.containsKey(componentId)) {
+				resolvedComponentById.put(componentId, type.cast(editingContext.lookup(storageKeysByRefSet.get(componentId))));
+			} else if (!SnomedRefSet.class.isAssignableFrom(type) && storageKeysByComponent.containsKey(componentId)) {
+				resolvedComponentById.put(componentId, type.cast(editingContext.lookup(storageKeysByComponent.get(componentId))));
 			} else {
 				unresolvedComponentIds.add(componentId);
 			}
 		}
 		
-		if (!unresolvedComponentIds.isEmpty()) {
-			// load any unresolved components via lookup
-			resolvedComponentById.putAll(getDelegate().lookup(unresolvedComponentIds, type));
+		if (!unresolvedComponentIds.isEmpty() && loadOnDemand) {
+			// load any unresolved components via index lookup
+			final Map<String, T> resolvedByIndex = getDelegate().lookup(unresolvedComponentIds, type);
+			resolvedComponentById.putAll(resolvedByIndex);
+			resolvedByIndex.values()
+				.stream()
+				.filter(CDOObject.class::isInstance)
+				.map(CDOObject.class::cast)
+				.forEach(component -> {
+					if (component instanceof Component) {
+						storageKeysByComponent.put(((Component) component).getId(), CDOIDUtil.getLong(component.cdoID()));
+					} else if (component instanceof SnomedRefSetMember) {
+						storageKeysByComponent.put(((SnomedRefSetMember) component).getUuid(), CDOIDUtil.getLong(component.cdoID()));
+					} else if (component instanceof SnomedRefSet) {
+						storageKeysByRefSet.put(((SnomedRefSet) component).getIdentifierId(), CDOIDUtil.getLong(component.cdoID()));
+					}
+				});
 		}
 		
 		return resolvedComponentById;
-	}
-	
-	private Pair<String, Class<? extends EObject>> createComponentKey(final String componentId, Class<? extends EObject> type) {
-		return Tuples.pair(componentId, type);
 	}
 	
 	void add(Collection<SnomedComponent> componentChanges, Multimap<Class<? extends CDOObject>, String> dependenciesByType) {
@@ -188,11 +234,11 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 		final List<Class<? extends CDOObject>> typeToImportInOrder = ImmutableList.of(Concept.class, Description.class, Relationship.class, SnomedRefSetMember.class);
 		for (Class<? extends CDOObject> type : typeToImportInOrder) {
 			final Collection<SnomedComponent> rf2Components = componentChangesByType.get(type);
-			final Set<String> componentsToFetch = rf2Components.stream().map(IComponent::getId).collect(Collectors.toSet());
+			final Set<String> componentsToLookup = rf2Components.stream().map(IComponent::getId).collect(Collectors.toSet());
 			// add all dependencies with the same type
-			componentsToFetch.addAll(dependenciesByType.get(type));
+			componentsToLookup.addAll(dependenciesByType.get(type));
 			
-			final Map<String, ? extends CDOObject> existingComponents = lookup(componentsToFetch, type);
+			final Map<String, ? extends CDOObject> existingComponents = lookup(componentsToLookup, type);
 			final Map<String, ? extends SnomedRefSet> existingRefSets;
 			if (SnomedRefSetMember.class == type) {
 				existingRefSets = lookup(rf2Components.stream().map(member -> ((SnomedReferenceSetMember) member).getReferenceSetId()).collect(Collectors.toSet()), SnomedRefSet.class);
@@ -213,8 +259,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 						final SnomedReferenceSetMember member = (SnomedReferenceSetMember) rf2Component;
 						existingObject = createMember(rf2Component.getId(), member.type());
 						// seed the refset if missing
-						Pair<String, Class<? extends EObject>> refSetKey = createComponentKey(member.getReferenceSetId(), SnomedRefSet.class);
-						if (!existingRefSets.containsKey(member.getReferenceSetId()) && !newComponents.containsKey(refSetKey)) {
+						if (!existingRefSets.containsKey(member.getReferenceSetId()) && !newRefSets.containsKey(member.getReferenceSetId())) {
 							final String referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentId(member.getReferencedComponent().getId());
 							String mapTargetComponentType = CoreTerminologyBroker.UNSPECIFIED;
 							try {
@@ -230,12 +275,12 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 								.build()
 								.execute(this);
 							
-							newComponents.put(refSetKey, lookup(member.getReferenceSetId(), SnomedRefSet.class));
+							newRefSets.put(member.getReferenceSetId(), lookup(member.getReferenceSetId(), SnomedRefSet.class));
 						}
 					} else {
 						throw new UnsupportedOperationException("Unsupported component: " + rf2Component);
 					}
-					newComponents.put(createComponentKey(rf2Component.getId(), type), existingObject);
+					newComponents.put(rf2Component.getId(), existingObject);
 					componentsToImport.add(rf2Component);
 				} else if (existingObject instanceof Component && rf2Component instanceof SnomedCoreComponent) {
 					final SnomedCoreComponent rf2Row = (SnomedCoreComponent) rf2Component;
@@ -256,7 +301,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 			for (SnomedComponent rf2Component : componentsToImport) {
 				CDOObject existingObject = existingComponents.get(rf2Component.getId());
 				if (existingObject == null) {
-					existingObject = newComponents.get(createComponentKey(rf2Component.getId(), type));
+					existingObject = newComponents.get(rf2Component.getId());
 				}
 				final SnomedComponentBuilder builder;
 				if (rf2Component instanceof SnomedCoreComponent) {
