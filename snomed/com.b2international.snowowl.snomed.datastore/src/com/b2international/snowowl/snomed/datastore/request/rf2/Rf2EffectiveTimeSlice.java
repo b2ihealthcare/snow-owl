@@ -149,7 +149,7 @@ final class Rf2EffectiveTimeSlice {
 	}
 
 	private List<LongSet> getImportPlan() {
-		return new LongTarjan(50000, dependenciesByComponent::get).run(dependenciesByComponent.keySet());
+		return new LongTarjan(60000, dependenciesByComponent::get).run(dependenciesByComponent.keySet());
 	}
 
 	public void doImport(BranchContext context, boolean createVersions) throws Exception {
@@ -160,7 +160,7 @@ final class Rf2EffectiveTimeSlice {
 			while (importPlan.hasNext()) {
 				LongSet componentsToImportInBatch = importPlan.next();
 				LongIterator it = componentsToImportInBatch.iterator();
-				final Collection<SnomedComponent> componentsToImport = newArrayListWithExpectedSize(componentsToImportInBatch.size() * 2);
+				final Collection<SnomedComponent> componentsToImport = newArrayListWithExpectedSize(componentsToImportInBatch.size());
 				while (it.hasNext()) {
 					long componentToImportL = it.next();
 					String componentToImport = Long.toString(componentToImportL);
@@ -169,7 +169,7 @@ final class Rf2EffectiveTimeSlice {
 						componentsToImport.add(component);
 					}
 					// add all members of this component to this batch as well
-					final Set<String> containerComponents = membersByContainer.get(componentToImportL);
+					final Set<String> containerComponents = membersByContainer.remove(componentToImportL);
 					if (containerComponents != null) {
 						for (String containedComponentId : containerComponents) {
 							SnomedReferenceSetMember containedComponent = getComponent(containedComponentId);

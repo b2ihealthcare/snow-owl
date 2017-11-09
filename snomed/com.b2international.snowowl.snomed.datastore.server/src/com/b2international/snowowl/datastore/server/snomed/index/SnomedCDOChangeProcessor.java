@@ -110,6 +110,7 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 		
 		if (!statedDestinationIds.isEmpty()) {
 			final Query<SnomedConceptDocument> statedDestinationConceptsQuery = Query.select(SnomedConceptDocument.class)
+					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.STATED_PARENTS, SnomedConceptDocument.Fields.STATED_ANCESTORS)
 					.where(SnomedDocument.Expressions.ids(statedDestinationIds))
 					.limit(statedDestinationIds.size())
 					.build();
@@ -123,6 +124,7 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 		
 		if (!inferredDestinationIds.isEmpty()) {
 			final Query<SnomedConceptDocument> inferredDestinationConceptsQuery = Query.select(SnomedConceptDocument.class)
+					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.PARENTS, SnomedConceptDocument.Fields.ANCESTORS)
 					.where(SnomedDocument.Expressions.ids(inferredDestinationIds))
 					.limit(inferredDestinationIds.size())
 					.build();
@@ -136,6 +138,7 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 		
 		if (!statedSourceIds.isEmpty()) {
 			final Query<SnomedConceptDocument> statedSourceConceptsQuery = Query.select(SnomedConceptDocument.class)
+					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.STATED_PARENTS, SnomedConceptDocument.Fields.STATED_ANCESTORS)
 					.where(Expressions.builder()
 							.should(SnomedConceptDocument.Expressions.ids(statedSourceIds))
 							.should(SnomedConceptDocument.Expressions.statedParents(statedSourceIds))
@@ -153,6 +156,7 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 		
 		if (!inferredSourceIds.isEmpty()) {
 			final Query<SnomedConceptDocument> inferredSourceConceptsQuery = Query.select(SnomedConceptDocument.class)
+					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.PARENTS, SnomedConceptDocument.Fields.ANCESTORS)
 					.where(Expressions.builder()
 							.should(SnomedConceptDocument.Expressions.ids(inferredSourceIds))
 							.should(SnomedConceptDocument.Expressions.parents(inferredSourceIds))
