@@ -23,7 +23,6 @@
         <!-- Add new identity provider here and change the identity.type to appropriate property value in snowowl_config.yml file -->
         
         <artifact type="bundle" name="com.b2international.snowowl.datastore" version="0.0.0"/>
-        <artifact type="bundle" name="com.b2international.snowowl.authorization.server" version="0.0.0"/>
 
         <!-- Add reasoner implementation bundles here before reasoner.server bundle, so they will be picked up during init -->
         <artifact type="bundle" name="org.semanticweb.elk" version="0.0.0"/>
