@@ -158,6 +158,16 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	}
 	
 	@Override
+	public boolean isNotificationEnabled() {
+		return getDelegate().isNotificationEnabled();
+	}
+	
+	@Override
+	public void setNotificationEnabled(boolean notificationEnabled) {
+		getDelegate().setNotificationEnabled(notificationEnabled);
+	}
+	
+	@Override
 	public void preCommit() {
 		// add concepts to tx context
 		for (CDOObject component : newComponents.values()) {
@@ -230,6 +240,10 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 		}
 		
 		return resolvedComponentById;
+	}
+	
+	Collection<SnomedRefSet> getNewRefSets() {
+		return ImmutableList.copyOf(newRefSets.values());
 	}
 	
 	void add(Collection<SnomedComponent> componentChanges, Multimap<Class<? extends CDOObject>, String> dependenciesByType) {

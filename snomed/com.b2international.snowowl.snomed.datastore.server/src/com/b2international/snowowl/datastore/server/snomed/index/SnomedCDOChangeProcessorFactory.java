@@ -34,13 +34,9 @@ public class SnomedCDOChangeProcessorFactory implements CDOChangeProcessorFactor
 
 	@Override
 	public ICDOChangeProcessor createChangeProcessor(final IBranchPath branchPath) throws SnowowlServiceException {
-		if (isImportInProgress()) {
-			return ICDOChangeProcessor.NULL_IMPL;
-		} else {
-			final ApplicationContext context = ApplicationContext.getInstance();
-			final RevisionIndex index = context.getService(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
-			return new SnomedCDOChangeProcessor(branchPath, index);
-		}
+		final ApplicationContext context = ApplicationContext.getInstance();
+		final RevisionIndex index = context.getService(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
+		return new SnomedCDOChangeProcessor(branchPath, index);
 	}
 	
 	private boolean isImportInProgress() {

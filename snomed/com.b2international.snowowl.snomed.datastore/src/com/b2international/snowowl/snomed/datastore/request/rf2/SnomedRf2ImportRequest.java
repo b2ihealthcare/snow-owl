@@ -15,22 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -40,7 +32,6 @@ import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 
-import com.b2international.collections.longs.LongCollections;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -58,7 +49,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -67,13 +57,6 @@ import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.MapMaker;
-import com.google.common.collect.Ordering;
-import com.google.common.io.Closer;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
 
 /**
  * @since 6.0.0
@@ -155,29 +138,16 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 			}
 			
 			// create executor service to parallel update the underlying index store
-			
-			final ConcurrentMap<String/*effectiveTimeKey*/, Rf2EffectiveTimeSlice> effectiveTimeSlices = new MapMaker().makeMap();
+
+			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, storageKeysByComponent, storageKeysByRefSet, isLoadOnDemandEnabled());
 			Stopwatch w = Stopwatch.createStarted();
-			read(rf2Archive, db, effectiveTimeSlices, storageKeysByComponent, storageKeysByRefSet);
+			read(rf2Archive, effectiveTimeSlices, storageKeysByComponent, storageKeysByRefSet);
 			System.err.println("Preparing RF2 import took: " + w);
 			w.reset().start();
 
-			final ListeningExecutorService indexingThread = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
-			final List<ListenableFuture<?>> indexingTasks = newArrayList();
-			
-			SnomedTaxonomyBuilder stated = new SnomedTaxonomyBuilder(LongCollections.emptySet(), Collections.emptyList());
-			SnomedTaxonomyBuilder inferred = new SnomedTaxonomyBuilder(LongCollections.emptySet(), Collections.emptyList());
-			
-			for (String effectiveTime : Ordering.natural().immutableSortedCopy(effectiveTimeSlices.keySet())) {
-				final Rf2EffectiveTimeSlice slice = effectiveTimeSlices.remove(effectiveTime);
-				slice.commitCdo(context, createVersions);
-				indexingTasks.add(indexingThread.submit(() -> slice.commitIndex(context, createVersions, inferred, stated)));
+			for (Rf2EffectiveTimeSlice slice : effectiveTimeSlices.consumeInOrder()) {
+				slice.doImport(context, createVersions);
 			}
-			
-			// block until all indexing jobs finish
-			indexingThread.shutdown();
-			Futures.allAsList(indexingTasks).get();
-			indexingThread.awaitTermination(1, TimeUnit.MINUTES);
 		}
 	}
 
@@ -185,7 +155,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		return Rf2ReleaseType.DELTA == type;
 	}
 
-	private void read(File rf2Archive, DB db, ConcurrentMap<String, Rf2EffectiveTimeSlice> effectiveTimeSlices, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet) {
+	private void read(File rf2Archive, Rf2EffectiveTimeSlices slices, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet) {
 		final CsvMapper csvMapper = new CsvMapper();
 		csvMapper.enable(CsvParser.Feature.WRAP_AS_ARRAY);
 		final CsvSchema schema = CsvSchema.emptySchema()
@@ -194,39 +164,26 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 				.withLineSeparator("\r\n");
 		final ObjectReader oReader = csvMapper.readerFor(String[].class).with(schema);
 
-
-		try (Closer closer = Closer.create()) {
-			final ListeningExecutorService exec = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()));
-			final ZipFile zip = closer.register(new ZipFile(rf2Archive));
-			final List<ListenableFuture<?>> futures = newArrayList();
+		final Stopwatch w = Stopwatch.createStarted();
+		try (final ZipFile zip = new ZipFile(rf2Archive)) {
 			for (ZipEntry entry : Collections.list(zip.entries())) {
 				final String fileName = Paths.get(entry.getName()).getFileName().toString().toLowerCase();
 				if (fileName.contains(type.toString().toLowerCase()) && fileName.endsWith(TXT_EXT)) {
-					futures.add(
-						exec.submit(() -> {
-							Stopwatch w = Stopwatch.createStarted();
-							w.reset().start();
-							try (final InputStream in = zip.getInputStream(entry)) {
-								readFile(entry, in, oReader, db, effectiveTimeSlices, storageKeysByComponent, storageKeysByRefSet);
-							}
-							System.err.println(entry.getName() + " - " + w);
-							return null;
-						})
-					);
+					w.reset().start();
+					try (final InputStream in = zip.getInputStream(entry)) {
+						readFile(entry, in, oReader, slices, storageKeysByComponent, storageKeysByRefSet);
+					}
+					System.err.println(entry.getName() + " - " + w);
 				}
 			}
-			exec.shutdown();
-			Futures.allAsList(futures).get();
-			exec.awaitTermination(1, TimeUnit.MINUTES);
-		} catch (IOException | ExecutionException | InterruptedException e) {
-			throw new SnowowlRuntimeException();
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
 		}
 		
-		// flush any tmp maps to disk
-		effectiveTimeSlices.values().forEach(Rf2EffectiveTimeSlice::flush);
+		slices.flushAll();
 	}
 
-	private void readFile(ZipEntry entry, final InputStream in, final ObjectReader oReader, DB db, Map<String, Rf2EffectiveTimeSlice> effectiveTimeSlices, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet)
+	private void readFile(ZipEntry entry, final InputStream in, final ObjectReader oReader, Rf2EffectiveTimeSlices effectiveTimeSlices, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet)
 			throws IOException, JsonProcessingException {
 		boolean header = true;
 		Rf2ContentType<?> resolver = null;
@@ -250,11 +207,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 				
 				header = false;
 			} else {
-				final String effectiveTime = line[1];
-				if (!effectiveTimeSlices.containsKey(effectiveTime)) {
-					 effectiveTimeSlices.put(effectiveTime, new Rf2EffectiveTimeSlice(db, effectiveTime, storageKeysByComponent, storageKeysByRefSet, isLoadOnDemandEnabled()));
-				}
-				resolver.register(line, effectiveTimeSlices.get(effectiveTime));
+				resolver.register(line, effectiveTimeSlices.getOrCreate(/*effectiveTime*/ line[1]));
 			}
 
 		}
