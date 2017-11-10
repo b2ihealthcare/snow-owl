@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.elasticsearch.action.DocWriteRequest.OpType;
@@ -51,12 +53,18 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 
 /**
  * @since 5.10 
  */
 public class EsDocumentWriter implements Writer {
 
+	private static final int BATCHS_SIZE = 10_000;
+	
 	private final EsIndexAdmin admin;
 	private final DocSearcher searcher;
 
@@ -107,78 +115,22 @@ public class EsDocumentWriter implements Writer {
 		
 		final Client client = admin.client();
 		// apply bulk updates first
+		final ListeningExecutorService executor;
+		if (updateOperations.size() > 1) {
+			executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(Math.min(4, updateOperations.size())));
+		} else {
+			executor = MoreExecutors.newDirectExecutorService();
+		}
+		final List<ListenableFuture<?>> updateFutures = newArrayList();
 		for (BulkUpdate<?> update : updateOperations) {
-			final DocumentMapping mapping = admin.mappings().getMapping(update.getType());
-			final QueryBuilder query = new EsQueryBuilder(mapping).build(update.getFilter());
-			final String rawScript = mapping.getScript(update.getScript()).script();
-			org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, ImmutableMap.copyOf(update.getParams()));
-			
-			long versionConflicts = 0;
-			do {
-				UpdateByQueryRequestBuilder ubqrb = UpdateByQueryAction.INSTANCE.newRequestBuilder(client);
-				
-				ubqrb.source()
-					.setSize(IndexClientFactory.DEFAULT_RESULT_WINDOW)
-					.setIndices(admin.name())
-					.setTypes(mapping.typeAsString())
-					.setRouting(mapping.typeAsString());
-				BulkByScrollResponse r = ubqrb
-					.script(script)
-					.setSlices(getConcurrencyLevel())
-					.filter(query)
-					.get();
-				
-				boolean created = r.getCreated() > 0;
-				if (created) {
-					admin.log().info("Created {} {} documents with script '{}', params({})", r.getCreated(), mapping.typeAsString(), update.getScript(), update.getParams());
-				}
-				
-				boolean updated = r.getUpdated() > 0;
-				if (updated) {
-					admin.log().info("Updated {} {} documents with script '{}', params({})", r.getUpdated(), mapping.typeAsString(), update.getScript(), update.getParams());
-				}
-				
-				boolean deleted = r.getDeleted() > 0;
-				if (deleted) {
-					admin.log().info("Deleted {} {} documents with script '{}', params({})", r.getDeleted(), mapping.typeAsString(), update.getScript(), update.getParams());
-				}
-				
-				if (!created && !updated && !deleted) {
-					admin.log().warn("Couldn't bulk update '{}' documents with script '{}', params({}), no-ops ({}), conflicts ({})", 
-							mapping.typeAsString(), 
-							update.getScript(), 
-							update.getParams(), 
-							r.getNoops(), 
-							r.getVersionConflicts());
-				}
-				
-				checkState(r.getSearchFailures().isEmpty(), "There were search failures during bulk updates");
-				if (!r.getBulkFailures().isEmpty()) {
-					boolean versionConflictsOnly = true;
-					Throwable t = null;
-					for (Failure failure : r.getBulkFailures()) {
-						if (failure.getStatus() != RestStatus.CONFLICT) {
-							versionConflictsOnly = false;
-							if (t == null) {
-								t = failure.getCause();
-							}
-							admin.log().error("Index failure during bulk update", failure.getCause());
-						}
-					}
-					if (!versionConflictsOnly) {
-						throw new IllegalStateException("There were indexing failures during bulk updates. See logs for all failures.", t);
-					}
-				}
-				
-				versionConflicts = r.getVersionConflicts();
-				if (versionConflicts > 0) {
-					try {
-						Thread.sleep(100 + random.nextInt(900));
-					} catch (InterruptedException e) {
-						throw new IndexException("Interrupted", e);
-					}
-				}
-			} while (versionConflicts > 0);
+			updateFutures.add(executor.submit(() -> bulkUpdate(client, update)));
+		}
+		try {
+			executor.shutdown();
+			Futures.allAsList(updateFutures).get();
+			executor.awaitTermination(10, TimeUnit.SECONDS);
+		} catch (InterruptedException | ExecutionException e) {
+			throw new IndexException("Couldn't execute bulk updates", e);
 		}
 		
 		// then bulk indexes/deletes
@@ -239,6 +191,80 @@ public class EsDocumentWriter implements Writer {
 		}
 		// refresh the index if there were only updates
 		admin.refresh();
+	}
+
+	private void bulkUpdate(final Client client, final BulkUpdate<?> update) {
+		final DocumentMapping mapping = admin.mappings().getMapping(update.getType());
+		final QueryBuilder query = new EsQueryBuilder(mapping).build(update.getFilter());
+		final String rawScript = mapping.getScript(update.getScript()).script();
+		org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, ImmutableMap.copyOf(update.getParams()));
+		
+		long versionConflicts = 0;
+		do {
+			UpdateByQueryRequestBuilder ubqrb = UpdateByQueryAction.INSTANCE.newRequestBuilder(client);
+			
+			ubqrb.source()
+				.setSize(BATCHS_SIZE)
+				.setIndices(admin.name())
+				.setTypes(mapping.typeAsString())
+				.setRouting(mapping.typeAsString());
+			BulkByScrollResponse r = ubqrb
+				.script(script)
+				.setSlices(getConcurrencyLevel())
+				.filter(query)
+				.get();
+			
+			boolean created = r.getCreated() > 0;
+			if (created) {
+				admin.log().info("Created {} {} documents with script '{}', params({})", r.getCreated(), mapping.typeAsString(), update.getScript(), update.getParams());
+			}
+			
+			boolean updated = r.getUpdated() > 0;
+			if (updated) {
+				admin.log().info("Updated {} {} documents with script '{}', params({})", r.getUpdated(), mapping.typeAsString(), update.getScript(), update.getParams());
+			}
+			
+			boolean deleted = r.getDeleted() > 0;
+			if (deleted) {
+				admin.log().info("Deleted {} {} documents with script '{}', params({})", r.getDeleted(), mapping.typeAsString(), update.getScript(), update.getParams());
+			}
+			
+			if (!created && !updated && !deleted) {
+				admin.log().warn("Couldn't bulk update '{}' documents with script '{}', params({}), no-ops ({}), conflicts ({})", 
+						mapping.typeAsString(), 
+						update.getScript(), 
+						update.getParams(), 
+						r.getNoops(), 
+						r.getVersionConflicts());
+			}
+			
+			checkState(r.getSearchFailures().isEmpty(), "There were search failures during bulk updates");
+			if (!r.getBulkFailures().isEmpty()) {
+				boolean versionConflictsOnly = true;
+				Throwable t = null;
+				for (Failure failure : r.getBulkFailures()) {
+					if (failure.getStatus() != RestStatus.CONFLICT) {
+						versionConflictsOnly = false;
+						if (t == null) {
+							t = failure.getCause();
+						}
+						admin.log().error("Index failure during bulk update", failure.getCause());
+					}
+				}
+				if (!versionConflictsOnly) {
+					throw new IllegalStateException("There were indexing failures during bulk updates. See logs for all failures.", t);
+				}
+			}
+			
+			versionConflicts = r.getVersionConflicts();
+			if (versionConflicts > 0) {
+				try {
+					Thread.sleep(100 + random.nextInt(900));
+				} catch (InterruptedException e) {
+					throw new IndexException("Interrupted", e);
+				}
+			}
+		} while (versionConflicts > 0);
 	}
 
 	private int getConcurrencyLevel() {
