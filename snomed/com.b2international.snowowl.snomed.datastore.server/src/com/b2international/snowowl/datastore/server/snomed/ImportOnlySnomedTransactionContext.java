@@ -169,6 +169,16 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 		return editingContext.getDefaultLanguageCode();
 	}
 	
+	@Override
+	public boolean isNotificationEnabled() {
+		return true;
+	}
+	
+	@Override
+	public void setNotificationEnabled(boolean notificationEnabled) {
+		throw new UnsupportedOperationException();
+	}
+	
 	public SnomedCoreConfiguration getSnomedCoreConfig() {
 		return config().getModuleConfig(SnomedCoreConfiguration.class);
 	}

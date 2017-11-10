@@ -41,6 +41,7 @@ import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 public final class CDOTransactionContext extends DelegatingBranchContext implements TransactionContext {
 
 	private CDOEditingContext editingContext;
+	private boolean isNotificationEnabled = true;
 
 	CDOTransactionContext(BranchContext context, CDOEditingContext editingContext) {
 		super(context);
@@ -104,6 +105,8 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 	public long commit(String userId, String commitComment, String parentContextDescription) {
 		try {
 			final CDOCommitInfo info = new CDOServerCommitBuilder(userId, commitComment, editingContext.getTransaction())
+					.notifyWriteAccessHandlers(isNotificationEnabled())
+					.sendCommitNotification(isNotificationEnabled())
 					.parentContextDescription(parentContextDescription)
 					.commitOne();
 			return info.getTimeStamp();
@@ -124,6 +127,16 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 			}
 			throw new SnowowlRuntimeException(e.getMessage(), e);
 		}
+	}
+
+	@Override
+	public boolean isNotificationEnabled() {
+		return isNotificationEnabled;
+	}
+	
+	@Override
+	public void setNotificationEnabled(boolean isNotificationEnabled) {
+		this.isNotificationEnabled = isNotificationEnabled;
 	}
 
 	@Override

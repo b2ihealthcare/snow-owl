@@ -69,6 +69,18 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * @return - the timestamp of the successful commit
 	 */
 	long commit(String userId, String commitComment, String parentContextDescription);
+	
+	/**
+	 * Returns whether the commit will notify interested services, notification services about this transaction's commit or not. It's enabled by default.
+	 * @return
+	 */
+	boolean isNotificationEnabled();
+	
+	/**
+	 * Enable or disable notification of other services about this commit.
+	 * @param notificationEnabled
+	 */
+	void setNotificationEnabled(boolean notificationEnabled);
 
 	/**
 	 * Rolls back any changes the underlying transaction has since its creation.
@@ -97,6 +109,13 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 */
 	<T extends EObject> T lookupIfExists(String componentId, Class<T> type);
 	
+	/**
+	 * Lookup all components of the given type and ID set. The returned {@link Map} will contain all resolved objects, but won't contain any value for missing components.
+	 * 
+	 * @param componentIds
+	 * @param type
+	 * @return
+	 */
 	<T extends EObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type);
 
 	/**
