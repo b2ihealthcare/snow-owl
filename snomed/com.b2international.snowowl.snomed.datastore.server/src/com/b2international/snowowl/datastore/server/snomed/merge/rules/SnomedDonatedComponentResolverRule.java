@@ -21,8 +21,6 @@ import static java.util.stream.Collectors.toSet;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 
@@ -34,6 +32,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Concept;
@@ -48,19 +47,19 @@ public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConfl
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedDonatedComponentResolverRule.class);
 
-	private final Map<CDOID, CDOID> donatedComponents;
+	private final Collection<Pair<CDOID,CDOID>> donatedComponents;
 
-	public SnomedDonatedComponentResolverRule(final Map<CDOID, CDOID> donatedComponents) {
+	public SnomedDonatedComponentResolverRule(final Collection<Pair<CDOID,CDOID>> donatedComponents) {
 		this.donatedComponents = donatedComponents;
 	}
 
 	@Override
 	public Collection<MergeConflict> validate(final CDOTransaction transaction) {
 
-		for (final Entry<CDOID, CDOID> entry : donatedComponents.entrySet()) {
+		for (final Pair<CDOID, CDOID> entry : donatedComponents) {
 
-			final CDOID sourceCDOID = entry.getKey();
-			final CDOID targetCDOID = entry.getValue();
+			final CDOID sourceCDOID = entry.getA();
+			final CDOID targetCDOID = entry.getB();
 
 			final Optional<CDOObject> sourceComponent = transaction.getNewObjects().values().stream()
 					.filter(c -> CDOIDUtil.equals(c.cdoID(), sourceCDOID))

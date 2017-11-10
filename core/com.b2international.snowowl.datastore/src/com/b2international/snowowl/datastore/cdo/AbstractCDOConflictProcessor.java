@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
@@ -110,12 +111,12 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 		return id;
 	}
 
-	protected Set<CDOID> getDetachedIdsInTarget(final Map<CDOID, Object> targetMap) {
-		return ImmutableSet.copyOf(Iterables.filter(targetMap.values(), CDOID.class));
+	protected Set<CDOID> getDetachedIds(final Map<CDOID, Object> revisionMap) {
+		return ImmutableSet.copyOf(Iterables.filter(revisionMap.values(), CDOID.class));
 	}
 
-	protected Iterable<InternalCDORevision> getNewRevisionsInTarget(final Map<CDOID, Object> targetMap) {
-		return Iterables.filter(targetMap.values(), InternalCDORevision.class);
+	protected Set<InternalCDORevision> getNewRevisions(final Map<CDOID, Object> revisionMap) {
+		return ImmutableSet.copyOf(Iterables.filter(revisionMap.values(), InternalCDORevision.class));
 	}
 
 	@Override
@@ -131,7 +132,7 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	}
 	
 	@Override
-	public void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap, boolean isRebase) {
+	public void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap, CDOBranch sourceBranch, CDOBranch targetBranch, boolean isRebase) {
 	}
 	
 	@Override

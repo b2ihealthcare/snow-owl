@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.cdo;
 import java.util.Collection;
 import java.util.Map;
 
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
@@ -105,7 +106,7 @@ public interface ICDOConflictProcessor {
 	
 	Object detachedInTarget(CDOID id);
 	
-	void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap, boolean isRebase);
+	void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap, CDOBranch sourceBranch, CDOBranch targetBranch, boolean isRebase);
 
 	/**
 	 * Post-processes the resulting change set. This usually removes cross-references from objects queued for removal

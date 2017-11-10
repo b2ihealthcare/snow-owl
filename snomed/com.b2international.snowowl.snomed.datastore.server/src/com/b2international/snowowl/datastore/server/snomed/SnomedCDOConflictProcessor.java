@@ -17,13 +17,14 @@ package com.b2international.snowowl.datastore.server.snomed;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
+import static java.util.stream.Collectors.toMap;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
@@ -37,6 +38,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
 import com.b2international.commons.Pair;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.datastore.cdo.AbstractCDOConflictProcessor;
 import com.b2international.snowowl.datastore.cdo.AddedInSourceAndDetachedInTargetConflict;
@@ -46,17 +48,19 @@ import com.b2international.snowowl.datastore.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.cdo.IMergeConflictRule;
 import com.b2international.snowowl.datastore.server.snomed.merge.SnomedMergeConflictMapper;
 import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedDonatedComponentResolverRule;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
@@ -90,36 +94,48 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 			SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__SOURCE_EFFECTIVE_TIME,
 			SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__TARGET_EFFECTIVE_TIME);
 
-	private Map<String, CDOID> newComponentIdsInSource;
+	private boolean isRebase;
+	
+	private Map<String, InternalCDORevision> newComponentIdsInSource;
+	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> newSourceRevisionIdToFeatureIdMap;
 	private Set<CDOID> detachedSourceIds;
-	private Map<String, CDOID> newComponentIdsInTarget;
+	
+	private Map<String, InternalCDORevision> newComponentIdsInTarget;
+	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> newTargetRevisionIdToFeatureIdMap;
 	private Set<CDOID> detachedTargetIds;
 
-	private boolean isRebase;
-
-	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> newSourceRevisionIdToFeatureIdMap;
-	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> newTargetRevisionIdToFeatureIdMap;
-
-	private Map<CDOID, CDOID> donatedComponentsMap = newHashMap(); // key -> extension component's CDO ID, value -> INT component's CDO ID
-	private Set<String> donatedComponentIds = newHashSet(); // set of SNOMED CT IDs to donate
+	private Map<String, Pair<CDOID, CDOID>> donatedComponentsMap = newHashMap();
+	private Set<String> donatedComponentIds = newHashSet();
 
 	public SnomedCDOConflictProcessor() {
 		super(SnomedDatastoreActivator.REPOSITORY_UUID, RELEASED_ATTRIBUTE_MAP);
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * <p>
-	 * SNOMED CT-specific conflict processing will report a conflict if:
-	 * <ul>
-	 * <li>a new object on target has the same SNOMED CT component identifier as the new object on source 
-	 * <li>a detached object on target is referenced by the new object on source
-	 * </ul>
-	 * The addition is allowed through in all other cases.
-	 */
+	@Override
+	public void preProcess(final Map<CDOID, Object> sourceMap, final Map<CDOID, Object> targetMap, CDOBranch sourceBranch, CDOBranch targetBranch, boolean isRebase) {
+		
+		this.isRebase = isRebase;
+		
+		Map<CDOID, InternalCDORevision> newSourceComponentRevisions = extractNewComponentRevisions(sourceMap);
+		Map<CDOID, InternalCDORevision> newTargetComponentRevisions = extractNewComponentRevisions(targetMap);
+
+		newSourceRevisionIdToFeatureIdMap = extractNewRevisionIdToFeatureIdMap(newSourceComponentRevisions.values());
+		newTargetRevisionIdToFeatureIdMap = extractNewRevisionIdToFeatureIdMap(newTargetComponentRevisions.values());
+		
+		newComponentIdsInSource = extractNewComponentIds(newSourceComponentRevisions.values());
+		newComponentIdsInTarget = extractNewComponentIds(newTargetComponentRevisions.values());
+		
+		collectDonatedComponents(newSourceComponentRevisions, newTargetComponentRevisions, sourceBranch, targetBranch);
+		
+		detachedSourceIds = getDetachedIds(sourceMap);
+		detachedTargetIds = getDetachedIds(targetMap);
+	}
+
 	@Override
 	public Object addedInSource(final CDORevision sourceRevision, final Map<CDOID, Object> targetMap) {
+
 		if (isRebase) {
+			
 			Conflict conflict = checkDuplicateComponentIds(sourceRevision, newComponentIdsInTarget);
 			
 			if (conflict != null) {
@@ -203,7 +219,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		
 		return super.changedInSourceAndTargetSingleValued(targetFeatureDelta, sourceFeatureDelta);
 	}
-	
+
 	@Override
 	public Collection<MergeConflict> handleCDOConflicts(final CDOView sourceView, final CDOView targetView, final Map<CDOID, Conflict> conflicts) {
 		if (!conflicts.isEmpty()) {
@@ -217,91 +233,128 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	}
 	
 	@Override
-	public void preProcess(final Map<CDOID, Object> sourceMap, final Map<CDOID, Object> targetMap, boolean isRebase) {
-		this.isRebase = isRebase;
-		
-		Collection<InternalCDORevision> newSourceComponentRevisions = extractNewComponentRevisions(sourceMap);
-		Collection<InternalCDORevision> newTargetComponentRevisions = extractNewComponentRevisions(targetMap);
-
-		newSourceRevisionIdToFeatureIdMap = extractNewRevisionIdToFeatureIdMap(newSourceComponentRevisions);
-		newTargetRevisionIdToFeatureIdMap = extractNewRevisionIdToFeatureIdMap(newTargetComponentRevisions);
-		
-		newComponentIdsInSource = extractNewComponentIds(newSourceComponentRevisions);
-		newComponentIdsInTarget = extractNewComponentIds(newTargetComponentRevisions);
-		
-		collectDonatedComponents(newSourceComponentRevisions, newTargetComponentRevisions);
-		
-		detachedSourceIds = getDetachedIdsInTarget(sourceMap);
-		detachedTargetIds = getDetachedIdsInTarget(targetMap);
+	public Collection<IMergeConflictRule> getConflictRules() {
+		if (!donatedComponentsMap.isEmpty()) {
+			super.getConflictRules().add(new SnomedDonatedComponentResolverRule(donatedComponentsMap.values()));
+		}
+		return super.getConflictRules();
 	}
-
-	private void collectDonatedComponents(Collection<InternalCDORevision> newSourceComponentRevisions,
-			Collection<InternalCDORevision> newTargetComponentRevisions) {
 	
+	private void collectDonatedComponents(Map<CDOID, InternalCDORevision> newSourceComponentRevisions, Map<CDOID, InternalCDORevision> newTargetComponentRevisions, CDOBranch sourceBranch, CDOBranch targetBranch) {
+		
+		Set<String> donatedDescriptionIdCandidates = newHashSet();
+		Set<String> donatedRelationshipIdCandidates = newHashSet();
+		
 		for (String id : Sets.intersection(newComponentIdsInSource.keySet(), newComponentIdsInTarget.keySet())) {
 			
-			CDOID sourceCDOId = newComponentIdsInSource.get(id);
-			CDOID targetCDOId = newComponentIdsInTarget.get(id);
+			InternalCDORevision sourceRevision = newComponentIdsInSource.get(id);
+			InternalCDORevision targetRevision = newComponentIdsInTarget.get(id);
 			
-			if (!CDOIDUtil.equals(sourceCDOId, targetCDOId)) {
+			if (!CDOIDUtil.equals(sourceRevision.getID(), targetRevision.getID())) {
 				
-				Optional<InternalCDORevision> sourceRevision = newSourceComponentRevisions.stream()
-						.filter(revision -> CDOIDUtil.equals(revision.getID(), sourceCDOId)).findFirst();
-				Optional<InternalCDORevision> targetRevision = newTargetComponentRevisions.stream()
-						.filter(revision -> CDOIDUtil.equals(revision.getID(), targetCDOId)).findFirst();
+				CDOID sourceModule = (CDOID) sourceRevision.getValue(SnomedPackage.Literals.COMPONENT__MODULE);
+				CDOID targetModule = (CDOID) targetRevision.getValue(SnomedPackage.Literals.COMPONENT__MODULE);
 				
-				if (sourceRevision.isPresent() && targetRevision.isPresent()) {
+				if (!CDOIDUtil.equals(sourceModule, targetModule)) {
 					
-					InternalCDORevision sourceRevisionComponent = sourceRevision.get();
-					InternalCDORevision targetRevisionComponent = targetRevision.get();
-					
-					CDOID sourceModule = (CDOID) sourceRevisionComponent.getValue(SnomedPackage.Literals.COMPONENT__MODULE);
-					CDOID targetModule = (CDOID) targetRevisionComponent.getValue(SnomedPackage.Literals.COMPONENT__MODULE);
-					
-					if (!CDOIDUtil.equals(sourceModule, targetModule)) {
+					if (isDescription(sourceRevision) && isDescription(targetRevision)) {
 						
-						if (isDescription(sourceRevisionComponent) && isDescription(targetRevisionComponent)) {
-							
-							CDOID sourceConcept = (CDOID) sourceRevisionComponent.getContainerID();
-							CDOID targetConcept = (CDOID) targetRevisionComponent.getContainerID();
-							
-							if (CDOIDUtil.equals(sourceConcept, targetConcept)) {
-								
-								donatedComponentsMap.put(sourceCDOId, targetCDOId);
-								donatedComponentIds.add(id);
-								
-							}
-							
-						} else if (isRelationship(sourceRevisionComponent) && isRelationship(targetRevisionComponent)) {
-							
-							CDOID sourceConcept = (CDOID) sourceRevisionComponent.getContainerID();
-							CDOID targetConcept = (CDOID) targetRevisionComponent.getContainerID();
-							
-							if (CDOIDUtil.equals(sourceConcept, targetConcept)) {
-								
-								donatedComponentsMap.put(sourceCDOId, targetCDOId);
-								donatedComponentIds.add(id);
-								
-							}
-							
-						} else { // must be concepts
-							
-							donatedComponentsMap.put(sourceCDOId, targetCDOId);
-							donatedComponentIds.add(id);
-							
-						}
+						donatedDescriptionIdCandidates.add(id);
+						
+					} else if (isRelationship(sourceRevision) && isRelationship(targetRevision)) {
+						
+						donatedRelationshipIdCandidates.add(id);
+						
+					} else { // must be concepts
+						
+						donatedComponentsMap.put(id, Pair.of(sourceRevision.getID(), targetRevision.getID()));
+						
 					}
 				}
 			}
 		}
-	}
-	
-	@Override
-	public Collection<IMergeConflictRule> getConflictRules() {
-		if (!donatedComponentsMap.isEmpty()) {
-			super.getConflictRules().add(new SnomedDonatedComponentResolverRule(donatedComponentsMap));
+		
+		if (!donatedDescriptionIdCandidates.isEmpty()) {
+			
+			Map<String, String> descriptionToConceptIdOnSourceMap = SnomedRequests.prepareSearchDescription()
+				.filterByIds(donatedDescriptionIdCandidates)
+				.all()
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, sourceBranch.getPathName())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then( descriptions -> {
+					return descriptions.getItems().stream().collect(toMap(SnomedDescription::getId, d -> d.getConceptId()));
+				}).getSync();
+			
+			Map<String, String> descriptionToConceptIdOnTargetMap = SnomedRequests.prepareSearchDescription()
+				.filterByIds(donatedDescriptionIdCandidates)
+				.all()
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, targetBranch.getPathName())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then( descriptions -> {
+					return descriptions.getItems().stream().collect(toMap(SnomedDescription::getId, d -> d.getConceptId()));
+				}).getSync();
+			
+			for (Entry<String, String> entry : descriptionToConceptIdOnSourceMap.entrySet()) {
+				
+				String descriptionId = entry.getKey();
+				String conceptIdOnSource = entry.getValue();
+				String conceptIdOnTarget = descriptionToConceptIdOnTargetMap.get(descriptionId);
+				
+				if (conceptIdOnSource.equals(conceptIdOnTarget)) {
+					
+					if (!donatedComponentsMap.keySet().contains(conceptIdOnSource)) {
+						donatedComponentsMap.put(descriptionId,
+								Pair.of(newComponentIdsInSource.get(descriptionId).getID(), newComponentIdsInTarget.get(descriptionId).getID()));
+					} else {
+						donatedComponentIds.add(descriptionId); // to avoid duplicate ID conflict
+					}
+					
+				}
+			}
+			
 		}
-		return super.getConflictRules();
+		
+		if (!donatedRelationshipIdCandidates.isEmpty()) {
+			
+			Map<String, String> relationshipToSourceConceptIdOnSourceMap = SnomedRequests.prepareSearchRelationship()
+				.filterByIds(donatedRelationshipIdCandidates)
+				.all()
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, sourceBranch.getPathName())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then( relationships -> {
+					return relationships.getItems().stream().collect(toMap(SnomedRelationship::getId, d -> d.getSourceId()));
+				}).getSync();
+			
+			Map<String, String> relationshipToSourceConceptIdOnTargetMap = SnomedRequests.prepareSearchRelationship()
+				.filterByIds(donatedRelationshipIdCandidates)
+				.all()
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, targetBranch.getPathName())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then( relationships -> {
+					return relationships.getItems().stream().collect(toMap(SnomedRelationship::getId, d -> d.getSourceId()));
+				}).getSync();
+			
+			for (Entry<String, String> entry : relationshipToSourceConceptIdOnSourceMap.entrySet()) {
+				
+				String relationshipId = entry.getKey();
+				String conceptIdOnSource = entry.getValue();
+				String conceptIdOnTarget = relationshipToSourceConceptIdOnTargetMap.get(relationshipId);
+				
+				if (conceptIdOnSource.equals(conceptIdOnTarget)) {
+					
+					if (!donatedComponentsMap.keySet().contains(conceptIdOnSource)) {
+						donatedComponentsMap.put(relationshipId,
+								Pair.of(newComponentIdsInSource.get(relationshipId).getID(), newComponentIdsInTarget.get(relationshipId).getID()));
+					} else {
+						donatedComponentIds.add(relationshipId); // to avoid duplicate ID conflict
+					}
+					
+				}
+			}
+			
+		}
+		
+		donatedComponentIds.addAll(donatedComponentsMap.keySet());
 	}
 	
 	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> extractNewRevisionIdToFeatureIdMap(Collection<InternalCDORevision> newComponentRevisions) {
@@ -318,32 +371,28 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		return revisionToFeatureIdMap;
 	}
 
-	private Collection<InternalCDORevision> extractNewComponentRevisions(final Map<CDOID, Object> revisionMap) {
-		return FluentIterable.from(getNewRevisionsInTarget(revisionMap)).filter(new Predicate<InternalCDORevision>() {
-			@Override public boolean apply(InternalCDORevision input) {
-				return isComponent(input);
-			}
-		}).toSet();
+	private Map<CDOID, InternalCDORevision> extractNewComponentRevisions(final Map<CDOID, Object> revisionMap) {
+		return getNewRevisions(revisionMap).stream()
+				.filter(revision -> isComponent(revision))
+				.collect(toMap(InternalCDORevision::getID, r -> r));
 	}
 	
-	private Map<String, CDOID> extractNewComponentIds(Collection<InternalCDORevision> newComponentRevisions) {
-		final Map<String, CDOID> newComponentIdsMap = Maps.newHashMap();
-		for (final InternalCDORevision revision : newComponentRevisions) {
-			newComponentIdsMap.put(getComponentId(revision), revision.getID());
-		}
-		return newComponentIdsMap;
+	private Map<String, InternalCDORevision> extractNewComponentIds(Collection<InternalCDORevision> newComponentRevisions) {
+		return newComponentRevisions.stream().collect(toMap(revision -> getComponentId(revision), r -> r));
 	}
 	
-	private Conflict checkDuplicateComponentIds(final CDORevision revision, final Map<String, CDOID> newComponentIdsMap) {
+	private Conflict checkDuplicateComponentIds(final CDORevision revision, final Map<String, InternalCDORevision> newComponentIdsToRevisionsMap) {
 
 		if (isComponent(revision)) {
-			final String newComponentId = getComponentId((InternalCDORevision) revision);
-			final CDOID conflictingNewId = newComponentIdsMap.get(newComponentId);
+			
+			final String revisionComponentId = getComponentId((InternalCDORevision) revision);
+			final InternalCDORevision newComponentRevision = newComponentIdsToRevisionsMap.get(revisionComponentId);
 
-			if (null != conflictingNewId && !donatedComponentIds.contains(newComponentId)) {
-				return new AddedInSourceAndTargetConflict(revision.getID(), conflictingNewId, String.format(
-						"Two SNOMED CT %ss are using the same '%s' identifier.", revision.getEClass().getName(), newComponentId));
+			if (null != newComponentRevision && !donatedComponentIds.contains(revisionComponentId)) {
+				return new AddedInSourceAndTargetConflict(revision.getID(), newComponentRevision.getID(),
+						String.format("Two SNOMED CT %ss are using the same '%s' identifier", revision.getEClass().getName(), revisionComponentId));
 			}
+			
 		}
 
 		return null;
@@ -397,4 +446,5 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		return null;
 	}
 
+	
 }
