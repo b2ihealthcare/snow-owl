@@ -185,7 +185,6 @@ public class DelegateCDOServerChangeManager {
 	 * @param monitor
 	 */
 	public void handleTransactionAfterCommitted() {
-		if (changeProcessors.isEmpty()) return;
 		RuntimeException caughtException = null;
 		final Collection<ICDOChangeProcessor> committedChangeProcessors = newConcurrentHashSet();
 		final Collection<IndexCommitChangeSet> indexCommitChangeSets = newConcurrentHashSet();

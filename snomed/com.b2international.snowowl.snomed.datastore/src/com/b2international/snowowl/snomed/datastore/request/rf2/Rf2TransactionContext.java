@@ -109,6 +109,9 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 			} else {
 				return -1L;
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
 		} finally {
 			newComponents.values().forEach(component -> {
 				if (component instanceof Component) {

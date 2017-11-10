@@ -19,6 +19,8 @@ import java.util.BitSet;
 
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.Pair;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 
 /**
  *
@@ -93,13 +95,64 @@ public interface ISnomedTaxonomyBuilder {
 	}
 	
 	public static interface TaxonomyBuilderNode extends TaxonomyItem {
+
+		static TaxonomyBuilderNode of(SnomedConcept concept) {
+			final boolean active = concept.isActive();
+			final String id = concept.getId();
+			return new TaxonomyBuilderNode() {
+				@Override
+				public boolean isCurrent() {
+					return active;
+				}
+				
+				@Override
+				public String getId() {
+					return id;
+				}
+			};
+		}
 		
 	}
 	
 	public static interface TaxonomyBuilderEdge extends TaxonomyItem {
 		String getSoureId();
 		String getDestinationId();
+		
+		@Deprecated
 		boolean isValid();
+		
+		static TaxonomyBuilderEdge of(SnomedRelationship relationship) {
+			final String id = relationship.getId();
+			final boolean active = relationship.isActive();
+			final String sourceId = relationship.getSourceId();
+			final String destinationId = relationship.getDestinationId();
+			return new TaxonomyBuilderEdge() {
+				@Override
+				public boolean isCurrent() {
+					return active;
+				}
+				
+				@Override
+				public String getId() {
+					return id;
+				}
+				
+				@Override
+				public boolean isValid() {
+					return true;
+				}
+				
+				@Override
+				public String getSoureId() {
+					return sourceId;
+				}
+				
+				@Override
+				public String getDestinationId() {
+					return destinationId;
+				}
+			};
+		}
 	}
 	
 }

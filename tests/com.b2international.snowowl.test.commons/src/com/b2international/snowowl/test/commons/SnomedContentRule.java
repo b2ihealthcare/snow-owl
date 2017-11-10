@@ -33,8 +33,8 @@ import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
@@ -49,13 +49,13 @@ public class SnomedContentRule extends ExternalResource {
 	private final String branchPath;
 	private final CodeSystem codeSystem;
 	private final File importArchive;
-	private final ContentSubType contentType;
+	private final Rf2ReleaseType contentType;
 
-	public SnomedContentRule(final CodeSystem codeSystem, final String importArchivePath, final ContentSubType contentType) {
+	public SnomedContentRule(final CodeSystem codeSystem, final String importArchivePath, final Rf2ReleaseType contentType) {
 		this(IBranchPath.MAIN_BRANCH, codeSystem, importArchivePath, contentType);
 	}
 	
-	public SnomedContentRule(final String branchPath, final CodeSystem codeSystem, final String importArchivePath, final ContentSubType contentType) {
+	public SnomedContentRule(final String branchPath, final CodeSystem codeSystem, final String importArchivePath, final Rf2ReleaseType contentType) {
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 		this.codeSystem = checkNotNull(codeSystem, "codeSystem");
 		this.contentType = checkNotNull(contentType, "contentType");
@@ -74,6 +74,8 @@ public class SnomedContentRule extends ExternalResource {
 		
 		SnomedRequests.rf2().prepareImport()
 			.setRf2ArchiveId(rf2ArchiveId)
+			.setReleaseType(contentType)
+			.setCreateVersions(true)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 			.execute(getBus())
 			.getSync();

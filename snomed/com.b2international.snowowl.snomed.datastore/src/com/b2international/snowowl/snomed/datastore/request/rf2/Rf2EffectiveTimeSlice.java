@@ -19,6 +19,7 @@ import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -38,6 +39,9 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.graph.LongTarjan;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionIndexWrite;
+import com.b2international.index.revision.RevisionWriter;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -48,11 +52,20 @@ import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
+import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderEdge;
+import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderNode;
+import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyStatus;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
@@ -81,13 +94,16 @@ final class Rf2EffectiveTimeSlice {
 	private final Map<String, Long> storageKeysByComponent;
 	private final Map<String, Long> storageKeysByRefSet;
 	private final boolean loadOnDemand;
+
+	// tracks the latest commitTimestamp, used by commitIndex
+	private long commitTimestamp;
 	
 	public Rf2EffectiveTimeSlice(DB db, String effectiveTime, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet, boolean loadOnDemand) {
 		this.effectiveDate = EffectiveTimes.parse(effectiveTime, DateFormats.SHORT);
 		this.effectiveTime = EffectiveTimes.format(effectiveDate, DateFormats.DEFAULT);
 		this.storageKeysByComponent = storageKeysByComponent;
 		this.storageKeysByRefSet = storageKeysByRefSet;
-		this.componentsById = db.hashMap(effectiveTime, Serializer.STRING, Serializer.ELSA).create();
+		this.componentsById = db.hashMap(effectiveTime, Serializer.STRING, Serializer.ELSA).createOrOpen();
 		this.tmpComponentsById = newHashMapWithExpectedSize(BATCH_SIZE);
 		this.dependenciesByComponent = PrimitiveMaps.newLongKeyOpenHashMap();
 		this.membersByContainer = PrimitiveMaps.newLongKeyOpenHashMap();
@@ -157,7 +173,7 @@ final class Rf2EffectiveTimeSlice {
 		return new LongTarjan(60000, dependenciesByComponent::get).run(dependenciesByComponent.keySet());
 	}
 
-	public void doImport(BranchContext context, boolean createVersions) throws Exception {
+	public void commitCdo(BranchContext context, boolean createVersions) throws Exception {
 		Stopwatch w = Stopwatch.createStarted();
 		System.err.println("Importing components from " + effectiveTime);
 		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.service(TransactionContextProvider.class).get(context), storageKeysByComponent, storageKeysByRefSet, loadOnDemand)) {
@@ -200,7 +216,7 @@ final class Rf2EffectiveTimeSlice {
 				
 				// TODO consider moving preCommit into commit method
 				tx.preCommit();
-				tx.commit("info@b2international.com", "Imported components from " + effectiveTime, DatastoreLockContextDescriptions.ROOT);
+				commitTimestamp = tx.commit("info@b2international.com", "Imported components from " + effectiveTime, DatastoreLockContextDescriptions.ROOT);
 			}
 			
 			if (createVersions) {
@@ -250,6 +266,65 @@ final class Rf2EffectiveTimeSlice {
 		case DESCRIPTION: return Description.class;
 		case RELATIONSHIP: return Relationship.class;
 		default: throw new UnsupportedOperationException("Cannot determine cdo type from component ID: " + componentId);
+		}
+	}
+
+	public void commitIndex(BranchContext context, boolean createVersions, final ISnomedTaxonomyBuilder inferred, final ISnomedTaxonomyBuilder stated) {
+		final Stopwatch w = Stopwatch.createStarted();
+		context.service(RevisionIndex.class).write(context.branchPath(), commitTimestamp, new RevisionIndexWrite<Void>() {
+			@Override
+			public Void execute(RevisionWriter index) throws IOException {
+				commitIndex(index, createVersions, inferred, stated);
+				return null;
+			}
+		});
+		System.err.println("Indexing " + effectiveTime + " took " + w);
+	}
+
+	private void commitIndex(RevisionWriter index, boolean createVersions, ISnomedTaxonomyBuilder inferred, ISnomedTaxonomyBuilder stated) {
+		// TODO update inferred and stated taxonomy with available nodes and edges
+		// TODO then index all concepts, descriptions, relationships, members as the change processor would do it
+		for (String componentId : componentsById.getKeys()) {
+			try {
+				SnomedIdentifier id = SnomedIdentifiers.create(componentId);
+				switch (id.getComponentCategory()) {
+				case CONCEPT:
+					SnomedConcept concept = getComponent(componentId);
+					TaxonomyBuilderNode node = TaxonomyBuilderNode.of(concept);
+					if (node.isCurrent()) {
+						stated.addNode(node);
+						inferred.addNode(node);
+					} else {
+						stated.removeNode(node);
+						inferred.removeNode(node);
+					}
+					break;
+				case RELATIONSHIP:
+					SnomedRelationship relationship = getComponent(componentId);
+					if (Concepts.IS_A.equals(relationship.getTypeId())) {
+						if (CharacteristicType.STATED_RELATIONSHIP == relationship.getCharacteristicType()) {
+							stated.addEdge(TaxonomyBuilderEdge.of(relationship));
+						} else if (CharacteristicType.INFERRED_RELATIONSHIP == relationship.getCharacteristicType()) {
+							inferred.addEdge(TaxonomyBuilderEdge.of(relationship));
+						}
+					}
+					break;
+				default: break;
+				}
+			} catch (IllegalArgumentException e) {
+				// ignore non-SCT IDs when updating inferred/stated taxonomies
+			}
+		}
+		
+		SnomedTaxonomyStatus inferredStatus = inferred.build();
+		SnomedTaxonomyStatus statedStatus = stated.build();
+		
+		if (!inferredStatus.getStatus().isOK()) {
+			System.err.println(inferredStatus.getInvalidRelationships());
+		}
+		
+		if (!statedStatus.getStatus().isOK()) {
+			System.err.println(statedStatus.getInvalidRelationships());
 		}
 	}
 
