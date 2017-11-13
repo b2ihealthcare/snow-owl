@@ -155,37 +155,15 @@ public class PersistChangesRequest implements Request<ServiceProvider, ApiError>
 
 			editingContext = new SnomedEditingContext(branchPath);
 
-			final OntologyChangeRecorder<StatementFragment> relationshipRecorder = new OntologyChangeRecorder<>();
-			final OntologyChangeRecorder<ConcreteDomainFragment> concreteDomainRecorder = new OntologyChangeRecorder<>();
-			recordChanges(subMonitor, relationshipRecorder, concreteDomainRecorder);
-		
-			namespaceAndModuleAssigner.allocateRelationshipIdsAndModules(relationshipRecorder.getAddedSubjects().keys(), editingContext);
-			applyRelationshipChanges(editingContext, relationshipRecorder);
-			
-			namespaceAndModuleAssigner.allocateConcreteDomainModules(concreteDomainRecorder.getAddedSubjects().keySet(), editingContext);
-			applyConcreteDomainChanges(editingContext, concreteDomainRecorder);
-			List<LongSet> equivalenciesToFix = Lists.newArrayList();
-
-			for (LongSet equivalentSet : taxonomy.getEquivalentConceptIds()) {
-				long firstConceptId = equivalentSet.iterator().next();
-				String firstConceptIdString = Long.toString(firstConceptId);
-
-				// FIXME: make equivalence set to fix user-selectable, only subtype of SMP can be auto-merged
-				if (isSubTypeOfSMP(branchPath, firstConceptIdString)) {
-					equivalenciesToFix.add(equivalentSet);
-				}
-			}
-
-			if (!equivalenciesToFix.isEmpty()) {
-				new EquivalentConceptMerger(editingContext, equivalenciesToFix).fixEquivalencies();
-			}
+			applyChanges(subMonitor, editingContext);
+			fixEquivalences(editingContext);
 
 			CDOTransaction editingContextTransaction = editingContext.getTransaction();
 			editingContext.preCommit();
 
 			new CDOServerCommitBuilder(userId, "Classified ontology.", editingContextTransaction)
-			.parentContextDescription(SAVE_CLASSIFICATION_RESULTS)
-			.commitOne(subMonitor.newChild(2));
+					.parentContextDescription(SAVE_CLASSIFICATION_RESULTS)
+					.commitOne(subMonitor.newChild(2));
 
 			return new ApiError.Builder("OK").code(200).build();
 		} catch (CommitException e) {
@@ -199,7 +177,19 @@ public class PersistChangesRequest implements Request<ServiceProvider, ApiError>
 			}
 		}
 	}
+
+	private void applyChanges(SubMonitor subMonitor, SnomedEditingContext editingContext) {
+		final OntologyChangeRecorder<StatementFragment> relationshipRecorder = new OntologyChangeRecorder<>();
+		final OntologyChangeRecorder<ConcreteDomainFragment> concreteDomainRecorder = new OntologyChangeRecorder<>();
+		recordChanges(subMonitor, relationshipRecorder, concreteDomainRecorder);
 	
+		namespaceAndModuleAssigner.allocateRelationshipIdsAndModules(relationshipRecorder.getAddedSubjects().keys(), editingContext);
+		applyRelationshipChanges(editingContext, relationshipRecorder);
+		
+		namespaceAndModuleAssigner.allocateConcreteDomainModules(concreteDomainRecorder.getAddedSubjects().keySet(), editingContext);
+		applyConcreteDomainChanges(editingContext, concreteDomainRecorder);
+	}
+
 	private void recordChanges(final SubMonitor subMonitor,
 			final OntologyChangeRecorder<StatementFragment> relationshipRecorder,
 			final OntologyChangeRecorder<ConcreteDomainFragment> concreteDomainRecorder) {
@@ -240,6 +230,25 @@ public class PersistChangesRequest implements Request<ServiceProvider, ApiError>
 		
 		for (Entry<String, ConcreteDomainFragment> removedFragments : concreteDomainRecorder.getRemovedSubjects().entries()) {
 			concreteDomainPersister.handleRemovedSubject(removedFragments.getKey(), removedFragments.getValue());
+		}
+	}
+
+	private void fixEquivalences(SnomedEditingContext editingContext) {
+		final IBranchPath branchPath = taxonomy.getBranchPath();
+		final List<LongSet> equivalenciesToFix = Lists.newArrayList();
+		
+		for (LongSet equivalentSet : taxonomy.getEquivalentConceptIds()) {
+			long firstConceptId = equivalentSet.iterator().next();
+			String firstConceptIdString = Long.toString(firstConceptId);
+	
+			// FIXME: make equivalence set to fix user-selectable, only subtype of SMP can be auto-merged
+			if (isSubTypeOfSMP(branchPath, firstConceptIdString)) {
+				equivalenciesToFix.add(equivalentSet);
+			}
+		}
+	
+		if (!equivalenciesToFix.isEmpty()) {
+			new EquivalentConceptMerger(editingContext, equivalenciesToFix).fixEquivalencies();
 		}
 	}
 
