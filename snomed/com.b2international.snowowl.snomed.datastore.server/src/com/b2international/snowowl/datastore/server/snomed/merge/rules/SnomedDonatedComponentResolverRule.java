@@ -33,8 +33,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.Pair;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
+import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
@@ -47,16 +49,18 @@ public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConfl
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedDonatedComponentResolverRule.class);
 
-	private final Collection<Pair<CDOID,CDOID>> donatedComponents;
+	private final Collection<Pair<CDOID,CDOID>> newDonatedComponents;
+	private final Set<CDOID> changedComponentCandidates;
 
-	public SnomedDonatedComponentResolverRule(final Collection<Pair<CDOID,CDOID>> donatedComponents) {
-		this.donatedComponents = donatedComponents;
+	public SnomedDonatedComponentResolverRule(final Collection<Pair<CDOID,CDOID>> newDonatedComponents, final Set<CDOID> changedComponentCandidates) {
+		this.newDonatedComponents = newDonatedComponents;
+		this.changedComponentCandidates = changedComponentCandidates;
 	}
 
 	@Override
 	public Collection<MergeConflict> validate(final CDOTransaction transaction) {
 
-		for (final Pair<CDOID, CDOID> entry : donatedComponents) {
+		for (final Pair<CDOID, CDOID> entry : newDonatedComponents) {
 
 			final CDOID sourceCDOID = entry.getA();
 			final CDOID targetCDOID = entry.getB();
@@ -97,7 +101,7 @@ public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConfl
 						donatedConcept.getOutboundRelationships().add(extensionRelationship);
 					}
 
-					LOGGER.info("Processed donated concept with id: {}", extensionConcept.getId());
+					LOGGER.info("Processed donated concept with id '{}'", extensionConcept.getId());
 
 				} else if (sourceComponent.get() instanceof Description && targetComponent.get() instanceof Description) {
 
@@ -115,8 +119,8 @@ public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConfl
 					donatedDescription.getLanguageRefSetMembers().addAll(extensionDescription.getLanguageRefSetMembers().stream()
 							.filter(member -> !intLanguageRefsetIds.contains(member.getRefSetIdentifierId()))
 							.collect(toList()));
-					
-					LOGGER.info("Processed donated description with id: {}", extensionDescription.getId());
+
+					LOGGER.info("Processed donated description with id '{}'", extensionDescription.getId());
 
 				} else if (sourceComponent.get() instanceof Relationship && targetComponent.get() instanceof Relationship) {
 
@@ -126,11 +130,29 @@ public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConfl
 
 					// concrete domain members?
 
-					LOGGER.info("Processed donated relationship with id: {}", sourceRelationship.getId());
+					LOGGER.info("Processed donated relationship with id '{}'", sourceRelationship.getId());
 				}
 
 			}
 
+		}
+
+		for (final CDOID id : changedComponentCandidates) {
+
+			final Optional<CDOObject> object = Optional.ofNullable(CDOUtils.getObjectIfExists(transaction, id));
+
+			if (object.isPresent()) {
+
+				if (object.get() instanceof Component) {
+
+					final Component component = (Component) object.get();
+
+					transaction.getLastSavepoint().getDirtyObjects().remove(id);
+					transaction.getLastSavepoint().getRevisionDeltas().remove(id);
+
+					LOGGER.info("Keeping latest ({}) version of component '{}' with id '{}'", EffectiveTimes.format(component.getEffectiveTime()), component.eClass().getName(), component.getId());
+				}
+			}
 		}
 
 		return emptySet();

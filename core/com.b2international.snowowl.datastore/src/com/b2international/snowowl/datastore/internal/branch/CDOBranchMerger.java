@@ -85,11 +85,13 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 	}
 	
 	@Override
-	protected CDOFeatureDelta changedInSourceAndTargetSingleValued(final EStructuralFeature feature, 
-			final CDOFeatureDelta targetFeatureDelta, 
+	protected CDOFeatureDelta changedInSourceAndTargetSingleValued(final EStructuralFeature feature,
+			final CDORevisionDelta targetDelta,
+			final CDOFeatureDelta targetFeatureDelta,
+			final CDORevisionDelta sourceDelta,
 			final CDOFeatureDelta sourceFeatureDelta) {
 
-		return delegate.changedInSourceAndTargetSingleValued(targetFeatureDelta, sourceFeatureDelta);
+		return delegate.changedInSourceAndTargetSingleValued(targetDelta, targetFeatureDelta, sourceDelta, sourceFeatureDelta);
 	}
 	
 	@Override

@@ -457,7 +457,7 @@ protected boolean merge(Object targetData, Object sourceData)
         }
         else
         {
-          CDOFeatureDelta featureDelta = changedInSourceAndTarget(targetFeatureDelta, sourceFeatureDelta);
+          CDOFeatureDelta featureDelta = changedInSourceAndTarget(targetDelta, targetFeatureDelta, sourceDelta, sourceFeatureDelta);
           if (featureDelta != null)
           {
             result.addFeatureDelta(featureDelta);
@@ -523,8 +523,8 @@ protected boolean merge(Object targetData, Object sourceData)
     /**
      * @return the result feature delta, or <code>null</code> to indicate an unresolved conflict.
      */
-    protected CDOFeatureDelta changedInSourceAndTarget(CDOFeatureDelta targetFeatureDelta,
-        CDOFeatureDelta sourceFeatureDelta)
+    protected CDOFeatureDelta changedInSourceAndTarget(CDORevisionDelta targetDelta, CDOFeatureDelta targetFeatureDelta,
+        CDORevisionDelta sourceDelta, CDOFeatureDelta sourceFeatureDelta)
     {
       EStructuralFeature feature = targetFeatureDelta.getFeature();
       if (feature.isMany())
@@ -532,7 +532,7 @@ protected boolean merge(Object targetData, Object sourceData)
         return changedInSourceAndTargetManyValued(feature, targetFeatureDelta, sourceFeatureDelta);
       }
 
-      return changedInSourceAndTargetSingleValued(feature, targetFeatureDelta, sourceFeatureDelta);
+      return changedInSourceAndTargetSingleValued(feature, targetDelta, targetFeatureDelta, sourceDelta, sourceFeatureDelta);
     }
 
     /**
@@ -548,7 +548,7 @@ protected boolean merge(Object targetData, Object sourceData)
      * @return the result feature delta, or <code>null</code> to indicate an unresolved conflict.
      */
     protected CDOFeatureDelta changedInSourceAndTargetSingleValued(EStructuralFeature feature,
-        CDOFeatureDelta targetFeatureDelta, CDOFeatureDelta sourceFeatureDelta)
+        CDORevisionDelta targetDelta, CDOFeatureDelta targetFeatureDelta, CDORevisionDelta sourceDelta, CDOFeatureDelta sourceFeatureDelta)
     {
       if (targetFeatureDelta.isStructurallyEqual(sourceFeatureDelta))
       {

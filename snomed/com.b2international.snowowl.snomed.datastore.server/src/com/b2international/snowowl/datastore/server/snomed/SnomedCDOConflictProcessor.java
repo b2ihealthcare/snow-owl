@@ -20,6 +20,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.util.stream.Collectors.toMap;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -30,6 +31,8 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta.Type;
+import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EAttribute;
@@ -38,6 +41,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
 import com.b2international.commons.Pair;
+import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.datastore.cdo.AbstractCDOConflictProcessor;
@@ -56,6 +60,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.base.Function;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -104,7 +109,9 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> newTargetRevisionIdToFeatureIdMap;
 	private Set<CDOID> detachedTargetIds;
 
-	private Map<String, Pair<CDOID, CDOID>> donatedComponentsMap = newHashMap();
+	private Map<String, Pair<CDOID, CDOID>> newDonatedComponentsMap = newHashMap();
+	private Set<CDOID> changedComponentCandidates = newHashSet();
+	
 	private Set<String> donatedComponentIds = newHashSet();
 
 	public SnomedCDOConflictProcessor() {
@@ -113,6 +120,10 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	
 	@Override
 	public void preProcess(final Map<CDOID, Object> sourceMap, final Map<CDOID, Object> targetMap, CDOBranch sourceBranch, CDOBranch targetBranch, boolean isRebase) {
+		
+		LOGGER.info("Pre-processing merge/rebase operation...");
+		
+		Stopwatch stopwatch = Stopwatch.createStarted();
 		
 		this.isRebase = isRebase;
 		
@@ -129,6 +140,8 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		
 		detachedSourceIds = getDetachedIds(sourceMap);
 		detachedTargetIds = getDetachedIds(targetMap);
+		
+		LOGGER.info("Pre-processing took {}", TimeUtil.toString(stopwatch));
 	}
 
 	@Override
@@ -203,21 +216,42 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	}
 	
 	@Override
-	public CDOFeatureDelta changedInSourceAndTargetSingleValued(CDOFeatureDelta targetFeatureDelta, CDOFeatureDelta sourceFeatureDelta) {
+	public CDOFeatureDelta changedInSourceAndTargetSingleValued(CDORevisionDelta targetDelta, CDOFeatureDelta targetFeatureDelta, CDORevisionDelta sourceDelta, CDOFeatureDelta sourceFeatureDelta) {
 		final EStructuralFeature feature = targetFeatureDelta.getFeature();
 		
 		if (EFFECTIVE_TIME_FEATURES.contains(feature)) {
-		
-			if (Type.UNSET.equals(targetFeatureDelta.getType())) {
+			
+			if (Type.UNSET == targetFeatureDelta.getType()) {
 				return targetFeatureDelta;
-			} else if (Type.UNSET.equals(sourceFeatureDelta.getType())) {
+			} else if (Type.UNSET == sourceFeatureDelta.getType()) {
 				return sourceFeatureDelta;
+			} else if (Type.SET == targetFeatureDelta.getType() && Type.SET == sourceFeatureDelta.getType()) {
+				
+				CDOSetFeatureDelta target = (CDOSetFeatureDelta) targetFeatureDelta;
+				CDOSetFeatureDelta source = (CDOSetFeatureDelta) sourceFeatureDelta;
+				
+				if (target.getValue() instanceof Date && source.getValue() instanceof Date) {
+					
+					Date sourceDate = (Date) source.getValue();
+					Date targetDate = (Date) target.getValue();
+					
+					if (targetDate.after(sourceDate)) {
+						
+						if (isComponent(sourceDelta) && isComponent(targetDelta)) {
+							changedComponentCandidates.add(sourceDelta.getID());
+						}
+						
+						return targetFeatureDelta;
+					}
+					
+				}
+				
 			}
 			
 			// Fall-through
 		}
 		
-		return super.changedInSourceAndTargetSingleValued(targetFeatureDelta, sourceFeatureDelta);
+		return super.changedInSourceAndTargetSingleValued(targetDelta, targetFeatureDelta, sourceDelta, sourceFeatureDelta);
 	}
 
 	@Override
@@ -234,8 +268,8 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	
 	@Override
 	public Collection<IMergeConflictRule> getConflictRules() {
-		if (!donatedComponentsMap.isEmpty()) {
-			super.getConflictRules().add(new SnomedDonatedComponentResolverRule(donatedComponentsMap.values()));
+		if (!newDonatedComponentsMap.isEmpty() || !changedComponentCandidates.isEmpty()) {
+			super.getConflictRules().add(new SnomedDonatedComponentResolverRule(newDonatedComponentsMap.values(), changedComponentCandidates));
 		}
 		return super.getConflictRules();
 	}
@@ -267,7 +301,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 						
 					} else { // must be concepts
 						
-						donatedComponentsMap.put(id, Pair.of(sourceRevision.getID(), targetRevision.getID()));
+						newDonatedComponentsMap.put(id, Pair.of(sourceRevision.getID(), targetRevision.getID()));
 						
 					}
 				}
@@ -302,8 +336,8 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 				
 				if (conceptIdOnSource.equals(conceptIdOnTarget)) {
 					
-					if (!donatedComponentsMap.keySet().contains(conceptIdOnSource)) {
-						donatedComponentsMap.put(descriptionId,
+					if (!newDonatedComponentsMap.keySet().contains(conceptIdOnSource)) {
+						newDonatedComponentsMap.put(descriptionId,
 								Pair.of(newComponentIdsInSource.get(descriptionId).getID(), newComponentIdsInTarget.get(descriptionId).getID()));
 					} else {
 						donatedComponentIds.add(descriptionId); // to avoid duplicate ID conflict
@@ -342,8 +376,8 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 				
 				if (conceptIdOnSource.equals(conceptIdOnTarget)) {
 					
-					if (!donatedComponentsMap.keySet().contains(conceptIdOnSource)) {
-						donatedComponentsMap.put(relationshipId,
+					if (!newDonatedComponentsMap.keySet().contains(conceptIdOnSource)) {
+						newDonatedComponentsMap.put(relationshipId,
 								Pair.of(newComponentIdsInSource.get(relationshipId).getID(), newComponentIdsInTarget.get(relationshipId).getID()));
 					} else {
 						donatedComponentIds.add(relationshipId); // to avoid duplicate ID conflict
@@ -354,7 +388,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 			
 		}
 		
-		donatedComponentIds.addAll(donatedComponentsMap.keySet());
+		donatedComponentIds.addAll(newDonatedComponentsMap.keySet());
 	}
 	
 	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> extractNewRevisionIdToFeatureIdMap(Collection<InternalCDORevision> newComponentRevisions) {
@@ -398,6 +432,10 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		return null;
 	}
 
+	private boolean isComponent(final CDORevisionDelta revisionDelta) {
+		return isComponent(revisionDelta.getEClass());
+	}
+	
 	private boolean isComponent(final CDORevision revision) {
 		return isComponent(revision.getEClass());
 	}

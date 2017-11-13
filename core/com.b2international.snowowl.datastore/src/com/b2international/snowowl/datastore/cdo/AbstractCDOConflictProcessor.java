@@ -37,14 +37,18 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInTargetAndDetachedInSourceConflict;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.platform.Extensions;
+import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -55,6 +59,8 @@ import com.google.common.collect.Iterables;
  */
 public abstract class AbstractCDOConflictProcessor implements ICDOConflictProcessor {
 
+	protected static final Logger LOGGER = LoggerFactory.getLogger(ICDOConflictProcessor.class);
+	
 	private static final Map<EClass, EAttribute> EMPTY_MAP = ImmutableMap.of();
 
 	private final String repositoryUuid;
@@ -138,6 +144,9 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	@Override
 	public void postProcess(final CDOTransaction transaction) throws ConflictException {
 		
+		LOGGER.info("Post-processing merge/rebase operation...");
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		
 		List<MergeConflict> conflicts = FluentIterable.from(getConflictRules())
 				.transformAndConcat(new Function<IMergeConflictRule, Collection<MergeConflict>>() {
 					@Override
@@ -146,6 +155,8 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 					}
 				}).toList();
 
+		LOGGER.info("Post-processing took {}", TimeUtil.toString(stopwatch));
+		
 		if (!conflicts.isEmpty()) {
 			throw new MergeConflictException(conflicts, "Domain specific conflicts detected while post-processing merge changes.");
 		}
@@ -162,8 +173,9 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	 * The default case implements the same behavior as {@link DefaultCDOMerger.PerFeature}.
 	 */
 	@Override
-	public CDOFeatureDelta changedInSourceAndTargetSingleValued(CDOFeatureDelta targetFeatureDelta, CDOFeatureDelta sourceFeatureDelta) {
-		
+	public CDOFeatureDelta changedInSourceAndTargetSingleValued(CDORevisionDelta targetDelta, CDOFeatureDelta targetFeatureDelta,
+			CDORevisionDelta sourceDelta, CDOFeatureDelta sourceFeatureDelta) {
+
 		if (targetFeatureDelta.isStructurallyEqual(sourceFeatureDelta)) {
 			return targetFeatureDelta;
 		}

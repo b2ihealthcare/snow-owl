@@ -22,14 +22,17 @@ import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestR
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranch;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.updateComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.DEFAULT_LANGUAGE_CODE;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.merge;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -186,6 +189,143 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedApiTest {
 		createComponent(targetPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(201);
 
 		merge(branchPath, targetPath, "Upgraded B2i extension to v4.").body("status", equalTo(Merge.Status.CONFLICTS.name()));
+	}
+	
+	@Test
+	public void upgradeWithBackAndForthDonatedConcept() {
+	
+		// create new version on MAIN with core module and initial char case insensitive case significance
+		
+		String descriptionTerm = "Description term";
+		
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("conceptId", Concepts.ROOT_CONCEPT)
+				.put("moduleId", Concepts.MODULE_SCT_CORE)
+				.put("typeId", Concepts.SYNONYM)
+				.put("term", descriptionTerm)
+				.put("languageCode", DEFAULT_LANGUAGE_CODE)
+				.put("acceptability", SnomedApiTestConstants.UK_ACCEPTABLE_MAP)
+				.put("caseSignificance", CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE)
+				.put("commitComment", "Created new synonym")
+				.build();
+
+		String descriptionId = lastPathSegment(createComponent(BranchPathUtils.createMainPath(), SnomedComponentType.DESCRIPTION, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+		
+		// version new description
+		
+		String effectiveDate = getNextAvailableEffectiveDateAsString(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+		String versionId = "v10";
+		createVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, versionId, effectiveDate).statusCode(201);
+		
+		getComponent(BranchPathUtils.createMainPath(), SnomedComponentType.DESCRIPTION, descriptionId)
+			.statusCode(200)
+			.body("released", equalTo(true))
+			.body("effectiveTime", equalTo(effectiveDate))
+			.body("moduleId", equalTo(Concepts.MODULE_SCT_CORE))
+			.body("caseSignificance", equalTo(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.toString()));
+		
+		// upgrade extension to latest INT version
+		
+		IBranchPath targetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(
+				Branch.MAIN_PATH, 
+				versionId, 
+				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
+
+		createBranch(targetPath).statusCode(201);
+		
+		merge(branchPath, targetPath, "Upgraded B2i extension to v10").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		Map<?, ?> updateRequest = ImmutableMap.builder()
+				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
+				.put("branchPath", targetPath.getPath())
+				.build();
+
+		updateCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME, updateRequest).statusCode(204);
+		getCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME).statusCode(200).body("branchPath", equalTo(targetPath.getPath()));
+		
+		// update description on extension, change module and case significance
+		
+		Map<?, ?> descriptionUpdateRequest = ImmutableMap.builder()
+				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
+				.put("moduleId", Concepts.MODULE_B2I_EXTENSION)
+				.put("commitComment", "Changed case significance on description")
+				.build();
+
+		updateComponent(targetPath, SnomedComponentType.DESCRIPTION, descriptionId, descriptionUpdateRequest).statusCode(204);
+		
+		getComponent(targetPath, SnomedComponentType.DESCRIPTION, descriptionId)
+				.statusCode(200)
+				.body("released", equalTo(true))
+				.body("effectiveTime", nullValue())
+				.body("moduleId", equalTo(Concepts.MODULE_B2I_EXTENSION))
+				.body("caseSignificance", equalTo(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.toString()));
+		
+		// version extension
+		
+		String extensionEffectiveDate = getNextAvailableEffectiveDateAsString(SNOMED_B2I_SHORT_NAME);
+		String extensionVersionId = "ev2";
+
+		createVersion(SNOMED_B2I_SHORT_NAME, extensionVersionId, extensionEffectiveDate).statusCode(201);
+		
+		getComponent(targetPath, SnomedComponentType.DESCRIPTION, descriptionId)
+			.statusCode(200)
+			.body("released", equalTo(true))
+			.body("effectiveTime", equalTo(extensionEffectiveDate));
+		
+		// update description on MAIN ("take" extension changes and apply it in INT) 
+		
+		Map<?, ?> intDescriptionUpdateRequest = ImmutableMap.builder()
+				.put("caseSignificance", CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE)
+				.put("commitComment", "Changed case significance on description on MAIN")
+				.build();
+
+		updateComponent(BranchPathUtils.createMainPath(), SnomedComponentType.DESCRIPTION, descriptionId, intDescriptionUpdateRequest).statusCode(204);
+		
+		// version INT on MAIN
+		
+		String newIntEffectiveDate = getNextAvailableEffectiveDateAsString(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+		String newIntversionId = "v11";
+		createVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, newIntversionId, newIntEffectiveDate).statusCode(201);
+		
+		getComponent(BranchPathUtils.createMainPath(), SnomedComponentType.DESCRIPTION, descriptionId)
+				.statusCode(200)
+				.body("released", equalTo(true))
+				.body("effectiveTime", equalTo(newIntEffectiveDate))
+				.body("moduleId", equalTo(Concepts.MODULE_SCT_CORE))
+				.body("caseSignificance", equalTo(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.toString()));
+		
+		// upgrade extension to new INT version
+		
+		IBranchPath newTargetPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(
+				Branch.MAIN_PATH, 
+				newIntversionId, 
+				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
+
+		createBranch(newTargetPath).statusCode(201);
+		
+		System.err.println(effectiveDate);
+		System.err.println(extensionEffectiveDate);
+		System.err.println(newIntEffectiveDate);
+		
+		merge(targetPath, newTargetPath, "Upgraded B2i extension to v11").body("status", equalTo(Merge.Status.COMPLETED.name()));
+
+		Map<?, ?> newUpdateRequest = ImmutableMap.builder()
+				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
+				.put("branchPath", newTargetPath.getPath())
+				.build();
+
+		updateCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME, newUpdateRequest).statusCode(204);
+		getCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME).statusCode(200).body("branchPath", equalTo(newTargetPath.getPath()));
+		
+		getComponent(newTargetPath, SnomedComponentType.DESCRIPTION, descriptionId)
+			.statusCode(200)
+			.body("released", equalTo(true))
+			.body("effectiveTime", equalTo(newIntEffectiveDate))
+			.body("moduleId", equalTo(Concepts.MODULE_SCT_CORE))
+			.body("caseSignificance", equalTo(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.toString()));
+		
 	}
 	
 	@Test
