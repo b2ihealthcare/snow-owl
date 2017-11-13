@@ -29,12 +29,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.b2international.index.Text;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
 import com.b2international.index.Normalizers;
 import com.b2international.index.Script;
+import com.b2international.index.Text;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -370,7 +370,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	private final String caseSignificanceId;
 	private final Set<String> acceptableIn;
 	private final Set<String> preferredIn;
-	private final String typeLabel;
 
 	private SnomedDescriptionIndexEntry(final String id,
 			final String label,
@@ -404,7 +403,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		this.languageCode = languageCode;
 		this.term = term;
 		this.typeId = typeId;
-		this.typeLabel = typeLabel;
 		this.caseSignificanceId = caseSignificanceId;
 		this.preferredIn = preferredIn == null ? Collections.<String>emptySet() : preferredIn;
 		this.acceptableIn = acceptableIn == null ? Collections.<String>emptySet() : acceptableIn;
@@ -449,14 +447,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		return typeId;
 	}
 	
-	/**
-	 * @return the label of the description type concept
-	 */
-	@JsonIgnore
-	public String getTypeLabel() {
-		return typeLabel;
-	}
-
 	/**
 	 * @return the case significance concept identifier
 	 */
@@ -513,8 +503,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 				.add("typeId", typeId)
 				.add("caseSignificanceId", caseSignificanceId)
 				.add("acceptableIn", acceptableIn)
-				.add("preferredIn", preferredIn)
-				.add("typeLabel", typeLabel);
+				.add("preferredIn", preferredIn);
 	}
 
 }
