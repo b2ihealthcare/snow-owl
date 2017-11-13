@@ -52,13 +52,13 @@ public class RelationshipPersister {
 		SnomedModelExtensions.removeOrDeactivate(relationship);
 	}
 	
-	public void handleAddedSubject(final String sourceConceptId, final StatementFragment addedEntry) {
-		final Concept sourceConcept = context.lookup(sourceConceptId, Concept.class);
+	public void handleAddedSubject(final String conceptId, final StatementFragment addedEntry) {
+		final Concept sourceConcept = context.lookup(conceptId, Concept.class);
 		final Concept typeConcept = context.lookup(Long.toString(addedEntry.getTypeId()), Concept.class);
 		final Concept destinationConcept = context.lookup(Long.toString(addedEntry.getDestinationId()), Concept.class);
 		
-		final String relationshipId = namespaceAndModuleAssigner.getRelationshipId(sourceConceptId);
-		final Concept moduleConcept = namespaceAndModuleAssigner.getRelationshipModule(sourceConceptId);
+		final String relationshipId = namespaceAndModuleAssigner.getRelationshipId(conceptId);
+		final Concept moduleConcept = namespaceAndModuleAssigner.getRelationshipModule(conceptId);
 		
 		final Relationship newRel = SnomedFactory.eINSTANCE.createRelationship();
 		newRel.setId(relationshipId);

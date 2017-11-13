@@ -46,7 +46,6 @@ public class ConcreteDomainPersister {
 	
 	public void handleAddedSubject(final String conceptId, final ConcreteDomainFragment addedEntry) {
 		final Concept moduleConcept = namespaceAndModuleAssigner.getConcreteDomainModule(conceptId);
-		
 		final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet = context.lookup(Long.toString(addedEntry.getRefSetId()), SnomedConcreteDataTypeRefSet.class);
 		final SnomedConcreteDataTypeRefSetMember refSetMember = context.createConcreteDataTypeRefSetMember(
 				conceptId,
