@@ -24,7 +24,6 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.request.SearchResourceRequest.OptionKey;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -91,12 +90,6 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B filterByIds(Collection<String> ids) {
-		for (final String id : ids) {
-			if (Strings.isNullOrEmpty(id)) {
-				throw new BadRequestException("ID filter cannot contain empty values");
-			}
-		}
-
 		addOption(OptionKey.COMPONENT_IDS, ImmutableSet.copyOf(ids));
 		return getSelf();
 	}
@@ -141,7 +134,14 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	// XXX: Does not allow empty-ish values
 	protected final B addOption(String key, Object value) {
-		if (!CompareUtils.isEmpty(value)) {
+		if (value instanceof Iterable<?>) {
+			for (final Object val : (Iterable<?>)value) {
+				if (CompareUtils.isEmpty(val)) {
+					throw new BadRequestException("%s filter cannot contain null or empty values", key);
+				}
+			}
+			optionsBuilder.put(key, value);
+		} else if (!CompareUtils.isEmpty(value)) {
 			optionsBuilder.put(key, value);
 		}
 		return getSelf();
