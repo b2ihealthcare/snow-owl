@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,73 +16,81 @@
 package com.b2international.snowowl.api.impl.codesystem;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Lists.newArrayList;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.b2international.snowowl.api.codesystem.ICodeSystemService;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
-import com.b2international.snowowl.datastore.TerminologyRegistryService;
-import com.b2international.snowowl.datastore.UserBranchPathMap;
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import com.b2international.snowowl.core.RepositoryInfo;
+import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.CodeSystems;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
-/**
- */
-public class CodeSystemServiceImpl implements ICodeSystemService {
+public final class CodeSystemServiceImpl implements ICodeSystemService {
 
-	private static final Function<? super com.b2international.snowowl.datastore.ICodeSystem, ICodeSystem> CODE_SYSTEM_CONVERTER = 
-			new Function<com.b2international.snowowl.datastore.ICodeSystem, ICodeSystem>() {
+	private static final Ordering<ICodeSystem> SHORT_NAME_ORDERING = Ordering.natural().onResultOf(ICodeSystem::getShortName);
 
-		@Override
-		public ICodeSystem apply(final com.b2international.snowowl.datastore.ICodeSystem input) {
-			return CodeSystem.builder(input).build();
-		}
-	};
-
-	private static final Ordering<ICodeSystem> SHORT_NAME_ORDERING = Ordering.natural().onResultOf(new Function<ICodeSystem, String>() {
-		@Override
-		public String apply(final ICodeSystem input) {
-			return input.getShortName();
-		}
-	});
-
-	protected static final UserBranchPathMap MAIN_BRANCH_PATH_MAP = new UserBranchPathMap();
-
-	protected static TerminologyRegistryService getRegistryService() {
-		return ApplicationContext.getServiceForClass(TerminologyRegistryService.class);
-	}
-	
 	@Override
 	public List<ICodeSystem> getCodeSystems() {
-		return toSortedCodeSystemList(getRegistryService().getCodeSystems(MAIN_BRANCH_PATH_MAP));
+		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
+		for (String repositoryId : getRepositoryIds()) {
+			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().build(repositoryId).execute(getBus()));
+		}
+		return Promise.all(getAllCodeSystems)
+				.then(results -> {
+					final List<ICodeSystem> codeSystems = newArrayList();
+					for (CodeSystems result : Iterables.filter(results, CodeSystems.class)) {
+						codeSystems.addAll(Lists.transform(result.getItems(), input -> CodeSystem.builder(input).build()));
+					}
+					return SHORT_NAME_ORDERING.immutableSortedCopy(codeSystems);
+				})
+				.getSync();
+	}
+
+	private IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 
 	@Override
-	public ICodeSystem getCodeSystemByShortNameOrOid(String shortNameOrOid) {
+	public ICodeSystem getCodeSystemById(String shortNameOrOid) {
 		checkNotNull(shortNameOrOid, "Shortname Or OID parameter may not be null.");
-		final TerminologyRegistryService service = getRegistryService();
-		com.b2international.snowowl.datastore.ICodeSystem codeSystem = service.getCodeSystemByOid(MAIN_BRANCH_PATH_MAP, shortNameOrOid);
-		if (codeSystem == null) {
-			codeSystem = service.getCodeSystemByShortName(MAIN_BRANCH_PATH_MAP, shortNameOrOid);
-			if (codeSystem == null) {
-				throw new CodeSystemNotFoundException(shortNameOrOid);
-			}
+		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
+		for (String repositoryId : getRepositoryIds()) {
+			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem()
+					.all()
+					.filterById(shortNameOrOid)
+					.build(repositoryId)
+					.execute(getBus()));
 		}
-		return toCodeSystem(codeSystem).get();
+		return Promise.all(getAllCodeSystems)
+				.then(results -> {
+					for (CodeSystems result : Iterables.filter(results, CodeSystems.class)) {
+						if (!result.getItems().isEmpty()) {
+							return CodeSystem.builder(Iterables.getOnlyElement(result.getItems())).build();
+						}
+					}
+					throw new NotFoundException("CodeSystem", shortNameOrOid);
+				})
+				.getSync();
 	}
 	
-	private Optional<ICodeSystem> toCodeSystem(final com.b2international.snowowl.datastore.ICodeSystem sourceCodeSystem) {
-		return Optional.fromNullable(sourceCodeSystem).transform(CODE_SYSTEM_CONVERTER);
-	}
-
-	private List<ICodeSystem> toSortedCodeSystemList(final Collection<com.b2international.snowowl.datastore.ICodeSystem> sourceCodeSystems) {
-		return SHORT_NAME_ORDERING.immutableSortedCopy(transform(sourceCodeSystems, CODE_SYSTEM_CONVERTER));
+	private List<String> getRepositoryIds() {
+		return RepositoryRequests.prepareSearch()
+				.all()
+				.buildAsync()
+				.execute(getBus())
+				.then(repos -> repos.stream().map(RepositoryInfo::id).collect(Collectors.toList()))
+				.getSync();
 	}
 	
 }

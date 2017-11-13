@@ -41,9 +41,6 @@
 		<module>com.b2international.snowowl.scripting.server.feature</module>
 		<module>com.b2international.snowowl.scripting.services</module>
 	
-		<!-- TerminologyRegistry modules -->
-		<module>com.b2international.snowowl.terminologyregistry.core.server</module>
-		
 		<!-- Product modules -->
 		<module>com.b2international.snowowl.server.console</module>
 		<module>com.b2international.snowowl.server.product</module>

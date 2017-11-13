@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,19 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import org.eclipse.core.runtime.IStatus;
 
+import com.b2international.snowowl.api.codesystem.ICodeSystemService;
 import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
+import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersion;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersionProperties;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystemVersion;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -39,9 +42,6 @@ import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.LockedException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
-import com.b2international.snowowl.datastore.ICodeSystem;
-import com.b2international.snowowl.datastore.TerminologyRegistryService;
-import com.b2international.snowowl.datastore.UserBranchPathMap;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.version.VersioningService;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -82,37 +82,22 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 		}
 	});
 
-	private static TerminologyRegistryService getRegistryService() {
-		return ApplicationContext.getServiceForClass(TerminologyRegistryService.class);
-	}
-
 	@Override
 	public List<ICodeSystemVersion> getCodeSystemVersions(final String shortName) {
 		checkNotNull(shortName, "Short name may not be null.");
-		
-		final ICodeSystem codeSystem = getCodeSystem(shortName);
-		if (codeSystem == null) {
-			throw new CodeSystemNotFoundException(shortName);
-		}
-		
-		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> versions = getCodeSystemVersions(shortName,
-				codeSystem.getRepositoryUuid()); 
+		final ICodeSystem codeSystem = codeSystems.getCodeSystemById(shortName);
+		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> versions = getCodeSystemVersions(shortName, codeSystem.getRepositoryUuid()); 
 		return toSortedCodeSystemVersionList(versions);
 	}
 	
-	private ICodeSystem getCodeSystem(final String shortName) {
-		return getRegistryService().getCodeSystemByShortName(new UserBranchPathMap(), shortName);
-	}
+	@Resource
+	private ICodeSystemService codeSystems;
 
 	@Override
 	public ICodeSystemVersion getCodeSystemVersionById(final String shortName, final String versionId) {
 		checkNotNull(shortName, "Short name may not be null.");
 		checkNotNull(versionId, "Version identifier may not be null.");
-		
-		final ICodeSystem codeSystem = getCodeSystem(shortName);
-		if (codeSystem == null) {
-			throw new CodeSystemNotFoundException(shortName);
-		}
+		final ICodeSystem codeSystem = codeSystems.getCodeSystemById(shortName);
 		
 		final CodeSystemVersions versions = CodeSystemRequests
 				.prepareSearchCodeSystemVersion()
@@ -132,11 +117,7 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 	
 	@Override
 	public ICodeSystemVersion createVersion(String shortName, ICodeSystemVersionProperties properties) {
-		final ICodeSystem codeSystem = getCodeSystem(shortName);
-		if (codeSystem == null) {
-			throw new CodeSystemNotFoundException(shortName);
-		}
-		
+		final ICodeSystem codeSystem = codeSystems.getCodeSystemById(shortName);
 		final String terminologyId = "com.b2international.snowowl.terminology.snomed";
 		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> versions = getCodeSystemVersions(shortName, codeSystem.getRepositoryUuid());
 		final ImmutableMap<String, Collection<com.b2international.snowowl.datastore.ICodeSystemVersion>> versionsMap = ImmutableMap

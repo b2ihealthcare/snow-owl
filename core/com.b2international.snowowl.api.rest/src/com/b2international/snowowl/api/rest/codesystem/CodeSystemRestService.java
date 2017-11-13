@@ -88,7 +88,7 @@ public class CodeSystemRestService extends AbstractRestService {
 	public ICodeSystem getCodeSystemByShortNameOrOid(
 			@ApiParam(value="The code system identifier (short name or OID)")
 			@PathVariable(value="shortNameOrOid") final String shortNameOrOId) {
-		return delegate.getCodeSystemByShortNameOrOid(shortNameOrOId);
+		return delegate.getCodeSystemById(shortNameOrOId);
 	}
 	
 	@ApiOperation(

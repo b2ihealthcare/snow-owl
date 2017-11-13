@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,51 +13,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.terminologyregistry.core.server;
+package com.b2international.snowowl.server.console;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.IBranchPathMap;
+import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
+import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
-import com.b2international.snowowl.datastore.TerminologyRegistryService;
-import com.b2international.snowowl.datastore.UserBranchPathMap;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 
 /**
  * OSGI command contribution with Snow Owl terminology registry commands.
- * 
  */
-public class TerminologyRegistryCommandProvider implements CommandProvider {
+public class CodeSystemsCommandProvider implements CommandProvider {
 
+	private static final Ordering<ICodeSystem> SHORT_NAME_ORDERING = Ordering.natural().onResultOf(ICodeSystem::getShortName);
+	
 	private static final String VERSIONS_COMMAND = "versions";
 	private static final String DETAILS_COMMAND = "details";
 	private static final String LISTALL_COMMAND = "listall";
 
-	private static final String OID_SWITCH = "-o";
-	private static final String SHORT_NAME_SWITCH = "-s";
 	private static final String USAGE = "Command usage: ";
 	
 	private static final String LISTALL_HELP = "terminologyregistry listall - List all registered terminologies";
-	private static final String VERSIONS_HELP = "terminologyregistry versions [codesystem shortname] - List all the available versions for a particular terminology identified by its short name.";
-	private static final String DETAILS_HELP = "terminologyregistry details [-s codesystem shortname | -o codesystem OID] - Prints the detailed information of a particular terminology identified by its short name or OID.";
+	private static final String VERSIONS_HELP = "terminologyregistry versions [codesystem shortnameOrOID] - List all the available versions for a particular terminology identified by its short name or OID.";
+	private static final String DETAILS_HELP = "terminologyregistry details [codesystem shortnameOrOID] - Prints the detailed information of a particular terminology identified by its short name or OID.";
 
-	private IBranchPathMap branchPathMap = new UserBranchPathMap();
-	
 	@Override
 	public String getHelp() {
 		StringBuffer buffer = new StringBuffer();
@@ -108,9 +112,7 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 			return;
 		}
 		
-		final TerminologyRegistryService service = getTerminologyRegistryService();
-		
-		ICodeSystem codeSystem = service.getCodeSystemByShortName(branchPathMap, codeSystemShortName);
+		ICodeSystem codeSystem = getCodeSystemById(codeSystemShortName);
 		
 		if (codeSystem == null) {
 			interpreter.println(String.format("Unknown or invalid code system with identifier '%s'", codeSystemShortName));
@@ -118,7 +120,13 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 			return;
 		}
 		
-		List<ICodeSystemVersion> codeSystemVersions = newArrayList(service.getCodeSystemVersions(branchPathMap, codeSystemShortName));
+		List<CodeSystemVersionEntry> codeSystemVersions = CodeSystemRequests
+				.prepareSearchCodeSystemVersion()
+				.filterByCodeSystemShortName(codeSystemShortName)
+				.build(codeSystem.getRepositoryUuid())
+				.execute(getBus())
+				.getSync()
+				.getItems();
 		
 		Collections.sort(codeSystemVersions, new Comparator<ICodeSystemVersion>() {
 			@Override public int compare(ICodeSystemVersion o1, ICodeSystemVersion o2) {
@@ -138,26 +146,13 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 	 */
 	private synchronized void details(CommandInterpreter interpreter) {
 		
-		String identifierTypeSwitch = interpreter.nextArgument();
-		
-		if (!SHORT_NAME_SWITCH.equals(identifierTypeSwitch) && !OID_SWITCH.equals(identifierTypeSwitch)) {
-			interpreter.println(USAGE + DETAILS_HELP);
-			return;
-		}
-		
 		String codeSystemNameOrId = interpreter.nextArgument();
 		if (Strings.isNullOrEmpty(codeSystemNameOrId)) {
 			interpreter.println(USAGE + DETAILS_HELP);
 			return;
 		}
 		
-		ICodeSystem codeSystem;
-		final TerminologyRegistryService service = getTerminologyRegistryService();
-		if (SHORT_NAME_SWITCH.equals(identifierTypeSwitch)) {
-			codeSystem = service.getCodeSystemByShortName(branchPathMap, codeSystemNameOrId);
-		} else {
-			codeSystem = service.getCodeSystemByOid(branchPathMap, codeSystemNameOrId);
-		}
+		ICodeSystem codeSystem = getCodeSystemById(codeSystemNameOrId);
 		
 		if (codeSystem == null) {
 			interpreter.println(String.format("Unknown or invalid code system with identifier '%s'", codeSystemNameOrId));
@@ -165,22 +160,17 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 			return;
 		}
 		
-		interpreter.println(getCodeSystemInformation(codeSystem, service));
+		interpreter.println(getCodeSystemInformation(codeSystem));
 	}
 
 	/*
 	 * List all registered terminologies
 	 */
 	private synchronized void listall(CommandInterpreter interpreter) {
-		final TerminologyRegistryService service = getTerminologyRegistryService();
-		interpreter.print(Joiner.on("\n").join(FluentIterable.from(service.getCodeSystems(branchPathMap)).transform(new Function<ICodeSystem, String>() {
-			@Override public String apply(ICodeSystem input) {
-				return getCodeSystemInformation(input, service);
-			}
-		})));
+		interpreter.print(Joiner.on("\n").join(FluentIterable.from(getCodeSystems()).transform(input -> getCodeSystemInformation(input))));
 	}
 	
-	private String getCodeSystemInformation(ICodeSystem codeSystem, TerminologyRegistryService service) {
+	private String getCodeSystemInformation(ICodeSystem codeSystem) {
 		StringBuilder builder = new StringBuilder();
 		builder
 			.append("Name: ").append(codeSystem.getName()).append("\n")
@@ -188,7 +178,6 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 			.append("Code System OID: ").append(codeSystem.getOid()).append("\n")
 			.append("Maintaining organization link: ").append(codeSystem.getOrgLink()).append("\n")
 			.append("Language: ").append(codeSystem.getLanguage()).append("\n")
-			.append("Last version: ").append(null == service.getVersionId(branchPathMap, codeSystem) ? "N/A" : service.getVersionId(branchPathMap, codeSystem)).append("\n")
 			.append("Current branch path: ").append(codeSystem.getBranchPath()).append("\n");
 		return builder.toString();
 	}
@@ -207,8 +196,55 @@ public class TerminologyRegistryCommandProvider implements CommandProvider {
 		return builder.toString();
 	}
 
-	private TerminologyRegistryService getTerminologyRegistryService() {
-		return ApplicationContext.getInstance().getService(TerminologyRegistryService.class);
+	private ICodeSystem getCodeSystemById(String shortNameOrOid) {
+		checkNotNull(shortNameOrOid, "Shortname Or OID parameter may not be null.");
+		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
+		for (String repositoryId : getRepositoryIds()) {
+			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem()
+					.all()
+					.filterById(shortNameOrOid)
+					.build(repositoryId)
+					.execute(getBus()));
+		}
+		return Promise.all(getAllCodeSystems)
+				.then(results -> {
+					for (CodeSystems result : Iterables.filter(results, CodeSystems.class)) {
+						if (!result.getItems().isEmpty()) {
+							return Iterables.getOnlyElement(result.getItems());
+						}
+					}
+					return null;
+				})
+				.getSync();
+	}
+	
+	private List<ICodeSystem> getCodeSystems() {
+		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
+		for (String repositoryId : getRepositoryIds()) {
+			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().build(repositoryId).execute(getBus()));
+		}
+		return Promise.all(getAllCodeSystems)
+				.then(results -> {
+					final List<ICodeSystem> codeSystems = newArrayList();
+					for (CodeSystems result : Iterables.filter(results, CodeSystems.class)) {
+						codeSystems.addAll(result.getItems());
+					}
+					return SHORT_NAME_ORDERING.immutableSortedCopy(codeSystems);
+				})
+				.getSync();
+	}
+	
+	private List<String> getRepositoryIds() {
+		return RepositoryRequests.prepareSearch()
+				.all()
+				.buildAsync()
+				.execute(getBus())
+				.then(repos -> repos.stream().map(RepositoryInfo::id).collect(Collectors.toList()))
+				.getSync();
+	}
+	
+	private IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 	
 }

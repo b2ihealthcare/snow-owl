@@ -25,13 +25,10 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
-import com.b2international.snowowl.datastore.TerminologyRegistryService;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
