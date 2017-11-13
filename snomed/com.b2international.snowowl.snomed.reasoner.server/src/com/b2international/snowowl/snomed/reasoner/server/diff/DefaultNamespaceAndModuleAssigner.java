@@ -30,6 +30,8 @@ import com.google.common.collect.Multiset;
 
 /**
  * Simple assigner that allocates the default namespace and module for relationships and concrete domains.
+ * 
+ * @since 5.11.5
  */
 public class DefaultNamespaceAndModuleAssigner implements NamespaceAndModuleAssigner {
 
@@ -57,7 +59,7 @@ public class DefaultNamespaceAndModuleAssigner implements NamespaceAndModuleAssi
 		ISnomedIdentifierService identifierService = getServiceForClass(ISnomedIdentifierService.class);
 		String defaultNamespace = editingContext.getDefaultNamespace();
 		Collection<String> reservedIds = identifierService.reserve(defaultNamespace, ComponentCategory.RELATIONSHIP, conceptIds.size());
-		
+
 		relationshipIds = reservedIds.iterator();
 		defaultRelationshipModuleConcept = editingContext.getDefaultModuleConcept();
 	}
