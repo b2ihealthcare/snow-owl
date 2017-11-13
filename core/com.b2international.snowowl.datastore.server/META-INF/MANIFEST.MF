@@ -29,7 +29,6 @@ Export-Package: com.b2international.snowowl.datastore.server,
  com.b2international.snowowl.datastore.server.oplock.impl,
  com.b2international.snowowl.datastore.server.reindex,
  com.b2international.snowowl.datastore.server.remotejobs,
- com.b2international.snowowl.datastore.server.validation,
  com.b2international.snowowl.datastore.server.version
 Import-Package: com.b2international.index.compat,
  org.slf4j;version="1.7.2"

@@ -7,8 +7,6 @@
    <extension-point id="eclassProvider" name="eclassProvider" schema="schema/eclassProvider.exsd"/>
    <extension-point id="conflictProcessor" name="conflictProcessor" schema="schema/conflictProcessor.exsd"/>
    <extension-point id="repositoryInitializer" name="Repository Initializer" schema="schema/repositoryInitializer.exsd"/>
-   <extension-point id="beanValidationConstraint" name="Identified Bean Validation Constraint" schema="schema/beanValidationConstraint.exsd"/>
-   <extension-point id="contextValidationConstraint" name="Context Validation Constraint" schema="schema/contextValidationConstraint.exsd"/>
    <extension-point id="versionCompareHierarchyBuilder" name="Version Compare Hierarchy Builder" schema="schema/versionCompareHierarchyBuilder.exsd"/>
    <extension-point id="editingContextFactory" name="editingContextFactory" schema="schema/editingContextFactory.exsd"/>
    <extension-point id="classLoaderProvider" name="classLoaderProvider" schema="schema/classLoaderProvider.exsd"/>

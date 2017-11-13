@@ -24,6 +24,5 @@ Export-Package: com.b2international.snowowl.datastore.server.snomed,
  com.b2international.snowowl.datastore.server.snomed.index.init,
  com.b2international.snowowl.datastore.server.snomed.jobs,
  com.b2international.snowowl.datastore.server.snomed.merge,
- com.b2international.snowowl.datastore.server.snomed.validation,
  com.b2international.snowowl.datastore.server.snomed.version
 Import-Package: org.slf4j;version="1.7.2"
