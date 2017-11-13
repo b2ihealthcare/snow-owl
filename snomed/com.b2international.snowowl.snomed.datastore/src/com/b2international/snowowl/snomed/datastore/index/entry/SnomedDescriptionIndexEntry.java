@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
@@ -52,6 +54,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
 
@@ -64,7 +67,22 @@ import com.google.common.collect.Maps;
 public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 
 	private static final long serialVersionUID = 301681633674309020L;
+	private static final Pattern SEM_TAG = Pattern.compile(".*\\((.*)\\)");
 
+	/**
+	 * Extracts the semantic tag from a given term. Returns empty {@link String} if there is no semantic tag.
+	 * @param term
+	 * @return the semantic tag or empty {@link String}, never <code>null</code>
+	 */
+	public static String extractSemanticTag(String term) {
+		final Matcher matcher = SEM_TAG.matcher(term);
+		if (matcher.matches()) {
+			return matcher.group(1);
+		} else {
+			return "";
+		}
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -253,6 +271,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		private String caseSignificanceId;
 		private Set<String> acceptableIn = newHashSet();
 		private Set<String> preferredIn = newHashSet();
+		private String semanticTag;
 
 		@JsonCreator
 		private Builder() {
@@ -266,6 +285,11 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 
 		public Builder term(final String term) {
 			this.term = term;
+			return getSelf();
+		}
+		
+		Builder semanticTag(final String semanticTag) {
+			this.semanticTag = semanticTag;
 			return getSelf();
 		}
 
@@ -330,6 +354,9 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public SnomedDescriptionIndexEntry build() {
+			if (!Strings.isNullOrEmpty(term) && semanticTag == null) {
+				semanticTag = extractSemanticTag(term);
+			}
 			final SnomedDescriptionIndexEntry doc = new SnomedDescriptionIndexEntry(id,
 					term,
 					moduleId,
@@ -339,6 +366,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 					conceptId, 
 					languageCode,
 					term,
+					semanticTag,
 					typeId,
 					typeLabel == null ? typeId : typeLabel,
 					caseSignificanceId,
@@ -353,7 +381,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			doc.setStorageKey(storageKey);
 			doc.setReplacedIns(replacedIns);
 			doc.setSegmentId(segmentId);
-			
 			return doc;
 		}
 	}
@@ -366,6 +393,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	@Keyword(alias="exact", normalizer=Normalizers.LOWER_ASCII)
 	private final String term;
 	
+	private final String semanticTag;
 	private final String typeId;
 	private final String caseSignificanceId;
 	private final Set<String> acceptableIn;
@@ -380,6 +408,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			final String conceptId,
 			final String languageCode,
 			final String term,
+			final String semanticTag,
 			final String typeId,
 			final String typeLabel,
 			final String caseSignificanceId,
@@ -402,6 +431,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		this.conceptId = conceptId;
 		this.languageCode = languageCode;
 		this.term = term;
+		this.semanticTag = semanticTag;
 		this.typeId = typeId;
 		this.caseSignificanceId = caseSignificanceId;
 		this.preferredIn = preferredIn == null ? Collections.<String>emptySet() : preferredIn;
@@ -438,6 +468,15 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	 */
 	public String getTerm() {
 		return term;
+	}
+	
+	/**
+	 * The value is extracted from each (not just FSN values) description't term using {@link #extractSemanticTag(String)} function. 
+	 * 
+	 * @return the semantic tag of the description's term
+	 */
+	public String getSemanticTag() {
+		return semanticTag;
 	}
 
 	/**

@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -65,6 +65,35 @@ public class SnomedDescriptionIndexEntrySerializationTest extends BaseRevisionIn
 		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, description);
 		final SnomedDescriptionIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedDescriptionIndexEntry.class, STORAGE_KEY1);
 		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		assertDocEquals(description, actual);
+	}
+	
+	@Test
+	public void indexFsn() throws Exception {
+		assertEquals("finding", SnomedDescriptionIndexEntry.extractSemanticTag("New Finding (finding)"));
+		
+		final SnomedDescriptionIndexEntry description = SnomedDescriptionIndexEntry.builder()
+				.id(RandomSnomedIdentiferGenerator.generateDescriptionId())
+				.active(true)
+				.released(true)
+				.effectiveTime(new Date().getTime())
+				.moduleId(Concepts.MODULE_ROOT)
+				.conceptId(Concepts.ROOT_CONCEPT)
+				.typeId(Concepts.FULLY_SPECIFIED_NAME)
+				.term("New Finding (finding)")
+				.caseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+				.languageCode("en")
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED)
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE)
+				.build();
+		
+		assertEquals("finding", description.getSemanticTag());
+		
+		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, description);
+		final SnomedDescriptionIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedDescriptionIndexEntry.class, STORAGE_KEY1);
+		
+		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		assertEquals("finding", actual.getSemanticTag());
 		assertDocEquals(description, actual);
 	}
 	
