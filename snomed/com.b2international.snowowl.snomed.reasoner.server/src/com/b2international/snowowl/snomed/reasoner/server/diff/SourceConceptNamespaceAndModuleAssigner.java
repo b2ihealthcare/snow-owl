@@ -25,7 +25,6 @@ import java.util.Set;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
@@ -34,8 +33,10 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
 /**
- * Simple assigner that allocates the namespaces and modules for relationships and concrete domains
- * to match the source concept's namespace.
+ * Simple assigner that allocates the namespaces and modules for relationships
+ * and concrete domains to match the source concept's namespace.
+ * 
+ * @since 5.11.5
  */
 public class SourceConceptNamespaceAndModuleAssigner implements NamespaceAndModuleAssigner {
 
@@ -63,28 +64,26 @@ public class SourceConceptNamespaceAndModuleAssigner implements NamespaceAndModu
 	public void allocateRelationshipIdsAndModules(Multiset<String> conceptIds, final SnomedEditingContext editingContext) {
 		Multiset<String> reservedIdsByNamespace = HashMultiset.create();
 		for (Multiset.Entry<String> conceptIdWithCount : conceptIds.entrySet()) {
-			String namespace = SnomedIdentifiers.create(conceptIdWithCount.getElement()).getNamespace();
+			String namespace = SnomedIdentifiers.getNamespace(conceptIdWithCount.getElement());
 			reservedIdsByNamespace.add(namespace, conceptIdWithCount.getCount());
 		}
-		
+
 		ISnomedIdentifierService identifierService = getServiceForClass(ISnomedIdentifierService.class);
 		for (Multiset.Entry<String> namespaceWithCount : reservedIdsByNamespace.entrySet()) {
 			Collection<String> reservedIds = identifierService.reserve(namespaceWithCount.getElement(), ComponentCategory.RELATIONSHIP, namespaceWithCount.getCount());
 			namespaceToRelationshipIdMap.put(namespaceWithCount.getElement(), reservedIds.iterator());
 		}
-		
-		SnomedConceptLookupService conceptLookupService = new SnomedConceptLookupService();
+
 		for (String conceptId : conceptIds.elementSet()) {
-			Concept concept = conceptLookupService.getComponent(conceptId, editingContext.getTransaction());
+			Concept concept = editingContext.lookup(conceptId, Concept.class);
 			conceptIdToRelationshipModuleMap.put(conceptId, concept.getModule());
 		}
 	}
 
 	@Override
 	public void allocateConcreteDomainModules(Set<String> conceptIds, final SnomedEditingContext editingContext) {
-		SnomedConceptLookupService conceptLookupService = new SnomedConceptLookupService();
 		for (String conceptId : conceptIds) {
-			Concept concept = conceptLookupService.getComponent(conceptId, editingContext.getTransaction());
+			Concept concept = editingContext.lookup(conceptId, Concept.class);
 			conceptIdToConcreteDomainModuleMap.put(conceptId, concept.getModule());
 		}
 	}
