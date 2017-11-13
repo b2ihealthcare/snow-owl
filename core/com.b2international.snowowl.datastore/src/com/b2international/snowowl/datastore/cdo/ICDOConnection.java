@@ -120,7 +120,7 @@ public interface ICDOConnection extends ICDOManagedItem<ICDOConnection> {
 	 * @return the oldest branch associated with the branch path argument. 
 	 */
 	CDOBranch getOldestBranch(final IBranchPath branchPath);
-
+	
 	/**
 	 * Returns the session configuration from the session backing this connection.
 	 * @return session configuration

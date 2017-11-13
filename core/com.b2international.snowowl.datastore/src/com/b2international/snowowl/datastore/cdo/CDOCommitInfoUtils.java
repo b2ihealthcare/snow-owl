@@ -229,44 +229,6 @@ public abstract class CDOCommitInfoUtils {
 	 * @param branchPath the branch path.
 	 * @param userId the unique user ID.
 	 * @param comment the commit comment.
-	 * @return with an empty commit info.
-	 */
-	public static CDOCommitInfo createEmptyCommitInfo(final String repositoryUuid, final IBranchPath branchPath, final String userId, final String comment) {
-		
-		Preconditions.checkNotNull(repositoryUuid, "Repository UUID argument cannot be null.");
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		Preconditions.checkNotNull(userId, "User ID argument cannot be null.");
-		Preconditions.checkNotNull(comment, "Commit comment argument cannot be null.");
-
-		final long timestamp = ApplicationContext.getInstance().getService(ICDOBranchActionManager.class).getLastCommitTime(repositoryUuid, branchPath);
-		final CDOCommitInfoQuery query = new CDOCommitInfoQuery(Collections.singletonMap(repositoryUuid, branchPath)).setEndTime(timestamp).setStartTime(timestamp);
-		final ConsumeAllCommitInfoHandler handler = new ConsumeAllCommitInfoHandler();
-		getCommitInfos(query, handler);
-		
-		if (1 != Iterables.size(handler.getInfos())) {
-			
-			throw new IllegalStateException(new StringBuilder("Expecting single commit info in '")
-			.append(repositoryUuid)
-			.append("' on '")
-			.append(branchPath)
-			.append("' with timestamp: ")
-			.append(timestamp)
-			.append(". Got:")
-			.append(StringUtils.toString(handler.getInfos())).toString());
-			
-		}
-		
-		final CDOCommitInfo info = handler.getInfos().get(0);
-		return createEmptyCommitInfo(repositoryUuid, branchPath, userId, comment, info.getTimeStamp(), info.getPreviousTimeStamp());
-		
-	}
-	
-	/**
-	 * Creates an {@link EmptyCDOCommitInfo empty commit info}.
-	 * @param repositoryUuid the repository UUID.
-	 * @param branchPath the branch path.
-	 * @param userId the unique user ID.
-	 * @param comment the commit comment.
 	 * @param timestamp the commit timestamp.
 	 * @param previousTimestamp the commit previous timestamp.
 	 * @return with an empty commit info.

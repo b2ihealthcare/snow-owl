@@ -63,7 +63,6 @@ import com.b2international.snowowl.datastore.Authenticator;
 import com.b2international.snowowl.datastore.ClientProtocolFactoryRegistry;
 import com.b2international.snowowl.datastore.DatastoreActivator;
 import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
-import com.b2international.snowowl.datastore.delta.IBranchPointCalculationStrategy;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.eventbus.net4j.EventBusNet4jUtil;
@@ -182,17 +181,6 @@ import com.google.common.collect.Maps;
 
 		Preconditions.checkNotNull(branchPoint, "Branch point argument cannot be null.");
 		return getByUuid(Preconditions.checkNotNull(branchPoint.getUuid()));
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.cdo.ICDOConnectionManager#get(com.b2international.snowowl.datastore.delta.IBranchPointCalculationStrategy)
-	 */
-	@Override
-	public ICDOConnection get(final IBranchPointCalculationStrategy strategy) {
-
-		Preconditions.checkNotNull(strategy, "Branch point calculation strategy argument cannot be null.");
-		return get(strategy.getSourceBranchPoint());
 
 	}
 

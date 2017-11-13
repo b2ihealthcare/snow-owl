@@ -25,7 +25,6 @@ import org.eclipse.net4j.util.event.IListener;
 
 import com.b2international.snowowl.core.api.IBranchPoint;
 import com.b2international.snowowl.datastore.Authenticator;
-import com.b2international.snowowl.datastore.delta.IBranchPointCalculationStrategy;
 import com.b2international.snowowl.identity.domain.User;
 
 
@@ -72,8 +71,6 @@ public interface ICDOConnectionManager extends ICDOContainer<ICDOConnection> {
 	 * @return the {@link ICDOConnection connection}.
 	 */
 	ICDOConnection get(final CDOBranchPoint branchPoint);
-	
-	ICDOConnection get(final IBranchPointCalculationStrategy strategy);
 	
 	ICDOConnection get(final IBranchPoint branchPoint);
 	

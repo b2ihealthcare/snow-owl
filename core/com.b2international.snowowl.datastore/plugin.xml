@@ -12,11 +12,6 @@
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob
-            class="com.b2international.snowowl.datastore.CDOBranchManagerConfigJob"
-            id="com.b2international.snowowl.datastore.CDOBranchManagerConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.datastore.version.TagServiceClientConfigJob"
             id="com.b2international.snowowl.datastore.version.TagServiceClientConfigJob"
             terminologyId="UNSPECIFIED">

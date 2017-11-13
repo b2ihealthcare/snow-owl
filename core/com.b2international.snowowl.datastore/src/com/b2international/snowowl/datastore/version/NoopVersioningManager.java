@@ -17,9 +17,6 @@ package com.b2international.snowowl.datastore.version;
 
 import org.eclipse.emf.ecore.EPackage;
 
-import com.b2international.snowowl.datastore.delta.HierarchicalComponentDelta;
-import com.b2international.snowowl.datastore.delta.IComponentDeltaProvider;
-
 /**
  * Abstract NOOP versioning manager.
  *
@@ -31,8 +28,5 @@ public abstract class NoopVersioningManager extends VersioningManager {
 
 	/**Returns with the {@link EPackage} for the versioning manager.*/
 	protected abstract EPackage getPackage();
-
-	/**Returns with the {@link IComponentDeltaProvider delta provider} class.*/
-	protected abstract Class<? extends IComponentDeltaProvider<HierarchicalComponentDelta>> getDeltaProviderClass();
 
 }
