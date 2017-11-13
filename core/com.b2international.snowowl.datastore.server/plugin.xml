@@ -13,13 +13,6 @@
    <extension-point id="mergeConflictRuleProvider" name="mergeConflictRuleProvider" schema="schema/mergeConflictRuleProvider.exsd"/>
    
    <extension
-         point="com.b2international.snowowl.datastore.server.protocolFactory">
-      <protocolFactory
-            class="com.b2international.snowowl.datastore.server.net4j.push.PushServerProtocol$Factory"
-            id="com.b2international.snowowl.datastore.server.net4j.push.PushServerProtocol$Factory">
-      </protocolFactory>      
-   </extension>
-   <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob
             class="com.b2international.snowowl.datastore.server.CDOServerBranchManagerConfigJob"

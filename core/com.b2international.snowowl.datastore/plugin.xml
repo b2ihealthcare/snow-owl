@@ -55,13 +55,6 @@
       </connectionFactory>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.protocolFactory">
-      <protocolFactory
-            class="com.b2international.snowowl.datastore.net4j.push.PushClientProtocol$Factory"
-            id="com.b2international.snowowl.datastore.net4j.push.PushClientProtocol$Factory">
-      </protocolFactory>
-   </extension>
-      <extension
          point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester
             class="com.b2international.snowowl.datastore.propertytester.OsPropertyTester"
