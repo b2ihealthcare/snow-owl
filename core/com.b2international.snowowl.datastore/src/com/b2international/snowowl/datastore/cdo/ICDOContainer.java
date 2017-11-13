@@ -44,9 +44,6 @@ public interface ICDOContainer<T extends ICDOManagedItem<T>> extends ILifecycle,
 	/**Returns with the managed service for a given Ecore model given as its unique namespace URI.*/
 	T get(final String nsUri);
 	
-	/**Returns with the managed item for the given object.*/
-	T get(final Object object);
-	
 	/**Returns with the managed service based on the {@link EClass}.*/
 	T get(final EClass eClass);
 	

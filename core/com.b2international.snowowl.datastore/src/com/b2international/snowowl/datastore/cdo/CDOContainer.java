@@ -38,7 +38,6 @@ import org.eclipse.emf.cdo.common.model.CDOPackageRegistry;
 import org.eclipse.emf.cdo.common.model.CDOPackageUnit;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EPackage.Registry;
 import org.eclipse.net4j.util.lifecycle.Lifecycle;
@@ -49,7 +48,6 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.NsUri;
-import com.b2international.snowowl.datastore.index.AbstractIndexEntry;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
@@ -223,26 +221,6 @@ public abstract class CDOContainer<T extends ICDOManagedItem<T>> extends Lifecyc
 		LifecycleUtil.checkActive(item);
 		
 		return item;
-	}
-	
-	@Override
-	public T get(final Object object) {
-		
-		checkActive();
-		
-		Preconditions.checkNotNull(object, "Object argument cannot be null.");
-		
-		if (object instanceof EObject) {
-			
-			return get(((EObject) object).eClass());
-			
-		} else if (object instanceof AbstractIndexEntry) {
-			
-			return get(((AbstractIndexEntry) object).getStorageKey());
-			
-		}
-		
-		return null;
 	}
 	
 	@Override

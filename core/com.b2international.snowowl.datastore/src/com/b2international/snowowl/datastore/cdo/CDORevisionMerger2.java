@@ -25,7 +25,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
  * Extended {@link CDORevisionMerger CDO revision merger} to handle list
  * addition into a greater index than the actual feature list size.
  */
-public class CDORevisionMerger2 extends CDORevisionMerger {
+class CDORevisionMerger2 extends CDORevisionMerger {
 
 	private InternalCDORevision localRevision;
 

@@ -28,8 +28,16 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
+import org.eclipse.emf.cdo.common.util.CDOQueryQueue;
+import org.eclipse.emf.cdo.internal.server.ServerCDOView;
+import org.eclipse.emf.cdo.internal.server.ServerCDOView.ServerCDOSession;
 import org.eclipse.emf.cdo.server.internal.db.CDODBSchema;
 import org.eclipse.emf.cdo.server.internal.db.SQLQueryHandler;
+import org.eclipse.emf.cdo.spi.server.InternalQueryManager;
+import org.eclipse.emf.cdo.spi.server.InternalQueryResult;
+import org.eclipse.emf.cdo.spi.server.InternalRepository;
+import org.eclipse.emf.cdo.spi.server.InternalSession;
+import org.eclipse.emf.cdo.spi.server.InternalView;
 import org.eclipse.emf.cdo.view.CDOQuery;
 import org.eclipse.emf.internal.cdo.query.CDOQueryCDOIDIteratorImpl;
 import org.eclipse.emf.internal.cdo.query.CDOQueryResultIteratorImpl;
@@ -295,7 +303,7 @@ public abstract class CDOQueryUtils {
 					? new CDOQueryCDOIDIteratorImpl<CDOID>(query.getView(), branchQuery) 
 					: new CDOQueryResultIteratorImpl<T>(query.getView(), branchQuery);
 			
-			CDOQueryUtilsExtension.getResults(branchQuery, queryItr);
+			getResults(branchQuery, queryItr);
 			
 			result = (List<T>) Lists.newArrayList(queryItr);
 			
@@ -319,6 +327,39 @@ public abstract class CDOQueryUtils {
 		}
 		
 		return ImmutableList.copyOf(collectedResults); 
+	}
+	
+	@SuppressWarnings("restriction")
+	public static void getResults(final CDOQuery query, final AbstractQueryIterator<?> queryIterator) {
+		
+		final ServerCDOView view = (ServerCDOView) query.getView();
+		final ServerCDOSession session = (ServerCDOSession) view.getSession();
+		final InternalRepository repository = session.getRepository();
+		final InternalQueryManager queryManager = repository.getQueryManager();
+
+		final InternalSession serverSession = session.getInternalSession();
+		final InternalView serverView = serverSession.getView(view.getViewID());
+		final InternalQueryResult result = queryManager.execute(serverView, queryIterator.getQueryInfo());
+		final int queryId = result.getQueryID();
+		
+		queryIterator.setQueryID(queryId);
+		
+		final CDOQueryQueue<Object> resultQueue = queryIterator.getQueue();
+		
+		try {
+			
+			while (result.hasNext()) {
+				final Object object = result.next();
+				if (null != object) {
+					resultQueue.add(object);
+				}
+			}
+			
+		} catch (final Throwable t) {
+			resultQueue.setException(new RuntimeException(t.getMessage(), t));
+		} finally {
+			resultQueue.close();
+		}
 	}
 
 	private CDOQueryUtils() {
