@@ -21,12 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.xtext.parser.IParser;
 import org.junit.ComparisonFailure;
 
-import com.b2international.snowowl.dsl.ESCGStandaloneSetup;
-import com.b2international.snowowl.dsl.escg.Expression;
-import com.b2international.snowowl.dsl.parser.antlr.ESCGParser;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.AttributeClauseList;
 import com.b2international.snowowl.semanticengine.simpleast.normalform.ConceptDefinition;
 import com.b2international.snowowl.semanticengine.simpleast.utils.ConceptDefinitionComparator;
@@ -37,6 +33,9 @@ import com.b2international.snowowl.snomed.dsl.query.queryast.ConceptRef;
 import com.b2international.snowowl.snomed.dsl.query.queryast.RValue;
 import com.b2international.snowowl.snomed.dsl.query.queryast.SubExpression;
 import com.b2international.snowowl.snomed.dsl.query.queryast.ecoreastFactory;
+import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.parser.antlr.EclParser;
 import com.google.common.collect.Lists;
 import com.google.inject.Injector;
 
@@ -46,17 +45,20 @@ import com.google.inject.Injector;
  */
 public class TestUtils {
 
-	public static Expression parseExpression(IParser parser, String expression) {
-		if (parser == null)
-			throw new NullPointerException("Parser cannot be null.");
+	private static EclParser parser;
+
+	public static ExpressionConstraint parseExpression(String expression) {
 		if (expression == null)
 			throw new NullPointerException("Expression string cannot be null.");
-		return (Expression) parser.parse(new StringReader(expression)).getRootASTElement();
+		return (ExpressionConstraint) parser.parse(new StringReader(expression)).getRootASTElement();
 	}
 	
-	public static ESCGParser createESCGParser() {
-		Injector injector = ESCGStandaloneSetup.getInstance().createInjectorAndDoEMFRegistration();
-		return injector.getInstance(ESCGParser.class);
+	public static EclParser createESCGParser() {
+		if (parser == null) {
+			final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
+			parser = injector.getInstance(EclParser.class);
+		}
+		return parser;
 	}
 	public static void assertConceptDefinitionsEqual(ConceptDefinition expectedConceptDefinition,
 			ConceptDefinition actualConceptDefinition) {

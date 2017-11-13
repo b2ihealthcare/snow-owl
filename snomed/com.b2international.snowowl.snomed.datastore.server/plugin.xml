@@ -9,16 +9,6 @@
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </serviceConfigJob>
      <serviceConfigJob
-           class="com.b2international.snowowl.datastore.server.snomed.jobs.EscgQueryEvaluatorServiceConfigJob"
-           id="com.b2international.snowowl.datastore.server.snomed.jobs.EscgQueryEvaluatorServiceConfigJob"
-           terminologyId="com.b2international.snowowl.terminology.snomed">
-     </serviceConfigJob>
-     <serviceConfigJob
-           class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedConceptDeltaProviderConfigJob"
-           id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedConceptDeltaProviderConfigJob"
-           terminologyId="com.b2international.snowowl.terminology.snomed">
-     </serviceConfigJob>
-     <serviceConfigJob
            class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedRefSetDerivationServiceConfigJob"
            id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedRefSetDerivationServiceConfigJob"
            terminologyId="com.b2international.snowowl.terminology.snomed">
@@ -74,14 +64,6 @@
             interface="com.b2international.snowowl.datastore.server.snomed.ISnomedVersioningManager"
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </manager>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.datastore.server.versionCompareHierarchyBuilder">
-      <builder
-            class="com.b2international.snowowl.datastore.server.snomed.version.SnomedVersionCompareHierarchyBuilder"
-            id="com.b2international.snowowl.datastore.server.snomed.version.SnomedVersionCompareHierarchyBuilder"
-            repositoryUuid="snomedStore">
-      </builder>
    </extension>
    <extension
          point="com.b2international.snowowl.datastore.server.historyInfo">

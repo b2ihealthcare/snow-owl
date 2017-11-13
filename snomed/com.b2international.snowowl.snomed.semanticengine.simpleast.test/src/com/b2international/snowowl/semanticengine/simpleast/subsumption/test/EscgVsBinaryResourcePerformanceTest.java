@@ -25,8 +25,8 @@ import org.eclipse.xtext.parser.IParser;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.b2international.snowowl.dsl.escg.Expression;
 import com.b2international.snowowl.semanticengine.simpleast.test.utils.TestUtils;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 
 /**
  * Performance test to compare performance of ESCG expression parser and EMF binary resource parser.
@@ -47,7 +47,7 @@ public class EscgVsBinaryResourcePerformanceTest {
 	private void performanceTest(String escgExpression, String binaryResourceName) throws IOException {
 		System.out.println("---------------------------------");
 		long escgStartTime = System.nanoTime();
-		Expression escgRootASTElement = (Expression) escgParser.parse(new StringReader(escgExpression)).getRootASTElement();
+		ExpressionConstraint escgRootASTElement = TestUtils.parseExpression(escgExpression);
 		long escgEstimatedTime = System.nanoTime() - escgStartTime;
 		BinaryResourceImpl binaryResource = new BinaryResourceImpl(URI.createFileURI(binaryResourceName));
 		binaryResource.getContents().add(escgRootASTElement);
@@ -56,7 +56,7 @@ public class EscgVsBinaryResourcePerformanceTest {
 		long binaryResourceStartTime = System.nanoTime();
 		BinaryResourceImpl binaryResource2 = new BinaryResourceImpl(URI.createFileURI(binaryResourceName));
 		binaryResource2.load(Collections.emptyMap());
-		Expression binaryResourceFirstRootElement = (Expression) binaryResource2.getContents().get(0);
+		ExpressionConstraint binaryResourceFirstRootElement = (ExpressionConstraint) binaryResource2.getContents().get(0);
 		long binaryResourceEstimatedTime = System.nanoTime() - binaryResourceStartTime;
 		System.out.println("ESCG parser: " + escgEstimatedTime / 1000 + " us");
 		System.out.println("Resulting expression: " + escgRootASTElement);

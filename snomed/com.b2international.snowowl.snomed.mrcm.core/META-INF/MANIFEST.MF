@@ -9,7 +9,6 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.8.0",
  org.codehaus.groovy;bundle-version="[2.0.7,2.1.0)",
  xstream;bundle-version="1.4.7",
  com.b2international.snowowl.snomed.mrcm.model;visibility:=reexport,
- com.b2international.snowowl.snomed.escg,
  com.b2international.snowowl.snomed.datastore;visibility:=reexport
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy

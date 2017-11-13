@@ -27,8 +27,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
-import com.b2international.collections.longs.LongCollection;
-import com.b2international.commons.collect.LongSets;
 import com.b2international.index.Hits;
 import com.b2international.index.Scroll;
 import com.b2international.index.query.Expression;
@@ -36,23 +34,16 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator2;
-import com.b2international.snowowl.snomed.datastore.escg.EscgParseFailedException;
-import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
-import com.b2international.snowowl.snomed.datastore.escg.IndexQueryQueryEvaluator;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.SearchProfileQueryProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.dsl.query.RValue;
-import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -80,12 +71,6 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		 */
 		DESCRIPTION_TYPE,
 
-		/**
-		 * ESCG expression to match
-		 * @deprecated
-		 */
-		ESCG,
-		
 		/**
 		 * ECL expression to match
 		 */
@@ -180,21 +165,6 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 					.build());
 		}
 
-		if (containsKey(OptionKey.ESCG)) {
-			final String escg = getString(OptionKey.ESCG);
-			try {
-				final IndexQueryQueryEvaluator queryEvaluator = new IndexQueryQueryEvaluator();
-				final Expression escgQuery = queryEvaluator.evaluate(context.service(EscgRewriter.class).parseRewrite(escg));
-				queryBuilder.filter(escgQuery);
-			} catch (final SyntaxErrorException e) {
-				throw new IllegalQueryParameterException(e.getMessage());
-			} catch (EscgParseFailedException e) {
-				final RValue expression = context.service(EscgRewriter.class).parseRewrite(escg);
-				final LongCollection matchingConceptIds = new ConceptIdQueryEvaluator2(searcher).evaluate(expression);
-				queryBuilder.filter(RevisionDocument.Expressions.ids(LongSets.toStringSet(matchingConceptIds)));
-			}
-		}
-		
 		if (containsKey(OptionKey.ECL)) {
 			final String ecl = getString(OptionKey.ECL);
 			queryBuilder.filter(SnomedRequests.prepareEclEvaluation(ecl).build().execute(context).getSync());

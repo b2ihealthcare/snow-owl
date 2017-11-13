@@ -111,10 +111,6 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@RequestParam(value="term", required=false) 
 			final String termFilter,
 
-			@ApiParam(value="Deprecated! The ESCG expression to match")
-			@RequestParam(value="escg", required=false) 
-			final String escgFilter,
-			
 			@ApiParam(value="The ECL expression to match")
 			@RequestParam(value="ecl", required=false) 
 			final String eclFilter,
@@ -165,7 +161,6 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.filterByDefinitionStatus(definitionStatusFilter)
 					.filterByNamespace(namespaceFilter)
 					.filterByTerm(termFilter)
-					.filterByEscg(escgFilter)
 					.filterByEcl(eclFilter)
 					.filterByExtendedLocales(extendedLocales)
 					.setExpand(expand)

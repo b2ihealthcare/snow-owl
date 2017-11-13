@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,23 +18,16 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Collection;
 import java.util.List;
 
-import com.b2international.collections.longs.LongSet;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator2;
-import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.dsl.query.RValue;
-import com.b2international.snowowl.snomed.dsl.query.SyntaxErrorException;
 import com.b2international.snowowl.snomed.ecl.Ecl;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -97,23 +90,6 @@ public abstract class SnomedSearchRequest<R> extends SearchIndexResourceRequest<
 			final long from = containsKey(OptionKey.EFFECTIVE_TIME_START) ? get(OptionKey.EFFECTIVE_TIME_START, Long.class) : 0;
 			final long to = containsKey(OptionKey.EFFECTIVE_TIME_END) ? get(OptionKey.EFFECTIVE_TIME_END, Long.class) : Long.MAX_VALUE;
 			queryBuilder.filter(SnomedDocument.Expressions.effectiveTime(from, to));
-		}
-	}
-	
-	/**
-	 * @deprecated - use {@link #addEclFilter(BranchContext, ExpressionBuilder, Enum, Function)} instead
-	 */
-	protected final void addEscgFilter(final BranchContext context, final ExpressionBuilder queryBuilder, Enum<?> key, Function<LongSet, Expression> expressionProvider) {
-		if (containsKey(key)) {
-			try {
-				final String escg = getString(key);
-				final RValue expression = context.service(EscgRewriter.class).parseRewrite(escg);
-				final LongSet conceptIds = new ConceptIdQueryEvaluator2(context.service(RevisionSearcher.class)).evaluate(expression);
-				final Expression conceptFilter = expressionProvider.apply(conceptIds);
-				queryBuilder.filter(conceptFilter);
-			} catch (SyntaxErrorException e) {
-				throw new IllegalQueryParameterException(e.getMessage());
-			}
 		}
 	}
 	

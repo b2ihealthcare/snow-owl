@@ -25,25 +25,19 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRef
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.mapTargets;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.operatorIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.refSetTypes;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.referenceSetId;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.targetComponents;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.unitIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.valueIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.valueRange;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.values;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.collect.LongSets;
-import com.b2international.commons.functions.LongToStringFunction;
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.Scroll;
@@ -60,10 +54,7 @@ import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.escg.ConceptIdQueryEvaluator2;
-import com.b2international.snowowl.snomed.datastore.escg.EscgRewriter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.dsl.query.RValue;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Iterables;
@@ -109,7 +100,6 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 	protected SnomedReferenceSetMembers doExecute(BranchContext context) throws IOException {
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 
-		final Collection<String> referenceSetIds = getCollection(OptionKey.REFSET, String.class);
 		final Collection<String> referencedComponentIds = getCollection(OptionKey.REFERENCED_COMPONENT, String.class);
 		final Collection<SnomedRefSetType> refSetTypes = getCollection(OptionKey.REFSET_TYPE, SnomedRefSetType.class);
 		final Options propsFilter = getOptions(OptionKey.PROPS);
@@ -120,21 +110,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		addModuleClause(queryBuilder);
 		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
 		addEffectiveTimeClause(queryBuilder);
-		
-		if (!referenceSetIds.isEmpty()) {
-			// if only one refset ID is defined, check if it's an ESCG expression and expand it, otherwise use as is
-			final List<String> selectedRefSetIds;
-			if (referenceSetIds.size() == 1) {
-				final String escg = Iterables.get(referenceSetIds, 0);
-				final RValue expression = context.service(EscgRewriter.class).parseRewrite(escg);
-				final LongSet matchingConceptIds = new ConceptIdQueryEvaluator2(searcher).evaluate(expression);
-				selectedRefSetIds = LongToStringFunction.copyOf(LongSets.toList(matchingConceptIds));
-			} else {
-				selectedRefSetIds = newArrayList(referenceSetIds);
-			}
-			
-			queryBuilder.filter(referenceSetId(selectedRefSetIds));
-		}
+		addEclFilter(context, queryBuilder, OptionKey.REFSET, SnomedRefSetMemberIndexEntry.Expressions::referenceSetId);
 		
 		if (!referencedComponentIds.isEmpty()) {
 			queryBuilder.filter(referencedComponentIds(referencedComponentIds));

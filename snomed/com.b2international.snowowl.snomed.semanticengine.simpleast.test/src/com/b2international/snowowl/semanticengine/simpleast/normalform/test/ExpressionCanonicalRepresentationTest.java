@@ -17,11 +17,10 @@ package com.b2international.snowowl.semanticengine.simpleast.normalform.test;
 
 import static org.junit.Assert.assertEquals;
 
-import org.eclipse.xtext.parser.IParser;
 import org.junit.Test;
 
-import com.b2international.snowowl.dsl.escg.Expression;
 import com.b2international.snowowl.semanticengine.simpleast.test.utils.TestUtils;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 
 public class ExpressionCanonicalRepresentationTest {
 	
@@ -33,29 +32,27 @@ public class ExpressionCanonicalRepresentationTest {
 	private static final String EXPRESSION_2_SHUFFLED = "71388002:" +
 			"{260686004=129304002,363704007=(31435000:272741003=7771000)}" +
 			"{260686004=129304002,363704007=(15497006:272741003=7771000)}";
-	private static final String EXPRESSION_3 = "195967001+7771000";
-	private static final String EXPRESSION_3_SHUFFLED = "7771000+195967001";
-	
-	private static final IParser escgParser = TestUtils.createESCGParser();
+	private static final String EXPRESSION_3 = "195967001 OR 7771000";
+	private static final String EXPRESSION_3_SHUFFLED = "7771000 OR 195967001";
 	
 	@Test
 	public void testGroupedAttributeSorting() {
-		Expression expression = TestUtils.parseExpression(escgParser, EXPRESSION_1);
-		Expression expressionShuffled = TestUtils.parseExpression(escgParser, EXPRESSION_1_SHUFFLED);
+		ExpressionConstraint expression = TestUtils.parseExpression(EXPRESSION_1);
+		ExpressionConstraint expressionShuffled = TestUtils.parseExpression(EXPRESSION_1_SHUFFLED);
 		assertEquals(expression.toString(), expressionShuffled.toString());
 	}
 	
 	@Test
 	public void testAttributeGroupSorting() {
-		Expression expression = TestUtils.parseExpression(escgParser, EXPRESSION_2);
-		Expression expressionShuffled = TestUtils.parseExpression(escgParser, EXPRESSION_2_SHUFFLED);
+		ExpressionConstraint expression = TestUtils.parseExpression(EXPRESSION_2);
+		ExpressionConstraint expressionShuffled = TestUtils.parseExpression(EXPRESSION_2_SHUFFLED);
 		assertEquals(expression.toString(), expressionShuffled.toString());
 	}
 	
 	@Test
 	public void testFocusConceptSorting() {
-		Expression expression = TestUtils.parseExpression(escgParser, EXPRESSION_3);
-		Expression expressionShuffled = TestUtils.parseExpression(escgParser, EXPRESSION_3_SHUFFLED);
+		ExpressionConstraint expression = TestUtils.parseExpression(EXPRESSION_3);
+		ExpressionConstraint expressionShuffled = TestUtils.parseExpression(EXPRESSION_3_SHUFFLED);
 		assertEquals(expression.toString(), expressionShuffled.toString());
 	}
 }

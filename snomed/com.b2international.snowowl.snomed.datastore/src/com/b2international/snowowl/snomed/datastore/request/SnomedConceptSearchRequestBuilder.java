@@ -93,16 +93,6 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	}
 
 	/**
-	 * Filter matches by the specified ESCG expression.
-	 * @param ESCG expression
-	 * @return SnomedConceptSearchRequestBuilder
-	 * @deprecated - as of 5.4, use {@link #filterByEcl(String)}
-	 */
-	public final SnomedConceptSearchRequestBuilder filterByEscg(String expression) {
-		return addOption(SnomedConceptSearchRequest.OptionKey.ESCG, expression);
-	}
-
-	/**
 	 * Filter matches by the specified Expression Constraint Language (ECL) expression. 
 	 * The currently supported ECL version is v1.1. See <a href="http://snomed.org/ecl">ECL Specification and Guide</a> or
 	 * <a href="http://www.snomed.org/news-articles/expression-constraint-language">About ECL</a> for more information.
