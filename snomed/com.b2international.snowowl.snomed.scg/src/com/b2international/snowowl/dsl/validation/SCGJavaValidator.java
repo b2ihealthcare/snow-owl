@@ -17,54 +17,24 @@ package com.b2international.snowowl.dsl.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.CheckType;
 
-import com.b2international.commons.CompareUtils;
-import com.b2international.commons.tree.emf.EObjectWalker;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.markers.IDiagnostic;
-import com.b2international.snowowl.core.markers.IDiagnostic.DiagnosticSeverity;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.dsl.expressionextractor.ExtractedSCGAttributeGroup;
-import com.b2international.snowowl.dsl.expressionextractor.SCGExpressionExtractor;
-import com.b2international.snowowl.dsl.scg.Attribute;
 import com.b2international.snowowl.dsl.scg.Concept;
-import com.b2international.snowowl.dsl.scg.Expression;
-import com.b2international.snowowl.dsl.scg.Group;
 import com.b2international.snowowl.dsl.scg.ScgPackage;
-import com.b2international.snowowl.dsl.util.ScgAttributeFinderVisitor;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.ConceptParentAdapter;
-import com.b2international.snowowl.snomed.datastore.NormalFormWrapper;
-import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.mrcm.core.validator.MrcmConceptWidgetBeanValidator;
-import com.b2international.snowowl.snomed.mrcm.core.validator.WidgetBeanValidationDiagnostic;
-import com.b2international.snowowl.snomed.mrcm.core.widget.IWidgetBeanProvider;
-import com.b2international.snowowl.snomed.mrcm.core.widget.IWidgetModelProvider;
-import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ConceptWidgetBean;
-import com.b2international.snowowl.snomed.mrcm.core.widget.bean.ModeledWidgetBean;
-import com.b2international.snowowl.snomed.mrcm.core.widget.bean.RelationshipWidgetBean;
-import com.b2international.snowowl.snomed.mrcm.core.widget.model.ConceptWidgetModel;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
  
@@ -134,71 +104,71 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 		}
 	}
 	
-	@Check(CheckType.NORMAL)
-	public void checkMRCMValidity(Expression expression) {
-		if (expression == null || expression.eAllContents().hasNext() == false)
-			return;
-		
-		SCGExpressionExtractor extractor = new SCGExpressionExtractor(expression);
-		NormalFormWrapper normalForm = new NormalFormWrapper(extractor.getFocusConceptIdList(), wrapRelationshipGroups(extractor.getGroupConcepts()));
-		
-		IBranchPath branchPath = BranchPathUtils.createPath(getBranch());
-		try (SnomedEditingContext editingContext = new SnomedEditingContext(branchPath)) {
-			com.b2international.snowowl.snomed.Concept concept = editingContext.buildDraftConceptFromNormalForm(normalForm);
-			concept.eAdapters().add(new ConceptParentAdapter(extractor.getFocusConceptIdList()));
-			IWidgetModelProvider widgetModelProvider = ApplicationContext.getInstance().getService(IWidgetModelProvider.class);
-			ConceptWidgetModel conceptWidgetModel = widgetModelProvider.createConceptWidgetModel(branchPath, extractor.getFocusConceptIdList(), null);
-			IWidgetBeanProvider widgetBeanProvider = ApplicationContext.getServiceForClass(IWidgetBeanProvider.class);
-			ConceptWidgetBean conceptWidgetBean = widgetBeanProvider.createConceptWidgetBean(branchPath, concept.getId(), conceptWidgetModel, null, true, false, new NullProgressMonitor());
-			IDiagnostic diagnostic = new MrcmConceptWidgetBeanValidator().validate(conceptWidgetBean);
-			Set<Attribute> markedAttributes = Sets.newHashSet();
-			for (IDiagnostic childDiagnostic : diagnostic.getChildren()) {
-				DiagnosticSeverity severity = childDiagnostic.getProblemMarkerSeverity();
-				switch (severity) {
-				case ERROR:
-					// find exact location for the error
-					WidgetBeanValidationDiagnostic widgetBeanDiagnostic = (WidgetBeanValidationDiagnostic) childDiagnostic;
-					ModeledWidgetBean widgetBean = widgetBeanDiagnostic.getWidgetBean();
-					if (widgetBean instanceof RelationshipWidgetBean) {
-						RelationshipWidgetBean relationshipWidgetBean = (RelationshipWidgetBean) widgetBean;
-						ScgAttributeFinderVisitor<SnomedConceptDocument> attributeExtractingVisitor =	
-								new ScgAttributeFinderVisitor<SnomedConceptDocument>(relationshipWidgetBean.getSelectedType().getId(), 
-										relationshipWidgetBean.getSelectedValue().getId(), Integer.MAX_VALUE, markedAttributes);
-						EObjectWalker extractorWalker = EObjectWalker.createContainmentWalker(attributeExtractingVisitor);
-						extractorWalker.walk(expression);
-						List<Attribute> matchingAttributes = attributeExtractingVisitor.getMatchingAttributes();
-						if (!CompareUtils.isEmpty(matchingAttributes)) {
-							final Attribute matchingAttribute = matchingAttributes.get(0);
-							if (matchingAttribute.eContainer() instanceof Expression) {
-								Expression containingExpression = (Expression) matchingAttribute.eContainer();
-								int index = containingExpression.getAttributes().indexOf(matchingAttribute);
-								error(childDiagnostic.getMessage(), containingExpression, ScgPackage.eINSTANCE.getExpression_Attributes(), index);
-							} else if (matchingAttribute.eContainer() instanceof Group) {
-								Group containingGroup = (Group) matchingAttribute.eContainer();
-								int index = containingGroup.getAttributes().indexOf(matchingAttribute);
-								error(childDiagnostic.getMessage(), containingGroup, ScgPackage.eINSTANCE.getGroup_Attributes(), index);
-							} else {
-								throw new IllegalStateException("Unexpected attribute container: " + matchingAttribute.eContainer());
-							}
-							markedAttributes.add(matchingAttribute);
-						}
-					}
-					break;
-					
-				default:
-					break;
-				}
-			}
-		}
-	}
-
-	private Collection<AttributeConceptGroupWrapper> wrapRelationshipGroups(final Collection<ExtractedSCGAttributeGroup> groupConcepts) {
-		final Set<AttributeConceptGroupWrapper> attributeConceptGroupWrappers = Sets.newHashSet();
-		for (ExtractedSCGAttributeGroup group : groupConcepts) {
-			attributeConceptGroupWrappers.add(new AttributeConceptGroupWrapper(group.getAttributeConceptIdMap(), group.getGroupId()));
-		}
-		return attributeConceptGroupWrappers;
-	}
+//	@Check(CheckType.NORMAL)
+//	public void checkMRCMValidity(Expression expression) {
+//		if (expression == null || expression.eAllContents().hasNext() == false)
+//			return;
+//		
+//		SCGExpressionExtractor extractor = new SCGExpressionExtractor(expression);
+//		NormalFormWrapper normalForm = new NormalFormWrapper(extractor.getFocusConceptIdList(), wrapRelationshipGroups(extractor.getGroupConcepts()));
+//		
+//		IBranchPath branchPath = BranchPathUtils.createPath(getBranch());
+//		try (SnomedEditingContext editingContext = new SnomedEditingContext(branchPath)) {
+//			com.b2international.snowowl.snomed.Concept concept = editingContext.buildDraftConceptFromNormalForm(normalForm);
+//			concept.eAdapters().add(new ConceptParentAdapter(extractor.getFocusConceptIdList()));
+//			IWidgetModelProvider widgetModelProvider = ApplicationContext.getInstance().getService(IWidgetModelProvider.class);
+//			ConceptWidgetModel conceptWidgetModel = widgetModelProvider.createConceptWidgetModel(branchPath, extractor.getFocusConceptIdList(), null);
+//			IWidgetBeanProvider widgetBeanProvider = ApplicationContext.getServiceForClass(IWidgetBeanProvider.class);
+//			ConceptWidgetBean conceptWidgetBean = widgetBeanProvider.createConceptWidgetBean(branchPath, concept.getId(), conceptWidgetModel, null, true, false, new NullProgressMonitor());
+//			IDiagnostic diagnostic = new MrcmConceptWidgetBeanValidator().validate(conceptWidgetBean);
+//			Set<Attribute> markedAttributes = Sets.newHashSet();
+//			for (IDiagnostic childDiagnostic : diagnostic.getChildren()) {
+//				DiagnosticSeverity severity = childDiagnostic.getProblemMarkerSeverity();
+//				switch (severity) {
+//				case ERROR:
+//					// find exact location for the error
+//					WidgetBeanValidationDiagnostic widgetBeanDiagnostic = (WidgetBeanValidationDiagnostic) childDiagnostic;
+//					ModeledWidgetBean widgetBean = widgetBeanDiagnostic.getWidgetBean();
+//					if (widgetBean instanceof RelationshipWidgetBean) {
+//						RelationshipWidgetBean relationshipWidgetBean = (RelationshipWidgetBean) widgetBean;
+//						ScgAttributeFinderVisitor<SnomedConceptDocument> attributeExtractingVisitor =	
+//								new ScgAttributeFinderVisitor<SnomedConceptDocument>(relationshipWidgetBean.getSelectedType().getId(), 
+//										relationshipWidgetBean.getSelectedValue().getId(), Integer.MAX_VALUE, markedAttributes);
+//						EObjectWalker extractorWalker = EObjectWalker.createContainmentWalker(attributeExtractingVisitor);
+//						extractorWalker.walk(expression);
+//						List<Attribute> matchingAttributes = attributeExtractingVisitor.getMatchingAttributes();
+//						if (!CompareUtils.isEmpty(matchingAttributes)) {
+//							final Attribute matchingAttribute = matchingAttributes.get(0);
+//							if (matchingAttribute.eContainer() instanceof Expression) {
+//								Expression containingExpression = (Expression) matchingAttribute.eContainer();
+//								int index = containingExpression.getAttributes().indexOf(matchingAttribute);
+//								error(childDiagnostic.getMessage(), containingExpression, ScgPackage.eINSTANCE.getExpression_Attributes(), index);
+//							} else if (matchingAttribute.eContainer() instanceof Group) {
+//								Group containingGroup = (Group) matchingAttribute.eContainer();
+//								int index = containingGroup.getAttributes().indexOf(matchingAttribute);
+//								error(childDiagnostic.getMessage(), containingGroup, ScgPackage.eINSTANCE.getGroup_Attributes(), index);
+//							} else {
+//								throw new IllegalStateException("Unexpected attribute container: " + matchingAttribute.eContainer());
+//							}
+//							markedAttributes.add(matchingAttribute);
+//						}
+//					}
+//					break;
+//					
+//				default:
+//					break;
+//				}
+//			}
+//		}
+//	}
+//
+//	private Collection<AttributeConceptGroupWrapper> wrapRelationshipGroups(final Collection<ExtractedSCGAttributeGroup> groupConcepts) {
+//		final Set<AttributeConceptGroupWrapper> attributeConceptGroupWrappers = Sets.newHashSet();
+//		for (ExtractedSCGAttributeGroup group : groupConcepts) {
+//			attributeConceptGroupWrappers.add(new AttributeConceptGroupWrapper(group.getAttributeConceptIdMap(), group.getGroupId()));
+//		}
+//		return attributeConceptGroupWrappers;
+//	}
 	
 	/**
 	 * Check if the concept id matches the subsequent term declaration. 

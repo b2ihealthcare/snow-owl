@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="conceptValidator" name="conceptValidator" schema="schema/conceptValidator.exsd"/>
-   <extension-point id="conceptPropagator" name="conceptPropagator" schema="schema/conceptPropagator.exsd"/>
-   <extension-point id="conceptModelExtension" name="Concept Model Extension" schema="schema/conceptModelExtension.exsd"/>
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob

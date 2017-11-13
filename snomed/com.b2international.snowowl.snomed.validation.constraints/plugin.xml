@@ -4,11 +4,6 @@
    <extension
          point="com.b2international.snowowl.core.componentValidationConstraint">
       <constraint
-            class="com.b2international.snowowl.snomed.validation.constraints.component.MrcmValidationConstraint"
-            id="com.b2international.snowowl.snomed.validation.constraints.component.MrcmValidationConstraint"
-            terminologyComponent="com.b2international.snowowl.terminology.snomed.concept">
-      </constraint>
-      <constraint
             class="com.b2international.snowowl.snomed.validation.constraints.component.SnomedConceptFsnStatusConstraint"
             id="com.b2international.snowowl.snomed.validation.constraints.component.SnomedConceptFsnStatusConstraint"
             terminologyComponent="com.b2international.snowowl.terminology.snomed.concept">

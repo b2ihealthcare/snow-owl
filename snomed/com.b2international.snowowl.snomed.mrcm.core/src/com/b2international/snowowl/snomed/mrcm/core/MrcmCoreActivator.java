@@ -18,14 +18,6 @@ package com.b2international.snowowl.snomed.mrcm.core;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.snomed.mrcm.core.extensions.ExtensionBasedConceptModelExtensionProvider;
-import com.b2international.snowowl.snomed.mrcm.core.extensions.ExtensionBasedConceptPropagatorProvider;
-import com.b2international.snowowl.snomed.mrcm.core.extensions.ExtensionBasedConceptValidatorProvider;
-import com.b2international.snowowl.snomed.mrcm.core.extensions.IConceptModelExtensionProvider;
-import com.b2international.snowowl.snomed.mrcm.core.extensions.IConceptPropagatorProvider;
-import com.b2international.snowowl.snomed.mrcm.core.extensions.IConceptValidatorProvider;
-
 public class MrcmCoreActivator implements BundleActivator {
 	
 	public static final String PLUGIN_ID = "com.b2international.snowowl.snomed.mrcm.core";
@@ -42,9 +34,6 @@ public class MrcmCoreActivator implements BundleActivator {
 	 */
 	public void start(BundleContext bundleContext) throws Exception {
 		MrcmCoreActivator.context = bundleContext;
-		ApplicationContext.getInstance().registerService(IConceptValidatorProvider.class, new ExtensionBasedConceptValidatorProvider());
-		ApplicationContext.getInstance().registerService(IConceptPropagatorProvider.class, new ExtensionBasedConceptPropagatorProvider());
-		ApplicationContext.getInstance().registerService(IConceptModelExtensionProvider.class, new ExtensionBasedConceptModelExtensionProvider());
 	}
 
 	/*

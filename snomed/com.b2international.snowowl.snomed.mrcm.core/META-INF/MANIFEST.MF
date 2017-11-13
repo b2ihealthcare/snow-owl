@@ -15,13 +15,7 @@ Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.snomed.mrcm,
  com.b2international.snowowl.snomed.mrcm.core,
  com.b2international.snowowl.snomed.mrcm.core.configuration,
- com.b2international.snowowl.snomed.mrcm.core.extensions,
- com.b2international.snowowl.snomed.mrcm.core.importer,
  com.b2international.snowowl.snomed.mrcm.core.io,
  com.b2international.snowowl.snomed.mrcm.core.renderer,
- com.b2international.snowowl.snomed.mrcm.core.validator,
- com.b2international.snowowl.snomed.mrcm.core.validator.util,
- com.b2international.snowowl.snomed.mrcm.core.widget,
- com.b2international.snowowl.snomed.mrcm.core.widget.bean,
- com.b2international.snowowl.snomed.mrcm.core.widget.model
+ com.b2international.snowowl.snomed.mrcm.core.validator
 Import-Package: org.slf4j;version="1.7.2"
