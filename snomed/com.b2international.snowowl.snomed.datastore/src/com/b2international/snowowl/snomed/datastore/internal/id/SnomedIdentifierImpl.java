@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.internal.id;
 
+import java.util.Objects;
+
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.google.common.base.Strings;
@@ -27,12 +29,15 @@ import com.google.common.base.Strings;
 public final class SnomedIdentifierImpl implements SnomedIdentifier {
 
 	private static final long serialVersionUID = 1L;
+	
+	private final long itemId;
+	private final String namespace;
+	private final int formatIdentifier;
+	private final int componentIdentifier;
+	private final int checkDigit;
+	
+	// Computed on first access to toString
 	private String id;
-	private long itemId;
-	private String namespace;
-	private int formatIdentifier;
-	private int componentIdentifier;
-	private int checkDigit;
 
 	public SnomedIdentifierImpl(final long itemId, final String namespace, final int formatIdentifier, final int componentIdentifier, final int checkDigit) {
 		this.itemId = itemId;
@@ -54,22 +59,9 @@ public final class SnomedIdentifierImpl implements SnomedIdentifier {
 	
 	@Override
 	public boolean equalsNamespace(String namespace) {
-		if (namespace == null & this.namespace == null) {
-			return true;
-		}
-		
-		if (this.namespace == null) {
-			return false;
-		}
-		
-		return this.namespace.equals(namespace);
+		return Objects.equals(this.namespace, namespace);
 	}
 
-	@Override
-	public boolean isNamespace(long namespace) {
-		return equalsNamespace(String.valueOf(namespace));
-	}
-	
 	@Override
 	public boolean hasNamespace() {
 		return namespace != null;
@@ -101,5 +93,4 @@ public final class SnomedIdentifierImpl implements SnomedIdentifier {
 		}
 		return id;
 	}
-
 }

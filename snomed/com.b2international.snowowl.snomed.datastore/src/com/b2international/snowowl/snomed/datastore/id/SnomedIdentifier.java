@@ -28,34 +28,27 @@ public interface SnomedIdentifier extends Serializable {
 	public long getItemId();
 
 	/**
-	 * Returns the namespace of this identifier which is a seven digit number allocated by the IHTSDO to an organization that is permitted to maintain a SNOMED CT Extension.
-	 * The namespace identifier forms part of the SCTID allocated every component that originated as part of an Extension to prevent collision between SCTIDs issued by different organizations.
-	 * The namespace-identifier indicates the provenance of each SNOMED CT component .
-     * <br>
-     * <br>
-     * Note: For short format SCTIDs, which are used for components that originate in the International Release 
-     * do not include a namespace-identifier. In this case the partition identifier provides sufficient information about the origin of the component.
-	 * @return namespace of this identifier
+	 * Returns the namespace identifier of this SCTID.
+	 * 
+	 * @return the namespace identifier or <code>null</code> if this SCTID is a short format ID
+	 * @see <a href="https://confluence.ihtsdotools.org/display/DOCGLOSS/Namespace+identifier">SNOMED Glossary: Namespace identifier</a>
 	 */
 	public String getNamespace();
 	
 	/**
-	 * Returns true if the identifiers namespace matches the passed in namespace
-	 * @param namespace
-	 * @return true if the namespace matches
+	 * Returns <code>true</code> if the identifiers namespace matches the specified
+	 * namespace, <code>false</code> otherwise.
+	 * 
+	 * @param namespace the namespace to match (can be <code>null</code>)
+	 * @return <code>true</code> if the SCTID's namespace matches the specified value
 	 */
 	public boolean equalsNamespace(String namespace);
-	
-	/**
-	 * Returns true if the identifiers namespace matches the passed in namespace
-	 * @param namespace
-	 * @return true if the namespace matches
-	 */
-	public boolean isNamespace(long namespace);
 
 	/**
-	 * Returns true if this identifier has a namespace. International components do not have namespaces.
-	 * @return
+	 * Returns <code>true</code> if this SCTID has a namespace identifier,
+	 * <code>false</code> otherwise. Short format IDs do not have namespaces.
+	 * 
+	 * @return <code>true</code> for long format SCTIDs, <code>false</code> for short format SCTIDs
 	 */
 	public boolean hasNamespace();
 
@@ -63,8 +56,11 @@ public interface SnomedIdentifier extends Serializable {
 	 * The first digit of the partition identifier. Possible values are:
 	 * <ul>
 	 * <li>0 &rarr; short format (component originated in the INT release) 
-	 * <li>1 &rarr; long format (component ID has a namespace and orginated in an extension). All other values are reserved for
-	 * future use.
+	 * <li>1 &rarr; long format (component ID has a namespace and orginated in an extension).
+	 * </ul>
+	 * All other values are reserved for future use.
+	 * 
+	 * @return the format identifier digit
 	 */
 	public int getFormatIdentifier();
 
@@ -76,10 +72,31 @@ public interface SnomedIdentifier extends Serializable {
 	 * <li>2 &rarr; Relationship
 	 * </ul>
 	 * All other values a reserved for future use.
+	 * 
+	 * @return the component identifier digit
 	 */
 	public int getComponentIdentifier();
 
+	/**
+	 * Returns the last (check) digit of this SCTID, which can be used to verify the
+	 * identifier. Note that this is the value that originally came with the
+	 * instance; it is not recomputed here.
+	 * 
+	 * @return the check digit, as entered at creation time
+	 * @see <a href="https://confluence.ihtsdotools.org/display/DOCGLOSS/Check-digit">SNOMED Glossary: Check-digit</a>
+	 */
 	public int getCheckDigit();
 
+	/**
+	 * Returns the category of the component this SCTID identifiers. The value is
+	 * derived from the second digit of the partition identifier:
+	 * <ul>
+	 * <li>0 &rarr; {@link ComponentCategory#CONCEPT}
+	 * <li>1 &rarr; {@link ComponentCategory#DESCRIPTION}
+	 * <li>2 &rarr; {@link ComponentCategory#RELATIONSHIP}
+	 * </ul>
+	 * 
+	 * @return the category of the component identified by this SCTID
+	 */
 	public ComponentCategory getComponentCategory();
 }
