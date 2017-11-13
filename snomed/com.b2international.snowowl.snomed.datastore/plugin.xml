@@ -127,6 +127,42 @@
       
    </extension>
    <extension
+         point="com.b2international.snowowl.datastore.serviceConfigJob">
+      <serviceConfigJob
+            class="com.b2international.snowowl.snomed.mrcm.core.boot.MrcmImporterClientConfigJob"
+            id="com.b2international.snowowl.snomed.mrcm.core.boot.MrcmImporterClientConfigJob"
+            terminologyId="com.b2international.snowowl.terminology.snomed">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.snomed.mrcm.core.boot.MrcmExporterClientConfigJob"
+            id="com.b2international.snowowl.snomed.mrcm.core.boot.MrcmExporterClientConfigJob"
+            terminologyId="com.b2international.snowowl.terminology.snomed">
+      </serviceConfigJob>
+   </extension>
+   <extension
+         point="com.b2international.snowowl.core.terminologyComponent">
+      <terminologyComponent
+            decorator="icons/mrcm_editor.gif"
+            hierarchical="false"
+            icon="icons/mrcm_editor.gif"
+            id="com.b2international.snowowl.terminology.snomed.predicate"
+            intId="999"
+            name="MRCM Predicate"
+            terminologyId="com.b2international.snowowl.terminology.snomed">
+      </terminologyComponent>
+   </extension>
+   <extension
+         point="com.b2international.snowowl.core.representation">
+      <representation
+            class="com.b2international.snowowl.snomed.mrcm.AttributeConstraint"
+            terminologyComponentId="com.b2international.snowowl.terminology.snomed.predicate">
+      </representation>
+      <representation
+            class="com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument"
+            terminologyComponentId="com.b2international.snowowl.terminology.snomed.predicate">
+      </representation>
+   </extension>
+   <extension
          point="com.b2international.snowowl.core.terminology">
       <terminology
             icon="icons/terminology_icon.png"
