@@ -91,6 +91,8 @@ import com.google.common.collect.ImmutableList;
  */
 public class SnomedReasonerServerService extends CollectingService<Reasoner, ClassificationSettings> implements SnomedReasonerService, IDisposableService {
 
+	private static final String NAMESPACE_ASSIGNER_EXTENSION = "com.b2international.snowowl.snomed.reasoner.server.namespaceAssigner";
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedReasonerServerService.class);
 	
 	private final IListener invalidationListener = new IListener() {
@@ -153,16 +155,13 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	};
 	
 	private final Cache<String, ReasonerTaxonomy> taxonomyResultRegistry;
-	private NamespaceAndModuleAssigner namespaceAndModuleAssigner;
+	private final NamespaceAndModuleAssigner namespaceAndModuleAssigner;
 	
 	public SnomedReasonerServerService(int maximumReasonerCount, int maximumTaxonomiesToKeep) {
 		super(maximumReasonerCount);
 
 		this.taxonomyResultRegistry = CacheBuilder.newBuilder().maximumSize(maximumTaxonomiesToKeep).build();
-		this.namespaceAndModuleAssigner = Extensions.getFirstPriorityExtension("com.b2international.snowowl.snomed.reasoner.server.namespaceAssigner", NamespaceAndModuleAssigner.class);
-		if (namespaceAndModuleAssigner == null) {
-			throw new NullPointerException("Could not find a namespace and module allocator in the extension registry");
-		}
+		this.namespaceAndModuleAssigner = checkNotNull(getNamespaceModuleAssigner(), "Could not find a namespace and module allocator in the extension registry");
 		
 		LOGGER.info("Initialized SNOMED CT reasoner server with maximum of {} reasoner(s) instances and {} result(s) to keep.", maximumReasonerCount, maximumTaxonomiesToKeep);
 		LOGGER.info("Reasoner service will use the {} class for relationship/concrete domain namespace and module assignement.", namespaceAndModuleAssigner.getClass().getSimpleName());
@@ -194,6 +193,10 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	
 	private static IEventBus getEventBus() {
 		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
+
+	private static NamespaceAndModuleAssigner getNamespaceModuleAssigner() {
+		return Extensions.getFirstPriorityExtension(NAMESPACE_ASSIGNER_EXTENSION, NamespaceAndModuleAssigner.class);
 	}
 
 	private void setStale(IBranchPath branchPath) {
