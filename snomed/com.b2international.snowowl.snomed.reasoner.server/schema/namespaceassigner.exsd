@@ -55,7 +55,7 @@
                   
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn=":com.b2international.snowowl.snomed.reasoner.server.NamespaceAndMolduleAssigner"/>
+                  <meta.attribute kind="java" basedOn=":com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner"/>
                </appinfo>
             </annotation>
          </attribute>
