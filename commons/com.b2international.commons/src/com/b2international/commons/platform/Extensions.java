@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +19,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.InvalidRegistryObjectException;
 import org.eclipse.core.runtime.Platform;
 
 import com.b2international.commons.ClassUtils;
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Sets;
 
 /**
  * Useful utility methods when working with {@link IExtension}s, {@link IExtensionPoint}s and {@link IConfigurationElement}s.
@@ -62,59 +60,40 @@ public class Extensions {
 	 * @param type
 	 * @return extension instance
 	 */
-	public static <T> T getFirstPriorityExtension(final String extensionPoint, final Class<T> type) {
+	public static final <T> T getFirstPriorityExtension(final String extensionPoint, final Class<T> type) {
 		checkNotNull(extensionPoint, "extensionPoint");
 		checkNotNull(type, "type");
-		
+
 		final String priorityAttributeName = "priority";
-		
 		final IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(extensionPoint);
-		
-		List<IConfigurationElement> elementList = FluentIterable.from(Sets.newHashSet(elements)).filter(new Predicate<IConfigurationElement>() {
+		final Optional<IConfigurationElement> firstPriorityElement = Arrays.stream(elements)
+				.filter(e -> hasAttributeOf(e, "class"))
+				.filter(e -> hasAttributeOf(e, priorityAttributeName))
+				.filter(e -> {
+					try {
+						Integer.parseInt(e.getAttribute(priorityAttributeName));
+						return true;
+					} catch (NumberFormatException | InvalidRegistryObjectException ex) {
+						return false;
+					}
+				})
+				.sorted((e1, e2) -> {
+					int p1 = Integer.parseInt(e1.getAttribute(priorityAttributeName));
+					int p2 = Integer.parseInt(e2.getAttribute(priorityAttributeName));
+					return -Integer.compare(p1, p2); // apply reverse sorting: higher priority appears earlier
+				})
+				.findFirst();
 
-			@Override
-			public boolean apply(IConfigurationElement element) {
-				return hasAttributeOf(element, "class");
-			}
-		}).filter(new Predicate<IConfigurationElement>() {
-
-			@Override
-			public boolean apply(IConfigurationElement element) {
-				return hasAttributeOf(element, priorityAttributeName);
-			}
-		}).filter(new Predicate<IConfigurationElement>() {
-
-			@Override
-			public boolean apply(IConfigurationElement element) {
-				
-				try {
-					Integer.valueOf(element.getAttribute(priorityAttributeName));
-					return true;
-				} catch (Exception e) {
-					return false;
-				}
-			}
-		}).toSortedList(new Comparator<IConfigurationElement>() {
-
-			@Override
-			public int compare(IConfigurationElement ce1, IConfigurationElement ce2) {
-				int priority1 = Integer.valueOf(ce1.getAttribute(priorityAttributeName));
-				int priority2 = Integer.valueOf(ce2.getAttribute(priorityAttributeName));
-				
-				return Integer.valueOf(priority1).compareTo(Integer.valueOf(priority2));
-			}
-		}).reverse(); //highest-priority first
-		
-		if (!elementList.isEmpty()) {
-			IConfigurationElement firstElement = elementList.get(0);
+		final Optional<T> firstPriorityInstance = firstPriorityElement.map(e -> {
 			try {
-				return instantiate(firstElement, "class", type);
-			} catch (CoreException e) {
-				throw new RuntimeException(String.format("Exception happened when creating element from %s bundle's extension: %s", firstElement
-						.getContributor().getName(), extensionPoint));
+				return instantiate(e, "class", type);
+			} catch (CoreException ex) {
+				String bundleName = e.getContributor().getName();
+				throw new RuntimeException(String.format("Exception happened when creating element from %s bundle's extension: %s", bundleName, extensionPoint));
 			}
-		}
-		return null;
+		});
+
+		return firstPriorityInstance.orElse(null);
 	}
 
 	/**
@@ -153,7 +132,7 @@ public class Extensions {
 	 * @return
 	 * @throws CoreException - if the instantiation fails
 	 */
-	public static <T> T instantiate(final IConfigurationElement element, final Class<T> type) throws CoreException {
+	public static final <T> T instantiate(final IConfigurationElement element, final Class<T> type) throws CoreException {
 		return instantiate(element, "class", type);
 	}
 
@@ -165,16 +144,13 @@ public class Extensions {
 	 * @return
 	 * @throws CoreException - if the instantiation fails
 	 */
-	public static <T> T instantiate(final IConfigurationElement element, final String classAttributeName, final Class<T> type) throws CoreException {
+	public static final <T> T instantiate(final IConfigurationElement element, final String classAttributeName, final Class<T> type) throws CoreException {
 		final Object object = checkNotNull(element, "element").createExecutableExtension(classAttributeName);
 		return ClassUtils.checkAndCast(object, type);
 	}
 
 	/*Returns with true if the configuration element has the given attribute. Otherwise returns with false.*/
-	private static boolean hasAttributeOf(final IConfigurationElement element, 
-			final String attributeName) {
+	private static boolean hasAttributeOf(final IConfigurationElement element, final String attributeName) {
 		return newHashSet(element.getAttributeNames()).contains(attributeName);
 	}
-	
-
 }
