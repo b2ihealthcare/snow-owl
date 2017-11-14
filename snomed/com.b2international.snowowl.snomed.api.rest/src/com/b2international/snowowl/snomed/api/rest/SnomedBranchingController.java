@@ -103,8 +103,8 @@ public class SnomedBranchingController extends AbstractRestService {
 				RepositoryRequests
 					.branching()
 					.prepareSearch()
-					.filterByParent(parents == null ? ImmutableList.of() : ImmutableList.copyOf(parents))
-					.filterByName(names == null ? ImmutableList.of() : ImmutableList.copyOf(names))
+					.filterByParent(parents == null ? null : ImmutableList.copyOf(parents))
+					.filterByName(names == null ? null : ImmutableList.copyOf(names))
 					.build(repositoryId)
 					.execute(bus));
 	}
