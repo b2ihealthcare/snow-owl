@@ -691,7 +691,7 @@
 		<profile>
 			<id>tp_dependencies</id>
 			<properties>
-				<target.platform.version>5.10.0-SNAPSHOT</target.platform.version>
+				<target.platform.version>6.0.0-SNAPSHOT</target.platform.version>
 				<target.platform.url>${nexus.url}/content/unzip/snapshots.unzip/com/b2international/snowowl/com.b2international.snowowl.server.target.update/${target.platform.version}/com.b2international.snowowl.server.target.update-${target.platform.version}.zip-unzip/</target.platform.url>
 			</properties>
 			<repositories>
