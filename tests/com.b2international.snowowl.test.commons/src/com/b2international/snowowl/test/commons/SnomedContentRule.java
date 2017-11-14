@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import org.junit.rules.ExternalResource;
 
+import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -33,10 +34,11 @@ import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
 /**
@@ -72,14 +74,23 @@ public class SnomedContentRule extends ExternalResource {
 			ApplicationContext.getServiceForClass(FileRegistry.class).upload(rf2ArchiveId, in);
 		}
 		
-		SnomedRequests.rf2().prepareImport()
-			.setRf2ArchiveId(rf2ArchiveId)
-			.setReleaseType(contentType)
-			.setCreateVersions(true)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
-			.execute(getBus())
-			.getSync();
-//		new ImportUtil().doImport(codeSystem, "info@b2international.com", contentType, branchPath, importArchive, true, new ConsoleProgressMonitor());
+//		SnomedRequests.rf2().prepareImport()
+//			.setRf2ArchiveId(rf2ArchiveId)
+//			.setReleaseType(contentType)
+//			.setCreateVersions(true)
+//			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
+//			.execute(getBus())
+//			.getSync();
+		new ImportUtil().doImport(codeSystem, "info@b2international.com", getContentSubType(contentType), branchPath, importArchive, true, new ConsoleProgressMonitor());
+	}
+	
+	private static ContentSubType getContentSubType(Rf2ReleaseType contentType) {
+		switch (contentType) {
+		case DELTA: return ContentSubType.DELTA;
+		case SNAPSHOT: return ContentSubType.SNAPSHOT;
+		case FULL: return ContentSubType.FULL;
+		}
+		return null;
 	}
 
 	private void checkBranch() {
