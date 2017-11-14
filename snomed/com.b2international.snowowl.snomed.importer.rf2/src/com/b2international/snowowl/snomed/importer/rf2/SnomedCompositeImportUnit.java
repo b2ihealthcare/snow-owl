@@ -19,8 +19,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
-import com.b2international.snowowl.importer.AbstractImportUnit;
-import com.b2international.snowowl.importer.Importer;
+import com.b2international.snowowl.snomed.importer.AbstractImportUnit;
+import com.b2international.snowowl.snomed.importer.Importer;
 import com.google.common.collect.ImmutableList;
 
 /**

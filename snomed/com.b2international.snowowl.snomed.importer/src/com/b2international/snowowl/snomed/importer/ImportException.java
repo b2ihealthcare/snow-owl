@@ -13,24 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.importer;
+package com.b2international.snowowl.snomed.importer;
 
-import org.slf4j.Logger;
+import com.b2international.commons.exceptions.FormattedRuntimeException;
 
 /**
- * An abstract {@link Importer} superclass which provides logging support. 
- *
+ * General runtime exception for reporting import related errors. 
  */
-public abstract class AbstractLoggingImporter implements Importer {
+public class ImportException extends FormattedRuntimeException {
 
-	private final Logger logger;
-	
-	public AbstractLoggingImporter(final Logger logger) {
-		this.logger = logger;
-	}
-
-	@Override
-	public Logger getLogger() {
-		return logger;
+	public ImportException(String template, Object... args) {
+		super(template, args);
 	}
 }

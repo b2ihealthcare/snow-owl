@@ -23,7 +23,7 @@ import org.eclipse.net4j.util.io.GZIPStreamWrapper;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.importer.ImportException;
+import com.b2international.snowowl.snomed.importer.ImportException;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedSubsetImportConfiguration.SubsetEntry;
 
 public class SnomedImportClientProtocol extends SignalProtocol<ICDOConnection> {

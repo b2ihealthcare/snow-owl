@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.model;
 
-import com.b2international.snowowl.importer.AbstractImportUnit;
+import com.b2international.snowowl.snomed.importer.AbstractImportUnit;
 import com.google.common.collect.Ordering;
 
 /**

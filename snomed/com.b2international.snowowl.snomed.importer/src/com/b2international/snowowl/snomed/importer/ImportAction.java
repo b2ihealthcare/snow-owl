@@ -13,29 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.importer;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import org.eclipse.core.runtime.SubMonitor;
+package com.b2international.snowowl.snomed.importer;
 
 /**
- * Represents an abstract data unit which can be imported in a single run.
+ * Enumerates possible actions to take when a validation or other kind of error
+ * is encountered. Check methods returning {@link ImportAction} may also choose
+ * to (re)throw an exception instead.
  * 
  */
-public abstract class AbstractImportUnit {
-
-	private final Importer importer;
-
-	public AbstractImportUnit(final Importer importer) {
-		this.importer = checkNotNull(importer, "importer");
-	}
+public enum ImportAction {
 	
-	public Importer getImporter() {
-		return importer;
-	}
+	/** Abort this action; no further processing takes place. */
+	BREAK,
 	
-	public void doImport(final SubMonitor subMonitor) {
-		importer.doImport(subMonitor, this);
-	}
+	/** Move on to the next unit of work. */
+	CONTINUE;
 }

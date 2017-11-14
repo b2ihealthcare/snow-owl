@@ -13,19 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.importer;
+package com.b2international.snowowl.snomed.importer;
+
+import org.slf4j.Logger;
 
 /**
- * Enumerates possible actions to take when a validation or other kind of error
- * is encountered. Check methods returning {@link ImportAction} may also choose
- * to (re)throw an exception instead.
- * 
+ * An abstract {@link Importer} superclass which provides logging support. 
+ *
  */
-public enum ImportAction {
+public abstract class AbstractLoggingImporter implements Importer {
+
+	private final Logger logger;
 	
-	/** Abort this action; no further processing takes place. */
-	BREAK,
-	
-	/** Move on to the next unit of work. */
-	CONTINUE;
+	public AbstractLoggingImporter(final Logger logger) {
+		this.logger = logger;
+	}
+
+	@Override
+	public Logger getLogger() {
+		return logger;
+	}
 }

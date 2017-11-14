@@ -13,16 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.importer;
+package com.b2international.snowowl.snomed.importer;
 
-import com.b2international.commons.exceptions.FormattedRuntimeException;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.eclipse.core.runtime.SubMonitor;
 
 /**
- * General runtime exception for reporting import related errors. 
+ * Represents an abstract data unit which can be imported in a single run.
+ * 
  */
-public class ImportException extends FormattedRuntimeException {
+public abstract class AbstractImportUnit {
 
-	public ImportException(String template, Object... args) {
-		super(template, args);
+	private final Importer importer;
+
+	public AbstractImportUnit(final Importer importer) {
+		this.importer = checkNotNull(importer, "importer");
+	}
+	
+	public Importer getImporter() {
+		return importer;
+	}
+	
+	public void doImport(final SubMonitor subMonitor) {
+		importer.doImport(subMonitor, this);
 	}
 }

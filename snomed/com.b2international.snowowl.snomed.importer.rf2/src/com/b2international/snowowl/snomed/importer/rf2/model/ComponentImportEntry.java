@@ -21,7 +21,7 @@ import java.io.File;
 
 import org.supercsv.io.CsvListWriter;
 
-import com.b2international.snowowl.importer.Importer;
+import com.b2international.snowowl.snomed.importer.Importer;
 
 /**
  * Stores a {@link CsvListWriter} and a record count for slicing release files
