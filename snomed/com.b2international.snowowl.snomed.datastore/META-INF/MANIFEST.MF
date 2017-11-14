@@ -65,5 +65,4 @@ Export-Package: com.b2international.snowowl.snomed.core.domain,
  com.b2international.snowowl.snomed.datastore.services,
  com.b2international.snowowl.snomed.datastore.snor,
  com.b2international.snowowl.snomed.datastore.strength,
- com.b2international.snowowl.snomed.datastore.taxonomy,
- com.b2international.snowowl.snomed.datastore.uri
+ com.b2international.snowowl.snomed.datastore.taxonomy
