@@ -388,7 +388,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 		conceptDetails.setRelationships(relationships);
 
 		final IRelationshipChangeList relationshipChanges = getRelationshipChanges(branchPath, classificationId, conceptId, userId, 0, 10000);
-		for (IRelationshipChange relationshipChange : relationshipChanges.getChanges()) {
+		for (IRelationshipChange relationshipChange : relationshipChanges.getItems()) {
 			switch (relationshipChange.getChangeNature()) {
 				case REDUNDANT:
 					relationships.remove(findRelationship(relationships, relationshipChange));

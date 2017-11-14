@@ -15,7 +15,12 @@
  */
 package com.b2international.snowowl.snomed.api.rest.classification;
 
-import static com.b2international.snowowl.snomed.api.rest.SnomedClassificationRestRequests.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedClassificationRestRequests.beginClassification;
+import static com.b2international.snowowl.snomed.api.rest.SnomedClassificationRestRequests.beginClassificationSave;
+import static com.b2international.snowowl.snomed.api.rest.SnomedClassificationRestRequests.getClassificationJobId;
+import static com.b2international.snowowl.snomed.api.rest.SnomedClassificationRestRequests.getRelationshipChanges;
+import static com.b2international.snowowl.snomed.api.rest.SnomedClassificationRestRequests.waitForClassificationJob;
+import static com.b2international.snowowl.snomed.api.rest.SnomedClassificationRestRequests.waitForClassificationSaveJob;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
@@ -31,17 +36,17 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.domain.classification.ChangeNature;
 import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
 import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChange;
+import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChangeList;
 import com.b2international.snowowl.snomed.api.impl.domain.classification.RelationshipChange;
+import com.b2international.snowowl.snomed.api.impl.domain.classification.RelationshipChangeList;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.Iterables;
@@ -54,12 +59,12 @@ import com.google.common.collect.Multimaps;
 public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 
 	private static final ObjectMapper MAPPER = getObjectMapper();
-	private static final TypeReference<PageableCollectionResource<IRelationshipChange>> RELATIONSHIP_CHANGES_REFERENCE = new TypeReference<PageableCollectionResource<IRelationshipChange>>() { };
 
 	private static ObjectMapper getObjectMapper() {
 		ObjectMapper objectMapper = new ObjectMapper();
 		SimpleModule module = new SimpleModule("classification", Version.unknownVersion());
 		module.addAbstractTypeMapping(IRelationshipChange.class, RelationshipChange.class);
+		module.addAbstractTypeMapping(IRelationshipChangeList.class, RelationshipChangeList.class);
 		objectMapper.registerModule(module);
 		return objectMapper;
 	}
@@ -88,9 +93,10 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		.statusCode(200)
 		.body("status", equalTo(ClassificationStatus.COMPLETED.name()));
 
-		PageableCollectionResource<IRelationshipChange> changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
+		Collection<IRelationshipChange> changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
 				.extract()
-				.asInputStream(), RELATIONSHIP_CHANGES_REFERENCE);
+				.asInputStream(), IRelationshipChangeList.class)
+				.getItems();
 
 		Multimap<String, IRelationshipChange> changesBySource = Multimaps.index(changes, c -> c.getSourceId());
 		Collection<IRelationshipChange> parentRelationshipChanges = changesBySource.get(parentConceptId);
@@ -151,12 +157,12 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		.statusCode(200)
 		.body("status", equalTo(ClassificationStatus.COMPLETED.name()));
 
-		PageableCollectionResource<IRelationshipChange> changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
+		IRelationshipChangeList changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
 				.extract()
-				.asInputStream(), RELATIONSHIP_CHANGES_REFERENCE);
+				.asInputStream(), IRelationshipChangeList.class);
 
 		assertEquals(1, changes.getTotal());
-		IRelationshipChange relationshipChange = Iterables.getOnlyElement(changes);
+		IRelationshipChange relationshipChange = Iterables.getOnlyElement(changes.getItems());
 		assertEquals(ChangeNature.REDUNDANT, relationshipChange.getChangeNature());
 		assertEquals(childConceptId, relationshipChange.getSourceId());
 		assertEquals(Concepts.IS_A, relationshipChange.getTypeId());
@@ -191,13 +197,13 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		 * Expecting lots of changes; all concepts receive the "Part of" relationship because it was added to the root concept, however, the original inferred relationship 
 		 * with group 5 should be redundant.
 		 */
-		PageableCollectionResource<IRelationshipChange> changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
+		IRelationshipChangeList changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
 				.extract()
-				.asInputStream(), RELATIONSHIP_CHANGES_REFERENCE);
+				.asInputStream(), IRelationshipChangeList.class);
 
 		boolean redundantFound = false;
 
-		for (IRelationshipChange relationshipChange : changes) {
+		for (IRelationshipChange relationshipChange : changes.getItems()) {
 			assertEquals(Concepts.PART_OF, relationshipChange.getTypeId());
 			assertEquals(Concepts.NAMESPACE_ROOT, relationshipChange.getDestinationId());
 

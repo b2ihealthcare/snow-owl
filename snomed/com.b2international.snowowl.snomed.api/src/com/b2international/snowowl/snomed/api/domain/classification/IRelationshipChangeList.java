@@ -28,7 +28,7 @@ public interface IRelationshipChangeList {
 	 * 
 	 * @return a subset of the relationships which should be modified 
 	 */
-	List<IRelationshipChange> getChanges();
+	List<IRelationshipChange> getItems();
 
 	/**
 	 * Returns the total number of relationship changes for this classification run.

@@ -19,27 +19,36 @@ import java.util.List;
 
 import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChange;
 import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChangeList;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  */
 public class RelationshipChangeList implements IRelationshipChangeList {
 
-	private final List<IRelationshipChange> changes;
+	private final List<IRelationshipChange> items;
 	private final int offset;
 	private final int limit;
 	private final int total;
 
-	public RelationshipChangeList(List<IRelationshipChange> changes, int offset, int limit, int total) {
-		this.changes = changes;
+	@JsonCreator
+	public RelationshipChangeList(
+			@JsonProperty("items") List<IRelationshipChange> items, 
+			@JsonProperty("offset") int offset, 
+			@JsonProperty("limit") int limit, 
+			@JsonProperty("total") int total) {
+		this.items = items;
 		this.offset = offset;
 		this.limit = limit;
 		this.total = total;
 	}
 	
-	public List<IRelationshipChange> getChanges() {
-		return changes;
+	@Override
+	public List<IRelationshipChange> getItems() {
+		return items;
 	}
 
+	@Override
 	public int getTotal() {
 		return total;
 	}
@@ -58,7 +67,7 @@ public class RelationshipChangeList implements IRelationshipChangeList {
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("RelationshipChangeList [changes=");
-		builder.append(changes);
+		builder.append(items);
 		builder.append(", total=");
 		builder.append(total);
 		builder.append("]");

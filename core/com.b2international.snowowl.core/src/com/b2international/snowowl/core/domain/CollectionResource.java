@@ -103,7 +103,7 @@ public class CollectionResource<T> implements Serializable, Iterable<T> {
 	/**
 	 * Returns a sequential {@code Stream} with this collection resource as its source.
 	 * @return a {@link Stream} over the items of this collection resource
-	 * @since 5.12
+	 * @since 6.0
 	 */
 	@JsonIgnore
 	public Stream<T> stream() {
