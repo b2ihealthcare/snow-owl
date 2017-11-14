@@ -21,6 +21,7 @@ import java.util.List;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.request.SearchResourceRequest.OptionKey;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
@@ -37,6 +38,8 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	private String scrollKeepAlive;
 	private String scrollId;
+	private Object[] searchAfter;
+	
 	private int limit = 50;
 	
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
@@ -46,9 +49,21 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	}
 	
 	/**
+	 * Sets the search after parameter to the specified array of scroll values.
+	 * @param searchAfter
+	 * @return
+	 * @see PageableCollectionResource#getSearchAfter()
+	 */
+	public B setSearchAfter(Object[] scrollValues) {
+		this.searchAfter = scrollValues;
+		return getSelf();
+	}
+	
+	/**
 	 * Sets the scroll keep alive value to the specified value to start a scroll based on the query of this request. 
 	 * @param scrollKeepAlive
 	 * @return this builder instance
+	 * @see PageableCollectionResource#getScrollId()
 	 */
 	public final B setScroll(String scrollKeepAlive) {
 		this.scrollKeepAlive = scrollKeepAlive;
@@ -59,6 +74,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * Sets the scroll Id to continue a previously started scroll.
 	 * @param scrollId
 	 * @return
+	 * @see PageableCollectionResource#getScrollId()
 	 */
 	public final B setScrollId(String scrollId) {
 		this.scrollId = scrollId;
@@ -156,6 +172,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 		final SearchResourceRequest<C, R> req = createSearch();
 		req.setScrollId(scrollId);
 		req.setScrollKeepAlive(scrollKeepAlive);
+		req.setSearchAfter(searchAfter);
 		req.setLimit(Math.min(limit, MAX_LIMIT));
 		req.setOptions(optionsBuilder.build());
 		return req;

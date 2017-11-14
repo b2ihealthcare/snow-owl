@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.domain;
 import java.util.List;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
@@ -30,27 +31,39 @@ import com.google.common.base.MoreObjects;
 //@ApiModel("Pageable Collection")
 public class PageableCollectionResource<T> extends CollectionResource<T> {
 
-//	@ApiModelProperty("Offset in the total collection")
-	private String scrollId;
+	private final String scrollId;
+	
+	private final Object[] searchAfter;
 	
 //	@ApiModelProperty("The number of requested maximum items")
-	private int limit;
+	private final int limit;
 	
 //	@ApiModelProperty("Total number of results available")
-	private int total;
+	private final int total;
 
-	protected PageableCollectionResource(List<T> items, String scrollId, int limit, int total) {
+	protected PageableCollectionResource(List<T> items, String scrollId, Object[] searchAfter, int limit, int total) {
 		super(items);
 		this.scrollId = scrollId;
+		this.searchAfter = searchAfter;
 		this.limit = limit;
 		this.total = total;
 	}
 
 	/**
+	 * Returns the sort values array that can be used to get the next page based on these values.
+	 * @return
+	 * @see SearchResourceRequestBuilder#setSearchAfter(Object[])
+	 */
+	public Object[] getSearchAfter() {
+		return searchAfter;
+	}
+	
+	/**
 	 * Returns the scrollId associated with this pageable result set. It can be used to fetch the next batch of {@link #getLimit()} items from the
 	 * repository.
 	 * 
 	 * @return
+	 * @see SearchResourceRequestBuilder#setScrollId(String)
 	 */
 	public String getScrollId() {
 		return scrollId;
@@ -60,6 +73,7 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 	 * Returns the limit of this collection resource.
 	 * 
 	 * @return
+	 * @see SearchResourceRequestBuilder#setLimit(int)
 	 */
 	public final int getLimit() {
 		return limit;
@@ -84,10 +98,11 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 	}
 
 	/**
-	 * Creates a new {@link PageableCollectionResource} from the given items, offset, limit and total arguments.
+	 * Creates a new {@link PageableCollectionResource} from the given items, scrollId, searchAfter, limit and total arguments.
 	 * 
 	 * @param items
-	 * @param offset
+	 * @param scrollId
+	 * @param searchAfter
 	 * @param limit
 	 * @param total
 	 * @return
@@ -95,10 +110,11 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 	@JsonCreator
 	public static <T> PageableCollectionResource<T> of(@JsonProperty("items") List<T> items, 
 			@JsonProperty("scrollId") String scrollId, 
+			@JsonProperty("searchAfter") Object[] searchAfter,
 			@JsonProperty("limit") int limit, 
 			@JsonProperty("total") int total) {
 		
-		return new PageableCollectionResource<T>(items, scrollId, limit, total);
+		return new PageableCollectionResource<T>(items, scrollId, searchAfter, limit, total);
 	}
 
 }

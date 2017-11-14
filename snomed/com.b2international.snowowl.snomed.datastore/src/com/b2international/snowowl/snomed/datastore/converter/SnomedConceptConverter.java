@@ -105,8 +105,8 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 	}
 	
 	@Override
-	protected SnomedConcepts createCollectionResource(List<SnomedConcept> results, String scrollId, int limit, int total) {
-		return new SnomedConcepts(results, scrollId, limit, total);
+	protected SnomedConcepts createCollectionResource(List<SnomedConcept> results, String scrollId, Object[] searchAfter, int limit, int total) {
+		return new SnomedConcepts(results, scrollId, searchAfter, limit, total);
 	}
 
 	@Override
@@ -244,7 +244,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		
 		for (SnomedConcept concept : results) {
 			final List<SnomedDescription> conceptDescriptions = descriptionsByConceptId.get(concept.getId());
-			concept.setDescriptions(new SnomedDescriptions(conceptDescriptions, null, conceptDescriptions.size(), conceptDescriptions.size()));
+			concept.setDescriptions(new SnomedDescriptions(conceptDescriptions, null, null, conceptDescriptions.size(), conceptDescriptions.size()));
 		}
 	}
 	
@@ -270,7 +270,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		
 		for (SnomedConcept concept : results) {
 			final List<SnomedRelationship> conceptRelationships = relationshipsByConceptId.get(concept.getId());
-			concept.setRelationships(new SnomedRelationships(conceptRelationships, null, conceptRelationships.size(), conceptRelationships.size()));
+			concept.setRelationships(new SnomedRelationships(conceptRelationships, null, null, conceptRelationships.size(), conceptRelationships.size()));
 		}
 	}
 
@@ -374,7 +374,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 				for (SnomedConcept concept : results) {
 					final Collection<String> descendantIds = descendantsByAncestor.get(concept.getId());
 					final List<SnomedConcept> currentDescendants = FluentIterable.from(descendantIds).skip(offset).limit(limit).transform(Functions.forMap(descendantsById)).toList();
-					final SnomedConcepts descendantConcepts = new SnomedConcepts(currentDescendants, null, limit, descendantIds.size());
+					final SnomedConcepts descendantConcepts = new SnomedConcepts(currentDescendants, null, null, limit, descendantIds.size());
 					if (stated) {
 						concept.setStatedDescendants(descendantConcepts);
 					} else {
@@ -456,7 +456,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 			for (SnomedConcept concept : results) {
 				final Collection<String> ancestorIds = ancestorsByDescendant.get(concept.getId());
 				final List<SnomedConcept> conceptAncestors = FluentIterable.from(ancestorIds).skip(offset).limit(limit).transform(Functions.forMap(ancestorsById)).toList();
-				final SnomedConcepts ancestorConcepts = new SnomedConcepts(conceptAncestors, null, limit, ancestorIds.size());
+				final SnomedConcepts ancestorConcepts = new SnomedConcepts(conceptAncestors, null, null, limit, ancestorIds.size());
 				if (stated) {
 					concept.setStatedAncestors(ancestorConcepts);
 				} else {

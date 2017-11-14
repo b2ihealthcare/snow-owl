@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,11 @@ public final class CommitInfos extends PageableCollectionResource<CommitInfo> {
 	private final String repositoryId;
 
 	public CommitInfos(String repositoryId, int limit, int total) {
-		this(Collections.emptyList(), repositoryId, null, limit, total);
+		this(Collections.emptyList(), repositoryId, null, null, limit, total);
 	}
 
-	public CommitInfos(List<CommitInfo> items, String repositoryId, String scrollId, int limit, int total) {
-		super(items, scrollId, limit, total);
+	public CommitInfos(List<CommitInfo> items, String repositoryId, String scrollId, Object[] searchAfter, int limit, int total) {
+		super(items, scrollId, searchAfter, limit, total);
 		this.repositoryId = repositoryId;
 	}
 	

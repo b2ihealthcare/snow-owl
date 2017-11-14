@@ -36,8 +36,10 @@ import com.google.common.collect.Iterables;
 /**
  * Abstract class for SNOMED CT search requests.
  * @since 4.5
+ * @param R - the return type of this request
+ * @param D - the document type to search for
  */
-public abstract class SnomedSearchRequest<R> extends SearchIndexResourceRequest<BranchContext, R> {
+public abstract class SnomedSearchRequest<R, D extends SnomedDocument> extends SearchIndexResourceRequest<BranchContext, R, D> {
 
 	enum OptionKey {
 		

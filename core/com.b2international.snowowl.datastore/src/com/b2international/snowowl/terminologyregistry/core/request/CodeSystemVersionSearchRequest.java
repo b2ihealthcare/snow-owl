@@ -15,13 +15,11 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
-import java.io.IOException;
 import java.util.Collections;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Hits;
-import com.b2international.index.Scroll;
-import com.b2international.index.Searcher;
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -32,7 +30,7 @@ import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 /**
  * @since 4.7
  */
-final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CodeSystemVersions> {
+final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CodeSystemVersions, CodeSystemVersionEntry> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -49,9 +47,9 @@ final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<Re
 	void setVersionId(String versionId) {
 		this.versionId = versionId;
 	}
-
+	
 	@Override
-	protected CodeSystemVersions doExecute(final RepositoryContext context) throws IOException {
+	protected Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder query = Expressions.builder();
 
 		if (!StringUtils.isEmpty(codeSystemShortName)) {
@@ -62,27 +60,22 @@ final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<Re
 			query.filter(CodeSystemVersionEntry.Expressions.versionId(versionId));
 		}
 		
-		final Searcher searcher = context.service(Searcher.class);
-		
-		final Hits<CodeSystemVersionEntry> hits;
-		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(CodeSystemVersionEntry.class, fields(), scrollId()));
-		} else {
-			hits = searcher.search(select(CodeSystemVersionEntry.class)
-					.fields(fields())
-					.where(query.build())
-					.sortBy(sortBy())
-					.scroll(scrollKeepAlive())
-					.limit(limit())
-					.build());
-		}
-		
-		return new CodeSystemVersions(hits.getHits(), hits.getScrollId(), limit(), hits.getTotal());
+		return query.build();
+	}
+	
+	@Override
+	protected Class<CodeSystemVersionEntry> getDocumentType() {
+		return CodeSystemVersionEntry.class;
+	}
+
+	@Override
+	protected CodeSystemVersions toCollectionResource(RepositoryContext context, Hits<CodeSystemVersionEntry> hits) {
+		return new CodeSystemVersions(hits.getHits(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
 	}
 	
 	@Override
 	protected CodeSystemVersions createEmptyResult(int limit) {
-		return new CodeSystemVersions(Collections.emptyList(), null, limit, 0);
+		return new CodeSystemVersions(Collections.emptyList(), null, null, limit, 0);
 	}
 
 }

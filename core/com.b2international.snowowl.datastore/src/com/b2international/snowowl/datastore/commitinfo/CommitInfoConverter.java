@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ public final class CommitInfoConverter extends BaseResourceConverter<CommitInfoD
 	}
 
 	@Override
-	protected CommitInfos createCollectionResource(final List<CommitInfo> results, final String scrollId, final int limit, final int total) {
-		return new CommitInfos(results, context().id(), scrollId, limit, total);
+	protected CommitInfos createCollectionResource(final List<CommitInfo> results, final String scrollId, Object[] searchAfter, final int limit, final int total) {
+		return new CommitInfos(results, context().id(), scrollId, searchAfter, limit, total);
 	}
 
 	@Override

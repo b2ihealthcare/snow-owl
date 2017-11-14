@@ -26,15 +26,12 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDes
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.preferredIn;
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.io.IOException;
 import java.util.List;
 
 import com.b2international.index.Hits;
-import com.b2international.index.Scroll;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -49,7 +46,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 4.5
  */
-final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<SnomedDescriptions> {
+final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<SnomedDescriptions, SnomedDescriptionIndexEntry> {
 
 	enum OptionKey {
 		EXACT_TERM,
@@ -65,8 +62,12 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 	SnomedDescriptionSearchRequest() {}
 
 	@Override
-	protected SnomedDescriptions doExecute(BranchContext context) throws IOException {
-		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
+	protected Class<SnomedDescriptionIndexEntry> getDocumentType() {
+		return SnomedDescriptionIndexEntry.class;
+	}
+	
+	@Override
+	protected Expression prepareQuery(BranchContext context) {
 		if (containsKey(OptionKey.TERM) && getString(OptionKey.TERM).length() < 2) {
 			throw new BadRequestException("Description term must be at least 2 characters long.");
 		}
@@ -97,25 +98,21 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		if (containsKey(OptionKey.EXACT_TERM)) {
 			queryBuilder.must(exactTerm(getString(OptionKey.EXACT_TERM)));
 		}
-
-		final Hits<SnomedDescriptionIndexEntry> hits;
-		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(SnomedDescriptionIndexEntry.class, fields(), scrollId()));
-		} else {
-			hits = searcher.search(select(SnomedDescriptionIndexEntry.class)
-					.fields(fields())
-					.where(queryBuilder.build())
-					.scroll(scrollKeepAlive())
-					.limit(limit())
-					.sortBy(sortBy())
-					.withScores(containsKey(OptionKey.TERM))
-					.build());
-		}
 		
+		return queryBuilder.build();
+	}
+
+	@Override
+	protected boolean trackScores() {
+		return containsKey(OptionKey.TERM);
+	}
+
+	@Override
+	protected SnomedDescriptions toCollectionResource(BranchContext context, Hits<SnomedDescriptionIndexEntry> hits) {
 		if (limit() < 1 || hits.getTotal() < 1) {
 			return new SnomedDescriptions(limit(), hits.getTotal());
 		} else {
-			return SnomedConverters.newDescriptionConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), limit(), hits.getTotal());
+			return SnomedConverters.newDescriptionConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
 		}
 	}
 	

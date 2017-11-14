@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentD
 /**
  * @since 5.3
  */
-public abstract class SnomedComponentSearchRequest<R> extends SnomedSearchRequest<R> {
+public abstract class SnomedComponentSearchRequest<R, D extends SnomedComponentDocument> extends SnomedSearchRequest<R, D> {
 	
 	enum OptionKey {
 		

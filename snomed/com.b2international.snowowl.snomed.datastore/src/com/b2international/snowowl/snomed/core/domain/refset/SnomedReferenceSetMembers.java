@@ -38,16 +38,17 @@ public final class SnomedReferenceSetMembers extends PageableCollectionResource<
 	};
 
 	public SnomedReferenceSetMembers(int limit, int total) {
-		super(Collections.emptyList(), null, limit, total);
+		super(Collections.emptyList(), null, null, limit, total);
 	}
 	
 	@JsonCreator
 	public SnomedReferenceSetMembers(
 			@JsonProperty("items") List<SnomedReferenceSetMember> items, 
-			@JsonProperty("scrollId") String scrollId, 
+			@JsonProperty("scrollId") String scrollId,
+			@JsonProperty("searchAfter") Object[] searchAfter,
 			@JsonProperty("limit") int limit, 
 			@JsonProperty("total") int total) {
-		super(items, scrollId, limit, total);
+		super(items, scrollId, searchAfter, limit, total);
 	}
 
 }

@@ -93,7 +93,8 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	private String scrollId;
 	private String scrollKeepAlive;
-
+	private Object[] searchAfter;
+	
 	@Min(0)
 	private int limit;
 
@@ -101,6 +102,11 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	private Options options;
 	
 	protected SearchResourceRequest() {}
+	
+	@JsonIgnore
+	protected final boolean isScrolled() {
+		return !Strings.isNullOrEmpty(scrollId());
+	}
 	
 	void setScrollId(String scrollId) {
 		this.scrollId = scrollId;
@@ -110,17 +116,8 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		this.scrollKeepAlive = scrollKeepAlive;
 	}
 	
-	void setLimit(int limit) {
-		this.limit = limit;
-	}
-	
-	void setOptions(Options options) {
-		this.options = options;
-	}
-	
-	@JsonIgnore
-	protected final boolean isScrolled() {
-		return !Strings.isNullOrEmpty(scrollId());
+	void setSearchAfter(Object[] searchAfter) {
+		this.searchAfter = searchAfter;
 	}
 
 	@JsonProperty
@@ -131,6 +128,19 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	@JsonProperty
 	protected final String scrollKeepAlive() {
 		return scrollKeepAlive;
+	}
+	
+	@JsonProperty
+	protected final Object[] searchAfter() {
+		return searchAfter;
+	}
+	
+	void setLimit(int limit) {
+		this.limit = limit;
+	}
+	
+	void setOptions(Options options) {
+		this.options = options;
 	}
 	
 	@JsonProperty

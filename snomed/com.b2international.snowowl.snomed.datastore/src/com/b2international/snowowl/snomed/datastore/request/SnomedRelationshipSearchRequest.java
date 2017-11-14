@@ -19,13 +19,10 @@ package com.b2international.snowowl.snomed.datastore.request;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.group;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.unionGroup;
 
-import java.io.IOException;
-
 import com.b2international.index.Hits;
-import com.b2international.index.Scroll;
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
@@ -35,7 +32,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 /**
  * @since 4.5
  */
-final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest<SnomedRelationships> {
+final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest<SnomedRelationships, SnomedRelationshipIndexEntry> {
 
 	enum OptionKey {
 		SOURCE,
@@ -51,9 +48,12 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 	SnomedRelationshipSearchRequest() {}
 
 	@Override
-	protected SnomedRelationships doExecute(BranchContext context) throws IOException {
-		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
-		
+	protected Class<SnomedRelationshipIndexEntry> getDocumentType() {
+		return SnomedRelationshipIndexEntry.class;
+	}
+	
+	@Override
+	protected Expression prepareQuery(BranchContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		addActiveClause(queryBuilder);
 		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
@@ -77,24 +77,17 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 			queryBuilder.filter(unionGroup(get(OptionKey.UNION_GROUP, Integer.class)));
 		}
 		
-		final Hits<SnomedRelationshipIndexEntry> hits;
-		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(SnomedRelationshipIndexEntry.class, fields(), scrollId()));
-		} else {
-			hits = searcher.search(select(SnomedRelationshipIndexEntry.class)
-					.fields(fields())
-					.where(queryBuilder.build())
-					.sortBy(sortBy())
-					.scroll(scrollKeepAlive())
-					.limit(limit())
-					.build());
-		}
-		
+		return queryBuilder.build();
+	}
+	
+	@Override
+	protected SnomedRelationships toCollectionResource(BranchContext context, Hits<SnomedRelationshipIndexEntry> hits) {
 		final int totalHits = hits.getTotal();
 		if (limit() < 1 || totalHits < 1) {
 			return new SnomedRelationships(limit(), totalHits);
+		} else {
+			return SnomedConverters.newRelationshipConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), hits.getSearchAfter(), limit(), totalHits);
 		}
-		return SnomedConverters.newRelationshipConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), limit(), totalHits);
 	}
 	
 	@Override

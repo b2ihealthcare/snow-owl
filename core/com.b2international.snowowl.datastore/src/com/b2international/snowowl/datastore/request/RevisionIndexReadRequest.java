@@ -15,12 +15,10 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import java.io.IOException;
-
+import com.b2international.index.DocSearcher;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.QueryParseException;
 import com.b2international.index.revision.RevisionIndex;
-import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
@@ -46,20 +44,19 @@ public final class RevisionIndexReadRequest<B> extends DelegatingRequest<BranchC
 	
 	@Override
 	public B execute(final BranchContext context) {
-		return context.service(RevisionIndex.class).read(context.branchPath(), new RevisionIndexRead<B>() {
-			@Override
-			public B execute(RevisionSearcher index) throws IOException {
-				try {
-					return next(DelegatingBranchContext
-							.basedOn(context)
-							.bind(Searcher.class, index.searcher())
-							.bind(RevisionSearcher.class, index)
-							.build());
-				} catch (QueryParseException e) {
-					throw new IllegalQueryParameterException(e.getMessage());
-				}
-			}
-		});
+		return context.service(RevisionIndex.class)
+				.read(context.branchPath(), index -> {
+					try {
+						return next(DelegatingBranchContext
+								.basedOn(context)
+								.bind(Searcher.class, index)
+								.bind(RevisionSearcher.class, index)
+								.bind(DocSearcher.class, index.searcher())
+								.build());
+					} catch (QueryParseException e) {
+						throw new IllegalQueryParameterException(e.getMessage());
+					}
+				});
 	}
 	
 }

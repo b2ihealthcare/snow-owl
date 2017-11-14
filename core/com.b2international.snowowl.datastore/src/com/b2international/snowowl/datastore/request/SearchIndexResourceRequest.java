@@ -15,24 +15,34 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+import com.b2international.index.Hits;
+import com.b2international.index.Scroll;
+import com.b2international.index.Searcher;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
-import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 
 /**
  * @since 5.11
+ * @param <C> - the required execution context of this request
+ * @param <B> - the return type
+ * @param <D> - the document type to search for 
  */
-public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B> extends SearchResourceRequest<C, B> {
+public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D> extends SearchResourceRequest<C, B> {
 
 	/**
 	 * Special field name for sorting based on the document's natural occurrence (document order). 
@@ -44,6 +54,37 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B> e
 	 */
 	public static final SortField SCORE = new SortField(SortBy.FIELD_SCORE, false);
 	
+	@Override
+	protected final B doExecute(C context) throws IOException {
+		final Searcher searcher = getSearcher(context);
+		final Expression where = prepareQuery(context);
+		final Hits<D> hits;
+		if (isScrolled()) {
+			hits = searcher.scroll(new Scroll<>(getDocumentType(), fields(), scrollId()));
+		} else {
+			hits = searcher.search(Query.select(getDocumentType())
+					.fields(fields())
+					.where(where)
+					.scroll(scrollKeepAlive())
+					.searchAfter(searchAfter())
+					.limit(limit())
+					.sortBy(sortBy())
+					.withScores(trackScores())
+					.build());
+		}
+		
+		return toCollectionResource(context, hits);
+	}
+	
+	/**
+	 * Returns the default {@link Searcher} attached to the given context.
+	 * @param context
+	 * @return
+	 */
+	protected Searcher getSearcher(C context) {
+		return context.service(Searcher.class);
+	}
+
 	protected final ExpressionBuilder addIdFilter(ExpressionBuilder queryBuilder, Function<Collection<String>, Expression> expressionFactory) {
 		return applyIdFilter(queryBuilder, (qb, ids) -> qb.filter(expressionFactory.apply(ids)));
 	}
@@ -61,8 +102,32 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B> e
 		}		
 	}
 	
-	protected final <T> QueryBuilder<T> select(Class<T> select) {
-		return Query.select(select).fields(fields());
+	/**
+	 * Prepares the search query with the clauses, filters specified in this request. 
+	 * @param context - the context that can be used to prepare the query 
+	 */
+	protected abstract Expression prepareQuery(C context);
+	
+	/**
+	 * Subclasses may override to configure scoring. By default disabled score tracking in search requests.
+	 * @return whether the search should compute scores for the prepared query or not
+	 */
+	protected boolean trackScores() {
+		return false;
 	}
+	
+	/**
+	 * Returns the type of documents to search for.
+	 * @return
+	 */
+	protected abstract Class<D> getDocumentType();
+	
+	/**
+	 * Converts the document hits to a API response of {@link CollectionResource} subtype.
+	 * @param context - the context that can be used to convert the hits
+	 * @param hits - the hits to convert to API response
+	 * @return
+	 */
+	protected abstract B toCollectionResource(C context, Hits<D> hits);
 	
 }

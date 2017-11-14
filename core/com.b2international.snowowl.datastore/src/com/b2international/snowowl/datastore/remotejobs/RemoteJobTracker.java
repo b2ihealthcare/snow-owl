@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.remotejobs;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -36,6 +37,8 @@ import org.slf4j.LoggerFactory;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
+import com.b2international.index.Scroll;
+import com.b2international.index.Searcher;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -111,22 +114,27 @@ public final class RemoteJobTracker implements IDisposableService {
 		return search(query, ImmutableList.of(), SortBy.DOC_ID, limit); 
 	}
 	
-	public RemoteJobs search(Expression query, List<String> fields, SortBy sortBy, int limit) {
+	private RemoteJobs search(Expression query, List<String> fields, SortBy sortBy, int limit) {
+		final Hits<RemoteJobEntry> hits = searchHits(query, fields, sortBy, limit);
+		return new RemoteJobs(hits.getHits(), null, null, hits.getLimit(), hits.getTotal());
+	}
+	
+	private Hits<RemoteJobEntry> searchHits(Expression query, List<String> fields, SortBy sortBy, int limit) {
 		return index.read(searcher -> {
-			final Hits<RemoteJobEntry> hits = searcher.search(
+			return searcher.search(
 					Query.select(RemoteJobEntry.class)
-						.fields(fields)
-						.where(Expressions.builder()
-								.filter(RemoteJobEntry.Expressions.deleted(false))
-								.filter(query)
-								.build())
-						.sortBy(sortBy)
-						.limit(limit)
-						.build()
+					.fields(fields)
+					.where(Expressions.builder()
+							.filter(RemoteJobEntry.Expressions.deleted(false))
+							.filter(query)
+							.build())
+					.sortBy(sortBy)
+					.limit(limit)
+					.build()
 					);
-			return new RemoteJobs(hits.getHits(), null, hits.getLimit(), hits.getTotal());
 		});
 	}
+	
 	
 	@VisibleForTesting
 	public RemoteJobEntry get(String jobId) {
@@ -288,6 +296,28 @@ public final class RemoteJobTracker implements IDisposableService {
 			}
 		}
 		
+	}
+
+	public Searcher searcher() {
+		return new Searcher() {
+			@Override
+			public <T> Hits<T> search(Query<T> query) throws IOException {
+				return (Hits<T>) searchHits(query.getWhere(), query.getFields(), query.getSortBy(), query.getLimit());
+			}
+			
+			@Override
+			public <T> Hits<T> scroll(Scroll<T> scroll) throws IOException {
+				return index.read(searcher -> searcher.scroll(scroll));
+			}
+			
+			@Override
+			public void cancelScroll(String scrollId) {
+				index.read(searcher -> {
+					searcher.cancelScroll(scrollId);
+					return null;
+				});
+			}
+		};
 	}
 
 }

@@ -23,16 +23,13 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCon
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedParents;
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
 import com.b2international.index.Hits;
-import com.b2international.index.Scroll;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
@@ -49,7 +46,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 4.5
  */
-final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<SnomedConcepts> {
+final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<SnomedConcepts, SnomedConceptDocument> {
 
 	private static final float MIN_DOI_VALUE = 1.05f;
 	private static final float MAX_DOI_VALUE = 10288.383f;
@@ -121,9 +118,7 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 	SnomedConceptSearchRequest() {}
 
 	@Override
-	protected SnomedConcepts doExecute(BranchContext context) throws IOException {
-		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
-
+	protected Expression prepareQuery(BranchContext context) {
 		ExpressionBuilder queryBuilder = Expressions.builder();
 		
 		addActiveClause(queryBuilder);
@@ -197,7 +192,7 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 			}
 			
 			if (conceptScoreMap.isEmpty()) {
-				return new SnomedConcepts(limit(), 0);
+				throw new NoResultException();
 			}
 			
 			queryBuilder.filter(RevisionDocument.Expressions.ids(conceptScoreMap.keySet()));
@@ -210,25 +205,26 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		} else {
 			queryExpression = addSearchProfile(searchProfileQuery, queryBuilder.build());
 		}
-
-		final Hits<SnomedConceptDocument> hits;
-		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(SnomedConceptDocument.class, fields(), scrollId()));
-		} else {
-			hits = searcher.search(select(SnomedConceptDocument.class)
-					.fields(fields())
-					.where(queryExpression)
-					.scroll(scrollKeepAlive())
-					.limit(limit())
-					.sortBy(sortBy())
-					.withScores(containsKey(OptionKey.TERM) || containsKey(OptionKey.USE_DOI))
-					.build());
-		}
 		
+		return queryExpression;
+	}
+	
+	@Override
+	protected boolean trackScores() {
+		return containsKey(OptionKey.TERM) || containsKey(OptionKey.USE_DOI);
+	}
+
+	@Override
+	protected Class<SnomedConceptDocument> getDocumentType() {
+		return SnomedConceptDocument.class;
+	}
+	
+	@Override
+	protected SnomedConcepts toCollectionResource(BranchContext context, Hits<SnomedConceptDocument> hits) {
 		if (limit() < 1 || hits.getTotal() < 1) {
 			return new SnomedConcepts(limit(), hits.getTotal());
 		} else {
-			return SnomedConverters.newConceptConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), limit(), hits.getTotal());
+			return SnomedConverters.newConceptConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
 		}
 	}
 	

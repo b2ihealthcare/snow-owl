@@ -26,11 +26,16 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 public final class SnomedConstraints extends PageableCollectionResource<SnomedConstraint> {
 
 	public SnomedConstraints(int limit, int total) {
-		super(Collections.emptyList(), null, limit, total);
+		super(Collections.emptyList(), null, null, limit, total);
 	}
 	
-	public SnomedConstraints(List<SnomedConstraint> items, String scrollId, int limit, int total) {
-		super(items, scrollId, limit, total);
+	public SnomedConstraints(
+			List<SnomedConstraint> items, 
+			String scrollId, 
+			Object[] searchAfter,
+			int limit, 
+			int total) {
+		super(items, scrollId, searchAfter, limit, total);
 	}
 
 }

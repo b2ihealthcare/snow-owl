@@ -827,7 +827,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 					@Override
 					public SnomedReferenceSetMembers apply(BulkResponse input) {
 						final List<SnomedReferenceSetMember> items = ImmutableList.copyOf(Iterables.concat(input.getResponses(SnomedReferenceSetMembers.class)));
-						return new SnomedReferenceSetMembers(items, null, items.size(), items.size());
+						return new SnomedReferenceSetMembers(items, null, null, items.size(), items.size());
 					}
 				})
 				.getSync();

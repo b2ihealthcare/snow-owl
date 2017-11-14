@@ -15,12 +15,10 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
-import java.io.IOException;
 import java.util.Collections;
 
 import com.b2international.index.Hits;
-import com.b2international.index.Scroll;
-import com.b2international.index.Searcher;
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -31,7 +29,7 @@ import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 /**
  * @since 4.7
  */
-final class CodeSystemSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CodeSystems> {
+final class CodeSystemSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CodeSystems, CodeSystemEntry> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -39,35 +37,28 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 	}
 
 	@Override
-	protected CodeSystems doExecute(final RepositoryContext context) throws IOException {
+	protected Class<CodeSystemEntry> getDocumentType() {
+		return CodeSystemEntry.class;
+	}
+	
+	@Override
+	protected Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
-
 		addIdFilter(queryBuilder, ids -> Expressions.builder()
 				.should(CodeSystemEntry.Expressions.shortNames(ids))
 				.should(CodeSystemEntry.Expressions.oids(ids))
 				.build());
-		
-		final Searcher searcher = context.service(Searcher.class);
+		return queryBuilder.build();
+	}
 
-		final Hits<CodeSystemEntry> hits;
-		
-		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(CodeSystemEntry.class, fields(), scrollId()));
-		} else {
-			hits = searcher.search(select(CodeSystemEntry.class)
-					.where(queryBuilder.build())
-					.sortBy(sortBy())
-					.scroll(scrollKeepAlive())
-					.limit(limit())
-					.build());
-		}
-		
-		return new CodeSystems(hits.getHits(), hits.getScrollId(), limit(), hits.getTotal());
+	@Override
+	protected CodeSystems toCollectionResource(RepositoryContext context, Hits<CodeSystemEntry> hits) {
+		return new CodeSystems(hits.getHits(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
 	}
 	
 	@Override
 	protected CodeSystems createEmptyResult(int limit) {
-		return new CodeSystems(Collections.emptyList(), null, limit, 0);
+		return new CodeSystems(Collections.emptyList(), null, null, limit, 0);
 	}
 
 }

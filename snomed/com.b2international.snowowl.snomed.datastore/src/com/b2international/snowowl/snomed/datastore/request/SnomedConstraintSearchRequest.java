@@ -20,14 +20,10 @@ import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraint
 import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.selfIds;
 import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.types;
 
-import java.io.IOException;
-
 import com.b2international.index.Hits;
-import com.b2international.index.Scroll;
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.query.Query;
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
@@ -38,7 +34,7 @@ import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocumen
 /**
  * @since 4.7
  */
-final class SnomedConstraintSearchRequest extends SearchIndexResourceRequest<BranchContext, SnomedConstraints> {
+final class SnomedConstraintSearchRequest extends SearchIndexResourceRequest<BranchContext, SnomedConstraints, SnomedConstraintDocument> {
 
 	public enum OptionKey {
 		
@@ -65,8 +61,7 @@ final class SnomedConstraintSearchRequest extends SearchIndexResourceRequest<Bra
 	}
 	
 	@Override
-	protected SnomedConstraints doExecute(BranchContext context) throws IOException {
-		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
+	protected Expression prepareQuery(BranchContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		
 		addIdFilter(queryBuilder, SnomedConstraintDocument.Expressions::ids);
@@ -87,22 +82,17 @@ final class SnomedConstraintSearchRequest extends SearchIndexResourceRequest<Bra
 			queryBuilder.filter(types(getCollection(OptionKey.TYPE, PredicateType.class)));
 		}
 		
-		final Hits<SnomedConstraintDocument> hits;
-		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(SnomedConstraintDocument.class, fields(), scrollId()));
-		} else {
-			final Query<SnomedConstraintDocument> query = select(SnomedConstraintDocument.class)
-					.fields(fields())
-					.where(queryBuilder.build())
-					.sortBy(sortBy())
-					.scroll(scrollKeepAlive())
-					.limit(limit())
-					.build();
-			hits = searcher.search(query);
-		}
-		
-		return SnomedConverters.newConstraintConverter(context, expand(), locales())
-				.convert(hits.getHits(), hits.getScrollId(), limit(), hits.getTotal());
+		return queryBuilder.build();
+	}
+
+	@Override
+	protected Class<SnomedConstraintDocument> getDocumentType() {
+		return SnomedConstraintDocument.class;
+	}
+	
+	@Override
+	protected SnomedConstraints toCollectionResource(BranchContext context, Hits<SnomedConstraintDocument> hits) {
+		return SnomedConverters.newConstraintConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
 	}
 	
 	@Override

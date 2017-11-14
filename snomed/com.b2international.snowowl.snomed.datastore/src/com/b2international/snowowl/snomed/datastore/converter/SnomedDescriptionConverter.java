@@ -51,8 +51,8 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 	}
 
 	@Override
-	protected SnomedDescriptions createCollectionResource(List<SnomedDescription> results, String scrollId, int limit, int total) {
-		return new SnomedDescriptions(results, scrollId, limit, total);
+	protected SnomedDescriptions createCollectionResource(List<SnomedDescription> results, String scrollId, Object[] searchAfter, int limit, int total) {
+		return new SnomedDescriptions(results, scrollId, searchAfter, limit, total);
 	}
 	
 	@Override

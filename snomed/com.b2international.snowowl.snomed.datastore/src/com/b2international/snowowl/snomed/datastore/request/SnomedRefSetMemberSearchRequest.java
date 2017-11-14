@@ -33,18 +33,15 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRef
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.values;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
-import com.b2international.index.Scroll;
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.query.Query;
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
@@ -62,7 +59,7 @@ import com.google.common.collect.Iterables;
 /**
  * @since 4.5
  */
-final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedReferenceSetMembers> {
+final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedReferenceSetMembers, SnomedRefSetMemberIndexEntry> {
 
 	/**
 	 * @since 4.5
@@ -97,9 +94,12 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 	SnomedRefSetMemberSearchRequest() {}
 	
 	@Override
-	protected SnomedReferenceSetMembers doExecute(BranchContext context) throws IOException {
-		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
-
+	protected Class<SnomedRefSetMemberIndexEntry> getDocumentType() {
+		return SnomedRefSetMemberIndexEntry.class;
+	}
+	
+	@Override
+	protected Expression prepareQuery(BranchContext context) {
 		final Collection<String> referencedComponentIds = getCollection(OptionKey.REFERENCED_COMPONENT, String.class);
 		final Collection<SnomedRefSetType> refSetTypes = getCollection(OptionKey.REFSET_TYPE, SnomedRefSetType.class);
 		final Options propsFilter = getOptions(OptionKey.PROPS);
@@ -206,26 +206,16 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			}
 		}
 		
-		final Hits<SnomedRefSetMemberIndexEntry> hits;
-		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(SnomedRefSetMemberIndexEntry.class, fields(), scrollId()));
-		} else {
-			final Query<SnomedRefSetMemberIndexEntry> query = select(SnomedRefSetMemberIndexEntry.class)
-					.fields(fields())
-					.where(queryBuilder.build())
-					.sortBy(sortBy())
-					.scroll(scrollKeepAlive())
-					.limit(limit())
-					.build();
-			hits = searcher.search(query);
-		}
-		
+		return queryBuilder.build();
+	}
+
+	@Override
+	protected SnomedReferenceSetMembers toCollectionResource(BranchContext context, Hits<SnomedRefSetMemberIndexEntry> hits) {
 		if (limit() < 1 || hits.getTotal() < 1) {
 			return new SnomedReferenceSetMembers(limit(), hits.getTotal());
 		} else {
-			return SnomedConverters.newMemberConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), limit(), hits.getTotal());
+			return SnomedConverters.newMemberConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
 		}
-
 	}
 
 	private static void checkRangeValue(final Collection<Object> attributeValues) {

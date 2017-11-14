@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ public final class CodeSystems extends PageableCollectionResource<CodeSystemEntr
 
 	private static final long serialVersionUID = 1L;
 
-	public CodeSystems(List<CodeSystemEntry> items, String scrollId, int limit, int total) {
-		super(items, scrollId, limit, total);
+	public CodeSystems(List<CodeSystemEntry> items, String scrollId, Object[] searchAfter, int limit, int total) {
+		super(items, scrollId, searchAfter, limit, total);
 	}
 
 }

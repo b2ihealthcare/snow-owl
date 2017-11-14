@@ -30,7 +30,7 @@ public final class Users extends PageableCollectionResource<User> {
 	}
 	
 	public Users(List<User> items, int limit, int total) {
-		super(items, null, limit, total);
+		super(items, null, null, limit, total);
 	}
 
 }

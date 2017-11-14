@@ -46,23 +46,25 @@ public final class SnomedConcepts extends PageableCollectionResource<SnomedConce
 	 * @param total number of items in the resultset
 	 */
 	public SnomedConcepts(int limit, int total) {
-		super(Collections.emptyList(), null, limit, total);
+		super(Collections.emptyList(), null, null, limit, total);
 	}
 	
 	/**
 	 * Instantiates a pageable collection of SNOMED CT concepts.
 	 * @param list of @link {@link SnomedConcept}s
-	 * @param offset for paging
+	 * @param scrollId for paging the result set continuously
+	 * @param searchAfter for paging the result set with a live cursor
 	 * @param limit of items for a single page
 	 * @param total number of items in the resultset
 	 */
 	@JsonCreator
 	public SnomedConcepts(
 			@JsonProperty("items") List<SnomedConcept> items, 
-			@JsonProperty("scrollId") String scrollId, 
+			@JsonProperty("scrollId") String scrollId,
+			@JsonProperty("searchAfter") Object[] searchAfter,
 			@JsonProperty("limit") int limit, 
 			@JsonProperty("total") int total) {
-		super(items, scrollId, limit, total);
+		super(items, scrollId, searchAfter, limit, total);
 	}
 
 }

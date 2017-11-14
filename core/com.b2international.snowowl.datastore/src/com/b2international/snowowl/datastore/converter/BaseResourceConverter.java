@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,11 +63,11 @@ public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<
 
 	@Override
 	public final R convert(T component) {
-		return Iterables.getOnlyElement(convert(Collections.singleton(component), null, 1, 1));
+		return Iterables.getOnlyElement(convert(Collections.singleton(component), null, null, 1, 1));
 	}
 
 	@Override
-	public final CR convert(Collection<T> components, String scrollId, int limit, int total) {
+	public final CR convert(Collection<T> components, String scrollId, Object[] searchAfter, int limit, int total) {
 		final List<R> results = components
 				.stream()
 				.map(this::toResource)
@@ -75,10 +75,10 @@ public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<
 		
 		expand(results);
 		
-		return createCollectionResource(results, scrollId, limit, total);
+		return createCollectionResource(results, scrollId, searchAfter, limit, total);
 	}
 
-	protected abstract CR createCollectionResource(List<R> results, String scrollId, int limit, int total);
+	protected abstract CR createCollectionResource(List<R> results, String scrollId, Object[] searchAfter, int limit, int total);
 
 	/**
 	 * Subclasses may override to expand resources based on the {@link #expand()} list.
