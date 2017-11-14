@@ -94,13 +94,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="com.b2international.snowowl.snomed.mrcm.core"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="com.b2international.snowowl.snomed.mrcm.model"
          download-size="0"
          install-size="0"
@@ -123,20 +116,6 @@ Visit us at http://b2i.sg
 
    <plugin
          id="com.b2international.snowowl.snomed.reasoner.server"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.b2international.snowowl.snomed.mrcm.core.server"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.b2international.snowowl.snomed.escg"
          download-size="0"
          install-size="0"
          version="0.0.0"
