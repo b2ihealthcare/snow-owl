@@ -7,7 +7,6 @@ Bundle-Activator: com.b2international.snowowl.semanticengine.SemanticEnginePlugi
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.google.guava;bundle-version="11.0.1",
- com.b2international.snowowl.snomed.dsl,
  com.b2international.snowowl.datastore,
  org.eclipse.emf.ecore;bundle-version="2.6.0",
  com.b2international.snowowl.snomed.scg,
