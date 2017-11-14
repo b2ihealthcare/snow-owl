@@ -79,6 +79,7 @@ import com.b2international.snowowl.datastore.events.RepositoryCommitNotification
 import com.b2international.snowowl.datastore.index.MappingProvider;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
+import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
@@ -431,13 +432,9 @@ public final class CDOBasedRepository extends DelegatingServiceProvider implemen
 		return getIndex().read(new IndexRead<CommitInfos>() {
 			@Override
 			public CommitInfos execute(DocSearcher index) throws IOException {
-				return RepositoryRequests.commitInfos().prepareSearchCommitInfo()
-					.all()
-					.build()
-					.execute(DelegatingRepositoryContext
-							.basedOn(repositoryContext)
-							.bind(Searcher.class, index)
-							.build());
+				return new IndexReadRequest<>(RepositoryRequests.commitInfos().prepareSearchCommitInfo()
+						.all()
+						.build()).execute(repositoryContext);
 			}
 		});
 	}

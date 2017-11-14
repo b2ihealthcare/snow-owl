@@ -58,7 +58,7 @@ final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider,
 	}
 
 	@Override
-	protected Searcher getSearcher(ServiceProvider context) {
+	protected Searcher searcher(ServiceProvider context) {
 		return context.service(RemoteJobTracker.class).searcher();
 	}
 	

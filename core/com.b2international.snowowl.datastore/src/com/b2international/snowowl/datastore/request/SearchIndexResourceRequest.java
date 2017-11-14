@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.Scroll;
 import com.b2international.index.Searcher;
@@ -29,12 +30,11 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
+import com.b2international.index.revision.Revision;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Strings;
 
 /**
  * @since 5.11
@@ -56,11 +56,12 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	
 	@Override
 	protected final B doExecute(C context) throws IOException {
-		final Searcher searcher = getSearcher(context);
+		final Class<D> docType = getDocumentType();
+		final Searcher searcher = searcher(context);
 		final Expression where = prepareQuery(context);
 		final Hits<D> hits;
 		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(getDocumentType(), fields(), scrollId()));
+			hits = searcher.scroll(new Scroll<>(docType, fields(), scrollId()));
 		} else {
 			hits = searcher.search(Query.select(getDocumentType())
 					.fields(fields())
@@ -77,12 +78,18 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	}
 	
 	/**
-	 * Returns the default {@link Searcher} attached to the given context.
+	 * Returns the default {@link Searcher} attached to the given context that can search {@link #getDocumentType() document}s. Subclasses may override this if they would like to use a different
+	 * searcher service.
+	 * 
 	 * @param context
 	 * @return
 	 */
-	protected Searcher getSearcher(C context) {
-		return context.service(Searcher.class);
+	protected Searcher searcher(C context) {
+		if (Revision.class.isAssignableFrom(getDocumentType())) {
+			return context.service(RevisionSearcher.class);
+		} else {
+			return context.service(DocSearcher.class);
+		}
 	}
 
 	protected final ExpressionBuilder addIdFilter(ExpressionBuilder queryBuilder, Function<Collection<String>, Expression> expressionFactory) {

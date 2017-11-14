@@ -52,6 +52,7 @@ public final class IndexReadRequest<R> extends DelegatingRequest<RepositoryConte
 					return next(DelegatingRepositoryContext
 							.basedOn(context)
 							.bind(Searcher.class, index)
+							.bind(DocSearcher.class, index)
 							.build());
 				} catch (QueryParseException e) {
 					throw new IllegalQueryParameterException(e.getMessage());
