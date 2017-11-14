@@ -129,12 +129,12 @@
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob
-            class="com.b2international.snowowl.snomed.mrcm.core.boot.MrcmImporterClientConfigJob"
+            class="com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporterClientConfigJob"
             id="com.b2international.snowowl.snomed.mrcm.core.boot.MrcmImporterClientConfigJob"
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </serviceConfigJob>
       <serviceConfigJob
-            class="com.b2international.snowowl.snomed.mrcm.core.boot.MrcmExporterClientConfigJob"
+            class="com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporterClientConfigJob"
             id="com.b2international.snowowl.snomed.mrcm.core.boot.MrcmExporterClientConfigJob"
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </serviceConfigJob>
@@ -340,11 +340,6 @@
       <serviceConfigJob
             class="com.b2international.snowowl.snomed.datastore.serviceconfig.SearchProfileManagerConfigJob"
             id="com.b2international.snowowl.snomed.datastore.serviceconfig.SearchProfileManagerConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.datastore.serviceconfig.ClientSnomedConceptDeltaProviderConfigJob"
-            id="com.b2international.snowowl.snomed.datastore.serviceconfig.ClientSnomedConceptDeltaProviderConfigJob"
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </serviceConfigJob>
       <serviceConfigJob
