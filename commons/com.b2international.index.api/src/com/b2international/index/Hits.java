@@ -20,6 +20,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
+import com.b2international.commons.StringUtils;
+import com.google.common.base.MoreObjects;
+
 /**
  * @since 4.7
  */
@@ -27,12 +30,14 @@ public final class Hits<T> implements Iterable<T> {
 
 	private final List<T> hits;
 	private final String scrollId;
+	private final Object[] searchAfter;
 	private final int limit;
 	private final int total;
 
-	public Hits(List<T> hits, String scrollId, int limit, int total) {
+	public Hits(List<T> hits, String scrollId, Object[] searchAfter, int limit, int total) {
 		this.hits = hits;
 		this.scrollId = scrollId;
+		this.searchAfter = searchAfter;
 		this.limit = limit;
 		this.total = total;
 	}
@@ -58,6 +63,10 @@ public final class Hits<T> implements Iterable<T> {
 		return scrollId;
 	}
 	
+	public Object[] getSearchAfter() {
+		return searchAfter;
+	}
+	
 	public int getLimit() {
 		return limit;
 	}
@@ -65,9 +74,20 @@ public final class Hits<T> implements Iterable<T> {
 	public int getTotal() {
 		return total;
 	}
+	
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(getClass())
+				.add("hits", StringUtils.limitedToString(hits, 10))
+				.add("limit", limit)
+				.add("total", total)
+				.add("scrollId", scrollId)
+				.add("searchAfter", searchAfter)
+				.toString();
+	}
 
 	public static <T> Hits<T> empty(int limit) {
-		return new Hits<>(Collections.<T>emptyList(), null, limit, 0);
+		return new Hits<>(Collections.<T>emptyList(), null, null, limit, 0);
 	}
 
 }

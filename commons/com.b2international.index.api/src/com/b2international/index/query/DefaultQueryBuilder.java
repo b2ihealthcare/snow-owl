@@ -34,6 +34,7 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 	private Class<?> scope;
 	
 	private String scrollKeepAlive;
+	private Object[] searchAfter;
 	private int limit = DEFAULT_LIMIT;
 	private Expression where;
 	private SortBy sortBy = SortBy.DOC_ID;
@@ -71,6 +72,12 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 	}
 	
 	@Override
+	public AfterWhereBuilder<T> searchAfter(Object[] sortValues) {
+		this.searchAfter = sortValues;
+		return this;
+	}
+	
+	@Override
 	public AfterWhereBuilder<T> limit(int limit) {
 		this.limit = limit;
 		return this;
@@ -102,6 +109,7 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 		query.setParentType(scope);
 		query.setWhere(where);
 		query.setScrollKeepAlive(scrollKeepAlive);
+		query.setSearchAfter(searchAfter);
 		query.setLimit(limit);
 		query.setSortBy(sortBy);
 		query.setWithScores(withScores);

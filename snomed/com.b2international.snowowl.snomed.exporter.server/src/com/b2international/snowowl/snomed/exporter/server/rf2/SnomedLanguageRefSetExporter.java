@@ -134,7 +134,7 @@ public class SnomedLanguageRefSetExporter extends AbstractSnomedCoreExporter<Sno
 				.flatMap(id -> referencedComponentToMemberMap.get(id).stream())
 				.collect(toList());
 
-		return new Hits<SnomedRefSetMemberIndexEntry>(filteredMembers, null, allResults.getLimit(), allResults.getTotal());
+		return new Hits<SnomedRefSetMemberIndexEntry>(filteredMembers, null, null, allResults.getLimit(), allResults.getTotal());
 	}
 
 }

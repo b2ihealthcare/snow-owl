@@ -19,8 +19,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -40,6 +42,7 @@ import com.b2international.index.query.EsQueryBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.MultiSortBy;
+import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.query.SortBy.SortByField;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -130,6 +133,10 @@ public class EsDocumentSearcher implements DocSearcher {
 			req.setScroll(query.getScrollKeepAlive());
 		}
 		
+		// search after
+		if (query.getSearchAfter() != null) {
+			req.searchAfter(query.getSearchAfter());
+		}
 		
 		// fetch phase
 		SearchResponse response = null; 
@@ -165,7 +172,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		final Class<T> select = query.getSelect();
 		final Class<?> from = query.getFrom();
 		
-		return toHits(select, from, query.getFields(), limit, totalHits, response.getScrollId(), allHits.build());
+		return toHits(select, from, query.getFields(), limit, totalHits, response.getScrollId(), query.getSortBy(), allHits.build());
 	}
 
 	@Override
@@ -174,7 +181,7 @@ public class EsDocumentSearcher implements DocSearcher {
 				.prepareSearchScroll(scroll.getScrollId())
 				.setScroll(scroll.getKeepAlive())
 				.get();
-		return toHits(scroll.getSelect(), scroll.getFrom(), scroll.getFields(), response.getHits().getHits().length, (int) response.getHits().getTotalHits(), response.getScrollId(), response.getHits());
+		return toHits(scroll.getSelect(), scroll.getFrom(), scroll.getFields(), response.getHits().getHits().length, (int) response.getHits().getTotalHits(), response.getScrollId(), null, response.getHits());
 	}
 	
 	@Override
@@ -182,13 +189,23 @@ public class EsDocumentSearcher implements DocSearcher {
 		admin.client().prepareClearScroll().addScrollId(scrollId).get();
 	}
 	
-	private <T> Hits<T> toHits(Class<T> select, Class<?> from, final List<String> fields, final int limit, final int totalHits, final String scrollId, final Iterable<SearchHit> hits) throws IOException {
+	private <T> Hits<T> toHits(
+			Class<T> select, 
+			Class<?> from, 
+			final List<String> fields, 
+			final int limit, 
+			final int totalHits, 
+			final String scrollId,
+			final SortBy sortBy,
+			final Iterable<SearchHit> hits) throws IOException {
 		final ObjectReader reader = select != from 
 				? mapper.readerFor(select).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) 
 				: mapper.readerFor(select);
-		
+		Object[] searchAfterSortValues = null;
 		final ImmutableList.Builder<T> result = ImmutableList.builder();
-		for (SearchHit hit : hits) {
+		for (Iterator<SearchHit> iterator = hits.iterator(); iterator.hasNext();) {
+			SearchHit hit = iterator.next();
+			// if this was the last value then collect the sort values for searchAfter
 			final T value;
 			if (Primitives.isWrapperType(select) || String.class.isAssignableFrom(select)) {
 				if (CompareUtils.isEmpty(hit.getSource())) {
@@ -216,23 +233,15 @@ public class EsDocumentSearcher implements DocSearcher {
 				((WithScore) value).setScore(Float.isNaN(hit.getScore()) ? 0.0f : hit.getScore());
 			}
 			result.add(value);
+			if (!iterator.hasNext()) {
+				searchAfterSortValues = hit.getSortValues();
+			}
 		}
-		return new Hits<T>(result.build(), scrollId, limit, totalHits);
+		return new Hits<T>(result.build(), scrollId, searchAfterSortValues, limit, totalHits);
 	}
 	
 	private void addSort(SearchRequestBuilder req, SortBy sortBy) {
-		final List<SortBy> items = newArrayList();
-
-		// Unpack the top level multi-sort if present
-		if (sortBy instanceof MultiSortBy) {
-			items.addAll(((MultiSortBy) sortBy).getItems());
-		} else {
-			items.add(sortBy);
-		}
-		
-		boolean sortById = false;
-		
-		for (final SortByField item : Iterables.filter(items, SortByField.class)) {
+		for (final SortByField item : getSortFields(sortBy)) {
             String field = item.getField();
             SortBy.Order order = item.getOrder();
             
@@ -242,17 +251,35 @@ public class EsDocumentSearcher implements DocSearcher {
                 req.addSort(SortBuilders.scoreSort().order(order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC)); 
                 break;
             case DocumentMapping._ID: //$FALL-THROUGH$
-            	sortById = true;
             	field = DocumentMapping._UID;
             default:
             	req.addSort(SortBuilders.fieldSort(field).order(order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC));
             }
         }
-		
-		// add _id field as tiebreaker if not defined in the original SortBy
-		if (!sortById) {
-			req.addSort(SortBuilders.fieldSort(DocumentMapping._UID).order(SortOrder.DESC));
+	}
+
+	private Iterable<SortByField> getSortFields(SortBy sortBy) {
+		final List<SortBy> items = newArrayList();
+
+		// Unpack the top level multi-sort if present
+		if (sortBy instanceof MultiSortBy) {
+			items.addAll(((MultiSortBy) sortBy).getItems());
+		} else {
+			items.add(sortBy);
 		}
+
+		Optional<SortByField> existingDocIdSort = items.stream()
+			.filter(SortByField.class::isInstance)
+			.map(SortByField.class::cast)
+			.filter(field -> DocumentMapping._ID.equals(field.getField()))
+			.findFirst();
+		
+		if (!existingDocIdSort.isPresent()) {
+			// add _id field as tiebreaker if not defined in the original SortBy
+			items.add(SortBy.field(DocumentMapping._ID, Order.DESC));
+		}
+		
+		return Iterables.filter(items, SortByField.class);
 	}
 
 }

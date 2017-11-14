@@ -370,7 +370,10 @@ public class StringUtils {
 			remaining--;
 		}
 
-		builder.append(String.format("... %d more items", Iterables.size(values) - limit));
+		int total = Iterables.size(values);
+		if (total - limit > 0) {
+			builder.append(String.format("... %d more items", total - limit));
+		}
 		builder.append("]");
 		
 		return builder.toString();

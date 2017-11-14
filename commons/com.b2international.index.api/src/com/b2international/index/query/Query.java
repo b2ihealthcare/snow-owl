@@ -76,14 +76,41 @@ public final class Query<T> {
 		 */
 		AfterWhereBuilder<T> scroll(String scrollKeepAlive);
 		
+		/**
+		 * Return matches after the specified sort values. This can be used for live scrolling on large result sets. If you would like to iterate over
+		 * the entire result set, use the {@link #scroll(String) scroll API} instead.
+		 * 
+		 * @param sortValues - the last sort values in sort order 
+		 * @return
+		 */
+		AfterWhereBuilder<T> searchAfter(Object[] sortValues);
+		
+		/**
+		 * The maximum number of hits to return.
+		 * @param limit
+		 * @return
+		 */
 		AfterWhereBuilder<T> limit(int limit);
 
+		/**
+		 * Sort the results by the specified {@link SortBy} construct.
+		 * 
+		 * @param sortBy
+		 * @return
+		 * @see SortBy
+		 */
 		AfterWhereBuilder<T> sortBy(SortBy sortBy);
 		
+		/**
+		 * Whether to compute scores for the hits or not. By default it is disabled.
+		 * @param withScores
+		 * @return
+		 */
 		AfterWhereBuilder<T> withScores(boolean withScores);
 	}
 
 	private String scrollKeepAlive;
+	private Object[] searchAfter;
 	private int limit;
 	private Class<T> select;
 	private Class<?> from;
@@ -165,6 +192,14 @@ public final class Query<T> {
 	
 	public void setScrollKeepAlive(String scrollKeepAlive) {
 		this.scrollKeepAlive = scrollKeepAlive;
+	}
+	
+	public Object[] getSearchAfter() {
+		return searchAfter;
+	}
+	
+	void setSearchAfter(Object[] searchAfter) {
+		this.searchAfter = searchAfter;
 	}
 	
 	@Override
