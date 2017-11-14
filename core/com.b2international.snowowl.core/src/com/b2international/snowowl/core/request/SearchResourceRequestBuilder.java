@@ -152,7 +152,9 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	protected final B addOption(String key, Object value) {
 		if (value instanceof Iterable<?>) {
 			for (final Object val : (Iterable<?>)value) {
-				if (CompareUtils.isEmpty(val)) {
+				if (val instanceof SearchResourceRequest.SortField) {
+					// ignore sort fields
+				} else if (CompareUtils.isEmpty(val)) {
 					throw new BadRequestException("%s filter cannot contain null or empty values", key);
 				}
 			}
