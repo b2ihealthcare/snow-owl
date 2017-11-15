@@ -265,7 +265,13 @@ public final class Promise<T> extends AbstractFuture<T> {
 		return Promise.wrap(Futures.allAsList(promises));
 	}
 	
-	private static final <T> Promise<T> wrap(ListenableFuture<T> future) {
+	/**
+	 * Wraps a {@link ListenableFuture} into a {@link Promise} to easily add listener callbacks to it.
+	 * @param future - the future to wrap
+	 * @return
+	 * @since 6.0
+	 */
+	public static final <T> Promise<T> wrap(ListenableFuture<T> future) {
 		final Promise<T> promise = new Promise<>();
 		Futures.addCallback(future, new FutureCallback<T>() {
 			@Override
