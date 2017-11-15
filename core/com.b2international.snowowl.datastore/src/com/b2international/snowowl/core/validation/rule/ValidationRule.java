@@ -45,12 +45,14 @@ public final class ValidationRule {
 	 */
 	public static final class Fields {
 		public static final String ID = "id";
+		public static final String TOOLING_ID = "toolingId";
 		public static final String MESSAGE_TEMPLATE = "messageTemplate";
 		public static final String SEVERITY = "severity";
 		public static final String TYPE = "type";
 	}
 
 	private final String id;
+	private final String toolingId;
 	private final String messageTemplate;
 	private final Severity severity;
 	private final Type type;
@@ -59,12 +61,14 @@ public final class ValidationRule {
 	@JsonCreator
 	public ValidationRule(
 			@JsonProperty("id") final String id,
+			@JsonProperty("toolingId") final String toolingId,
 			@JsonProperty("messageTemplate") final String messageTemplate,
 			@JsonProperty("severity") final Severity severity,
 			@JsonProperty("type") final Type type,
 			@JsonProperty("implementation") final String implementation
 			) {
 		this.id = id;
+		this.toolingId = toolingId;
 		this.messageTemplate = messageTemplate;
 		this.severity = severity;
 		this.type = type;
@@ -73,6 +77,10 @@ public final class ValidationRule {
 	
 	public String getId() {
 		return id;
+	}
+	
+	public String getToolingId() {
+		return toolingId;
 	}
 	
 	public String getMessageTemplate() {

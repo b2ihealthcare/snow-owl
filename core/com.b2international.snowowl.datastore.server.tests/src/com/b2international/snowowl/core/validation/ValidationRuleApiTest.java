@@ -81,6 +81,7 @@ public class ValidationRuleApiTest {
 	public void createRule() throws Exception {
 		final String ruleId = ValidationRequests.rules().prepareCreate()
 				.setId(UUID.randomUUID().toString())
+				.setToolingId("TerminologyToolingId")
 				.setMessageTemplate("Error message")
 				.setSeverity(Severity.ERROR)
 				.setType(Type.QUERY)
@@ -89,6 +90,7 @@ public class ValidationRuleApiTest {
 				.execute(context);
 		
 		final ValidationRule rule = ValidationRequests.rules().prepareGet(ruleId).buildAsync().getRequest().execute(context);
+		assertThat(rule.getToolingId()).isEqualTo("TerminologyToolingId");
 		assertThat(rule.getMessageTemplate()).isEqualTo("Error message");
 		assertThat(rule.getSeverity()).isEqualTo(Severity.ERROR);
 		assertThat(rule.getType()).isEqualTo(Type.QUERY);

@@ -33,6 +33,7 @@ public final class ValidationRuleCreateRequestBuilder
 		implements ValidationRepositoryWriteRequestBuilder<String> {
 
 	private String id;
+	private String toolingId;
 	private String messageTemplate;
 	private Severity severity;
 	private Type type;
@@ -42,6 +43,11 @@ public final class ValidationRuleCreateRequestBuilder
 	
 	public ValidationRuleCreateRequestBuilder setId(String id) {
 		this.id = id;
+		return getSelf();
+	}
+	
+	public ValidationRuleCreateRequestBuilder setToolingId(String toolingId) {
+		this.toolingId = toolingId;
 		return getSelf();
 	}
 	
@@ -69,6 +75,7 @@ public final class ValidationRuleCreateRequestBuilder
 	protected Request<ServiceProvider, String> doBuild() {
 		ValidationRuleCreateRequest req = new ValidationRuleCreateRequest();
 		req.setId(Strings.isNullOrEmpty(id) ? UUID.randomUUID().toString() : id);
+		req.setToolingId(toolingId);
 		req.setMessageTemplate(messageTemplate);
 		req.setSeverity(severity);
 		req.setType(type);

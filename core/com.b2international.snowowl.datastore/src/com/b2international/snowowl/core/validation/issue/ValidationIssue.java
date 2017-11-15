@@ -35,7 +35,6 @@ public final class ValidationIssue {
 	
 	private final String id;
 	private final String ruleId;
-	private final String codeSystem;
 	private final String branchPath;
 	private final ComponentIdentifier affectedComponent;
 
@@ -43,12 +42,10 @@ public final class ValidationIssue {
 	public ValidationIssue(
 			@JsonProperty("id") final String id,
 			@JsonProperty("ruleId") final String ruleId, 
-			@JsonProperty("codeSystem") final String codeSystem, 
 			@JsonProperty("branchPath") final String branchPath, 
 			@JsonProperty("affectedComponent") final ComponentIdentifier affectedComponent) {
 		this.id = id;
 		this.ruleId = ruleId;
-		this.codeSystem = codeSystem;
 		this.branchPath = branchPath;
 		this.affectedComponent = affectedComponent;
 	}
@@ -65,10 +62,6 @@ public final class ValidationIssue {
 		return branchPath;
 	}
 	
-	public String getCodeSystem() {
-		return codeSystem;
-	}
-	
 	public String getRuleId() {
 		return ruleId;
 	}
@@ -78,7 +71,6 @@ public final class ValidationIssue {
 		return MoreObjects.toStringHelper(getClass())
 				.add("id", id)
 				.add("ruleId", ruleId)
-				.add("codeSystem", codeSystem)
 				.add("branchPath", branchPath)
 				.add("affectedComponent", affectedComponent)
 				.toString();

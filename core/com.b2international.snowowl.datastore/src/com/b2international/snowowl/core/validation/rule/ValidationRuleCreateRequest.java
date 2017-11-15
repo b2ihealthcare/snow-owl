@@ -36,6 +36,9 @@ final class ValidationRuleCreateRequest implements Request<ServiceProvider, Stri
 	private String id;
 	
 	@NotEmpty
+	private String toolingId;
+	
+	@NotEmpty
 	private String messageTemplate;
 	
 	@NotNull 
@@ -46,11 +49,15 @@ final class ValidationRuleCreateRequest implements Request<ServiceProvider, Stri
 	
 	@NotEmpty
 	private String implementation;
-	
+
 	ValidationRuleCreateRequest() {}
 
 	void setId(String id) {
 		this.id = id;
+	}
+	
+	void setToolingId(String toolingId) {
+		this.toolingId = toolingId;
 	}
 	
 	void setMessageTemplate(String messageTemplate) {
@@ -72,7 +79,7 @@ final class ValidationRuleCreateRequest implements Request<ServiceProvider, Stri
 	@Override
 	public String execute(ServiceProvider context) {
 		try {
-			context.service(Writer.class).put(id, new ValidationRule(id, messageTemplate, severity, type, implementation));
+			context.service(Writer.class).put(id, new ValidationRule(id, toolingId, messageTemplate, severity, type, implementation));
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Failed to create validation rule: " + e);
 		}
