@@ -166,6 +166,8 @@ final class SnomedRefSetMemberCreateRequest implements Request<TransactionContex
 				return new SnomedSimpleMemberCreateDelegate(this);
 			case SIMPLE_MAP:
 				return new SnomedSimpleMapMemberCreateDelegate(this);
+			case ANNOTATION:
+				return new SnomedOWLAxiomMemberCreateDelegate(this);
 			default: 
 				throw new IllegalStateException("Unexpected reference set type '" + referenceSetType + "'.");
 		}

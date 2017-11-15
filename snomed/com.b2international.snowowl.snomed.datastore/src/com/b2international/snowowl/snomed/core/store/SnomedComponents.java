@@ -175,4 +175,12 @@ public class SnomedComponents {
 		return new SnomedComplexMapReferenceSetMemberBuilder();
 	}
 
+	/**
+	 * Creates and returns a new {@link SnomedOWLAxiomReferenceSetMemberBuilder SNOMED CT OWL Axiom Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedOWLAxiomReferenceSetMemberBuilder newOWLAxiomReferenceSetMember() {
+		return new SnomedOWLAxiomReferenceSetMemberBuilder();
+	}
 }

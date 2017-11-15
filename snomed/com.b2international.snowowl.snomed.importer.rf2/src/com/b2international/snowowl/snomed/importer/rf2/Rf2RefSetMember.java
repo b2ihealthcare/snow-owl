@@ -59,6 +59,7 @@ public class Rf2RefSetMember extends UnsupportedRf2RefSetMember {
 		case QUERY: return SnomedRefSetPackage.Literals.SNOMED_QUERY_REF_SET_MEMBER;
 		case SIMPLE: return SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER;
 		case SIMPLE_MAP: return SnomedRefSetPackage.Literals.SNOMED_SIMPLE_MAP_REF_SET_MEMBER;
+		case ANNOTATION: return SnomedRefSetPackage.Literals.SNOMED_ANNOTATION_REF_SET_MEMBER;
 		default: throw new UnsupportedOperationException("Unknown refset: " + refSet.getType());
 		}
 	}

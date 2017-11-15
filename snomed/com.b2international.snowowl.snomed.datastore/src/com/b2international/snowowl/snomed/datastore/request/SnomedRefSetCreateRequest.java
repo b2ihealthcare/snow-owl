@@ -92,6 +92,7 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 			case QUERY:
 			case DESCRIPTION_TYPE:
 			case MODULE_DEPENDENCY:
+			case ANNOTATION:
 				refSet = createRegularRefSet(context);
 				break;
 			case CONCRETE_DATA_TYPE:
