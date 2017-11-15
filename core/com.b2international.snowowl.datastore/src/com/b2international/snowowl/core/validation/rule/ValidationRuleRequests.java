@@ -29,5 +29,9 @@ public enum ValidationRuleRequests {
 	public ValidationRuleSearchRequestBuilder prepareSearch() {
 		return new ValidationRuleSearchRequestBuilder();
 	}
+
+	public ValidationRuleCreateRequestBuilder prepareCreate() {
+		return new ValidationRuleCreateRequestBuilder();
+	}
 	
 }

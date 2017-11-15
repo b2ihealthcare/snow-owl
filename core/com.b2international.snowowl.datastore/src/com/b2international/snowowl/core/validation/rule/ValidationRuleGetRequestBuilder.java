@@ -16,7 +16,7 @@
 package com.b2international.snowowl.core.validation.rule;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.internal.validation.ValidationRequestBuilder;
+import com.b2international.snowowl.core.internal.validation.ValidationRepositoryReadRequestBuilder;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
 
 /**
@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
  */
 public final class ValidationRuleGetRequestBuilder extends
 		GetResourceRequestBuilder<ValidationRuleGetRequestBuilder, ValidationRuleSearchRequestBuilder, ServiceProvider, ValidationRule>
-		implements ValidationRequestBuilder<ValidationRule> {
+		implements ValidationRepositoryReadRequestBuilder<ValidationRule> {
 
 	ValidationRuleGetRequestBuilder(final String ruleId) {
 		super(new ValidationRuleGetRequest(ruleId));

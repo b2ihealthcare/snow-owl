@@ -27,18 +27,18 @@ import com.b2international.snowowl.core.request.SystemRequestBuilder;
  * @since 6.0
  * @param <R> - the return type
  */
-public interface ValidationRequestBuilder<R> extends SystemRequestBuilder<R> {
+public interface ValidationRepositoryReadRequestBuilder<R> extends SystemRequestBuilder<R> {
 
 	@Override
 	default AsyncRequest<R> buildAsync() {
 		return new AsyncRequest<R>(
-			new ValidationRepositoryRequest<>(build())
+			new ValidationRepositoryReadRequest<>(build())
 		);
 	}
 	
-	final class ValidationRepositoryRequest<R> extends DelegatingRequest<ServiceProvider, ServiceProvider, R> {
+	final class ValidationRepositoryReadRequest<R> extends DelegatingRequest<ServiceProvider, ServiceProvider, R> {
 
-		ValidationRepositoryRequest(Request<ServiceProvider, R> next) {
+		ValidationRepositoryReadRequest(Request<ServiceProvider, R> next) {
 			super(next);
 		}
 
