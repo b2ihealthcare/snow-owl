@@ -141,7 +141,7 @@ public abstract class SnomedRefSetUtil {
 				return SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER;
 			case MODULE_DEPENDENCY:
 				return SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER;
-			case ANNOTATION:
+			case OWL_AXIOM:
 				return SnomedRefSetPackage.Literals.SNOMED_ANNOTATION_REF_SET_MEMBER;
 			default:
 				throw new IllegalArgumentException("Unsupported reference set type: " + type);
@@ -383,7 +383,7 @@ public abstract class SnomedRefSetUtil {
 				return Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
 			case EXTENDED_MAP:
 				return Concepts.EXTENDED_MAP_TYPE;
-			case ANNOTATION:
+			case OWL_AXIOM:
 				return Concepts.REFSET_OWL_AXIOM;
 			default:
 				throw new IllegalArgumentException("Unexpected reference set type: " + type);

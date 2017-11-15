@@ -33,7 +33,7 @@ public class SnomedOWLAxiomMemberCreateDelegate extends SnomedRefSetMemberCreate
 
 	@Override
 	String execute(final SnomedRefSet refSet, final TransactionContext context) {
-		checkRefSetType(refSet, SnomedRefSetType.ANNOTATION);
+		checkRefSetType(refSet, SnomedRefSetType.OWL_AXIOM);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_OWL_EXPRESSION);
 

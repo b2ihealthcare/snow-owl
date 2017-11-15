@@ -84,7 +84,7 @@ public class SnomedOWLAxiomRefSetImporter extends AbstractSnomedRefSetImporter<O
 
 	@Override
 	protected SnomedRefSetType getRefSetType() {
-		return SnomedRefSetType.ANNOTATION;
+		return SnomedRefSetType.OWL_AXIOM;
 	}
 
 	@Override
