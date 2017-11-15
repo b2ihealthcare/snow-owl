@@ -110,6 +110,9 @@ public abstract class SnomedRf2Headers {
 	public static final String FIELD_SOURCE_EFFECTIVE_TIME = "sourceEffectiveTime";
 	public static final String FIELD_TARGET_EFFECTIVE_TIME = "targetEffectiveTime";
 	
+	// Field names introduced in annotation type reference set files
+	public static final String FIELD_OWL_EXPRESSION = "owlExpression";
+	
 	public static final String[] CONCEPT_HEADER = new String[] { 
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
@@ -275,6 +278,15 @@ public abstract class SnomedRf2Headers {
 		FIELD_REFERENCED_COMPONENT_ID,
 		FIELD_SOURCE_EFFECTIVE_TIME,
 		FIELD_TARGET_EFFECTIVE_TIME	};
+	
+	public static final String[] OWL_AXIOM_HEADER = new String[] {
+		FIELD_ID, 
+		FIELD_EFFECTIVE_TIME, 
+		FIELD_ACTIVE, 
+		FIELD_MODULE_ID, 
+		FIELD_REFSET_ID, 
+		FIELD_REFERENCED_COMPONENT_ID,
+		FIELD_OWL_EXPRESSION };
 	
 	private SnomedRf2Headers() {
 		// Prevent instantiation

@@ -33,6 +33,7 @@ import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedComplexMapTy
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedConcreteDataTypeRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedDescriptionTypeRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedLanguageRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedOWLAxiomRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedQueryRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedSimpleMapTypeRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedSimpleTypeRefSetImporter;
@@ -62,6 +63,7 @@ public class IndexConfiguration {
 			.put(ComponentImportType.RELATIONSHIP, SnomedRelationshipImporter.INDEXES)
 			.put(ComponentImportType.SIMPLE_MAP_TYPE_REFSET, SnomedSimpleMapTypeRefSetImporter.INDEXES)
 			.put(ComponentImportType.SIMPLE_TYPE_REFSET, SnomedSimpleTypeRefSetImporter.INDEXES)
+			.put(ComponentImportType.OWL_AXIOM_REFSET, SnomedOWLAxiomRefSetImporter.INDEXES)
 			.build();
 	}
 	

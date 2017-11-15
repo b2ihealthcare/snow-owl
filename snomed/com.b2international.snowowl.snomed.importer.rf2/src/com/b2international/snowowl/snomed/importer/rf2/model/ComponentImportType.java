@@ -42,7 +42,8 @@ public enum ComponentImportType {
 	EXTENDED_CONCRETE_DOMAIN_REFSET("concrete domain reference set member"), // XXX: display name intentionally duplicated
 	EXTENDED_MAP_TYPE_REFSET("extended map type reference set member"),
 	TERMINOLOGY_REGISTRY("terminology registry"),
-	MODULE_DEPENDENCY_REFSET("module dependency reference set member");
+	MODULE_DEPENDENCY_REFSET("module dependency reference set member"),
+	OWL_AXIOM_REFSET("owl axiom reference set member");
 	
 	private final String displayName;
 

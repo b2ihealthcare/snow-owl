@@ -134,6 +134,8 @@ public abstract class SnomedRefSetImporterFactory {
 			return new SnomedConcreteDataTypeRefSetImporter(importContext, url.openStream(), false, urlIdentifier); // AU CDT refset
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME)) {
 			return new SnomedModuleDependencyRefSetImporter(importContext, url.openStream(), urlIdentifier);
+		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_OWL_EXPRESSION)) {
+			return new SnomedOWLAxiomRefSetImporter(importContext, url.openStream(), urlIdentifier);
 		} else {
 			return null;
 		}	

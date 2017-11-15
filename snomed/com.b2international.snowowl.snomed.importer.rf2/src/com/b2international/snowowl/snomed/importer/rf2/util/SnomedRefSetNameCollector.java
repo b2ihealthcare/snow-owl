@@ -299,6 +299,8 @@ public class SnomedRefSetNameCollector {
 			return Concepts.EXTENDED_MAP_TYPE;
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION)) {
 			return Concepts.REFSET_SIMPLE_MAP_TYPE;
+		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_OWL_EXPRESSION)) {
+			return Concepts.REFSET_OWL_AXIOM;
 		}
 		
 		return null;
