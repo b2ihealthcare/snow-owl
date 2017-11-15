@@ -993,7 +993,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.ASSOCIATION);
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.MODULE_DEPENDENCY);
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.EXTENDED_MAP);
-		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.ANNOTATION);
+		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.OWL_AXIOM);
 
 		initEEnum(dataTypeEEnum, DataType.class, "DataType");
 		addEEnumLiteral(dataTypeEEnum, DataType.INTEGER);

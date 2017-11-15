@@ -22,7 +22,7 @@
       <genEnumLiterals ecoreEnumLiteral="snomedrefset.ecore#//SnomedRefSetType/ASSOCIATION"/>
       <genEnumLiterals ecoreEnumLiteral="snomedrefset.ecore#//SnomedRefSetType/MODULE_DEPENDENCY"/>
       <genEnumLiterals ecoreEnumLiteral="snomedrefset.ecore#//SnomedRefSetType/EXTENDED_MAP"/>
-      <genEnumLiterals ecoreEnumLiteral="snomedrefset.ecore#//SnomedRefSetType/ANNOTATION"/>
+      <genEnumLiterals ecoreEnumLiteral="snomedrefset.ecore#//SnomedRefSetType/OWL_AXIOM"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="snomedrefset.ecore#//DataType">
       <genEnumLiterals ecoreEnumLiteral="snomedrefset.ecore#//DataType/INTEGER"/>

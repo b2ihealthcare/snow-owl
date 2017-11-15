@@ -131,7 +131,7 @@
     <eLiterals name="ASSOCIATION" value="8"/>
     <eLiterals name="MODULE_DEPENDENCY" value="9" literal="MODULE_DEPENDENCY"/>
     <eLiterals name="EXTENDED_MAP" value="10" literal="EXTENDED_MAP"/>
-    <eLiterals name="ANNOTATION" value="11" literal="ANNOTATION"/>
+    <eLiterals name="OWL_AXIOM" value="11" literal="OWL_AXIOM"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="DataType">
     <eLiterals name="INTEGER" literal="INTEGER"/>
