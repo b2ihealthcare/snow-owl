@@ -17,6 +17,9 @@ package com.b2international.snowowl.core.domain;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,6 +27,7 @@ import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.MapMaker;
+import com.google.common.reflect.Reflection;
 import com.google.inject.Provider;
 
 /**
@@ -31,13 +35,13 @@ import com.google.inject.Provider;
  * 
  * @since 5.0
  */
-public class DelegatingServiceProvider implements ServiceProvider, IDisposableService {
+public class DelegatingContext implements ServiceProvider, IDisposableService {
 
 	private final Map<Class<?>, Object> registry = new MapMaker().makeMap();
 	private final ServiceProvider delegate;
 	private final AtomicBoolean disposed = new AtomicBoolean(false);
 
-	protected DelegatingServiceProvider(ServiceProvider delegate) {
+	protected DelegatingContext(ServiceProvider delegate) {
 		this.delegate = checkNotNull(delegate, "delegate");
 	}
 	
@@ -55,7 +59,7 @@ public class DelegatingServiceProvider implements ServiceProvider, IDisposableSe
 	}
 
 	/**
-	 * Subclasses may override this method to do additional work before disposing this {@link DelegatingServiceProvider}. 
+	 * Subclasses may override this method to do additional work before disposing this {@link DelegatingContext}. 
 	 */
 	protected void doDispose() {
 	}
@@ -107,21 +111,19 @@ public class DelegatingServiceProvider implements ServiceProvider, IDisposableSe
 		return delegate;
 	}
 
-	public static DelegatingServiceProvider.Builder<DelegatingServiceProvider> basedOn(ServiceProvider context) {
-		return new DelegatingServiceProvider.Builder<>(new DelegatingServiceProvider(context));
-	}
-
 	/**
-	 * A builder to construct {@link DelegatingServiceProvider} instances or subclasses by specifying the instance to configure.
+	 * A builder to construct {@link DelegatingContext} instances or subclasses by specifying the instance to configure.
 	 * 
 	 * @since 5.0
 	 */
-	public static class Builder<C extends DelegatingServiceProvider> {
+	public static final class Builder<C extends ServiceProvider> {
 
-		private final C provider;
+		private final DelegatingContext provider;
+		private final Class<C> nextContext;
 
-		Builder(C delegate) {
-			this.provider = delegate;
+		public Builder(C delegate, Class<C> nextContext) {
+			this.nextContext = nextContext;
+			this.provider = new DelegatingContext(delegate);
 		}
 
 		public final <T> Builder<C> bind(Class<T> type, T object) {
@@ -129,13 +131,26 @@ public class DelegatingServiceProvider implements ServiceProvider, IDisposableSe
 			return this;
 		}
 		
-		public final Builder<C> bindAll(DelegatingServiceProvider other) {
+		public final Builder<C> bindAll(DelegatingContext other) {
 			provider.bindAll(other.registry);
 			return this;
 		}
 		
 		public C build() {
-			return provider;
+			return Reflection.newProxy(nextContext, new InvocationHandler() {
+				@Override
+				public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+					try {
+						if (ServiceProvider.class == method.getDeclaringClass()) {
+							return method.invoke(provider, args);
+						} else {
+							return method.invoke(provider.getDelegate(), args);
+						}
+					} catch (InvocationTargetException e) {
+						throw e.getCause();
+					}
+				}
+			});
 		}
 
 	}

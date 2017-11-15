@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -47,9 +46,7 @@ public final class MeteredRequest<R> extends DelegatingRequest<ServiceProvider, 
 		final Timer responseTimer = metrics.timer("responseTime");
 		responseTimer.start();
 		try {
-			return next(DelegatingServiceProvider
-					.basedOn(context)
-					.bind(Metrics.class, metrics)
+			return next(context.inject().bind(Metrics.class, metrics)
 					.build());
 		} finally {
 			responseTimer.stop();

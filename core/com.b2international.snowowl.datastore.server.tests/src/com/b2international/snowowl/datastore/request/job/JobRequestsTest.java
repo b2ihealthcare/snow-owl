@@ -32,7 +32,6 @@ import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.SystemNotification;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
@@ -64,8 +63,7 @@ public class JobRequestsTest {
 		final Index index = Indexes.createIndex("jobs", mapper, new Mappings(RemoteJobEntry.class));
 		this.bus = EventBusUtil.getBus();
 		this.tracker = new RemoteJobTracker(index, bus, mapper, 200);
-		this.context = DelegatingServiceProvider
-				.basedOn(ServiceProvider.EMPTY)
+		this.context = ServiceProvider.EMPTY.inject()
 				.bind(ObjectMapper.class, mapper)
 				.bind(RemoteJobTracker.class, tracker)
 				.build();

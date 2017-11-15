@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.domain;
 
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.domain.DelegatingContext.Builder;
 
 /**
  * @since 4.5
@@ -40,5 +41,10 @@ public interface BranchContext extends RepositoryContext {
 	 * @since 5.9
 	 */
 	String branchPath();
+	
+	@Override
+	default Builder<? extends BranchContext> inject() {
+		return new DelegatingContext.Builder<BranchContext>(this, BranchContext.class);
+	}
 
 }

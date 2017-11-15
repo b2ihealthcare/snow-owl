@@ -33,5 +33,10 @@ public interface RepositoryContext extends ServiceProvider, RepositoryInfo {
 	 * @return
 	 */
 	SnowOwlConfiguration config();
+	
+	@Override
+	default DelegatingContext.Builder<? extends RepositoryContext> inject() {
+		return new DelegatingContext.Builder<>(this, RepositoryContext.class);
+	}
 
 }

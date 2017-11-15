@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core;
 
+import com.b2international.snowowl.core.domain.DelegatingContext;
 import com.b2international.snowowl.core.events.Request;
 import com.google.inject.Provider;
 
@@ -39,7 +40,16 @@ public interface ServiceProvider {
 	 * @return
 	 */
 	<T> Provider<T> provider(Class<T> type);
-
+	
+	/**
+	 * Inject or override services in this context using a service provider builder. 
+	 * @return
+	 * @see DelegatingContext.Builder#build()
+	 */
+	default DelegatingContext.Builder<? extends ServiceProvider> inject() {
+		return new DelegatingContext.Builder<>(this, ServiceProvider.class);
+	}
+	
 	/**
 	 * Empty {@link ServiceProvider} implementation that throws {@link UnsupportedOperationException}s when trying to provide services. Useful when
 	 * testing {@link Request} implementations.

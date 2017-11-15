@@ -27,7 +27,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
+import com.b2international.snowowl.core.domain.DelegatingContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
@@ -43,7 +43,7 @@ import com.b2international.snowowl.eventbus.IMessage;
 /**
  * @since 5.4
  */
-public final class TestBranchContext extends DelegatingServiceProvider implements BranchContext, RepositoryContextProvider {
+public final class TestBranchContext extends DelegatingContext implements BranchContext, RepositoryContextProvider {
 
 	private final String repositoryId;
 	private final Branch branch;

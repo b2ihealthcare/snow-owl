@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import com.b2international.commons.status.Statuses;
 import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicate;
@@ -65,8 +64,7 @@ public final class RemoteJob extends Job {
 		final IProgressMonitor trackerMonitor = this.context.service(RemoteJobTracker.class).createMonitor(id, monitor);
 		try {
 			// seed the monitor instance into the current context, so the request can use it for progress reporting
-			final DelegatingServiceProvider context = DelegatingServiceProvider
-					.basedOn(this.context)
+			final ServiceProvider context = this.context.inject()
 					.bind(IProgressMonitor.class, trackerMonitor)
 					.bind(RemoteJob.class, this)
 					.build();

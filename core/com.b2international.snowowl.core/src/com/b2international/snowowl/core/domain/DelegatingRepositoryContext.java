@@ -20,7 +20,7 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 /**
  * @since 4.5
  */
-public class DelegatingRepositoryContext extends DelegatingServiceProvider implements RepositoryContext {
+public class DelegatingRepositoryContext extends DelegatingContext implements RepositoryContext {
 
 	protected DelegatingRepositoryContext(RepositoryContext context) {
 		super(context);
@@ -45,14 +45,10 @@ public class DelegatingRepositoryContext extends DelegatingServiceProvider imple
 	public String diagnosis() {
 		return getDelegate().diagnosis();
 	}
-
+	
 	@Override
 	protected RepositoryContext getDelegate() {
 		return (RepositoryContext) super.getDelegate();
 	}
-	
-	public static DelegatingRepositoryContext.Builder<DelegatingRepositoryContext> basedOn(RepositoryContext context) {
-		return new DelegatingServiceProvider.Builder<>(new DelegatingRepositoryContext(context));
-	}
-	
+
 }

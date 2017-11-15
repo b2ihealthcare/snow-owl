@@ -22,7 +22,6 @@ import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.QueryParseException;
-import com.b2international.snowowl.core.domain.DelegatingRepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -49,8 +48,7 @@ public final class IndexReadRequest<R> extends DelegatingRequest<RepositoryConte
 			@Override
 			public R execute(DocSearcher index) throws IOException {
 				try {
-					return next(DelegatingRepositoryContext
-							.basedOn(context)
+					return next(context.inject()
 							.bind(Searcher.class, index)
 							.bind(DocSearcher.class, index)
 							.build());

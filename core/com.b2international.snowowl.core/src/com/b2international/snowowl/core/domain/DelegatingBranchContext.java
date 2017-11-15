@@ -41,8 +41,4 @@ public class DelegatingBranchContext extends DelegatingRepositoryContext impleme
 		return (BranchContext) super.getDelegate();
 	}
 	
-	public static DelegatingBranchContext.Builder<DelegatingBranchContext> basedOn(BranchContext context) {
-		return new DelegatingServiceProvider.Builder<>(new DelegatingBranchContext(context));
-	}
-
 }
