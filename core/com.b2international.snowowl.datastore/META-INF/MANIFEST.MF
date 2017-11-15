@@ -23,7 +23,11 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.index.api;visibility:=reexport,
  com.b2international.snowowl.identity;visibility:=reexport
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Export-Package: com.b2international.snowowl.datastore,
+Export-Package: com.b2international.snowowl.core.internal.validation,
+ com.b2international.snowowl.core.validation,
+ com.b2international.snowowl.core.validation.issue,
+ com.b2international.snowowl.core.validation.rule,
+ com.b2international.snowowl.datastore,
  com.b2international.snowowl.datastore.advancedsearch,
  com.b2international.snowowl.datastore.cdo,
  com.b2international.snowowl.datastore.commitinfo,

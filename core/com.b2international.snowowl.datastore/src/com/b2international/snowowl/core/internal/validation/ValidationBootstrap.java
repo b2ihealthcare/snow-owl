@@ -15,9 +15,16 @@
  */
 package com.b2international.snowowl.core.internal.validation;
 
+import com.b2international.index.Index;
+import com.b2international.index.Indexes;
+import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.validation.issue.ValidationIssue;
+import com.b2international.snowowl.core.validation.rule.ValidationRule;
+import com.b2international.snowowl.datastore.config.IndexSettings;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 6.0
@@ -26,7 +33,16 @@ public class ValidationBootstrap extends DefaultBootstrapFragment {
 
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
-		env.services().registerService(ValidationRepository.class, new ValidationRepository(env));
+		if (env.isEmbedded() || env.isServer()) {
+			final Index validationIndex = Indexes.createIndex(
+				"validations", 
+				env.service(ObjectMapper.class), 
+				new Mappings(ValidationIssue.class, ValidationRule.class), 
+				env.service(IndexSettings.class)
+			);
+			env.services().registerService(ValidationRepository.class, new ValidationRepository(validationIndex));
+			// TODO initialize repository with default validation rules if the repository is empty
+		}
 	}
 	
 }

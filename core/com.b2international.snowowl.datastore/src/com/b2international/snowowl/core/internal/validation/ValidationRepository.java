@@ -20,15 +20,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
-import com.b2international.index.Indexes;
 import com.b2international.index.admin.IndexAdmin;
-import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.IDisposableService;
-import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.core.validation.issue.ValidationIssue;
-import com.b2international.snowowl.core.validation.rule.ValidationRule;
-import com.b2international.snowowl.datastore.config.IndexSettings;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 6.0
@@ -38,13 +31,8 @@ public final class ValidationRepository implements Index, IDisposableService {
 	private final Index index;
 	private final AtomicBoolean disposed = new AtomicBoolean(false);
 
-	public ValidationRepository(Environment env) {
-		this.index = Indexes.createIndex(
-			"validations", 
-			env.service(ObjectMapper.class), 
-			new Mappings(ValidationIssue.class, ValidationRule.class), 
-			env.service(IndexSettings.class)
-		);
+	public ValidationRepository(Index index) {
+		this.index = index;
 	}
 	
 	@Override
