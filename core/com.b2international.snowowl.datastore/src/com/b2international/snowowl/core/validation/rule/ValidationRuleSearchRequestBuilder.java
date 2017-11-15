@@ -16,9 +16,9 @@
 package com.b2international.snowowl.core.validation.rule;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.internal.validation.ValidationRepositoryReadRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequest.OptionKey;
 
@@ -27,7 +27,7 @@ import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequ
  */
 public final class ValidationRuleSearchRequestBuilder
 		extends SearchResourceRequestBuilder<ValidationRuleSearchRequestBuilder, ServiceProvider, ValidationRules>
-		implements ValidationRepositoryReadRequestBuilder<ValidationRules> {
+		implements SystemRequestBuilder<ValidationRules> {
 
 	ValidationRuleSearchRequestBuilder() {}
 	

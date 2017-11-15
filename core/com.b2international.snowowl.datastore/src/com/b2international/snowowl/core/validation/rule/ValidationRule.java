@@ -27,11 +27,6 @@ import com.google.common.base.MoreObjects;
 @Doc
 public final class ValidationRule {
 
-	public enum Type {
-		SCRIPT,
-		QUERY
-	}
-	
 	/**
 	 * @since 6.0
 	 */
@@ -55,7 +50,7 @@ public final class ValidationRule {
 	private final String toolingId;
 	private final String messageTemplate;
 	private final Severity severity;
-	private final Type type;
+	private final String type;
 	private final String implementation;
 	
 	@JsonCreator
@@ -64,7 +59,7 @@ public final class ValidationRule {
 			@JsonProperty("toolingId") final String toolingId,
 			@JsonProperty("messageTemplate") final String messageTemplate,
 			@JsonProperty("severity") final Severity severity,
-			@JsonProperty("type") final Type type,
+			@JsonProperty("type") final String type,
 			@JsonProperty("implementation") final String implementation
 			) {
 		this.id = id;
@@ -91,7 +86,7 @@ public final class ValidationRule {
 		return severity;
 	}
 	
-	public Type getType() {
+	public String getType() {
 		return type;
 	}
 	

@@ -16,10 +16,12 @@
 package com.b2international.snowowl.core.validation.issue;
 
 import com.b2international.index.Hits;
+import com.b2international.index.Searcher;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 
 /**
@@ -34,14 +36,14 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 		RULE_ID,
 		
 		/**
-		 * Filter matches by code system identifier.
-		 */
-		CODESYSTEM,
-		
-		/**
 		 * Filter matches by branch path field.
 		 */
 		BRANCH_PATH
+	}
+	
+	@Override
+	protected Searcher searcher(ServiceProvider context) {
+		return context.service(ValidationRepository.class).searcher();
 	}
 	
 	@Override
@@ -50,10 +52,6 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 
 		if (containsKey(OptionKey.RULE_ID)) {
 			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.RULE_ID, getCollection(OptionKey.RULE_ID, String.class)));
-		}
-		
-		if (containsKey(OptionKey.CODESYSTEM)) {
-			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.CODE_SYSTEM, getCollection(OptionKey.CODESYSTEM, String.class)));
 		}
 		
 		if (containsKey(OptionKey.BRANCH_PATH)) {

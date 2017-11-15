@@ -25,8 +25,8 @@ import com.b2international.index.Writer;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
-import com.b2international.snowowl.core.validation.rule.ValidationRule.Type;
 
 /**
  * @since 6.0
@@ -45,7 +45,7 @@ final class ValidationRuleCreateRequest implements Request<ServiceProvider, Stri
 	private Severity severity;
 	
 	@NotNull
-	private Type type;
+	private String type;
 	
 	@NotEmpty
 	private String implementation;
@@ -68,7 +68,7 @@ final class ValidationRuleCreateRequest implements Request<ServiceProvider, Stri
 		this.severity = severity;
 	}
 	
-	void setType(Type type) {
+	void setType(String type) {
 		this.type = type;
 	}
 	
@@ -78,11 +78,7 @@ final class ValidationRuleCreateRequest implements Request<ServiceProvider, Stri
 	
 	@Override
 	public String execute(ServiceProvider context) {
-		try {
-			context.service(Writer.class).put(id, new ValidationRule(id, toolingId, messageTemplate, severity, type, implementation));
-		} catch (IOException e) {
-			throw new SnowowlRuntimeException("Failed to create validation rule: " + e);
-		}
+		context.service(ValidationRepository.class).save(id, new ValidationRule(id, toolingId, messageTemplate, severity, type, implementation));
 		return id;
 	}
 

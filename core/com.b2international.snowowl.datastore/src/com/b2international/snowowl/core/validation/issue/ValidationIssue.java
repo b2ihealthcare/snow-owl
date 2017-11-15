@@ -28,8 +28,8 @@ import com.google.common.base.MoreObjects;
 public final class ValidationIssue {
 
 	public static class Fields {
+		public static final String ID = "id";
 		public static final String RULE_ID = "ruleId";
-		public static final String CODE_SYSTEM = "codeSystem";
 		public static final String BRANCH_PATH = "branchPath";
 	}
 	

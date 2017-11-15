@@ -15,12 +15,17 @@
  */
 package com.b2international.snowowl.core.internal.validation;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
+import com.b2international.index.Scroll;
+import com.b2international.index.Searcher;
 import com.b2international.index.admin.IndexAdmin;
+import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.IDisposableService;
 
 /**
@@ -65,6 +70,36 @@ public final class ValidationRepository implements Index, IDisposableService {
 	@Override
 	public <T> T write(IndexWrite<T> write) {
 		return index.write(write);
+	}
+
+	public Searcher searcher() {
+		return new Searcher() {
+			@Override
+			public <T> Hits<T> search(Query<T> query) throws IOException {
+				return read(searcher -> searcher.search(query));
+			}
+			
+			@Override
+			public <T> Hits<T> scroll(Scroll<T> scroll) throws IOException {
+				return read(searcher -> searcher.scroll(scroll));
+			}
+			
+			@Override
+			public void cancelScroll(String scrollId) {
+				read(searcher -> {
+					searcher.cancelScroll(scrollId);
+					return null;
+				});
+			}
+		};
+	}
+
+	public void save(String key, Object document) {
+		write(writer -> {
+			writer.put(key, document);
+			writer.commit();
+			return null;
+		});
 	}
 	
 }

@@ -19,10 +19,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.index.Hits;
+import com.b2international.index.Searcher;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 
@@ -36,6 +38,11 @@ final class ValidationRuleSearchRequest extends SearchIndexResourceRequest<Servi
 		 * Filter matches by severity values.
 		 */
 		SEVERITY
+	}
+	
+	@Override
+	protected Searcher searcher(ServiceProvider context) {
+		return context.service(ValidationRepository.class).searcher();
 	}
 	
 	@Override

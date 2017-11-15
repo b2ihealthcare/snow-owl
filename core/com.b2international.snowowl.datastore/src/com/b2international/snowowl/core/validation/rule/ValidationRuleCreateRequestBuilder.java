@@ -20,9 +20,8 @@ import java.util.UUID;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.internal.validation.ValidationRepositoryWriteRequestBuilder;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
-import com.b2international.snowowl.core.validation.rule.ValidationRule.Type;
 import com.google.common.base.Strings;
 
 /**
@@ -30,13 +29,13 @@ import com.google.common.base.Strings;
  */
 public final class ValidationRuleCreateRequestBuilder 
 		extends BaseRequestBuilder<ValidationRuleCreateRequestBuilder, ServiceProvider, String>
-		implements ValidationRepositoryWriteRequestBuilder<String> {
+		implements SystemRequestBuilder<String> {
 
 	private String id;
 	private String toolingId;
 	private String messageTemplate;
 	private Severity severity;
-	private Type type;
+	private String type;
 	private String implementation;
 	
 	ValidationRuleCreateRequestBuilder() {}
@@ -61,7 +60,7 @@ public final class ValidationRuleCreateRequestBuilder
 		return getSelf();
 	}
 	
-	public ValidationRuleCreateRequestBuilder setType(Type type) {
+	public ValidationRuleCreateRequestBuilder setType(String type) {
 		this.type = type;
 		return getSelf();
 	}

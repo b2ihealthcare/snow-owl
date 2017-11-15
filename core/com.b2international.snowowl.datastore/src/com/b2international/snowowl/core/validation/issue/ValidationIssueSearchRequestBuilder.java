@@ -16,9 +16,9 @@
 package com.b2international.snowowl.core.validation.issue;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.internal.validation.ValidationRepositoryReadRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueSearchRequest.OptionKey;
 
 /**
@@ -26,17 +26,9 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueSearchRe
  */
 public final class ValidationIssueSearchRequestBuilder
 		extends SearchResourceRequestBuilder<ValidationIssueSearchRequestBuilder, ServiceProvider, ValidationIssues>
-		implements ValidationRepositoryReadRequestBuilder<ValidationIssues> {
+		implements SystemRequestBuilder<ValidationIssues> {
 
 	ValidationIssueSearchRequestBuilder() {}
-	
-	public ValidationIssueSearchRequestBuilder filterByCodeSystem(final String codeSystem) {
-		return addOption(OptionKey.CODESYSTEM, codeSystem);
-	}
-	
-	public ValidationIssueSearchRequestBuilder filterByCodeSystems(final Iterable<? extends String> codeSystems) {
-		return addOption(OptionKey.CODESYSTEM, codeSystems);
-	}
 	
 	public ValidationIssueSearchRequestBuilder filterByRule(final String ruleId) {
 		return addOption(OptionKey.RULE_ID, ruleId);

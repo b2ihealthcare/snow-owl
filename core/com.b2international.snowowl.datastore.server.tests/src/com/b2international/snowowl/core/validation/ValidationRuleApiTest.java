@@ -26,13 +26,12 @@ import org.junit.Test;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.DelegatingServiceProvider;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
-import com.b2international.snowowl.core.validation.rule.ValidationRule.Type;
 import com.b2international.snowowl.core.validation.rule.ValidationRules;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,7 +41,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ValidationRuleApiTest {
 
-	private DelegatingServiceProvider context;
+	private ServiceProvider context;
 
 	@Before
 	public void setup() {
@@ -50,7 +49,7 @@ public class ValidationRuleApiTest {
 		final Index index = Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(ValidationRule.class));
 		index.admin().create();
 		final ValidationRepository repository = new ValidationRepository(index);
-		context = DelegatingServiceProvider.basedOn(ServiceProvider.EMPTY)
+		context = ServiceProvider.EMPTY.inject()
 				.bind(ValidationRepository.class, repository)
 				.build();
 	}
@@ -58,7 +57,9 @@ public class ValidationRuleApiTest {
 	@After
 	public void after() {
 		context.service(ValidationRepository.class).admin().delete();
-		context.dispose();
+		if (context instanceof IDisposableService) {
+			((IDisposableService) context).dispose();
+		}
 	}
 
 	@Test
@@ -84,7 +85,7 @@ public class ValidationRuleApiTest {
 				.setToolingId("TerminologyToolingId")
 				.setMessageTemplate("Error message")
 				.setSeverity(Severity.ERROR)
-				.setType(Type.QUERY)
+				.setType("snomed.ecl")
 				.setImplementation("*")
 				.buildAsync().getRequest()
 				.execute(context);
@@ -93,7 +94,7 @@ public class ValidationRuleApiTest {
 		assertThat(rule.getToolingId()).isEqualTo("TerminologyToolingId");
 		assertThat(rule.getMessageTemplate()).isEqualTo("Error message");
 		assertThat(rule.getSeverity()).isEqualTo(Severity.ERROR);
-		assertThat(rule.getType()).isEqualTo(Type.QUERY);
+		assertThat(rule.getType()).isEqualTo("snomed.ecl");
 		assertThat(rule.getImplementation()).isEqualTo("*");
 	}
 	
