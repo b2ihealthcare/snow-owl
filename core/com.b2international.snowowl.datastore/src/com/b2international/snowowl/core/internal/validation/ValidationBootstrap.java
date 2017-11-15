@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.internal.validation;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
@@ -32,7 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ValidationBootstrap extends DefaultBootstrapFragment {
 
 	@Override
-	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
+	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
 		if (env.isEmbedded() || env.isServer()) {
 			final Index validationIndex = Indexes.createIndex(
 				"validations", 
@@ -41,6 +43,12 @@ public class ValidationBootstrap extends DefaultBootstrapFragment {
 				env.service(IndexSettings.class)
 			);
 			env.services().registerService(ValidationRepository.class, new ValidationRepository(validationIndex));
+			
+			// initialize validation thread pool
+			// TODO make this configurable
+			int numberOfValidationThreads = Math.max(2, Runtime.getRuntime().availableProcessors() / 2);
+			env.services().registerService(ValidationThreadPool.class, new ValidationThreadPool(numberOfValidationThreads));
+			
 			// TODO initialize repository with default validation rules if the repository is empty
 		}
 	}

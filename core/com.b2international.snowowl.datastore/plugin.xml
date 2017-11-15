@@ -9,6 +9,7 @@
    <extension-point id="versioningManager" name="versioningManager" schema="schema/versioningManager.exsd"/>
    <extension-point id="contentAvailabilityInfoProvider" name="Content Availability Info Provider" schema="schema/contentAvailabilityInfoProvider.exsd"/>
    <extension-point id="mappingProvider" name="mappingProvider" schema="schema/mappingProvider.exsd"/>
+   <extension-point id="validationRuleEvaluator" name="validationRuleEvaluator" schema="schema/validationRuleEvaluator.exsd"/>
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob
