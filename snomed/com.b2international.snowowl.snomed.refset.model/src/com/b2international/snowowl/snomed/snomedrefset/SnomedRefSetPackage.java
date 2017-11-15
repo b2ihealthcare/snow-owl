@@ -1579,6 +1579,115 @@ public interface SnomedRefSetPackage extends EPackage {
 	int SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER_FEATURE_COUNT = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 2;
 
 	/**
+	 * The meta object id for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedAnnotationRefSetMemberImpl <em>Snomed Annotation Ref Set Member</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedAnnotationRefSetMemberImpl
+	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedAnnotationRefSetMember()
+	 * @generated
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER = 15;
+
+	/**
+	 * The feature id for the '<em><b>Referenced Component Type</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__REFERENCED_COMPONENT_TYPE = SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_TYPE;
+
+	/**
+	 * The feature id for the '<em><b>Effective Time</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__EFFECTIVE_TIME = SNOMED_REF_SET_MEMBER__EFFECTIVE_TIME;
+
+	/**
+	 * The feature id for the '<em><b>Active</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__ACTIVE = SNOMED_REF_SET_MEMBER__ACTIVE;
+
+	/**
+	 * The feature id for the '<em><b>Ref Set</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__REF_SET = SNOMED_REF_SET_MEMBER__REF_SET;
+
+	/**
+	 * The feature id for the '<em><b>Released</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__RELEASED = SNOMED_REF_SET_MEMBER__RELEASED;
+
+	/**
+	 * The feature id for the '<em><b>Referenced Component Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__REFERENCED_COMPONENT_ID = SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_ID;
+
+	/**
+	 * The feature id for the '<em><b>Module Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__MODULE_ID = SNOMED_REF_SET_MEMBER__MODULE_ID;
+
+	/**
+	 * The feature id for the '<em><b>Ref Set Identifier Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__REF_SET_IDENTIFIER_ID = SNOMED_REF_SET_MEMBER__REF_SET_IDENTIFIER_ID;
+
+	/**
+	 * The feature id for the '<em><b>Uuid</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__UUID = SNOMED_REF_SET_MEMBER__UUID;
+
+	/**
+	 * The feature id for the '<em><b>Annotation</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__ANNOTATION = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 0;
+
+	/**
+	 * The number of structural features of the '<em>Snomed Annotation Ref Set Member</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER_FEATURE_COUNT = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 1;
+
+	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType <em>Type</em>}' enum.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1586,7 +1695,7 @@ public interface SnomedRefSetPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedRefSetType()
 	 * @generated
 	 */
-	int SNOMED_REF_SET_TYPE = 15;
+	int SNOMED_REF_SET_TYPE = 16;
 
 	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.snomedrefset.DataType <em>Data Type</em>}' enum.
@@ -1596,7 +1705,7 @@ public interface SnomedRefSetPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getDataType()
 	 * @generated
 	 */
-	int DATA_TYPE = 16;
+	int DATA_TYPE = 17;
 
 
 	/**
@@ -2179,6 +2288,27 @@ public interface SnomedRefSetPackage extends EPackage {
 	EAttribute getSnomedModuleDependencyRefSetMember_TargetEffectiveTime();
 
 	/**
+	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember <em>Snomed Annotation Ref Set Member</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Snomed Annotation Ref Set Member</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember
+	 * @generated
+	 */
+	EClass getSnomedAnnotationRefSetMember();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember#getAnnotation <em>Annotation</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Annotation</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember#getAnnotation()
+	 * @see #getSnomedAnnotationRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedAnnotationRefSetMember_Annotation();
+
+	/**
 	 * Returns the meta object for enum '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType <em>Type</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -2681,6 +2811,24 @@ public interface SnomedRefSetPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__TARGET_EFFECTIVE_TIME = eINSTANCE.getSnomedModuleDependencyRefSetMember_TargetEffectiveTime();
+
+		/**
+		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedAnnotationRefSetMemberImpl <em>Snomed Annotation Ref Set Member</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedAnnotationRefSetMemberImpl
+		 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedAnnotationRefSetMember()
+		 * @generated
+		 */
+		EClass SNOMED_ANNOTATION_REF_SET_MEMBER = eINSTANCE.getSnomedAnnotationRefSetMember();
+
+		/**
+		 * The meta object literal for the '<em><b>Annotation</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_ANNOTATION_REF_SET_MEMBER__ANNOTATION = eINSTANCE.getSnomedAnnotationRefSetMember_Annotation();
 
 		/**
 		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType <em>Type</em>}' enum.

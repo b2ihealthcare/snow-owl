@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.snomedrefset.impl;
 
+import com.b2international.snowowl.snomed.snomedrefset.*;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
@@ -99,6 +100,7 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 			case SnomedRefSetPackage.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER: return (EObject)createSnomedConcreteDataTypeRefSetMember();
 			case SnomedRefSetPackage.SNOMED_ASSOCIATION_REF_SET_MEMBER: return (EObject)createSnomedAssociationRefSetMember();
 			case SnomedRefSetPackage.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER: return (EObject)createSnomedModuleDependencyRefSetMember();
+			case SnomedRefSetPackage.SNOMED_ANNOTATION_REF_SET_MEMBER: return (EObject)createSnomedAnnotationRefSetMember();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -276,6 +278,16 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	public SnomedModuleDependencyRefSetMember createSnomedModuleDependencyRefSetMember() {
 		SnomedModuleDependencyRefSetMemberImpl snomedModuleDependencyRefSetMember = new SnomedModuleDependencyRefSetMemberImpl();
 		return snomedModuleDependencyRefSetMember;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public SnomedAnnotationRefSetMember createSnomedAnnotationRefSetMember() {
+		SnomedAnnotationRefSetMemberImpl snomedAnnotationRefSetMember = new SnomedAnnotationRefSetMemberImpl();
+		return snomedAnnotationRefSetMember;
 	}
 
 	/**

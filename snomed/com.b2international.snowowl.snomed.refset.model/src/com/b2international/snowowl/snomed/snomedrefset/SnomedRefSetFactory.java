@@ -161,6 +161,15 @@ public interface SnomedRefSetFactory extends EFactory {
 	SnomedModuleDependencyRefSetMember createSnomedModuleDependencyRefSetMember();
 
 	/**
+	 * Returns a new object of class '<em>Snomed Annotation Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Snomed Annotation Ref Set Member</em>'.
+	 * @generated
+	 */
+	SnomedAnnotationRefSetMember createSnomedAnnotationRefSetMember();
+
+	/**
 	 * Returns the package supported by this factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->

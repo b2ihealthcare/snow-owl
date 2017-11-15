@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.snomedrefset.util;
 
+import com.b2international.snowowl.snomed.snomedrefset.*;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notifier;
 import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl;
@@ -152,6 +153,10 @@ public class SnomedRefSetAdapterFactory extends AdapterFactoryImpl {
 			@Override
 			public Adapter caseSnomedModuleDependencyRefSetMember(SnomedModuleDependencyRefSetMember object) {
 				return createSnomedModuleDependencyRefSetMemberAdapter();
+			}
+			@Override
+			public Adapter caseSnomedAnnotationRefSetMember(SnomedAnnotationRefSetMember object) {
+				return createSnomedAnnotationRefSetMemberAdapter();
 			}
 			@Override
 			public Adapter defaultCase(EObject object) {
@@ -380,6 +385,20 @@ public class SnomedRefSetAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createSnomedModuleDependencyRefSetMemberAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember <em>Snomed Annotation Ref Set Member</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember
+	 * @generated
+	 */
+	public Adapter createSnomedAnnotationRefSetMemberAdapter() {
 		return null;
 	}
 

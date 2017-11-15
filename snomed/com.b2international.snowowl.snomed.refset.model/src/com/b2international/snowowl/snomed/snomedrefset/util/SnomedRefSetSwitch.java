@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.snomedrefset.util;
 
+import com.b2international.snowowl.snomed.snomedrefset.*;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.util.Switch;
@@ -74,7 +75,7 @@ public class SnomedRefSetSwitch<T> extends Switch<T> {
 	 * Checks whether this is a switch for the given package.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @parameter ePackage the package in question.
+	 * @param ePackage the package in question.
 	 * @return whether this is a switch for the given package.
 	 * @generated
 	 */
@@ -196,6 +197,13 @@ public class SnomedRefSetSwitch<T> extends Switch<T> {
 				SnomedModuleDependencyRefSetMember snomedModuleDependencyRefSetMember = (SnomedModuleDependencyRefSetMember)theEObject;
 				T result = caseSnomedModuleDependencyRefSetMember(snomedModuleDependencyRefSetMember);
 				if (result == null) result = caseSnomedRefSetMember(snomedModuleDependencyRefSetMember);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case SnomedRefSetPackage.SNOMED_ANNOTATION_REF_SET_MEMBER: {
+				SnomedAnnotationRefSetMember snomedAnnotationRefSetMember = (SnomedAnnotationRefSetMember)theEObject;
+				T result = caseSnomedAnnotationRefSetMember(snomedAnnotationRefSetMember);
+				if (result == null) result = caseSnomedRefSetMember(snomedAnnotationRefSetMember);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -425,6 +433,21 @@ public class SnomedRefSetSwitch<T> extends Switch<T> {
 	 * @generated
 	 */
 	public T caseSnomedModuleDependencyRefSetMember(SnomedModuleDependencyRefSetMember object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Snomed Annotation Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Snomed Annotation Ref Set Member</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseSnomedAnnotationRefSetMember(SnomedAnnotationRefSetMember object) {
 		return null;
 	}
 

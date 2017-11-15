@@ -114,7 +114,15 @@ public enum SnomedRefSetType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	EXTENDED_MAP(10, "EXTENDED_MAP", "EXTENDED_MAP");
+	EXTENDED_MAP(10, "EXTENDED_MAP", "EXTENDED_MAP"), /**
+	 * The '<em><b>ANNOTATION</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #ANNOTATION_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	ANNOTATION(11, "ANNOTATION", "ANNOTATION");
 
 	/**
 	 * The '<em><b>SIMPLE</b></em>' literal value.
@@ -222,6 +230,21 @@ public enum SnomedRefSetType implements Enumerator {
 	public static final int EXTENDED_MAP_VALUE = 10;
 
 	/**
+	 * The '<em><b>ANNOTATION</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>ANNOTATION</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #ANNOTATION
+	 * @model
+	 * @generated
+	 * @ordered
+	 */
+	public static final int ANNOTATION_VALUE = 11;
+
+	/**
 	 * An array of all the '<em><b>Type</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -240,6 +263,7 @@ public enum SnomedRefSetType implements Enumerator {
 			ASSOCIATION,
 			MODULE_DEPENDENCY,
 			EXTENDED_MAP,
+			ANNOTATION,
 		};
 
 	/**
@@ -295,6 +319,7 @@ public enum SnomedRefSetType implements Enumerator {
 			case ASSOCIATION_VALUE: return ASSOCIATION;
 			case MODULE_DEPENDENCY_VALUE: return MODULE_DEPENDENCY;
 			case EXTENDED_MAP_VALUE: return EXTENDED_MAP;
+			case ANNOTATION_VALUE: return ANNOTATION;
 		}
 		return null;
 	}

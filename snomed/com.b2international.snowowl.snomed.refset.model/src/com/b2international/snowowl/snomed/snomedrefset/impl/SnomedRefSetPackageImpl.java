@@ -23,6 +23,7 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.impl.EPackageImpl;
 
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
@@ -153,6 +154,13 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * @generated
 	 */
 	private EClass snomedModuleDependencyRefSetMemberEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass snomedAnnotationRefSetMemberEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -720,6 +728,24 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EClass getSnomedAnnotationRefSetMember() {
+		return snomedAnnotationRefSetMemberEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedAnnotationRefSetMember_Annotation() {
+		return (EAttribute)snomedAnnotationRefSetMemberEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EEnum getSnomedRefSetType() {
 		return snomedRefSetTypeEEnum;
 	}
@@ -830,6 +856,9 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		createEAttribute(snomedModuleDependencyRefSetMemberEClass, SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__SOURCE_EFFECTIVE_TIME);
 		createEAttribute(snomedModuleDependencyRefSetMemberEClass, SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__TARGET_EFFECTIVE_TIME);
 
+		snomedAnnotationRefSetMemberEClass = createEClass(SNOMED_ANNOTATION_REF_SET_MEMBER);
+		createEAttribute(snomedAnnotationRefSetMemberEClass, SNOMED_ANNOTATION_REF_SET_MEMBER__ANNOTATION);
+
 		// Create enums
 		snomedRefSetTypeEEnum = createEEnum(SNOMED_REF_SET_TYPE);
 		dataTypeEEnum = createEEnum(DATA_TYPE);
@@ -876,6 +905,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		snomedConcreteDataTypeRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
 		snomedAssociationRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
 		snomedModuleDependencyRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
+		snomedAnnotationRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
 
 		// Initialize classes and features; add operations and parameters
 		initEClass(snomedRefSetEClass, SnomedRefSet.class, "SnomedRefSet", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -947,6 +977,9 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		initEAttribute(getSnomedModuleDependencyRefSetMember_SourceEffectiveTime(), ecorePackage.getEDate(), "sourceEffectiveTime", null, 1, 1, SnomedModuleDependencyRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getSnomedModuleDependencyRefSetMember_TargetEffectiveTime(), ecorePackage.getEDate(), "targetEffectiveTime", null, 1, 1, SnomedModuleDependencyRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
+		initEClass(snomedAnnotationRefSetMemberEClass, SnomedAnnotationRefSetMember.class, "SnomedAnnotationRefSetMember", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSnomedAnnotationRefSetMember_Annotation(), ecorePackage.getEString(), "annotation", null, 1, 1, SnomedAnnotationRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
 		// Initialize enums and add enum literals
 		initEEnum(snomedRefSetTypeEEnum, SnomedRefSetType.class, "SnomedRefSetType");
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.SIMPLE);
@@ -960,6 +993,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.ASSOCIATION);
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.MODULE_DEPENDENCY);
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.EXTENDED_MAP);
+		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.ANNOTATION);
 
 		initEEnum(dataTypeEEnum, DataType.class, "DataType");
 		addEEnumLiteral(dataTypeEEnum, DataType.INTEGER);
@@ -1003,6 +1037,13 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		   source, 
 		   new String[] {
 			 "columnName", "label0"
+		   });	
+		addAnnotation
+		  (getSnomedAnnotationRefSetMember_Annotation(), 
+		   source, 
+		   new String[] {
+			 "columnType", "LONG VARCHAR",
+			 "columnLength", "32768"
 		   });
 	}
 
