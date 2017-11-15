@@ -7,7 +7,6 @@
    <extension-point id="eclassProvider" name="eclassProvider" schema="schema/eclassProvider.exsd"/>
    <extension-point id="conflictProcessor" name="conflictProcessor" schema="schema/conflictProcessor.exsd"/>
    <extension-point id="repositoryInitializer" name="Repository Initializer" schema="schema/repositoryInitializer.exsd"/>
-   <extension-point id="versionCompareHierarchyBuilder" name="Version Compare Hierarchy Builder" schema="schema/versionCompareHierarchyBuilder.exsd"/>
    <extension-point id="editingContextFactory" name="editingContextFactory" schema="schema/editingContextFactory.exsd"/>
    <extension-point id="classLoaderProvider" name="classLoaderProvider" schema="schema/classLoaderProvider.exsd"/>
    <extension-point id="mergeConflictRuleProvider" name="mergeConflictRuleProvider" schema="schema/mergeConflictRuleProvider.exsd"/>
