@@ -23,7 +23,6 @@ import org.eclipse.xtext.conversion.IValueConverterService
  */
 class EclRuntimeModule extends AbstractEclRuntimeModule {
 
-	@Override
 	override Class<? extends IValueConverterService> bindIValueConverterService() {
 		return EclValueConverterService;
 	}
