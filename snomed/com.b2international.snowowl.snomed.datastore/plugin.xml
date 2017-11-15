@@ -130,12 +130,12 @@
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob
             class="com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporterClientConfigJob"
-            id="com.b2international.snowowl.snomed.mrcm.core.boot.MrcmImporterClientConfigJob"
+            id="com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporterClientConfigJob"
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </serviceConfigJob>
       <serviceConfigJob
             class="com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporterClientConfigJob"
-            id="com.b2international.snowowl.snomed.mrcm.core.boot.MrcmExporterClientConfigJob"
+            id="com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporterClientConfigJob"
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </serviceConfigJob>
    </extension>
@@ -359,14 +359,6 @@
       </serviceConfigJob>
    </extension>
    <extension
-         point="com.b2international.snowowl.core.terminologyComponentUriResolver">
-      <resolver
-            class="com.b2international.snowowl.snomed.datastore.uri.SnomedComponentUriResolver"
-            id="com.b2international.snowowl.snomed.datastore.uriResolver"
-            terminology="com.b2international.snowowl.terminology.snomed">
-      </resolver>
-   </extension>
-   <extension
          point="com.b2international.snowowl.core.componentIconIdProvider">
       <provider
             class="com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider"
@@ -416,6 +408,9 @@
    <extension
          point="com.b2international.snowowl.core.bootstrapFragments">
       <bootstrapFragment
+            class="com.b2international.snowowl.snomed.datastore.id.SnomedIdentifierBootstrap">
+      </bootstrapFragment>
+      <bootstrapFragment
             class="com.b2international.snowowl.snomed.datastore.internal.boot.SnomedCoreBootstrap">
       </bootstrapFragment>
    </extension>
@@ -428,12 +423,6 @@
             properties="conceptId"
             type="java.lang.Object">
       </propertyTester>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.core.bootstrapFragments">
-      <bootstrapFragment
-            class="com.b2international.snowowl.snomed.datastore.id.SnomedIdentifierBootstrap">
-      </bootstrapFragment>
    </extension>
    <extension
          point="com.b2international.snowowl.datastore.mappingProvider">

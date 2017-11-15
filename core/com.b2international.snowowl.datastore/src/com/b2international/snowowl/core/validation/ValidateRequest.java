@@ -65,15 +65,17 @@ final class ValidateRequest implements Request<BranchContext, Boolean> {
 			for (ValidationRule rule : rules) {
 				ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
 				if (evaluator != null) {
-					List<ComponentIdentifier> affectedComponents = evaluator.eval(rule);
+					List<ComponentIdentifier> affectedComponents = evaluator.eval(context, rule);
 					if (!affectedComponents.isEmpty()) {
-						String issueId = UUID.randomUUID().toString();
 						for (ComponentIdentifier affectedComponent : affectedComponents) {
+							String issueId = UUID.randomUUID().toString();
 							index.put(issueId, new ValidationIssue(issueId, rule.getId(), branchPath, affectedComponent));
 						}
 					}
 				}
 			}
+			
+			index.commit();
 			return Boolean.TRUE;
 		});
 		

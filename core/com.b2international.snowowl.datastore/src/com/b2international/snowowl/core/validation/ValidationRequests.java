@@ -32,5 +32,9 @@ public final class ValidationRequests {
 	public static ValidationRuleRequests rules() {
 		return ValidationRuleRequests.INSTANCE;
 	}
+
+	public static ValidateRequestBuilder prepareValidate() {
+		return new ValidateRequestBuilder();
+	}
 	
 }

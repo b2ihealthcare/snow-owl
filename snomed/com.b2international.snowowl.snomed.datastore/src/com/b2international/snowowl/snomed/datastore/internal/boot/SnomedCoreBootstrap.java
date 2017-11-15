@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
@@ -40,6 +41,7 @@ import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdent
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.snomed.validation.SnomedEclValidationRuleEvaluator;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
 
@@ -57,6 +59,9 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 		env.services().registerService(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)));
 		env.services().registerService(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)));
+		
+		// register ECL/SCT Query based validation rule evaluator
+		ValidationRuleEvaluator.Registry.register(new SnomedEclValidationRuleEvaluator());
 	}
 
 	@Override

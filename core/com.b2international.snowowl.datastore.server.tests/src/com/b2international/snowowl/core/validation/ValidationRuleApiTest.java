@@ -85,7 +85,7 @@ public class ValidationRuleApiTest {
 				.setToolingId("TerminologyToolingId")
 				.setMessageTemplate("Error message")
 				.setSeverity(Severity.ERROR)
-				.setType("snomed.ecl")
+				.setType("snomed-ecl")
 				.setImplementation("*")
 				.buildAsync().getRequest()
 				.execute(context);

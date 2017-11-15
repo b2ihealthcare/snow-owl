@@ -15,15 +15,17 @@
  */
 package com.b2international.snowowl.core.validation.eval;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 
 /**
  * Evaluates {@link ValidationRule}s.
@@ -41,14 +43,16 @@ public interface ValidationRuleEvaluator {
 	enum Registry {
 		INSTANCE;
 
-		private final Map<String, ValidationRuleEvaluator> evaluators;
+		private final Map<String, ValidationRuleEvaluator> evaluators = newHashMap();
 
-		private Registry() {
-			this.evaluators = Maps.uniqueIndex(
-					Extensions.getExtensions("com.b2international.snowowl.core.validationRuleEvaluator", ValidationRuleEvaluator.class),
-					ValidationRuleEvaluator::type);
+		/**
+		 * @param evaluator
+		 */
+		public static void register(ValidationRuleEvaluator evaluator) {
+			checkArgument(!INSTANCE.evaluators.containsKey(evaluator.type()), "Rule Evaluator '%s' is already registered", evaluator.type());
+			INSTANCE.evaluators.put(evaluator.type(), evaluator);
 		}
-
+		
 		/**
 		 * Returns the available evaluator for the given type or <code>null</code> if there is not evaluator registered for that type.
 		 * 
@@ -72,15 +76,15 @@ public interface ValidationRuleEvaluator {
 
 	/**
 	 * Evaluate the given rule
-	 * 
-	 * @param rule
+	 * @param context - the context where the rule should be evaluated
+	 * @param rule - the rule to evaluate
 	 * @return
 	 */
-	List<ComponentIdentifier> eval(ValidationRule rule);
+	List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule);
 
 	/**
 	 * Unique type identifier of this validation rule evaluator. The type should represent the kind of rules that this evaluator can evaluate using
-	 * the {@link #eval(ValidationRule)} method.
+	 * the {@link #eval(BranchContext, ValidationRule)} method.
 	 * 
 	 * @return
 	 */

@@ -38,6 +38,7 @@ public final class ValidationRepository implements Index, IDisposableService {
 
 	public ValidationRepository(Index index) {
 		this.index = index;
+		this.index.admin().create();
 	}
 	
 	@Override
