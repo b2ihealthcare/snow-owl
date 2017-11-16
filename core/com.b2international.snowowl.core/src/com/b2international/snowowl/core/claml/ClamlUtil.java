@@ -58,7 +58,7 @@ public final class ClamlUtil {
 		if ("aster".equalsIgnoreCase(usageString)) {
 			builder.append('*');
 		} else if ("dagger".equalsIgnoreCase(usageString)) {
-			builder.append('+');
+			builder.append('\u207A');
 		}
 		
 		return builder;
