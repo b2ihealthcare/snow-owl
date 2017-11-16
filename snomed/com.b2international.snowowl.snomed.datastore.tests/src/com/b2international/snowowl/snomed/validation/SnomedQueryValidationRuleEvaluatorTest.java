@@ -15,10 +15,11 @@
  */
 package com.b2international.snowowl.snomed.validation;
 
+import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.concept;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 import org.eclipse.xtext.parser.IParser;
@@ -29,16 +30,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.collections.PrimitiveCollectionModule;
-import com.b2international.collections.PrimitiveSets;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
@@ -47,7 +45,6 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
@@ -60,6 +57,7 @@ import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Injector;
 
 /**
@@ -90,6 +88,7 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 		repository = new ValidationRepository(index);
 		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 		context = TestBranchContext.on(MAIN)
+				.with(ObjectMapper.class, getMapper())
 				.with(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)))
 				.with(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)))
 				.with(Index.class, rawIndex())
@@ -109,14 +108,22 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 	}
 	
 	@Test
-	public void test() throws Exception {
+	public void conceptRuleEclSingleConcept() throws Exception {
 		final String concept1 = RandomSnomedIdentiferGenerator.generateConceptId();
+		final String concept2 = RandomSnomedIdentiferGenerator.generateConceptId();
 		indexRevision(MAIN, STORAGE_KEY1, concept(concept1).build());
+		indexRevision(MAIN, STORAGE_KEY2, concept(concept2).build());
+		
+		final Map<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
+				.put("componentType", "concept")
+				.put("ecl", concept1) 
+				.build();
+		
 		final String ruleId = ValidationRequests.rules().prepareCreate()
 			.setType(evaluator.type())
 			.setMessageTemplate("Error")
 			.setSeverity(Severity.ERROR)
-			.setImplementation("*")
+			.setImplementation(context.service(ObjectMapper.class).writeValueAsString(ruleQuery))
 			.setToolingId("toolingId")
 			.build()
 			.execute(context);
@@ -132,24 +139,6 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 
 		assertThat(issues.getTotal()).isEqualTo(1);
 		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, concept1));
-	}
-	
-	private SnomedConceptDocument.Builder concept(final String id) {
-		return SnomedConceptDocument.builder()
-				.id(id)
-				.iconId(Concepts.ROOT_CONCEPT)
-				.active(true)
-				.released(true)
-				.exhaustive(false)
-				.moduleId(Concepts.MODULE_SCT_CORE)
-				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.primitive(true)
-				.parents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
-				.ancestors(PrimitiveSets.newLongOpenHashSet())
-				.statedParents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet())
-				.referringRefSets(Collections.<String>emptySet())
-				.referringMappingRefSets(Collections.<String>emptySet());
 	}
 	
 }

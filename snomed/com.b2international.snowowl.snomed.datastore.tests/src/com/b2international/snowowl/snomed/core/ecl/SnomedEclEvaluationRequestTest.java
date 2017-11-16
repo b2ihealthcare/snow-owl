@@ -17,13 +17,20 @@ package com.b2international.snowowl.snomed.core.ecl;
 
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.id;
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
+import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.concept;
+import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.decimalMember;
+import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.integerMember;
+import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.relationship;
+import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.stringMember;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringMappingRefSet;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringRefSet;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_MAPPING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -45,26 +52,17 @@ import com.b2international.index.query.MatchNone;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
@@ -1060,67 +1058,6 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, nextStorageKey(), decimalMember(DRUG_1D_MG, PREFERRED_STRENGTH, BigDecimal.valueOf(1.0d)).build());
 	}
 
-	private SnomedConceptDocument.Builder concept(final String id) {
-		return SnomedConceptDocument.builder()
-				.id(id)
-				.iconId(Concepts.ROOT_CONCEPT)
-				.active(true)
-				.released(true)
-				.exhaustive(false)
-				.moduleId(Concepts.MODULE_SCT_CORE)
-				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.primitive(true)
-				.parents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
-				.ancestors(PrimitiveSets.newLongOpenHashSet())
-				.statedParents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet())
-				.referringRefSets(Collections.<String>emptySet())
-				.referringMappingRefSets(Collections.<String>emptySet());
-	}
-	
-	private SnomedRelationshipIndexEntry.Builder relationship(final String source, final String type, final String destination) {
-		return SnomedRelationshipIndexEntry.builder()
-				.id(RandomSnomedIdentiferGenerator.generateRelationshipId())
-				.active(true)
-				.moduleId(Concepts.MODULE_SCT_CORE)
-				.sourceId(source)
-				.typeId(type)
-				.destinationId(destination)
-				.characteristicTypeId(Concepts.INFERRED_RELATIONSHIP)
-				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
-	}
-	
-	private SnomedRefSetMemberIndexEntry.Builder decimalMember(final String referencedComponentId, final String attributeName, final BigDecimal value) {
-		return concreteDomain(referencedComponentId, attributeName, value, DataType.DECIMAL);
-	}
-	
-	private SnomedRefSetMemberIndexEntry.Builder integerMember(final String referencedComponentId, final String attributeName, final int value) {
-		return concreteDomain(referencedComponentId, attributeName, value, DataType.INTEGER);
-	}
-	
-	private SnomedRefSetMemberIndexEntry.Builder stringMember(final String referencedComponentId, final String attributeName, final String value) {
-		return concreteDomain(referencedComponentId, attributeName, value, DataType.STRING);
-	}
-
-	private SnomedRefSetMemberIndexEntry.Builder concreteDomain(final String referencedComponentId, final String attributeName, final Object value, final DataType type) {
-		final short referencedComponentType = 
-				SnomedIdentifiers.getComponentCategory(referencedComponentId) == ComponentCategory.CONCEPT 
-					? SnomedTerminologyComponentConstants.CONCEPT_NUMBER 
-					: SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
-		return SnomedRefSetMemberIndexEntry.builder()
-				.id(RandomSnomedIdentiferGenerator.generateRelationshipId())
-				.active(true)
-				.moduleId(Concepts.MODULE_SCT_CORE)
-				.referencedComponentId(referencedComponentId)
-				.referencedComponentType(referencedComponentType)
-				.referenceSetId(RandomSnomedIdentiferGenerator.generateConceptId())
-				.referenceSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
-				.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.INFERRED_RELATIONSHIP)
-				.field(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, attributeName)
-				.field(Fields.DATA_TYPE, type)
-				.field(SnomedRf2Headers.FIELD_VALUE, value);
-	}
-	
 	private static Expression descendantsOf(String...conceptIds) {
 		return Expressions.builder()
 				.should(parents(ImmutableSet.copyOf(conceptIds)))
