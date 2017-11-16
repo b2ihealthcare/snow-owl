@@ -22,7 +22,13 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestReq
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetMemberEffectiveTime;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSet;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createReferencedComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.getFirstAllowedReferencedComponentCategory;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.getFirstAllowedReferencedComponentType;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.reserveComponentId;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP;
@@ -30,7 +36,11 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastP
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.junit.Assume;
@@ -59,6 +69,30 @@ import com.jayway.restassured.response.ValidatableResponse;
 public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 
 	private static final List<String> REFERENCED_COMPONENT_TYPES = ImmutableList.of(CONCEPT, DESCRIPTION, RELATIONSHIP);
+	
+	private static final String OWL_EXPRESSION_1 = 
+			"SubClassOf(\n" +
+				"ObjectIntersectionOf(\n" +
+					"sct:73211009 Diabetes mellitus (disorder)\n" +
+					"ObjectSomeValuesFrom(\n" +
+						"sct:246075003 Causative agent (attribute)\n" +
+						"sct:410942007 Drug or medicament (substance)\n" +
+					")\n" +
+				")\n" + 
+				"sct:8801005 Secondary diabetes mellitus (disorder)\n" +
+			")";
+	
+	private static final String OWL_EXPRESSION_2 =
+			"SubClassOf(\n" +
+				"ObjectIntersectionOf(\n" +
+					"sct:73211009 Diabetes mellitus (disorder)\n" +
+					"ObjectSomeValuesFrom(\n" +
+						"sct:42752001 Due to (attribute)\n" +
+						"sct:64572001 Disease (disorder)\n" +
+					")\n" +
+				")\n" + 
+				"sct:8801005 Secondary diabetes mellitus (disorder)\n" +
+			")";
 
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
@@ -73,7 +107,8 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 			{ 	SnomedRefSetType.MODULE_DEPENDENCY	},
 			//  Query type reference sets are tested separately 
 			{ 	SnomedRefSetType.SIMPLE				}, 
-			{ 	SnomedRefSetType.SIMPLE_MAP			}, 
+			{ 	SnomedRefSetType.SIMPLE_MAP			},
+			{ 	SnomedRefSetType.OWL_AXIOM			},
 		});
 	}
 
@@ -331,6 +366,10 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "simpleMapTarget")
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, "simpleMapTargetDescription")
 					.build();
+		case OWL_AXIOM:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, OWL_EXPRESSION_1)
+					.build();
 		default:
 			throw new IllegalStateException("Unexpected reference set type '" + refSetType + "'.");
 		}
@@ -386,6 +425,10 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "simpleMapTarget2")
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, "simpleMapTargetDescription2")
 					.build();
+		case OWL_AXIOM:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, OWL_EXPRESSION_2)
+					.build();
 		default:
 			throw new IllegalStateException("Unexpected reference set type '" + refSetType + "'.");
 		}
@@ -437,6 +480,10 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		case SIMPLE_MAP:
 			return ImmutableMap.<String, Object>builder()
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "")
+					.build();
+		case OWL_AXIOM:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "")
 					.build();
 		default:
 			throw new IllegalStateException("Unexpected reference set type '" + refSetType + "'.");

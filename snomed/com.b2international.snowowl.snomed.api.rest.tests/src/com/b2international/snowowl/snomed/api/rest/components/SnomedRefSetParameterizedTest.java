@@ -75,7 +75,8 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 			{ 	SnomedRefSetType.MODULE_DEPENDENCY	},
 			{ 	SnomedRefSetType.QUERY				}, 
 			{ 	SnomedRefSetType.SIMPLE				}, 
-			{ 	SnomedRefSetType.SIMPLE_MAP			}, 
+			{ 	SnomedRefSetType.SIMPLE_MAP			},
+			{ 	SnomedRefSetType.OWL_AXIOM			},
 		});
 	}
 
