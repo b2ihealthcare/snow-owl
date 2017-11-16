@@ -22,6 +22,7 @@ import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestR
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.UK_ACCEPTABLE_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.UK_PREFERRED_MAP;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranch;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.updateComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedExportRestRequests.createExport;
@@ -37,6 +38,9 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.cre
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSet;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSetMember;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.getFirstAllowedReferencedComponentType;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -58,11 +62,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.commons.Pair;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
@@ -73,6 +80,8 @@ import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
@@ -930,6 +939,93 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		fileToLinesMap.put("der2_cRefset_LanguageDelta-da", Pair.of(true, languageMemberLineB));
 		fileToLinesMap.put("der2_cRefset_LanguageDelta-da", Pair.of(true, languageMemberLineD));
 		fileToLinesMap.put("der2_cRefset_LanguageDelta-da", Pair.of(true, languageMemberLineF));
+		
+		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+	}
+	
+	@Ignore // until external classification service support is ready 
+	@Test
+	public void exportConceptsAndRelationshipsOnly() throws Exception {
+		
+		final String codeSystemShortName = "SNOMEDCT-CONCEPTS-AND-RELATIONSHIPS-ONLY";
+		createCodeSystem(branchPath, codeSystemShortName).statusCode(201);
+		
+		// create new concept
+		final String conceptId = createNewConcept(branchPath);
+		createNewDescription(branchPath, conceptId, Concepts.SYNONYM, UK_ACCEPTABLE_MAP, "en");
+		
+		String statedRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.STATED_RELATIONSHIP);
+		String inferredRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.INFERRED_RELATIONSHIP);
+		String additionalRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.ADDITIONAL_RELATIONSHIP);
+		
+		SnomedRequests.prepareNewRefSet()
+			.setIdentifierId(Concepts.REFSET_OWL_AXIOM)
+			.setReferencedComponentType(getFirstAllowedReferencedComponentType(SnomedRefSetType.OWL_AXIOM))
+			.setType(SnomedRefSetType.OWL_AXIOM)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), "System", "add OWL refset")
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync();
+				
+		String owlExpression = "dummy expression";
+		
+		Map<?, ?> memberRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_AXIOM, Concepts.ROOT_CONCEPT)
+				.put("owlExpression", owlExpression)
+				.put("commitComment", "Created new OWL axiom reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, memberRequestBody)
+			.statusCode(201)
+			.body(equalTo(""))
+			.extract().header("Location"));
+		
+		// export delta rf2
+		final Map<Object, Object> config = ImmutableMap.builder()
+				.put("codeSystemShortName", codeSystemShortName)
+				.put("type", Rf2ReleaseType.DELTA.name())
+				.put("branchPath", branchPath.getPath())
+				.put("conceptsAndRelationshipsOnly", true)
+				.put("includeUnpublished", true)
+				.build();
+		
+		final String exportId = getExportId(createExport(config));
+		final File exportArchive = getExportFile(exportId);
+	
+		String conceptLine = TAB_JOINER.join(conceptId, "", "1", Concepts.MODULE_SCT_CORE, DefinitionStatus.PRIMITIVE.getConceptId());
+		
+		String statedLine = TAB_JOINER.join(statedRelationshipId, "", "1", Concepts.MODULE_SCT_CORE, Concepts.ROOT_CONCEPT, Concepts.NAMESPACE_ROOT,
+				"0", Concepts.PART_OF, CharacteristicType.STATED_RELATIONSHIP.getConceptId(), Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
+
+		String inferredLine = TAB_JOINER.join(inferredRelationshipId, "", "1", Concepts.MODULE_SCT_CORE, Concepts.ROOT_CONCEPT,
+				Concepts.NAMESPACE_ROOT, "0", Concepts.PART_OF, CharacteristicType.INFERRED_RELATIONSHIP.getConceptId(),
+				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
+
+		String additionalLine = TAB_JOINER.join(additionalRelationshipId, "", "1", Concepts.MODULE_SCT_CORE, Concepts.ROOT_CONCEPT,
+				Concepts.NAMESPACE_ROOT, "0", Concepts.PART_OF, CharacteristicType.ADDITIONAL_RELATIONSHIP.getConceptId(),
+				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
+		
+		String owlMemberLine = TAB_JOINER.join(memberId, "", "1", Concepts.MODULE_SCT_CORE, Concepts.REFSET_OWL_AXIOM, Concepts.ROOT_CONCEPT,
+				owlExpression);
+
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+				.put("sct2_Concept", true)
+				.put("sct2_StatedRelationship", true)
+				.put("sct2_Relationship", true)
+				.put("sct2_Description", false)
+				.put("sct2_TextDefinition", false)
+				.put("der2_cRefset_LanguageDelta", false)
+				.put("der2_ssRefset_ModuleDependency", false)
+				.put("der2_sRefset_OWLAxiomReferenceSet", true)
+				.build();
+				
+		// TODO: assertArchiveContainsFiles(exportArchive, files);
+		
+		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.create();
+		
+		fileToLinesMap.put("sct2_Concept", Pair.of(true, conceptLine));
+		fileToLinesMap.put("sct2_StatedRelationship", Pair.of(true, statedLine));
+		fileToLinesMap.put("sct2_Relationship", Pair.of(true, inferredLine));
+		fileToLinesMap.put("sct2_Relationship", Pair.of(false, additionalLine));
+		fileToLinesMap.put("der2_sRefset_OWLAxiomReferenceSet", Pair.of(true, owlMemberLine));
 		
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}
