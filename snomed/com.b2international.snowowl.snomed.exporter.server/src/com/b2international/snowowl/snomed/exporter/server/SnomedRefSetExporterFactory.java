@@ -34,6 +34,7 @@ import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedDescriptionT
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExtendedMapRefSetExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedModuleDependencyRefSetExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedOWLAxiomRefSetExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedQueryRefSetExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedRefSetExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedSimpleMapRefSetExporter;
@@ -70,6 +71,8 @@ public class SnomedRefSetExporterFactory {
 				return new SnomedAssociationRefSetExporter(exportContext, refset, revisionSearcher);
 			case MODULE_DEPENDENCY:
 				return new SnomedModuleDependencyRefSetExporter(exportContext, refset, revisionSearcher);
+			case OWL_AXIOM:
+				return new SnomedOWLAxiomRefSetExporter(exportContext, refset, revisionSearcher);
 
 			default:
 				throw new IllegalArgumentException("Unknown reference set type.");

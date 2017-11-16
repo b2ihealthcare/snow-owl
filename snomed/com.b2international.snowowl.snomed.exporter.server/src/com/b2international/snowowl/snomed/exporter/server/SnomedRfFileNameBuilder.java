@@ -136,6 +136,7 @@ public class SnomedRfFileNameBuilder {
 			case EXTENDED_MAP: return "iissscc";
 			case SIMPLE_MAP: return includeMapTargetDescription ? "ss" : "s";
 			case MODULE_DEPENDENCY: return "ss";
+			case OWL_AXIOM: return "s";
 		}
 		throw new IllegalArgumentException ("Unknown reference set type. Type: " + type);
 	}
