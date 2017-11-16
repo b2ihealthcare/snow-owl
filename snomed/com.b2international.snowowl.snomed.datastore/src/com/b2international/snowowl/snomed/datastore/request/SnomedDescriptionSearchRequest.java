@@ -58,7 +58,8 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		LANGUAGE,
 		USE_FUZZY,
 		PARSED_TERM, 
-		CASE_SIGNIFICANCE;
+		CASE_SIGNIFICANCE, 
+		REGEX_TERM;
 	}
 	
 	SnomedDescriptionSearchRequest() {}
@@ -87,6 +88,11 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		addEclFilter(context, queryBuilder, OptionKey.CONCEPT, SnomedDescriptionIndexEntry.Expressions::concepts);
 		addEclFilter(context, queryBuilder, OptionKey.TYPE, SnomedDescriptionIndexEntry.Expressions::types);
 		addEclFilter(context, queryBuilder, OptionKey.CASE_SIGNIFICANCE, SnomedDescriptionIndexEntry.Expressions::caseSignificances);
+		
+		if (containsKey(OptionKey.REGEX_TERM)) {
+			final String regex = getString(OptionKey.REGEX_TERM);
+			queryBuilder.filter(SnomedDescriptionIndexEntry.Expressions.regexTerm(regex));
+		}
 		
 		if (containsKey(OptionKey.TERM)) {
 			final String searchTerm = getString(OptionKey.TERM);

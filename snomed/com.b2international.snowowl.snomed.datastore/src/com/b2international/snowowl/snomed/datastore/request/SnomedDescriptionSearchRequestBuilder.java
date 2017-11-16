@@ -105,6 +105,10 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 		return addOption(OptionKey.ACCEPTABILITY, acceptabilityFilter);
 	}
 	
+	public SnomedDescriptionSearchRequestBuilder filterByTermRegex(String regex) {
+		return addOption(OptionKey.REGEX_TERM, regex);
+	}
+	
 	@Override
 	protected SearchResourceRequest<BranchContext, SnomedDescriptions> createSearch() {
 		return new SnomedDescriptionSearchRequest();

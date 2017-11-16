@@ -20,6 +20,7 @@ import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextFuzzy;
 import static com.b2international.index.query.Expressions.matchTextParsed;
+import static com.b2international.index.query.Expressions.matchTextRegexp;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
@@ -196,6 +197,10 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		
 		public static Expression exactTerm(String term) {
 			return matchTextAll(Fields.TERM+".exact", term);
+		}
+		
+		public static Expression regexTerm(String regex) {
+			return matchTextRegexp(Fields.TERM+".exact", regex);
 		}
 		
 		public static Expression allTermPrefixesPresent(String term) {
