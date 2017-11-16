@@ -45,6 +45,17 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	public final B filterByModule(String moduleId) {
 		return addOption(OptionKey.MODULE, moduleId);
 	}
+	
+	/**
+	 * Filter to return components with the specified module id set. 
+	 * Commonly used module IDs are listed in the {@link com.b2international.snowowl.snomed.Concepts} class.
+	 * 
+	 * @param moduleIds
+	 * @return
+	 */
+	public B filterByModules(Iterable<String> moduleIds) {
+		return addOption(OptionKey.MODULE, moduleIds);
+	}
 
 	/**
 	 * Filter to return components with the specified state (active/inactive)

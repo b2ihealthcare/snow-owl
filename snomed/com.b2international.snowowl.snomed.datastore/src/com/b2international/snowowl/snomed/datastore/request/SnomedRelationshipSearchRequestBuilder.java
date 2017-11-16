@@ -42,7 +42,7 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 		return addOption(OptionKey.SOURCE, sourceId);
 	}
 
-	public SnomedRelationshipSearchRequestBuilder filterBySource(Collection<String> sourceIds) {
+	public SnomedRelationshipSearchRequestBuilder filterBySource(Iterable<String> sourceIds) {
 		return addOption(OptionKey.SOURCE, Collections3.toImmutableSet(sourceIds));
 	}
 	
@@ -50,7 +50,7 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 		return addOption(OptionKey.TYPE, typeId);
 	}
 	
-	public SnomedRelationshipSearchRequestBuilder filterByType(Collection<String> typeIds) {
+	public SnomedRelationshipSearchRequestBuilder filterByType(Iterable<String> typeIds) {
 		return addOption(OptionKey.TYPE, typeIds);
 	}
 	
@@ -58,7 +58,7 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 		return addOption(OptionKey.DESTINATION, destinationId);
 	}
 
-	public SnomedRelationshipSearchRequestBuilder filterByDestination(Collection<String> destinationIds) {
+	public SnomedRelationshipSearchRequestBuilder filterByDestination(Iterable<String> destinationIds) {
 		return addOption(OptionKey.DESTINATION, Collections3.toImmutableSet(destinationIds));
 	}
 	
@@ -66,7 +66,7 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 		return addOption(OptionKey.CHARACTERISTIC_TYPE, characteristicType);
 	}
 	
-	public SnomedRelationshipSearchRequestBuilder filterByCharacteristicTypes(Collection<String> characteristicType) {
+	public SnomedRelationshipSearchRequestBuilder filterByCharacteristicTypes(Iterable<String> characteristicType) {
 		return addOption(OptionKey.CHARACTERISTIC_TYPE, characteristicType);
 	}
 	

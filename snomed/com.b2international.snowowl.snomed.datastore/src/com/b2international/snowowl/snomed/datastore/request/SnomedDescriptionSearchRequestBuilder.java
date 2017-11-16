@@ -21,8 +21,10 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequest.OptionKey;
+import com.google.common.collect.FluentIterable;
 
 /**
  * <i>Builder</i> class to build requests responsible for searching SNOMED CT descriptions.
@@ -71,6 +73,18 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 		return addOption(OptionKey.EXACT_TERM, exactTermFilter == null ? exactTermFilter : exactTermFilter.trim());
 	}
 
+	public SnomedDescriptionSearchRequestBuilder filterByCaseSignificance(CaseSignificance caseSignificance) {
+		return filterByCaseSignificance(caseSignificance.getConceptId());
+	}
+	
+	public SnomedDescriptionSearchRequestBuilder filterByCaseSignificance(Iterable<CaseSignificance> caseSignificances) {
+		return addOption(OptionKey.CASE_SIGNIFICANCE, FluentIterable.from(caseSignificances).transform(CaseSignificance::getConceptId).toSet());
+	}
+	
+	public SnomedDescriptionSearchRequestBuilder filterByCaseSignificance(String caseSignificanceFilter) {
+		return addOption(OptionKey.CASE_SIGNIFICANCE, caseSignificanceFilter);
+	}
+	
 	public SnomedDescriptionSearchRequestBuilder filterByConcept(String conceptFilter) {
 		return addOption(OptionKey.CONCEPT, conceptFilter);
 	}

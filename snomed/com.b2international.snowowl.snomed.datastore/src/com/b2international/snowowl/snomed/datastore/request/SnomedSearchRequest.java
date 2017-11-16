@@ -75,12 +75,6 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument> extends S
 		return getList(OptionKey.LANGUAGE_REFSET, String.class);
 	}
 
-	protected final void addModuleClause(ExpressionBuilder queryBuilder) {
-		if (containsKey(OptionKey.MODULE)) {
-			queryBuilder.filter(SnomedDocument.Expressions.module(getString(OptionKey.MODULE)));
-		}
-	}
-
 	protected final void addActiveClause(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.ACTIVE)) {
 			queryBuilder.filter(SnomedDocument.Expressions.active(getBoolean(OptionKey.ACTIVE)));

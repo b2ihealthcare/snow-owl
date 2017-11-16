@@ -41,6 +41,8 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.SearchProfileQueryProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequest.OptionKey;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -123,7 +125,7 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		
 		addActiveClause(queryBuilder);
 		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
-		addModuleClause(queryBuilder);
+		addEclFilter(context, queryBuilder, SnomedSearchRequest.OptionKey.MODULE, SnomedDocument.Expressions::modules);
 		addNamespaceFilter(queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
 		addActiveMemberOfClause(queryBuilder);

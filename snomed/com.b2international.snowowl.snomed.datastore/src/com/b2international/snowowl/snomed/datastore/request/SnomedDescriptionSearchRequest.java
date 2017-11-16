@@ -41,6 +41,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -56,7 +57,8 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		ACCEPTABILITY,
 		LANGUAGE,
 		USE_FUZZY,
-		PARSED_TERM;
+		PARSED_TERM, 
+		CASE_SIGNIFICANCE;
 	}
 	
 	SnomedDescriptionSearchRequest() {}
@@ -75,16 +77,16 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		// Add (presumably) most selective filters first
 		addActiveClause(queryBuilder);
-		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
-		addLocaleFilter(context, queryBuilder);
-		addModuleClause(queryBuilder);
-		addNamespaceFilter(queryBuilder);
-		addEffectiveTimeClause(queryBuilder);
-		addActiveMemberOfClause(queryBuilder);
 		addLanguageFilter(queryBuilder);
+		addNamespaceFilter(queryBuilder);
 		addActiveMemberOfClause(queryBuilder);
+		addLocaleFilter(context, queryBuilder);
+		addEffectiveTimeClause(queryBuilder);
+		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
+		addEclFilter(context, queryBuilder, SnomedSearchRequest.OptionKey.MODULE, SnomedDocument.Expressions::modules);
 		addEclFilter(context, queryBuilder, OptionKey.CONCEPT, SnomedDescriptionIndexEntry.Expressions::concepts);
 		addEclFilter(context, queryBuilder, OptionKey.TYPE, SnomedDescriptionIndexEntry.Expressions::types);
+		addEclFilter(context, queryBuilder, OptionKey.CASE_SIGNIFICANCE, SnomedDescriptionIndexEntry.Expressions::caseSignificances);
 		
 		if (containsKey(OptionKey.TERM)) {
 			final String searchTerm = getString(OptionKey.TERM);
