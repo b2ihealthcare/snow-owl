@@ -30,7 +30,7 @@ public abstract class SnomedComponentSearchRequestBuilder<B extends SnomedCompon
 	}
 	
 	/**
-	 * Filter the matches components to check whether the component ID from the specified namespace.
+	 * Filter matches by their namespace (specified in their SNOMED CT identifier).
 	 * 
 	 * @param namespaceId
 	 *            - the namespace identifier as a string
@@ -38,8 +38,19 @@ public abstract class SnomedComponentSearchRequestBuilder<B extends SnomedCompon
 	 * @see Concepts
 	 */
 	public final B filterByNamespace(String namespaceId) {
-		
 		return addOption(OptionKey.NAMESPACE, namespaceId);
+	}
+	
+	/**
+	 * Filter matches by their namespace (specified in their SNOMED CT identifier).
+	 * 
+	 * @param namespaceIds 
+	 *            - the namespace identifiers
+	 * @return SnomedComponentSearchRequestBuilder
+	 * @see Concepts
+	 */
+	public final B filterByNamespaces(Iterable<String> namespaceIds) {
+		return addOption(OptionKey.NAMESPACE, namespaceIds);
 	}
 
 }
