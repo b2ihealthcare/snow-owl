@@ -21,7 +21,7 @@ package com.b2international.index.query;
 public final class TextPredicate extends Predicate {
 
 	public enum MatchType {
-		ALL, ANY, PHRASE, FUZZY, PARSED
+		ALL, ANY, PHRASE, FUZZY, PARSED, REGEXP
 	}
 	
 	private final String term;
