@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.b2international.snowowl.core.domain.BaseComponent;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
 /**
  * @since 5.7
@@ -31,6 +32,11 @@ public abstract class SnomedConstraint extends BaseComponent {
 	private Set<String> selfIds = Collections.emptySet();
 	private Set<String> descendantIds = Collections.emptySet();
 	private Set<String> refSetIds = Collections.emptySet();
+	
+	@Override
+	public final short getTerminologyComponentId() {
+		return SnomedTerminologyComponentConstants.PREDICATE_TYPE_ID;
+	}
 	
 	public final String getDomain() {
 		return domain;

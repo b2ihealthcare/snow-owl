@@ -21,6 +21,7 @@ import java.util.Set;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -132,6 +133,11 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	
 	public SnomedConcept(String id) {
 		setId(id);
+	}
+	
+	@Override
+	public short getTerminologyComponentId() {
+		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 	}
 	
 	@Override

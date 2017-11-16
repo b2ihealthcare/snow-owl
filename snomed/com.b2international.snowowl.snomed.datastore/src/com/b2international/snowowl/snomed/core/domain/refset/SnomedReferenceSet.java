@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.domain.refset;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -57,6 +58,11 @@ public final class SnomedReferenceSet extends SnomedComponent {
 	private String mapTargetComponentType;
 	private SnomedReferenceSetMembers members;
 
+	@Override
+	public short getTerminologyComponentId() {
+		return SnomedTerminologyComponentConstants.REFSET_NUMBER;
+	}
+	
 	/**
 	 * Returns the type of the reference set.
 	 * 

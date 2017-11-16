@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import com.b2international.snowowl.core.ComponentIdentifier;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * @since 4.0
  */
@@ -46,6 +49,21 @@ public abstract class BaseComponent implements IComponent {
 	public void setReleased(final boolean released) {
 		this.released = released;
 	}
+	
+	/**
+	 * Returns a {@link ComponentIdentifier} instance to identify this component using its {@link #getTerminologyComponentId() type} and {@link #getId() id}.
+	 * @return
+	 */
+	@JsonIgnore
+	public final ComponentIdentifier getComponentIdentifier() {
+		return ComponentIdentifier.of(getTerminologyComponentId(), getId());
+	}
+	
+	/**
+	 * @return the associated terminology component type identifier of this component.
+	 */
+	@JsonIgnore
+	public abstract short getTerminologyComponentId();
 	
 	/**
 	 * @deprecated - see {@link IComponent#getStorageKey()}

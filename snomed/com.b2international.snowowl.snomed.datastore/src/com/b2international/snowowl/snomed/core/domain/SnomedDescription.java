@@ -19,6 +19,7 @@ import java.util.Map;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -61,6 +62,11 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	
 	public SnomedDescription(String id) {
 		setId(id);
+	}
+	
+	@Override
+	public short getTerminologyComponentId() {
+		return SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 	}
 
 	/**

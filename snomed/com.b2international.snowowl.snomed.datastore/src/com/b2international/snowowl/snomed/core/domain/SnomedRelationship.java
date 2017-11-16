@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -62,6 +63,11 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	
 	public SnomedRelationship(String id) {
 		setId(id);
+	}
+	
+	@Override
+	public short getTerminologyComponentId() {
+		return SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 	}
 
 	@JsonProperty
