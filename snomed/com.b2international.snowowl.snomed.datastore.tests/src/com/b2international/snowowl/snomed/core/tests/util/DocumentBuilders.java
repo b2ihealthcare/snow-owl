@@ -25,9 +25,11 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
@@ -57,6 +59,18 @@ public abstract class DocumentBuilders {
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet())
 				.referringRefSets(Collections.<String>emptySet())
 				.referringMappingRefSets(Collections.<String>emptySet());
+	}
+	
+	public static SnomedDescriptionIndexEntry.Builder description(final String id, final String type, final String term) {
+		return SnomedDescriptionIndexEntry.builder()
+				.id(id)
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.typeId(type)
+				.languageCode("en")
+				.term(term)
+				.caseSignificanceId(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId())
+				.released(false);
 	}
 	
 	public static SnomedRelationshipIndexEntry.Builder relationship(final String source, final String type, final String destination) {

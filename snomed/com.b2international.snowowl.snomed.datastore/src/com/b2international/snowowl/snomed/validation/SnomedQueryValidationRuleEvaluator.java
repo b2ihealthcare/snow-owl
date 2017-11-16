@@ -18,6 +18,8 @@ package com.b2international.snowowl.snomed.validation;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -51,6 +53,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 
 /**
  * @since 6.0
@@ -140,6 +143,9 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 	
 	private static final class SnomedDescriptionValidationRuleQuery extends SnomedCoreComponentValidationQuery<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions, SnomedDescription> {
 		
+		private static final Pattern REGEX = Pattern.compile("regex\\((.*)\\)");
+		
+		@JsonProperty private String term;
 		@JsonProperty private String concept;
 		@JsonProperty private String type;
 		@JsonProperty private String caseSignificance;
@@ -151,6 +157,12 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		
 		@Override
 		protected SnomedDescriptionSearchRequestBuilder prepareSearch(SnomedDescriptionSearchRequestBuilder req) {
+			if (!Strings.isNullOrEmpty(term)) {
+				Matcher matcher = REGEX.matcher(term.trim());
+				if (matcher.matches()) {
+					req.filterByTermRegex(matcher.group(1));
+				}
+			}
 			return super.prepareSearch(req)
 					.filterByType(type)
 					.filterByConcept(concept)
