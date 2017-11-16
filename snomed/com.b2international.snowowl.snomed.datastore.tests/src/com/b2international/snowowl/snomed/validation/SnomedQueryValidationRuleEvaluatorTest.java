@@ -65,10 +65,10 @@ import com.google.inject.Injector;
 /**
  * @since 6.0
  */
-public class SnomedEclValidationRuleTest extends BaseRevisionIndexTest {
+public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTest {
 
 	private BranchContext context;
-	private SnomedEclValidationRuleEvaluator evaluator;
+	private SnomedQueryValidationRuleEvaluator evaluator;
 	private ValidationRepository repository;
 
 	@Override
@@ -96,7 +96,7 @@ public class SnomedEclValidationRuleTest extends BaseRevisionIndexTest {
 				.with(RevisionIndex.class, index())
 				.with(ValidationRepository.class, repository)
 				.build();
-		evaluator = new SnomedEclValidationRuleEvaluator();
+		evaluator = new SnomedQueryValidationRuleEvaluator();
 		if (!ValidationRuleEvaluator.Registry.types().contains(evaluator.type())) {
 			ValidationRuleEvaluator.Registry.register(evaluator);
 		}

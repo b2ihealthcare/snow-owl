@@ -41,7 +41,7 @@ import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdent
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
-import com.b2international.snowowl.snomed.validation.SnomedEclValidationRuleEvaluator;
+import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
 
@@ -60,8 +60,8 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 		env.services().registerService(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)));
 		env.services().registerService(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)));
 		
-		// register ECL/SCT Query based validation rule evaluator
-		ValidationRuleEvaluator.Registry.register(new SnomedEclValidationRuleEvaluator());
+		// register SNOMED CT Query based validation rule evaluator
+		ValidationRuleEvaluator.Registry.register(new SnomedQueryValidationRuleEvaluator());
 	}
 
 	@Override

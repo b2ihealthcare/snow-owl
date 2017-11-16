@@ -79,8 +79,9 @@ public interface ValidationRuleEvaluator {
 	 * @param context - the context where the rule should be evaluated
 	 * @param rule - the rule to evaluate
 	 * @return
+	 * @throws Exception
 	 */
-	List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule);
+	List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule) throws Exception;
 
 	/**
 	 * Unique type identifier of this validation rule evaluator. The type should represent the kind of rules that this evaluator can evaluate using

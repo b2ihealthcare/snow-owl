@@ -85,7 +85,7 @@ public class ValidationRuleApiTest {
 				.setToolingId("TerminologyToolingId")
 				.setMessageTemplate("Error message")
 				.setSeverity(Severity.ERROR)
-				.setType("snomed-ecl")
+				.setType("snomed-query")
 				.setImplementation("*")
 				.buildAsync().getRequest()
 				.execute(context);
@@ -94,7 +94,7 @@ public class ValidationRuleApiTest {
 		assertThat(rule.getToolingId()).isEqualTo("TerminologyToolingId");
 		assertThat(rule.getMessageTemplate()).isEqualTo("Error message");
 		assertThat(rule.getSeverity()).isEqualTo(Severity.ERROR);
-		assertThat(rule.getType()).isEqualTo("snomed.ecl");
+		assertThat(rule.getType()).isEqualTo("snomed-query");
 		assertThat(rule.getImplementation()).isEqualTo("*");
 	}
 	
