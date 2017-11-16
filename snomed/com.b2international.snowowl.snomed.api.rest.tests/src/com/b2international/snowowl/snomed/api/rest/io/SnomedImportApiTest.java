@@ -19,20 +19,32 @@ import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getVersion;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
-import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.createImport;
+import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.deleteImport;
+import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.getImport;
+import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.uploadImportFile;
+import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.waitForImportJob;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -40,6 +52,13 @@ import com.google.common.collect.ImmutableMap;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SnomedImportApiTest extends AbstractSnomedApiTest {
+
+	private static final String OWL_EXPRESSION = "SubClassOf("
+			+ "ObjectIntersectionOf("
+				+ "sct:73211009 Diabetes mellitus (disorder)"
+				+ "ObjectSomeValuesFrom("
+				+ "sct:42752001 Due to (attribute)sct:64572001 Disease (disorder))) "
+				+ "sct:8801005 Secondary diabetes mellitus (disorder))";
 
 	private void importArchive(final String fileName) {
 		final Map<?, ?> importConfiguration = ImmutableMap.builder()
@@ -202,6 +221,23 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		importArchive("SnomedCT_Release_INT_20150205_new_extension_concept.zip", importConfiguration);
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "555231000005107").statusCode(200);
 		getVersion("SNOMEDCT-NE", "2015-02-05").statusCode(200);
+	}
+	
+	@Test
+	public void import12OWLAxiomReferenceSetMember() {
+		SnomedConcept oldRoot = getComponent(branchPath, SnomedComponentType.CONCEPT, Concepts.ROOT_CONCEPT, "members()").extract().as(SnomedConcept.class);
+		assertTrue(StreamSupport.stream(oldRoot.getMembers().spliterator(), false).noneMatch(m -> m.getReferenceSetId().equals(Concepts.REFSET_OWL_AXIOM)));
+		importArchive("SnomedCT_Release_INT_20170731_owl_axiom_member.zip");
+		SnomedConcept root = getComponent(branchPath, SnomedComponentType.CONCEPT, Concepts.ROOT_CONCEPT, "members()").extract().as(SnomedConcept.class);
+		Optional<SnomedReferenceSetMember> member = StreamSupport.stream(root.getMembers().spliterator(), false)
+			.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_OWL_AXIOM))
+			.findFirst();
+		assertTrue(member.isPresent());
+		assertEquals("ec2cc6be-a10b-44b1-a2cc-42a3f11d406e", member.get().getId());
+		assertEquals(Concepts.MODULE_SCT_CORE, member.get().getModuleId());
+		assertEquals(Concepts.REFSET_OWL_AXIOM, member.get().getReferenceSetId());
+		assertEquals(Concepts.ROOT_CONCEPT, member.get().getReferencedComponent().getId());
+		assertEquals(OWL_EXPRESSION, member.get().getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION));
 	}
 
 }
