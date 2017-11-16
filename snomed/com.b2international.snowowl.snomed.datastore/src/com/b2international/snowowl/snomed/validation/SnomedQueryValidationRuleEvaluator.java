@@ -91,7 +91,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		
 		@JsonProperty private Boolean active;
 		@JsonProperty private String effectiveTime;
-		@JsonProperty private String moduleFilter;
+		@JsonProperty private String module;
 
 		public final SB prepareSearch() {
 			return prepareSearch(createSearch());
@@ -102,18 +102,19 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@OverridingMethodsMustInvokeSuper
 		protected SB prepareSearch(SB req) {
 			return req.filterByActive(active)
-					.filterByModule(moduleFilter)
+					.filterByModule(module)
 					.filterByEffectiveTime(effectiveTime);
 		}		
 	}
 	
 	private static abstract class SnomedCoreComponentValidationQuery<SB extends SnomedComponentSearchRequestBuilder<SB, R>, R extends PageableCollectionResource<T>, T extends SnomedCoreComponent> extends SnomedComponentValidationQuery<SB, R, T> {
 		
-		@JsonProperty private List<String> namespaceIds;
+		@JsonProperty private List<String> namespace;
 		
 		@Override
 		protected SB prepareSearch(SB req) {
-			return req.filterByNamespaces(namespaceIds);
+			return super.prepareSearch(req)
+					.filterByNamespaces(namespace);
 		}
 		
 	}
@@ -121,7 +122,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 	private static final class SnomedConceptValidationRuleQuery extends SnomedCoreComponentValidationQuery<SnomedConceptSearchRequestBuilder, SnomedConcepts, SnomedConcept> {
 		
 		@JsonProperty private String ecl;
-		@JsonProperty private String definitionStatusId;
+		@JsonProperty private String definitionStatus;
 		
 		@Override
 		protected SnomedConceptSearchRequestBuilder createSearch() {
@@ -131,7 +132,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@Override
 		protected SnomedConceptSearchRequestBuilder prepareSearch(SnomedConceptSearchRequestBuilder req) {
 			return super.prepareSearch(req)
-					.filterByDefinitionStatus(definitionStatusId)
+					.filterByDefinitionStatus(definitionStatus)
 					.filterByEcl(ecl);
 		}
 		
@@ -139,9 +140,9 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 	
 	private static final class SnomedDescriptionValidationRuleQuery extends SnomedCoreComponentValidationQuery<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions, SnomedDescription> {
 		
-		@JsonProperty private String conceptFilter;
-		@JsonProperty private String typeFilter;
-		@JsonProperty private String caseSignificanceFilter;
+		@JsonProperty private String concept;
+		@JsonProperty private String type;
+		@JsonProperty private String caseSignificance;
 		
 		@Override
 		protected SnomedDescriptionSearchRequestBuilder createSearch() {
@@ -151,20 +152,20 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@Override
 		protected SnomedDescriptionSearchRequestBuilder prepareSearch(SnomedDescriptionSearchRequestBuilder req) {
 			return super.prepareSearch(req)
-					.filterByType(typeFilter)
-					.filterByConcept(conceptFilter)
-					.filterByCaseSignificance(caseSignificanceFilter);
+					.filterByType(type)
+					.filterByConcept(concept)
+					.filterByCaseSignificance(caseSignificance);
 		}
 		
 	}
 	
 	private static final class SnomedRelationshipValidationRuleQuery extends SnomedCoreComponentValidationQuery<SnomedRelationshipSearchRequestBuilder, SnomedRelationships, SnomedRelationship> {
 		
-		@JsonProperty private String sourceFilter;
-		@JsonProperty private String typeFilter;
-		@JsonProperty private String destinationFilter;
-		@JsonProperty private String characteristicTypeFilter;
-		@JsonProperty private String modifierFilter;
+		@JsonProperty private String source;
+		@JsonProperty private String type;
+		@JsonProperty private String destination;
+		@JsonProperty private String characteristicType;
+		@JsonProperty private String modifier;
 		@JsonProperty private Integer groupMin;
 		@JsonProperty private Integer groupMax;
 		
@@ -176,11 +177,11 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@Override
 		protected SnomedRelationshipSearchRequestBuilder prepareSearch(SnomedRelationshipSearchRequestBuilder req) {
 			return super.prepareSearch(req)
-					.filterByCharacteristicType(characteristicTypeFilter)
-					.filterBySource(sourceFilter)
-					.filterByType(typeFilter)
-					.filterByDestination(destinationFilter)
-					.filterByDestination(destinationFilter)
+					.filterByCharacteristicType(characteristicType)
+					.filterBySource(source)
+					.filterByType(type)
+					.filterByDestination(destination)
+					.filterByDestination(destination)
 					.filterByGroup(groupMin, groupMax);
 		}
 		
@@ -188,8 +189,8 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 	
 	private static final class SnomedMemberValidationRuleQuery extends SnomedComponentValidationQuery<SnomedRefSetMemberSearchRequestBuilder, SnomedReferenceSetMembers, SnomedReferenceSetMember> {
 
-		@JsonProperty private String refSetFilter;
-		@JsonProperty private List<SnomedRefSetType> refSetTypeFilter;
+		@JsonProperty private String refSet;
+		@JsonProperty private List<SnomedRefSetType> refSetType;
 
 		@Override
 		protected SnomedRefSetMemberSearchRequestBuilder createSearch() {
@@ -199,8 +200,8 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@Override
 		protected SnomedRefSetMemberSearchRequestBuilder prepareSearch(SnomedRefSetMemberSearchRequestBuilder req) {
 			return super.prepareSearch(req)
-					.filterByRefSet(refSetFilter)
-					.filterByRefSetType(refSetTypeFilter);
+					.filterByRefSet(refSet)
+					.filterByRefSetType(refSetType);
 		}
 		
 	}

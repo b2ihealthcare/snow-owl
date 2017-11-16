@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.validation;
 
 import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.concept;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Map;
@@ -45,6 +46,7 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
@@ -55,6 +57,7 @@ import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGene
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -119,7 +122,48 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 				.put("ecl", concept1) 
 				.build();
 		
-		final String ruleId = ValidationRequests.rules().prepareCreate()
+		final String ruleId = createSnomedQueryRule(ruleQuery);
+		
+		final ValidationIssues issues = validate(ruleId);
+
+		assertThat(issues.getTotal()).isEqualTo(1);
+		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, concept1));
+	}
+
+	@Test
+	public void conceptRuleActiveAndModuleFilter() throws Exception {
+		final String concept1 = RandomSnomedIdentiferGenerator.generateConceptId();
+		final String concept2 = RandomSnomedIdentiferGenerator.generateConceptId();
+		final String concept3 = RandomSnomedIdentiferGenerator.generateConceptId();
+		indexRevision(MAIN, STORAGE_KEY1, concept(concept1).moduleId(Concepts.MODULE_B2I_EXTENSION).build());
+		indexRevision(MAIN, STORAGE_KEY2, concept(concept2).active(false).moduleId(Concepts.MODULE_B2I_EXTENSION).build());
+		indexRevision(MAIN, nextStorageKey(), concept(concept3).active(false).moduleId(Concepts.MODULE_SCT_CORE).build());
+		
+		final Map<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
+				.put("componentType", "concept")
+				.put("active", true)
+				.put("module", Concepts.MODULE_B2I_EXTENSION)
+				.build();
+		
+		final String ruleId = createSnomedQueryRule(ruleQuery);
+		final ValidationIssues issues = validate(ruleId);
+
+		assertThat(issues.getTotal()).isEqualTo(1);
+		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, concept1));
+		
+	}
+	
+	private ValidationIssues validate(final String ruleId) {
+		new RevisionIndexReadRequest<>(ValidationRequests.prepareValidate().build()).execute(context);
+		return ValidationRequests.issues().prepareSearch()
+			.all()
+			.filterByRule(ruleId)
+			.build()
+			.execute(context);
+	}
+
+	private String createSnomedQueryRule(final Map<String, Object> ruleQuery) throws JsonProcessingException {
+		return ValidationRequests.rules().prepareCreate()
 			.setType(evaluator.type())
 			.setMessageTemplate("Error")
 			.setSeverity(Severity.ERROR)
@@ -127,18 +171,6 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 			.setToolingId("toolingId")
 			.build()
 			.execute(context);
-
-		
-		new RevisionIndexReadRequest<>(ValidationRequests.prepareValidate().build()).execute(context);
-		
-		final ValidationIssues issues = ValidationRequests.issues().prepareSearch()
-			.all()
-			.filterByRule(ruleId)
-			.build()
-			.execute(context);
-
-		assertThat(issues.getTotal()).isEqualTo(1);
-		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, concept1));
 	}
 	
 }
