@@ -66,10 +66,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.commons.Pair;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
@@ -80,8 +78,6 @@ import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
@@ -958,14 +954,15 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		String inferredRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.INFERRED_RELATIONSHIP);
 		String additionalRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.ADDITIONAL_RELATIONSHIP);
 		
-		SnomedRequests.prepareNewRefSet()
-			.setIdentifierId(Concepts.REFSET_OWL_AXIOM)
-			.setReferencedComponentType(getFirstAllowedReferencedComponentType(SnomedRefSetType.OWL_AXIOM))
-			.setType(SnomedRefSetType.OWL_AXIOM)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), "System", "add OWL refset")
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-			.getSync();
-				
+		Map<?, ?> refSetRequestBody = ImmutableMap.<String, Object>builder()
+				.put("id", Concepts.REFSET_OWL_AXIOM)
+				.put("type", SnomedRefSetType.OWL_AXIOM)
+				.put("referencedComponentType", getFirstAllowedReferencedComponentType(SnomedRefSetType.OWL_AXIOM))
+				.put("commitComment", "Created new reference set")
+				.build();
+		
+		createComponent(branchPath, SnomedComponentType.REFSET, refSetRequestBody).statusCode(201);
+		
 		String owlExpression = "dummy expression";
 		
 		Map<?, ?> memberRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_AXIOM, Concepts.ROOT_CONCEPT)
