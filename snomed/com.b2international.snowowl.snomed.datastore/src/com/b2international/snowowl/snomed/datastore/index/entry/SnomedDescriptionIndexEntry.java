@@ -172,6 +172,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		public static final String LANGUAGE_CODE = SnomedRf2Headers.FIELD_LANGUAGE_CODE;
 		public static final String PREFERRED_IN = "preferredIn";
 		public static final String ACCEPTABLE_IN = "acceptableIn";
+		public static final String SEMANTIC_TAG = "semanticTag";
 	}
 	
 	public final static class Expressions extends SnomedComponentDocument.Expressions {
@@ -261,6 +262,10 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		
 		public static Expression languageCodes(Collection<String> languageCodes) {
 			return matchAny(Fields.LANGUAGE_CODE, languageCodes);
+		}
+
+		public static Expression semanticTags(Iterable<String> semanticTags) {
+			return matchAny(Fields.SEMANTIC_TAG, semanticTags);
 		}
 		
 	}

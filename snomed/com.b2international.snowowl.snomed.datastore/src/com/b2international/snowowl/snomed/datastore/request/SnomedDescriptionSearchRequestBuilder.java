@@ -109,6 +109,14 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 		return addOption(OptionKey.REGEX_TERM, regex);
 	}
 	
+	public SnomedDescriptionSearchRequestBuilder filterBySemanticTag(String semanticTag) {
+		return addOption(OptionKey.SEMANTIC_TAG, semanticTag);
+	}
+	
+	public SnomedDescriptionSearchRequestBuilder filterBySemanticTags(Iterable<String> semanticTags) {
+		return addOption(OptionKey.SEMANTIC_TAG, semanticTags);
+	}
+	
 	@Override
 	protected SearchResourceRequest<BranchContext, SnomedDescriptions> createSearch() {
 		return new SnomedDescriptionSearchRequest();
