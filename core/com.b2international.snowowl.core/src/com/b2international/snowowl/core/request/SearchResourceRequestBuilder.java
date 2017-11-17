@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.request;
 import java.util.Collection;
 import java.util.List;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
@@ -148,18 +147,18 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 		return setScroll(null).setLimit(1);
 	}
 	
-	// XXX: Does not allow empty-ish values
+	// XXX: Does not allow null values or collections with null values
 	protected final B addOption(String key, Object value) {
 		if (value instanceof Iterable<?>) {
 			for (final Object val : (Iterable<?>)value) {
 				if (val instanceof SearchResourceRequest.SortField) {
 					// ignore sort fields
-				} else if (CompareUtils.isEmpty(val)) {
-					throw new BadRequestException("%s filter cannot contain null or empty values", key);
+				} else if (val == null) {
+					throw new BadRequestException("%s filter cannot contain null values", key);
 				}
 			}
 			optionsBuilder.put(key, value);
-		} else if (!CompareUtils.isEmpty(value)) {
+		} else if (value != null) {
 			optionsBuilder.put(key, value);
 		}
 		return getSelf();
