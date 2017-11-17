@@ -36,9 +36,6 @@
 		<module>com.b2international.snowowl.snomed.reasoner</module>
 		<module>com.b2international.snowowl.snomed.reasoner.server</module>
 		
-		<!-- SNOMED CT Validation -->
-		<module>com.b2international.snowowl.snomed.validation.constraints</module>
-		
 		<!-- SNOMED CT SemanticEngine -->
 		<module>com.b2international.snowowl.snomed.semanticengine</module>
 		<module>com.b2international.snowowl.snomed.semanticengine.test</module>
