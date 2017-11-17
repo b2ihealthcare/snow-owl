@@ -15,41 +15,103 @@
  */
 package com.b2international.snowowl.core.internal.validation;
 
+import static com.google.common.collect.Sets.newHashSet;
+
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.datastore.config.IndexSettings;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * @since 6.0
  */
-public class ValidationBootstrap extends DefaultBootstrapFragment {
+public final class ValidationBootstrap extends DefaultBootstrapFragment {
 
+	private static final Logger LOG = LoggerFactory.getLogger("validation");
+	
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
 		if (env.isEmbedded() || env.isServer()) {
+			final ObjectMapper mapper = env.service(ObjectMapper.class);
 			final Index validationIndex = Indexes.createIndex(
 				"validations", 
-				env.service(ObjectMapper.class), 
+				mapper, 
 				new Mappings(ValidationIssue.class, ValidationRule.class), 
 				env.service(IndexSettings.class)
 			);
-			env.services().registerService(ValidationRepository.class, new ValidationRepository(validationIndex));
+			
+			final ValidationRepository repository = new ValidationRepository(validationIndex);
+			env.services().registerService(ValidationRepository.class, repository);
 			
 			// initialize validation thread pool
 			// TODO make this configurable
 			int numberOfValidationThreads = Math.max(2, Runtime.getRuntime().availableProcessors() / 2);
 			env.services().registerService(ValidationThreadPool.class, new ValidationThreadPool(numberOfValidationThreads));
-			
-			// TODO initialize repository with default validation rules if the repository is empty
+
+			// synchronize rules from a default validation-rules file
+			final File validationRulesFile = env.getConfigDirectory().toPath().resolve("validation-rules.json").toFile();
+			if (validationRulesFile.exists()) {
+				LOG.info("Synchronizing validation rules from file: " + validationRulesFile);
+				final List<ValidationRule> availableRules = mapper.readValue(validationRulesFile, new TypeReference<List<ValidationRule>>() {});
+				final Map<String, ValidationRule> existingRules = Maps.uniqueIndex(ValidationRequests.rules().prepareSearch()
+						.all()
+						.buildAsync()
+						.getRequest()
+						.execute(env), ValidationRule::getId);
+				
+				repository.write(writer -> {
+					
+					// index all rules from the file, this will update existing rules as well
+					final Set<String> ruleIds = newHashSet();
+					for (ValidationRule rule : availableRules) {
+						writer.put(rule.getId(), rule);
+						ruleIds.add(rule.getId());
+					}
+					
+					// delete rules and associated issues
+					Set<String> rulesToDelete = Sets.difference(existingRules.keySet(), ruleIds);
+					if (!rulesToDelete.isEmpty()) {
+						final Set<String> issuesToDelete = newHashSet(writer.searcher().search(Query.select(String.class)
+								.from(ValidationIssue.class)
+								.fields(ValidationIssue.Fields.ID)
+								.where(Expressions.builder()
+										.filter(Expressions.matchAny(ValidationIssue.Fields.RULE_ID, rulesToDelete))
+										.build())
+								.limit(Integer.MAX_VALUE)
+								.build())
+								.getHits());
+						writer.removeAll(ImmutableMap.<Class<?>, Set<String>>of(
+							ValidationRule.class, rulesToDelete,
+							ValidationIssue.class, issuesToDelete
+						));
+					}
+					
+					writer.commit();
+					return null;
+				});
+			}
 		}
 	}
 	
