@@ -89,7 +89,6 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@JsonSubTypes.Type(name="relationship", value=SnomedRelationshipValidationRuleQuery.class),
 		@JsonSubTypes.Type(name="member", value=SnomedMemberValidationRuleQuery.class)
 	})
-	//<SB extends SnomedSearchRequestBuilder<SB, R>, R extends PageableCollectionResource<T>, T extends IComponent> SB
 	private static abstract class SnomedComponentValidationQuery<SB extends SnomedSearchRequestBuilder<SB, R>, R extends PageableCollectionResource<T>, T extends SnomedComponent> {
 		
 		@JsonProperty private Boolean active;
@@ -150,6 +149,9 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@JsonProperty private String type;
 		@JsonProperty private String caseSignificance;
 		@JsonProperty private String semanticTag;
+		@JsonProperty private List<String> languageRefSet;
+		@JsonProperty private List<String> acceptableIn;
+		@JsonProperty private List<String> preferredIn;
 		
 		@Override
 		protected SnomedDescriptionSearchRequestBuilder createSearch() {
@@ -168,7 +170,10 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 					.filterByType(type)
 					.filterByConcept(concept)
 					.filterByCaseSignificance(caseSignificance)
-					.filterBySemanticTag(semanticTag);
+					.filterBySemanticTag(semanticTag)
+					.filterByLanguageRefSets(languageRefSet)
+					.filterByPreferredIn(preferredIn)
+					.filterByAcceptableIn(acceptableIn);
 		}
 		
 	}

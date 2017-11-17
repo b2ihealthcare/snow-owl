@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.validation;
 import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.concept;
 import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.description;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Map;
@@ -62,6 +63,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
 
 /**
@@ -185,6 +187,34 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 		final Map<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
 				.put("componentType", "description")
 				.put("semanticTag", "")
+				.build();
+		
+		final String ruleId = createSnomedQueryRule(ruleQuery);
+		final ValidationIssues issues = validate(ruleId);
+		
+		assertThat(issues.getTotal()).isEqualTo(1);
+		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description1));
+	}
+	
+	@Test
+	public void descriptionAcceptableInAndPreferredIn() throws Exception {
+		final String description1 = RandomSnomedIdentiferGenerator.generateDescriptionId();
+		final String description2 = RandomSnomedIdentiferGenerator.generateDescriptionId();
+		final String langRefSet1 = RandomSnomedIdentiferGenerator.generateConceptId();
+		final String langRefSet2 = RandomSnomedIdentiferGenerator.generateConceptId();
+		
+		indexRevision(MAIN, STORAGE_KEY1, description(description1, Concepts.SYNONYM, "Minor heart attack")
+				.acceptableIn(ImmutableSet.of(langRefSet1))
+				.preferredIn(ImmutableSet.of(langRefSet2))
+				.build());
+		indexRevision(MAIN, STORAGE_KEY2, description(description2, Concepts.SYNONYM, "Clinical finding (finding)")
+				.acceptableIn(ImmutableSet.of(langRefSet1))
+				.build());
+		
+		final Map<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
+				.put("componentType", "description")
+				.put("acceptableIn", ImmutableList.of(langRefSet1))
+				.put("preferredIn", ImmutableList.of(langRefSet2))
 				.build();
 		
 		final String ruleId = createSnomedQueryRule(ruleQuery);
