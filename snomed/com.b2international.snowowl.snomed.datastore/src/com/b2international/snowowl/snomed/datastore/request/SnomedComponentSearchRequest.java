@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.namespace;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.namespaces;
+
+import java.util.Collection;
 
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -29,6 +31,9 @@ public abstract class SnomedComponentSearchRequest<R, D extends SnomedComponentD
 	
 	enum OptionKey {
 		
+		/**
+		 * Filters component to be members of the specified reference sets.
+		 */
 		ACTIVE_MEMBER_OF,
 		
 		/**
@@ -40,10 +45,10 @@ public abstract class SnomedComponentSearchRequest<R, D extends SnomedComponentD
 	
 	protected final void addActiveMemberOfClause(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.ACTIVE_MEMBER_OF)) {
-			final String refSetId = getString(OptionKey.ACTIVE_MEMBER_OF);
+			final Collection<String> refSetIds = getCollection(OptionKey.ACTIVE_MEMBER_OF, String.class);
 			
-			final Expression referringRefSetExpression = SnomedComponentDocument.Expressions.referringRefSet(refSetId);
-			final Expression referringMappingRefSetExpression = SnomedComponentDocument.Expressions.referringMappingRefSet(refSetId);
+			final Expression referringRefSetExpression = SnomedComponentDocument.Expressions.referringRefSets(refSetIds);
+			final Expression referringMappingRefSetExpression = SnomedComponentDocument.Expressions.referringMappingRefSets(refSetIds);
 			
 			final Expression expression = Expressions
 					.builder()
@@ -57,7 +62,7 @@ public abstract class SnomedComponentSearchRequest<R, D extends SnomedComponentD
 	
 	protected final void addNamespaceFilter(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.NAMESPACE)) {
-			queryBuilder.filter(namespace(getString(OptionKey.NAMESPACE)));
+			queryBuilder.filter(namespaces(getCollection(OptionKey.NAMESPACE, String.class)));
 		}
 	}
 

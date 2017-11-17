@@ -29,6 +29,10 @@ public abstract class SnomedComponentSearchRequestBuilder<B extends SnomedCompon
 		return addOption(OptionKey.ACTIVE_MEMBER_OF, refSetId);
 	}
 	
+	public final B isActiveMemberOf(Iterable<String> refSetIds) {
+		return addOption(OptionKey.ACTIVE_MEMBER_OF, refSetIds);
+	}
+	
 	/**
 	 * Filter matches by their namespace (specified in their SNOMED CT identifier).
 	 * 
