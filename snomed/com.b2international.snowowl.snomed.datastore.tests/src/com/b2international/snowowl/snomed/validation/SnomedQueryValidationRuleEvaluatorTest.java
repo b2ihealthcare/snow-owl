@@ -174,6 +174,26 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description1));
 	}
 	
+	@Test
+	public void descriptionRuleEmptySemanticTag() throws Exception {
+		final String description1 = RandomSnomedIdentiferGenerator.generateDescriptionId();
+		final String description2 = RandomSnomedIdentiferGenerator.generateDescriptionId();
+		
+		indexRevision(MAIN, STORAGE_KEY1, description(description1, Concepts.SYNONYM, "Minor heart attack").build());
+		indexRevision(MAIN, STORAGE_KEY2, description(description2, Concepts.SYNONYM, "Clinical finding (finding)").build());
+		
+		final Map<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
+				.put("componentType", "description")
+				.put("semanticTag", "")
+				.build();
+		
+		final String ruleId = createSnomedQueryRule(ruleQuery);
+		final ValidationIssues issues = validate(ruleId);
+		
+		assertThat(issues.getTotal()).isEqualTo(1);
+		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description1));
+	}
+	
 	private ValidationIssues validate(final String ruleId) {
 		new RevisionIndexReadRequest<>(ValidationRequests.prepareValidate().build()).execute(context);
 		return ValidationRequests.issues().prepareSearch()

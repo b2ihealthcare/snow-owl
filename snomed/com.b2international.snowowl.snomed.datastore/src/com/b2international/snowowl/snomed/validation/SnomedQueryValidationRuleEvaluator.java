@@ -149,6 +149,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@JsonProperty private String concept;
 		@JsonProperty private String type;
 		@JsonProperty private String caseSignificance;
+		@JsonProperty private String semanticTag;
 		
 		@Override
 		protected SnomedDescriptionSearchRequestBuilder createSearch() {
@@ -166,7 +167,8 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 			return super.prepareSearch(req)
 					.filterByType(type)
 					.filterByConcept(concept)
-					.filterByCaseSignificance(caseSignificance);
+					.filterByCaseSignificance(caseSignificance)
+					.filterBySemanticTag(semanticTag);
 		}
 		
 	}
