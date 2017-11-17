@@ -15,10 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +29,6 @@ import com.b2international.commons.ExplicitFirstOrdering;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.SnomedConstants.LanguageCodeReferenceSetIdentifierMapping;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -84,45 +81,6 @@ public abstract class DescriptionRequestHelper {
 				return null;
 			}
 		}
-	}
-
-	/**
-	 * Extracts the language reference set identifier from the specified list of {@link ExtendedLocale}s. 
-	 * <p>
-	 * The identifiers may come from the value itself, if it includes a reference set ID (eg. {@code en-x-12345678901}),
-	 * or from the language tag part, if it is well known (eg. {@code en-US}).
-	 * <p>
-	 * If no element from the input list can be converted, an {@link IllegalArgumentException} is thrown; no exception occurs
-	 * if only some of the {@code ExtendedLocale}s could not be transformed into a language reference set identifier, however. 
-	 *  
-	 * @param locales  the extended locale list to process (may not be {@code null})
-	 * @return the converted language reference set identifiers
-	 */
-	public static List<String> getLanguageRefSetIds(List<ExtendedLocale> locales) {
-		List<String> languageRefSetIds = newArrayList();
-		List<ExtendedLocale> unconvertableLocales = new ArrayList<ExtendedLocale>();
-	
-		for (ExtendedLocale extendedLocale : locales) {
-			String languageRefSetId;
-	
-			if (!extendedLocale.getLanguageRefSetId().isEmpty()) {
-				languageRefSetId = extendedLocale.getLanguageRefSetId();
-			} else {
-				languageRefSetId = LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifier(extendedLocale.getLanguageTag());
-			}
-	
-			if (languageRefSetId == null) {
-				unconvertableLocales.add(extendedLocale);
-			} else {
-				languageRefSetIds.add(languageRefSetId);
-			}
-		}
-	
-		if (languageRefSetIds.isEmpty() && !unconvertableLocales.isEmpty()) {
-			throw new IllegalArgumentException("Don't know how to convert extended locale " + unconvertableLocales.get(0).toString() + " to a language reference set identifier.");
-		}
-		
-		return languageRefSetIds;
 	}
 
 	/**
@@ -253,14 +211,12 @@ public abstract class DescriptionRequestHelper {
 	
 	private SnomedDescriptionSearchRequestBuilder prepareFsnSearchByAcceptability(String conceptId, List<ExtendedLocale> locales) {
 		return prepareFsnSearchDefault(conceptId)
-				.filterByAcceptability(Acceptability.PREFERRED)
-				.filterByExtendedLocales(locales);
+				.filterByPreferredIn(locales);
 	}
 	
 	private SnomedDescriptionSearchRequestBuilder prepareFsnSearchByAcceptability(Collection<String> conceptIds, List<ExtendedLocale> locales) {
 		return prepareFsnSearchDefault(conceptIds)
-				.filterByAcceptability(Acceptability.PREFERRED)
-				.filterByExtendedLocales(locales);
+				.filterByPreferredIn(locales);
 	}
 	
 	private SnomedDescriptionSearchRequestBuilder prepareFsnSearchByLanguageCodes(String conceptId, List<String> languageCodes) {
@@ -297,8 +253,7 @@ public abstract class DescriptionRequestHelper {
 				.filterByActive(true)
 				.filterByConcept(conceptId)
 				.filterByType("<<" + Concepts.SYNONYM)
-				.filterByAcceptability(Acceptability.PREFERRED)
-				.filterByExtendedLocales(locales);
+				.filterByPreferredIn(locales);
 	}
 	
 	private SnomedDescriptionSearchRequestBuilder preparePtSearch(Collection<String> conceptIds, List<ExtendedLocale> locales) {
@@ -307,12 +262,11 @@ public abstract class DescriptionRequestHelper {
 				.filterByActive(true)
 				.filterByConceptId(conceptIds)
 				.filterByType("<<" + Concepts.SYNONYM)
-				.filterByAcceptability(Acceptability.PREFERRED)
-				.filterByExtendedLocales(locales);
+				.filterByPreferredIn(locales);
 	}
 
 	private Map<String, SnomedDescription> indexBestPreferredByConceptId(SnomedDescriptions descriptions, List<ExtendedLocale> orderedLocales) {
-		List<String> languageRefSetIds = getLanguageRefSetIds(orderedLocales);
+		List<String> languageRefSetIds = SnomedDescriptionSearchRequestBuilder.getLanguageRefSetIds(orderedLocales);
 		ExplicitFirstOrdering<String> languageRefSetOrdering = ExplicitFirstOrdering.create(languageRefSetIds);
 		
 		return extractBest(indexByConceptId(descriptions), languageRefSetIds, description -> {

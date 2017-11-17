@@ -31,12 +31,12 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
+import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
@@ -232,8 +232,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 				.filterByActive(true)
 				.filterByConcept(refsetId)
 				.filterByType("<<" + Concepts.SYNONYM)
-				.filterByAcceptability(Acceptability.PREFERRED)
-				.filterByExtendedLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
+				.filterByPreferredIn(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getClientBranch().path())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.then(new Function<SnomedDescriptions, String>() {

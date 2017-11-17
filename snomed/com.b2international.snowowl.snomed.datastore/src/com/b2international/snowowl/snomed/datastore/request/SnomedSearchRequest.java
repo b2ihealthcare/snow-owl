@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
-import java.util.List;
 
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -42,12 +41,6 @@ import com.google.common.collect.Iterables;
 public abstract class SnomedSearchRequest<R, D extends SnomedDocument> extends SearchIndexResourceRequest<BranchContext, R, D> {
 
 	enum OptionKey {
-		
-		/**
-		 * Language reference sets to use
-		 */
-		LANGUAGE_REFSET,
-		
 		/**
 		 * Component status to match
 		 */
@@ -71,10 +64,6 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument> extends S
 	
 	protected SnomedSearchRequest() {}
 	
-	protected List<String> languageRefSetIds() {
-		return getList(OptionKey.LANGUAGE_REFSET, String.class);
-	}
-
 	protected final void addActiveClause(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.ACTIVE)) {
 			queryBuilder.filter(SnomedDocument.Expressions.active(getBoolean(OptionKey.ACTIVE)));

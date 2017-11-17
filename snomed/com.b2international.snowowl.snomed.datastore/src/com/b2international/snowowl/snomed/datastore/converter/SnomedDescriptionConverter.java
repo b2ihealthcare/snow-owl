@@ -70,6 +70,7 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 		result.setIconId(input.getIconId());
 		result.setReleased(input.isReleased());
 		result.setTerm(input.getTerm());
+		result.setSemanticTag(input.getSemanticTag());
 		result.setTypeId(input.getTypeId());
 		result.setType(new SnomedConcept(input.getTypeId()));
 		result.setScore(input.getScore());

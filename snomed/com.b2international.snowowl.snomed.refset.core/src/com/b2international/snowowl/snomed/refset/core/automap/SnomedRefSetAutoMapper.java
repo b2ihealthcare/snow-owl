@@ -81,7 +81,7 @@ public class SnomedRefSetAutoMapper {
 						.prepareSearchConcept()
 						.filterByActive(true)
 						.filterByTerm(entry.getValue())
-						.filterByExtendedLocales(locales)
+						.filterByDescriptionLanguageRefSet(locales)
 						.filterByAncestor(topLevelConceptId)
 						.withSearchProfile(userId)
 						.withDoi()

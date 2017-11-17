@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -54,6 +55,7 @@ import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -109,9 +111,21 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@RequestParam(value="type", required=false) 
 			final String typeFilter,
 			
-			@ApiParam(value="The acceptability to match")
+			@ApiParam(value="The acceptability to match. DEPRECATED! Use acceptableIn or preferredIn!")
 			@RequestParam(value="acceptability", required=false) 
 			final Acceptability acceptabilityFilter,
+			
+			@ApiParam(value="Acceptable membership to match in these language refsets")
+			@RequestParam(value="acceptableIn", required=false)
+			final String[] acceptableIn,
+			
+			@ApiParam(value="Preferred membership to match in these language refsets")
+			@RequestParam(value="preferredIn", required=false)
+			final String[] preferredIn,
+			
+			@ApiParam(value="Any membership to match in these language refsets")
+			@RequestParam(value="languageRefSet", required=false)
+			final String[] languageRefSet,
 			
 			@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
 			@RequestParam(value="scrollKeepAlive", required=false) 
@@ -147,17 +161,39 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 				? SearchIndexResourceRequest.DOC_ID 
 				: SearchIndexResourceRequest.SCORE;
 		
+		final SnomedDescriptionSearchRequestBuilder req = SnomedRequests
+			.prepareSearchDescription()
+			.filterByActive(activeFilter)
+			.filterByModule(moduleFilter)
+			.filterByNamespace(namespaceFilter)
+			.filterByConcept(conceptFilter)
+			.filterByTerm(termFilter)
+			.filterByType(typeFilter);
+
+		if (acceptableIn == null && preferredIn == null && languageRefSet == null) {
+			if (acceptabilityFilter != null) {
+				if (Acceptability.ACCEPTABLE == acceptabilityFilter) {
+					req.filterByAcceptableIn(extendedLocales);
+				} else if (Acceptability.PREFERRED == acceptabilityFilter) {
+					req.filterByPreferredIn(extendedLocales);
+				}
+			} else {
+				req.filterByLanguageRefSets(extendedLocales);
+			}
+		} else {
+			if (languageRefSet != null) {
+				req.filterByLanguageRefSets(Arrays.asList(languageRefSet));
+			}
+			if (acceptableIn != null) {
+				req.filterByAcceptableIn(Arrays.asList(acceptableIn));
+			}
+			if (preferredIn != null) {
+				req.filterByPreferredIn(Arrays.asList(preferredIn));
+			}
+		}
+		
 		return DeferredResults.wrap(
-				SnomedRequests
-					.prepareSearchDescription()
-					.filterByActive(activeFilter)
-					.filterByModule(moduleFilter)
-					.filterByNamespace(namespaceFilter)
-					.filterByConcept(conceptFilter)
-					.filterByTerm(termFilter)
-					.filterByType(typeFilter)
-					.filterByAcceptability(acceptabilityFilter)
-					.filterByExtendedLocales(extendedLocales)
+				req
 					.setLocales(extendedLocales)
 					.setLimit(limit)
 					.setScroll(scrollKeepAlive)

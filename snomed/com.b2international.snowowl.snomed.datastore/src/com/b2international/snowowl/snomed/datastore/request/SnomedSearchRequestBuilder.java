@@ -53,7 +53,7 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	 * @param moduleIds
 	 * @return
 	 */
-	public B filterByModules(Iterable<String> moduleIds) {
+	public final B filterByModules(Iterable<String> moduleIds) {
 		return addOption(OptionKey.MODULE, moduleIds);
 	}
 
@@ -66,19 +66,6 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 		return addOption(OptionKey.ACTIVE, active);
 	}
 
-	/**
-	 * Filter to return concepts or descriptions based on its associated 
-	 * language refsets.  This filter method is always called along {@link SnomedConceptSearchRequestBuilder#filterByTerm(String)}
-	 * or {@link SnomedDescriptionSearchRequestBuilder#filterByTerm(String)} filters.
-	 * 
-	 * @param list of language refSet ids
-	 * @return this builder
-	 * @see #filterByExtendedLocales(List)
-	 */
-	public final B filterByLanguageRefSetIds(List<String> languageRefSetIds) {
-		return addOption(OptionKey.LANGUAGE_REFSET, languageRefSetIds);
-	}
-	
 	/**
 	 * Filter to return components with the specified effective time represented as a string in yyyy-MM-dd format
 	 * @param effectiveTime in yyyy-MM-dd format.
@@ -121,22 +108,5 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	public final B filterByEffectiveTime(long from, long to) {
 		return addOption(OptionKey.EFFECTIVE_TIME_START, from).addOption(OptionKey.EFFECTIVE_TIME_END, to);
 	}
-	
-	/**
-	 * Filter to return concepts or descriptions based on its associated 
-	 * language refsets configured via locales.
-	 * This filter method is always called along {@link SnomedConceptSearchRequestBuilder#filterByTerm(String)}
-	 * or {@link SnomedDescriptionSearchRequestBuilder#filterByTerm(String)} filters.
-	 * 
-	 * @param languageRefSetIds
-	 * @return this builder
-	 * @see #filterByLanguageRefSetIds(List)
-	 */
-	public final B filterByExtendedLocales(List<ExtendedLocale> locales) {
-		/* 
-		 * XXX: Pairwise matching of language code and reference set ID has to be checked on the Java side, after
-		 * results have been returned.
-		 */
-		return filterByLanguageRefSetIds(DescriptionRequestHelper.getLanguageRefSetIds(locales));
-	}
+
 }

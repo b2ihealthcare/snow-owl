@@ -49,6 +49,7 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	private static final long serialVersionUID = 1L;
 
 	private String term;
+	private String semanticTag;
 	private String languageCode;
 	private CaseSignificance caseSignificance;
 	private DescriptionInactivationIndicator inactivationIndicator;
@@ -114,6 +115,14 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	 */
 	public String getTerm() {
 		return term;
+	}
+	
+	/**
+	 * Returns the semantic tag value from the term without the brackets, eg. "{@code finding}", or an empty {@link String} value if no semantic tag is specified in the term.  
+	 * @return
+	 */
+	public String getSemanticTag() {
+		return semanticTag;
 	}
 
 	/**
@@ -184,6 +193,10 @@ public final class SnomedDescription extends SnomedCoreComponent {
 
 	public void setTerm(final String term) {
 		this.term = term;
+	}
+	
+	public void setSemanticTag(String semanticTag) {
+		this.semanticTag = semanticTag;
 	}
 
 	public void setLanguageCode(final String languageCode) {

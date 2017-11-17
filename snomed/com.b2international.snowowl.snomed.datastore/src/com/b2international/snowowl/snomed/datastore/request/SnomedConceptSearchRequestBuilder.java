@@ -16,8 +16,10 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -209,6 +211,10 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByDefinitionStatus(String definitionStatusId) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.DEFINITION_STATUS, definitionStatusId);
+	}
+	
+	public SnomedConceptSearchRequestBuilder filterByDescriptionLanguageRefSet(List<ExtendedLocale> extendedLocales) {
+		return addOption(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET, SnomedDescriptionSearchRequestBuilder.getLanguageRefSetIds(extendedLocales));
 	}
 
 	/*

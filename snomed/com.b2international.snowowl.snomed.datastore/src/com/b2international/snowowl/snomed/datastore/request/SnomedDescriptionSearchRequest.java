@@ -26,6 +26,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDes
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.preferredIn;
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.b2international.index.Hits;
@@ -36,7 +37,6 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
@@ -54,13 +54,15 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		TERM,
 		CONCEPT,
 		TYPE,
-		ACCEPTABILITY,
 		LANGUAGE,
 		USE_FUZZY,
 		PARSED_TERM, 
 		CASE_SIGNIFICANCE, 
 		REGEX_TERM, 
-		SEMANTIC_TAG;
+		SEMANTIC_TAG,
+		LANGUAGE_REFSET,
+		ACCEPTABLE_IN,
+		PREFERRED_IN;
 	}
 	
 	SnomedDescriptionSearchRequest() {}
@@ -82,7 +84,9 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		addLanguageFilter(queryBuilder);
 		addNamespaceFilter(queryBuilder);
 		addActiveMemberOfClause(queryBuilder);
-		addLocaleFilter(context, queryBuilder);
+		addLanguageRefSetFilter(queryBuilder);
+		addAcceptableInFilter(queryBuilder);
+		addPreferredInFilter(queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
 		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
 		addEclFilter(context, queryBuilder, SnomedSearchRequest.OptionKey.MODULE, SnomedDocument.Expressions::modules);
@@ -171,27 +175,28 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		}
 	}
 
-	private void addLocaleFilter(BranchContext context, ExpressionBuilder queryBuilder) {
-		if (languageRefSetIds().isEmpty()) {
-			return;
+	private void addLanguageRefSetFilter(ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.LANGUAGE_REFSET)) {
+			final Collection<String> languageRefSetIds = getCollection(OptionKey.LANGUAGE_REFSET, String.class);
+			final ExpressionBuilder filter = Expressions.builder();
+			filter.should(preferredIn(languageRefSetIds));
+			filter.should(acceptableIn(languageRefSetIds));
+			queryBuilder.filter(filter.build());
 		}
-		
-		ExpressionBuilder languageRefSetExpression = Expressions.builder();
-		
-		for (String languageRefSetId : languageRefSetIds()) {
-			if (containsKey(OptionKey.ACCEPTABILITY)) {
-				final Acceptability acceptability = get(OptionKey.ACCEPTABILITY, Acceptability.class);
-				final Expression acceptabilityExpression = Acceptability.PREFERRED.equals(acceptability) 
-						? preferredIn(languageRefSetId) 
-						: acceptableIn(languageRefSetId);
-
-				languageRefSetExpression.should(acceptabilityExpression);
-			} else {
-				languageRefSetExpression.should(preferredIn(languageRefSetId));
-				languageRefSetExpression.should(acceptableIn(languageRefSetId));
-			}
-		}
-		
-		queryBuilder.filter(languageRefSetExpression.build());
 	}
+	
+	private void addAcceptableInFilter(ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.ACCEPTABLE_IN)) {
+			final Collection<String> acceptableIn = getCollection(OptionKey.ACCEPTABLE_IN, String.class);
+			queryBuilder.filter(acceptableIn(acceptableIn));
+		}
+	}
+	
+	private void addPreferredInFilter(ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.PREFERRED_IN)) {
+			final Collection<String> preferredIn = getCollection(OptionKey.PREFERRED_IN, String.class);
+			queryBuilder.filter(preferredIn(preferredIn));
+		}
+	}
+	
 }

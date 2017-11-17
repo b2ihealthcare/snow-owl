@@ -42,7 +42,6 @@ import com.b2international.snowowl.snomed.datastore.index.SearchProfileQueryProv
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequest.OptionKey;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -251,7 +250,7 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 			.all()
 			.filterByActive(true)
 			.filterByTerm(term)
-			.filterByLanguageRefSetIds(languageRefSetIds())
+			.filterByLanguageRefSets(getCollection(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET, String.class))
 			.setFields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 			.sortBy(SCORE);
 			
