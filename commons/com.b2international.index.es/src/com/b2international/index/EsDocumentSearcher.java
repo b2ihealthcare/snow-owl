@@ -78,8 +78,7 @@ public class EsDocumentSearcher implements DocSearcher {
 	public <T> T get(Class<T> type, String key) throws IOException {
 		final DocumentMapping mapping = admin.mappings().getMapping(type);
 		final GetResponse response = admin.client()
-				.prepareGet(admin.name(), mapping.typeAsString(), key)
-				.setRouting(mapping.typeAsString())
+				.prepareGet(admin.getTypeIndex(mapping), mapping.typeAsString(), key)
 				.setFetchSource(true)
 				.get();
 		if (response.isExists()) {
@@ -102,8 +101,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping);
 		final QueryBuilder esQuery = esQueryBuilder.build(query.getWhere());
 		
-		final SearchRequestBuilder req = client.prepareSearch(admin.name())
-			.setRouting(mapping.typeAsString())
+		final SearchRequestBuilder req = client.prepareSearch(admin.getTypeIndex(mapping))
 			.setTypes(mapping.typeAsString())
 			.setSize(toRead)
 			.setQuery(esQuery)
@@ -208,18 +206,19 @@ public class EsDocumentSearcher implements DocSearcher {
 			// if this was the last value then collect the sort values for searchAfter
 			final T value;
 			if (Primitives.isWrapperType(select) || String.class.isAssignableFrom(select)) {
-				if (CompareUtils.isEmpty(hit.getSource())) {
+				final Map<String, Object> source = hit.getSourceAsMap();
+				if (CompareUtils.isEmpty(source)) {
 					value = (T) hit.getId();
 				} else {
-					value = (T) hit.getSource().get(Iterables.getOnlyElement(hit.getSource().keySet()));
+					value = (T) source.get(Iterables.getOnlyElement(source.keySet()));
 				}
 			} else if (Map.class.isAssignableFrom(select)) {
-				value = select.cast(hit.getSource());
+				value = select.cast(hit.getSourceAsMap());
 			} else if (String[].class.isAssignableFrom(select)) {
 				final String[] val = new String[fields.size()];
 				for (int i = 0; i < fields.size(); i++) {
 					String field = fields.get(i);
-					val[i] = String.valueOf(hit.getSource().get(field));
+					val[i] = String.valueOf(hit.getSourceAsMap().get(field));
 				}
 				value = select.cast(val);
 			} else {
@@ -251,7 +250,7 @@ public class EsDocumentSearcher implements DocSearcher {
                 req.addSort(SortBuilders.scoreSort().order(order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC)); 
                 break;
             case DocumentMapping._ID: //$FALL-THROUGH$
-            	field = DocumentMapping._UID;
+            	field = DocumentMapping._ID;
             default:
             	req.addSort(SortBuilders.fieldSort(field).order(order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC));
             }

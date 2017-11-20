@@ -83,7 +83,6 @@ public final class EsQueryBuilder {
 				return queryBuilder;
 			} else {
 				return QueryBuilders.boolQuery()
-					.disableCoord(true)
 					.must(QueryBuilders.matchAllQuery())
 					.filter(queryBuilder);
 			}
@@ -160,7 +159,6 @@ public final class EsQueryBuilder {
 	
 	private void visit(BoolExpression bool) {
 		final BoolQueryBuilder query = QueryBuilders.boolQuery();
-		query.disableCoord(true);
 		for (Expression must : bool.mustClauses()) {
 			// visit the item and immediately pop the deque item back
 			final EsQueryBuilder innerQueryBuilder = new EsQueryBuilder(mapping);
@@ -189,7 +187,7 @@ public final class EsQueryBuilder {
 		}
 		
 		if (!bool.shouldClauses().isEmpty()) {
-			query.minimumNumberShouldMatch(bool.minShouldMatch());
+			query.minimumShouldMatch(bool.minShouldMatch());
 		}
 		
 		deque.push(query);

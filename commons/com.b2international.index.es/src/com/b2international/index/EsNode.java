@@ -19,11 +19,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import org.elasticsearch.analysis.common.CommonAnalysisPlugin;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.reindex.ReindexPlugin;
 import org.elasticsearch.node.InternalSettingsPreparer;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.painless.PainlessPlugin;
+import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.transport.Netty4Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,9 +95,8 @@ public final class EsNode extends Node {
 		putSettingIfAbsent(esSettings, "cluster.name", CLUSTER_NAME);
 		putSettingIfAbsent(esSettings, "node.name", CLUSTER_NAME);
 		
-		// local mode if not set
+		// this node is always the master node
 		putSettingIfAbsent(esSettings, "node.master", true);
-		putSettingIfAbsent(esSettings, "transport.type", "local");
 		putSettingIfAbsent(esSettings, "http.type", "netty4");
 		
 		return esSettings.build();
@@ -108,7 +109,12 @@ public final class EsNode extends Node {
 	}
 
 	protected EsNode(Settings settings) {
-		super(InternalSettingsPreparer.prepareEnvironment(settings, null), ImmutableList.of(Netty4Plugin.class, ReindexPlugin.class, PainlessPlugin.class));
+		super(InternalSettingsPreparer.prepareEnvironment(settings, null), ImmutableList.<Class<? extends Plugin>>builder()
+				.add(Netty4Plugin.class)
+				.add(ReindexPlugin.class)
+				.add(PainlessPlugin.class)
+				.add(CommonAnalysisPlugin.class)
+				.build());
 	}
 	
 }

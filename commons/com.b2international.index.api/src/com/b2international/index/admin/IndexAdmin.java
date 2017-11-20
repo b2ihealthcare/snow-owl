@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 
 /**
@@ -73,11 +74,19 @@ public interface IndexAdmin {
 	Mappings mappings();
 
 	/**
-	 * Returns the index name this {@link IndexAdmin} is responsible for.
+	 * Returns the index name prefix which will be used to identify all indexes that managed by this {@link IndexAdmin}.
 	 * 
 	 * @return
 	 */
 	String name();
+	
+	/**
+	 * Returns the actual index name for the given {@link DocumentMapping}.
+	 * 
+	 * @param mapping
+	 * @return
+	 */
+	String getTypeIndex(DocumentMapping mapping);
 
 	/**
 	 * Closes the underlying index.

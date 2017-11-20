@@ -18,6 +18,7 @@ package com.b2international.index;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -113,6 +114,7 @@ public class EsDocumentWriter implements Writer {
 			return;
 		}
 		
+		final Set<DocumentMapping> mappingsToRefresh = newHashSet();
 		final Client client = admin.client();
 		// apply bulk updates first
 		final ListeningExecutorService executor;
@@ -123,7 +125,7 @@ public class EsDocumentWriter implements Writer {
 		}
 		final List<ListenableFuture<?>> updateFutures = newArrayList();
 		for (BulkUpdate<?> update : updateOperations) {
-			updateFutures.add(executor.submit(() -> bulkUpdate(client, update)));
+			updateFutures.add(executor.submit(() -> bulkUpdate(client, update, mappingsToRefresh)));
 		}
 		try {
 			executor.shutdown();
@@ -165,21 +167,22 @@ public class EsDocumentWriter implements Writer {
 				if (!deleteOperations.containsValue(id)) {
 					final Object obj = entry.getValue();
 					final DocumentMapping mapping = admin.mappings().getMapping(obj.getClass());
+					mappingsToRefresh.add(mapping);
 					final byte[] _source = mapper.writeValueAsBytes(obj);
 					processor.add(client
-							.prepareIndex(admin.name(), mapping.typeAsString(), id)
+							.prepareIndex(admin.getTypeIndex(mapping), mapping.typeAsString(), id)
 							.setOpType(OpType.INDEX)
 							.setSource(_source, XContentType.JSON)
-							.setRouting(mapping.typeAsString())
 							.request());
 				}
 			}
 
 			for (Class<?> type : deleteOperations.keySet()) {
 				final DocumentMapping mapping = admin.mappings().getMapping(type);
+				mappingsToRefresh.add(mapping);
 				final String typeString = mapping.typeAsString();
 				for (String id : deleteOperations.get(type)) {
-					processor.add(client.prepareDelete(admin.name(), typeString, id).setRouting(typeString).request());
+					processor.add(client.prepareDelete(admin.getTypeIndex(mapping), typeString, id).request());
 				}
 			}
 			
@@ -190,10 +193,10 @@ public class EsDocumentWriter implements Writer {
 			}
 		}
 		// refresh the index if there were only updates
-		admin.refresh();
+		admin.refresh(mappingsToRefresh);
 	}
 
-	private void bulkUpdate(final Client client, final BulkUpdate<?> update) {
+	private void bulkUpdate(final Client client, final BulkUpdate<?> update, Set<DocumentMapping> mappingsToRefresh) {
 		final DocumentMapping mapping = admin.mappings().getMapping(update.getType());
 		final QueryBuilder query = new EsQueryBuilder(mapping).build(update.getFilter());
 		final String rawScript = mapping.getScript(update.getScript()).script();
@@ -205,9 +208,8 @@ public class EsDocumentWriter implements Writer {
 			
 			ubqrb.source()
 				.setSize(BATCHS_SIZE)
-				.setIndices(admin.name())
-				.setTypes(mapping.typeAsString())
-				.setRouting(mapping.typeAsString());
+				.setIndices(admin.getTypeIndex(mapping))
+				.setTypes(mapping.typeAsString());
 			BulkByScrollResponse r = ubqrb
 				.script(script)
 				.setSlices(getConcurrencyLevel())
@@ -216,16 +218,19 @@ public class EsDocumentWriter implements Writer {
 			
 			boolean created = r.getCreated() > 0;
 			if (created) {
+				mappingsToRefresh.add(mapping);
 				admin.log().info("Created {} {} documents with script '{}', params({})", r.getCreated(), mapping.typeAsString(), update.getScript(), update.getParams());
 			}
 			
 			boolean updated = r.getUpdated() > 0;
 			if (updated) {
+				mappingsToRefresh.add(mapping);
 				admin.log().info("Updated {} {} documents with script '{}', params({})", r.getUpdated(), mapping.typeAsString(), update.getScript(), update.getParams());
 			}
 			
 			boolean deleted = r.getDeleted() > 0;
 			if (deleted) {
+				mappingsToRefresh.add(mapping);
 				admin.log().info("Deleted {} {} documents with script '{}', params({})", r.getDeleted(), mapping.typeAsString(), update.getScript(), update.getParams());
 			}
 			

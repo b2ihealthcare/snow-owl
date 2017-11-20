@@ -111,7 +111,6 @@ public class QueryBuilderBase<Q extends QueryBuilderBase<Q>> {
 			for (Query q : queries) {
 				query.add(q, occur);
 			}
-			query.setDisableCoord(true);
 			return query.build();
 		}
 	}

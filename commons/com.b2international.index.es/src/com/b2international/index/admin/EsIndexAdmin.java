@@ -16,24 +16,32 @@
 package com.b2international.index.admin;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
+import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.index.Analyzers;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
@@ -42,11 +50,8 @@ import com.b2international.index.Text;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.util.NumericClassUtils;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Multimap;
 import com.google.common.io.Resources;
-import com.google.common.primitives.Ints;
 import com.google.common.primitives.Primitives;
 
 /**
@@ -82,48 +87,53 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 	@Override
 	public boolean exists() {
-		return client().admin().indices().prepareExists(name).get().isExists();
+		for (DocumentMapping mapping : mappings.getMappings()) {
+			if (!exists(mapping)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean exists(DocumentMapping mapping) {
+		return client().admin().indices().prepareExists(getTypeIndex(mapping)).get().isExists();
 	}
 
 	@Override
 	public void create() {
-		if (exists()) {
-			waitForYellowHealth();
-			return;
-		}
-		final CreateIndexRequestBuilder req = client().admin().indices().prepareCreate(name);
-		
-		// add mappings
-		final Multimap<String, Map<String, Object>> esMappings = HashMultimap.create();
+		// create number of indexes based on number of types
  		for (DocumentMapping mapping : mappings.getMappings()) {
+ 			if (exists(mapping)) {
+ 				continue;
+ 			}
+ 			final String indexName = getTypeIndex(mapping);
+			final CreateIndexRequestBuilder req = client().admin().indices().prepareCreate(indexName);
 			final String type = mapping.typeAsString();
 			Map<String, Object> typeMapping = ImmutableMap.of(type,
 				ImmutableMap.builder()
-					.put("_all", ImmutableMap.of("enabled", false))
 					.put("date_detection", "false")
 					.put("numeric_detection", "false")
 					.putAll(toProperties(mapping))
 					.build()
 			);
-			esMappings.put(type, typeMapping);
+			req.addMapping(type, typeMapping);
+			try {
+				final Map<String, Object> indexSettings = createSettings();
+				log.info("Configuring '{}' index with settings: {}", indexName, indexSettings);
+				req.setSettings(indexSettings);
+			} catch (IOException e) {
+				throw new IndexException("Couldn't prepare settings for index " + indexName, e);
+			}
+			CreateIndexResponse response = req.get();
+			checkState(response.isAcknowledged(), "Failed to create index '%s' for type '%s'", name, mapping.typeAsString());
  		}
  		
-		for (String type : esMappings.keySet()) {
-			final Map<String, Object> typeMapping = esMappings.get(type).stream().sorted((m1, m2) -> -1 * Ints.compare(m1.toString().length(), m2.toString().length())).findFirst().get();
-			req.addMapping(type, typeMapping);
-		}
+ 		// wait until the cluster processes each index create request
+		waitForYellowHealth(getAllIndexes());
+	}
 
-		try {
-			final Map<String, Object> indexSettings = createSettings();
-			log.info("Configuring '{}' index with settings: {}", name, indexSettings);
-			req.setSettings(indexSettings);
-		} catch (IOException e) {
-			throw new IndexException("Couldn't prepare settings for index " + name, e);
-		}
-
-		CreateIndexResponse response = req.get();
-		checkState(response.isAcknowledged(), "Failed to create index %s", name);
-		waitForYellowHealth();
+	private Set<String> getAllIndexes() {
+		return mappings.getMappings().stream().map(this::getTypeIndex).collect(Collectors.toSet());
 	}
 
 	private Map<String, Object> createSettings() throws IOException {
@@ -139,11 +149,13 @@ public final class EsIndexAdmin implements IndexAdmin {
 		);
 	}
 	
-	private void waitForYellowHealth() {
-		client().admin().cluster()
-			.prepareHealth(name())
-			.setWaitForYellowStatus()
-			.get();
+	private void waitForYellowHealth(Set<String> indexes) {
+		if (!CompareUtils.isEmpty(indexes)) {
+			client().admin().cluster()
+				.prepareHealth(indexes.toArray(new String[indexes.size()]))
+				.setWaitForYellowStatus()
+				.get();
+		}
 	}
 
 	private Map<String, Object> toProperties(DocumentMapping mapping) {
@@ -265,7 +277,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 	@Override
 	public void delete() {
 		if (exists()) {
-			DeleteIndexResponse response = client().admin().indices().prepareDelete(name).get();
+			DeleteIndexResponse response = client().admin().indices().prepareDelete(name+"*").get();
 			checkState(response.isAcknowledged(), "Failed to delete index %s", name);
 		}
 	}
@@ -297,18 +309,39 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 	@Override
 	public void optimize(int maxSegments) {
-		client().admin().indices().prepareForceMerge(name()).setMaxNumSegments(maxSegments).get();
-		waitForYellowHealth();
+//		client().admin().indices().prepareForceMerge(name).setMaxNumSegments(maxSegments).get();
+//		waitForYellowHealth();
+	}
+	
+	public String getTypeIndex(DocumentMapping mapping) {
+		if (mapping.getParent() != null) {
+			return String.format("%s-%s", name, mapping.getParent().typeAsString());
+		} else {
+			return String.format("%s-%s", name, mapping.typeAsString());
+		}
 	}
 	
 	public Client client() {
 		return client;
 	}
 	
-	public void refresh() {
-		log.trace("Refreshing index '{}'", name);
-		client().admin().indices().prepareRefresh(name).get();
-		waitForYellowHealth();
+	public void refresh(Set<DocumentMapping> typesToRefresh) {
+		if (!CompareUtils.isEmpty(typesToRefresh)) {
+			final List<Future<RefreshResponse>> futures = newArrayList();
+			for (DocumentMapping mapping : typesToRefresh) {
+				final String typeIndex = getTypeIndex(mapping);
+				log.trace("Refreshing indexes '{}'", typeIndex);
+				futures.add(client().admin().indices().prepareRefresh(typeIndex).execute());
+			}
+			for (Future<RefreshResponse> future : futures) {
+				try {
+					future.get();
+				} catch (InterruptedException | ExecutionException e) {
+					throw new IndexException("Failed to refresh index", e);
+				}
+			}
+			waitForYellowHealth(typesToRefresh.stream().map(this::getTypeIndex).collect(Collectors.toSet()));
+		}
 	}
 	
 }
