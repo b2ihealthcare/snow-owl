@@ -15,6 +15,7 @@
  */
 package com.b2international.index;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
@@ -109,7 +110,7 @@ public abstract class BaseIndexTest {
 	protected final <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) {
 		return index().read(new IndexRead<Aggregation<T>>() {
 			@Override
-			public Aggregation<T> execute(Searcher index) throws IOException {
+			public Aggregation<T> execute(DocSearcher index) throws IOException {
 				return index.aggregate(aggregation);
 			}
 		});

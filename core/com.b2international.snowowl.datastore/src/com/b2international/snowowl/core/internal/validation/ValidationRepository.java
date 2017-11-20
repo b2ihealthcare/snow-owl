@@ -25,6 +25,8 @@ import com.b2international.index.IndexWrite;
 import com.b2international.index.Scroll;
 import com.b2international.index.Searcher;
 import com.b2international.index.admin.IndexAdmin;
+import com.b2international.index.aggregations.Aggregation;
+import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.IDisposableService;
 
@@ -91,6 +93,11 @@ public final class ValidationRepository implements Index, IDisposableService {
 					searcher.cancelScroll(scrollId);
 					return null;
 				});
+			}
+			
+			@Override
+			public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {
+				throw new UnsupportedOperationException();
 			}
 		};
 	}

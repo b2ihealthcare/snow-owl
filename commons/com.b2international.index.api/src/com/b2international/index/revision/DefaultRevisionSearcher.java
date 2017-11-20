@@ -23,6 +23,8 @@ import java.util.Collections;
 import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.Scroll;
+import com.b2international.index.aggregations.Aggregation;
+import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.google.common.collect.Iterables;
@@ -96,6 +98,11 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 					.build();
 		}
 		return searcher.search(query);
+	}
+	
+	@Override
+	public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {
+		return searcher.aggregate(aggregation);
 	}
 	
 	@Override

@@ -18,7 +18,7 @@ package com.b2international.index.aggregations;
 import java.util.Map;
 
 /**
- * @since 5.12.0 
+ * @since 6.0 
  * @param <T> - the type of documents to aggregate
  */
 public final class Aggregation<T> {

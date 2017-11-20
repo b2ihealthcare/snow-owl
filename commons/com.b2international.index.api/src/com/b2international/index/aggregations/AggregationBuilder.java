@@ -18,7 +18,7 @@ package com.b2international.index.aggregations;
 import com.b2international.index.query.Expression;
 
 /**
- * @since 5.12.0
+ * @since 6.0
  */
 public final class AggregationBuilder<T> {
 	

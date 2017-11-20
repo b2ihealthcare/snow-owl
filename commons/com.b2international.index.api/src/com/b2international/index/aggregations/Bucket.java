@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 import com.b2international.index.Hits;
 
 /**
- * @since 5.12.0
+ * @since 6.0
  */
 public final class Bucket<T> implements Iterable<T> {
 

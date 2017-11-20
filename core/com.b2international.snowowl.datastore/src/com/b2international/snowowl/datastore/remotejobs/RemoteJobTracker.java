@@ -39,6 +39,8 @@ import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.Scroll;
 import com.b2international.index.Searcher;
+import com.b2international.index.aggregations.Aggregation;
+import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -316,6 +318,11 @@ public final class RemoteJobTracker implements IDisposableService {
 					searcher.cancelScroll(scrollId);
 					return null;
 				});
+			}
+			
+			@Override
+			public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {
+				throw new UnsupportedOperationException();
 			}
 		};
 	}
