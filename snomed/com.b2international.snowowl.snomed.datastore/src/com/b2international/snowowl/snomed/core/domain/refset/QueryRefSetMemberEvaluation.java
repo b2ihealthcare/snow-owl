@@ -24,6 +24,13 @@ import java.util.Collection;
 public interface QueryRefSetMemberEvaluation extends Serializable {
 
 	/**
+	 * Returns the evaluated query refset member id.
+	 * 
+	 * @return
+	 */
+	String getMemberId();
+
+	/**
 	 * Returns the target reference set ID of the evaluated member.
 	 * 
 	 * @return
