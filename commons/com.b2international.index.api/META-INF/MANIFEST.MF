@@ -8,6 +8,7 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: com.b2international.commons;visibility:=reexport
 Export-Package: com.b2international.index,
  com.b2international.index.admin,
+ com.b2international.index.aggregations,
  com.b2international.index.mapping,
  com.b2international.index.query,
  com.b2international.index.query.slowlog,

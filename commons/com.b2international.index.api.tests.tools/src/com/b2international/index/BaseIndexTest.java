@@ -22,6 +22,8 @@ import java.util.UUID;
 import org.junit.After;
 import org.junit.Before;
 
+import com.b2international.index.aggregations.Aggregation;
+import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Query;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -102,6 +104,15 @@ public abstract class BaseIndexTest {
 	
 	protected final <T> Hits<T> search(final Query<T> query) {
 		return index().read(index -> index.search(query));
+	}
+	
+	protected final <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) {
+		return index().read(new IndexRead<Aggregation<T>>() {
+			@Override
+			public Aggregation<T> execute(Searcher index) throws IOException {
+				return index.aggregate(aggregation);
+			}
+		});
 	}
 	
 	protected final void deleteDocument(final Class<?> type, final String key) {

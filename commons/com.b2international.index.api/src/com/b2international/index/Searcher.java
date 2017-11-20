@@ -18,6 +18,8 @@ package com.b2international.index;
 import java.io.IOException;
 import java.util.Iterator;
 
+import com.b2international.index.aggregations.Aggregation;
+import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.query.Query;
 
 /**
@@ -50,6 +52,15 @@ public interface Searcher {
 	 * @param scrollId
 	 */
 	void cancelScroll(String scrollId);
+	
+	/**
+	 * Execute an aggregation among all stored documents.
+	 * 
+	 * @param aggregation
+	 * @return
+	 * @throws IOException
+	 */
+	<T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException;
 	
 	/**
 	 * Returns an {@link Iterable} to scroll through all matches of the given query. If the query does not specify scroll keep alive, then the

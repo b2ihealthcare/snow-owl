@@ -36,8 +36,14 @@ import com.google.common.collect.Maps;
 public class Fixtures {
 
 	@Doc
-	@Script(name="floatField", script="return doc.floatField.value", fields={"floatField"})
+	@Script(name=Data.Scripts.FIELD_SCORE, script="return doc.floatField.value", fields={"floatField"})
+	@Script(name=Data.Scripts.COMPOUND_VALUE, script="return doc.field1.value + '_' + doc.field2.value")
 	public static class Data {
+		
+		public static class Scripts {
+			public static final String COMPOUND_VALUE = "compoundValue";
+			public static final String FIELD_SCORE = "fieldScore";
+		}
 
 		@Text(analyzer=Analyzers.CASE_SENSITIVE)
 		@Keyword(alias="exact")

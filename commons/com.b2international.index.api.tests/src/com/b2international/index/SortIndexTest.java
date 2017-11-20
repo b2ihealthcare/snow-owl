@@ -334,7 +334,7 @@ public class SortIndexTest extends BaseIndexTest {
 		indexDocuments(documents);
 		
 		final Query<Data> descendingQuery = Query.select(Data.class)
-				.where(Expressions.scriptScore(Expressions.matchAll(), "floatField"))
+				.where(Expressions.scriptScore(Expressions.matchAll(), Data.Scripts.FIELD_SCORE))
 				.limit(NUM_DOCS)
 				.sortBy(SortBy.SCORE)
 				.build();
@@ -342,7 +342,7 @@ public class SortIndexTest extends BaseIndexTest {
 		checkDocumentOrder(descendingQuery, data -> data.getField1(), ImmutableSet.copyOf(orderedItems), String.class);
 		
 		final Query<Data> ascendingQuery = Query.select(Data.class)
-				.where(Expressions.scriptScore(Expressions.matchAll(), "floatField"))
+				.where(Expressions.scriptScore(Expressions.matchAll(), Data.Scripts.FIELD_SCORE))
 				.limit(NUM_DOCS)
 				.sortBy(SortBy.field(SortBy.FIELD_SCORE, Order.ASC))
 				.build();
