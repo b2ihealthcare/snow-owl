@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.review;
+package com.b2international.snowowl.datastore.review;
 
-import com.b2international.snowowl.datastore.review.BranchState;
-import com.b2international.snowowl.datastore.review.ReviewStatus;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.2
  */
-public abstract class ReviewImplMixin {
+public abstract class ReviewMixin {
 
     @JsonCreator
-    private ReviewImplMixin(@JsonProperty("id") final String id, 
-    		@JsonProperty("source") final BranchStateImpl source, 
-    		@JsonProperty("target") final BranchStateImpl target, 
+    private ReviewMixin(@JsonProperty("id") final String id, 
+    		@JsonProperty("source") final BranchState source, 
+    		@JsonProperty("target") final BranchState target, 
     		@JsonProperty("status") final ReviewStatus status, 
     		@JsonProperty("lastUpdated") final String lastUpdated) {
         // Empty constructor body for mixin

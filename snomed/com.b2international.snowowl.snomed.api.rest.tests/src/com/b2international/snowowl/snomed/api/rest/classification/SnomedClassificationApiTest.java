@@ -61,12 +61,12 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 	private static final ObjectMapper MAPPER = getObjectMapper();
 
 	private static ObjectMapper getObjectMapper() {
-		ObjectMapper objectMapper = new ObjectMapper();
+		ObjectMapper mapper = new ObjectMapper();
 		SimpleModule module = new SimpleModule("classification", Version.unknownVersion());
 		module.addAbstractTypeMapping(IRelationshipChange.class, RelationshipChange.class);
 		module.addAbstractTypeMapping(IRelationshipChangeList.class, RelationshipChangeList.class);
-		objectMapper.registerModule(module);
-		return objectMapper;
+		mapper.registerModule(module);
+		return mapper;
 	}
 
 	private static int getPersistedInferredRelationshipCount(IBranchPath conceptPath, String conceptId) {

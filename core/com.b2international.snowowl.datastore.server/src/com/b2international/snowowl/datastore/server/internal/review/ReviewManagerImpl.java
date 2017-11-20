@@ -123,7 +123,7 @@ public class ReviewManagerImpl implements ReviewManager {
 				store.write(new IndexWrite<Void>() {
 					@Override
 					public Void execute(Writer index) throws IOException {
-						final Hits<ReviewImpl> affectedReviews = index.searcher().search(Query.select(ReviewImpl.class)
+						final Hits<Review> affectedReviews = index.searcher().search(Query.select(Review.class)
 								.where(Expressions.builder()
 										.should(buildQuery(ReviewStatus.FAILED, now - keepOtherMillis))
 										.should(buildQuery(ReviewStatus.STALE, now - keepOtherMillis))
@@ -141,7 +141,7 @@ public class ReviewManagerImpl implements ReviewManager {
 							}
 						
 							index.removeAll(ImmutableMap.of(
-									ReviewImpl.class, ids,
+									Review.class, ids,
 									ConceptChanges.class, ids
 									));
 							
@@ -158,8 +158,8 @@ public class ReviewManagerImpl implements ReviewManager {
 
 		private Expression buildQuery(ReviewStatus status, long beforeTimestamp) {
 			return Expressions.builder()
-					.filter(Expressions.exactMatch(ReviewImpl.Fields.STATUS, status.toString()))
-					.filter(Expressions.matchRange(ReviewImpl.Fields.LAST_UPDATED, null, ISO8601Utils.format(new Date(beforeTimestamp))))
+					.filter(Expressions.exactMatch(Review.Fields.STATUS, status.toString()))
+					.filter(Expressions.matchRange(Review.Fields.LAST_UPDATED, null, ISO8601Utils.format(new Date(beforeTimestamp))))
 					.build();
 		}
 	}
@@ -218,8 +218,8 @@ public class ReviewManagerImpl implements ReviewManager {
 		store.write(new IndexWrite<Void>() {
 			@Override
 			public Void execute(Writer index) throws IOException {
-				final Hits<ReviewImpl> affectedReviews = index.searcher().search(
-						Query.select(ReviewImpl.class)
+				final Hits<Review> affectedReviews = index.searcher().search(
+						Query.select(Review.class)
 						.where(Expressions.builder()
 								.should(Expressions.nestedMatch("source", Expressions.exactMatch("path", path)))
 								.should(Expressions.nestedMatch("target", Expressions.exactMatch("path", path)))
@@ -229,8 +229,8 @@ public class ReviewManagerImpl implements ReviewManager {
 						.build());
 				
 				if (affectedReviews.getTotal() > 0) {
-					for (final ReviewImpl affectedReview : affectedReviews) {
-						ReviewImpl newReview = updateStatus(affectedReview, ReviewStatus.STALE);
+					for (final Review affectedReview : affectedReviews) {
+						Review newReview = updateStatus(affectedReview, ReviewStatus.STALE);
 						if (newReview != null) {
 							index.put(newReview.id(), newReview);
 						}
@@ -258,8 +258,7 @@ public class ReviewManagerImpl implements ReviewManager {
 		final String reviewId = UUID.randomUUID().toString();
 		final CreateReviewJob compareJob = new CreateReviewJob(reviewId, revisionIndex, branchAsBase, branchToCompare);
 
-		final ReviewImpl review = ReviewImpl.builder(reviewId.toString(), source, target).build();
-		review.setReviewManager(this);
+		final Review review = Review.builder(reviewId.toString(), source, target).build();
 
 		putReview(review);
 
@@ -270,8 +269,8 @@ public class ReviewManagerImpl implements ReviewManager {
 
 	void updateReviewStatus(final String id, final ReviewStatus newReviewStatus) {
 		try {
-			final ReviewImpl oldReview = (ReviewImpl) getReview(id);
-			final ReviewImpl newReview = updateStatus(oldReview, newReviewStatus);
+			final Review oldReview = (Review) getReview(id);
+			final Review newReview = updateStatus(oldReview, newReviewStatus);
 			if (newReview != null) {
 				putReview(newReview);
 			}
@@ -280,9 +279,9 @@ public class ReviewManagerImpl implements ReviewManager {
 		}
 	}
 
-	private ReviewImpl updateStatus(ReviewImpl current, ReviewStatus newStatus) {
+	private Review updateStatus(Review current, ReviewStatus newStatus) {
 		if (!ReviewStatus.STALE.equals(current.status())) {
-			return ReviewImpl.builder(current)
+			return Review.builder(current)
 					.status(newStatus)
 					.refreshLastUpdated()
 					.build();
@@ -292,7 +291,7 @@ public class ReviewManagerImpl implements ReviewManager {
 		}
 	}
 
-	private void putReview(final ReviewImpl newReview) {
+	private void putReview(final Review newReview) {
 		store.write(new IndexWrite<Void>() {
 			@Override
 			public Void execute(Writer index) throws IOException {
@@ -398,14 +397,13 @@ public class ReviewManagerImpl implements ReviewManager {
 		final Review review= store.read(new IndexRead<Review>() {
 			@Override
 			public Review execute(DocSearcher index) throws IOException {
-				return index.get(ReviewImpl.class, id);
+				return index.get(Review.class, id);
 			}
 		});
 
 		if (review == null) {
 			throw new NotFoundException(Review.class.getSimpleName(), id);
 		} else {
-			((ReviewImpl) review).setReviewManager(this);
 			return review;
 		}
 	}
@@ -426,15 +424,16 @@ public class ReviewManagerImpl implements ReviewManager {
 		}
 	}
 
-	Review deleteReview(final Review review) {
-		return store.write(new IndexWrite<Review>() {
+	@Override
+	public void delete(final String reviewId) {
+		store.write(new IndexWrite<Review>() {
 			@Override
 			public Review execute(Writer index) throws IOException {
 				index.removeAll(ImmutableMap.of(
-						ReviewImpl.class, Collections.singleton(review.id()),
-						ConceptChanges.class, Collections.singleton(review.id())));
+						Review.class, Collections.singleton(reviewId),
+						ConceptChanges.class, Collections.singleton(reviewId)));
 				index.commit();
-				return review;
+				return null;
 			}
 		});
 	}

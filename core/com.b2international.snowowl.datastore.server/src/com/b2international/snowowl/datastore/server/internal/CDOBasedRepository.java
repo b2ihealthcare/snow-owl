@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.internal;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -91,7 +92,6 @@ import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchMan
 import com.b2international.snowowl.datastore.server.internal.branch.CDOMainBranchImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.InternalCDOBasedBranch;
 import com.b2international.snowowl.datastore.server.internal.merge.MergeServiceImpl;
-import com.b2international.snowowl.datastore.server.internal.review.ReviewImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewManagerImpl;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -235,12 +235,11 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 	}
 
 	private void initIndex(final ObjectMapper mapper) {
-		final Collection<Class<?>> types = newHashSet();
+		final Collection<Class<?>> types = newArrayList();
 		types.add(CDOMainBranchImpl.class);
 		types.add(CDOBranchImpl.class);
 		types.add(InternalBranch.class);
 		types.add(Review.class);
-		types.add(ReviewImpl.class);
 		types.add(ConceptChanges.class);
 		types.add(CodeSystemEntry.class);
 		types.add(CodeSystemVersionEntry.class);

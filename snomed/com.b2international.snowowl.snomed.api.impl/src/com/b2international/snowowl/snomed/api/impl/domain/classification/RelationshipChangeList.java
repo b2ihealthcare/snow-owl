@@ -54,7 +54,7 @@ public class RelationshipChangeList implements IRelationshipChangeList {
 	}
 
 	@Override
-	public int getOffSet() {
+	public int getOffset() {
 		return offset;
 	}
 	

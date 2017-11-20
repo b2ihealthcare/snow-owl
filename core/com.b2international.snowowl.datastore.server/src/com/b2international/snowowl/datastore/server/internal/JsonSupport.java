@@ -20,6 +20,8 @@ import com.b2international.snowowl.core.MetadataHolder;
 import com.b2international.snowowl.core.MetadataHolderMixin;
 import com.b2international.snowowl.core.MetadataMixin;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
+import com.b2international.snowowl.datastore.review.Review;
+import com.b2international.snowowl.datastore.review.ReviewMixin;
 import com.b2international.snowowl.datastore.server.internal.branch.BranchImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.BranchImplMixin;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchImpl;
@@ -29,10 +31,6 @@ import com.b2international.snowowl.datastore.server.internal.branch.CDOMainBranc
 import com.b2international.snowowl.datastore.server.internal.branch.InternalBranchMixin;
 import com.b2international.snowowl.datastore.server.internal.branch.MainBranchImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.MainBranchImplMixin;
-import com.b2international.snowowl.datastore.server.internal.review.BranchStateImpl;
-import com.b2international.snowowl.datastore.server.internal.review.BranchStateImplMixin;
-import com.b2international.snowowl.datastore.server.internal.review.ReviewImpl;
-import com.b2international.snowowl.datastore.server.internal.review.ReviewImplMixin;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -55,8 +53,7 @@ public class JsonSupport {
 		mapper.addMixIn(CDOBranchImpl.class, CDOBranchImplMixin.class);
 		mapper.addMixIn(CDOMainBranchImpl.class, CDOMainBranchImplMixin.class);
 		
-		mapper.addMixIn(ReviewImpl.class, ReviewImplMixin.class);
-		mapper.addMixIn(BranchStateImpl.class, BranchStateImplMixin.class);
+		mapper.addMixIn(Review.class, ReviewMixin.class);
 		return mapper;
 	}
 	

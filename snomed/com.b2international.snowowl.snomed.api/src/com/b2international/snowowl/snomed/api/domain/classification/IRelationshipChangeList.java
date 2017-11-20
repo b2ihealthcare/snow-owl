@@ -47,5 +47,5 @@ public interface IRelationshipChangeList {
 	 * Returns the offset of this collection-like resource
 	 * @return
 	 */
-	int getOffSet();
+	int getOffset();
 }

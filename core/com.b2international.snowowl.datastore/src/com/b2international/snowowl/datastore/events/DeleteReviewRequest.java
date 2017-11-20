@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.events;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 
 /**
@@ -24,15 +23,16 @@ import com.b2international.snowowl.datastore.review.ReviewManager;
  * 
  * @since 4.2
  */
-public final class DeleteReviewRequest extends ReviewRequest<Review> {
+public final class DeleteReviewRequest extends ReviewRequest<Boolean> {
 
 	public DeleteReviewRequest(final String reviewId) {
 		super(reviewId);
 	}
 	
 	@Override
-	public Review execute(RepositoryContext context) {
-		return context.service(ReviewManager.class).getReview(getReviewId()).delete();
+	public Boolean execute(RepositoryContext context) {
+		context.service(ReviewManager.class).delete(getReviewId());
+		return Boolean.TRUE;
 	}
 	
 }
