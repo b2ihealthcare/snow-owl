@@ -56,6 +56,8 @@ public class DefaultNamespaceAndModuleAssigner implements NamespaceAndModuleAssi
 
 	@Override
 	public void allocateRelationshipIdsAndModules(Multiset<String> conceptIds, final SnomedEditingContext editingContext) {
+		if (conceptIds.isEmpty()) return;
+		
 		ISnomedIdentifierService identifierService = getServiceForClass(ISnomedIdentifierService.class);
 		String defaultNamespace = editingContext.getDefaultNamespace();
 		Collection<String> reservedIds = identifierService.reserve(defaultNamespace, ComponentCategory.RELATIONSHIP, conceptIds.size());

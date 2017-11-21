@@ -127,7 +127,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	@Override
 	public Set<String> reserve(final String namespace, final ComponentCategory category, final int quantity) {
 		checkNotNull(category, "Component category must not be null.");
-		checkArgument(quantity > 0, "Number of requested IDs should be non-negative.");
+		checkArgument(quantity > 0, "Number of requested IDs should be greater than zero.");
 		checkCategory(category);
 
 		LOGGER.debug("Reserving {} component IDs for category {}.", quantity, category.getDisplayName());
