@@ -250,7 +250,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 				.from(revisionType)
 				.fields(DocumentMapping._ID)
 				.where(purgeQuery.build())
-				.scroll()
+				.scroll("10m") 
 				.limit(PURGE_LIMIT)
 				.build();
 			

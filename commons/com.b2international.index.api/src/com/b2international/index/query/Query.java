@@ -67,7 +67,7 @@ public final class Query<T> {
 		
 		/**
 		 * A keep alive time value to pass to the query. This will keep the context of the search alive until the specified time value to scroll the
-		 * results in subsequent {@link Searcher#scroll(String)} calls. 
+		 * results in subsequent {@link Searcher#scroll(com.b2international.index.Scroll)} calls. 
 		 * <br/ >
 		 * Example values are <code>15s</code>, <code>1m</code>, <code>1h</code>.
 		 * 
