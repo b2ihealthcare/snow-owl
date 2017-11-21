@@ -86,23 +86,12 @@
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>default-test</id>
-						<phase>integration-test</phase>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<configuration>
-							<includes>
-								<include>**/AllSnomedApiTests.java</include>
-							</includes>
-						</configuration>
-					</execution>
-				</executions>
 				<configuration>
 					<useUIThread>false</useUIThread>
 					<argLine>-Xms512m -Xmx2g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090</argLine>
+					<includes>
+						<include>**/AllSnomedApiTests.java</include>
+					</includes>
 					<bundleStartLevel>
 						<bundle>
 							<id>org.eclipse.jetty.osgi.boot</id>

@@ -375,9 +375,6 @@
 						<includes>
 							<include>**/*Tests.java</include>
 						</includes>
-						<!-- Kill test JVM if tests take more than 10 minutes (600 seconds)
-							to finish -->
-						<forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
 					</configuration>
 				</plugin>
 				<plugin>
