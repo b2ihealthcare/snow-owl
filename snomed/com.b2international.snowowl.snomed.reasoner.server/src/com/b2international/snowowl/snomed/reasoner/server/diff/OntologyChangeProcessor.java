@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.reasoner.server.diff;
 
 import java.io.Serializable;
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.TreeSet;
 
@@ -33,10 +32,9 @@ import com.google.common.collect.Sets;
  * element is encountered.
  * 
  * @param <T> the change subject's type
- * 
  */
 public abstract class OntologyChangeProcessor<T extends Serializable> {
-
+	
 	public void apply(final long conceptId, final Collection<T> oldCollection, final Collection<T> newCollection, final Ordering<T> ordering) {
 		apply(conceptId, oldCollection, newCollection, ordering, null);
 	}
@@ -59,56 +57,31 @@ public abstract class OntologyChangeProcessor<T extends Serializable> {
 			final int idx = ordering.binarySearch(sortedNew, oldSubject);
 			
 			if (idx < 0 || !uniqueOlds.add(oldSubject)) {
-				handleRemovedSubject(conceptId, oldSubject);
+				handleRemovedSubject(String.valueOf(conceptId), oldSubject);
 			}
 			
 			subMonitor.worked(1);
 		}
 		
-		for (final T newMini : sortedNew) {
+		for (final T newSubject : sortedNew) {
 
 			if (subMonitor.isCanceled()) {
 				throw new OperationCanceledException();
 			}
 			
-			if (ordering.binarySearch(sortedOld, newMini) < 0) {
-				handleAddedSubject(conceptId, newMini);
-			}
-			
-			subMonitor.worked(1);
-		}
-	}
-	
-	public void apply(final Collection<OntologyChange<T>> changes, final IProgressMonitor monitor) {
-		
-		if (changes == null || changes.isEmpty()) {
-			return;
-		}
-		
-		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Processing changes...", changes.size());
-		
-		for (final OntologyChange<T> change : changes) {
-			final long conceptId = change.getConceptId();
-			switch (change.getNature()) {
-				case ADD:
-					handleAddedSubject(conceptId, change.getSubject());
-					break;
-				case REMOVE:
-					handleRemovedSubject(conceptId, change.getSubject());
-					break;
-				default:
-					throw new IllegalStateException(MessageFormat.format("Unexpected change nature {0}.", change.getNature()));
+			if (ordering.binarySearch(sortedOld, newSubject) < 0) {
+				handleAddedSubject(String.valueOf(conceptId), newSubject);
 			}
 			
 			subMonitor.worked(1);
 		}
 	}
 
-	protected void handleRemovedSubject(final long conceptId, final T removedSubject) {
+	protected void handleRemovedSubject(final String conceptId, final T removedSubject) {
 		// Subclasses should override		
 	}
 
-	protected void handleAddedSubject(final long conceptId, final T addedSubject) {
+	protected void handleAddedSubject(final String conceptId, final T addedSubject) {
 		// Subclasses should override
 	}
 }

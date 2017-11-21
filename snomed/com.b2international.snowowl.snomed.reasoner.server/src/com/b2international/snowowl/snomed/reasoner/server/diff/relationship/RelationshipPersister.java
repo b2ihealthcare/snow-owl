@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,72 +15,53 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server.diff.relationship;
 
-import java.util.Collection;
-
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Nature;
-import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
-import com.google.common.collect.Sets;
 
 /**
  * Applies changes related to relationships using the specified SNOMED CT editing context.
  */
-public class RelationshipPersister extends OntologyChangeProcessor<StatementFragment> {
+public class RelationshipPersister {
 
 	private final Concept inferredRelationshipConcept;
 	private final Concept existentialRelationshipConcept;
 	private final Concept universalRelationshipConcept;
+	
 	private final SnomedEditingContext context;
-	private final Nature nature;
+	private final NamespaceAndModuleAssigner namespaceAndModuleAssigner;
 	
-	private final Collection<String> relationshipIds = Sets.newHashSet();
-	
-	public RelationshipPersister(final SnomedEditingContext context, final Nature nature) {
+	public RelationshipPersister(final SnomedEditingContext context, final NamespaceAndModuleAssigner namespaceAndModuleAssigner) {
 		this.context = context;
-		this.nature = nature;
+		this.namespaceAndModuleAssigner = namespaceAndModuleAssigner;
+
 		this.inferredRelationshipConcept = context.lookup(Concepts.INFERRED_RELATIONSHIP, Concept.class);
 		this.existentialRelationshipConcept = context.lookup(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER, Concept.class);
 		this.universalRelationshipConcept = context.lookup(Concepts.UNIVERSAL_RESTRICTION_MODIFIER, Concept.class);
 	}
-
-	@Override
-	protected void handleRemovedSubject(final long conceptId, final StatementFragment removedEntry) {
-
-		if (!Nature.REMOVE.equals(nature)) {
-			return;
-		}
-		
+	
+	public void handleRemovedSubject(final String conceptId, final StatementFragment removedEntry) {
 		final Relationship relationship = (Relationship) context.lookup(removedEntry.getStorageKey());
 		SnomedModelExtensions.removeOrDeactivate(relationship);
 	}
 	
-	@Override
-	protected void handleAddedSubject(final long conceptId, final StatementFragment addedEntry) {
-
-		if (!Nature.ADD.equals(nature)) {
-			return;
-		}
-
-		final String sourceConceptId = Long.toString(conceptId);
-		final Concept sourceConcept = context.lookup(sourceConceptId, Concept.class);
-		final String namespace = SnomedIdentifiers.create(sourceConceptId).getNamespace();
-		final Concept module = sourceConcept.getModule();
-		
+	public void handleAddedSubject(final String conceptId, final StatementFragment addedEntry) {
+		final Concept sourceConcept = context.lookup(conceptId, Concept.class);
 		final Concept typeConcept = context.lookup(Long.toString(addedEntry.getTypeId()), Concept.class);
 		final Concept destinationConcept = context.lookup(Long.toString(addedEntry.getDestinationId()), Concept.class);
 		
-		final Relationship newRel = context.buildEmptyRelationship(namespace);
+		final String relationshipId = namespaceAndModuleAssigner.getRelationshipId(conceptId);
+		final Concept moduleConcept = namespaceAndModuleAssigner.getRelationshipModule(conceptId);
 		
-		relationshipIds.add(newRel.getId());
-
+		final Relationship newRel = SnomedFactory.eINSTANCE.createRelationship();
+		newRel.setId(relationshipId);
 		newRel.setType(typeConcept);
 		newRel.setActive(true);
 		newRel.setCharacteristicType(inferredRelationshipConcept);
@@ -90,7 +71,7 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 		newRel.setGroup(addedEntry.getGroup());
 		newRel.setUnionGroup(addedEntry.getUnionGroup());
 		newRel.setModifier(addedEntry.isUniversal() ? universalRelationshipConcept : existentialRelationshipConcept);
-		newRel.setModule(module);
+		newRel.setModule(moduleConcept);
 		
 		if (addedEntry.getStatementId() != -1L) {
 			final Relationship originalRel = context.lookup(Long.toString(addedEntry.getStatementId()), Relationship.class);
@@ -109,15 +90,11 @@ public class RelationshipPersister extends OntologyChangeProcessor<StatementFrag
 						originalMember.getSerializedValue(), 
 						Concepts.INFERRED_RELATIONSHIP, 
 						originalMember.getLabel(), 
-						module.getId(), 
+						moduleConcept.getId(), 
 						concreteDataTypeRefSet);
 				
 				newRel.getConcreteDomainRefSetMembers().add(refSetMember);
 			}
 		}
-	}
-	
-	public Collection<String> getRelationshipIds() {
-		return relationshipIds;
 	}
 }

@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
+import com.b2international.commons.platform.Extensions;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
@@ -75,6 +76,7 @@ import com.b2international.snowowl.snomed.reasoner.classification.entry.Relation
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.model.LongConcepts;
 import com.b2international.snowowl.snomed.reasoner.preferences.IReasonerPreferencesService;
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
@@ -88,6 +90,8 @@ import com.google.common.collect.ImmutableList;
  * Manages reasoners that operate on the OWL representation of a SNOMED&nbsp;CT repository branch path. 
  */
 public class SnomedReasonerServerService extends CollectingService<Reasoner, ClassificationSettings> implements SnomedReasonerService, IDisposableService {
+
+	private static final String NAMESPACE_ASSIGNER_EXTENSION = "com.b2international.snowowl.snomed.reasoner.server.namespaceAssigner";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedReasonerServerService.class);
 	
@@ -151,11 +155,16 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	};
 	
 	private final Cache<String, ReasonerTaxonomy> taxonomyResultRegistry;
+	private final NamespaceAndModuleAssigner namespaceAndModuleAssigner;
 	
 	public SnomedReasonerServerService(int maximumReasonerCount, int maximumTaxonomiesToKeep) {
 		super(maximumReasonerCount);
+
 		this.taxonomyResultRegistry = CacheBuilder.newBuilder().maximumSize(maximumTaxonomiesToKeep).build();
-		LOGGER.info("Initialized SNOMED CT reasoner server with maximum of {} reasoner(s) instances and {} saveable taxonomies to keep.", maximumReasonerCount, maximumTaxonomiesToKeep);
+		this.namespaceAndModuleAssigner = checkNotNull(getNamespaceModuleAssigner(), "Could not find a namespace and module allocator in the extension registry");
+		
+		LOGGER.info("Initialized SNOMED CT reasoner server with maximum of {} reasoner(s) instances and {} result(s) to keep.", maximumReasonerCount, maximumTaxonomiesToKeep);
+		LOGGER.info("Reasoner service will use the {} class for relationship/concrete domain namespace and module assignement.", namespaceAndModuleAssigner.getClass().getSimpleName());
 	}
 
 	public void registerListeners() {
@@ -184,6 +193,10 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	
 	private static IEventBus getEventBus() {
 		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
+
+	private static NamespaceAndModuleAssigner getNamespaceModuleAssigner() {
+		return Extensions.getFirstPriorityExtension(NAMESPACE_ASSIGNER_EXTENSION, NamespaceAndModuleAssigner.class);
 	}
 
 	private void setStale(IBranchPath branchPath) {
@@ -265,17 +278,18 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		
 		ImmutableList.Builder<RelationshipChangeEntry> relationshipBuilder = ImmutableList.builder();
 		ImmutableList.Builder<IConcreteDomainChangeEntry> concreteDomainBuilder = ImmutableList.builder();
-	
 		Map<Long, ChangeConcept> changeConceptCache = newHashMap();
-		new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder).collectNormalFormChanges(null, new OntologyChangeProcessor<StatementFragment>() {
+				
+		new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder)
+			.collectNormalFormChanges(null, new OntologyChangeProcessor<StatementFragment>() {
 			@Override 
-			protected void handleAddedSubject(long conceptId, StatementFragment addedSubject) {
-				registerEntry(conceptId, addedSubject, Nature.INFERRED);
+			protected void handleAddedSubject(final String conceptId, final StatementFragment addedSubject) {
+				registerEntry(Long.valueOf(conceptId), addedSubject, Nature.INFERRED);
 			}
 			
 			@Override 
-			protected void handleRemovedSubject(long conceptId, StatementFragment removedSubject) {
-				registerEntry(conceptId, removedSubject, Nature.REDUNDANT);
+			protected void handleRemovedSubject(final String conceptId, final StatementFragment removedSubject) {
+				registerEntry(Long.valueOf(conceptId), removedSubject, Nature.REDUNDANT);
 			}
 	
 			private void registerEntry(long conceptId, StatementFragment subject, Nature changeNature) {
@@ -324,15 +338,16 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 			}
 		});
 		
-		new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder).collectNormalFormChanges(null, new OntologyChangeProcessor<ConcreteDomainFragment>() {
+		new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder)
+			.collectNormalFormChanges(null, new OntologyChangeProcessor<ConcreteDomainFragment>() {
 			@Override 
-			protected void handleAddedSubject(long conceptId, ConcreteDomainFragment addedSubject) {
-				registerEntry(conceptId, addedSubject, Nature.INFERRED);
+			protected void handleAddedSubject(final String conceptId, final ConcreteDomainFragment addedSubject) {
+				registerEntry(Long.valueOf(conceptId), addedSubject, Nature.INFERRED);
 			}
 			
 			@Override 
-			protected void handleRemovedSubject(long conceptId, ConcreteDomainFragment removedSubject) {
-				registerEntry(conceptId, removedSubject, Nature.REDUNDANT);
+			protected void handleRemovedSubject(final String conceptId, final ConcreteDomainFragment removedSubject) {
+				registerEntry(Long.valueOf(conceptId), removedSubject, Nature.REDUNDANT);
 			}
 	
 			private void registerEntry(long conceptId, ConcreteDomainFragment subject, Nature changeNature) {
@@ -458,6 +473,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 				.setClassificationId(classificationId)
 				.setTaxonomy(taxonomy)
 				.setUserId(userId)
+				.setNamespaceAndModuleAssigner(namespaceAndModuleAssigner)
 				.buildAsync()
 				.execute(getEventBus())
 				.getSync();

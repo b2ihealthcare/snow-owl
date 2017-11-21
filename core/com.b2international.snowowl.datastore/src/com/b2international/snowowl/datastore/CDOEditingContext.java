@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
@@ -117,7 +118,8 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	}
 	
 	public final String getBranch() {
-		return BranchPathUtils.createPath(getTransaction()).getPath();
+		final CDOBranch cdoBranch = CDOUtils.check(getTransaction()).getBranch();
+		return cdoBranch.getPathName();
 	}
 	
 	public final <T extends CDOObject> Iterable<T> getNewObjects(Class<T> type) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,40 +16,35 @@
 package com.b2international.snowowl.snomed.reasoner.server.diff;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
 
-import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Nature;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * A change processor that collects a list of changes.
- * 
  *
  * @param <T> the change subject's type
  */
 public class OntologyChangeRecorder<T extends Serializable> extends OntologyChangeProcessor<T> {
 	
-	public static <T extends Serializable> OntologyChangeRecorder<T> create(final List<OntologyChange<T>> changes) {
-		return new OntologyChangeRecorder<T>(changes);
-	}
-	
-	private final List<OntologyChange<T>> changes;
-	
-	public OntologyChangeRecorder(final List<OntologyChange<T>> changes) {
-		this.changes = changes;
-	}
+	private final Multimap<String, T> addedSubjects = ArrayListMultimap.create();
+	private final Multimap<String, T> removedSubjects = ArrayListMultimap.create();
 
 	@Override
-	protected void handleAddedSubject(final long conceptId, final T addedSubject) {
-		changes.add(new OntologyChange<T>(Nature.ADD, conceptId, addedSubject));
+	protected void handleAddedSubject(final String conceptId, final T addedSubject) {
+		addedSubjects.put(conceptId, addedSubject);
 	}
 	
 	@Override
-	protected void handleRemovedSubject(final long conceptId, final T removedSubject) {
-		changes.add(new OntologyChange<T>(Nature.REMOVE, conceptId, removedSubject));
+	protected void handleRemovedSubject(final String conceptId, final T removedSubject) {
+		removedSubjects.put(conceptId, removedSubject);
 	}
 	
-	public void finish() {
-		Collections.sort(changes, OntologyChangeOrdering.INSTANCE);
+	public Multimap<String, T> getAddedSubjects() {
+		return addedSubjects;
+	}
+	
+	public Multimap<String, T> getRemovedSubjects() {
+		return removedSubjects;
 	}
 }

@@ -34,12 +34,17 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -365,6 +370,30 @@ public final class FileUtils {
 			if (entry.getName().equals(fileName)) {
 				occuranceCollectorSet.add(entry);
 			}
+		}
+	}
+	
+	
+	/**
+	 * Returns a file path from the given directory that matches the path matcher expression.
+	 * It is expected to have a single file in the directory that matches the expression.
+	 * @param directory to find the file within
+	 * @param path matcher expression
+	 * @return path for the matched file.
+	 */
+	public static Path getFileFromWorkFolder(String workDir, String pathMatcherExpression) throws IOException {
+		
+		Path workDirPath = Paths.get(workDir);
+		final PathMatcher filter = workDirPath.getFileSystem().getPathMatcher("glob:**/" + pathMatcherExpression);
+		
+		try (final Stream<Path> stream = java.nio.file.Files.list(workDirPath)) {
+			Set<Path> filesFromWorkFolder = stream.filter(filter::matches).collect(Collectors.toSet());
+			if (filesFromWorkFolder.isEmpty()) {
+				throw new RuntimeException("Could not find file in the work folder " +workDir + " for the path expression: " + pathMatcherExpression);
+			} else if (filesFromWorkFolder.size() > 1) {
+				throw new RuntimeException("Found more than one file in work folder for the path expression: " + pathMatcherExpression);
+			}
+			return filesFromWorkFolder.iterator().next();
 		}
 	}
 }

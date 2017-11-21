@@ -27,14 +27,40 @@ public interface SnomedIdentifier extends Serializable {
 
 	public long getItemId();
 
+	/**
+	 * Returns the namespace identifier of this SCTID.
+	 * 
+	 * @return the namespace identifier or <code>null</code> if this SCTID is a short format ID
+	 * @see <a href="https://confluence.ihtsdotools.org/display/DOCGLOSS/Namespace+identifier">SNOMED Glossary: Namespace identifier</a>
+	 */
 	public String getNamespace();
+	
+	/**
+	 * Returns <code>true</code> if the identifiers namespace matches the specified
+	 * namespace, <code>false</code> otherwise.
+	 * 
+	 * @param namespace the namespace to match (can be <code>null</code>)
+	 * @return <code>true</code> if the SCTID's namespace matches the specified value
+	 */
+	public boolean equalsNamespace(String namespace);
+
+	/**
+	 * Returns <code>true</code> if this SCTID has a namespace identifier,
+	 * <code>false</code> otherwise. Short format IDs do not have namespaces.
+	 * 
+	 * @return <code>true</code> for long format SCTIDs, <code>false</code> for short format SCTIDs
+	 */
+	public boolean hasNamespace();
 
 	/** 
 	 * The first digit of the partition identifier. Possible values are:
 	 * <ul>
 	 * <li>0 &rarr; short format (component originated in the INT release) 
-	 * <li>1 &rarr; long format (component ID has a namespace and orginated in an extension). All other values are reserved for
-	 * future use.
+	 * <li>1 &rarr; long format (component ID has a namespace and orginated in an extension).
+	 * </ul>
+	 * All other values are reserved for future use.
+	 * 
+	 * @return the format identifier digit
 	 */
 	public int getFormatIdentifier();
 
@@ -46,10 +72,31 @@ public interface SnomedIdentifier extends Serializable {
 	 * <li>2 &rarr; Relationship
 	 * </ul>
 	 * All other values a reserved for future use.
+	 * 
+	 * @return the component identifier digit
 	 */
 	public int getComponentIdentifier();
 
+	/**
+	 * Returns the last (check) digit of this SCTID, which can be used to verify the
+	 * identifier. Note that this is the value that originally came with the
+	 * instance; it is not recomputed here.
+	 * 
+	 * @return the check digit, as entered at creation time
+	 * @see <a href="https://confluence.ihtsdotools.org/display/DOCGLOSS/Check-digit">SNOMED Glossary: Check-digit</a>
+	 */
 	public int getCheckDigit();
 
+	/**
+	 * Returns the category of the component this SCTID identifiers. The value is
+	 * derived from the second digit of the partition identifier:
+	 * <ul>
+	 * <li>0 &rarr; {@link ComponentCategory#CONCEPT}
+	 * <li>1 &rarr; {@link ComponentCategory#DESCRIPTION}
+	 * <li>2 &rarr; {@link ComponentCategory#RELATIONSHIP}
+	 * </ul>
+	 * 
+	 * @return the category of the component identified by this SCTID
+	 */
 	public ComponentCategory getComponentCategory();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,49 +22,33 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChange.Nature;
-import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
+import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 
 /**
  * Applies changes related to concrete domain elements using the specified SNOMED CT editing context.
  */
-public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDomainFragment> {
+public class ConcreteDomainPersister {
 
-	private final SnomedRefSetEditingContext refSetEditingContext;
-	private final Concept moduleConcept;
-	private final Nature nature;
-	
-	public ConcreteDomainPersister(final SnomedEditingContext context, final Nature nature) {
-		this.nature = nature;
-		this.refSetEditingContext = context.getRefSetEditingContext();
-		this.moduleConcept = context.getDefaultModuleConcept();
+	private final SnomedRefSetEditingContext context;
+	private final NamespaceAndModuleAssigner namespaceAndModuleAssigner;
+
+	public ConcreteDomainPersister(final SnomedEditingContext context, NamespaceAndModuleAssigner namespaceAndModuleAssigner) {
+		this.context = context.getRefSetEditingContext();
+		this.namespaceAndModuleAssigner = namespaceAndModuleAssigner;
 	}
-
-	@Override
-	protected void handleRemovedSubject(final long conceptId, final ConcreteDomainFragment removedEntry) {
-		
-		if (!Nature.REMOVE.equals(nature)) {
-			return;
-		}
-		
-		final SnomedConcreteDataTypeRefSetMember existingMember = (SnomedConcreteDataTypeRefSetMember) refSetEditingContext.lookup(removedEntry.getStorageKey());
+	
+	public void handleRemovedSubject(final String conceptId, final ConcreteDomainFragment removedEntry) {
+		final SnomedConcreteDataTypeRefSetMember existingMember = (SnomedConcreteDataTypeRefSetMember) context.lookup(removedEntry.getStorageKey());
 		SnomedModelExtensions.removeOrDeactivate(existingMember);
 	}
 	
-	@Override
-	protected void handleAddedSubject(final long conceptId, final ConcreteDomainFragment addedEntry) {
-		
-		if (!Nature.ADD.equals(nature)) {
-			return;
-		}
-
-		final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet = refSetEditingContext.lookup(Long.toString(addedEntry.getRefSetId()), SnomedConcreteDataTypeRefSet.class);
-		
-		final String referencedComponentId = Long.toString(conceptId);
-		final SnomedConcreteDataTypeRefSetMember refSetMember = refSetEditingContext.createConcreteDataTypeRefSetMember(
-				referencedComponentId,
+	public void handleAddedSubject(final String conceptId, final ConcreteDomainFragment addedEntry) {
+		final Concept moduleConcept = namespaceAndModuleAssigner.getConcreteDomainModule(conceptId);
+		final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet = context.lookup(Long.toString(addedEntry.getRefSetId()), SnomedConcreteDataTypeRefSet.class);
+		final SnomedConcreteDataTypeRefSetMember refSetMember = context.createConcreteDataTypeRefSetMember(
+				conceptId,
 				nullIfUnset(addedEntry.getUomId()),
 				Concepts.CD_EQUAL,
 				SnomedRefSetUtil.deserializeValue(addedEntry.getDataType(), addedEntry.getValue()), 
@@ -73,7 +57,7 @@ public class ConcreteDomainPersister extends OntologyChangeProcessor<ConcreteDom
 				moduleConcept.getId(), 
 				concreteDataTypeRefSet);
 		
-		final Concept referencedComponent = refSetEditingContext.lookup(referencedComponentId, Concept.class);
+		final Concept referencedComponent = context.lookup(conceptId, Concept.class);
 		referencedComponent.getConcreteDomainRefSetMembers().add(refSetMember);
 	}
 
