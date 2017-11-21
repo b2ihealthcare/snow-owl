@@ -23,7 +23,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 /**
  * @since 4.5
  */
-public final class SnomedRefSetMemberChangeRequestBuilder extends BaseRequestBuilder<SnomedRefSetMemberChangeRequestBuilder, TransactionContext, Void> {
+public final class SnomedRefSetMemberChangeRequestBuilder extends BaseRequestBuilder<SnomedRefSetMemberChangeRequestBuilder, TransactionContext, Boolean> {
 
 	private final MemberChange change;
 	private final String moduleId;
@@ -36,7 +36,7 @@ public final class SnomedRefSetMemberChangeRequestBuilder extends BaseRequestBui
 	}
 	
 	@Override
-	public Request<TransactionContext, Void> doBuild() {
+	public Request<TransactionContext, Boolean> doBuild() {
 		switch (change.getChangeKind()) {
 		case ADD:
 			return SnomedRequests

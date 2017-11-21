@@ -38,14 +38,14 @@ public class Requests {
 		return (Request<C, R>) NOOP;
 	}
 	
-	public static <C extends ServiceProvider> Request<C, Void> noContent(final Request<C, ?> req) {
-		return new Request<C, Void>() {
+	public static <C extends ServiceProvider> Request<C, Boolean> noContent(final Request<C, ?> req) {
+		return new Request<C, Boolean>() {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public Void execute(C context) {
+			public Boolean execute(C context) {
 				req.execute(context);
-				return null;
+				return Boolean.TRUE;
 			}
 		};
 	}

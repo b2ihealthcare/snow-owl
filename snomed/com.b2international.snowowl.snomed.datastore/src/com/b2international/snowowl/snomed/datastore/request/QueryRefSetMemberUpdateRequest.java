@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEv
 /**
  * @since 4.5
  */
-public final class QueryRefSetMemberUpdateRequest implements Request<TransactionContext, Void> {
+public final class QueryRefSetMemberUpdateRequest implements Request<TransactionContext, Boolean> {
 
 	@NotEmpty
 	private final String memberId;
@@ -39,14 +39,14 @@ public final class QueryRefSetMemberUpdateRequest implements Request<Transaction
 	}
 
 	@Override
-	public Void execute(TransactionContext context) {
+	public Boolean execute(TransactionContext context) {
 		// evaluate query member
 		final QueryRefSetMemberEvaluation evaluation = SnomedRequests.prepareQueryRefSetMemberEvaluation(memberId).build().execute(context);
 		// apply all change as request on the target reference set
 		for (MemberChange change : evaluation.getChanges()) {
 			SnomedRequests.prepareMemberChangeRequest(change, moduleId, evaluation.getReferenceSetId()).build().execute(context);
 		}
-		return null;
+		return Boolean.TRUE;
 	}
 
 }

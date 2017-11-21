@@ -53,7 +53,7 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 		final String branchPath = codeSystem.extract().path("branchPath");
 		
 		// 1. create a version with a datelike versionId
-		Request<ServiceProvider, Void> v1Req = CodeSystemRequests.prepareNewCodeSystemVersion()
+		Request<ServiceProvider, Boolean> v1Req = CodeSystemRequests.prepareNewCodeSystemVersion()
 			.setCodeSystemShortName(codeSystemShortName)
 			// XXX use default format, ES will likely try to convert this to a date field, unless we disable it in the mapping
 			.setVersionId(Dates.formatByGmt(getNextAvailableEffectiveDate(codeSystemShortName), DateFormats.DEFAULT))
@@ -67,7 +67,7 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 			.then(this::waitDone)
 			.thenWith(unused -> {
 				// 2. create another version with a non-datelike versionId
-				Request<ServiceProvider, Void> v2Req = CodeSystemRequests.prepareNewCodeSystemVersion()
+				Request<ServiceProvider, Boolean> v2Req = CodeSystemRequests.prepareNewCodeSystemVersion()
 					.setCodeSystemShortName(codeSystemShortName)
 					.setVersionId("xx-" + Dates.formatByGmt(getNextAvailableEffectiveDate(codeSystemShortName), DateFormats.DEFAULT))
 					.setEffectiveTime(new Date())
@@ -82,7 +82,7 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 		// 3. second step either has failed with index exception or the job is not available via the remote job API thus it throws a NotFoundException on first get call
 	}
 
-	private Promise<String> scheduleJob(Request<ServiceProvider, Void> req, String description) {
+	private Promise<String> scheduleJob(Request<ServiceProvider, ?> req, String description) {
 		return JobRequests.prepareSchedule()
 			.setDescription(description)
 			.setUser("test")

@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 /**
  * @since 4.5
  */
-public final class QueryRefSetUpdateRequest implements Request<TransactionContext, Void> {
+public final class QueryRefSetUpdateRequest implements Request<TransactionContext, Boolean> {
 
 	@NotEmpty
 	private final String referenceSetId;
@@ -39,7 +39,7 @@ public final class QueryRefSetUpdateRequest implements Request<TransactionContex
 	}
 	
 	@Override
-	public Void execute(TransactionContext context) {
+	public Boolean execute(TransactionContext context) {
 		// GET all members of the reference set
 		final SnomedReferenceSetMembers members = SnomedRequests.prepareSearchMember().all().filterByRefSet(referenceSetId).build().execute(context);
 
@@ -47,7 +47,7 @@ public final class QueryRefSetUpdateRequest implements Request<TransactionContex
 		for (SnomedReferenceSetMember member : members.getItems()) {
 			SnomedRequests.prepareUpdateQueryRefSetMember().setMemberId(member.getId()).setModuleId(moduleId).build().execute(context);
 		}
-		return null;
+		return Boolean.TRUE;
 	}
 
 }

@@ -26,7 +26,7 @@ import com.b2international.snowowl.core.events.Request;
 /**
  * @since 5.7
  */
-public final class CodeSystemVersionCreateRequestBuilder extends BaseRequestBuilder<CodeSystemVersionCreateRequestBuilder, ServiceProvider, Void> {
+public final class CodeSystemVersionCreateRequestBuilder extends BaseRequestBuilder<CodeSystemVersionCreateRequestBuilder, ServiceProvider, Boolean> {
 
 	private String codeSystemShortName;
 	private String parentBranchPath;
@@ -76,7 +76,7 @@ public final class CodeSystemVersionCreateRequestBuilder extends BaseRequestBuil
 	}
 	
 	@Override
-	protected Request<ServiceProvider, Void> doBuild() {
+	protected Request<ServiceProvider, Boolean> doBuild() {
 		final CodeSystemVersionCreateRequest req = new CodeSystemVersionCreateRequest();
 		req.setCodeSystemShortName(codeSystemShortName);
 		req.setParentBranchPath(parentBranchPath);

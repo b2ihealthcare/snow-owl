@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 5.7
  */
-final class CancelJobRequest implements Request<ServiceProvider, Void> {
+final class CancelJobRequest implements Request<ServiceProvider, Boolean> {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -35,9 +35,9 @@ final class CancelJobRequest implements Request<ServiceProvider, Void> {
 	}
 
 	@Override
-	public Void execute(ServiceProvider context) {
+	public Boolean execute(ServiceProvider context) {
 		context.service(RemoteJobTracker.class).requestCancel(id);
-		return null;
+		return Boolean.TRUE;
 	}
 
 }

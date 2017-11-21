@@ -349,7 +349,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			final Concept concept, 
 			final Set<String> previousComponentIds,
 			final Iterable<U> currentComponents, 
-			final Function<String, Request<TransactionContext, Void>> toDeleteRequest) {
+			final Function<String, Request<TransactionContext, ?>> toDeleteRequest) {
 
 		// pre process all incoming components
 		currentComponents.forEach(component -> {

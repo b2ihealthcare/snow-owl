@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.events.Request;
 /**
  * @since 4.5
  */
-public final class QueryRefSetUpdateRequestBuilder extends BaseRequestBuilder<QueryRefSetUpdateRequestBuilder, TransactionContext, Void> {
+public final class QueryRefSetUpdateRequestBuilder extends BaseRequestBuilder<QueryRefSetUpdateRequestBuilder, TransactionContext, Boolean> {
 
 	private String referenceSetId;
 	private String moduleId;
@@ -44,7 +44,7 @@ public final class QueryRefSetUpdateRequestBuilder extends BaseRequestBuilder<Qu
 	}
 
 	@Override
-	protected Request<TransactionContext, Void> doBuild() {
+	protected Request<TransactionContext, Boolean> doBuild() {
 		return new QueryRefSetUpdateRequest(referenceSetId, moduleId);
 	}
 	
