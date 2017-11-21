@@ -164,7 +164,7 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 		assertEquals(data, getDocument(DataWithMap.class, KEY1));
 		
 		final Query<DataWithMap> query = Query.select(DataWithMap.class)
-				.where(Expressions.exactMatch("field1", "field1Value"))
+				.where(Expressions.exactMatch("field1", "field1value"))
 				.build();
 		
 		final Iterable<DataWithMap> matches = search(query);
