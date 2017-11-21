@@ -118,7 +118,7 @@ public class Extensions {
 				}
 			} catch (final CoreException e) {
 				throw new RuntimeException(String.format("Exception happened when creating element from %s bundle's extension: %s", element
-						.getContributor().getName(), extensionPoint));
+						.getContributor().getName(), extensionPoint), e);
 			}
 		}
 		return extensions;

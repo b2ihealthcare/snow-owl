@@ -55,10 +55,10 @@ public final class ClamlUtil {
 	 * @param builder
 	 */
 	public static StringBuilder appendUsageSymbol(String usageString, StringBuilder builder) {
-		if ("aster".equals(usageString)) {
+		if ("aster".equalsIgnoreCase(usageString)) {
 			builder.append('*');
-		} else if ("dagger".equals(usageString)) {
-			builder.append('+');
+		} else if ("dagger".equalsIgnoreCase(usageString)) {
+			builder.append('\u207A');
 		}
 		
 		return builder;

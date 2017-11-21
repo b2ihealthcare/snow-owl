@@ -22,12 +22,19 @@ import java.util.Collection;
  */
 public class QueryRefSetMemberEvaluationImpl implements QueryRefSetMemberEvaluation {
 
+	private final String memberId;
 	private final String referenceSetId;
 	private final Collection<MemberChange> changes;
 
-	public QueryRefSetMemberEvaluationImpl(String referenceSetId, Collection<MemberChange> changes) {
+	public QueryRefSetMemberEvaluationImpl(String memberId, String referenceSetId, Collection<MemberChange> changes) {
+		this.memberId = memberId;
 		this.referenceSetId = referenceSetId;
 		this.changes = changes;
+	}
+	
+	@Override
+	public String getMemberId() {
+		return memberId;
 	}
 	
 	@Override

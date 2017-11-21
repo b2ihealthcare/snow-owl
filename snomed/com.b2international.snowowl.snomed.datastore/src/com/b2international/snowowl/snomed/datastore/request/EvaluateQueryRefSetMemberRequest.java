@@ -153,7 +153,7 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 //		for (String id : conceptsToActivate.keySet()) {
 //			changes.add(new Diff(MemberChangeKind.ACTIVATE, id, conceptsToActivate.get(id)));
 //		}
-		return new QueryRefSetMemberEvaluationImpl(targetReferenceSet, changes);
+		return new QueryRefSetMemberEvaluationImpl(memberId, targetReferenceSet, changes);
 	}
 
 }
