@@ -305,9 +305,8 @@ public class EsDocumentSearcher implements DocSearcher {
 		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping);
 		final QueryBuilder esQuery = esQueryBuilder.build(aggregation.getQuery());
 		
-		final SearchRequestBuilder req = client.prepareSearch(admin.name())
+		final SearchRequestBuilder req = client.prepareSearch(admin.getTypeIndex(mapping))
 			.addAggregation(toEsAggregation(mapping, aggregation))
-			.setRouting(mapping.typeAsString())
 			.setTypes(mapping.typeAsString())
 			.setQuery(esQuery)
 			.setSize(0)
