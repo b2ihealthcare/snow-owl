@@ -250,9 +250,12 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 			.all()
 			.filterByActive(true)
 			.filterByTerm(term)
-			.filterByLanguageRefSets(getCollection(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET, String.class))
 			.setFields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 			.sortBy(SCORE);
+		
+		if (containsKey(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET)) {
+			requestBuilder.filterByLanguageRefSets(getCollection(SnomedDescriptionSearchRequest.OptionKey.LANGUAGE_REFSET, String.class));
+		}
 			
 		applyIdFilter(requestBuilder, (rb, ids) -> rb.filterByConceptId(ids));
 		
