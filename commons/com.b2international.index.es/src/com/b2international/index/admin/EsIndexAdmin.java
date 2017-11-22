@@ -87,12 +87,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 	@Override
 	public boolean exists() {
-		for (DocumentMapping mapping : mappings.getMappings()) {
-			if (!exists(mapping)) {
-				return false;
-			}
-		}
-		return true;
+		return client().admin().indices().prepareExists(getAllIndexes().toArray(new String[]{})).get().isExists();
 	}
 
 	private boolean exists(DocumentMapping mapping) {
@@ -101,33 +96,35 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 	@Override
 	public void create() {
-		// create number of indexes based on number of types
- 		for (DocumentMapping mapping : mappings.getMappings()) {
- 			if (exists(mapping)) {
- 				continue;
- 			}
- 			final String indexName = getTypeIndex(mapping);
-			final CreateIndexRequestBuilder req = client().admin().indices().prepareCreate(indexName);
-			final String type = mapping.typeAsString();
-			Map<String, Object> typeMapping = ImmutableMap.of(type,
-				ImmutableMap.builder()
-					.put("date_detection", "false")
-					.put("numeric_detection", "false")
-					.putAll(toProperties(mapping))
-					.build()
-			);
-			req.addMapping(type, typeMapping);
-			try {
-				final Map<String, Object> indexSettings = createSettings();
-				log.info("Configuring '{}' index with settings: {}", indexName, indexSettings);
-				req.setSettings(indexSettings);
-			} catch (IOException e) {
-				throw new IndexException("Couldn't prepare settings for index " + indexName, e);
-			}
-			CreateIndexResponse response = req.get();
-			checkState(response.isAcknowledged(), "Failed to create index '%s' for type '%s'", name, mapping.typeAsString());
- 		}
- 		
+		if (!exists()) {
+			// create number of indexes based on number of types
+	 		for (DocumentMapping mapping : mappings.getMappings()) {
+	 			if (exists(mapping)) {
+	 				continue;
+	 			}
+	 			final String indexName = getTypeIndex(mapping);
+				final CreateIndexRequestBuilder req = client().admin().indices().prepareCreate(indexName);
+				final String type = mapping.typeAsString();
+				Map<String, Object> typeMapping = ImmutableMap.of(type,
+					ImmutableMap.builder()
+						.put("date_detection", "false")
+						.put("numeric_detection", "false")
+						.putAll(toProperties(mapping))
+						.build()
+				);
+				req.addMapping(type, typeMapping);
+				try {
+					final Map<String, Object> indexSettings = createSettings();
+					log.info("Configuring '{}' index with settings: {}", indexName, indexSettings);
+					req.setSettings(indexSettings);
+				} catch (IOException e) {
+					throw new IndexException("Couldn't prepare settings for index " + indexName, e);
+				}
+				CreateIndexResponse response = req.get();
+				checkState(response.isAcknowledged(), "Failed to create index '%s' for type '%s'", name, mapping.typeAsString());
+	 		}
+		}
+		
  		// wait until the cluster processes each index create request
 		waitForYellowHealth(getAllIndexes());
 	}
