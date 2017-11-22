@@ -196,12 +196,16 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			return fuzzyQuery.build();
 		}
 		
-		public static Expression exactTerm(String term) {
-			return matchTextAll(Fields.TERM+".exact", term);
+		public static Expression matchEntireTerm(String term) {
+			return matchTextAll(Fields.TERM + ".exact", term);
 		}
 		
-		public static Expression regexTerm(String regex) {
-			return matchTextRegexp(Fields.TERM+".exact", regex);
+		public static Expression matchTermOriginal(String term) {
+			return exactMatch(Fields.TERM + ".original", term);
+		}
+		
+		public static Expression matchTermRegex(String regex) {
+			return matchTextRegexp(Fields.TERM + ".original", regex);
 		}
 		
 		public static Expression allTermPrefixesPresent(String term) {
@@ -405,6 +409,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	@Text(analyzer=Analyzers.TOKENIZED)
 	@Text(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
 	@Keyword(alias="exact", normalizer=Normalizers.LOWER_ASCII)
+	@Keyword(alias="original")
 	private final String term;
 	
 	private final String semanticTag;
