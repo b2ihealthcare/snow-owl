@@ -268,6 +268,10 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			return matchAny(Fields.SEMANTIC_TAG, semanticTags);
 		}
 		
+		public static Expression semanticTagRegex(String regex) {
+			return matchTextRegexp(Fields.SEMANTIC_TAG, regex);
+		}
+
 	}
 	
 	@JsonPOJOBuilder(withPrefix="")

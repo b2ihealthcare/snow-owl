@@ -164,7 +164,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @return <code>this</code> search request builder, for method chaining
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByTermRegex(String regex) {
-		return addOption(OptionKey.REGEX_TERM, regex);
+		return addOption(OptionKey.TERM_REGEX, regex);
 	}
 	
 	/**
@@ -189,6 +189,17 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterBySemanticTags(Iterable<String> semanticTags) {
 		return addOption(OptionKey.SEMANTIC_TAG, semanticTags);
+	}
+	
+	/**
+	 * Filters descriptions to have a semantic tag that matches the given regular expression.
+	 * 
+	 * @param semanticTagRegex
+	 * @return <code>this</code> search request builder, for method chaining
+	 * @see SnomedDescription#getSemanticTag()
+	 */
+	public SnomedDescriptionSearchRequestBuilder filterBySemanticTagRegex(String semanticTagRegex) {
+		return addOption(OptionKey.SEMANTIC_TAG_REGEX, semanticTagRegex);
 	}
 	
 	/**

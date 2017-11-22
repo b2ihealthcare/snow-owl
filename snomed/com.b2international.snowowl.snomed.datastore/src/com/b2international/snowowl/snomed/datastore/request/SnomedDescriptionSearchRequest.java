@@ -58,8 +58,9 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		USE_FUZZY,
 		PARSED_TERM, 
 		CASE_SIGNIFICANCE, 
-		REGEX_TERM, 
+		TERM_REGEX, 
 		SEMANTIC_TAG,
+		SEMANTIC_TAG_REGEX,
 		LANGUAGE_REFSET,
 		ACCEPTABLE_IN,
 		PREFERRED_IN;
@@ -97,9 +98,13 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		if (containsKey(OptionKey.SEMANTIC_TAG)) {
 			queryBuilder.filter(SnomedDescriptionIndexEntry.Expressions.semanticTags(getCollection(OptionKey.SEMANTIC_TAG, String.class)));
 		}
+		
+		if (containsKey(OptionKey.SEMANTIC_TAG_REGEX)) {
+			queryBuilder.filter(SnomedDescriptionIndexEntry.Expressions.semanticTagRegex(getString(OptionKey.SEMANTIC_TAG_REGEX)));
+		}
 			
-		if (containsKey(OptionKey.REGEX_TERM)) {
-			final String regex = getString(OptionKey.REGEX_TERM);
+		if (containsKey(OptionKey.TERM_REGEX)) {
+			final String regex = getString(OptionKey.TERM_REGEX);
 			queryBuilder.filter(SnomedDescriptionIndexEntry.Expressions.regexTerm(regex));
 		}
 		
