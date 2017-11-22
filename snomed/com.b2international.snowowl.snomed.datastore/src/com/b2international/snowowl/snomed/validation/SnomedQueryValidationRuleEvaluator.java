@@ -164,6 +164,8 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 				Matcher matcher = REGEX.matcher(term.trim());
 				if (matcher.matches()) {
 					req.filterByTermRegex(matcher.group(1));
+				} else {
+					req.filterByTerm(term);
 				}
 			}
 			return super.prepareSearch(req)
