@@ -170,6 +170,42 @@ public interface SnomedRefSetFactory extends EFactory {
 	SnomedAnnotationRefSetMember createSnomedAnnotationRefSetMember();
 
 	/**
+	 * Returns a new object of class '<em>Snomed MRCM Domain Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Snomed MRCM Domain Ref Set Member</em>'.
+	 * @generated
+	 */
+	SnomedMRCMDomainRefSetMember createSnomedMRCMDomainRefSetMember();
+
+	/**
+	 * Returns a new object of class '<em>Snomed MRCM Attribute Domain Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Snomed MRCM Attribute Domain Ref Set Member</em>'.
+	 * @generated
+	 */
+	SnomedMRCMAttributeDomainRefSetMember createSnomedMRCMAttributeDomainRefSetMember();
+
+	/**
+	 * Returns a new object of class '<em>Snomed MRCM Attribute Range Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Snomed MRCM Attribute Range Ref Set Member</em>'.
+	 * @generated
+	 */
+	SnomedMRCMAttributeRangeRefSetMember createSnomedMRCMAttributeRangeRefSetMember();
+
+	/**
+	 * Returns a new object of class '<em>Snomed MRCM Module Scope Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Snomed MRCM Module Scope Ref Set Member</em>'.
+	 * @generated
+	 */
+	SnomedMRCMModuleScopeRefSetMember createSnomedMRCMModuleScopeRefSetMember();
+
+	/**
 	 * Returns the package supported by this factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->

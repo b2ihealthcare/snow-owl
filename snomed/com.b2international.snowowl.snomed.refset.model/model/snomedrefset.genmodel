@@ -23,6 +23,10 @@
       <genEnumLiterals ecoreEnumLiteral="snomedrefset.ecore#//SnomedRefSetType/MODULE_DEPENDENCY"/>
       <genEnumLiterals ecoreEnumLiteral="snomedrefset.ecore#//SnomedRefSetType/EXTENDED_MAP"/>
       <genEnumLiterals ecoreEnumLiteral="snomedrefset.ecore#//SnomedRefSetType/OWL_AXIOM"/>
+      <genEnumLiterals ecoreEnumLiteral="snomedrefset.ecore#//SnomedRefSetType/MRCM_DOMAIN"/>
+      <genEnumLiterals ecoreEnumLiteral="snomedrefset.ecore#//SnomedRefSetType/MRCM_ATTRIBUTE_DOMAIN"/>
+      <genEnumLiterals ecoreEnumLiteral="snomedrefset.ecore#//SnomedRefSetType/MRCM_ATTRIBUTE_RANGE"/>
+      <genEnumLiterals ecoreEnumLiteral="snomedrefset.ecore#//SnomedRefSetType/MRCM_MODULE_SCOPE"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="snomedrefset.ecore#//DataType">
       <genEnumLiterals ecoreEnumLiteral="snomedrefset.ecore#//DataType/INTEGER"/>
@@ -101,6 +105,32 @@
     </genClasses>
     <genClasses ecoreClass="snomedrefset.ecore#//SnomedAnnotationRefSetMember">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedAnnotationRefSetMember/annotation"/>
+    </genClasses>
+    <genClasses ecoreClass="snomedrefset.ecore#//SnomedMRCMDomainRefSetMember">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMDomainRefSetMember/domainConstraint"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMDomainRefSetMember/parentDomain"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMDomainRefSetMember/proximalPrimitiveConstraint"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMDomainRefSetMember/proximalPrimitiveRefinement"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMDomainRefSetMember/domainTemplateForPrecoordination"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMDomainRefSetMember/domainTemplateForPostcoordination"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMDomainRefSetMember/editorialGuideReference"/>
+    </genClasses>
+    <genClasses ecoreClass="snomedrefset.ecore#//SnomedMRCMAttributeDomainRefSetMember">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMAttributeDomainRefSetMember/domainId"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMAttributeDomainRefSetMember/grouped"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMAttributeDomainRefSetMember/attributeCardinality"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMAttributeDomainRefSetMember/attributeInGroupCardinality"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMAttributeDomainRefSetMember/ruleStrengthId"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMAttributeDomainRefSetMember/contentTypeId"/>
+    </genClasses>
+    <genClasses ecoreClass="snomedrefset.ecore#//SnomedMRCMAttributeRangeRefSetMember">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMAttributeRangeRefSetMember/rangeConstraint"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMAttributeRangeRefSetMember/attributeRule"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMAttributeRangeRefSetMember/ruleStrengthId"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMAttributeRangeRefSetMember/contentTypeId"/>
+    </genClasses>
+    <genClasses ecoreClass="snomedrefset.ecore#//SnomedMRCMModuleScopeRefSetMember">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedMRCMModuleScopeRefSetMember/mrcmRuleRefsetId"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

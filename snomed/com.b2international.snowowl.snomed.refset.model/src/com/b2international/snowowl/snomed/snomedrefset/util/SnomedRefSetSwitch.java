@@ -207,6 +207,34 @@ public class SnomedRefSetSwitch<T> extends Switch<T> {
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
+			case SnomedRefSetPackage.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER: {
+				SnomedMRCMDomainRefSetMember snomedMRCMDomainRefSetMember = (SnomedMRCMDomainRefSetMember)theEObject;
+				T result = caseSnomedMRCMDomainRefSetMember(snomedMRCMDomainRefSetMember);
+				if (result == null) result = caseSnomedRefSetMember(snomedMRCMDomainRefSetMember);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case SnomedRefSetPackage.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER: {
+				SnomedMRCMAttributeDomainRefSetMember snomedMRCMAttributeDomainRefSetMember = (SnomedMRCMAttributeDomainRefSetMember)theEObject;
+				T result = caseSnomedMRCMAttributeDomainRefSetMember(snomedMRCMAttributeDomainRefSetMember);
+				if (result == null) result = caseSnomedRefSetMember(snomedMRCMAttributeDomainRefSetMember);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case SnomedRefSetPackage.SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER: {
+				SnomedMRCMAttributeRangeRefSetMember snomedMRCMAttributeRangeRefSetMember = (SnomedMRCMAttributeRangeRefSetMember)theEObject;
+				T result = caseSnomedMRCMAttributeRangeRefSetMember(snomedMRCMAttributeRangeRefSetMember);
+				if (result == null) result = caseSnomedRefSetMember(snomedMRCMAttributeRangeRefSetMember);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case SnomedRefSetPackage.SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER: {
+				SnomedMRCMModuleScopeRefSetMember snomedMRCMModuleScopeRefSetMember = (SnomedMRCMModuleScopeRefSetMember)theEObject;
+				T result = caseSnomedMRCMModuleScopeRefSetMember(snomedMRCMModuleScopeRefSetMember);
+				if (result == null) result = caseSnomedRefSetMember(snomedMRCMModuleScopeRefSetMember);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
 			default: return defaultCase(theEObject);
 		}
 	}
@@ -448,6 +476,66 @@ public class SnomedRefSetSwitch<T> extends Switch<T> {
 	 * @generated
 	 */
 	public T caseSnomedAnnotationRefSetMember(SnomedAnnotationRefSetMember object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Snomed MRCM Domain Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Snomed MRCM Domain Ref Set Member</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseSnomedMRCMDomainRefSetMember(SnomedMRCMDomainRefSetMember object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Snomed MRCM Attribute Domain Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Snomed MRCM Attribute Domain Ref Set Member</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseSnomedMRCMAttributeDomainRefSetMember(SnomedMRCMAttributeDomainRefSetMember object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Snomed MRCM Attribute Range Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Snomed MRCM Attribute Range Ref Set Member</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseSnomedMRCMAttributeRangeRefSetMember(SnomedMRCMAttributeRangeRefSetMember object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Snomed MRCM Module Scope Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Snomed MRCM Module Scope Ref Set Member</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseSnomedMRCMModuleScopeRefSetMember(SnomedMRCMModuleScopeRefSetMember object) {
 		return null;
 	}
 

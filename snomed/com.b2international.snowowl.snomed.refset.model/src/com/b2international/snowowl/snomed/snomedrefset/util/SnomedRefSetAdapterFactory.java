@@ -159,6 +159,22 @@ public class SnomedRefSetAdapterFactory extends AdapterFactoryImpl {
 				return createSnomedAnnotationRefSetMemberAdapter();
 			}
 			@Override
+			public Adapter caseSnomedMRCMDomainRefSetMember(SnomedMRCMDomainRefSetMember object) {
+				return createSnomedMRCMDomainRefSetMemberAdapter();
+			}
+			@Override
+			public Adapter caseSnomedMRCMAttributeDomainRefSetMember(SnomedMRCMAttributeDomainRefSetMember object) {
+				return createSnomedMRCMAttributeDomainRefSetMemberAdapter();
+			}
+			@Override
+			public Adapter caseSnomedMRCMAttributeRangeRefSetMember(SnomedMRCMAttributeRangeRefSetMember object) {
+				return createSnomedMRCMAttributeRangeRefSetMemberAdapter();
+			}
+			@Override
+			public Adapter caseSnomedMRCMModuleScopeRefSetMember(SnomedMRCMModuleScopeRefSetMember object) {
+				return createSnomedMRCMModuleScopeRefSetMemberAdapter();
+			}
+			@Override
 			public Adapter defaultCase(EObject object) {
 				return createEObjectAdapter();
 			}
@@ -399,6 +415,62 @@ public class SnomedRefSetAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createSnomedAnnotationRefSetMemberAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember <em>Snomed MRCM Domain Ref Set Member</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember
+	 * @generated
+	 */
+	public Adapter createSnomedMRCMDomainRefSetMemberAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember <em>Snomed MRCM Attribute Domain Ref Set Member</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember
+	 * @generated
+	 */
+	public Adapter createSnomedMRCMAttributeDomainRefSetMemberAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember <em>Snomed MRCM Attribute Range Ref Set Member</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember
+	 * @generated
+	 */
+	public Adapter createSnomedMRCMAttributeRangeRefSetMemberAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember <em>Snomed MRCM Module Scope Ref Set Member</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember
+	 * @generated
+	 */
+	public Adapter createSnomedMRCMModuleScopeRefSetMemberAdapter() {
 		return null;
 	}
 
