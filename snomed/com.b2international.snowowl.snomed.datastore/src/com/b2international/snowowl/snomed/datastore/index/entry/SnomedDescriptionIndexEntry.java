@@ -449,7 +449,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		
 		this.conceptId = conceptId;
 		this.languageCode = languageCode;
-		this.term = term;
+		this.term = term == null ? term : term.trim();
 		this.semanticTag = semanticTag;
 		this.typeId = typeId;
 		this.caseSignificanceId = caseSignificanceId;
