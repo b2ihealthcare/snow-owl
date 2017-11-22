@@ -96,6 +96,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 	@Override
 	public void create() {
+		log.info("Preparing '{}' indexes...", name);
 		if (!exists()) {
 			// create number of indexes based on number of types
 	 		for (DocumentMapping mapping : mappings.getMappings()) {
@@ -127,6 +128,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		
  		// wait until the cluster processes each index create request
 		waitForYellowHealth(getAllIndexes());
+		log.info("'{}' indexes are ready.", name);
 	}
 
 	private Set<String> getAllIndexes() {
