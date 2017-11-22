@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.request;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -35,6 +36,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	private static final int MAX_LIMIT = Integer.MAX_VALUE - 1;
 	
+	private Set<String> componentIds;
 	private String scrollKeepAlive;
 	private String scrollId;
 	private Object[] searchAfter;
@@ -105,7 +107,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B filterByIds(Collection<String> ids) {
-		addOption(OptionKey.COMPONENT_IDS, ImmutableSet.copyOf(ids));
+		this.componentIds = ImmutableSet.copyOf(ids);
 		return getSelf();
 	}
 	
@@ -171,6 +173,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	@Override
 	protected ResourceRequest<C, R> create() {
 		final SearchResourceRequest<C, R> req = createSearch();
+		req.setComponentIds(componentIds);
 		req.setScrollId(scrollId);
 		req.setScrollKeepAlive(scrollKeepAlive);
 		req.setSearchAfter(searchAfter);
