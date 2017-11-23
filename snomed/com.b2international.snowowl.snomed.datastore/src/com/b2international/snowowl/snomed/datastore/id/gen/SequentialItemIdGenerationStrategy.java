@@ -163,7 +163,7 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 
 	@Override
 	public String generateItemId(final String namespace, final ComponentCategory category) {
-		final Pair<String, ComponentCategory> key = Pair.identicalPairOf(Strings.emptyToNull(namespace), category);
+		final Pair<String, ComponentCategory> key = Pair.identicalPairOf(namespace, category);
 		final long nextItemId = lastItemIds.getUnchecked(key).getNextItemId();
 		return Long.toString(nextItemId);
 	}

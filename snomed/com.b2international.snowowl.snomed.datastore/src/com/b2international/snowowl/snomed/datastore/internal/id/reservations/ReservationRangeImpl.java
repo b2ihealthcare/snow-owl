@@ -42,7 +42,7 @@ public class ReservationRangeImpl implements Reservation {
 		checkArgument(itemIdMin >= minItemIdMin, "ItemIdMin should be greater than or equal to %s", minItemIdMin);
 		checkArgument(itemIdMax >= itemIdMin, "ItemIdMax should be greater than or equal to ItemIdMin");
 		this.itemIdRange = Range.closed(itemIdMin, itemIdMax);
-		this.namespace = namespace;
+		this.namespace = Strings.nullToEmpty(namespace);
 		this.components = components;
 	}
 	

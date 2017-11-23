@@ -64,7 +64,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 		}
 	}
 
-	private static final String INT_NAMESPACE = null;
+	private static final String INT_NAMESPACE = "";
 	private static final String B2I_NAMESPACE = "1000129";
 
 	private Index store;
