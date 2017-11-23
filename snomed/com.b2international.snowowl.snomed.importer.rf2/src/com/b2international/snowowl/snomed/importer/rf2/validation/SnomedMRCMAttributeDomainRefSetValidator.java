@@ -26,22 +26,32 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
+import com.google.common.base.Strings;
 
 /**
- *
+ * @since 5.10.19
  */
-public class SnomedOWLAxiomRefSetValidator extends SnomedRefSetValidator {
+public class SnomedMRCMAttributeDomainRefSetValidator extends SnomedRefSetValidator {
 
 	private final List<String> defects = newArrayList();
 
-	public SnomedOWLAxiomRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
-		super(configuration, releaseUrl, ComponentImportType.OWL_AXIOM_REFSET, context, SnomedRf2Headers.OWL_AXIOM_HEADER);
+	public SnomedMRCMAttributeDomainRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
+		super(configuration, releaseUrl, ComponentImportType.MRCM_ATTRIBUTE_DOMAIN_REFSET, context, SnomedRf2Headers.MRCM_ATTRIBUTE_DOMAIN_HEADER);
 	}
 
 	@Override
 	protected void doValidate(final List<String> row) {
 		super.doValidate(row);
 		validateRow(row);
+		if (!Strings.isNullOrEmpty(row.get(6))) {
+			validateReferencedComponent(row, 6); // domainId
+		}
+		if (!Strings.isNullOrEmpty(row.get(10))) {
+			validateReferencedComponent(row, 10); // ruleStrengthId
+		}
+		if (!Strings.isNullOrEmpty(row.get(11))) {
+			validateReferencedComponent(row, 11); // contentTypeId
+		}
 	}
 
 	@Override
@@ -55,10 +65,28 @@ public class SnomedOWLAxiomRefSetValidator extends SnomedRefSetValidator {
 
 	@Override
 	protected String getName() {
-		return "OWL Axiom";
+		return "MRCM Attribute Domain";
 	}
 
 	private void validateRow(final List<String> row) {
-		validateNotEmptyFieldValue(row.get(6), SnomedRf2Headers.FIELD_OWL_EXPRESSION, row, defects);
+
+		// domainId
+		validateNotEmptyFieldValue(row.get(6), SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, row, defects);
+
+		// grouped
+		validateNotEmptyFieldValue(row.get(7), SnomedRf2Headers.FIELD_MRCM_GROUPED, row, defects);
+
+		// attribute cardinality
+		validateNotEmptyFieldValue(row.get(8), SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, row, defects);
+
+		// attribute in group cardinality
+		validateNotEmptyFieldValue(row.get(9), SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, row, defects);
+
+		// rule strength id
+		validateNotEmptyFieldValue(row.get(10), SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, row, defects);
+
+		// content type id
+		validateNotEmptyFieldValue(row.get(11), SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, row, defects);
 	}
+
 }

@@ -46,7 +46,7 @@ public enum DefectType {
 	INVALID_EFFECTIVE_TIME_FORMAT("Effective time format is not valid. Acceptable effective time format is 'yyyyMMdd'."),
 	INCONSISTENT_TAXONOMY("The concepts below are referenced in active IS A relationships, but are inactive or otherwise not known."),
 	IO_PROBLEM("Encountered an I/O error while running validation."),
-	OWL_EXPRESSION_IS_EMPTY("OWL Axiom reference set member value is empty in column 'owlExpression'");
+	EMPTY_REFSET_MEMBER_FIELD("Reference set member field is empty");
 	
 	private final String label;
 	private final boolean critical;

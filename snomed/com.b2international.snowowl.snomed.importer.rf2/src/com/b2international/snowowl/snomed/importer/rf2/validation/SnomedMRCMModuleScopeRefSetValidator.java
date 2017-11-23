@@ -26,22 +26,26 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
+import com.google.common.base.Strings;
 
 /**
- *
+ * @since 5.10.19
  */
-public class SnomedOWLAxiomRefSetValidator extends SnomedRefSetValidator {
+public class SnomedMRCMModuleScopeRefSetValidator extends SnomedRefSetValidator {
 
 	private final List<String> defects = newArrayList();
 
-	public SnomedOWLAxiomRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
-		super(configuration, releaseUrl, ComponentImportType.OWL_AXIOM_REFSET, context, SnomedRf2Headers.OWL_AXIOM_HEADER);
+	public SnomedMRCMModuleScopeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
+		super(configuration, releaseUrl, ComponentImportType.MRCM_MODULE_SCOPE_REFSET, context, SnomedRf2Headers.MRCM_MODULE_SCOPE_HEADER);
 	}
 
 	@Override
 	protected void doValidate(final List<String> row) {
 		super.doValidate(row);
 		validateRow(row);
+		if (!Strings.isNullOrEmpty(row.get(6))) {
+			validateReferencedComponent(row, 6); // mrcmRuleRefsetId
+		}
 	}
 
 	@Override
@@ -55,10 +59,11 @@ public class SnomedOWLAxiomRefSetValidator extends SnomedRefSetValidator {
 
 	@Override
 	protected String getName() {
-		return "OWL Axiom";
+		return "MRCM Module Scope";
 	}
 
 	private void validateRow(final List<String> row) {
-		validateNotEmptyFieldValue(row.get(6), SnomedRf2Headers.FIELD_OWL_EXPRESSION, row, defects);
+		// MRCM rule refset id
+		validateNotEmptyFieldValue(row.get(6), SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, row, defects);
 	}
 }

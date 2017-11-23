@@ -113,6 +113,27 @@ public abstract class SnomedRf2Headers {
 	// Field names introduced in annotation type reference set files
 	public static final String FIELD_OWL_EXPRESSION = "owlExpression";
 	
+	// Field names used in MRCM reference set files
+	public static final String FIELD_MRCM_DOMAIN_CONSTRAINT = "domainConstraint";
+	public static final String FIELD_MRCM_PARENT_DOMAIN = "parentDomain";
+	public static final String FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT = "proximalPrimitiveConstraint";
+	public static final String FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT = "proximalPrimitiveRefinement";
+	public static final String FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION = "domainTemplateForPrecoordination";
+	public static final String FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION = "domainTemplateForPostcoordination";
+	public static final String FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE = "guideURL";
+	
+	public static final String FIELD_MRCM_DOMAIN_ID = "domainId";
+	public static final String FIELD_MRCM_GROUPED = "grouped";
+	public static final String FIELD_MRCM_ATTRIBUTE_CARDINALITY = "attributeCardinality";
+	public static final String FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY = "attributeInGroupCardinality";
+	public static final String FIELD_MRCM_RULE_STRENGTH_ID = "ruleStrengthId";
+	public static final String FIELD_MRCM_CONTENT_TYPE_ID = "contentTypeId";
+	
+	public static final String FIELD_MRCM_RANGE_CONSTRAINT = "rangeConstraint";
+	public static final String FIELD_MRCM_ATTRIBUTE_RULE = "attributeRule";
+	
+	public static final String FIELD_MRCM_RULE_REFSET_ID = "mrcmRuleRefsetId";
+	
 	public static final String[] CONCEPT_HEADER = new String[] { 
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
@@ -287,6 +308,60 @@ public abstract class SnomedRf2Headers {
 		FIELD_REFSET_ID, 
 		FIELD_REFERENCED_COMPONENT_ID,
 		FIELD_OWL_EXPRESSION };
+	
+	public static final String[] MRCM_DOMAIN_HEADER = new String[] {
+		FIELD_ID, 
+		FIELD_EFFECTIVE_TIME, 
+		FIELD_ACTIVE, 
+		FIELD_MODULE_ID, 
+		FIELD_REFSET_ID, 
+		FIELD_REFERENCED_COMPONENT_ID,
+		FIELD_MRCM_DOMAIN_CONSTRAINT,
+		FIELD_MRCM_PARENT_DOMAIN,
+		FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT,
+		FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT,
+		FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION,
+		FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION,
+		FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE
+	};
+	
+	public static final String[] MRCM_ATTRIBUTE_DOMAIN_HEADER = new String[] {
+		FIELD_ID, 
+		FIELD_EFFECTIVE_TIME, 
+		FIELD_ACTIVE, 
+		FIELD_MODULE_ID, 
+		FIELD_REFSET_ID, 
+		FIELD_REFERENCED_COMPONENT_ID,
+		FIELD_MRCM_DOMAIN_ID,
+		FIELD_MRCM_GROUPED,
+		FIELD_MRCM_ATTRIBUTE_CARDINALITY,
+		FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY,
+		FIELD_MRCM_RULE_STRENGTH_ID,
+		FIELD_MRCM_CONTENT_TYPE_ID
+	};
+	
+	public static final String[] MRCM_ATTRIBUTE_RANGE_HEADER = new String[] {
+		FIELD_ID, 
+		FIELD_EFFECTIVE_TIME, 
+		FIELD_ACTIVE, 
+		FIELD_MODULE_ID, 
+		FIELD_REFSET_ID, 
+		FIELD_REFERENCED_COMPONENT_ID,
+		FIELD_MRCM_RANGE_CONSTRAINT,
+		FIELD_MRCM_ATTRIBUTE_RULE,
+		FIELD_MRCM_RULE_STRENGTH_ID,
+		FIELD_MRCM_CONTENT_TYPE_ID
+	};
+	
+	public static final String[] MRCM_MODULE_SCOPE_HEADER = new String[] {
+		FIELD_ID, 
+		FIELD_EFFECTIVE_TIME, 
+		FIELD_ACTIVE, 
+		FIELD_MODULE_ID, 
+		FIELD_REFSET_ID, 
+		FIELD_REFERENCED_COMPONENT_ID,
+		FIELD_MRCM_RULE_REFSET_ID
+	};
 	
 	private SnomedRf2Headers() {
 		// Prevent instantiation

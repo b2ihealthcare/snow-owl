@@ -28,14 +28,14 @@ import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 
 /**
- *
+ * @since 5.10.19
  */
-public class SnomedOWLAxiomRefSetValidator extends SnomedRefSetValidator {
+public class SnomedMRCMDomainRefSetValidator extends SnomedRefSetValidator {
 
 	private final List<String> defects = newArrayList();
 
-	public SnomedOWLAxiomRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
-		super(configuration, releaseUrl, ComponentImportType.OWL_AXIOM_REFSET, context, SnomedRf2Headers.OWL_AXIOM_HEADER);
+	public SnomedMRCMDomainRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
+		super(configuration, releaseUrl, ComponentImportType.MRCM_DOMAIN_REFSET, context, SnomedRf2Headers.MRCM_DOMAIN_HEADER);
 	}
 
 	@Override
@@ -55,10 +55,29 @@ public class SnomedOWLAxiomRefSetValidator extends SnomedRefSetValidator {
 
 	@Override
 	protected String getName() {
-		return "OWL Axiom";
+		return "MRCM Domain";
 	}
 
 	private void validateRow(final List<String> row) {
-		validateNotEmptyFieldValue(row.get(6), SnomedRf2Headers.FIELD_OWL_EXPRESSION, row, defects);
+
+		// domainConstraint
+		validateNotEmptyFieldValue(row.get(6), SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, row, defects);
+
+		// parentDomain is optional
+
+		// proximal primitive constraint
+		validateNotEmptyFieldValue(row.get(8), SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, row, defects);
+
+		// proximal primitive refinement is optional
+
+		// domain template for precoordination
+		validateNotEmptyFieldValue(row.get(10), SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, row, defects);
+
+		// domain template for postcoordination
+		validateNotEmptyFieldValue(row.get(11), SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, row, defects);
+
+		// editorial guide reference is optional
+
 	}
+
 }

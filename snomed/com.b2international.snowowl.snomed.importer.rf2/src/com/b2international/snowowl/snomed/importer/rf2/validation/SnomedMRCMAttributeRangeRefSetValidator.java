@@ -26,22 +26,29 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
+import com.google.common.base.Strings;
 
 /**
- *
+ * @since 5.10.19
  */
-public class SnomedOWLAxiomRefSetValidator extends SnomedRefSetValidator {
+public class SnomedMRCMAttributeRangeRefSetValidator extends SnomedRefSetValidator {
 
 	private final List<String> defects = newArrayList();
 
-	public SnomedOWLAxiomRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
-		super(configuration, releaseUrl, ComponentImportType.OWL_AXIOM_REFSET, context, SnomedRf2Headers.OWL_AXIOM_HEADER);
+	public SnomedMRCMAttributeRangeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
+		super(configuration, releaseUrl, ComponentImportType.MRCM_ATTRIBUTE_RANGE_REFSET, context, SnomedRf2Headers.MRCM_ATTRIBUTE_RANGE_HEADER);
 	}
 
 	@Override
 	protected void doValidate(final List<String> row) {
 		super.doValidate(row);
 		validateRow(row);
+		if (!Strings.isNullOrEmpty(row.get(8))) {
+			validateReferencedComponent(row, 8); // ruleStrengthId
+		}
+		if (!Strings.isNullOrEmpty(row.get(9))) {
+			validateReferencedComponent(row, 9); // contentTypeId
+		}
 	}
 
 	@Override
@@ -55,10 +62,22 @@ public class SnomedOWLAxiomRefSetValidator extends SnomedRefSetValidator {
 
 	@Override
 	protected String getName() {
-		return "OWL Axiom";
+		return "MRCM Attribute Range";
 	}
 
 	private void validateRow(final List<String> row) {
-		validateNotEmptyFieldValue(row.get(6), SnomedRf2Headers.FIELD_OWL_EXPRESSION, row, defects);
+
+		// rangeConstraint
+		validateNotEmptyFieldValue(row.get(6), SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, row, defects);
+
+		// attribute rule
+		validateNotEmptyFieldValue(row.get(7), SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, row, defects);
+
+		// rule strength id
+		validateNotEmptyFieldValue(row.get(8), SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, row, defects);
+
+		// content type id
+		validateNotEmptyFieldValue(row.get(9), SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, row, defects);
 	}
+
 }

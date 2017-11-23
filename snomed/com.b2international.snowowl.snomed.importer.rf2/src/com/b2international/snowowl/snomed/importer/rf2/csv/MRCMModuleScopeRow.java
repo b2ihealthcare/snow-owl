@@ -16,25 +16,25 @@
 package com.b2international.snowowl.snomed.importer.rf2.csv;
 
 /**
- *
+ * @since 5.10.19
  */
-public class OWLAxiomRefSetRow extends RefSetRow {
+public class MRCMModuleScopeRow extends RefSetRow {
 
-	private String owlExpression;
+	private String mrcmRuleRefsetId;
 
-	public String getOwlExpression() {
-		return owlExpression;
+	public String getMrcmRuleRefsetId() {
+		return mrcmRuleRefsetId;
 	}
 
-	public void setOwlExpression(final String owlExpression) {
-		this.owlExpression = owlExpression;
+	public void setMrcmRuleRefsetId(final String mrcmRuleRefsetId) {
+		this.mrcmRuleRefsetId = mrcmRuleRefsetId;
 	}
 
 	@Override
 	public String toString() {
 		return String.format(
-				"OWLAxiomRefSetRow [uuid=%s, effectiveTime=%s, active=%s, moduleId=%s, refsetId=%s, referencedComponentId=%s, owlExpression=%s]",
-				getUuid(), getEffectiveTime(), isActive(), getModuleId(), getRefSetId(), getReferencedComponentId(), getOwlExpression());
+				"MRCMModuleScopeRow [uuid=%s, effectiveTime=%s, active=%s, moduleId=%s, refsetId=%s, referencedComponentId=%s, mrcmRuleRefsetId=%s ]",
+				getUuid(), getEffectiveTime(), isActive(), getModuleId(), getRefSetId(), getReferencedComponentId(), getMrcmRuleRefsetId());
 	}
 
 }

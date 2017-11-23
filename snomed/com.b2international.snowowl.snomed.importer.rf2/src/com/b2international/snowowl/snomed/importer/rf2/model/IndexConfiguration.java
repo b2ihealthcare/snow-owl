@@ -33,6 +33,10 @@ import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedComplexMapTy
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedConcreteDataTypeRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedDescriptionTypeRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedLanguageRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedMRCMAttributeDomainRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedMRCMAttributeRangeRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedMRCMDomainRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedMRCMModuleScopeRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedOWLAxiomRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedQueryRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedSimpleMapTypeRefSetImporter;
@@ -64,6 +68,10 @@ public class IndexConfiguration {
 			.put(ComponentImportType.SIMPLE_MAP_TYPE_REFSET, SnomedSimpleMapTypeRefSetImporter.INDEXES)
 			.put(ComponentImportType.SIMPLE_TYPE_REFSET, SnomedSimpleTypeRefSetImporter.INDEXES)
 			.put(ComponentImportType.OWL_AXIOM_REFSET, SnomedOWLAxiomRefSetImporter.INDEXES)
+			.put(ComponentImportType.MRCM_DOMAIN_REFSET, SnomedMRCMDomainRefSetImporter.INDEXES)
+			.put(ComponentImportType.MRCM_ATTRIBUTE_DOMAIN_REFSET, SnomedMRCMAttributeDomainRefSetImporter.INDEXES)
+			.put(ComponentImportType.MRCM_ATTRIBUTE_RANGE_REFSET, SnomedMRCMAttributeRangeRefSetImporter.INDEXES)
+			.put(ComponentImportType.MRCM_MODULE_SCOPE_REFSET, SnomedMRCMModuleScopeRefSetImporter.INDEXES)
 			.build();
 	}
 	
