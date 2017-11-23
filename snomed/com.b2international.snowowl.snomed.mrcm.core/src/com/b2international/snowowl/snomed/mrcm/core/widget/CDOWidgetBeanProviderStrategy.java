@@ -19,10 +19,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.cdo.view.CDOView;
 
@@ -109,17 +109,17 @@ public class CDOWidgetBeanProviderStrategy extends WidgetBeanProviderStrategy {
 	}
 
 	@Override
-	public List<LeafWidgetBean> createRelationshipDataTypeWidgetBeans(ConceptWidgetBean cwb, String... relationshipIds) {
+	public List<LeafWidgetBean> createRelationshipDataTypeWidgetBeans(ConceptWidgetBean cwb, Map<String, String> relationshipIdToCharTypeMap) {
 
 		final List<LeafWidgetBean> beans = Lists.newArrayList();
 		final CDOView view = concept.cdoView();
 		
 		final List<SnomedConcreteDataTypeRefSetMember> dataTypes = newArrayList();
-		final List<String> relationshipIdList = Arrays.asList(relationshipIds);
+		final Set<String> relationshipIds = relationshipIdToCharTypeMap.keySet();
 		
 		for (final Relationship relationship : concept.getOutboundRelationships()) {
 			
-			if (relationshipIdList.contains(relationship.getId())) {
+			if (relationshipIds.contains(relationship.getId())) {
 				dataTypes.addAll(relationship.getConcreteDomainRefSetMembers());
 			}
 		}
@@ -136,7 +136,8 @@ public class CDOWidgetBeanProviderStrategy extends WidgetBeanProviderStrategy {
 			}
 			
 			final DataTypeWidgetModel matchingModel = groupModel.getFirstMatching(entry.getLabel(), entry.getDataType());
-			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getUuid(), member.isReleased());
+			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), 
+					relationshipIdToCharTypeMap.get(entry.getReferencedComponentId()), entry.getUuid(), member.isReleased(), true);
 			widgetBean.setCharacteristicTypeId(entry.getCharacteristicTypeId());
 			widgetBean.setSelectedValue(entry.getSerializedValue());
 			widgetBean.setSelectedLabel(entry.getLabel());
@@ -170,7 +171,7 @@ public class CDOWidgetBeanProviderStrategy extends WidgetBeanProviderStrategy {
 			}
 			
 			final DataTypeWidgetModel matchingModel = dataTypeModel.getFirstMatching(entry.getLabel(), entry.getDataType());
-			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getUuid(), member.isReleased());
+			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getUuid(), member.isReleased(), false);
 			widgetBean.setCharacteristicTypeId(entry.getCharacteristicTypeId());
 			widgetBean.setSelectedValue(entry.getSerializedValue());
 			widgetBean.setSelectedLabel(entry.getLabel());

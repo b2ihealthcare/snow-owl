@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.mrcm.core.server.widget;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -110,15 +109,14 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 	}
 
 	@Override
-	public List<LeafWidgetBean> createRelationshipDataTypeWidgetBeans(final ConceptWidgetBean cwb, final String... relationshipIds) {
+	public List<LeafWidgetBean> createRelationshipDataTypeWidgetBeans(final ConceptWidgetBean cwb, final Map<String, String> relationshipIdToCharTypeMap) {
 
 		final List<LeafWidgetBean> beans = Lists.newArrayList();
 
 		//ignore inactive ones
-		final Collection<SnomedRefSetMemberIndexEntry> indexEntries = new SnomedRefSetMembershipLookupService().getRelationshipDataTypes(Arrays.asList(relationshipIds));
+		final Collection<SnomedRefSetMemberIndexEntry> indexEntries = new SnomedRefSetMembershipLookupService().getRelationshipDataTypes(relationshipIdToCharTypeMap.keySet());
 		
 		//occurred 
-		
 		final Iterable<SnomedRefSetMemberIndexEntry> dataTypes = Iterables.filter(indexEntries, new Predicate<SnomedRefSetMemberIndexEntry>() {
 			@Override public boolean apply(final SnomedRefSetMemberIndexEntry member) {
 				return member.isActive();
@@ -129,7 +127,8 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 		
 		for (final SnomedRefSetMemberIndexEntry entry : dataTypes) {
 			final DataTypeWidgetModel matchingModel = groupModel.getFirstMatching(entry.getAttributeLabel(), entry.getRefSetPackageDataType());
-			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased());
+			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), 
+					relationshipIdToCharTypeMap.get(entry.getReferencedComponentId()), entry.getId(), entry.isReleased(), true);
 			if (entry.getUomComponentId() != null) {
 				widgetBean.setSelectedUom(entry.getUomComponentId());
 			}
@@ -154,7 +153,7 @@ public class ServerSideWidgetBeanProviderStrategy extends WidgetBeanProviderStra
 		
 		for (final SnomedRefSetMemberIndexEntry entry : getConcreteDataTypes(conceptId)) {
 			final DataTypeWidgetModel matchingModel = dataTypeModel.getFirstMatching(entry.getAttributeLabel(), entry.getRefSetPackageDataType());
-			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased());
+			final DataTypeWidgetBean widgetBean = new DataTypeWidgetBean(cwb, matchingModel, entry.getReferencedComponentId(), entry.getId(), entry.isReleased(), false);
 			widgetBean.setSelectedValue(SnomedRefSetUtil.serializeValue(entry.getRefSetPackageDataType(), entry.getValue()));
 			widgetBean.setSelectedLabel(entry.getAttributeLabel());
 			widgetBean.setCharacteristicTypeId(entry.getCharacteristicTypeId());
