@@ -24,13 +24,14 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.1
  */
-final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryContext, Branches, InternalBranch> {
+final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryContext, Branches, BranchDocument> {
 
 	enum OptionKey {
 		
@@ -71,12 +72,12 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 	}
 	
 	@Override
-	protected Class<InternalBranch> getDocumentType() {
-		return InternalBranch.class;
+	protected Class<BranchDocument> getDocumentType() {
+		return BranchDocument.class;
 	}
 
 	@Override
-	protected Branches toCollectionResource(RepositoryContext context, Hits<InternalBranch> matches) {
+	protected Branches toCollectionResource(RepositoryContext context, Hits<BranchDocument> matches) {
 		final BranchManager branchManager = context.service(BranchManager.class);
 		for (InternalBranch branch : matches) {
 			branch.setBranchManager(branchManager);

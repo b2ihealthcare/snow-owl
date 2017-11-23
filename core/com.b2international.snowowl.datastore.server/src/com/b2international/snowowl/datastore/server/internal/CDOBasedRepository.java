@@ -76,7 +76,7 @@ import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.b2international.snowowl.datastore.index.MappingProvider;
-import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
+import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
@@ -87,9 +87,7 @@ import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.ReviewConfiguration;
 import com.b2international.snowowl.datastore.server.cdo.CDOConflictProcessorBroker;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
-import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.CDOBranchManagerImpl;
-import com.b2international.snowowl.datastore.server.internal.branch.CDOMainBranchImpl;
 import com.b2international.snowowl.datastore.server.internal.branch.InternalCDOBasedBranch;
 import com.b2international.snowowl.datastore.server.internal.merge.MergeServiceImpl;
 import com.b2international.snowowl.datastore.server.internal.review.ReviewManagerImpl;
@@ -236,9 +234,7 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 
 	private void initIndex(final ObjectMapper mapper) {
 		final Collection<Class<?>> types = newArrayList();
-		types.add(CDOMainBranchImpl.class);
-		types.add(CDOBranchImpl.class);
-		types.add(InternalBranch.class);
+		types.add(BranchDocument.class);
 		types.add(Review.class);
 		types.add(ConceptChanges.class);
 		types.add(CodeSystemEntry.class);

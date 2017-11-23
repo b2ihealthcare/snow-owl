@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
@@ -40,6 +41,8 @@ import com.google.common.collect.ImmutableMap;
  * @since 4.1
  */
 public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBranch {
+
+	static final String TYPE = "BranchImpl";
 
 	private static final Runnable EMPTY_RUNNABLE = new Runnable() {
 		@Override public void run() { return; }
@@ -54,9 +57,6 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
     private final boolean deleted;
     private final String path;
 
-    private String _id;
-
-    
     protected BranchImpl(String name, String parentPath, long baseTimestamp, Metadata metadata) {
     	this(name, parentPath, baseTimestamp, baseTimestamp, metadata);
     }
@@ -86,16 +86,6 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
     	return new BranchData(name(), parentPath(), baseTimestamp(), headTimestamp(), state(), isDeleted(), metadata());
     }
     
-    @Override
-    public String _id() {
-    	return _id;
-    }
-    
-    @Override
-    public void set_id(String _id) {
-    	this._id = _id;
-    }
-	
     @Override
 	public void setBranchManager(BranchManager branchManager) {
 		this.branchManager = ClassUtils.checkAndCast(branchManager, BranchManagerImpl.class);
@@ -146,7 +136,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	@Override
 	public final void update(final Metadata metadata) {
 		if (!metadata().equals(metadata)) {
-			branchManager.commit(branchManager.update(getClass(), path(), InternalBranch.WITH_METADATA, ImmutableMap.of("metadata", metadata)));
+			branchManager.commit(branchManager.update(path(), BranchDocument.Scripts.WITH_METADATA, ImmutableMap.of("metadata", metadata)));
 			branchManager.sendChangeEvent(path());
 		}
 	}
@@ -305,4 +295,21 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 		
 		return true;
 	}
+	
+	BranchDocument.Builder toDocument() {
+		return BranchDocument.builder()
+				.type(TYPE)
+				.parentPath(parentPath)
+				.name(name)
+				.path(path)
+				.baseTimestamp(baseTimestamp)
+				.headTimestamp(headTimestamp)
+				.deleted(deleted)
+				.metadata(metadata());
+	}
+
+	static InternalBranch from(BranchDocument doc) {
+		return new BranchImpl(doc.getName(), doc.getParentPath(), doc.getBaseTimestamp(), doc.getHeadTimestamp(), doc.isDeleted(), doc.getMetadata());
+	}
+	
 }

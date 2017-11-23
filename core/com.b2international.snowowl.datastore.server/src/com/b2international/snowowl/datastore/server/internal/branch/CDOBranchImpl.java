@@ -20,7 +20,10 @@ import java.util.Set;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.Metadata;
-import com.google.common.base.Objects;
+import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
+import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
+import com.b2international.snowowl.datastore.internal.branch.BranchDocument.Builder;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -28,6 +31,8 @@ import com.google.common.collect.ImmutableSet;
  */
 public class CDOBranchImpl extends BranchImpl implements InternalCDOBasedBranch {
 
+	static final String TYPE = "CDOBranchImpl";
+	
 	private final int cdoBranchId;
 	private final int segmentId;
 	private final Collection<Integer> segments;
@@ -84,12 +89,36 @@ public class CDOBranchImpl extends BranchImpl implements InternalCDOBasedBranch 
 	
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(getClass())
+		return MoreObjects.toStringHelper(getClass())
 				.add("cdoBranchId", cdoBranchId())
 				.add("segmentId", segmentId())
 				.add("segments", segments())
 				.add("parentSegments", parentSegments())
 				.toString();
+	}
+	
+	@Override
+	Builder toDocument() {
+		return super.toDocument()
+				.type(TYPE)
+				.cdoBranchId(cdoBranchId)
+				.segmentId(segmentId)
+				.segments(segments)
+				.parentSegments(parentSegments);
+	}
+	
+	static InternalBranch from(BranchDocument doc) {
+		return new CDOBranchImpl(
+				doc.getName(), 
+				doc.getParentPath(), 
+				doc.getBaseTimestamp(), 
+				doc.getHeadTimestamp(), 
+				doc.isDeleted(), 
+				doc.getMetadata(), 
+				doc.getCdoBranchId(), 
+				doc.getSegmentId(), 
+				doc.getSegments(), 
+				doc.getParentSegments());
 	}
 
 }

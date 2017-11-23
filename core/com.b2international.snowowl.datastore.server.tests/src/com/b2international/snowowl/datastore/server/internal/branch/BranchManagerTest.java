@@ -48,6 +48,7 @@ import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.review.ReviewManager;
@@ -76,7 +77,7 @@ public class BranchManagerTest {
 
 		@Override
 		InternalBranch doReopen(InternalBranch parent, String name, Metadata metadata) {
-			final InternalBranch branch = new BranchImpl(name, parent.path(), clock.getTimestamp(), metadata);
+			final BranchImpl branch = new BranchImpl(name, parent.path(), clock.getTimestamp(), metadata);
 			return commit(create(branch));
 		}
 	}
@@ -91,7 +92,7 @@ public class BranchManagerTest {
 	@Before
 	public void givenBranchManager() {
 		clock = new AtomicLongTimestampAuthority();
-		store = Indexes.createIndex(UUID.randomUUID().toString(), JsonSupport.getDefaultObjectMapper(), new Mappings(MainBranchImpl.class, BranchImpl.class, InternalBranch.class));
+		store = Indexes.createIndex(UUID.randomUUID().toString(), JsonSupport.getDefaultObjectMapper(), new Mappings(BranchDocument.class));
 		store.admin().create();
 		manager = new BranchManagerImplTest(store, clock.getTimestamp());
 		
@@ -115,7 +116,9 @@ public class BranchManagerTest {
 	
 	@After
 	public void after() {
-		store.admin().delete();
+		if (store != null) {
+			store.admin().delete();
+		}
 	}
 	
 	@Test

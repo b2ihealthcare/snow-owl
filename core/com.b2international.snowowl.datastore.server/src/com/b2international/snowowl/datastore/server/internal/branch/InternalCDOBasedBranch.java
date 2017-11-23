@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,12 @@ package com.b2international.snowowl.datastore.server.internal.branch;
 
 import java.util.Collection;
 
-import com.b2international.index.Script;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 
 /**
  * @since 4.1
  */
-@Script(name=InternalCDOBasedBranch.WITH_SEGMENTID, script=""
-		+ "ctx._source.segmentId = params.segmentId;"
-		+ "if (!ctx._source.segments.contains(params.segmentId)) {"
-		+ "    ctx._source.segments.add(params.segmentId);"
-		+ "}")
 public interface InternalCDOBasedBranch extends InternalBranch {
-	
-	String WITH_SEGMENTID = "withSegmentId";
 
 	int cdoBranchId();
 	

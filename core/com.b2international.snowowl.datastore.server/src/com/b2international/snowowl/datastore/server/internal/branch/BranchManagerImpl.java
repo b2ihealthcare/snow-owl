@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.DocSearcher;
@@ -41,6 +42,7 @@ import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
+import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -69,7 +71,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		this.branchStore = branchStore;
 	}
 	
-	protected final void initBranchStore(final InternalBranch main) {
+	protected final void initBranchStore(final MainBranchImpl main) {
     	try {
     		getMainBranch();
     	} catch (NotFoundException e) {
@@ -77,7 +79,7 @@ public abstract class BranchManagerImpl implements BranchManager {
     	}
 	}
 
-	private void doInitBranchStore(InternalBranch main) {
+	private void doInitBranchStore(MainBranchImpl main) {
 		branchStore.admin().clear(Branch.class);
 		main.setBranchManager(this);
 		commit(create(main));
@@ -165,7 +167,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return branch;
 	}
 
-	protected final Branch getBranchFromStore(final AfterWhereBuilder<InternalBranch> query) {
+	protected final Branch getBranchFromStore(final AfterWhereBuilder<BranchDocument> query) {
 		query.limit(1);
 		final InternalBranch branch = Iterables.getOnlyElement(search(query.build()), null);
 		if (branch != null) {
@@ -184,7 +186,10 @@ public abstract class BranchManagerImpl implements BranchManager {
 
 	@Override
 	public final Collection<Branch> getBranches() {
-		final Collection<InternalBranch> values = search(Query.select(InternalBranch.class).where(Expressions.matchAll()).limit(Integer.MAX_VALUE).build());
+		final Collection<InternalBranch> values = search(Query.select(BranchDocument.class)
+				.where(Expressions.matchAll())
+				.limit(Integer.MAX_VALUE)
+				.build());
 		initialize(values);
 		return ImmutableList.copyOf(values);
 	}
@@ -230,14 +235,14 @@ public abstract class BranchManagerImpl implements BranchManager {
 
 	private InternalBranch doDelete(final InternalBranch branch) {
 		final String path = branch.path();
-		commit(update(branch.getClass(), path, InternalBranch.WITH_DELETED, Collections.emptyMap()));
+		commit(update(path, BranchDocument.Scripts.WITH_DELETED, Collections.emptyMap()));
 		sendChangeEvent(path); // Explicit notification (delete)
 		return (InternalBranch) getBranch(path);
 	}
 	
 	/*package*/ final InternalBranch handleCommit(final InternalBranch branch, final long timestamp) {
 		final String path = branch.path();
-		commit(update(branch.getClass(), path, InternalBranch.WITH_HEADTIMESTAMP, ImmutableMap.of("headTimestamp", timestamp)));
+		commit(update(path, BranchDocument.Scripts.WITH_HEADTIMESTAMP, ImmutableMap.of("headTimestamp", timestamp)));
 		sendChangeEvent(path); // Explicit notification (commit)
 		return (InternalBranch) getBranch(path);
 	}
@@ -251,16 +256,19 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 
 	/*package*/ final Collection<Branch> getChildren(BranchImpl branchImpl) {
-		final Collection<InternalBranch> values = search(Query.select(InternalBranch.class).where(Expressions.prefixMatch("path", branchImpl.path() + Branch.SEPARATOR)).limit(Integer.MAX_VALUE).build());
+		final Collection<InternalBranch> values = search(Query.select(BranchDocument.class)
+				.where(Expressions.prefixMatch("path", branchImpl.path() + Branch.SEPARATOR))
+				.limit(Integer.MAX_VALUE)
+				.build());
 		initialize(values);
 		return ImmutableList.copyOf(values);
 	}
 
-	private Collection<InternalBranch> search(final Query<InternalBranch> query) {
+	private Collection<InternalBranch> search(final Query<BranchDocument> query) {
 		return ImmutableList.copyOf(branchStore.read(new IndexRead<Iterable<InternalBranch>>() {
 			@Override
 			public Iterable<InternalBranch> execute(DocSearcher index) throws IOException {
-				return index.search(query);
+				return index.search(query).stream().map(BranchManagerImpl.this::toBranch).collect(Collectors.toList());
 			}
 		}));
 	}
@@ -269,7 +277,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return branchStore.read(new IndexRead<InternalBranch>() {
 			@Override
 			public InternalBranch execute(DocSearcher index) throws IOException {
-				return index.get(InternalBranch.class, path);
+				return toBranch(index.get(BranchDocument.class, path));
 			}
 		});
 	}
@@ -285,24 +293,36 @@ public abstract class BranchManagerImpl implements BranchManager {
 		});
 	}
 	
-	protected final IndexWrite<Void> update(final Class<? extends InternalBranch> branchType, final String path, final String mutator, final Map<String, Object> params) {
+	protected final IndexWrite<Void> update(final String path, final String script, final Map<String, Object> params) {
 		return new IndexWrite<Void>() {
 			@Override
 			public Void execute(Writer index) throws IOException {
-				index.bulkUpdate(new BulkUpdate<>(branchType, DocumentMapping.matchId(path), DocumentMapping._ID, mutator, params));
+				index.bulkUpdate(new BulkUpdate<>(BranchDocument.class, DocumentMapping.matchId(path), DocumentMapping._ID, script, params));
 				return null;
 			}
 		};
 	}
 	
-	protected final IndexWrite<InternalBranch> create(final InternalBranch branch) {
-		return new IndexWrite<InternalBranch>() {
+	protected final IndexWrite<BranchImpl> create(final BranchImpl branch) {
+		return new IndexWrite<BranchImpl>() {
 			@Override
-			public InternalBranch execute(Writer index) throws IOException {
-				index.put(branch.path(), branch);
+			public BranchImpl execute(Writer index) throws IOException {
+				index.put(branch.path(), branch.toDocument().build());
 				branch.setBranchManager(BranchManagerImpl.this);
 				return branch;
 			}
 		};
 	}
+	
+	protected InternalBranch toBranch(BranchDocument doc) {
+		if (doc == null) return null;
+		switch (doc.getType()) {
+		case BranchImpl.TYPE: return BranchImpl.from(doc);
+		case MainBranchImpl.TYPE: return MainBranchImpl.from(doc);
+		case CDOBranchImpl.TYPE: return CDOBranchImpl.from(doc);
+		case CDOMainBranchImpl.TYPE: return CDOMainBranchImpl.from(doc);
+		default: throw new UnsupportedOperationException("TODO implement me for " + doc.getType()); 
+		}
+	}
+	
 }

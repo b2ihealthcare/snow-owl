@@ -23,6 +23,9 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.Metadata;
+import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
+import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
+import com.b2international.snowowl.datastore.internal.branch.BranchDocument.Builder;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -30,6 +33,8 @@ import com.google.common.collect.ImmutableSet;
  */
 public class CDOMainBranchImpl extends MainBranchImpl implements InternalCDOBasedBranch {
 
+	static final String TYPE = "CDOMainBranchImpl";
+	
 	private final int cdoBranchId = CDOBranch.MAIN_BRANCH_ID;
 	private final int segmentId;
 	private final Collection<Integer> segments;
@@ -76,4 +81,23 @@ public class CDOMainBranchImpl extends MainBranchImpl implements InternalCDOBase
 		main.setBranchManager(getBranchManager());
 		return main;
 	}
+	
+	@Override
+	Builder toDocument() {
+		return super.toDocument()
+				.type(TYPE)
+				.cdoBranchId(cdoBranchId)
+				.segmentId(segmentId)
+				.segments(segments);
+	}
+	
+	static InternalBranch from(BranchDocument doc) {
+		return new CDOMainBranchImpl(
+				doc.getBaseTimestamp(), 
+				doc.getHeadTimestamp(), 
+				doc.getMetadata(), 
+				doc.getSegmentId(), 
+				doc.getSegments());
+	}
+	
 }

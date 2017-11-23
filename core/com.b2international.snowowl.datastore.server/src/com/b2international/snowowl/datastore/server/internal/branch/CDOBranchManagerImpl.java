@@ -52,6 +52,7 @@ import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.events.BranchChangedEvent;
+import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
@@ -137,7 +138,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
     }
 
     private Branch getBranch(Integer branchId) {
-    	return getBranchFromStore(Query.select(InternalBranch.class).where(Expressions.match(CDO_BRANCH_ID, branchId)));
+    	return getBranchFromStore(Query.select(BranchDocument.class).where(Expressions.match(CDO_BRANCH_ID, branchId)));
     }
     
     private CDOBranch loadCDOBranch(Integer branchId) {
@@ -160,7 +161,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 				final InternalCDOBasedBranch tmpBranch = (InternalCDOBasedBranch) reopen(onTopOf,
 						String.format(Branch.TEMP_BRANCH_NAME_FORMAT, Branch.TEMP_PREFIX, branch.name(), System.currentTimeMillis()), branch.metadata());
 				
-				delete = prepareDelete(tmpBranch.getClass(), tmpBranch.path());
+				delete = prepareDelete(tmpBranch.path());
 				
 				postReopen.run();
 				
@@ -171,7 +172,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 						tmpBranchWithChanges.headTimestamp(), branch.metadata(), tmpBranchWithChanges.cdoBranchId(), 
 						tmpBranchWithChanges.segmentId(), tmpBranchWithChanges.segments(), tmpBranchWithChanges.parentSegments());
 				
-				final IndexWrite<Void> replace = prepareReplace(branch.getClass(), branch.path(), rebasedBranch);
+				final IndexWrite<Void> replace = prepareReplace(branch.path(), rebasedBranch);
 				
 				final CDOBranch rebasedCDOBranch = getCDOBranch(rebasedBranch);
 				rebasedCDOBranch.rename(branch.name());
@@ -206,15 +207,15 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 		}
     }
 
-	private IndexWrite<Void> prepareReplace(Class<? extends InternalBranch> type, final String path, final InternalBranch value) {
-		return update(type, path, InternalBranch.REPLACE, ImmutableMap.of("replace", mapper.convertValue(value, Map.class)));
+	private IndexWrite<Void> prepareReplace(final String path, final InternalBranch value) {
+		return update(path, BranchDocument.Scripts.REPLACE, ImmutableMap.of("replace", mapper.convertValue(value, Map.class)));
 	}
 	
-	private IndexWrite<Void> prepareDelete(final Class<? extends InternalBranch> type, final String path) {
+	private IndexWrite<Void> prepareDelete(final String path) {
 		return new IndexWrite<Void>() {
 			@Override
 			public Void execute(Writer index) throws IOException {
-				index.remove(type, path);
+				index.remove(BranchDocument.class, path);
 				return null;
 			}
 		};
@@ -293,12 +294,11 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
     }
 
     private InternalBranch doReopen(final String parentPath, final String name, final Metadata metadata, final long baseTimestamp, final long headTimestamp, final int cdoBranchId) {
-    	final Class<? extends InternalBranch> parentBranchClass = Branch.MAIN_PATH.equals(parentPath) ? CDOMainBranchImpl.class : CDOBranchImpl.class;
     	final Pair<Integer, Integer> nextTwoSegments = nextTwoSegments();
     	return commit(new IndexWrite<InternalBranch>() {
 			@Override
 			public InternalBranch execute(Writer index) throws IOException {
-				final InternalCDOBasedBranch parentBranch = (InternalCDOBasedBranch) index.searcher().get(parentBranchClass, parentPath);
+				final InternalCDOBasedBranch parentBranch = (InternalCDOBasedBranch) toBranch(index.searcher().get(BranchDocument.class, parentPath));
 				final Set<Integer> parentSegments = newHashSet();
 		    	// all branch should know the segment path to the ROOT
 		    	parentSegments.addAll(parentBranch.parentSegments());
@@ -307,7 +307,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 				// the "new" child branch
 				final CDOBranchImpl childBranch = new CDOBranchImpl(name, parentPath, baseTimestamp, headTimestamp, metadata, cdoBranchId, nextTwoSegments.getA(), Collections.singleton(nextTwoSegments.getA()), parentSegments);
 				create(childBranch).execute(index);
-				update(parentBranchClass, parentPath, InternalCDOBasedBranch.WITH_SEGMENTID, ImmutableMap.of("segmentId", nextTwoSegments.getB())).execute(index);
+				update(parentPath, BranchDocument.Scripts.WITH_SEGMENTID, ImmutableMap.of("segmentId", nextTwoSegments.getB())).execute(index);
 				return childBranch;
 			}
 		});

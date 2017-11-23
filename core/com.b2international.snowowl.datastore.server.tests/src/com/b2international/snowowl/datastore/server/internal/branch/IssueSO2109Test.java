@@ -51,6 +51,7 @@ import com.b2international.index.revision.RevisionIndexWrite;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.RevisionWriter;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.internal.InternalRepository;
@@ -91,8 +92,7 @@ public class IssueSO2109Test {
 		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
 		when(repository.getConflictProcessor()).thenReturn(conflictProcessor);
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
-		store = Indexes.createIndex(UUID.randomUUID().toString(), mapper,
-				new Mappings(CDOMainBranchImpl.class, CDOBranchImpl.class, InternalBranch.class, Data.class));
+		store = Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(BranchDocument.class, Data.class));
 		store.admin().create();
 
 		revisionIndex = new DefaultRevisionIndex(store, new RevisionBranchProvider() {

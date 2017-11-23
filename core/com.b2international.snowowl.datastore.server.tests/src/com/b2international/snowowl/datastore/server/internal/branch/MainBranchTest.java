@@ -15,7 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.internal.branch;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import org.junit.Before;
@@ -117,23 +118,4 @@ public class MainBranchTest {
 		main.rebase(main, "Rebase");
 	}
 	
-	@Test
-	public void serializationTest() throws Exception {
-		main.metadata().put("key", "value");
-		final String json = serializer.writeValueAsString(main);
-		assertEquals("{\"type\":\"MainBranchImpl\",\"baseTimestamp\":0,\"headTimestamp\":0,\"metadata\":{\"key\":\"value\"},\"name\":\"MAIN\",\"parentPath\":\"\",\"deleted\":false,\"path\":\"MAIN\"}", json);
-	}
-	
-	@Test
-	public void deserializationTest() throws Exception {
-		main.metadata().put("key", "value");
-		final String json = serializer.writeValueAsString(main);
-		final BranchImpl value = serializer.readValue(json, BranchImpl.class);
-		assertEquals("MAIN", value.path());
-		assertEquals("MAIN", value.name());
-		assertEquals(0L, value.baseTimestamp());
-		assertEquals(0L, value.headTimestamp());
-		assertEquals(false, value.isDeleted());
-		assertEquals("value", value.metadata().get("key"));
-	}
 }

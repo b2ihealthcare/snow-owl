@@ -19,13 +19,17 @@ import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
+import com.b2international.snowowl.datastore.internal.branch.BranchDocument.Builder;
 
 /**
  * @since 4.1
  */
 public class MainBranchImpl extends BranchImpl {
 
+	public static final String TYPE = "MainBranchImpl";
+	
 	MainBranchImpl(long baseTimestamp) {
 		super(MAIN_PATH, "", baseTimestamp, new MetadataImpl());
 	}
@@ -73,4 +77,14 @@ public class MainBranchImpl extends BranchImpl {
 	public BranchState state(Branch target) {
 		throw new UnsupportedOperationException(path() + " cannot compute state compared to target " + target.path());
 	}
+	
+	@Override
+	Builder toDocument() {
+		return super.toDocument().type(TYPE);
+	}
+	
+	static InternalBranch from(BranchDocument doc) {
+		return new MainBranchImpl(doc.getBaseTimestamp(), doc.getHeadTimestamp(), doc.getMetadata());
+	}
+	
 }
