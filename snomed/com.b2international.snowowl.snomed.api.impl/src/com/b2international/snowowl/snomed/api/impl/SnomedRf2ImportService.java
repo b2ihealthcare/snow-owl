@@ -32,7 +32,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
@@ -156,31 +155,12 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		
 		final File archiveFile = copyContentToTempFile(inputStream, valueOf(randomUUID()));
 		
-		final CodeSystem codeSystem;
-		if (codeSystemEntry == null) {
-			codeSystem = SnomedReleases.internationalRelease();
-		} else {
-			codeSystem = CodeSystem.builder()
-					.name(codeSystemEntry.getName())
-					.shortName(codeSystemEntry.getShortName())
-					.oid(codeSystemEntry.getOid())
-					.primaryLanguage(codeSystemEntry.getLanguage())
-					.organizationLink(codeSystemEntry.getOrgLink())
-					.citation(codeSystemEntry.getCitation())
-					.branchPath(codeSystemEntry.getBranchPath())
-					.iconPath(codeSystemEntry.getIconPath())
-					.repositoryUuid(codeSystemEntry.getRepositoryUuid())
-					.terminologyId(codeSystemEntry.getTerminologyComponentId())
-					.extensionOf(codeSystemEntry.getExtensionOf())
-					.build();
-		}
-		
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					((SnomedImportConfiguration) configuration).setStatus(ImportStatus.RUNNING);
-					final SnomedImportResult result = doImport(configuration, archiveFile, codeSystem);
+					final SnomedImportResult result = doImport(configuration, archiveFile);
 					((SnomedImportConfiguration) configuration).setStatus(convertStatus(result.getValidationDefects())); 
 				} catch (final Exception e) {
 					LOG.error("Error during the import of " + archiveFile, e);
@@ -200,11 +180,10 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		return ImportStatus.COMPLETED;
 	}
 
-	private SnomedImportResult doImport(final ISnomedImportConfiguration configuration, final File archiveFile,
-			final CodeSystem codeSystem) throws Exception {
+	private SnomedImportResult doImport(final ISnomedImportConfiguration configuration, final File archiveFile) throws Exception {
 		final IBranchPath branch = BranchPathUtils.createPath(configuration.getBranchPath());
 		return new ImportUtil().doImport(
-				codeSystem,
+				configuration.getCodeSystemShortName(),
 				getByNameIgnoreCase(valueOf(configuration.getRf2ReleaseType())), 
 				branch,
 				archiveFile,
