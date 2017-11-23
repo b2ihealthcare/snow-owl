@@ -31,6 +31,7 @@ import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
@@ -150,10 +151,13 @@ public final class EsIndexAdmin implements IndexAdmin {
 	
 	private void waitForYellowHealth(Set<String> indexes) {
 		if (!CompareUtils.isEmpty(indexes)) {
-			client().admin().cluster()
+			ClusterHealthResponse clusterHealthResponse = client().admin().cluster()
 				.prepareHealth(indexes.toArray(new String[indexes.size()]))
 				.setWaitForYellowStatus()
 				.get();
+			if (clusterHealthResponse.isTimedOut()) {
+				throw new IndexException("Failed to wait for yellow health status of index " + name, null);
+			}
 		}
 	}
 
