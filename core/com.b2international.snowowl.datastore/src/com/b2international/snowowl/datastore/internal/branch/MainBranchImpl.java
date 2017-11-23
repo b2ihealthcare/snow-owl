@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.branch;
+package com.b2international.snowowl.datastore.internal.branch;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
-import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
-import com.b2international.snowowl.datastore.internal.branch.BranchDocument.Builder;
 
 /**
  * @since 4.1
@@ -30,11 +27,11 @@ public class MainBranchImpl extends BranchImpl {
 
 	public static final String TYPE = "MainBranchImpl";
 	
-	MainBranchImpl(long baseTimestamp) {
+	public MainBranchImpl(long baseTimestamp) {
 		super(MAIN_PATH, "", baseTimestamp, new MetadataImpl());
 	}
 	
-	MainBranchImpl(long baseTimestamp, long headTimestamp, Metadata metadata) {
+	public MainBranchImpl(long baseTimestamp, long headTimestamp, Metadata metadata) {
 		super(MAIN_PATH, "", baseTimestamp, headTimestamp, metadata);
 	}
 
@@ -79,7 +76,7 @@ public class MainBranchImpl extends BranchImpl {
 	}
 	
 	@Override
-	Builder toDocument() {
+	BranchDocument.Builder toDocument() {
 		return super.toDocument().type(TYPE);
 	}
 	

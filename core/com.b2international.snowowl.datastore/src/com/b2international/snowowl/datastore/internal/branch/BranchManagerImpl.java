@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.branch;
+package com.b2international.snowowl.datastore.internal.branch;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -42,8 +42,6 @@ import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
-import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
-import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -151,7 +149,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return parentPath.concat(Branch.SEPARATOR).concat(name);
 	}
 
-	abstract InternalBranch doReopen(InternalBranch parent, String name, Metadata metadata);
+	protected abstract InternalBranch doReopen(InternalBranch parent, String name, Metadata metadata);
 
 	@Override
 	public final Branch getMainBranch() {
@@ -211,7 +209,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return mergedTo;
 	}
 
-	InternalBranch rebase(final InternalBranch branch, final InternalBranch onTopOf, final String commitMessage, final Runnable postReopen) {
+	public InternalBranch rebase(final InternalBranch branch, final InternalBranch onTopOf, final String commitMessage, final Runnable postReopen) {
 		applyChangeSet(branch, onTopOf, true, true, commitMessage);
 		final InternalBranch rebasedBranch = reopen(onTopOf, branch.name(), branch.metadata());
 		postReopen.run();
@@ -224,7 +222,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		}
 	}
 
-	abstract InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, boolean isRebase, String commitMessage);
+	protected abstract InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, boolean isRebase, String commitMessage);
 
 	/*package*/ final InternalBranch delete(final InternalBranch branchImpl) {
 		for (Branch child : branchImpl.children()) {
@@ -240,7 +238,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return (InternalBranch) getBranch(path);
 	}
 	
-	/*package*/ final InternalBranch handleCommit(final InternalBranch branch, final long timestamp) {
+	public final InternalBranch handleCommit(final InternalBranch branch, final long timestamp) {
 		final String path = branch.path();
 		commit(update(path, BranchDocument.Scripts.WITH_HEADTIMESTAMP, ImmutableMap.of("headTimestamp", timestamp)));
 		sendChangeEvent(path); // Explicit notification (commit)
@@ -268,7 +266,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return ImmutableList.copyOf(branchStore.read(new IndexRead<Iterable<InternalBranch>>() {
 			@Override
 			public Iterable<InternalBranch> execute(DocSearcher index) throws IOException {
-				return index.search(query).stream().map(BranchManagerImpl.this::toBranch).collect(Collectors.toList());
+				return index.search(query).stream().map(BranchDocument::toBranch).collect(Collectors.toList());
 			}
 		}));
 	}
@@ -277,12 +275,13 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return branchStore.read(new IndexRead<InternalBranch>() {
 			@Override
 			public InternalBranch execute(DocSearcher index) throws IOException {
-				return toBranch(index.get(BranchDocument.class, path));
+				BranchDocument doc = index.get(BranchDocument.class, path);
+				return doc == null ? null : doc.toBranch();
 			}
 		});
 	}
 	
-	protected final <T> T commit(final IndexWrite<T> changes) {
+	public final <T> T commit(final IndexWrite<T> changes) {
 		return branchStore.write(new IndexWrite<T>() {
 			@Override
 			public T execute(Writer index) throws IOException {
@@ -293,7 +292,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		});
 	}
 	
-	protected final IndexWrite<Void> update(final String path, final String script, final Map<String, Object> params) {
+	public final IndexWrite<Void> update(final String path, final String script, final Map<String, Object> params) {
 		return new IndexWrite<Void>() {
 			@Override
 			public Void execute(Writer index) throws IOException {
@@ -303,7 +302,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		};
 	}
 	
-	protected final IndexWrite<BranchImpl> create(final BranchImpl branch) {
+	public final IndexWrite<BranchImpl> create(final BranchImpl branch) {
 		return new IndexWrite<BranchImpl>() {
 			@Override
 			public BranchImpl execute(Writer index) throws IOException {
@@ -312,17 +311,6 @@ public abstract class BranchManagerImpl implements BranchManager {
 				return branch;
 			}
 		};
-	}
-	
-	protected InternalBranch toBranch(BranchDocument doc) {
-		if (doc == null) return null;
-		switch (doc.getType()) {
-		case BranchImpl.TYPE: return BranchImpl.from(doc);
-		case MainBranchImpl.TYPE: return MainBranchImpl.from(doc);
-		case CDOBranchImpl.TYPE: return CDOBranchImpl.from(doc);
-		case CDOMainBranchImpl.TYPE: return CDOMainBranchImpl.from(doc);
-		default: throw new UnsupportedOperationException("TODO implement me for " + doc.getType()); 
-		}
 	}
 	
 }

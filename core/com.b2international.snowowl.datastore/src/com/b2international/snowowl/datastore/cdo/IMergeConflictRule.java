@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.branch;
+package com.b2international.snowowl.datastore.cdo;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
+
+import com.b2international.snowowl.core.merge.MergeConflict;
 
 /**
- * @since 4.1
+ * Generic interface for merge conflict rules
+ * 
+ * @since 4.7
  */
-public interface InternalCDOBasedBranch extends InternalBranch {
+public interface IMergeConflictRule {
 
-	int cdoBranchId();
-	
-	int segmentId();
-	
-	Collection<Integer> segments();
-	
-	Collection<Integer> parentSegments();
-
-	InternalCDOBasedBranch withSegmentId(int segmentId);
+	/**
+	 * Executes the given conflict rule and returns a collection of {@link MergeConflict} if there was any.
+	 * 
+	 * @param transaction
+	 * @return
+	 */
+	Collection<MergeConflict> validate(CDOTransaction transaction);
 	
 }

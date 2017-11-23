@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.branch;
+package com.b2international.snowowl.datastore.internal.branch;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,12 +52,15 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
+import com.b2international.snowowl.datastore.cdo.ICDOConflictProcessor;
+import com.b2international.snowowl.datastore.internal.InternalRepository;
 import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
+import com.b2international.snowowl.datastore.internal.branch.CDOBranchManagerImpl;
+import com.b2international.snowowl.datastore.internal.branch.CDOMainBranchImpl;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
+import com.b2international.snowowl.datastore.internal.branch.InternalCDOBasedBranch;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.review.ReviewManager;
-import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
-import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;

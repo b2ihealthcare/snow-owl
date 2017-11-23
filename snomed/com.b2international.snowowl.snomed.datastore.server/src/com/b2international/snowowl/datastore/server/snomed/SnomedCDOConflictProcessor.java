@@ -36,11 +36,11 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.merge.MergeConflict;
-import com.b2international.snowowl.datastore.server.cdo.AbstractCDOConflictProcessor;
-import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndDetachedInTargetConflict;
-import com.b2international.snowowl.datastore.server.cdo.AddedInSourceAndTargetConflict;
-import com.b2international.snowowl.datastore.server.cdo.AddedInTargetAndDetachedInSourceConflict;
-import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
+import com.b2international.snowowl.datastore.cdo.AbstractCDOConflictProcessor;
+import com.b2international.snowowl.datastore.cdo.AddedInSourceAndDetachedInTargetConflict;
+import com.b2international.snowowl.datastore.cdo.AddedInSourceAndTargetConflict;
+import com.b2international.snowowl.datastore.cdo.AddedInTargetAndDetachedInSourceConflict;
+import com.b2international.snowowl.datastore.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.server.snomed.merge.SnomedMergeConflictMapper;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedPackage;

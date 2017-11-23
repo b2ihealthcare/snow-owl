@@ -247,5 +247,15 @@ public final class BranchDocument implements WithId {
     public Collection<Integer> getParentSegments() {
 		return parentSegments;
 	}
+
+    public InternalBranch toBranch() {
+		switch (type) {
+		case BranchImpl.TYPE: return BranchImpl.from(this);
+		case MainBranchImpl.TYPE: return MainBranchImpl.from(this);
+		case CDOBranchImpl.TYPE: return CDOBranchImpl.from(this);
+		case CDOMainBranchImpl.TYPE: return CDOMainBranchImpl.from(this);
+		default: throw new UnsupportedOperationException("TODO implement me for " + type); 
+		}
+	}
     
 }

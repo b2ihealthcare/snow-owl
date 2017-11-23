@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.branch;
+package com.b2international.snowowl.datastore.internal.branch;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -31,8 +31,6 @@ import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
-import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -57,7 +55,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
     private final boolean deleted;
     private final String path;
 
-    protected BranchImpl(String name, String parentPath, long baseTimestamp, Metadata metadata) {
+    public BranchImpl(String name, String parentPath, long baseTimestamp, Metadata metadata) {
     	this(name, parentPath, baseTimestamp, baseTimestamp, metadata);
     }
     
@@ -92,7 +90,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	}
 	
     @JsonIgnore
-	BranchManagerImpl getBranchManager() {
+	public BranchManagerImpl getBranchManager() {
 		return this.branchManager;
 	}
 	

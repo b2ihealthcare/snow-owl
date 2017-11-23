@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.branch;
+package com.b2international.snowowl.datastore.internal.branch;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSet;
@@ -52,11 +52,9 @@ import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.events.BranchChangedEvent;
-import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
-import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
+import com.b2international.snowowl.datastore.internal.InternalRepository;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
-import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -67,7 +65,7 @@ import com.google.common.collect.ImmutableSet;
  *
  * @since 4.1
  */
-public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchReplicator {
+public final class CDOBranchManagerImpl extends BranchManagerImpl implements BranchReplicator {
 
 	private static final String CDO_BRANCH_ID = "cdoBranchId";
 
@@ -131,7 +129,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 		}
     }
 
-    CDOBranch getCDOBranch(Branch branch) {
+    public final CDOBranch getCDOBranch(Branch branch) {
         checkArgument(!branch.isDeleted(), "Deleted branches cannot be retrieved.");
         final int branchId = ((InternalCDOBasedBranch) branch).cdoBranchId();
         return loadCDOBranch(branchId);
@@ -146,7 +144,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
     }
 
     @Override
-    InternalBranch rebase(InternalBranch branch, InternalBranch onTopOf, String commitMessage, Runnable postReopen) {
+    public InternalBranch rebase(InternalBranch branch, InternalBranch onTopOf, String commitMessage, Runnable postReopen) {
 		CDOTransaction testTransaction = null;
 		CDOTransaction newTransaction = null;
 		
@@ -231,7 +229,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 	}
     
     @Override
-    InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, boolean isRebase, String commitMessage) {
+    protected InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, boolean isRebase, String commitMessage) {
         final CDOTransaction dirtyTransaction = applyChangeSet(from, to, isRebase);
         try {
         	if (dryRun) {
@@ -286,7 +284,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
 	}
     
     @Override
-    InternalBranch doReopen(InternalBranch parent, String name, Metadata metadata) {
+    protected InternalBranch doReopen(InternalBranch parent, String name, Metadata metadata) {
         final CDOBranch childCDOBranch = createCDOBranch(parent, name);
         final CDOBranchPoint[] basePath = childCDOBranch.getBasePath();
         final long timeStamp = basePath[basePath.length - 1].getTimeStamp();
@@ -298,7 +296,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl implements BranchRep
     	return commit(new IndexWrite<InternalBranch>() {
 			@Override
 			public InternalBranch execute(Writer index) throws IOException {
-				final InternalCDOBasedBranch parentBranch = (InternalCDOBasedBranch) toBranch(index.searcher().get(BranchDocument.class, parentPath));
+				final InternalCDOBasedBranch parentBranch = (InternalCDOBasedBranch) index.searcher().get(BranchDocument.class, parentPath).toBranch();
 				final Set<Integer> parentSegments = newHashSet();
 		    	// all branch should know the segment path to the ROOT
 		    	parentSegments.addAll(parentBranch.parentSegments());

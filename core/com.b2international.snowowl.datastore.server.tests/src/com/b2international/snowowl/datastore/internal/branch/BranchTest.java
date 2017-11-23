@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.branch;
+package com.b2international.snowowl.datastore.internal.branch;
 
-import static com.b2international.snowowl.datastore.server.internal.branch.BranchAssertions.assertState;
+import static com.b2international.snowowl.datastore.internal.branch.BranchAssertions.assertState;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Mockito.mock;
@@ -27,7 +27,10 @@ import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branch.BranchState;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.internal.branch.BranchImpl;
+import com.b2international.snowowl.datastore.internal.branch.BranchManagerImpl;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
+import com.b2international.snowowl.datastore.internal.branch.MainBranchImpl;
 
 /**
  * @since 4.1

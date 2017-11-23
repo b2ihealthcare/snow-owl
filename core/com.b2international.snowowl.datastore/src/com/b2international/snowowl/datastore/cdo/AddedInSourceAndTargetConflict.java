@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.cdo;
+package com.b2international.snowowl.datastore.cdo;
 
 import java.text.MessageFormat;
 
@@ -21,28 +21,33 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
 /**
- * Reported when a component is added on the source branch, but it references a component (either directly or indirectly) which was detached on the
- * target branch.
+ * Reported when components with the same domain key are added on both the source and the target branch.
  */
-public class AddedInSourceAndDetachedInTargetConflict extends Conflict {
+public class AddedInSourceAndTargetConflict extends Conflict {
 
 	private final CDOID sourceId;
 	private final CDOID targetId;
-	private final String featureName;
+	private final String message;
+	private final boolean addedInSource;
 
-	public AddedInSourceAndDetachedInTargetConflict(final CDOID sourceId, final CDOID targetId) {
-		this(sourceId, targetId, null);
+	public AddedInSourceAndTargetConflict(final CDOID sourceId, final CDOID targetId, final String message) {
+		this(sourceId, targetId, message, true);
 	}
 	
-	public AddedInSourceAndDetachedInTargetConflict(final CDOID sourceId, final CDOID targetId, final String featureName) {
+	public AddedInSourceAndTargetConflict(final CDOID sourceId, final CDOID targetId, final String message, final boolean addedInSource) {
 		this.sourceId = sourceId;
 		this.targetId = targetId;
-		this.featureName = featureName;
+		this.message = message;
+		this.addedInSource = addedInSource;
 	}
 
 	@Override
 	public CDOID getID() {
 		return sourceId;
+	}
+	
+	public String getMessage() {
+		return message;
 	}
 
 	public CDOID getSourceId() {
@@ -53,12 +58,12 @@ public class AddedInSourceAndDetachedInTargetConflict extends Conflict {
 		return targetId;
 	}
 	
-	public String getFeatureName() {
-		return featureName;
+	public boolean isAddedInSource() {
+		return addedInSource;
 	}
-
+	
 	@Override
 	public String toString() {
-		return MessageFormat.format("AddedInSourceAndDetachedInTarget[source={0}, target={1}]", sourceId, targetId);
+		return MessageFormat.format("AddedInSourceAndTarget[source={0}, target={1}]", sourceId, targetId);
 	}
 }

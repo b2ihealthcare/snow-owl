@@ -13,16 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.branch;
+package com.b2international.snowowl.datastore.internal.branch;
 
 import java.util.Collection;
 import java.util.Set;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.Metadata;
-import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
-import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
-import com.b2international.snowowl.datastore.internal.branch.BranchDocument.Builder;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
@@ -98,7 +95,7 @@ public class CDOBranchImpl extends BranchImpl implements InternalCDOBasedBranch 
 	}
 	
 	@Override
-	Builder toDocument() {
+	BranchDocument.Builder toDocument() {
 		return super.toDocument()
 				.type(TYPE)
 				.cdoBranchId(cdoBranchId)

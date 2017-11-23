@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.cdo;
+package com.b2international.snowowl.datastore.cdo;
 
 import java.text.MessageFormat;
 
@@ -21,33 +21,28 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
 /**
- * Reported when components with the same domain key are added on both the source and the target branch.
+ * Reported when a component is added on the source branch, but it references a component (either directly or indirectly) which was detached on the
+ * target branch.
  */
-public class AddedInSourceAndTargetConflict extends Conflict {
+public class AddedInSourceAndDetachedInTargetConflict extends Conflict {
 
 	private final CDOID sourceId;
 	private final CDOID targetId;
-	private final String message;
-	private final boolean addedInSource;
+	private final String featureName;
 
-	public AddedInSourceAndTargetConflict(final CDOID sourceId, final CDOID targetId, final String message) {
-		this(sourceId, targetId, message, true);
+	public AddedInSourceAndDetachedInTargetConflict(final CDOID sourceId, final CDOID targetId) {
+		this(sourceId, targetId, null);
 	}
 	
-	public AddedInSourceAndTargetConflict(final CDOID sourceId, final CDOID targetId, final String message, final boolean addedInSource) {
+	public AddedInSourceAndDetachedInTargetConflict(final CDOID sourceId, final CDOID targetId, final String featureName) {
 		this.sourceId = sourceId;
 		this.targetId = targetId;
-		this.message = message;
-		this.addedInSource = addedInSource;
+		this.featureName = featureName;
 	}
 
 	@Override
 	public CDOID getID() {
 		return sourceId;
-	}
-	
-	public String getMessage() {
-		return message;
 	}
 
 	public CDOID getSourceId() {
@@ -58,12 +53,12 @@ public class AddedInSourceAndTargetConflict extends Conflict {
 		return targetId;
 	}
 	
-	public boolean isAddedInSource() {
-		return addedInSource;
+	public String getFeatureName() {
+		return featureName;
 	}
-	
+
 	@Override
 	public String toString() {
-		return MessageFormat.format("AddedInSourceAndTarget[source={0}, target={1}]", sourceId, targetId);
+		return MessageFormat.format("AddedInSourceAndDetachedInTarget[source={0}, target={1}]", sourceId, targetId);
 	}
 }

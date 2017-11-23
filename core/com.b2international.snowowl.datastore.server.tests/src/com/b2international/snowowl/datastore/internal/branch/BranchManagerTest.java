@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.branch;
+package com.b2international.snowowl.datastore.internal.branch;
 
-import static com.b2international.snowowl.datastore.server.internal.branch.BranchAssertions.assertLaterBase;
-import static com.b2international.snowowl.datastore.server.internal.branch.BranchAssertions.assertState;
+import static com.b2international.snowowl.datastore.internal.branch.BranchAssertions.assertLaterBase;
+import static com.b2international.snowowl.datastore.internal.branch.BranchAssertions.assertState;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -49,7 +49,10 @@ import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
+import com.b2international.snowowl.datastore.internal.branch.BranchImpl;
+import com.b2international.snowowl.datastore.internal.branch.BranchManagerImpl;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
+import com.b2international.snowowl.datastore.internal.branch.MainBranchImpl;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
@@ -67,7 +70,7 @@ public class BranchManagerTest {
 		}
 
 		@Override
-		InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, boolean isRebase, String commitMessage) {
+		protected InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, boolean isRebase, String commitMessage) {
 			if (!dryRun && from.headTimestamp() > from.baseTimestamp()) {
 				return handleCommit(to, clock.getTimestamp());
 			} else {
@@ -76,7 +79,7 @@ public class BranchManagerTest {
 		}
 
 		@Override
-		InternalBranch doReopen(InternalBranch parent, String name, Metadata metadata) {
+		protected InternalBranch doReopen(InternalBranch parent, String name, Metadata metadata) {
 			final BranchImpl branch = new BranchImpl(name, parent.path(), clock.getTimestamp(), metadata);
 			return commit(create(branch));
 		}

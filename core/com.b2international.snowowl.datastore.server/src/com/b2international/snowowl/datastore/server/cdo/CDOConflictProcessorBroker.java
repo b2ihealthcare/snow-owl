@@ -20,6 +20,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Collection;
 
 import com.b2international.commons.platform.Extensions;
+import com.b2international.snowowl.datastore.cdo.ICDOConflictProcessor;
+import com.b2international.snowowl.datastore.cdo.NullCDOConflictProcessor;
 
 /**
  * Broker for terminology specific {@link ICDOConflictProcessor conflict processors}.

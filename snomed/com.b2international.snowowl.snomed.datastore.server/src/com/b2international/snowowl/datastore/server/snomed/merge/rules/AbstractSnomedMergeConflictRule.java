@@ -16,7 +16,7 @@
 package com.b2international.snowowl.datastore.server.snomed.merge.rules;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.server.cdo.IMergeConflictRule;
+import com.b2international.snowowl.datastore.cdo.IMergeConflictRule;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;

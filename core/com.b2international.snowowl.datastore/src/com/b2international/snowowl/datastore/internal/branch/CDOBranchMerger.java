@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.branch;
+package com.b2international.snowowl.datastore.internal.branch;
 
 import java.util.Collection;
 import java.util.Map;
@@ -28,8 +28,8 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
 import com.b2international.snowowl.core.merge.MergeConflict;
-import com.b2international.snowowl.datastore.server.cdo.ConflictMapper;
-import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
+import com.b2international.snowowl.datastore.cdo.ConflictMapper;
+import com.b2international.snowowl.datastore.cdo.ICDOConflictProcessor;
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 
