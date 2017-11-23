@@ -22,10 +22,13 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.b2international.index.query.Query;
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 
 /**
  * @since 4.7
@@ -40,9 +43,17 @@ public final class Mappings {
 	
 	public Mappings(Collection<Class<?>> types) {
 		checkArgument(!types.isEmpty(), "At least one document type should be specified");
+		final Multiset<String> duplicates = HashMultiset.create();
 		for (Class<?> type : ImmutableSet.copyOf(types)) {
 			// XXX register only root mappings, nested mappings should be looked up via the parent/ancestor mapping
-			mappingsByType.put(type, new DocumentMapping(type));
+			DocumentMapping mapping = new DocumentMapping(type);
+			mappingsByType.put(type, mapping);
+			duplicates.add(mapping.typeAsString());
+		}
+		for (Entry<String> duplicate : duplicates.entrySet()) {
+			if (duplicate.getCount() > 1) {
+				throw new IllegalArgumentException("Multiple Java types with the same document name: " + duplicate.getElement());
+			}
 		}
 	}
 	
