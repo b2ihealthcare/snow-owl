@@ -169,12 +169,12 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 				}
 			}
 			
-			if (!Strings.isNullOrEmpty(semanticTag)) {
+			if (semanticTag != null) {
 				Matcher matcher = REGEX.matcher(semanticTag.trim());
 				if (matcher.matches()) {
 					req.filterBySemanticTagRegex(matcher.group(1));
 				} else {
-					req.filterBySemanticTag(semanticTag);
+					req.filterBySemanticTag(semanticTag.trim());
 				}
 			}
 			
