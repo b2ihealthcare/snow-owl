@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +33,7 @@ import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
@@ -47,12 +47,12 @@ import com.google.common.collect.Sets;
 /**
  * @since 6.0
  */
-public final class ValidationBootstrap extends DefaultBootstrapFragment {
+public final class ValidationBootstrap extends DefaultBootstrapFragment implements PreRunCapableBootstrapFragment {
 
 	private static final Logger LOG = LoggerFactory.getLogger("validation");
 	
 	@Override
-	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
+	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		if (env.isEmbedded() || env.isServer()) {
 			final ObjectMapper mapper = env.service(ObjectMapper.class);
 			final Index validationIndex = Indexes.createIndex(
