@@ -21,7 +21,6 @@ import org.osgi.service.prefs.PreferencesService;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.events.metrics.DefaultMetricsProvider;
 import com.b2international.snowowl.core.events.metrics.Metrics;
@@ -43,9 +42,6 @@ public class SnowOwlApplicationBootstrap implements BootstrapFragment {
 	public void init(SnowOwlConfiguration configuration, Environment env) {
 		final PreferencesService preferences = env.preferences(); 
 		
-		final ClientPreferences cdoClientConfiguration = new ClientPreferences(preferences);
-		env.services().registerService(ClientPreferences.class, cdoClientConfiguration);
-
 		final LoginConfiguration loginConfiguration = new LoginConfiguration(preferences);
 		env.services().registerService(LoginConfiguration.class, loginConfiguration);
 		
