@@ -202,11 +202,17 @@ public class BranchManagerTest {
 	
 	@Test
 	public void whenDeletingBranch_ChildBranchesShouldBeDeletedAsWell() throws Exception {
-		a.createChild("1");
-		a.createChild("2");
+		for (int i = 0; i < 10; i++) {
+			a.createChild(""+i);
+		}
+		
+		assertEquals(10, a.children().size());
+		
 		a.delete();
-		assertTrue(manager.getBranch("MAIN/a/1").isDeleted());
-		assertTrue(manager.getBranch("MAIN/a/2").isDeleted());
+		
+		for (int i = 0; i < 10; i++) {
+			assertTrue(manager.getBranch("MAIN/a/"+i).isDeleted());
+		}
 	}
 	
 	@Test
