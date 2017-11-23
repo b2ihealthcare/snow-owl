@@ -132,6 +132,8 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			env.services().registerService(RepositoryManager.class, new DefaultRepositoryManager());
 			env.services().registerService(EditingContextFactoryProvider.class, new ExtensionBasedEditingContextFactoryProvider());
 			
+			initializeRequestSupport(env, configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers());
+			
 			LOG.debug("<<< Server-side datastore bundle started. [{}]", serverStopwatch);
 		} else {
 			LOG.debug("Snow Owl application is running in remote mode.");
@@ -154,7 +156,6 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		
 		if (env.isEmbedded() || env.isServer()) {
 			initializeJobSupport(env, configuration);
-			initializeRequestSupport(env, configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers());
 			initializeRepositories(configuration, env);
 			initializeContent(env);
 		}
