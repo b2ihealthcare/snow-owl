@@ -221,24 +221,24 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	public class DottedExpressionConstraintElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.DottedExpressionConstraint");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cSimpleExpressionConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cSubExpressionConstraintParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Action cDottedExpressionConstraintConstraintAction_1_0 = (Action)cGroup_1.eContents().get(0);
 		private final RuleCall cDOTTerminalRuleCall_1_1 = (RuleCall)cGroup_1.eContents().get(1);
 		private final Assignment cAttributeAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
-		private final RuleCall cAttributeAttributeParserRuleCall_1_2_0 = (RuleCall)cAttributeAssignment_1_2.eContents().get(0);
+		private final RuleCall cAttributeSubExpressionConstraintParserRuleCall_1_2_0 = (RuleCall)cAttributeAssignment_1_2.eContents().get(0);
 		
 		//DottedExpressionConstraint ExpressionConstraint:
-		//	SimpleExpressionConstraint ({DottedExpressionConstraint.constraint=current} DOT attribute=Attribute)*;
+		//	SubExpressionConstraint ({DottedExpressionConstraint.constraint=current} DOT attribute=SubExpressionConstraint)*;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//SimpleExpressionConstraint ({DottedExpressionConstraint.constraint=current} DOT attribute=Attribute)*
+		//SubExpressionConstraint ({DottedExpressionConstraint.constraint=current} DOT attribute=SubExpressionConstraint)*
 		public Group getGroup() { return cGroup; }
 		
-		//SimpleExpressionConstraint
-		public RuleCall getSimpleExpressionConstraintParserRuleCall_0() { return cSimpleExpressionConstraintParserRuleCall_0; }
+		//SubExpressionConstraint
+		public RuleCall getSubExpressionConstraintParserRuleCall_0() { return cSubExpressionConstraintParserRuleCall_0; }
 		
-		//({DottedExpressionConstraint.constraint=current} DOT attribute=Attribute)*
+		//({DottedExpressionConstraint.constraint=current} DOT attribute=SubExpressionConstraint)*
 		public Group getGroup_1() { return cGroup_1; }
 		
 		//{DottedExpressionConstraint.constraint=current}
@@ -247,14 +247,14 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		//DOT
 		public RuleCall getDOTTerminalRuleCall_1_1() { return cDOTTerminalRuleCall_1_1; }
 		
-		//attribute=Attribute
+		//attribute=SubExpressionConstraint
 		public Assignment getAttributeAssignment_1_2() { return cAttributeAssignment_1_2; }
 		
-		//Attribute
-		public RuleCall getAttributeAttributeParserRuleCall_1_2_0() { return cAttributeAttributeParserRuleCall_1_2_0; }
+		//SubExpressionConstraint
+		public RuleCall getAttributeSubExpressionConstraintParserRuleCall_1_2_0() { return cAttributeSubExpressionConstraintParserRuleCall_1_2_0; }
 	}
-	public class SimpleExpressionConstraintElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.SimpleExpressionConstraint");
+	public class SubExpressionConstraintElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
 		private final RuleCall cChildOfParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
 		private final RuleCall cDescendantOfParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
@@ -264,7 +264,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cAncestorOrSelfOfParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
 		private final RuleCall cFocusConceptParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
 		
-		//SimpleExpressionConstraint ExpressionConstraint:
+		//SubExpressionConstraint ExpressionConstraint:
 		//	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | FocusConcept;
 		@Override public ParserRule getRule() { return rule; }
 		
@@ -863,15 +863,15 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final Assignment cReversedAssignment_1 = (Assignment)cGroup.eContents().get(1);
 		private final RuleCall cReversedREVERSEDTerminalRuleCall_1_0 = (RuleCall)cReversedAssignment_1.eContents().get(0);
 		private final Assignment cAttributeAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cAttributeAttributeParserRuleCall_2_0 = (RuleCall)cAttributeAssignment_2.eContents().get(0);
+		private final RuleCall cAttributeSubExpressionConstraintParserRuleCall_2_0 = (RuleCall)cAttributeAssignment_2.eContents().get(0);
 		private final Assignment cComparisonAssignment_3 = (Assignment)cGroup.eContents().get(3);
 		private final RuleCall cComparisonComparisonParserRuleCall_3_0 = (RuleCall)cComparisonAssignment_3.eContents().get(0);
 		
 		//AttributeConstraint:
-		//	cardinality=Cardinality? reversed?=REVERSED? attribute=Attribute comparison=Comparison;
+		//	cardinality=Cardinality? reversed?=REVERSED? attribute=SubExpressionConstraint comparison=Comparison;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//cardinality=Cardinality? reversed?=REVERSED? attribute=Attribute comparison=Comparison
+		//cardinality=Cardinality? reversed?=REVERSED? attribute=SubExpressionConstraint comparison=Comparison
 		public Group getGroup() { return cGroup; }
 		
 		//cardinality=Cardinality?
@@ -886,106 +886,17 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		//REVERSED
 		public RuleCall getReversedREVERSEDTerminalRuleCall_1_0() { return cReversedREVERSEDTerminalRuleCall_1_0; }
 		
-		//attribute=Attribute
+		//attribute=SubExpressionConstraint
 		public Assignment getAttributeAssignment_2() { return cAttributeAssignment_2; }
 		
-		//Attribute
-		public RuleCall getAttributeAttributeParserRuleCall_2_0() { return cAttributeAttributeParserRuleCall_2_0; }
+		//SubExpressionConstraint
+		public RuleCall getAttributeSubExpressionConstraintParserRuleCall_2_0() { return cAttributeSubExpressionConstraintParserRuleCall_2_0; }
 		
 		//comparison=Comparison
 		public Assignment getComparisonAssignment_3() { return cComparisonAssignment_3; }
 		
 		//Comparison
 		public RuleCall getComparisonComparisonParserRuleCall_3_0() { return cComparisonComparisonParserRuleCall_3_0; }
-	}
-	public class AttributeElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.Attribute");
-		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
-		private final RuleCall cAttributeDescendantOfParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final RuleCall cAttributeDescendantOrSelfOfParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
-		private final RuleCall cConceptReferenceParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
-		private final RuleCall cAnyParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
-		
-		//Attribute ExpressionConstraint:
-		//	AttributeDescendantOf | AttributeDescendantOrSelfOf | ConceptReference | Any;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//AttributeDescendantOf | AttributeDescendantOrSelfOf | ConceptReference | Any
-		public Alternatives getAlternatives() { return cAlternatives; }
-		
-		//AttributeDescendantOf
-		public RuleCall getAttributeDescendantOfParserRuleCall_0() { return cAttributeDescendantOfParserRuleCall_0; }
-		
-		//AttributeDescendantOrSelfOf
-		public RuleCall getAttributeDescendantOrSelfOfParserRuleCall_1() { return cAttributeDescendantOrSelfOfParserRuleCall_1; }
-		
-		//ConceptReference
-		public RuleCall getConceptReferenceParserRuleCall_2() { return cConceptReferenceParserRuleCall_2; }
-		
-		//Any
-		public RuleCall getAnyParserRuleCall_3() { return cAnyParserRuleCall_3; }
-	}
-	public class AttributeDescendantOfElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.AttributeDescendantOf");
-		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cLTTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
-		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final Alternatives cConstraintAlternatives_1_0 = (Alternatives)cConstraintAssignment_1.eContents().get(0);
-		private final RuleCall cConstraintConceptReferenceParserRuleCall_1_0_0 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(0);
-		private final RuleCall cConstraintAnyParserRuleCall_1_0_1 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(1);
-		
-		//AttributeDescendantOf DescendantOf:
-		//	LT constraint=(ConceptReference | Any);
-		@Override public ParserRule getRule() { return rule; }
-		
-		//LT constraint=(ConceptReference | Any)
-		public Group getGroup() { return cGroup; }
-		
-		//LT
-		public RuleCall getLTTerminalRuleCall_0() { return cLTTerminalRuleCall_0; }
-		
-		//constraint=(ConceptReference | Any)
-		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
-		
-		//(ConceptReference | Any)
-		public Alternatives getConstraintAlternatives_1_0() { return cConstraintAlternatives_1_0; }
-		
-		//ConceptReference
-		public RuleCall getConstraintConceptReferenceParserRuleCall_1_0_0() { return cConstraintConceptReferenceParserRuleCall_1_0_0; }
-		
-		//Any
-		public RuleCall getConstraintAnyParserRuleCall_1_0_1() { return cConstraintAnyParserRuleCall_1_0_1; }
-	}
-	public class AttributeDescendantOrSelfOfElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.AttributeDescendantOrSelfOf");
-		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cDBL_LTTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
-		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final Alternatives cConstraintAlternatives_1_0 = (Alternatives)cConstraintAssignment_1.eContents().get(0);
-		private final RuleCall cConstraintConceptReferenceParserRuleCall_1_0_0 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(0);
-		private final RuleCall cConstraintAnyParserRuleCall_1_0_1 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(1);
-		
-		//AttributeDescendantOrSelfOf DescendantOrSelfOf:
-		//	DBL_LT constraint=(ConceptReference | Any);
-		@Override public ParserRule getRule() { return rule; }
-		
-		//DBL_LT constraint=(ConceptReference | Any)
-		public Group getGroup() { return cGroup; }
-		
-		//DBL_LT
-		public RuleCall getDBL_LTTerminalRuleCall_0() { return cDBL_LTTerminalRuleCall_0; }
-		
-		//constraint=(ConceptReference | Any)
-		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
-		
-		//(ConceptReference | Any)
-		public Alternatives getConstraintAlternatives_1_0() { return cConstraintAlternatives_1_0; }
-		
-		//ConceptReference
-		public RuleCall getConstraintConceptReferenceParserRuleCall_1_0_0() { return cConstraintConceptReferenceParserRuleCall_1_0_0; }
-		
-		//Any
-		public RuleCall getConstraintAnyParserRuleCall_1_0_1() { return cConstraintAnyParserRuleCall_1_0_1; }
 	}
 	public class CardinalityElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.Cardinality");
@@ -1152,46 +1063,46 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final RuleCall cEQUALTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final RuleCall cConstraintSimpleExpressionConstraintParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
+		private final RuleCall cConstraintSubExpressionConstraintParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
 		
 		//AttributeValueEquals:
-		//	EQUAL constraint=SimpleExpressionConstraint;
+		//	EQUAL constraint=SubExpressionConstraint;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//EQUAL constraint=SimpleExpressionConstraint
+		//EQUAL constraint=SubExpressionConstraint
 		public Group getGroup() { return cGroup; }
 		
 		//EQUAL
 		public RuleCall getEQUALTerminalRuleCall_0() { return cEQUALTerminalRuleCall_0; }
 		
-		//constraint=SimpleExpressionConstraint
+		//constraint=SubExpressionConstraint
 		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
 		
-		//SimpleExpressionConstraint
-		public RuleCall getConstraintSimpleExpressionConstraintParserRuleCall_1_0() { return cConstraintSimpleExpressionConstraintParserRuleCall_1_0; }
+		//SubExpressionConstraint
+		public RuleCall getConstraintSubExpressionConstraintParserRuleCall_1_0() { return cConstraintSubExpressionConstraintParserRuleCall_1_0; }
 	}
 	public class AttributeValueNotEqualsElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.AttributeValueNotEquals");
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final RuleCall cNOT_EQUALTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final RuleCall cConstraintSimpleExpressionConstraintParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
+		private final RuleCall cConstraintSubExpressionConstraintParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
 		
 		//AttributeValueNotEquals:
-		//	NOT_EQUAL constraint=SimpleExpressionConstraint;
+		//	NOT_EQUAL constraint=SubExpressionConstraint;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//NOT_EQUAL constraint=SimpleExpressionConstraint
+		//NOT_EQUAL constraint=SubExpressionConstraint
 		public Group getGroup() { return cGroup; }
 		
 		//NOT_EQUAL
 		public RuleCall getNOT_EQUALTerminalRuleCall_0() { return cNOT_EQUALTerminalRuleCall_0; }
 		
-		//constraint=SimpleExpressionConstraint
+		//constraint=SubExpressionConstraint
 		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
 		
-		//SimpleExpressionConstraint
-		public RuleCall getConstraintSimpleExpressionConstraintParserRuleCall_1_0() { return cConstraintSimpleExpressionConstraintParserRuleCall_1_0; }
+		//SubExpressionConstraint
+		public RuleCall getConstraintSubExpressionConstraintParserRuleCall_1_0() { return cConstraintSubExpressionConstraintParserRuleCall_1_0; }
 	}
 	public class StringValueEqualsElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.StringValueEquals");
@@ -1816,7 +1727,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final ExclusionExpressionConstraintElements pExclusionExpressionConstraint;
 	private final RefinedExpressionConstraintElements pRefinedExpressionConstraint;
 	private final DottedExpressionConstraintElements pDottedExpressionConstraint;
-	private final SimpleExpressionConstraintElements pSimpleExpressionConstraint;
+	private final SubExpressionConstraintElements pSubExpressionConstraint;
 	private final FocusConceptElements pFocusConcept;
 	private final ChildOfElements pChildOf;
 	private final DescendantOfElements pDescendantOf;
@@ -1839,9 +1750,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final SubAttributeSetElements pSubAttributeSet;
 	private final NestedAttributeSetElements pNestedAttributeSet;
 	private final AttributeConstraintElements pAttributeConstraint;
-	private final AttributeElements pAttribute;
-	private final AttributeDescendantOfElements pAttributeDescendantOf;
-	private final AttributeDescendantOrSelfOfElements pAttributeDescendantOrSelfOf;
 	private final CardinalityElements pCardinality;
 	private final ComparisonElements pComparison;
 	private final AttributeComparisonElements pAttributeComparison;
@@ -1915,7 +1823,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pExclusionExpressionConstraint = new ExclusionExpressionConstraintElements();
 		this.pRefinedExpressionConstraint = new RefinedExpressionConstraintElements();
 		this.pDottedExpressionConstraint = new DottedExpressionConstraintElements();
-		this.pSimpleExpressionConstraint = new SimpleExpressionConstraintElements();
+		this.pSubExpressionConstraint = new SubExpressionConstraintElements();
 		this.pFocusConcept = new FocusConceptElements();
 		this.pChildOf = new ChildOfElements();
 		this.pDescendantOf = new DescendantOfElements();
@@ -1938,9 +1846,6 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pSubAttributeSet = new SubAttributeSetElements();
 		this.pNestedAttributeSet = new NestedAttributeSetElements();
 		this.pAttributeConstraint = new AttributeConstraintElements();
-		this.pAttribute = new AttributeElements();
-		this.pAttributeDescendantOf = new AttributeDescendantOfElements();
-		this.pAttributeDescendantOrSelfOf = new AttributeDescendantOrSelfOfElements();
 		this.pCardinality = new CardinalityElements();
 		this.pComparison = new ComparisonElements();
 		this.pAttributeComparison = new AttributeComparisonElements();
@@ -2088,7 +1993,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//DottedExpressionConstraint ExpressionConstraint:
-	//	SimpleExpressionConstraint ({DottedExpressionConstraint.constraint=current} DOT attribute=Attribute)*;
+	//	SubExpressionConstraint ({DottedExpressionConstraint.constraint=current} DOT attribute=SubExpressionConstraint)*;
 	public DottedExpressionConstraintElements getDottedExpressionConstraintAccess() {
 		return pDottedExpressionConstraint;
 	}
@@ -2097,14 +2002,14 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		return getDottedExpressionConstraintAccess().getRule();
 	}
 	
-	//SimpleExpressionConstraint ExpressionConstraint:
+	//SubExpressionConstraint ExpressionConstraint:
 	//	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | FocusConcept;
-	public SimpleExpressionConstraintElements getSimpleExpressionConstraintAccess() {
-		return pSimpleExpressionConstraint;
+	public SubExpressionConstraintElements getSubExpressionConstraintAccess() {
+		return pSubExpressionConstraint;
 	}
 	
-	public ParserRule getSimpleExpressionConstraintRule() {
-		return getSimpleExpressionConstraintAccess().getRule();
+	public ParserRule getSubExpressionConstraintRule() {
+		return getSubExpressionConstraintAccess().getRule();
 	}
 	
 	//FocusConcept ExpressionConstraint:
@@ -2318,43 +2223,13 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//AttributeConstraint:
-	//	cardinality=Cardinality? reversed?=REVERSED? attribute=Attribute comparison=Comparison;
+	//	cardinality=Cardinality? reversed?=REVERSED? attribute=SubExpressionConstraint comparison=Comparison;
 	public AttributeConstraintElements getAttributeConstraintAccess() {
 		return pAttributeConstraint;
 	}
 	
 	public ParserRule getAttributeConstraintRule() {
 		return getAttributeConstraintAccess().getRule();
-	}
-	
-	//Attribute ExpressionConstraint:
-	//	AttributeDescendantOf | AttributeDescendantOrSelfOf | ConceptReference | Any;
-	public AttributeElements getAttributeAccess() {
-		return pAttribute;
-	}
-	
-	public ParserRule getAttributeRule() {
-		return getAttributeAccess().getRule();
-	}
-	
-	//AttributeDescendantOf DescendantOf:
-	//	LT constraint=(ConceptReference | Any);
-	public AttributeDescendantOfElements getAttributeDescendantOfAccess() {
-		return pAttributeDescendantOf;
-	}
-	
-	public ParserRule getAttributeDescendantOfRule() {
-		return getAttributeDescendantOfAccess().getRule();
-	}
-	
-	//AttributeDescendantOrSelfOf DescendantOrSelfOf:
-	//	DBL_LT constraint=(ConceptReference | Any);
-	public AttributeDescendantOrSelfOfElements getAttributeDescendantOrSelfOfAccess() {
-		return pAttributeDescendantOrSelfOf;
-	}
-	
-	public ParserRule getAttributeDescendantOrSelfOfRule() {
-		return getAttributeDescendantOrSelfOfAccess().getRule();
 	}
 	
 	//Cardinality:
@@ -2411,7 +2286,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//AttributeValueEquals:
-	//	EQUAL constraint=SimpleExpressionConstraint;
+	//	EQUAL constraint=SubExpressionConstraint;
 	public AttributeValueEqualsElements getAttributeValueEqualsAccess() {
 		return pAttributeValueEquals;
 	}
@@ -2421,7 +2296,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//AttributeValueNotEquals:
-	//	NOT_EQUAL constraint=SimpleExpressionConstraint;
+	//	NOT_EQUAL constraint=SubExpressionConstraint;
 	public AttributeValueNotEqualsElements getAttributeValueNotEqualsAccess() {
 		return pAttributeValueNotEquals;
 	}

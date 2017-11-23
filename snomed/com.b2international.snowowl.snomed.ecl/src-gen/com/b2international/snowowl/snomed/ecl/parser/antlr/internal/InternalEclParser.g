@@ -434,11 +434,11 @@ ruleDottedExpressionConstraint returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getDottedExpressionConstraintAccess().getSimpleExpressionConstraintParserRuleCall_0());
+			newCompositeNode(grammarAccess.getDottedExpressionConstraintAccess().getSubExpressionConstraintParserRuleCall_0());
 		}
-		this_SimpleExpressionConstraint_0=ruleSimpleExpressionConstraint
+		this_SubExpressionConstraint_0=ruleSubExpressionConstraint
 		{
-			$current = $this_SimpleExpressionConstraint_0.current;
+			$current = $this_SubExpressionConstraint_0.current;
 			afterParserOrEnumRuleCall();
 		}
 		(
@@ -459,9 +459,9 @@ ruleDottedExpressionConstraint returns [EObject current=null]
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getDottedExpressionConstraintAccess().getAttributeAttributeParserRuleCall_1_2_0());
+						newCompositeNode(grammarAccess.getDottedExpressionConstraintAccess().getAttributeSubExpressionConstraintParserRuleCall_1_2_0());
 					}
-					lv_attribute_3_0=ruleAttribute
+					lv_attribute_3_0=ruleSubExpressionConstraint
 					{
 						if ($current==null) {
 							$current = createModelElementForParent(grammarAccess.getDottedExpressionConstraintRule());
@@ -470,7 +470,7 @@ ruleDottedExpressionConstraint returns [EObject current=null]
 							$current,
 							"attribute",
 							lv_attribute_3_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.Attribute");
+							"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -479,15 +479,15 @@ ruleDottedExpressionConstraint returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleSimpleExpressionConstraint
-entryRuleSimpleExpressionConstraint returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getSimpleExpressionConstraintRule()); }
-	iv_ruleSimpleExpressionConstraint=ruleSimpleExpressionConstraint
-	{ $current=$iv_ruleSimpleExpressionConstraint.current; }
+// Entry rule entryRuleSubExpressionConstraint
+entryRuleSubExpressionConstraint returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getSubExpressionConstraintRule()); }
+	iv_ruleSubExpressionConstraint=ruleSubExpressionConstraint
+	{ $current=$iv_ruleSubExpressionConstraint.current; }
 	EOF;
 
-// Rule SimpleExpressionConstraint
-ruleSimpleExpressionConstraint returns [EObject current=null]
+// Rule SubExpressionConstraint
+ruleSubExpressionConstraint returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -499,7 +499,7 @@ ruleSimpleExpressionConstraint returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getChildOfParserRuleCall_0());
+			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getChildOfParserRuleCall_0());
 		}
 		this_ChildOf_0=ruleChildOf
 		{
@@ -511,7 +511,7 @@ ruleSimpleExpressionConstraint returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getDescendantOfParserRuleCall_1());
+			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getDescendantOfParserRuleCall_1());
 		}
 		this_DescendantOf_1=ruleDescendantOf
 		{
@@ -523,7 +523,7 @@ ruleSimpleExpressionConstraint returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getDescendantOrSelfOfParserRuleCall_2());
+			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getDescendantOrSelfOfParserRuleCall_2());
 		}
 		this_DescendantOrSelfOf_2=ruleDescendantOrSelfOf
 		{
@@ -535,7 +535,7 @@ ruleSimpleExpressionConstraint returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getParentOfParserRuleCall_3());
+			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getParentOfParserRuleCall_3());
 		}
 		this_ParentOf_3=ruleParentOf
 		{
@@ -547,7 +547,7 @@ ruleSimpleExpressionConstraint returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getAncestorOfParserRuleCall_4());
+			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getAncestorOfParserRuleCall_4());
 		}
 		this_AncestorOf_4=ruleAncestorOf
 		{
@@ -559,7 +559,7 @@ ruleSimpleExpressionConstraint returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getAncestorOrSelfOfParserRuleCall_5());
+			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getAncestorOrSelfOfParserRuleCall_5());
 		}
 		this_AncestorOrSelfOf_5=ruleAncestorOrSelfOf
 		{
@@ -571,7 +571,7 @@ ruleSimpleExpressionConstraint returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getSimpleExpressionConstraintAccess().getFocusConceptParserRuleCall_6());
+			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getFocusConceptParserRuleCall_6());
 		}
 		this_FocusConcept_6=ruleFocusConcept
 		{
@@ -1709,9 +1709,9 @@ ruleAttributeConstraint returns [EObject current=null]
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getAttributeConstraintAccess().getAttributeAttributeParserRuleCall_2_0());
+					newCompositeNode(grammarAccess.getAttributeConstraintAccess().getAttributeSubExpressionConstraintParserRuleCall_2_0());
 				}
-				lv_attribute_2_0=ruleAttribute
+				lv_attribute_2_0=ruleSubExpressionConstraint
 				{
 					if ($current==null) {
 						$current = createModelElementForParent(grammarAccess.getAttributeConstraintRule());
@@ -1720,7 +1720,7 @@ ruleAttributeConstraint returns [EObject current=null]
 						$current,
 						"attribute",
 						lv_attribute_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Attribute");
+						"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1742,192 +1742,6 @@ ruleAttributeConstraint returns [EObject current=null]
 						"com.b2international.snowowl.snomed.ecl.Ecl.Comparison");
 					afterParserOrEnumRuleCall();
 				}
-			)
-		)
-	)
-;
-
-// Entry rule entryRuleAttribute
-entryRuleAttribute returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getAttributeRule()); }
-	iv_ruleAttribute=ruleAttribute
-	{ $current=$iv_ruleAttribute.current; }
-	EOF;
-
-// Rule Attribute
-ruleAttribute returns [EObject current=null]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
-	(
-		{
-			/* */
-		}
-		{
-			newCompositeNode(grammarAccess.getAttributeAccess().getAttributeDescendantOfParserRuleCall_0());
-		}
-		this_AttributeDescendantOf_0=ruleAttributeDescendantOf
-		{
-			$current = $this_AttributeDescendantOf_0.current;
-			afterParserOrEnumRuleCall();
-		}
-		    |
-		{
-			/* */
-		}
-		{
-			newCompositeNode(grammarAccess.getAttributeAccess().getAttributeDescendantOrSelfOfParserRuleCall_1());
-		}
-		this_AttributeDescendantOrSelfOf_1=ruleAttributeDescendantOrSelfOf
-		{
-			$current = $this_AttributeDescendantOrSelfOf_1.current;
-			afterParserOrEnumRuleCall();
-		}
-		    |
-		{
-			/* */
-		}
-		{
-			newCompositeNode(grammarAccess.getAttributeAccess().getConceptReferenceParserRuleCall_2());
-		}
-		this_ConceptReference_2=ruleConceptReference
-		{
-			$current = $this_ConceptReference_2.current;
-			afterParserOrEnumRuleCall();
-		}
-		    |
-		{
-			/* */
-		}
-		{
-			newCompositeNode(grammarAccess.getAttributeAccess().getAnyParserRuleCall_3());
-		}
-		this_Any_3=ruleAny
-		{
-			$current = $this_Any_3.current;
-			afterParserOrEnumRuleCall();
-		}
-	)
-;
-
-// Entry rule entryRuleAttributeDescendantOf
-entryRuleAttributeDescendantOf returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getAttributeDescendantOfRule()); }
-	iv_ruleAttributeDescendantOf=ruleAttributeDescendantOf
-	{ $current=$iv_ruleAttributeDescendantOf.current; }
-	EOF;
-
-// Rule AttributeDescendantOf
-ruleAttributeDescendantOf returns [EObject current=null]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
-	(
-		this_LT_0=RULE_LT
-		{
-			newLeafNode(this_LT_0, grammarAccess.getAttributeDescendantOfAccess().getLTTerminalRuleCall_0());
-		}
-		(
-			(
-				(
-					{
-						newCompositeNode(grammarAccess.getAttributeDescendantOfAccess().getConstraintConceptReferenceParserRuleCall_1_0_0());
-					}
-					lv_constraint_1_1=ruleConceptReference
-					{
-						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getAttributeDescendantOfRule());
-						}
-						set(
-							$current,
-							"constraint",
-							lv_constraint_1_1,
-							"com.b2international.snowowl.snomed.ecl.Ecl.ConceptReference");
-						afterParserOrEnumRuleCall();
-					}
-					    |
-					{
-						newCompositeNode(grammarAccess.getAttributeDescendantOfAccess().getConstraintAnyParserRuleCall_1_0_1());
-					}
-					lv_constraint_1_2=ruleAny
-					{
-						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getAttributeDescendantOfRule());
-						}
-						set(
-							$current,
-							"constraint",
-							lv_constraint_1_2,
-							"com.b2international.snowowl.snomed.ecl.Ecl.Any");
-						afterParserOrEnumRuleCall();
-					}
-				)
-			)
-		)
-	)
-;
-
-// Entry rule entryRuleAttributeDescendantOrSelfOf
-entryRuleAttributeDescendantOrSelfOf returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getAttributeDescendantOrSelfOfRule()); }
-	iv_ruleAttributeDescendantOrSelfOf=ruleAttributeDescendantOrSelfOf
-	{ $current=$iv_ruleAttributeDescendantOrSelfOf.current; }
-	EOF;
-
-// Rule AttributeDescendantOrSelfOf
-ruleAttributeDescendantOrSelfOf returns [EObject current=null]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
-	(
-		this_DBL_LT_0=RULE_DBL_LT
-		{
-			newLeafNode(this_DBL_LT_0, grammarAccess.getAttributeDescendantOrSelfOfAccess().getDBL_LTTerminalRuleCall_0());
-		}
-		(
-			(
-				(
-					{
-						newCompositeNode(grammarAccess.getAttributeDescendantOrSelfOfAccess().getConstraintConceptReferenceParserRuleCall_1_0_0());
-					}
-					lv_constraint_1_1=ruleConceptReference
-					{
-						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getAttributeDescendantOrSelfOfRule());
-						}
-						set(
-							$current,
-							"constraint",
-							lv_constraint_1_1,
-							"com.b2international.snowowl.snomed.ecl.Ecl.ConceptReference");
-						afterParserOrEnumRuleCall();
-					}
-					    |
-					{
-						newCompositeNode(grammarAccess.getAttributeDescendantOrSelfOfAccess().getConstraintAnyParserRuleCall_1_0_1());
-					}
-					lv_constraint_1_2=ruleAny
-					{
-						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getAttributeDescendantOrSelfOfRule());
-						}
-						set(
-							$current,
-							"constraint",
-							lv_constraint_1_2,
-							"com.b2international.snowowl.snomed.ecl.Ecl.Any");
-						afterParserOrEnumRuleCall();
-					}
-				)
 			)
 		)
 	)
@@ -2295,9 +2109,9 @@ ruleAttributeValueEquals returns [EObject current=null]
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getAttributeValueEqualsAccess().getConstraintSimpleExpressionConstraintParserRuleCall_1_0());
+					newCompositeNode(grammarAccess.getAttributeValueEqualsAccess().getConstraintSubExpressionConstraintParserRuleCall_1_0());
 				}
-				lv_constraint_1_0=ruleSimpleExpressionConstraint
+				lv_constraint_1_0=ruleSubExpressionConstraint
 				{
 					if ($current==null) {
 						$current = createModelElementForParent(grammarAccess.getAttributeValueEqualsRule());
@@ -2306,7 +2120,7 @@ ruleAttributeValueEquals returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.SimpleExpressionConstraint");
+						"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2337,9 +2151,9 @@ ruleAttributeValueNotEquals returns [EObject current=null]
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getAttributeValueNotEqualsAccess().getConstraintSimpleExpressionConstraintParserRuleCall_1_0());
+					newCompositeNode(grammarAccess.getAttributeValueNotEqualsAccess().getConstraintSubExpressionConstraintParserRuleCall_1_0());
 				}
-				lv_constraint_1_0=ruleSimpleExpressionConstraint
+				lv_constraint_1_0=ruleSubExpressionConstraint
 				{
 					if ($current==null) {
 						$current = createModelElementForParent(grammarAccess.getAttributeValueNotEqualsRule());
@@ -2348,7 +2162,7 @@ ruleAttributeValueNotEquals returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.SimpleExpressionConstraint");
+						"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)

@@ -367,6 +367,16 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
+	public void refinementAttributeSubExpression() throws Exception {
+		generateDrugHierarchy();
+		indexRevision(MAIN, nextStorageKey(), concept(HAS_ACTIVE_INGREDIENT).build());
+		indexRevision(MAIN, nextStorageKey(), concept(HAS_BOSS).build());
+		final Expression actual = eval(String.format("<%s:(%s OR %s)=(%s OR %s)", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, HAS_BOSS, INGREDIENT1, INGREDIENT2));
+		final Expression expected = ids(ImmutableSet.of(PANADOL_TABLET, TRIPHASIL_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void refinementAttributeEqualsSingleMatch() throws Exception {
 		generateDrugHierarchy();
 		

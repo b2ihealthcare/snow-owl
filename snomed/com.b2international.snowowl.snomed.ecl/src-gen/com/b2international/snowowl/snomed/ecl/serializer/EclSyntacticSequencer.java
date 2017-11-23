@@ -355,7 +355,7 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	/**
 	 * Ambiguous syntax:
-	 *     'AND' | ','
+	 *     ',' | 'AND'
 	 *
 	 * This ambiguous syntax occurs at:
 	 *     {AndExpressionConstraint.left=} (ambiguity) right=ExclusionExpressionConstraint
@@ -366,7 +366,7 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	/**
 	 * Ambiguous syntax:
-	 *     'AND' | ','
+	 *     ',' | 'AND'
 	 *
 	 * This ambiguous syntax occurs at:
 	 *     {AndRefinement.left=} (ambiguity) right=SubRefinement
