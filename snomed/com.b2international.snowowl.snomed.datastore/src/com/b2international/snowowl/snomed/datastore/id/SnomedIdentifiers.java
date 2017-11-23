@@ -96,9 +96,8 @@ public class SnomedIdentifiers {
 
 	public static String getNamespace(final String componentId) {
 		final boolean shortForm = isShortForm(componentId);
-		
 		if (shortForm) {
-			return null;
+			return "";
 		} else {
 			return componentId.substring(componentId.length() - 10, componentId.length() - 3);
 		}
