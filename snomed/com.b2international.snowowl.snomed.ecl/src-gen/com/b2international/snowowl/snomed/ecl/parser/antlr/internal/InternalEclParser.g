@@ -953,6 +953,22 @@ ruleMemberOf returns [EObject current=null]
 							"com.b2international.snowowl.snomed.ecl.Ecl.Any");
 						afterParserOrEnumRuleCall();
 					}
+					    |
+					{
+						newCompositeNode(grammarAccess.getMemberOfAccess().getConstraintNestedExpressionParserRuleCall_1_0_2());
+					}
+					lv_constraint_1_3=ruleNestedExpression
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getMemberOfRule());
+						}
+						set(
+							$current,
+							"constraint",
+							lv_constraint_1_3,
+							"com.b2international.snowowl.snomed.ecl.Ecl.NestedExpression");
+						afterParserOrEnumRuleCall();
+					}
 				)
 			)
 		)

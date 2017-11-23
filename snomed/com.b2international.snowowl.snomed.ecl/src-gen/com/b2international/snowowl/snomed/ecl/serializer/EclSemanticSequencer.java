@@ -1006,7 +1006,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     MemberOf returns MemberOf
 	 *
 	 * Constraint:
-	 *     (constraint=ConceptReference | constraint=Any)
+	 *     (constraint=ConceptReference | constraint=Any | constraint=NestedExpression)
 	 */
 	protected void sequence_MemberOf(ISerializationContext context, MemberOf semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);

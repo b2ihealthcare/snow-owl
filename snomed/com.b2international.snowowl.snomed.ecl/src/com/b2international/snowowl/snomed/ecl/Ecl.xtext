@@ -65,7 +65,7 @@ AncestorOrSelfOf:
 	DBL_GT constraint=FocusConcept;
 
 MemberOf:
-	CARET constraint=(ConceptReference | Any);
+	CARET constraint=(ConceptReference | Any | NestedExpression);
 
 ConceptReference:
 	id=SnomedIdentifier (term=TERM_STRING)?;

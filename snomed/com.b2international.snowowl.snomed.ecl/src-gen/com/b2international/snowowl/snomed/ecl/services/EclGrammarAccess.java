@@ -465,21 +465,22 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		private final Alternatives cConstraintAlternatives_1_0 = (Alternatives)cConstraintAssignment_1.eContents().get(0);
 		private final RuleCall cConstraintConceptReferenceParserRuleCall_1_0_0 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(0);
 		private final RuleCall cConstraintAnyParserRuleCall_1_0_1 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(1);
+		private final RuleCall cConstraintNestedExpressionParserRuleCall_1_0_2 = (RuleCall)cConstraintAlternatives_1_0.eContents().get(2);
 		
 		//MemberOf:
-		//	CARET constraint=(ConceptReference | Any);
+		//	CARET constraint=(ConceptReference | Any | NestedExpression);
 		@Override public ParserRule getRule() { return rule; }
 		
-		//CARET constraint=(ConceptReference | Any)
+		//CARET constraint=(ConceptReference | Any | NestedExpression)
 		public Group getGroup() { return cGroup; }
 		
 		//CARET
 		public RuleCall getCARETTerminalRuleCall_0() { return cCARETTerminalRuleCall_0; }
 		
-		//constraint=(ConceptReference | Any)
+		//constraint=(ConceptReference | Any | NestedExpression)
 		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
 		
-		//(ConceptReference | Any)
+		//(ConceptReference | Any | NestedExpression)
 		public Alternatives getConstraintAlternatives_1_0() { return cConstraintAlternatives_1_0; }
 		
 		//ConceptReference
@@ -487,6 +488,9 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		
 		//Any
 		public RuleCall getConstraintAnyParserRuleCall_1_0_1() { return cConstraintAnyParserRuleCall_1_0_1; }
+		
+		//NestedExpression
+		public RuleCall getConstraintNestedExpressionParserRuleCall_1_0_2() { return cConstraintNestedExpressionParserRuleCall_1_0_2; }
 	}
 	public class ConceptReferenceElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.ConceptReference");
@@ -2174,7 +2178,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//MemberOf:
-	//	CARET constraint=(ConceptReference | Any);
+	//	CARET constraint=(ConceptReference | Any | NestedExpression);
 	public MemberOfElements getMemberOfAccess() {
 		return pMemberOf;
 	}

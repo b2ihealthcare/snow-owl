@@ -19,7 +19,9 @@ import static com.b2international.snowowl.datastore.index.RevisionDocument.Expre
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Fields.ID;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringMappingRefSet;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringMappingRefSets;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringRefSet;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringRefSets;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_MAPPING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
@@ -131,21 +133,32 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
 	protected Promise<Expression> eval(BranchContext context, MemberOf memberOf) {
-		if (memberOf.getConstraint() instanceof ConceptReference) {
-			final ConceptReference concept = (ConceptReference) memberOf.getConstraint();
+		final ExpressionConstraint inner = memberOf.getConstraint();
+		if (inner instanceof ConceptReference) {
+			final ConceptReference concept = (ConceptReference) inner;
 			return Promise.immediate(
 					Expressions.builder()
 						.should(referringRefSet(concept.getId()))
 						.should(referringMappingRefSet(concept.getId()))
 					.build()
 					);
-		} else if (memberOf.getConstraint() instanceof Any) {
+		} else if (inner instanceof Any) {
 			return Promise.immediate(Expressions.builder()
 					.should(Expressions.exists(REFERRING_REFSETS))
 					.should(Expressions.exists(REFERRING_MAPPING_REFSETS))
 					.build());
+		} else if (inner instanceof NestedExpression) {
+			final String focusConceptExpression = context.service(EclSerializer.class).serializeWithoutTerms(inner);
+			return EclExpression.of(focusConceptExpression)
+					.resolve(context)
+					.then(ids -> {
+						return Expressions.builder()
+						.should(referringRefSets(ids))
+						.should(referringMappingRefSets(ids))
+						.build();
+					});
 		} else {
-			return throwUnsupported(memberOf.getConstraint());
+			return throwUnsupported(inner);
 		}
 	}
 	
