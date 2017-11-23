@@ -48,10 +48,12 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable, 
 	private String selectedValue = "";
 	private String selectedUom;
 	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
+	private String referencedComponentCharType = "";
 
 	private ConceptWidgetBean cwb;
 
 	private boolean inferredEditingEnabled;
+	private boolean isRelationshipDataType;
 	
 	/**
 	 * Default constructor for serialization.
@@ -61,10 +63,10 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable, 
 	}
 	
 	public DataTypeWidgetBean(final ConceptWidgetBean cwb, DataTypeWidgetModel model, String referencedComponentId) {
-		this(cwb, model, referencedComponentId, UNINITIALIZED, false);
+		this(cwb, model, referencedComponentId, UNINITIALIZED, false, false);
 	}
 	
-	public DataTypeWidgetBean(ConceptWidgetBean cwb, DataTypeWidgetModel model, String referencedComponentId, String uuid, final boolean released) {
+	public DataTypeWidgetBean(ConceptWidgetBean cwb, DataTypeWidgetModel model, String referencedComponentId, String uuid, final boolean released, boolean isRelationshipDataType) {
 		
 		super(model, released);
 
@@ -73,6 +75,7 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable, 
 			this.selectedLabel = Iterables.getFirst(model.getAllowedLabels(), null);
 		}
 		
+		this.isRelationshipDataType = isRelationshipDataType;
 		this.referencedComponentId = referencedComponentId;
 		this.uuid = uuid;
 		
@@ -85,11 +88,25 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable, 
 		inferredEditingEnabled = ApplicationContext.getInstance().getServiceChecked(SnomedCoreConfiguration.class).isInferredEditingEnabled();
 	}
 	
+	public DataTypeWidgetBean(ConceptWidgetBean cwb, DataTypeWidgetModel matchingModel, String referencedComponentId,
+			String referencedComponentCharacteristicType, String id, boolean released, boolean isRelationshipDataType) {
+		this(cwb, matchingModel, referencedComponentId, id, released, isRelationshipDataType);
+		this.referencedComponentCharType = referencedComponentCharacteristicType;
+	}
+
 	@Override
 	public DataTypeWidgetModel getModel() {
 		return (DataTypeWidgetModel) super.getModel();
 	}
 
+	public boolean isRelationshipDataType() {
+		return isRelationshipDataType;
+	}
+	
+	public String getreferencedComponentCharType() {
+		return referencedComponentCharType;
+	}
+	
 	public IComponent<String> getSelectedUom() {
 		return getConcept().getComponent(selectedUom);
 	}
@@ -166,7 +183,7 @@ public class DataTypeWidgetBean extends LeafWidgetBean implements Serializable, 
 	
 	@Override
 	protected DataTypeWidgetBean replicate() {
-		final DataTypeWidgetBean dataTypeWidgetBean = new DataTypeWidgetBean(cwb, getModel(), getReferencedComponentId(), UNINITIALIZED, false);
+		final DataTypeWidgetBean dataTypeWidgetBean = new DataTypeWidgetBean(cwb, getModel(), getReferencedComponentId(), getreferencedComponentCharType(), UNINITIALIZED, false, isRelationshipDataType);
 		dataTypeWidgetBean.setPropagationEnabled(isPropagationEnabled());
 		dataTypeWidgetBean.setSelectedLabel(getSelectedLabel());
 		dataTypeWidgetBean.setSelectedValue(getSelectedValue());

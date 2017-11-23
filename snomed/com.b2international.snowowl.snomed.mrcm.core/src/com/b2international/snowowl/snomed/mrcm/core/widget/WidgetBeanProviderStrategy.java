@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,7 +86,8 @@ public abstract class WidgetBeanProviderStrategy {
 
 		final List<RelationshipWidgetModel> unusedModels = Lists.newArrayList(Iterables.filter(groupModel.getChildren(), RelationshipWidgetModel.class));
 		final List<LeafWidgetBean> relationshipBeans = Lists.newArrayList();
-		final List<String> relationshipIds = Lists.newArrayList();
+		//final List<String> relationshipIds = Lists.newArrayList();
+		final Map<String, String> relationshipCharTypeMap = new HashMap<>();
 		
 		// Matching models are populated with a matched instance
 		for (final SnomedRelationship relationship : relationships) {
@@ -106,13 +108,13 @@ public abstract class WidgetBeanProviderStrategy {
 			rwb.setSelectedValue(selectedValue);
 			rwb.setSelectedCharacteristicType(selectedCharacteristicType);
 			relationshipBeans.add(rwb);
-			relationshipIds.add(id);
+			relationshipCharTypeMap.put(id, selectedCharacteristicType);
 			unusedModels.remove(matchedModel);
 		}
 
 		// Add related concrete domain widget beans for groups only
 		if (!groupModel.isUngrouped()) {
-			relationshipBeans.addAll(createRelationshipDataTypeWidgetBeans(cwb, relationshipIds.toArray(new String[relationshipIds.size()])));
+			relationshipBeans.addAll(createRelationshipDataTypeWidgetBeans(cwb, relationshipCharTypeMap));
 		}
 		
 		// The rest is left unpopulated
@@ -283,7 +285,7 @@ public abstract class WidgetBeanProviderStrategy {
 	 */
 	abstract public List<LeafWidgetBean> createDataTypeWidgetBeans(ConceptWidgetBean cwb);
 	
-	abstract public List<LeafWidgetBean> createRelationshipDataTypeWidgetBeans(ConceptWidgetBean cwb, final String... relationshipIds);
+	abstract public List<LeafWidgetBean> createRelationshipDataTypeWidgetBeans(ConceptWidgetBean cwb, final Map<String, String> relationshipCharTypeMap);
 
 	/**
 	 * Clears the underlying cached components if any.
