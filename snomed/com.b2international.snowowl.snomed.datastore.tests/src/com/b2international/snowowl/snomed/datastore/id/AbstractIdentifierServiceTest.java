@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.id.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.google.common.collect.Sets;
@@ -34,7 +35,7 @@ import com.google.common.collect.Sets;
  */
 public abstract class AbstractIdentifierServiceTest {
 
-	private static final String B2I_NAMESPACE = "1000129";
+	private static final String B2I_NAMESPACE = Concepts.B2I_NAMESPACE;
 
 	protected abstract ISnomedIdentifierService getIdentifierService();
 
