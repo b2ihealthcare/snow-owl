@@ -34,7 +34,8 @@ public interface PreRunCapableBootstrapFragment extends BootstrapFragment {
 	 * 
 	 * @param configuration
 	 * @param env
+	 * @throws Exception 
 	 */
-	void preRun(SnowOwlConfiguration configuration, Environment env);
+	void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception;
 
 }
