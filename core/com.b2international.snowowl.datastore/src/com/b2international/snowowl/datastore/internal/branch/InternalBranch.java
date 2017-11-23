@@ -35,5 +35,7 @@ public interface InternalBranch extends Branch {
 	
 	@Override
 	InternalBranch withMetadata(Metadata metadata);
+
+	BranchDocument.Builder toDocument();
 	
 }

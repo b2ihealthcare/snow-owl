@@ -294,7 +294,8 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 		return true;
 	}
 	
-	BranchDocument.Builder toDocument() {
+	@Override
+	public BranchDocument.Builder toDocument() {
 		return BranchDocument.builder()
 				.type(TYPE)
 				.parentPath(parentPath)

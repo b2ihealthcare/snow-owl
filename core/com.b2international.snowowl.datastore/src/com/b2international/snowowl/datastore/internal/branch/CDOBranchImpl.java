@@ -95,7 +95,7 @@ public class CDOBranchImpl extends BranchImpl implements InternalCDOBasedBranch 
 	}
 	
 	@Override
-	BranchDocument.Builder toDocument() {
+	public BranchDocument.Builder toDocument() {
 		return super.toDocument()
 				.type(TYPE)
 				.cdoBranchId(cdoBranchId)

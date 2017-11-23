@@ -206,7 +206,7 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
     }
 
 	private IndexWrite<Void> prepareReplace(final String path, final InternalBranch value) {
-		return update(path, BranchDocument.Scripts.REPLACE, ImmutableMap.of("replace", mapper.convertValue(value, Map.class)));
+		return update(path, BranchDocument.Scripts.REPLACE, ImmutableMap.of("replace", mapper.convertValue(value.toDocument().build(), Map.class)));
 	}
 	
 	private IndexWrite<Void> prepareDelete(final String path) {

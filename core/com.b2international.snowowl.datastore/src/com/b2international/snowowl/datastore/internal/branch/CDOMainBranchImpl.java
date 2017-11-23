@@ -80,7 +80,7 @@ public class CDOMainBranchImpl extends MainBranchImpl implements InternalCDOBase
 	}
 	
 	@Override
-	BranchDocument.Builder toDocument() {
+	public BranchDocument.Builder toDocument() {
 		return super.toDocument()
 				.type(TYPE)
 				.cdoBranchId(cdoBranchId)

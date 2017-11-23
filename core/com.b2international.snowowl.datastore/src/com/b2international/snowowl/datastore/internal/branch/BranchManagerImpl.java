@@ -302,10 +302,10 @@ public abstract class BranchManagerImpl implements BranchManager {
 		};
 	}
 	
-	public final IndexWrite<BranchImpl> create(final BranchImpl branch) {
-		return new IndexWrite<BranchImpl>() {
+	public final IndexWrite<InternalBranch> create(final InternalBranch branch) {
+		return new IndexWrite<InternalBranch>() {
 			@Override
-			public BranchImpl execute(Writer index) throws IOException {
+			public InternalBranch execute(Writer index) throws IOException {
 				index.put(branch.path(), branch.toDocument().build());
 				branch.setBranchManager(BranchManagerImpl.this);
 				return branch;

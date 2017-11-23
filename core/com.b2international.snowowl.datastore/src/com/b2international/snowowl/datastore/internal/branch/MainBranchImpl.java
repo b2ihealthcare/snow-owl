@@ -76,7 +76,7 @@ public class MainBranchImpl extends BranchImpl {
 	}
 	
 	@Override
-	BranchDocument.Builder toDocument() {
+	public BranchDocument.Builder toDocument() {
 		return super.toDocument().type(TYPE);
 	}
 	

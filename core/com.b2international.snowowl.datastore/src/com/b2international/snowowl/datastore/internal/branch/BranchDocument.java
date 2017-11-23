@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.internal.branch;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Collection;
 
 import com.b2international.index.Doc;
@@ -176,7 +178,7 @@ public final class BranchDocument implements WithId {
     		int segmentId,
     		Collection<Integer> segments,
     		Collection<Integer> parentSegments) {
-		this.type = type;
+		this.type = checkNotNull(type, "Type cannot be null");
 		this.parentPath = parentPath;
 		this.name = name;
 		this.path = path;
