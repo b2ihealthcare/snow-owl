@@ -137,6 +137,10 @@ public class SnomedRfFileNameBuilder {
 			case SIMPLE_MAP: return includeMapTargetDescription ? "ss" : "s";
 			case MODULE_DEPENDENCY: return "ss";
 			case OWL_AXIOM: return "s";
+			case MRCM_DOMAIN: return "sssssss";
+			case MRCM_ATTRIBUTE_DOMAIN: return "cisscc";
+			case MRCM_ATTRIBUTE_RANGE: return "sscc";
+			case MRCM_MODULE_SCOPE: return "c";
 		}
 		throw new IllegalArgumentException ("Unknown reference set type. Type: " + type);
 	}
