@@ -74,7 +74,7 @@ public class SnomedMRCMDomainMemberUpdateDelegate extends SnomedRefSetMemberUpda
 			changed |= true;
 		}
 
-		if (!Strings.isNullOrEmpty(editorialGuideReference) && !editorialGuideReference.equals(domainMember.getEditorialGuideReference())) {
+		if (editorialGuideReference != null && !editorialGuideReference.equals(domainMember.getEditorialGuideReference())) {
 			domainMember.setEditorialGuideReference(editorialGuideReference);
 			changed |= true;
 		}
