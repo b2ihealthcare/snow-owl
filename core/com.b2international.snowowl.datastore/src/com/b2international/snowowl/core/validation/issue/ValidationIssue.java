@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
+import java.io.Serializable;
+
 import com.b2international.index.Doc;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -25,7 +27,7 @@ import com.google.common.base.MoreObjects;
  * @since 6.0
  */
 @Doc
-public final class ValidationIssue {
+public final class ValidationIssue implements Serializable {
 
 	public static class Fields {
 		public static final String ID = "id";

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.validation.rule;
 
+import java.io.Serializable;
+
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Doc;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -25,7 +27,7 @@ import com.google.common.base.MoreObjects;
  * @since 6.0
  */
 @Doc
-public final class ValidationRule {
+public final class ValidationRule implements Serializable {
 
 	/**
 	 * @since 6.0
