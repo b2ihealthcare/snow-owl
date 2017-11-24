@@ -215,12 +215,8 @@ repository:
 |Description
 
 |commitInterval
-|`15000`
-|The hard commit interval of an index in milliseconds.
-
-|translogSyncInterval
 |`5000`
-|The sync interval of the transaction log in milliseconds.
+|The commit interval of an index in milliseconds.
 
 |queryWarnThreshold
 |`400`
@@ -259,7 +255,7 @@ repository:
 |Number of shards to use for terminology repositories when using the Elasticsearch based index module.
 
 |commitConcurrencyLevel
-|`1`
+|`Number of cores / 4 by default, min 1`
 |Number of concurrent requests when executing bulk commit operations against a terminology repository index.
 |===
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,8 @@ import com.google.common.collect.ImmutableMap;
  * @since 3.4
  */
 @ModuleConfigs({
-		@ModuleConfig(fieldName = "repository", type = RepositoryConfiguration.class),
-		@ModuleConfig(fieldName = "rpc", type = RpcConfiguration.class)
+	@ModuleConfig(fieldName = "repository", type = RepositoryConfiguration.class),
+	@ModuleConfig(fieldName = "rpc", type = RpcConfiguration.class)
 })
 public class RepositoryBootstrap extends DefaultBootstrapFragment {
 	
@@ -54,8 +54,7 @@ public class RepositoryBootstrap extends DefaultBootstrapFragment {
 		final IndexConfiguration config = env.service(SnowOwlConfiguration.class)
 				.getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();
 		
-		builder.put(IndexClientFactory.COMMIT_INTERVAL_KEY, config.getCommitInterval());
-		builder.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, config.getTranslogSyncInterval());
+		builder.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, config.getCommitInterval());
 		builder.put(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, config.getCommitConcurrencyLevel());
 		
 		final SlowLogConfig slowLog = createSlowLogConfig(config);

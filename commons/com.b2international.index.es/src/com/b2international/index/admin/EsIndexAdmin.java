@@ -74,6 +74,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		this.log = LoggerFactory.getLogger(String.format("index.%s", this.name));
 		this.settings.putIfAbsent(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, IndexClientFactory.DEFAULT_COMMIT_CONCURRENCY_LEVEL);
 		this.settings.putIfAbsent(IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW);
+		this.settings.putIfAbsent(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL);
 	}
 	
 	@Override
@@ -116,7 +117,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 				);
 				req.addMapping(type, typeMapping);
 				try {
-					final Map<String, Object> indexSettings = createSettings();
+					final Map<String, Object> indexSettings = createIndexSettings();
 					log.info("Configuring '{}' index with settings: {}", indexName, indexSettings);
 					req.setSettings(indexSettings);
 				} catch (IOException e) {
@@ -136,17 +137,17 @@ public final class EsIndexAdmin implements IndexAdmin {
 		return mappings.getMappings().stream().map(this::getTypeIndex).collect(Collectors.toSet());
 	}
 
-	private Map<String, Object> createSettings() throws IOException {
-		return ImmutableMap.of(
-			"analysis", 
-			Settings.builder().loadFromStream("analysis.json", Resources.getResource(getClass(), "analysis.json").openStream()).build().getAsStructuredMap(),
-			"number_of_shards",
-			String.valueOf(settings().getOrDefault(IndexClientFactory.NUMBER_OF_SHARDS, "1")),
-			"number_of_replicas", "0",
-			// disable es refresh, we will do it manually on each commit
-			"refresh_interval", "-1",
-			IndexClientFactory.RESULT_WINDOW_KEY, settings().get(IndexClientFactory.RESULT_WINDOW_KEY)
-		);
+	private Map<String, Object> createIndexSettings() throws IOException {
+		return ImmutableMap.<String, Object>builder()
+				.put("analysis", Settings.builder().loadFromStream("analysis.json", Resources.getResource(getClass(), "analysis.json").openStream()).build().getAsStructuredMap())
+				.put("number_of_shards", String.valueOf(settings().getOrDefault(IndexClientFactory.NUMBER_OF_SHARDS, "1")))
+				.put("number_of_replicas", "0")
+				// disable es refresh, we will do it manually on each commit
+				.put("refresh_interval", "-1")
+				.put(IndexClientFactory.RESULT_WINDOW_KEY, settings().get(IndexClientFactory.RESULT_WINDOW_KEY))
+				.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, settings().get(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY))
+				.put("translog.durability", "async")
+				.build();
 	}
 	
 	private void waitForYellowHealth(Set<String> indexes) {
