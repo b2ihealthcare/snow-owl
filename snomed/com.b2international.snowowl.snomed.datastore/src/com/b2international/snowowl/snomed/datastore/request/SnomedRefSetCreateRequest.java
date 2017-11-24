@@ -101,6 +101,10 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 			case DESCRIPTION_TYPE:
 			case MODULE_DEPENDENCY:
 			case OWL_AXIOM:
+			case MRCM_DOMAIN:
+			case MRCM_ATTRIBUTE_DOMAIN:
+			case MRCM_ATTRIBUTE_RANGE:
+			case MRCM_MODULE_SCOPE:
 				refSet = createRegularRefSet(context);
 				break;
 			case CONCRETE_DATA_TYPE:

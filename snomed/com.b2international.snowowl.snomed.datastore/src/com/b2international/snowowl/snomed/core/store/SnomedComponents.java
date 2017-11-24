@@ -183,4 +183,40 @@ public class SnomedComponents {
 	public static SnomedOWLAxiomReferenceSetMemberBuilder newOWLAxiomReferenceSetMember() {
 		return new SnomedOWLAxiomReferenceSetMemberBuilder();
 	}
+	
+	/**
+	 * Creates and returns a new {@link SnomedMRCMDomainReferenceSetMemberBuilder SNOMED CT MRCM Domain Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedMRCMDomainReferenceSetMemberBuilder newMRCMDomainReferenceSetMember() {
+		return new SnomedMRCMDomainReferenceSetMemberBuilder();
+	}
+	
+	/**
+	 * Creates and returns a new {@link SnomedMRCMAttributeDomainReferenceSetMemberBuilder SNOMED CT MRCM Attribute Domain Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedMRCMAttributeDomainReferenceSetMemberBuilder newMRCMAttributeDomainReferenceSetMember() {
+		return new SnomedMRCMAttributeDomainReferenceSetMemberBuilder();
+	}
+	
+	/**
+	 * Creates and returns a new {@link SnomedMRCMAttributeRangeReferenceSetMemberBuilder SNOMED CT MRCM Attribute Range Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedMRCMAttributeRangeReferenceSetMemberBuilder newMRCMAttributeRangeReferenceSetMember() {
+		return new SnomedMRCMAttributeRangeReferenceSetMemberBuilder();
+	}
+	
+	/**
+	 * Creates and returns a new {@link SnomedMRCMModuleScopeReferenceSetMemberBuilder SNOMED CT MRCM Module Scope Reference set member builder}.
+	 * 
+	 * @return
+	 */
+	public static SnomedMRCMModuleScopeReferenceSetMemberBuilder newMRCMModuleScopeReferenceSetMember() {
+		return new SnomedMRCMModuleScopeReferenceSetMemberBuilder();
+	}
 }

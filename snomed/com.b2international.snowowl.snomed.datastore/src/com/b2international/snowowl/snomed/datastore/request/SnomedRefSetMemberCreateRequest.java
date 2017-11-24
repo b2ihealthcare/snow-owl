@@ -168,6 +168,14 @@ final class SnomedRefSetMemberCreateRequest implements Request<TransactionContex
 				return new SnomedSimpleMapMemberCreateDelegate(this);
 			case OWL_AXIOM:
 				return new SnomedOWLAxiomMemberCreateDelegate(this);
+			case MRCM_DOMAIN:
+				return new SnomedMRCMDomainMemberCreateDelegate(this);
+			case MRCM_ATTRIBUTE_DOMAIN:
+				return new SnomedMRCMAttributeDomainMemberCreateDelegate(this);
+			case MRCM_ATTRIBUTE_RANGE:
+				return new SnomedMRCMAttributeRangeMemberCreateDelegate(this);
+			case MRCM_MODULE_SCOPE:
+				return new SnomedMRCMModuleScopeMemberCreateDelegate(this);
 			default: 
 				throw new IllegalStateException("Unexpected reference set type '" + referenceSetType + "'.");
 		}

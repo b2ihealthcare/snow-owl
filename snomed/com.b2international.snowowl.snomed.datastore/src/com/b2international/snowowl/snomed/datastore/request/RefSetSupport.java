@@ -55,6 +55,10 @@ public abstract class RefSetSupport {
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.RELATIONSHIP)
 			.put(SnomedRefSetType.SIMPLE_MAP, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.OWL_AXIOM, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.MRCM_DOMAIN, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.MRCM_MODULE_SCOPE, SnomedTerminologyComponentConstants.CONCEPT)
 			.build();
 
 	public static boolean isSupported(SnomedRefSetType type) {

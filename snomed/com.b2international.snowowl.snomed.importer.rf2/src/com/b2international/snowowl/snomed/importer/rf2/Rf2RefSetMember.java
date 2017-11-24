@@ -60,6 +60,10 @@ public class Rf2RefSetMember extends UnsupportedRf2RefSetMember {
 		case SIMPLE: return SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER;
 		case SIMPLE_MAP: return SnomedRefSetPackage.Literals.SNOMED_SIMPLE_MAP_REF_SET_MEMBER;
 		case OWL_AXIOM: return SnomedRefSetPackage.Literals.SNOMED_ANNOTATION_REF_SET_MEMBER;
+		case MRCM_DOMAIN: return SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER;
+		case MRCM_ATTRIBUTE_DOMAIN: return SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER;
+		case MRCM_ATTRIBUTE_RANGE: return SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER;
+		case MRCM_MODULE_SCOPE: return SnomedRefSetPackage.Literals.SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER;
 		default: throw new UnsupportedOperationException("Unknown refset: " + refSet.getType());
 		}
 	}
