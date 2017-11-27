@@ -174,7 +174,7 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 	}
 
 	protected String getSafeEffectiveTime(String effectiveTime) {
-		return Strings.isNullOrEmpty(effectiveTime) ? EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL : EffectiveTimes.format(effectiveTime);
+		return Strings.isNullOrEmpty(effectiveTime) ? EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL : effectiveTime;
 	}
 	
 	protected void validateNotEmptyFieldValue(String fieldValue, String fieldName, List<String> row, List<String> results) {
