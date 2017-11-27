@@ -72,6 +72,9 @@ import com.b2international.snowowl.snomed.reasoner.classification.Classification
 import com.b2international.snowowl.snomed.reasoner.classification.GetResultResponse;
 import com.b2international.snowowl.snomed.reasoner.classification.PersistChangesResponse;
 import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerService;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Closeables;
 
 import io.reactivex.disposables.Disposable;
@@ -95,12 +98,14 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 	@Resource
 	private int maxReasonerRuns;
 
+	private ObjectMapper mapper;
+
 	@PostConstruct
 	protected void init() {
 		LOG.info("Initializing classification service; keeping indexed data for {} recent run(s).", maxReasonerRuns); 
-		
+		this.mapper = new ObjectMapper();
 		final File dir = new File(new File(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory(), "indexes"), "classification_runs");
-		indexService = new ClassificationRunIndex(dir);
+		indexService = new ClassificationRunIndex(dir, mapper);
 		ApplicationContext.getInstance().getServiceChecked(SingleDirectoryIndexManager.class).registerIndex(indexService);
 
 		try {
@@ -136,7 +141,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 	}
 
 	private void onRemoteJobChanged(RemoteJobEntry remoteJob) {
-		String type = (String) remoteJob.getParameters().get("type");
+		String type = (String) remoteJob.getParameters(mapper).get("type");
 		
 		switch (type) {
 		case "ClassifyRequest":
@@ -214,7 +219,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 	private void onPersistJobChanged(RemoteJobEntry remoteJob) {
 		try {
 
-			String classificationJobId = (String) remoteJob.getParameters().get("classificationId");
+			String classificationJobId = (String) remoteJob.getParameters(mapper).get("classificationId");
 			
 			switch (remoteJob.getState()) {
 			case CANCELED: //$FALL-THROUGH$

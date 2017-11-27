@@ -19,6 +19,7 @@ import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAny;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
@@ -30,8 +31,10 @@ import com.b2international.index.Doc;
 import com.b2international.index.Script;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.MoreObjects;
@@ -123,8 +126,8 @@ public final class RemoteJobEntry implements Serializable {
 		private RemoteJobState state = RemoteJobState.SCHEDULED;
 		private int completionLevel = MIN_COMPLETION_LEVEL;
 		private boolean deleted;
-		private Map<String, Object> parameters;
-		private Map<String, Object> result;
+		private String parameters;
+		private String result;
 		
 		@JsonCreator
 		private Builder() {
@@ -175,12 +178,12 @@ public final class RemoteJobEntry implements Serializable {
 			return this;
 		}
 		
-		public Builder result(Map<String, Object> result) {
+		public Builder result(String result) {
 			this.result = result;
 			return this;
 		}
 		
-		public Builder parameters(Map<String, Object> parameters) {
+		public Builder parameters(String parameters) {
 			this.parameters = parameters;
 			return this;
 		}
@@ -200,9 +203,9 @@ public final class RemoteJobEntry implements Serializable {
 	private final Date finishDate;
 	private final RemoteJobState state;
 	private final int completionLevel;
-	private final Map<String, Object> result;
 	private final boolean deleted;
-	private final Map<String, Object> parameters;
+	private final String result;
+	private final String parameters;
 
 	private RemoteJobEntry(
 			final String id, 
@@ -214,8 +217,8 @@ public final class RemoteJobEntry implements Serializable {
 			final RemoteJobState state, 
 			final int completionLevel,
 			final boolean deleted,
-			final Map<String, Object> result,
-			final Map<String, Object> parameters) {
+			final String result,
+			final String parameters) {
 		this.id = id;
 		this.description = description;
 		this.user = user;
@@ -265,12 +268,46 @@ public final class RemoteJobEntry implements Serializable {
 		return deleted;
 	}
 	
-	public Map<String, Object> getParameters() {
+	/**
+	 * Returns a JSON serialized parameters object.
+	 * @return
+	 */
+	public String getParameters() {
 		return parameters;
 	}
 	
-	public Map<String, Object> getResult() {
+	/**
+	 * Returns a deserialized parameters {@link Map} using the given {@link ObjectMapper} to deserialize the {@link #getParameters()} JSON string.
+	 * @param mapper
+	 * @return
+	 */
+	public Map<String, Object> getParameters(ObjectMapper mapper) {
+		try {
+			return mapper.readValue(getParameters(), Map.class);
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
+		}
+	}
+	
+	/**
+	 * Returns a JSON serialized result object or <code>null</code> if there is no result. 
+	 * @return
+	 */
+	public String getResult() {
 		return result;
+	}
+	
+	/**
+	 * Returns a deserialized result {@link Map} using the given {@link ObjectMapper} to deserialize the {@link #getResult()} JSON string.
+	 * @param mapper
+	 * @return
+	 */
+	public Map<String, Object> getResult(ObjectMapper mapper) {
+		try {
+			return mapper.readValue(getResult(), Map.class);
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
+		}
 	}
 	
 	// Frequently used domain specific methods

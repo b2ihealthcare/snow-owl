@@ -56,10 +56,11 @@ public class JobRequestsTest {
 	private RemoteJobTracker tracker;
 	private IEventBus bus;
 	private final Collection<RemoteJobNotification> notifications = newArrayList();
+	private ObjectMapper mapper;
 
 	@Before
 	public void setup() {
-		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
+		mapper = JsonSupport.getDefaultObjectMapper();
 		final Index index = Indexes.createIndex("jobs", mapper, new Mappings(RemoteJobEntry.class));
 		this.bus = EventBusUtil.getBus();
 		this.tracker = new RemoteJobTracker(index, bus, mapper, 200);
@@ -82,7 +83,7 @@ public class JobRequestsTest {
 		final String jobId = schedule("scheduleAndWaitDone", context -> RESULT);
 		final RemoteJobEntry entry = waitDone(jobId);
 		assertEquals(RemoteJobState.FINISHED, entry.getState());
-		assertEquals(RESULT, entry.getResult().get("value"));
+		assertEquals(RESULT, entry.getResult(mapper).get("value"));
 		// verify job events
 		// 1 added
 		// 1 changed - RUNNING

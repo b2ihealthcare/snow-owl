@@ -42,7 +42,7 @@ public final class RemoteJob extends Job {
 	private final ServiceProvider context;
 	private final Request<ServiceProvider, ?> request;
 	
-	private Object response;
+	private String response;
 	private String user;
 
 	public RemoteJob(
@@ -72,9 +72,9 @@ public final class RemoteJob extends Job {
 			if (response != null) {
 				final Class<? extends Object> responseType = response.getClass();
 				if (Primitives.isWrapperType(responseType) || String.class.isAssignableFrom(responseType) || UUID.class.isAssignableFrom(responseType)) {
-					this.response = ImmutableMap.of("value", response);
+					this.response = mapper.writeValueAsString(ImmutableMap.of("value", response));
 				} else {
-					this.response = mapper.convertValue(response, Map.class);
+					this.response = mapper.writeValueAsString(response);
 				}
 			}
 			return Statuses.ok();
@@ -107,7 +107,7 @@ public final class RemoteJob extends Job {
 		return user;
 	}
 	
-	Object getResponse() {
+	String getResponse() {
 		return response;
 	}
 

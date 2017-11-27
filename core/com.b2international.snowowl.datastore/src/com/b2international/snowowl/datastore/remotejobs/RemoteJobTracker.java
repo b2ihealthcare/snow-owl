@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore.remotejobs;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -240,11 +239,11 @@ public final class RemoteJobTracker implements IDisposableService {
 				final String jobId = job.getId();
 				LOG.trace("Scheduled job {}", jobId);
 				// try to convert the request to a param object
-				Map<String, Object> parameters;
+				String parameters;
 				try {
-					parameters = mapper.convertValue(job.getRequest(), Map.class);
+					parameters = mapper.writeValueAsString(job.getRequest());
 				} catch (Throwable e) {
-					parameters = Collections.emptyMap();
+					parameters = "";
 				}
 				put(jobId, RemoteJobEntry.builder()
 						.id(jobId)
@@ -278,7 +277,7 @@ public final class RemoteJobTracker implements IDisposableService {
 					return;
 				}
 				final IStatus result = job.getResult();
-				final Object response = job.getResponse();
+				final String response = job.getResponse();
 				final RemoteJobState newState;
 				if (result.isOK()) {
 					newState = RemoteJobState.FINISHED;
