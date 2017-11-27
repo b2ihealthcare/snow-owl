@@ -200,7 +200,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 			"109006") // 9
 		); 
 		
-		assertEquals("116007", identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT, 1));
+		assertEquals("116007", Iterables.getOnlyElement(identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT, 1)));
 	}
 	
 	@Test
@@ -211,7 +211,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 
 		// itemId counter is initialized with 99999996, next free itemId is 99999997
 		identifiers.register(ImmutableSet.of("999999961000154101"));
-		assertEquals("999999971000154106", identifiers.generate("1000154", ComponentCategory.CONCEPT, 1));
+		assertEquals("999999971000154106", Iterables.getOnlyElement(identifiers.generate("1000154", ComponentCategory.CONCEPT, 1)));
 		
 		// 99999998 and 2 becomes registered
 		identifiers.register(ImmutableSet.of("999999981000154108", "21000154106"));
@@ -235,7 +235,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 		
 		// itemId counter is initialized with 198, next free itemId is 199
 		identifiers.register(ImmutableSet.of("1981000004105"));
-		assertEquals("1991000004108", identifiers.generate("1000004", ComponentCategory.CONCEPT, 1));
+		assertEquals("1991000004108", Iterables.getOnlyElement(identifiers.generate("1000004", ComponentCategory.CONCEPT, 1)));
 		
 		// 300 becomes registered
 		identifiers.register(ImmutableSet.of("3001000004102"));
@@ -258,7 +258,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 
 		// itemId counter is initialized with 198, next free itemId is 199
 		identifiers.register(ImmutableSet.of("1981000133109"));
-		assertEquals("1991000133107", identifiers.generate("1000133", ComponentCategory.CONCEPT, 1));
+		assertEquals("1991000133107", Iterables.getOnlyElement(identifiers.generate("1000133", ComponentCategory.CONCEPT, 1)));
 
 		// 1 becomes registered
 		identifiers.register(ImmutableSet.of("11000133105"));
