@@ -220,7 +220,7 @@ public class BranchCompareRequestTest {
 		return newIds;
 	}
 	
-	private CompareResult compareOnJob(String base, String compare) throws InterruptedException {
+	private CompareResult compareOnJob(String base, String compare) throws Exception {
 		final String compareJobId = JobRequests.prepareSchedule()
 			.setRequest(prepareCompare(base, compare).getRequest())
 			.setUser("test@b2i.sg")
@@ -231,7 +231,7 @@ public class BranchCompareRequestTest {
 		
 		final RemoteJobEntry job = waitDone(compareJobId);
 		
- 		return JsonSupport.getDefaultObjectMapper().convertValue(job.getResult(), CompareResult.class);
+ 		return JsonSupport.getDefaultObjectMapper().readValue(job.getResult(), CompareResult.class);
 	}
 	
 }
