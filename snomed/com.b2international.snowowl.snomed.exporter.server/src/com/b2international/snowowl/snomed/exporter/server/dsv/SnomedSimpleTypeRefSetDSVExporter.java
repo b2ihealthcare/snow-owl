@@ -553,7 +553,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							if (relationship.getGroup() == 0) {
 								occursAsUngrouped.set(true);
 							} else {
-								groupsAndCounts.merge(relationship.getGroup(), 1, (key, oldValue) -> oldValue + 1 );
+								groupsAndCounts.merge(relationship.getGroup(), 1, (oldValue, newValue) -> oldValue + newValue);
 							}
 							i.incrementAndGet();
 					});
@@ -564,10 +564,10 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					
 					groupsAndCounts.entrySet().stream().forEach(entry -> {
 						groupedRelationships.compute(entry.getKey(), (key, oldValue) -> {
-								LinkedHashMap<String, Integer> relationshipTypeOccurence = ofNullable(oldValue).orElseGet(LinkedHashMap::new);
-								relationshipTypeOccurence.merge(relationshipTypeId, entry.getValue(), (innerKey, innerOldValue) -> Math.max(innerOldValue, entry.getValue()));
-								return relationshipTypeOccurence;
-							});
+							LinkedHashMap<String, Integer> relationshipTypeOccurence = ofNullable(oldValue).orElseGet(LinkedHashMap::new);
+							relationshipTypeOccurence.merge(relationshipTypeId, entry.getValue(), Math::max);
+							return relationshipTypeOccurence;
+						});
 					});
 					
 				} 
