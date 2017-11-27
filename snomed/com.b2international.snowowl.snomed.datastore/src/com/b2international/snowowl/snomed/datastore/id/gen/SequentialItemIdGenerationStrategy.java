@@ -44,6 +44,7 @@ import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
+import com.google.common.primitives.Ints;
 
 /**
  * An item identifier generation strategy that assigns item identifiers to components in a sequential
@@ -53,6 +54,8 @@ import com.google.common.collect.RangeSet;
  */
 public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrategy {
 
+	private static final int MAX_ATTEMPT = 512;
+
 	private class ItemIdCounter {
 
 		private final Range<Long> allowedRange;
@@ -60,7 +63,7 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 		private final AtomicLong counter;
 		
 		public ItemIdCounter(final String namespace, final ComponentCategory category) {
-			this.allowedRange = Range.closed(getLowerInclusiveId(namespace), getUpperExclusiveId(namespace));
+			this.allowedRange = Range.closedOpen(getLowerInclusiveId(namespace), getUpperExclusiveId(namespace));
 			
 			final SctId lastSctId = getLastSctId(namespace, category);
 			if (lastSctId != null) {
@@ -98,6 +101,7 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 					final Expression idsByNamespaceAndType = Expressions.builder()
 							.filter(SctId.Expressions.namespace(namespace))
 							.filter(SctId.Expressions.partitionId(namespace, category))
+							.filter(SctId.Expressions.sequenceBetween(allowedRange.lowerEndpoint(), allowedRange.upperEndpoint()))
 							.build();
 					
 					final Hits<SctId> hits = index.search(Query.select(SctId.class)
@@ -111,9 +115,14 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 			});
 		}
 		
-		public long getNextItemId() {
-			return counter.updateAndGet(current -> {
-				long next = snapToLowerBound(current + 1L);
+		public long getNextItemId(long stepSize) {
+			long current;
+			long next;
+			
+	        do {
+	        	
+	            current = counter.get();
+				next = snapToLowerBound(current + stepSize);
 				
 				Range<Long> firstRange = null;
 				while (excludedRanges.contains(next)) {
@@ -133,13 +142,20 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 						next = snapToLowerBound(next + 1L);
 					}
 				}
-				
-				return next;
-			});
+
+	        } while (!counter.compareAndSet(current, next));
+	        
+	        return next;
 		}
 		
 		private long snapToLowerBound(final long value) {
-			return allowedRange.contains(value) ? value : allowedRange.lowerEndpoint();
+			if (value < allowedRange.lowerEndpoint()) { // inclusive
+				return allowedRange.upperEndpoint() - (allowedRange.lowerEndpoint() - value);
+			} else if (value >= allowedRange.upperEndpoint()) { // exclusive
+				return allowedRange.lowerEndpoint() + (value - allowedRange.upperEndpoint());
+			} else {
+				return value;
+			}
 		}
 	}
 	
@@ -162,9 +178,12 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 	}
 
 	@Override
-	public String generateItemId(final String namespace, final ComponentCategory category) {
+	public String generateItemId(final String namespace, final ComponentCategory category, int attempt) {
 		final Pair<String, ComponentCategory> key = Pair.identicalPairOf(Strings.nullToEmpty(namespace), category);
-		final long nextItemId = lastItemIds.getUnchecked(key).getNextItemId();
+		final int limitedAttempt = Ints.min(attempt, MAX_ATTEMPT); // 512^512 = 256K will be the biggest jump forward
+		final int stepSize = 2 * limitedAttempt - 1; 
+	
+		final long nextItemId = lastItemIds.getUnchecked(key).getNextItemId(stepSize);
 		return Long.toString(nextItemId);
 	}
 }

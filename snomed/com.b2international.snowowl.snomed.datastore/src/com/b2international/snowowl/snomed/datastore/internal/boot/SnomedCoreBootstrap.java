@@ -24,7 +24,6 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
@@ -36,13 +35,8 @@ import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.core.lang.StaticLanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
-import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
-import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Injector;
 
 /**
@@ -72,15 +66,6 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 			repository.setReaderPoolCapacity(snomedConfig.getReaderPoolCapacity());
 			repository.setWriterPoolCapacity(snomedConfig.getWriterPoolCapacity());
 		}
-		
-		final Reservation intMetadataReservation = Reservations.range(
-				SnomedIdentifiers.MIN_INT_METADATA_ITEMID, // 900000000000000
-				SnomedIdentifiers.MAX_INT_ITEMID, // 999999999999999
-				null, // INT namespace 
-				ImmutableSet.of(ComponentCategory.CONCEPT, ComponentCategory.DESCRIPTION, ComponentCategory.RELATIONSHIP));
-		
-		final ISnomedIdentiferReservationService reservationService = env.service(ISnomedIdentiferReservationService.class);
-		reservationService.create("int_metadata", intMetadataReservation);
 	}
 	
 }
