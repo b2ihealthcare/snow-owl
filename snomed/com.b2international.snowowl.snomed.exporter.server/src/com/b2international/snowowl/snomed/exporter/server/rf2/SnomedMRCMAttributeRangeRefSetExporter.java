@@ -20,6 +20,8 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
+import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * @since 5.10.19
@@ -50,4 +52,19 @@ public class SnomedMRCMAttributeRangeRefSetExporter extends SnomedRefSetExporter
 		return SnomedRf2Headers.MRCM_ATTRIBUTE_RANGE_HEADER;
 	}
 
+	@Override
+	public String getFileName() {
+		return new StringBuilder("der2_")
+			.append(SnomedRfFileNameBuilder.getPrefix(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE, false))
+			.append("Refset_")
+			.append("MRCMAttributeRange")
+			.append(String.valueOf(getExportContext().getContentSubType()))
+			.append('_')
+			.append(getExportContext().getNamespaceId())
+			.append('_')
+			.append(SnomedRfFileNameBuilder.getReleaseDate(getExportContext()))
+			.append(".txt")
+			.toString();
+	}
+	
 }
