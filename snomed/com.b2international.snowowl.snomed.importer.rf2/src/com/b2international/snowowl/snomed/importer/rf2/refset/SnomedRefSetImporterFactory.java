@@ -17,14 +17,13 @@ package com.b2international.snowowl.snomed.importer.rf2.refset;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
+import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
@@ -42,7 +41,7 @@ public abstract class SnomedRefSetImporterFactory {
 		
 		String header;
 		
-		try (BufferedReader reader = Files.newBufferedReader(Paths.get(url.toURI()))) {
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), Charsets.UTF_8))) {
 			
 			header = reader.readLine();
 			
@@ -50,8 +49,6 @@ public abstract class SnomedRefSetImporterFactory {
 				return null;
 			}
 			
-		} catch (URISyntaxException e) {
-			throw new IOException(e);
 		}
 		
 		List<String> headerElements = TAB_SPLITTER.splitToList(header);

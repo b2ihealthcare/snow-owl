@@ -22,10 +22,8 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -56,6 +54,7 @@ import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.RepositoryState;
+import com.google.common.base.Charsets;
 import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
@@ -180,8 +179,7 @@ public final class SnomedValidationContext {
 
 	private void addRefSetFile(final URL url) throws IOException {
 		
-		try (BufferedReader reader = Files.newBufferedReader(Paths.get(url.toURI()))) {
-			
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), Charsets.UTF_8))) {
 			final String header = reader.readLine();
 			
 			// guard against invalid files/folders in the SCT RF2 archive/root folder
@@ -231,8 +229,6 @@ public final class SnomedValidationContext {
 			} else {
 				logger.warn("Couldn't determine reference set type for file '" + configuration.getMappedName(url.getPath()) + "', not validating.");
 			}
-		} catch (URISyntaxException e) {
-			throw new IOException(e);
 		}
 	}
 
