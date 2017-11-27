@@ -68,7 +68,11 @@ public class SnomedIdentifiers {
 			throw new IllegalArgumentException("SCTID should be parseable to a long value");
 		}
 		
-		checkArgument(VerhoeffCheck.validateLastChecksumDigit(componentId), "ComponentId should pass Verhoeff check-digit test");
+		final CharSequence idHead = componentId.subSequence(0, componentId.length() - 1);
+		final char originalChecksum = componentId.charAt(componentId.length() - 1);
+		final char checksum = VerhoeffCheck.calculateChecksum(idHead, false);
+
+		checkArgument(VerhoeffCheck.validateLastChecksumDigit(componentId), "%s has incorrect Verhoeff check-digit; expected %s, was %s", componentId, checksum, originalChecksum);
 	}
 
 	/**
