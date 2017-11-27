@@ -26,7 +26,7 @@ public class MRCMDomainRefSetRow extends RefSetRow {
 	private String proximalPrimitiveRefinement;
 	private String domainTemplateForPrecoordination;
 	private String domainTemplateForPostcoordination;
-	private String editorialGuideReference;
+	private String guideURL;
 
 	public String getDomainConstraint() {
 		return domainConstraint;
@@ -76,12 +76,12 @@ public class MRCMDomainRefSetRow extends RefSetRow {
 		this.domainTemplateForPostcoordination = domainTemplateForPostcoordination;
 	}
 
-	public String getEditorialGuideReference() {
-		return editorialGuideReference;
+	public String getGuideURL() {
+		return guideURL;
 	}
 
-	public void setEditorialGuideReference(final String editorialGuideReference) {
-		this.editorialGuideReference = editorialGuideReference;
+	public void setGuideURL(final String guideURL) {
+		this.guideURL = guideURL;
 	}
 
 	@Override
@@ -89,10 +89,10 @@ public class MRCMDomainRefSetRow extends RefSetRow {
 		return String.format(
 				"MRCMDomainRefSetRow [uuid=%s, effectiveTime=%s, active=%s, moduleId=%s, refsetId=%s, referencedComponentId=%s, domainConstraint=%s, "
 						+ "parentDomain=%s, proximalPrimitiveConstraint=%s, proximalPrimitiveRefinement=%s, domainTemplateForPrecoordination=%s, "
-						+ "domainTemplateForPostcoordination=%s, editorialGuideReference=%s ]",
+						+ "domainTemplateForPostcoordination=%s, guideURL=%s ]",
 						getUuid(), getEffectiveTime(), isActive(), getModuleId(), getRefSetId(), getReferencedComponentId(), getDomainConstraint(),
 						getParentDomain(), getProximalPrimitiveConstraint(), getProximalPrimitiveRefinement(), getDomainTemplateForPrecoordination(),
-						getDomainTemplateForPostcoordination(), getEditorialGuideReference());
+						getDomainTemplateForPostcoordination(), getGuideURL());
 	}
 
 }

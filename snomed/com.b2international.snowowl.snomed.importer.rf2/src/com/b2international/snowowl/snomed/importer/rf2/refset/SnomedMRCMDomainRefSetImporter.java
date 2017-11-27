@@ -113,7 +113,7 @@ public class SnomedMRCMDomainRefSetImporter extends AbstractSnomedRefSetImporter
 		member.setProximalPrimitiveRefinement(row.getProximalPrimitiveRefinement());
 		member.setDomainTemplateForPrecoordination(row.getDomainTemplateForPrecoordination());
 		member.setDomainTemplateForPostcoordination(row.getDomainTemplateForPostcoordination());
-		member.setEditorialGuideReference(row.getEditorialGuideReference());
+		member.setEditorialGuideReference(row.getGuideURL());
 
 	}
 
