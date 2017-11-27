@@ -164,13 +164,24 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 				Matcher matcher = REGEX.matcher(term.trim());
 				if (matcher.matches()) {
 					req.filterByTermRegex(matcher.group(1));
+				} else {
+					req.filterByTerm(term);
 				}
 			}
+			
+			if (semanticTag != null) {
+				Matcher matcher = REGEX.matcher(semanticTag.trim());
+				if (matcher.matches()) {
+					req.filterBySemanticTagRegex(matcher.group(1));
+				} else {
+					req.filterBySemanticTag(semanticTag.trim());
+				}
+			}
+			
 			return super.prepareSearch(req)
 					.filterByType(type)
 					.filterByConcept(concept)
 					.filterByCaseSignificance(caseSignificance)
-					.filterBySemanticTag(semanticTag)
 					.filterByLanguageRefSets(languageRefSet)
 					.filterByPreferredIn(preferredIn)
 					.filterByAcceptableIn(acceptableIn);

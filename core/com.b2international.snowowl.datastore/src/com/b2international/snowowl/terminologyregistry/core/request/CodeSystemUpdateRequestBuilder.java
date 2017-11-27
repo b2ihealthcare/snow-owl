@@ -23,7 +23,7 @@ import com.b2international.snowowl.datastore.request.TransactionalRequestBuilder
 /**
  * @since 4.7
  */
-public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<CodeSystemUpdateRequestBuilder, TransactionContext, Void> implements TransactionalRequestBuilder<Void> {
+public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<CodeSystemUpdateRequestBuilder, TransactionContext, Boolean> implements TransactionalRequestBuilder<Boolean> {
 
 	private final String uniqueId;
 
@@ -70,7 +70,7 @@ public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<Cod
 	}
 
 	@Override
-	protected Request<TransactionContext, Void> doBuild() {
+	protected Request<TransactionContext, Boolean> doBuild() {
 		final CodeSystemUpdateRequest req = new CodeSystemUpdateRequest(uniqueId);
 		req.setName(name);
 		req.setLink(link);

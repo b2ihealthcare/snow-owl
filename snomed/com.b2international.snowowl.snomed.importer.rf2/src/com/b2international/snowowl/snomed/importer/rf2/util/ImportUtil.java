@@ -62,12 +62,10 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
@@ -146,17 +144,17 @@ public final class ImportUtil {
 	}
 	
 	public SnomedImportResult doImport(
-			final CodeSystem codeSystem,
+			final String codeSystemShortName,
 			final ContentSubType contentSubType,
 			final IBranchPath branchPath,
 			final File releaseArchive,
 			final boolean shouldCreateVersions) throws Exception {
 		
-		return doImport(codeSystem, branchPath, contentSubType, releaseArchive, shouldCreateVersions, User.SYSTEM.getUsername(), new NullProgressMonitor());
+		return doImport(codeSystemShortName, branchPath, contentSubType, releaseArchive, shouldCreateVersions, User.SYSTEM.getUsername(), new NullProgressMonitor());
 	}
 	
 	public SnomedImportResult doImport(
-			final CodeSystem codeSystem,
+			final String codeSystemShortName,
 			final String userId,
 			final ContentSubType contentSubType,
 			final String branchPathName,
@@ -164,11 +162,11 @@ public final class ImportUtil {
 			final boolean createVersions,
 			final IProgressMonitor monitor) throws ImportException {
 		
-		return doImport(codeSystem, BranchPathUtils.createPath(branchPathName), contentSubType, releaseArchive, createVersions, userId, monitor);
+		return doImport(codeSystemShortName, BranchPathUtils.createPath(branchPathName), contentSubType, releaseArchive, createVersions, userId, monitor);
 	}
 
 	private SnomedImportResult doImport(
-			final CodeSystem codeSystem,
+			final String codeSystemShortName,
 			final IBranchPath branchPath,
 			final ContentSubType contentSubType,
 			final File releaseArchive,
@@ -181,10 +179,9 @@ public final class ImportUtil {
 		checkNotNull(releaseArchive, "releaseArchive");
 		checkArgument(releaseArchive.canRead(), "Cannot read SNOMED CT RF2 release archive content.");
 		checkArgument(BranchPathUtils.exists(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()));
-		ApiValidation.checkInput(codeSystem);
 		
 		final ImportConfiguration config = new ImportConfiguration(branchPath.getPath());
-		config.setCodeSystemShortName(codeSystem.getShortName());
+		config.setCodeSystemShortName(codeSystemShortName);
 		config.setVersion(contentSubType);
 		config.setCreateVersions(shouldCreateVersions);
 		config.setArchiveFile(releaseArchive);

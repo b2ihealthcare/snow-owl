@@ -8,10 +8,6 @@
    <extension-point id="lookupService" name="lookupService" schema="schema/lookupService.exsd"/>
    <extension-point id="searchResultProvider" name="searchResultProvider" schema="schema/searchResultProvider.exsd"/>
    <extension-point id="nameProviderFactory" name="nameProviderFactory" schema="schema/nameProviderFactory.exsd"/>
-   <extension-point id="terminologyComponentUriResolver" name="terminologyComponentUriResolver" schema="schema/terminologyComponentUriResolver.exsd"/>
-   <extension-point id="expressionUriEvaluator" name="Expression URI Evaluator" schema="schema/expressionUriEvaluator.exsd"/>
-   <extension-point id="componentValidationConstraint" name="Component Validation Constraint" schema="schema/componentValidationConstraint.exsd"/>
-   <extension-point id="globalValidationConstraints" name="Global Validation Constraint" schema="schema/globalValidationConstraint.exsd"/>
    <extension-point id="componentIconIdProvider" name="componentIconIdProvider" schema="schema/componentIconIdProvider.exsd"/>
    <extension-point id="valueSetMembershipLookupService" name="Value Set Membership Lookup Service" schema="schema/valueSetMembershipLookupService.exsd"/>
    <extension-point id="mappingSetMembershipLookupService" name="Mapping Set Membership Lookup Service" schema="schema/mappingSetMembershipLookupService.exsd"/>

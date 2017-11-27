@@ -418,18 +418,18 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			
 			if (!existingVersionFound && importContext.isVersionCreationEnabled()) {
 				// purge index
-				PurgeRequest.builder()
-					.setBranchPath(getImportBranchPath().getPath())
-					.setPurge(Purge.LATEST)
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-					.execute(getEventBus())
-					.getSync();
+//				PurgeRequest.builder()
+//					.setBranchPath(getImportBranchPath().getPath())
+//					.setPurge(Purge.LATEST)
+//					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+//					.execute(getEventBus())
+//					.getSync();
 				// optimize index
-				OptimizeRequest.builder()
-					.setMaxSegments(8)
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-					.execute(getEventBus())
-					.getSync();
+//				OptimizeRequest.builder()
+//					.setMaxSegments(8)
+//					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+//					.execute(getEventBus())
+//					.getSync();
 				
 				final IBranchPath snomedBranchPath = getImportBranchPath();
 				final Date effectiveDate = EffectiveTimes.parse(lastUnitEffectiveTimeKey, DateFormats.SHORT);

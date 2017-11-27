@@ -27,7 +27,7 @@ import com.b2international.snowowl.core.events.Request;
  * 
  * @since 4.5
  */
-public class DeleteRequestBuilder extends BaseRequestBuilder<DeleteRequestBuilder, TransactionContext, Void> implements TransactionalRequestBuilder<Void> {
+public class DeleteRequestBuilder extends BaseRequestBuilder<DeleteRequestBuilder, TransactionContext, Boolean> implements TransactionalRequestBuilder<Boolean> {
 
 	private final String componentId;
 	private final Class<? extends EObject> type;
@@ -52,7 +52,7 @@ public class DeleteRequestBuilder extends BaseRequestBuilder<DeleteRequestBuilde
 	}
 
 	@Override
-	protected Request<TransactionContext, Void> doBuild() {
+	protected Request<TransactionContext, Boolean> doBuild() {
 		return new DeleteRequest(componentId, type, force);
 	}
 

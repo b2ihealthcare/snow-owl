@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,19 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.command;
 
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_INT_ICON_PATH;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
-import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 
 import com.b2international.commons.ConsoleProgressMonitor;
-import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.server.console.CommandLineAuthenticator;
@@ -42,8 +37,7 @@ import com.b2international.snowowl.snomed.importer.ImportException;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
@@ -56,37 +50,25 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 	private static final String TYPE_SWITCH = "-t";
 	private static final String BRANCH_OR_VERSION_SWITCH = "-b";
 	private static final String CREATE_VERSION_SWITCH = "-v";
-	private static final String DEFAULT_METADATA_FILE_EXTENSION = ".json";
-	
-	private static final String KEY_NAME = "name";
-	private static final String KEY_SHORT_NAME = "shortName";
-	private static final String KEY_LANGUAGE = "language";
-	private static final String KEY_CODE_SYSTEM_OID = "codeSystemOID";
-	private static final String KEY_MAINTAINING_ORGANIZATION_LINK = "maintainingOrganizationLink";
-	private static final String KEY_CITATION = "citation";
-	private static final String KEY_ICON_PATH = "iconPath";
-	private static final String KEY_TERMINOLOGY_COMPONENT_ID = "terminologyComponentId";
-	private static final String KEY_REPOSITORY_UUID = "repositoryUuid";
-	private static final String KEY_EXTENSION_OF = "extensionOf";
 	
 	private static final String IMPORT_ARCHIVE_PATH_IS_MISSING = "Import archive path is missing.";
 
 	public ImportZipCommand() {
 		super(
 				"rf2_release", 
-				"-t <type> -b <branch> -v <path to rf2 archive> <path to release descriptor file>",
+				"-t <type> -b <branch> -v <path to rf2 archive> <code_system_short_name>",
 				"Imports SNOMED CT RF2 releases from a release archive",
 				new String[] { 
 					"-t <type>\t\tThe import type (FULL, SNAPSHOT or DELTA).",
 					"-b <branch>\t\tThe existing branch to import the content onto. In case of extension import, an effective time from the base SNOMED CT release (e.g. 2016-01-31). If omitted 'MAIN' will be used.",
 					"-v\t\t\tCreates versions for each effective time found in the release archive. If omitted no versions will be created.",
 					"<path>\t\tSpecifies the release archive to import (must be a .zip file with a supported internal structure, such as the release archive of the International Release).",
-					"<path to release descriptor file>\tThe path to the release descriptor file.",
+					"<code_system_short_name>\t\tThe selected code system short name where you would like to import the content from the archive",
 					"E.g:",
 					"\tImporting the international release on MAIN:",
-					"\tsctimport rf2_release -t full -v C:/SnomedCT_RF2Release_INT_20160131.zip C:/snomed_ct_international.json",
+					"\tsctimport rf2_release -t full -v C:/SnomedCT_RF2Release_INT_20160131.zip SNOMEDCT",
 					"\tImport and extension on a branch:",
-					"\tsctimport rf2_release -t full -b 2016-01-31 -v C:/SnomedCT_Release_B2i_20160201.zip C:/snomed_ct_b2i.json"
+					"\tsctimport rf2_release -t full -b 2016-01-31 -v C:/SnomedCT_Release_B2i_20160201.zip SNOMEDCT-B2I"
 				});
 	}
 
@@ -202,24 +184,22 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			return;
 		}
 
-		final CodeSystem codeSystem;
-		final File metadataFile = new File(metadataFilePath);
-		
-		if (!metadataFile.isFile() || !metadataFilePath.endsWith(DEFAULT_METADATA_FILE_EXTENSION)) {
-			interpreter.println("Invalid metadata file path.");
-			printDetailedHelp(interpreter);
-			return;
-		} else {
-			try {
-				ObjectMapper mapper = new ObjectMapper();
-				final Map<String, String> metadataMap = mapper.readValue(metadataFile, new TypeReference<Map<String, String>>() {});
-				codeSystem = createCodeSystem(metadataMap);
-			} catch (IOException e) {
-				interpreter.println("Unable to parse metadata file: " + e.getMessage());
+		// code system
+		String codeSystemShortName = null;
+		if (!archiveFilePath.equals(parameters.get(parameters.size() - 1))) {
+			codeSystemShortName = parameters.get(parameters.size() - 1);
+			if (Strings.isNullOrEmpty(codeSystemShortName)) {
+				interpreter.println("Code System Short Name must be specified");
 				printDetailedHelp(interpreter);
 				return;
 			}
+		} else {
+			interpreter.println("Code System Short Name must be specified");
+			printDetailedHelp(interpreter);
+			return;
 		}
+		
+		final CodeSystemEntry codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName).build(SnomedDatastoreActivator.REPOSITORY_UUID).execute(ApplicationContext.getServiceForClass(IEventBus.class)).getSync();
 		
 		// branchPath
 		
@@ -252,8 +232,6 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 			}
 		}
 
-		codeSystem.setBranchPath(branchPath);
-		
 		try {
 
 			final CommandLineAuthenticator authenticator = new CommandLineAuthenticator();
@@ -262,7 +240,7 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 				return;
 			}
 
-			final SnomedImportResult result = new ImportUtil().doImport(codeSystem, authenticator.getUsername(), contentSubType, branchPath,
+			final SnomedImportResult result = new ImportUtil().doImport(codeSystemShortName, authenticator.getUsername(), contentSubType, branchPath,
 					archiveFile, createVersions, new ConsoleProgressMonitor());
 
 			Set<SnomedValidationDefect> validationDefects = result.getValidationDefects();
@@ -284,26 +262,6 @@ public class ImportZipCommand extends AbstractRf2ImporterCommand {
 		}
 	}
 	
-	private CodeSystem createCodeSystem(final Map<String, String> values) {
-		return CodeSystem.builder()
-				.branchPath(getValue(KEY_NAME, null, values))
-				.citation(getValue(KEY_CITATION, null, values))
-				.oid(getValue(KEY_CODE_SYSTEM_OID, null, values))
-				.extensionOf(getValue(KEY_EXTENSION_OF, null, values))
-				.iconPath(getValue(KEY_ICON_PATH, SNOMED_INT_ICON_PATH, values))
-				.primaryLanguage(getValue(KEY_LANGUAGE, null, values))
-				.organizationLink(getValue(KEY_MAINTAINING_ORGANIZATION_LINK, null, values))
-				.name(getValue(KEY_NAME, null, values))
-				.repositoryUuid(getValue(KEY_REPOSITORY_UUID, REPOSITORY_UUID, values))
-				.shortName(getValue(KEY_SHORT_NAME, null, values))
-				.terminologyId(getValue(KEY_TERMINOLOGY_COMPONENT_ID, TERMINOLOGY_ID, values))
-				.build();
-	}
-
-	private String getValue(final String key, final String defaultValue, final Map<String, String> values) {
-		return values.get(key) == null ? defaultValue : values.get(key);
-	}
-
 	private List<String> getParameters(final CommandInterpreter interpreter) {
 		List<String> parameters = newArrayList();
 		String param = null;

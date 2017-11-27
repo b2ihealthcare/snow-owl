@@ -19,11 +19,13 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -48,11 +50,6 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	 * @since 5.8
 	 */
 	public enum OptionKey {
-		/**
-		 * Restrict search to the given collection of component identifiers.
-		 */
-		COMPONENT_IDS,
-		
 		/**
 		 * Sort result by the specified sort fields.
 		 */
@@ -94,6 +91,11 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	private String scrollId;
 	private String scrollKeepAlive;
 	private Object[] searchAfter;
+
+	/**
+	 * Restrict search to the given collection of component identifiers.
+	 */
+	private Set<String> componentIds;
 	
 	@Min(0)
 	private int limit;
@@ -118,6 +120,10 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	void setSearchAfter(Object[] searchAfter) {
 		this.searchAfter = searchAfter;
+	}
+	
+	void setComponentIds(Set<String> componentIds) {
+		this.componentIds = componentIds;
 	}
 
 	@JsonProperty
@@ -151,6 +157,18 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	@JsonProperty
 	protected final Options options() {
 		return options;
+	}
+	
+	protected final Set<String> componentIds() {
+		return componentIds;
+	}
+
+	/**
+	 * @return
+	 */
+	@JsonProperty("componentIds")
+	String getTruncatedComponentIdValues() {
+		return componentIds == null ? null : StringUtils.limitedToString(componentIds, 10);
 	}
 	
 	protected final boolean containsKey(Enum<?> key) {
@@ -193,8 +211,8 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	 * @param reducer
 	 */
 	protected final <T> T applyIdFilter(T input, BiFunction<T, Collection<String>, T> reducer) {
-		if (containsKey(OptionKey.COMPONENT_IDS)) {
-			return reducer.apply(input, getCollection(OptionKey.COMPONENT_IDS, String.class));
+		if (componentIds != null) {
+			return reducer.apply(input, componentIds);
 		} else {
 			return input;
 		}

@@ -69,6 +69,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicates;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -600,7 +601,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	private String getNamespace(final String componentId) {
 		final String namespace = SnomedIdentifiers.getNamespace(componentId);
 		
-		if (namespace == null) {
+		if (Strings.isNullOrEmpty(namespace)) {
 			return "0";
 		} else {
 			return namespace;

@@ -81,7 +81,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 5.7
  */
-final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, Void> {
+final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, Boolean> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -118,7 +118,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, V
 	private Map<String, SingleRepositoryAndBranchLockTarget> lockTargets;
 	
 	@Override
-	public Void execute(ServiceProvider context) {
+	public Boolean execute(ServiceProvider context) {
 		final IProgressMonitor monitor = context.service(IProgressMonitor.class);
 		final RemoteJob job = context.service(RemoteJob.class);
 		final String user = job.getUser();
@@ -153,7 +153,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, V
 				monitor.done();
 			}
 		}
-		return null;
+		return Boolean.TRUE;
 	}
 	
 	void setCodeSystemShortName(String codeSystemShortName) {

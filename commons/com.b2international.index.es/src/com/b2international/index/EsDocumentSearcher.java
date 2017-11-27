@@ -93,7 +93,7 @@ public class EsDocumentSearcher implements DocSearcher {
 				.setFetchSource(true)
 				.get();
 		if (response.isExists()) {
-			final byte[] bytes = BytesReference.toBytes(response.getSourceAsBytesRef());
+			final byte[] bytes = response.getSourceAsBytes();
 			return mapper.readValue(bytes, 0, bytes.length, type);
 		} else {
 			return null;

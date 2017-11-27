@@ -47,6 +47,7 @@ import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
+import com.b2international.snowowl.datastore.internal.InternalRepository;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
@@ -56,7 +57,6 @@ import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryCo
 import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryManager;
 import com.b2international.snowowl.datastore.server.internal.ExtensionBasedEditingContextFactoryProvider;
 import com.b2international.snowowl.datastore.server.internal.ExtensionBasedRepositoryClassLoaderProviderRegistry;
-import com.b2international.snowowl.datastore.server.internal.InternalRepository;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.server.session.LogListener;
@@ -132,6 +132,8 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			env.services().registerService(RepositoryManager.class, new DefaultRepositoryManager());
 			env.services().registerService(EditingContextFactoryProvider.class, new ExtensionBasedEditingContextFactoryProvider());
 			
+			initializeRequestSupport(env, configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers());
+			
 			LOG.debug("<<< Server-side datastore bundle started. [{}]", serverStopwatch);
 		} else {
 			LOG.debug("Snow Owl application is running in remote mode.");
@@ -154,7 +156,6 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		
 		if (env.isEmbedded() || env.isServer()) {
 			initializeJobSupport(env, configuration);
-			initializeRequestSupport(env, configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers());
 			initializeRepositories(configuration, env);
 			initializeContent(env);
 		}

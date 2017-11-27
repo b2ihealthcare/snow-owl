@@ -422,7 +422,7 @@ public class VersioningService implements IVersioningService {
 	private void publishComponents() throws SnowowlServiceException {
 		releaseLock();
 		final IEventBus bus = ApplicationContext.getServiceForClass(IEventBus.class);
-		final Request<ServiceProvider, Void> req = CodeSystemRequests.prepareNewCodeSystemVersion()
+		final Request<ServiceProvider, Boolean> req = CodeSystemRequests.prepareNewCodeSystemVersion()
 			.setCodeSystemShortName(codeSystemShortName)
 			.setPrimaryToolingId(primaryToolingId)
 			.setParentBranchPath(parentBranchPath)

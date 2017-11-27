@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package com.b2international.snowowl.datastore.config;
 
 import javax.validation.constraints.Min;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.query.slowlog.SlowLogConfig;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,10 +28,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class IndexConfiguration {
 
-	@Min(1000)
-	private long commitInterval = IndexClientFactory.DEFAULT_COMMIT_INTERVAL;
-	@Min(1000)
-	private long translogSyncInterval = IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL;
+	@NotEmpty
+	private String commitInterval = IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL;
 	@Min(10)
 	private long queryWarnThreshold = SlowLogConfig.QUERY_WARN_THRESHOLD_DEFAULT;
 	@Min(10)
@@ -54,23 +54,13 @@ public class IndexConfiguration {
 	private int commitConcurrencyLevel = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
 
 	@JsonProperty
-	public long getCommitInterval() {
+	public String getCommitInterval() {
 		return commitInterval;
 	}
 
 	@JsonProperty
-	public void setCommitInterval(long commitInterval) {
+	public void setCommitInterval(String commitInterval) {
 		this.commitInterval = commitInterval;
-	}
-
-	@JsonProperty
-	public long getTranslogSyncInterval() {
-		return translogSyncInterval;
-	}
-
-	@JsonProperty
-	public void setTranslogSyncInterval(long translogSyncInterval) {
-		this.translogSyncInterval = translogSyncInterval;
 	}
 
 	@JsonProperty

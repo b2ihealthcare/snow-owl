@@ -116,8 +116,9 @@ public class Bootstrap {
 	 * 
 	 * @param configuration
 	 * @param environment
+	 * @throws Exception 
 	 */
-	public void preRun(SnowOwlConfiguration configuration, Environment environment) {
+	public void preRun(SnowOwlConfiguration configuration, Environment environment) throws Exception {
 		for (BootstrapFragment fragment : extensions) {
 			if (fragment instanceof PreRunCapableBootstrapFragment) {
 				((PreRunCapableBootstrapFragment) fragment).preRun(configuration, environment);

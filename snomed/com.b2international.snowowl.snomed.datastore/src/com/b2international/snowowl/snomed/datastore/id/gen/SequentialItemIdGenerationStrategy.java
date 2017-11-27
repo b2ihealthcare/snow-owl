@@ -179,7 +179,7 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 
 	@Override
 	public String generateItemId(final String namespace, final ComponentCategory category, int attempt) {
-		final Pair<String, ComponentCategory> key = Pair.identicalPairOf(Strings.emptyToNull(namespace), category);
+		final Pair<String, ComponentCategory> key = Pair.identicalPairOf(Strings.nullToEmpty(namespace), category);
 		final int limitedAttempt = Ints.min(attempt, MAX_ATTEMPT); // 512^512 = 256K will be the biggest jump forward
 		final int stepSize = 2 * limitedAttempt - 1; 
 	

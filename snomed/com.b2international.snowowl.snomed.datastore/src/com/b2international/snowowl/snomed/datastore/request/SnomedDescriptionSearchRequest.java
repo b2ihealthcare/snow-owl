@@ -19,9 +19,10 @@ import static com.b2international.snowowl.datastore.index.RevisionDocument.Expre
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.acceptableIn;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.allTermPrefixesPresent;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.allTermsPresent;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.exactTerm;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.fuzzy;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.languageCodes;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.matchEntireTerm;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.matchTermOriginal;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.parsedTerm;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.preferredIn;
 import static com.google.common.collect.Lists.newArrayList;
@@ -58,8 +59,9 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		USE_FUZZY,
 		PARSED_TERM, 
 		CASE_SIGNIFICANCE, 
-		REGEX_TERM, 
+		TERM_REGEX, 
 		SEMANTIC_TAG,
+		SEMANTIC_TAG_REGEX,
 		LANGUAGE_REFSET,
 		ACCEPTABLE_IN,
 		PREFERRED_IN;
@@ -97,10 +99,14 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		if (containsKey(OptionKey.SEMANTIC_TAG)) {
 			queryBuilder.filter(SnomedDescriptionIndexEntry.Expressions.semanticTags(getCollection(OptionKey.SEMANTIC_TAG, String.class)));
 		}
+		
+		if (containsKey(OptionKey.SEMANTIC_TAG_REGEX)) {
+			queryBuilder.filter(SnomedDescriptionIndexEntry.Expressions.semanticTagRegex(getString(OptionKey.SEMANTIC_TAG_REGEX)));
+		}
 			
-		if (containsKey(OptionKey.REGEX_TERM)) {
-			final String regex = getString(OptionKey.REGEX_TERM);
-			queryBuilder.filter(SnomedDescriptionIndexEntry.Expressions.regexTerm(regex));
+		if (containsKey(OptionKey.TERM_REGEX)) {
+			final String regex = getString(OptionKey.TERM_REGEX);
+			queryBuilder.filter(SnomedDescriptionIndexEntry.Expressions.matchTermRegex(regex));
 		}
 		
 		if (containsKey(OptionKey.TERM)) {
@@ -113,7 +119,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		}
 		
 		if (containsKey(OptionKey.EXACT_TERM)) {
-			queryBuilder.must(exactTerm(getString(OptionKey.EXACT_TERM)));
+			queryBuilder.must(matchTermOriginal(getString(OptionKey.EXACT_TERM)));
 		}
 		
 		return queryBuilder.build();
@@ -163,7 +169,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 
 	private Expression createTermDisjunctionQuery(final String searchTerm) {
 		final List<Expression> disjuncts = newArrayList();
-		disjuncts.add(Expressions.scriptScore(exactTerm(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 2)));
+		disjuncts.add(Expressions.scriptScore(matchEntireTerm(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 2)));
 		disjuncts.add(Expressions.scriptScore(allTermsPresent(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
 		disjuncts.add(Expressions.scriptScore(allTermPrefixesPresent(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
 		return Expressions.dismax(disjuncts);

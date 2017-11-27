@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.request.SystemRequestBuilder;
 /**
  * @since 5.7
  */
-public final class DeleteJobRequestBuilder extends BaseRequestBuilder<DeleteJobRequestBuilder, ServiceProvider, Void> implements SystemRequestBuilder<Void> {
+public final class DeleteJobRequestBuilder extends BaseRequestBuilder<DeleteJobRequestBuilder, ServiceProvider, Boolean> implements SystemRequestBuilder<Boolean> {
 
 	private final String jobId;
 	
@@ -34,7 +34,7 @@ public final class DeleteJobRequestBuilder extends BaseRequestBuilder<DeleteJobR
 	}
 
 	@Override
-	protected Request<ServiceProvider, Void> doBuild() {
+	protected Request<ServiceProvider, Boolean> doBuild() {
 		return new DeleteJobRequest(Collections.singleton(jobId));
 	}
 

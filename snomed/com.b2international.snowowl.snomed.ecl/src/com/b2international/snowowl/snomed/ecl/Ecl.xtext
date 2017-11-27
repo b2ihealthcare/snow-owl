@@ -38,9 +38,9 @@ RefinedExpressionConstraint returns ExpressionConstraint:
 	DottedExpressionConstraint ({RefinedExpressionConstraint.constraint=current} COLON refinement=Refinement)?;
 
 DottedExpressionConstraint returns ExpressionConstraint:
-	SimpleExpressionConstraint ({DottedExpressionConstraint.constraint=current} DOT attribute=Attribute)*;
+	SubExpressionConstraint ({DottedExpressionConstraint.constraint=current} DOT attribute=SubExpressionConstraint)*;
 
-SimpleExpressionConstraint returns ExpressionConstraint:
+SubExpressionConstraint returns ExpressionConstraint:
 	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | FocusConcept;
 
 FocusConcept returns ExpressionConstraint:
@@ -65,7 +65,7 @@ AncestorOrSelfOf:
 	DBL_GT constraint=FocusConcept;
 
 MemberOf:
-	CARET constraint=(ConceptReference | Any);
+	CARET constraint=(ConceptReference | Any | NestedExpression);
 
 ConceptReference:
 	id=SnomedIdentifier (term=TERM_STRING)?;
@@ -107,16 +107,7 @@ NestedAttributeSet returns NestedRefinement:
 	ROUND_OPEN nested=AttributeSet ROUND_CLOSE;
 
 AttributeConstraint:
-	(cardinality=Cardinality)? (reversed?=REVERSED)? attribute=Attribute comparison=Comparison;
-
-Attribute returns ExpressionConstraint:
-	AttributeDescendantOf | AttributeDescendantOrSelfOf | ConceptReference | Any;
-
-AttributeDescendantOf returns DescendantOf:
-	LT constraint=(ConceptReference | Any);
-
-AttributeDescendantOrSelfOf returns DescendantOrSelfOf:
-	DBL_LT constraint=(ConceptReference | Any);
+	(cardinality=Cardinality)? (reversed?=REVERSED)? attribute=SubExpressionConstraint comparison=Comparison;
 
 Cardinality:
 	SQUARE_OPEN min=NonNegativeInteger TO max=MaxValue SQUARE_CLOSE;
@@ -144,10 +135,10 @@ DataTypeComparison:
 	| DecimalValueLessThanEquals;
 
 AttributeValueEquals:
-	EQUAL constraint=SimpleExpressionConstraint;
+	EQUAL constraint=SubExpressionConstraint;
 
 AttributeValueNotEquals:
-	NOT_EQUAL constraint=SimpleExpressionConstraint;
+	NOT_EQUAL constraint=SubExpressionConstraint;
 
 StringValueEquals:
 	EQUAL value=STRING;

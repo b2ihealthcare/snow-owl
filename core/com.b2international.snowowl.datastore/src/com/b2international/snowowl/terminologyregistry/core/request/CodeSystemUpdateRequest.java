@@ -25,7 +25,7 @@ import com.b2international.snowowl.terminologymetadata.CodeSystem;
 /**
  * @since 4.7
  */
-final class CodeSystemUpdateRequest implements Request<TransactionContext, Void> {
+final class CodeSystemUpdateRequest implements Request<TransactionContext, Boolean> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -67,7 +67,7 @@ final class CodeSystemUpdateRequest implements Request<TransactionContext, Void>
 	}
 
 	@Override
-	public Void execute(final TransactionContext context) {
+	public Boolean execute(final TransactionContext context) {
 		final CodeSystem codeSystem = context.lookup(uniqueId, CodeSystem.class);
 
 		updateName(codeSystem);
@@ -77,7 +77,7 @@ final class CodeSystemUpdateRequest implements Request<TransactionContext, Void>
 		updateBranchPath(codeSystem, context);
 		updateIconPath(codeSystem);
 
-		return null;
+		return Boolean.TRUE;
 	}
 
 	private void updateName(final CodeSystem codeSystem) {

@@ -52,7 +52,7 @@ final class ImportRf2Command extends AbstractRf2ImporterCommand {
 	public ImportRf2Command() {
 		super(
 			"rf2", 
-			"-t <type> -b <branch> -v <code_system_short_name> <path to rf2 archive>",
+			"-t <type> -b <branch> -v <path to rf2 archive> <code_system_short_name>",
 			"Imports SNOMED CT RF2 release from a release archive",
 			new String[] { 
 				"-t <type>\t\tThe import type (FULL, SNAPSHOT or DELTA).",

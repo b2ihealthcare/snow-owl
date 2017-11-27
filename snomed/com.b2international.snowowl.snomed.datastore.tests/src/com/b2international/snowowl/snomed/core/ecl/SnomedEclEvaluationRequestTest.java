@@ -23,7 +23,9 @@ import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilder
 import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.relationship;
 import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.stringMember;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringMappingRefSet;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringMappingRefSets;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringRefSet;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringRefSets;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_MAPPING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
@@ -53,6 +55,7 @@ import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -195,6 +198,20 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		final Expression expected = Expressions.builder()
 				.should(Expressions.exists(REFERRING_REFSETS))
 				.should(Expressions.exists(REFERRING_MAPPING_REFSETS))
+				.build();
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void memberOfNested() throws Exception {
+		indexRevision(MAIN, nextStorageKey(), concept(Concepts.SYNONYM)
+				.parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.REFSET_DESCRIPTION_TYPE)))
+				.ancestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.build());
+		final Expression actual = eval("^(<" + Concepts.REFSET_DESCRIPTION_TYPE + ")");
+		final Expression expected = Expressions.builder()
+				.should(referringRefSets(Collections.singleton(Concepts.SYNONYM)))
+				.should(referringMappingRefSets(Collections.singleton(Concepts.SYNONYM)))
 				.build();
 		assertEquals(expected, actual);
 	}
@@ -345,6 +362,16 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	public void refinementAttributeEquals() throws Exception {
 		generateDrugHierarchy();
 		final Expression actual = eval(String.format("<%s:%s=%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, INGREDIENT1));
+		final Expression expected = ids(ImmutableSet.of(PANADOL_TABLET, TRIPHASIL_TABLET));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void refinementAttributeSubExpression() throws Exception {
+		generateDrugHierarchy();
+		indexRevision(MAIN, nextStorageKey(), concept(HAS_ACTIVE_INGREDIENT).build());
+		indexRevision(MAIN, nextStorageKey(), concept(HAS_BOSS).build());
+		final Expression actual = eval(String.format("<%s:(%s OR %s)=(%s OR %s)", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, HAS_BOSS, INGREDIENT1, INGREDIENT2));
 		final Expression expected = ids(ImmutableSet.of(PANADOL_TABLET, TRIPHASIL_TABLET));
 		assertEquals(expected, actual);
 	}

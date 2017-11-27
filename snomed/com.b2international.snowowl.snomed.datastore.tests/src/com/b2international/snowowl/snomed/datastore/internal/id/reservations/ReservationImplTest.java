@@ -65,7 +65,7 @@ public class ReservationImplTest {
 			}
 		}, new SnomedIdentifierReservationServiceImpl(), new SnomedIdentifierConfiguration());
 		final Set<ComponentCategory> components = Collections.singleton(ComponentCategory.CONCEPT);
-		final Reservation range = Reservations.range(200, 300, null, components);
+		final Reservation range = Reservations.range(200, 300, "", components);
 		final Set<String> componentIds = identifierService.generate(null, ComponentCategory.CONCEPT, 300 - 200 + 1);
 		
 		for (String id : componentIds) { 

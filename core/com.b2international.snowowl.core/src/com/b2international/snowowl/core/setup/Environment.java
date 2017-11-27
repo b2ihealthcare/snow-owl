@@ -45,11 +45,12 @@ public final class Environment implements ServiceProvider {
 
 	public Environment(final Bootstrap bootstrap, final SnowOwlConfiguration configuration) throws Exception {
 		initializeEnvironmentDirectories(bootstrap.getInstallationDirectory(), configuration);
-		services().registerService(PreferencesService.class,
-				PlatformUtil.getPreferencesService(bootstrap.getBundleContext()));
-		services().registerService(FileBasedPreferencesService.class,
-				new FileBasedPreferencesService(getConfigDirectory()));
+		final PreferencesService preferences = PlatformUtil.getPreferencesService(bootstrap.getBundleContext());
+		services().registerService(PreferencesService.class, preferences);
+		services().registerService(FileBasedPreferencesService.class, new FileBasedPreferencesService(getConfigDirectory()));
 		services().registerService(SnowOwlConfiguration.class, configuration);
+		final ClientPreferences cdoClientConfiguration = new ClientPreferences(preferences);
+		services().registerService(ClientPreferences.class, cdoClientConfiguration);
 	}
 	
 	private void initializeEnvironmentDirectories(File installationDirectory, SnowOwlConfiguration configuration) throws Exception {

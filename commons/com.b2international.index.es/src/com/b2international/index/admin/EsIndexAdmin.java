@@ -31,6 +31,7 @@ import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
@@ -73,6 +74,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		this.log = LoggerFactory.getLogger(String.format("index.%s", this.name));
 		this.settings.putIfAbsent(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, IndexClientFactory.DEFAULT_COMMIT_CONCURRENCY_LEVEL);
 		this.settings.putIfAbsent(IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW);
+		this.settings.putIfAbsent(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL);
 	}
 	
 	@Override
@@ -87,12 +89,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 	@Override
 	public boolean exists() {
-		for (DocumentMapping mapping : mappings.getMappings()) {
-			if (!exists(mapping)) {
-				return false;
-			}
-		}
-		return true;
+		return client().admin().indices().prepareExists(getAllIndexes().toArray(new String[]{})).get().isExists();
 	}
 
 	private boolean exists(DocumentMapping mapping) {
@@ -101,60 +98,67 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 	@Override
 	public void create() {
-		// create number of indexes based on number of types
- 		for (DocumentMapping mapping : mappings.getMappings()) {
- 			if (exists(mapping)) {
- 				continue;
- 			}
- 			final String indexName = getTypeIndex(mapping);
-			final CreateIndexRequestBuilder req = client().admin().indices().prepareCreate(indexName);
-			final String type = mapping.typeAsString();
-			Map<String, Object> typeMapping = ImmutableMap.of(type,
-				ImmutableMap.builder()
-					.put("date_detection", "false")
-					.put("numeric_detection", "false")
-					.putAll(toProperties(mapping))
-					.build()
-			);
-			req.addMapping(type, typeMapping);
-			try {
-				final Map<String, Object> indexSettings = createSettings();
-				log.info("Configuring '{}' index with settings: {}", indexName, indexSettings);
-				req.setSettings(indexSettings);
-			} catch (IOException e) {
-				throw new IndexException("Couldn't prepare settings for index " + indexName, e);
-			}
-			CreateIndexResponse response = req.get();
-			checkState(response.isAcknowledged(), "Failed to create index '%s' for type '%s'", name, mapping.typeAsString());
- 		}
- 		
+		log.info("Preparing '{}' indexes...", name);
+		if (!exists()) {
+			// create number of indexes based on number of types
+	 		for (DocumentMapping mapping : mappings.getMappings()) {
+	 			if (exists(mapping)) {
+	 				continue;
+	 			}
+	 			final String indexName = getTypeIndex(mapping);
+				final CreateIndexRequestBuilder req = client().admin().indices().prepareCreate(indexName);
+				final String type = mapping.typeAsString();
+				Map<String, Object> typeMapping = ImmutableMap.of(type,
+					ImmutableMap.builder()
+						.put("date_detection", "false")
+						.put("numeric_detection", "false")
+						.putAll(toProperties(mapping))
+						.build()
+				);
+				req.addMapping(type, typeMapping);
+				try {
+					final Map<String, Object> indexSettings = createIndexSettings();
+					log.info("Configuring '{}' index with settings: {}", indexName, indexSettings);
+					req.setSettings(indexSettings);
+				} catch (IOException e) {
+					throw new IndexException("Couldn't prepare settings for index " + indexName, e);
+				}
+				CreateIndexResponse response = req.get();
+				checkState(response.isAcknowledged(), "Failed to create index '%s' for type '%s'", name, mapping.typeAsString());
+	 		}
+		}
+		
  		// wait until the cluster processes each index create request
 		waitForYellowHealth(getAllIndexes());
+		log.info("'{}' indexes are ready.", name);
 	}
 
 	private Set<String> getAllIndexes() {
 		return mappings.getMappings().stream().map(this::getTypeIndex).collect(Collectors.toSet());
 	}
 
-	private Map<String, Object> createSettings() throws IOException {
-		return ImmutableMap.of(
-			"analysis", 
-			Settings.builder().loadFromStream("analysis.json", Resources.getResource(getClass(), "analysis.json").openStream()).build().getAsStructuredMap(),
-			"number_of_shards",
-			String.valueOf(settings().getOrDefault(IndexClientFactory.NUMBER_OF_SHARDS, "1")),
-			"number_of_replicas", "0",
-			// disable es refresh, we will do it manually on each commit
-			"refresh_interval", "-1",
-			IndexClientFactory.RESULT_WINDOW_KEY, settings().get(IndexClientFactory.RESULT_WINDOW_KEY)
-		);
+	private Map<String, Object> createIndexSettings() throws IOException {
+		return ImmutableMap.<String, Object>builder()
+				.put("analysis", Settings.builder().loadFromStream("analysis.json", Resources.getResource(getClass(), "analysis.json").openStream()).build().getAsStructuredMap())
+				.put("number_of_shards", String.valueOf(settings().getOrDefault(IndexClientFactory.NUMBER_OF_SHARDS, "1")))
+				.put("number_of_replicas", "0")
+				// disable es refresh, we will do it manually on each commit
+				.put("refresh_interval", "-1")
+				.put(IndexClientFactory.RESULT_WINDOW_KEY, settings().get(IndexClientFactory.RESULT_WINDOW_KEY))
+				.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, settings().get(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY))
+				.put("translog.durability", "async")
+				.build();
 	}
 	
 	private void waitForYellowHealth(Set<String> indexes) {
 		if (!CompareUtils.isEmpty(indexes)) {
-			client().admin().cluster()
+			ClusterHealthResponse clusterHealthResponse = client().admin().cluster()
 				.prepareHealth(indexes.toArray(new String[indexes.size()]))
 				.setWaitForYellowStatus()
 				.get();
+			if (clusterHealthResponse.isTimedOut()) {
+				throw new IndexException("Failed to wait for yellow health status of index " + name, null);
+			}
 		}
 	}
 

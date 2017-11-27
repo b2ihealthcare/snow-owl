@@ -207,11 +207,11 @@ final class Rf2EffectiveTimeSlice {
 			
 			if (createVersions) {
 				// purge index
-				PurgeRequest.builder()
-					.setBranchPath(context.branch().path())
-					.setPurge(Purge.LATEST)
-					.build()
-					.execute(context);
+//				PurgeRequest.builder()
+//					.setBranchPath(context.branch().path())
+//					.setPurge(Purge.LATEST)
+//					.build()
+//					.execute(context);
 				
 				// do actually create a branch with the effective time name
 				RepositoryRequests

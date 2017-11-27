@@ -94,7 +94,7 @@ public final class SnomedRefSetMemberCreateRequestBuilder
 		return request;
 	}
 
-	public Request<TransactionContext, Void> buildNoContent() {
+	public Request<TransactionContext, Boolean> buildNoContent() {
 		return Requests.noContent(build());
 	}
 	

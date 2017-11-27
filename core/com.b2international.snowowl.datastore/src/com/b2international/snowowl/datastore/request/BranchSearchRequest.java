@@ -21,16 +21,18 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.1
  */
-final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryContext, Branches, InternalBranch> {
+final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryContext, Branches, BranchDocument> {
 
 	enum OptionKey {
 		
@@ -71,17 +73,20 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 	}
 	
 	@Override
-	protected Class<InternalBranch> getDocumentType() {
-		return InternalBranch.class;
+	protected Class<BranchDocument> getDocumentType() {
+		return BranchDocument.class;
 	}
 
 	@Override
-	protected Branches toCollectionResource(RepositoryContext context, Hits<InternalBranch> matches) {
+	protected Branches toCollectionResource(RepositoryContext context, Hits<BranchDocument> hits) {
 		final BranchManager branchManager = context.service(BranchManager.class);
-		for (InternalBranch branch : matches) {
+		final ImmutableList.Builder<Branch> branches = ImmutableList.builder();
+		for (BranchDocument doc : hits) {
+			final InternalBranch branch = doc.toBranch();
 			branch.setBranchManager(branchManager);
+			branches.add(branch);
 		}
-		return new Branches(ImmutableList.copyOf(matches), matches.getScrollId(), matches.getSearchAfter(), limit(), matches.getTotal());
+		return new Branches(branches.build(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
 	}
 
 }

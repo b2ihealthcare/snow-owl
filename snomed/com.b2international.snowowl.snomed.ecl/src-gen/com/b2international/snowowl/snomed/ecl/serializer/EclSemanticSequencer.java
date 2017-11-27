@@ -151,51 +151,11 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				sequence_DecimalValueNotEquals(context, (DecimalValueNotEquals) semanticObject); 
 				return; 
 			case EclPackage.DESCENDANT_OF:
-				if (rule == grammarAccess.getAttributeRule()
-						|| rule == grammarAccess.getAttributeDescendantOfRule()) {
-					sequence_AttributeDescendantOf(context, (DescendantOf) semanticObject); 
-					return; 
-				}
-				else if (rule == grammarAccess.getExpressionConstraintRule()
-						|| rule == grammarAccess.getOrExpressionConstraintRule()
-						|| action == grammarAccess.getOrExpressionConstraintAccess().getOrExpressionConstraintLeftAction_1_0()
-						|| rule == grammarAccess.getAndExpressionConstraintRule()
-						|| action == grammarAccess.getAndExpressionConstraintAccess().getAndExpressionConstraintLeftAction_1_0()
-						|| rule == grammarAccess.getExclusionExpressionConstraintRule()
-						|| action == grammarAccess.getExclusionExpressionConstraintAccess().getExclusionExpressionConstraintLeftAction_1_0()
-						|| rule == grammarAccess.getRefinedExpressionConstraintRule()
-						|| action == grammarAccess.getRefinedExpressionConstraintAccess().getRefinedExpressionConstraintConstraintAction_1_0()
-						|| rule == grammarAccess.getDottedExpressionConstraintRule()
-						|| action == grammarAccess.getDottedExpressionConstraintAccess().getDottedExpressionConstraintConstraintAction_1_0()
-						|| rule == grammarAccess.getSimpleExpressionConstraintRule()
-						|| rule == grammarAccess.getDescendantOfRule()) {
-					sequence_DescendantOf(context, (DescendantOf) semanticObject); 
-					return; 
-				}
-				else break;
+				sequence_DescendantOf(context, (DescendantOf) semanticObject); 
+				return; 
 			case EclPackage.DESCENDANT_OR_SELF_OF:
-				if (rule == grammarAccess.getAttributeRule()
-						|| rule == grammarAccess.getAttributeDescendantOrSelfOfRule()) {
-					sequence_AttributeDescendantOrSelfOf(context, (DescendantOrSelfOf) semanticObject); 
-					return; 
-				}
-				else if (rule == grammarAccess.getExpressionConstraintRule()
-						|| rule == grammarAccess.getOrExpressionConstraintRule()
-						|| action == grammarAccess.getOrExpressionConstraintAccess().getOrExpressionConstraintLeftAction_1_0()
-						|| rule == grammarAccess.getAndExpressionConstraintRule()
-						|| action == grammarAccess.getAndExpressionConstraintAccess().getAndExpressionConstraintLeftAction_1_0()
-						|| rule == grammarAccess.getExclusionExpressionConstraintRule()
-						|| action == grammarAccess.getExclusionExpressionConstraintAccess().getExclusionExpressionConstraintLeftAction_1_0()
-						|| rule == grammarAccess.getRefinedExpressionConstraintRule()
-						|| action == grammarAccess.getRefinedExpressionConstraintAccess().getRefinedExpressionConstraintConstraintAction_1_0()
-						|| rule == grammarAccess.getDottedExpressionConstraintRule()
-						|| action == grammarAccess.getDottedExpressionConstraintAccess().getDottedExpressionConstraintConstraintAction_1_0()
-						|| rule == grammarAccess.getSimpleExpressionConstraintRule()
-						|| rule == grammarAccess.getDescendantOrSelfOfRule()) {
-					sequence_DescendantOrSelfOf(context, (DescendantOrSelfOf) semanticObject); 
-					return; 
-				}
-				else break;
+				sequence_DescendantOrSelfOf(context, (DescendantOrSelfOf) semanticObject); 
+				return; 
 			case EclPackage.DOTTED_EXPRESSION_CONSTRAINT:
 				sequence_DottedExpressionConstraint(context, (DottedExpressionConstraint) semanticObject); 
 				return; 
@@ -298,7 +258,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     RefinedExpressionConstraint.RefinedExpressionConstraint_1_0 returns AncestorOf
 	 *     DottedExpressionConstraint returns AncestorOf
 	 *     DottedExpressionConstraint.DottedExpressionConstraint_1_0 returns AncestorOf
-	 *     SimpleExpressionConstraint returns AncestorOf
+	 *     SubExpressionConstraint returns AncestorOf
 	 *     AncestorOf returns AncestorOf
 	 *
 	 * Constraint:
@@ -328,7 +288,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     RefinedExpressionConstraint.RefinedExpressionConstraint_1_0 returns AncestorOrSelfOf
 	 *     DottedExpressionConstraint returns AncestorOrSelfOf
 	 *     DottedExpressionConstraint.DottedExpressionConstraint_1_0 returns AncestorOrSelfOf
-	 *     SimpleExpressionConstraint returns AncestorOrSelfOf
+	 *     SubExpressionConstraint returns AncestorOrSelfOf
 	 *     AncestorOrSelfOf returns AncestorOrSelfOf
 	 *
 	 * Constraint:
@@ -433,10 +393,9 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     RefinedExpressionConstraint.RefinedExpressionConstraint_1_0 returns Any
 	 *     DottedExpressionConstraint returns Any
 	 *     DottedExpressionConstraint.DottedExpressionConstraint_1_0 returns Any
-	 *     SimpleExpressionConstraint returns Any
+	 *     SubExpressionConstraint returns Any
 	 *     FocusConcept returns Any
 	 *     Any returns Any
-	 *     Attribute returns Any
 	 *
 	 * Constraint:
 	 *     {Any}
@@ -463,35 +422,9 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     AttributeConstraint returns AttributeConstraint
 	 *
 	 * Constraint:
-	 *     (cardinality=Cardinality? reversed?=REVERSED? attribute=Attribute comparison=Comparison)
+	 *     (cardinality=Cardinality? reversed?=REVERSED? attribute=SubExpressionConstraint comparison=Comparison)
 	 */
 	protected void sequence_AttributeConstraint(ISerializationContext context, AttributeConstraint semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * Contexts:
-	 *     Attribute returns DescendantOf
-	 *     AttributeDescendantOf returns DescendantOf
-	 *
-	 * Constraint:
-	 *     (constraint=ConceptReference | constraint=Any)
-	 */
-	protected void sequence_AttributeDescendantOf(ISerializationContext context, DescendantOf semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * Contexts:
-	 *     Attribute returns DescendantOrSelfOf
-	 *     AttributeDescendantOrSelfOf returns DescendantOrSelfOf
-	 *
-	 * Constraint:
-	 *     (constraint=ConceptReference | constraint=Any)
-	 */
-	protected void sequence_AttributeDescendantOrSelfOf(ISerializationContext context, DescendantOrSelfOf semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -521,7 +454,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     AttributeValueEquals returns AttributeValueEquals
 	 *
 	 * Constraint:
-	 *     constraint=SimpleExpressionConstraint
+	 *     constraint=SubExpressionConstraint
 	 */
 	protected void sequence_AttributeValueEquals(ISerializationContext context, AttributeValueEquals semanticObject) {
 		if (errorAcceptor != null) {
@@ -529,7 +462,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.ATTRIBUTE_COMPARISON__CONSTRAINT));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getAttributeValueEqualsAccess().getConstraintSimpleExpressionConstraintParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.accept(grammarAccess.getAttributeValueEqualsAccess().getConstraintSubExpressionConstraintParserRuleCall_1_0(), semanticObject.getConstraint());
 		feeder.finish();
 	}
 	
@@ -541,7 +474,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     AttributeValueNotEquals returns AttributeValueNotEquals
 	 *
 	 * Constraint:
-	 *     constraint=SimpleExpressionConstraint
+	 *     constraint=SubExpressionConstraint
 	 */
 	protected void sequence_AttributeValueNotEquals(ISerializationContext context, AttributeValueNotEquals semanticObject) {
 		if (errorAcceptor != null) {
@@ -549,7 +482,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, EclPackage.Literals.ATTRIBUTE_COMPARISON__CONSTRAINT));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getAttributeValueNotEqualsAccess().getConstraintSimpleExpressionConstraintParserRuleCall_1_0(), semanticObject.getConstraint());
+		feeder.accept(grammarAccess.getAttributeValueNotEqualsAccess().getConstraintSubExpressionConstraintParserRuleCall_1_0(), semanticObject.getConstraint());
 		feeder.finish();
 	}
 	
@@ -588,7 +521,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     RefinedExpressionConstraint.RefinedExpressionConstraint_1_0 returns ChildOf
 	 *     DottedExpressionConstraint returns ChildOf
 	 *     DottedExpressionConstraint.DottedExpressionConstraint_1_0 returns ChildOf
-	 *     SimpleExpressionConstraint returns ChildOf
+	 *     SubExpressionConstraint returns ChildOf
 	 *     ChildOf returns ChildOf
 	 *
 	 * Constraint:
@@ -618,10 +551,9 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     RefinedExpressionConstraint.RefinedExpressionConstraint_1_0 returns ConceptReference
 	 *     DottedExpressionConstraint returns ConceptReference
 	 *     DottedExpressionConstraint.DottedExpressionConstraint_1_0 returns ConceptReference
-	 *     SimpleExpressionConstraint returns ConceptReference
+	 *     SubExpressionConstraint returns ConceptReference
 	 *     FocusConcept returns ConceptReference
 	 *     ConceptReference returns ConceptReference
-	 *     Attribute returns ConceptReference
 	 *
 	 * Constraint:
 	 *     (id=SnomedIdentifier term=TERM_STRING?)
@@ -764,7 +696,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     RefinedExpressionConstraint.RefinedExpressionConstraint_1_0 returns DescendantOf
 	 *     DottedExpressionConstraint returns DescendantOf
 	 *     DottedExpressionConstraint.DottedExpressionConstraint_1_0 returns DescendantOf
-	 *     SimpleExpressionConstraint returns DescendantOf
+	 *     SubExpressionConstraint returns DescendantOf
 	 *     DescendantOf returns DescendantOf
 	 *
 	 * Constraint:
@@ -794,7 +726,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     RefinedExpressionConstraint.RefinedExpressionConstraint_1_0 returns DescendantOrSelfOf
 	 *     DottedExpressionConstraint returns DescendantOrSelfOf
 	 *     DottedExpressionConstraint.DottedExpressionConstraint_1_0 returns DescendantOrSelfOf
-	 *     SimpleExpressionConstraint returns DescendantOrSelfOf
+	 *     SubExpressionConstraint returns DescendantOrSelfOf
 	 *     DescendantOrSelfOf returns DescendantOrSelfOf
 	 *
 	 * Constraint:
@@ -826,7 +758,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     DottedExpressionConstraint.DottedExpressionConstraint_1_0 returns DottedExpressionConstraint
 	 *
 	 * Constraint:
-	 *     (constraint=DottedExpressionConstraint_DottedExpressionConstraint_1_0 attribute=Attribute)
+	 *     (constraint=DottedExpressionConstraint_DottedExpressionConstraint_1_0 attribute=SubExpressionConstraint)
 	 */
 	protected void sequence_DottedExpressionConstraint(ISerializationContext context, DottedExpressionConstraint semanticObject) {
 		if (errorAcceptor != null) {
@@ -837,7 +769,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
 		feeder.accept(grammarAccess.getDottedExpressionConstraintAccess().getDottedExpressionConstraintConstraintAction_1_0(), semanticObject.getConstraint());
-		feeder.accept(grammarAccess.getDottedExpressionConstraintAccess().getAttributeAttributeParserRuleCall_1_2_0(), semanticObject.getAttribute());
+		feeder.accept(grammarAccess.getDottedExpressionConstraintAccess().getAttributeSubExpressionConstraintParserRuleCall_1_2_0(), semanticObject.getAttribute());
 		feeder.finish();
 	}
 	
@@ -1001,12 +933,12 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     RefinedExpressionConstraint.RefinedExpressionConstraint_1_0 returns MemberOf
 	 *     DottedExpressionConstraint returns MemberOf
 	 *     DottedExpressionConstraint.DottedExpressionConstraint_1_0 returns MemberOf
-	 *     SimpleExpressionConstraint returns MemberOf
+	 *     SubExpressionConstraint returns MemberOf
 	 *     FocusConcept returns MemberOf
 	 *     MemberOf returns MemberOf
 	 *
 	 * Constraint:
-	 *     (constraint=ConceptReference | constraint=Any)
+	 *     (constraint=ConceptReference | constraint=Any | constraint=NestedExpression)
 	 */
 	protected void sequence_MemberOf(ISerializationContext context, MemberOf semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
@@ -1050,7 +982,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     RefinedExpressionConstraint.RefinedExpressionConstraint_1_0 returns NestedExpression
 	 *     DottedExpressionConstraint returns NestedExpression
 	 *     DottedExpressionConstraint.DottedExpressionConstraint_1_0 returns NestedExpression
-	 *     SimpleExpressionConstraint returns NestedExpression
+	 *     SubExpressionConstraint returns NestedExpression
 	 *     FocusConcept returns NestedExpression
 	 *     NestedExpression returns NestedExpression
 	 *
@@ -1174,7 +1106,7 @@ public class EclSemanticSequencer extends AbstractDelegatingSemanticSequencer {
 	 *     RefinedExpressionConstraint.RefinedExpressionConstraint_1_0 returns ParentOf
 	 *     DottedExpressionConstraint returns ParentOf
 	 *     DottedExpressionConstraint.DottedExpressionConstraint_1_0 returns ParentOf
-	 *     SimpleExpressionConstraint returns ParentOf
+	 *     SubExpressionConstraint returns ParentOf
 	 *     ParentOf returns ParentOf
 	 *
 	 * Constraint:

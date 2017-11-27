@@ -22,7 +22,7 @@ import com.b2international.snowowl.datastore.request.DeleteRequestBuilder;
 /**
  * @since 5.7
  */
-public final class SnomedDeleteRequestBuilder extends DeleteRequestBuilder implements SnomedTransactionalRequestBuilder<Void> {
+public final class SnomedDeleteRequestBuilder extends DeleteRequestBuilder implements SnomedTransactionalRequestBuilder<Boolean> {
 
 	public SnomedDeleteRequestBuilder(String componentId, Class<? extends EObject> type) {
 		super(componentId, type);

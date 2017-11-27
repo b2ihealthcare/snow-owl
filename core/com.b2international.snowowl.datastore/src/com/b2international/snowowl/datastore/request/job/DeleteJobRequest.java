@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 5.7
  */
-final class DeleteJobRequest implements Request<ServiceProvider, Void> {
+final class DeleteJobRequest implements Request<ServiceProvider, Boolean> {
 
 	@JsonProperty
 	private final Collection<String> jobIds;
@@ -35,9 +35,9 @@ final class DeleteJobRequest implements Request<ServiceProvider, Void> {
 	}
 	
 	@Override
-	public Void execute(ServiceProvider context) {
+	public Boolean execute(ServiceProvider context) {
 		context.service(RemoteJobTracker.class).requestDeletes(jobIds);
-		return null;
+		return Boolean.TRUE;
 	}
 
 }

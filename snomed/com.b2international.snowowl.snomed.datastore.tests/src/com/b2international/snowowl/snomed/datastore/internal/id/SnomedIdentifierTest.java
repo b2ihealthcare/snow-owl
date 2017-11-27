@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.internal.id;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
@@ -34,7 +33,7 @@ public class SnomedIdentifierTest {
 	public void whenCreatingBasicConceptIdentifierInShortFormat_ThenItShouldBeCreated() throws Exception {
 		final SnomedIdentifier id = SnomedIdentifiers.create(Concepts.ROOT_CONCEPT);
 		assertEquals(138875L, id.getItemId());
-		assertNull(id.getNamespace());
+		assertEquals("", id.getNamespace());
 		assertEquals(0, id.getFormatIdentifier());
 		assertEquals(0, id.getComponentIdentifier());
 		assertEquals(5, id.getCheckDigit());
@@ -45,7 +44,7 @@ public class SnomedIdentifierTest {
 	public void whenCreatingShortestConceptIdentifierInShortFormat_ThenItShouldBeCreated() throws Exception {
 		final SnomedIdentifier id = SnomedIdentifiers.create("100005");
 		assertEquals(100L, id.getItemId());
-		assertNull(id.getNamespace());
+		assertEquals("", id.getNamespace());
 		assertEquals(0, id.getFormatIdentifier());
 		assertEquals(0, id.getComponentIdentifier());
 		assertEquals(5, id.getCheckDigit());
@@ -56,7 +55,7 @@ public class SnomedIdentifierTest {
 	public void whenCreatingLongestConceptIdentifierInShortFormat_ThenItShouldBeCreated() throws Exception {
 		final SnomedIdentifier id = SnomedIdentifiers.create(Concepts.DEFINITION_STATUS_ROOT);
 		assertEquals(900000000000444L, id.getItemId());
-		assertNull(id.getNamespace());
+		assertEquals("", id.getNamespace());
 		assertEquals(0, id.getFormatIdentifier());
 		assertEquals(0, id.getComponentIdentifier());
 		assertEquals(6, id.getCheckDigit());
@@ -67,7 +66,7 @@ public class SnomedIdentifierTest {
 	public void whenCreatingDescriptionIdentifierInShortFormat_ThenItShouldBeCreated() throws Exception {
 		final SnomedIdentifier id = SnomedIdentifiers.create("1290023401015");
 		assertEquals(1290023401L, id.getItemId());
-		assertNull(id.getNamespace());
+		assertEquals("", id.getNamespace());
 		assertEquals(0, id.getFormatIdentifier());
 		assertEquals(1, id.getComponentIdentifier());
 		assertEquals(5, id.getCheckDigit());
@@ -78,7 +77,7 @@ public class SnomedIdentifierTest {
 	public void whenCreatingRelationshipIdentifierInShortFormat_ThenItShouldBeCreated() throws Exception {
 		final SnomedIdentifier id = SnomedIdentifiers.create("9940000001029");
 		assertEquals(9940000001L, id.getItemId());
-		assertNull(id.getNamespace());
+		assertEquals("", id.getNamespace());
 		assertEquals(0, id.getFormatIdentifier());
 		assertEquals(2, id.getComponentIdentifier());
 		assertEquals(9, id.getCheckDigit());
