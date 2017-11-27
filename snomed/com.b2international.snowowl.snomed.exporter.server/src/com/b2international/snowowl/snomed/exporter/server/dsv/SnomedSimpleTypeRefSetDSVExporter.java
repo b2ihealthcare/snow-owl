@@ -88,7 +88,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	private String delimiter;
 
 	private Map<Integer, LinkedHashMap<String, Integer>> groupedRelationships;
-	private Map<String, Integer> exportItemMaxOccurences;
+	private Map<String, Integer> exportItemOccurences;
 	private Collection<String> headerList;
 	private Collection<String> metaHeaderList;
 
@@ -113,7 +113,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		this.branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
 		exportPath = exportSetting.getExportPath();
 		groupedRelationships = Maps.newTreeMap();
-		exportItemMaxOccurences = Maps.newHashMap();
 		groupedOnlyItems = Lists.newArrayList();
 	}
 
@@ -182,8 +181,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						case DESCRIPTION:
 							final ComponentIdSnomedDsvExportItem descriptionItem = (ComponentIdSnomedDsvExportItem) exportItem;
 							final String descriptionTypeId = descriptionItem.getComponentId();
-							final int descriptionOccurrences = exportItemMaxOccurences.get(descriptionTypeId);
-							
+							final int descriptionOccurrences = exportItemOccurences.get(descriptionTypeId);
 							final Collection<String> descriptions = getDescriptionTokens(referencedComponent, descriptionTypeId);
 							stringBuffer.append(joinResultsWithDelimiters(descriptions, descriptionOccurrences, delimiter, includeDescriptionId));
 							break;
@@ -191,8 +189,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						case RELATIONSHIP:
 							final ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
 							final String relationshipTypeId = String.valueOf(relationshipItem.getComponentId());
-							final int relationshipOccurrences = exportItemMaxOccurences.get(relationshipTypeId);
-							
+							int relationshipOccurrences = exportItemOccurences.get(relationshipTypeId);
 							final Collection<String> relationships = getRelationshipTokens(referencedComponent, relationshipTypeId, 0);
 							stringBuffer.append(joinResultsWithDelimiters(relationships, relationshipOccurrences, delimiter, includeRelationshipId));
 							break;
@@ -200,7 +197,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						case DATAYPE:
 							final DatatypeSnomedDsvExportItem datatypeItem = (DatatypeSnomedDsvExportItem) exportItem;
 							final String datatypeName = exportItem.getDisplayName();
-							final int datatypeOccurrences = exportItemMaxOccurences.get(datatypeName);
+							final int datatypeOccurrences = exportItemOccurences.get(datatypeName);
 							final Collection<String> datatypes = getDatatypeTokens(referencedComponent, datatypeName);
 							final Collection<String> formattedDatatypeTerms = new ArrayList<String>();
 							
@@ -284,17 +281,13 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		}
 	}
 
-	private String getPreferredTerm(SnomedConcept referencedComponent, boolean includeDescriptionId) {
-		SnomedDescription pt = referencedComponent.getPt();
+	private String getPreferredTerm(SnomedConcept concept, boolean includeDescriptionId) {
+		SnomedDescription pt = concept.getPt();
 		if (pt == null) {
-			return includeDescriptionId ? "" + delimiter + "" : referencedComponent.getId();
+			return includeDescriptionId ? "" + delimiter + "" : "";
 		} else {
-			return getTerm(includeDescriptionId, pt);
+			return includeDescriptionId ? pt.getId() + delimiter + pt.getTerm() : pt.getTerm();
 		}
-	}
-
-	private String getTerm(boolean includeDescriptionId, SnomedDescription pt) {
-		return includeDescriptionId ? pt.getId() + delimiter + pt.getTerm() : pt.getTerm();
 	}
 
 	private Collection<String> getDatatypeTokens(SnomedConcept referencedComponent, String datatypeName) {
@@ -380,7 +373,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				.getSync();
 		
 		
-		Map<String, Integer> occurenceByTypeId = initOccurrenceMap(referencedComponents, exportItems);
+		exportItemOccurences = initOccurrenceMap(referencedComponents, exportItems);
 		
 		for (AbstractSnomedDsvExportItem exportItem : exportItems) {
 			switch (exportItem.getType()) {
@@ -388,12 +381,11 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				case DESCRIPTION:
 					final ComponentIdSnomedDsvExportItem descriptionItem = (ComponentIdSnomedDsvExportItem) exportItem;
 					final String descriptionTypeId = descriptionItem.getComponentId();
-					final int descriptionOccurrences = getMaxOccurence(occurenceByTypeId, descriptionTypeId);
+					int descriptionOccurrences = exportItemOccurences.get(descriptionTypeId);
 					final String descriptionDisplayName = descriptionTypeIdToTermMap.getOrDefault(descriptionTypeId, descriptionItem.getDisplayName());
 					
-					exportItemMaxOccurences.put(descriptionTypeId, descriptionOccurrences);
 					// only one result
-				if (2 > descriptionOccurrences) {
+					if (2 > descriptionOccurrences) {
 						if (includeDescriptionId) {
 							metaHeaderList.add(descriptionDisplayName);
 							metaHeaderList.add(descriptionDisplayName);
@@ -427,9 +419,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					
 					// if the relationship occurs as an ungrouped relationship.
 					if (sortToRelationshipGroups(referencedComponents, relationshipTypeId)) {
-						
-						final int relationshipOccurrences = getMaxOccurence(occurenceByTypeId, relationshipTypeId);
-						exportItemMaxOccurences.put(relationshipTypeId, relationshipOccurrences);
+						final int relationshipOccurrences = exportItemOccurences.get(relationshipTypeId);
 						
 						// only one result
 						if (2 > relationshipOccurrences) {
@@ -467,8 +457,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				case DATAYPE:
 					final DatatypeSnomedDsvExportItem datatypeItem = (DatatypeSnomedDsvExportItem) exportItem;
 					final String datatypeDisplayName = datatypeItem.getDisplayName();
-					final int datatypeOccurrences = getMaxOccurence(occurenceByTypeId, datatypeDisplayName);
-					exportItemMaxOccurences.put(datatypeDisplayName, datatypeOccurrences);
+					final int datatypeOccurrences = exportItemOccurences.get(datatypeDisplayName);
 
 					// only one result
 					if (2 > datatypeOccurrences) {
@@ -589,9 +578,8 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 	private Map<String, Integer> initOccurrenceMap(SnomedConcepts referencedComponents, Collection<AbstractSnomedDsvExportItem> exportColumns) {
 		Map<String, Integer> result = Maps.newHashMap();
-		for (SnomedConcept concept : referencedComponents.getItems()) {
-			
-			for (AbstractSnomedDsvExportItem column : exportColumns) {
+		for (AbstractSnomedDsvExportItem column : exportColumns) {
+			for (SnomedConcept concept : referencedComponents.getItems()) {
 				switch (column.getType()) {
 				case DESCRIPTION: {
 					ComponentIdSnomedDsvExportItem item = (ComponentIdSnomedDsvExportItem) column;
@@ -599,7 +587,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 							.getItems().stream()
 							.filter(description -> description.getTypeId().equals(item.getComponentId()))
 							.count();
-					result.merge(item.getComponentId(), count,  (key, oldCountValue) -> Math.max(oldCountValue, count));
+					result.merge(item.getComponentId(), count,  Math::max);
 					break;
 				}
 				case RELATIONSHIP: {
@@ -609,7 +597,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 									.stream()
 									.filter(relationship -> relationship.getTypeId().equals(item.getComponentId()))
 									.count();
-					result.merge(item.getComponentId(), count, (key, oldCountValue) -> Math.max(oldCountValue, count));
+					result.merge(item.getComponentId(), count, Math::max);
 					break;
 				}
 				case DATAYPE: {
@@ -620,30 +608,15 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 									.flatMap(relationship -> relationship.getMembers().getItems().stream())
 									.filter(cdMember -> cdMember.getProperties().get(Fields.ATTRIBUTE_NAME).toString().contains(item.getDisplayName()))
 									.count();
-					result.merge(item.getDisplayName(), count,  (key, oldCountValue) -> Math.max(oldCountValue, count));
+					result.merge(item.getDisplayName(), count, Math::max);
 					break;
 				}
 				default: break;
-			}
+				}
 			}
 		}
 
 		return result;
-	}
-
-	/**
-	 * This method implements a maximum search. It founds the maximum presence of a given description, relationship or concrete datatype.
-	 * @param occurenceByTypeId 
-	 * @param members 
-	 * 
-	 * @param queryType
-	 *            - type of the query can be description, relationship and data type.
-	 * @param typeId
-	 *            - type id of the description or relationship or data type.
-	 * @return
-	 */
-	private int getMaxOccurence(Map<String, Integer> occurenceByTypeId, String typeId) {
-		return occurenceByTypeId.get(typeId);
 	}
 
 	private String joinResultsWithDelimiters(Collection<String> results, int max, String delimiter, boolean includeComponentId) {
