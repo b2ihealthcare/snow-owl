@@ -43,10 +43,13 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.ComponentIdSnomedDsvExportItem;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedDsvExportItemType;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult.Result;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportModel;
@@ -100,6 +103,10 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 		for (int i = 0; i < exportItemsSize; i++) {
 			// TODO supplying MAIN here, as the selected branch read later from the stream
 			exportSetting.addExportItem(AbstractSnomedDsvExportItem.createFromInputStream(in));
+		}
+		
+		if (exportSetting.includeDescriptionId()) {
+			exportSetting.addExportItem(new ComponentIdSnomedDsvExportItem(SnomedDsvExportItemType.DESCRIPTION, SnomedConstants.Concepts.SYNONYM, SnomedConstants.Concepts.SYNONYM));
 		}
 		
 		int extendedLocaleSize = in.readInt();
