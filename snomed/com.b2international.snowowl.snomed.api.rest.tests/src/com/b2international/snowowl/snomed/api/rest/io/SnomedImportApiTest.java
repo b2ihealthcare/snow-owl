@@ -240,4 +240,94 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertEquals(OWL_EXPRESSION, member.get().getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION));
 	}
 
+	@Test
+	public void import13MRCMReferenceSetMembers() {
+		
+		SnomedConcept rootConcept = getComponent(branchPath, SnomedComponentType.CONCEPT, Concepts.ROOT_CONCEPT, "members()")
+				.extract()
+				.as(SnomedConcept.class);
+		
+		assertTrue(StreamSupport.stream(rootConcept.getMembers().spliterator(), false).noneMatch(m -> {
+			return m.getReferenceSetId().equals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL) ||
+			m.getReferenceSetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL) ||
+			m.getReferenceSetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL) ||
+			m.getReferenceSetId().equals(Concepts.REFSET_MRCM_MODULE_SCOPE);
+		}));
+		
+		importArchive("SnomedCT_Release_INT_20170731_new_mrcm_members.zip");
+		
+		SnomedConcept newRootConcept = getComponent(branchPath, SnomedComponentType.CONCEPT, Concepts.ROOT_CONCEPT, "members()")
+				.extract()
+				.as(SnomedConcept.class);
+		
+		Optional<SnomedReferenceSetMember> mrcmDomainMemberCandidate = StreamSupport.stream(newRootConcept.getMembers().spliterator(), false)
+			.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL))
+			.findFirst();
+		
+		assertTrue(mrcmDomainMemberCandidate.isPresent());
+		SnomedReferenceSetMember mrcmDomainMember = mrcmDomainMemberCandidate.get();
+		
+		assertEquals("28ecaa32-8f0e-4ff8-b6b1-b642e40519d8", mrcmDomainMember.getId());
+		assertEquals(Concepts.MODULE_SCT_MODEL_COMPONENT, mrcmDomainMember.getModuleId());
+		assertEquals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL, mrcmDomainMember.getReferenceSetId());
+		assertEquals(Concepts.ROOT_CONCEPT, mrcmDomainMember.getReferencedComponent().getId());
+		Map<String, Object> domainMemberProps = mrcmDomainMember.getProperties();
+		assertEquals("domainConstraint", domainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT));
+		assertEquals("parentDomain", domainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN));
+		assertEquals("proximalPrimitiveConstraint", domainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT));
+		assertEquals("proximalPrimitiveRefinement", domainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT));
+		assertEquals("domainTemplateForPrecoordination", domainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION));
+		assertEquals("domainTemplateForPostcoordination", domainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION));
+		assertEquals("guideURL", domainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE));
+		
+		Optional<SnomedReferenceSetMember> mrcmAttributeDomainMemberCandidate = StreamSupport.stream(newRootConcept.getMembers().spliterator(), false)
+				.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL))
+				.findFirst();
+			
+		assertTrue(mrcmAttributeDomainMemberCandidate.isPresent());
+		SnomedReferenceSetMember mrcmAttributeDomainMember = mrcmAttributeDomainMemberCandidate.get();
+		
+		assertEquals("126bf3f1-4f34-439d-ba0a-a832824d072a", mrcmAttributeDomainMember.getId());
+		assertEquals(Concepts.MODULE_SCT_MODEL_COMPONENT, mrcmAttributeDomainMember.getModuleId());
+		assertEquals(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL, mrcmAttributeDomainMember.getReferenceSetId());
+		assertEquals(Concepts.ROOT_CONCEPT, mrcmAttributeDomainMember.getReferencedComponent().getId());
+		Map<String, Object> attributeDomainMemberProps = mrcmAttributeDomainMember.getProperties();
+		assertEquals(Concepts.ROOT_CONCEPT, attributeDomainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID));
+		assertEquals(Boolean.TRUE, attributeDomainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_GROUPED));
+		assertEquals("attributeCardinality", attributeDomainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY));
+		assertEquals("attributeInGroupCardinality", attributeDomainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY));
+		assertEquals(Concepts.ROOT_CONCEPT, attributeDomainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID));
+		assertEquals(Concepts.ROOT_CONCEPT, attributeDomainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID));
+		
+		Optional<SnomedReferenceSetMember> mrcmAttributeRangeMemberCandidate = StreamSupport.stream(newRootConcept.getMembers().spliterator(), false)
+				.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL))
+				.findFirst();
+			
+		assertTrue(mrcmAttributeRangeMemberCandidate.isPresent());
+		SnomedReferenceSetMember mrcmAttributeRangeMember = mrcmAttributeRangeMemberCandidate.get();
+		
+		assertEquals("ae090cc3-2827-4e39-80c6-364435d30c17", mrcmAttributeRangeMember.getId());
+		assertEquals(Concepts.MODULE_SCT_MODEL_COMPONENT, mrcmAttributeRangeMember.getModuleId());
+		assertEquals(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL, mrcmAttributeRangeMember.getReferenceSetId());
+		assertEquals(Concepts.ROOT_CONCEPT, mrcmAttributeRangeMember.getReferencedComponent().getId());
+		Map<String, Object> attributeRangeMemberProps = mrcmAttributeRangeMember.getProperties();
+		assertEquals("rangeConstraint", attributeRangeMemberProps.get(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT));
+		assertEquals("attributeRule", attributeRangeMemberProps.get(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE));
+		assertEquals(Concepts.ROOT_CONCEPT, attributeRangeMemberProps.get(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID));
+		assertEquals(Concepts.ROOT_CONCEPT, attributeRangeMemberProps.get(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID));
+		
+		Optional<SnomedReferenceSetMember> mrcmModuleScopeMemberCandidate = StreamSupport.stream(newRootConcept.getMembers().spliterator(), false)
+				.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_MRCM_MODULE_SCOPE))
+				.findFirst();
+			
+		assertTrue(mrcmModuleScopeMemberCandidate.isPresent());
+		SnomedReferenceSetMember mrmcModuleScopeMember = mrcmModuleScopeMemberCandidate.get();
+		
+		assertEquals("52d29f1b-f7a3-4a0f-828c-383c6259c3f5", mrmcModuleScopeMember.getId());
+		assertEquals(Concepts.MODULE_SCT_MODEL_COMPONENT, mrmcModuleScopeMember.getModuleId());
+		assertEquals(Concepts.REFSET_MRCM_MODULE_SCOPE, mrmcModuleScopeMember.getReferenceSetId());
+		assertEquals(Concepts.ROOT_CONCEPT, mrmcModuleScopeMember.getReferencedComponent().getId());
+		assertEquals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL, mrmcModuleScopeMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID));
+	}
+	
 }
