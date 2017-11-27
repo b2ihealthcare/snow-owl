@@ -39,7 +39,6 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.cre
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSetMember;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.getFirstAllowedReferencedComponentType;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -954,14 +953,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		String inferredRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.INFERRED_RELATIONSHIP);
 		String additionalRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, CharacteristicType.ADDITIONAL_RELATIONSHIP);
 		
-		Map<?, ?> refSetRequestBody = ImmutableMap.<String, Object>builder()
-				.put("id", Concepts.REFSET_OWL_AXIOM)
-				.put("type", SnomedRefSetType.OWL_AXIOM)
-				.put("referencedComponentType", getFirstAllowedReferencedComponentType(SnomedRefSetType.OWL_AXIOM))
-				.put("commitComment", "Created new reference set")
-				.build();
-		
-		createComponent(branchPath, SnomedComponentType.REFSET, refSetRequestBody).statusCode(201);
+		createNewRefSet(branchPath, SnomedRefSetType.OWL_AXIOM, Concepts.REFSET_OWL_AXIOM);
 		
 		String owlExpression = "dummy expression";
 		
