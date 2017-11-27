@@ -529,7 +529,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		private String editorialGuideReference;
 		// MRCM Attribute Domain		
 		private String domainId;
-		private boolean grouped;
+		private Boolean grouped;
 		private String attributeCardinality;
 		private String attributeInGroupCardinality;
 		private String ruleStrengthId;
@@ -766,6 +766,85 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return getSelf();
 		}
 		
+		Builder domainConstraint(String domainConstraint) {
+			this.domainConstraint = domainConstraint;
+			return getSelf();
+		}
+		
+		Builder parentDomain(String parentDomain) {
+			this.parentDomain = parentDomain;
+			return getSelf();
+		}
+		
+		Builder proximalPrimitiveConstraint(String proximalPrimitiveConstraint) {
+			this.proximalPrimitiveConstraint = proximalPrimitiveConstraint;
+			return getSelf();
+		}
+		
+		Builder proximalPrimitiveRefinement(String proximalPrimitiveRefinement) {
+			this.proximalPrimitiveRefinement = proximalPrimitiveRefinement;
+			return getSelf();
+		}
+		
+		Builder domainTemplateForPrecoordination(String domainTemplateForPrecoordination) {
+			this.domainTemplateForPrecoordination = domainTemplateForPrecoordination;
+			return getSelf();
+		}
+		Builder domainTemplateForPostcoordination(String domainTemplateForPostcoordination) {
+			this.domainTemplateForPostcoordination = domainTemplateForPostcoordination;
+			return getSelf();
+		}
+		
+		Builder editorialGuideReference(String editorialGuideReference) {
+			this.editorialGuideReference = editorialGuideReference;
+			return getSelf();
+		}
+		
+		Builder domainId(String domainId) {
+			this.domainId = domainId;
+			return getSelf();
+		}
+		
+		Builder grouped(Boolean grouped) {
+			this.grouped = grouped;
+			return getSelf();
+		}
+		
+		Builder attributeCardinality(String attributeCardinality) {
+			this.attributeCardinality = attributeCardinality;
+			return getSelf();
+		}
+		
+		Builder attributeInGroupCardinality(String attributeInGroupCardinality) {
+			this.attributeInGroupCardinality = attributeInGroupCardinality;
+			return getSelf();
+		}
+		
+		Builder ruleStrengthId(String ruleStrengthId) {
+			this.ruleStrengthId = ruleStrengthId;
+			return getSelf();
+		}
+		
+		Builder contentTypeId(String contentTypeId) {
+			this.contentTypeId = contentTypeId;
+			return getSelf();
+		}
+		
+		Builder rangeConstraint(String rangeConstraint) {
+			this.rangeConstraint = rangeConstraint;
+			return getSelf();
+		}
+		
+		Builder attributeRule(String attributeRule) {
+			this.attributeRule = attributeRule;
+			return getSelf();
+		}
+		
+		Builder mrcmRuleRefsetId(String mrcmRuleRefsetId) {
+			this.mrcmRuleRefsetId = mrcmRuleRefsetId;
+			return getSelf();
+		}
+		
 		public SnomedRefSetMemberIndexEntry build() {
 			final SnomedRefSetMemberIndexEntry doc = new SnomedRefSetMemberIndexEntry(id,
 					label,
@@ -931,7 +1010,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	private String editorialGuideReference;
 	// MRCM Attribute Domain		
 	private String domainId;
-	private boolean grouped;
+	private Boolean grouped;
 	private String attributeCardinality;
 	private String attributeInGroupCardinality;
 	private String ruleStrengthId;
@@ -1164,7 +1243,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		return domainId;
 	}
 	
-	public boolean isGrouped() {
+	public Boolean isGrouped() {
 		return grouped;
 	}
 	
