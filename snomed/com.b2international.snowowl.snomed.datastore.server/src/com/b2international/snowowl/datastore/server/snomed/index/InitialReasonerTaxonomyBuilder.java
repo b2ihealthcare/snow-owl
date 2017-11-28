@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,6 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
@@ -56,7 +55,6 @@ import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.b2international.snowowl.snomed.datastore.SnomedIsAStatement;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -491,8 +489,10 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	}
 	
 	public Collection<ConcreteDomainFragment> getInferredConceptConcreteDomainFragments(final long conceptId) {
-		final Collection<ConcreteDomainFragment> concreteDomains = inferredConcreteDomainMap.get(conceptId);
-		return null == concreteDomains ? Collections.<ConcreteDomainFragment>emptySet() : concreteDomains;
+		if (inferredConcreteDomainMap == null || inferredConcreteDomainMap.isEmpty() || inferredConcreteDomainMap.get(conceptId) == null) {
+			return Collections.emptySet();
+		}
+		return inferredConcreteDomainMap.get(conceptId);
 	}
 
 	private Collection<String> getAllowedCharacteristicTypes() {
