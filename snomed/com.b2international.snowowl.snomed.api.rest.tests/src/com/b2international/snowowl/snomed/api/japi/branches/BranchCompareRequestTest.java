@@ -231,7 +231,7 @@ public class BranchCompareRequestTest {
 		
 		final RemoteJobEntry job = waitDone(compareJobId);
 		
- 		return JsonSupport.getDefaultObjectMapper().readValue(job.getResult(), CompareResult.class);
+ 		return job.getResultAs(JsonSupport.getDefaultObjectMapper(), CompareResult.class);
 	}
 	
 }

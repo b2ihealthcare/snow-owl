@@ -282,8 +282,17 @@ public final class RemoteJobEntry implements Serializable {
 	 * @return
 	 */
 	public Map<String, Object> getParameters(ObjectMapper mapper) {
+		return getParametersAs(mapper, Map.class);
+	}
+	
+	/**
+	 * Returns a deserialized parameters object using the given {@link ObjectMapper} and type to deserialize the {@link #getParameters()} JSON string.
+	 * @param mapper
+	 * @return
+	 */
+	public <T> T getParametersAs(ObjectMapper mapper, Class<T> type) {
 		try {
-			return mapper.readValue(getParameters(), Map.class);
+			return mapper.readValue(getParameters(), type);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);
 		}
@@ -303,8 +312,18 @@ public final class RemoteJobEntry implements Serializable {
 	 * @return
 	 */
 	public Map<String, Object> getResult(ObjectMapper mapper) {
+		return getResultAs(mapper, Map.class);
+	}
+	
+	/**
+	 * Returns a deserialized result using the given {@link ObjectMapper} and type to deserialize the {@link #getResult()} JSON string.
+	 * @param mapper
+	 * @param type
+	 * @return
+	 */
+	public <T> T getResultAs(ObjectMapper mapper, Class<T> type) {
 		try {
-			return mapper.readValue(getResult(), Map.class);
+			return mapper.readValue(getResult(), type);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);
 		}
