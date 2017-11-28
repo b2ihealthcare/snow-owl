@@ -17,6 +17,9 @@ package com.b2international.snowowl.core.validation;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * @since 6.0
  */
@@ -25,7 +28,10 @@ public final class ValidationResult implements Serializable {
 	private final String repositoryId;
 	private final String branchPath;
 	
-	public ValidationResult(final String repositoryId, final String branchPath) {
+	@JsonCreator
+	public ValidationResult(
+			@JsonProperty("repositoryId") final String repositoryId, 
+			@JsonProperty("branchPath") final String branchPath) {
 		this.repositoryId = repositoryId;
 		this.branchPath = branchPath;
 	}
