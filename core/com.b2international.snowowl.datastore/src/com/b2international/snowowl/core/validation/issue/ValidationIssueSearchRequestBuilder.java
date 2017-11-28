@@ -45,6 +45,14 @@ public final class ValidationIssueSearchRequestBuilder
 	public ValidationIssueSearchRequestBuilder filterByBranchPaths(final Iterable<? extends String> branchPaths) {
 		return addOption(OptionKey.BRANCH_PATH, branchPaths);
 	}
+	
+	public ValidationIssueSearchRequestBuilder filterByTooling(String toolingId) {
+		return addOption(OptionKey.TOOLING_ID, toolingId);
+	}
+	
+	public ValidationIssueSearchRequestBuilder filterByTooling(Iterable<String> toolingIds) {
+		return addOption(OptionKey.TOOLING_ID, toolingIds);
+	}
  	
 	@Override
 	protected SearchResourceRequest<ServiceProvider, ValidationIssues> createSearch() {

@@ -15,6 +15,12 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
+import static com.google.common.collect.Sets.newHashSet;
+
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.Expression;
@@ -22,6 +28,8 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
+import com.b2international.snowowl.core.validation.ValidationRequests;
+import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 
 /**
@@ -38,7 +46,12 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 		/**
 		 * Filter matches by branch path field.
 		 */
-		BRANCH_PATH
+		BRANCH_PATH, 
+		
+		/**
+		 * Filter matches by their rule's tooling ID field.
+		 */
+		TOOLING_ID
 	}
 	
 	@Override
@@ -50,12 +63,40 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 	protected Expression prepareQuery(ServiceProvider context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 
-		if (containsKey(OptionKey.RULE_ID)) {
-			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.RULE_ID, getCollection(OptionKey.RULE_ID, String.class)));
-		}
+		addIdFilter(queryBuilder, ids -> Expressions.matchAny(ValidationIssue.Fields.ID, ids));
 		
 		if (containsKey(OptionKey.BRANCH_PATH)) {
 			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.BRANCH_PATH, getCollection(OptionKey.BRANCH_PATH, String.class)));
+		}
+		
+		final Set<String> filterByRuleIds = newHashSet();
+		
+		if (containsKey(OptionKey.TOOLING_ID)) {
+			final Collection<String> toolingIds = getCollection(OptionKey.TOOLING_ID, String.class);
+			
+			final Set<String> ruleIds = ValidationRequests.rules().prepareSearch()
+				.all()
+				.filterByToolings(toolingIds)
+				.setFields(ValidationRule.Fields.ID)
+				.build()
+				.execute(context)
+				.stream()
+				.map(ValidationRule::getId)
+				.collect(Collectors.toSet());
+			
+			if (ruleIds.isEmpty()) {
+				queryBuilder.filter(Expressions.matchNone());
+			} else {
+				filterByRuleIds.addAll(ruleIds);
+			}
+		}
+		
+		if (containsKey(OptionKey.RULE_ID)) {
+			filterByRuleIds.addAll(getCollection(OptionKey.RULE_ID, String.class));
+		}
+		
+		if (!filterByRuleIds.isEmpty()) {
+			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.RULE_ID, filterByRuleIds));
 		}
 		
 		return queryBuilder.build();

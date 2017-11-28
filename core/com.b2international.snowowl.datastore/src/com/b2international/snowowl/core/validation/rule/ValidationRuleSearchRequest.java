@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.validation.rule;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,7 +38,12 @@ final class ValidationRuleSearchRequest extends SearchIndexResourceRequest<Servi
 		/**
 		 * Filter matches by severity values.
 		 */
-		SEVERITY
+		SEVERITY, 
+		
+		/**
+		 * Filter matches by tooling ID values.
+		 */
+		TOOLING_ID
 	}
 	
 	@Override
@@ -49,9 +55,16 @@ final class ValidationRuleSearchRequest extends SearchIndexResourceRequest<Servi
 	protected Expression prepareQuery(ServiceProvider context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 
+		addIdFilter(queryBuilder, ids -> Expressions.matchAny(ValidationRule.Fields.ID, ids));
+		
 		if (containsKey(OptionKey.SEVERITY)) {
 			final Set<String> values = getCollection(OptionKey.SEVERITY, Severity.class).stream().map(Severity::name).collect(Collectors.toSet());
 			queryBuilder.filter(Expressions.matchAny(ValidationRule.Fields.SEVERITY, values));
+		}
+		
+		if (containsKey(OptionKey.TOOLING_ID)) {
+			final Collection<String> toolingIds = getCollection(OptionKey.TOOLING_ID, String.class);
+			queryBuilder.filter(Expressions.matchAny(ValidationRule.Fields.TOOLING_ID, toolingIds));
 		}
 		
 		return queryBuilder.build();

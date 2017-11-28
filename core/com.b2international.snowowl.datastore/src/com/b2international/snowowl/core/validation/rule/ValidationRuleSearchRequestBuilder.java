@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.validation.rule;
 
+import java.util.Collection;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
@@ -38,7 +40,15 @@ public final class ValidationRuleSearchRequestBuilder
 	public ValidationRuleSearchRequestBuilder filterBySeverity(final Iterable<Severity> severities) {
 		return addOption(OptionKey.SEVERITY, severities);
 	}
- 	
+
+	public ValidationRuleSearchRequestBuilder filterByTooling(String toolingId) {
+		return addOption(OptionKey.TOOLING_ID, toolingId);
+	}
+	
+	public ValidationRuleSearchRequestBuilder filterByToolings(Collection<String> toolingIds) {
+		return addOption(OptionKey.TOOLING_ID, toolingIds);
+	}
+	
 	@Override
 	protected SearchResourceRequest<ServiceProvider, ValidationRules> createSearch() {
 		return new ValidationRuleSearchRequest();
