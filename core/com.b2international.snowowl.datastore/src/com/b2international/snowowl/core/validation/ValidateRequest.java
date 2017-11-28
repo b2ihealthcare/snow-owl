@@ -33,12 +33,12 @@ import com.b2international.snowowl.core.validation.rule.ValidationRules;
 /**
  * @since 6.0
  */
-final class ValidateRequest implements Request<BranchContext, Boolean> {
+final class ValidateRequest implements Request<BranchContext, ValidationResult> {
 	
 	ValidateRequest() {}
 	
 	@Override
-	public Boolean execute(BranchContext context) {
+	public ValidationResult execute(BranchContext context) {
 		return context.service(ValidationRepository.class).write(index -> {
 			final String branchPath = context.branchPath();
 			final ValidationRules rules = ValidationRequests.rules().prepareSearch()
@@ -84,7 +84,7 @@ final class ValidateRequest implements Request<BranchContext, Boolean> {
 			index.commit();
 			
 			// TODO return ValidationResult object with status and new issue IDs as set
-			return Boolean.TRUE;
+			return new ValidationResult(context.id(), context.branchPath());
 		});
 		
 	}

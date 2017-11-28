@@ -15,23 +15,27 @@
  */
 package com.b2international.snowowl.core.validation;
 
-import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
+import java.io.Serializable;
 
 /**
  * @since 6.0
  */
-public final class ValidateRequestBuilder 
-		extends BaseRequestBuilder<ValidateRequestBuilder, BranchContext, ValidationResult>
-		implements RevisionIndexRequestBuilder<ValidationResult> {
-
-	ValidateRequestBuilder() {}
+public final class ValidationResult implements Serializable {
 	
-	@Override
-	protected Request<BranchContext, ValidationResult> doBuild() {
-		return new ValidateRequest();
+	private final String repositoryId;
+	private final String branchPath;
+	
+	public ValidationResult(final String repositoryId, final String branchPath) {
+		this.repositoryId = repositoryId;
+		this.branchPath = branchPath;
+	}
+	
+	public String getBranchPath() {
+		return branchPath;
+	}
+	
+	public String getRepositoryId() {
+		return repositoryId;
 	}
 
 }
