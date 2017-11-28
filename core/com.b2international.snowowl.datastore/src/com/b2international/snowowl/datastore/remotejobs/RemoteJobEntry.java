@@ -346,6 +346,11 @@ public final class RemoteJobEntry implements Serializable {
 		return getState().oneOf(RemoteJobState.CANCELED, RemoteJobState.CANCEL_REQUESTED);
 	}
 	
+	@JsonIgnore
+	public boolean isSuccessful() {
+		return RemoteJobState.FINISHED == getState();
+	}
+	
 	@Override
 	public int hashCode() {
 		return 31 + id.hashCode();
