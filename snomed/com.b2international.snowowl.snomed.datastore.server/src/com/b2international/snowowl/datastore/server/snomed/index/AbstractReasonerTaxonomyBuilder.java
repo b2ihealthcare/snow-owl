@@ -180,8 +180,10 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	 * @return the concrete domains associated with a concept, if any.
 	 */
 	public Collection<ConcreteDomainFragment> getConceptConcreteDomainFragments(final long conceptId) {
-		final Collection<ConcreteDomainFragment> concreteDomains = conceptIdToConcreteDomain.get(conceptId);
-		return null == concreteDomains ? Collections.<ConcreteDomainFragment>emptySet() : concreteDomains;
+		if (conceptIdToConcreteDomain == null || conceptIdToConcreteDomain.isEmpty() || conceptIdToConcreteDomain.get(conceptId) == null) {
+			return Collections.<ConcreteDomainFragment>emptySet();
+		}
+		return conceptIdToConcreteDomain.get(conceptId);
 	}
 
 	/**
@@ -190,8 +192,10 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	 * @return the concrete domains associated with a relationship, if any.
 	 */
 	public Collection<ConcreteDomainFragment> getStatementConcreteDomainFragments(final long statementId) {
-		final Collection<ConcreteDomainFragment> concreteDomains = statementIdToConcreteDomain.get(statementId);
-		return null == concreteDomains ? Collections.<ConcreteDomainFragment>emptySet() : concreteDomains;
+		if (statementIdToConcreteDomain == null || statementIdToConcreteDomain.isEmpty() || statementIdToConcreteDomain.get(statementId) == null) {
+			return Collections.<ConcreteDomainFragment>emptySet();
+		}
+		return statementIdToConcreteDomain.get(statementId);
 	}
 
 	/**

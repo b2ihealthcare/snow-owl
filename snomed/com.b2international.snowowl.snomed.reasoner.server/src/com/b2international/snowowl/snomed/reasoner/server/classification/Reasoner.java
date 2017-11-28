@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.protege.editor.owl.model.inference.ProtegeOWLReasonerInfo;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -47,11 +48,13 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
+import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerException;
 import com.b2international.snowowl.snomed.reasoner.model.ConceptDefinition;
 import com.b2international.snowowl.snomed.reasoner.preferences.IReasonerPreferencesService;
 import com.b2international.snowowl.snomed.reasoner.server.SnomedReasonerServerActivator;
+import com.b2international.snowowl.snomed.reasoner.server.ontology.DelegateOntology;
 import com.b2international.snowowl.snomed.reasoner.server.ontology.SnomedOntologyService;
 import com.google.common.base.Stopwatch;
 
@@ -66,6 +69,7 @@ public class Reasoner extends AbstractDisposableService {
 	private final boolean shared;
 
 	private final ReasonerStateMachine stateMachine = new ReasonerStateMachine(ReasonerState.UNLOADED);
+	private final AtomicReference<InitialReasonerTaxonomyBuilder> taxonomyBuilder = new AtomicReference<>();
 	
 	private OWLOntology ontology;
 	private OWLReasoner reasoner;
@@ -104,6 +108,12 @@ public class Reasoner extends AbstractDisposableService {
 			
 			for (final ConceptDefinition conceptDefinition : additionalDefinitions) {
 				ontologyService.applyChanges(ontology, conceptDefinition.add(ontology));
+			}
+			
+			// must happen before any unload
+			if (ontology instanceof DelegateOntology) {
+				DelegateOntology delegateOntology = (DelegateOntology) ontology;
+				taxonomyBuilder.set(delegateOntology.getReasonerTaxonomyBuilder());
 			}
 			
 			return ontology;
@@ -193,6 +203,10 @@ public class Reasoner extends AbstractDisposableService {
 
 	private ReasonerState getState() {
 		return stateMachine.getState();
+	}
+	
+	public AtomicReference<InitialReasonerTaxonomyBuilder> getTaxonomyBuilder() {
+		return taxonomyBuilder;
 	}
 
 	public void setStale() {

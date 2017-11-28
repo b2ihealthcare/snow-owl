@@ -24,8 +24,7 @@ public abstract class SnomedReasonerRequests {
 		return new ClassifyRequestBuilder();
 	}	
 
-	public static PersistChangesRequestBuilder preparePersistChanges() {
-		return new PersistChangesRequestBuilder();
+	public static PersistChangesRequestBuilder preparePersistChanges() { return new PersistChangesRequestBuilder();
 	}
 
 	private SnomedReasonerRequests() {
