@@ -211,6 +211,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 					}
 					
 					if (keywordMapping != null) {
+						prop.put("type", "keyword");
 						String normalizer = EsTextAnalysis.getNormalizer(keywordMapping.normalizer());
 						if (!Strings.isNullOrEmpty(normalizer)) {
 							prop.put("normalizer", normalizer);
