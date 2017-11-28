@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.index.Doc;
+import com.b2international.index.Keyword;
 import com.b2international.index.Script;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
@@ -204,7 +205,11 @@ public final class RemoteJobEntry implements Serializable {
 	private final RemoteJobState state;
 	private final int completionLevel;
 	private final boolean deleted;
+	
+	@Keyword(index=false)
 	private final String result;
+	
+	@Keyword(index=false)
 	private final String parameters;
 
 	private RemoteJobEntry(

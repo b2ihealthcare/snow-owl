@@ -34,4 +34,6 @@ public @interface Keyword {
 	
 	Normalizers normalizer() default Normalizers.NONE;
 	
+	boolean index() default true;
+	
 }

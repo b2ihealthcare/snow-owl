@@ -33,6 +33,7 @@ import java.util.Map.Entry;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Doc;
+import com.b2international.index.Keyword;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -769,8 +770,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	private Integer mapGroup;
 	private Integer mapPriority;
 	// QUERY
+	@Keyword(index = false)
 	private String query;
-	
 
 	private SnomedRefSetMemberIndexEntry(final String id,
 			final String label,

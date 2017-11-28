@@ -215,6 +215,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 						if (!Strings.isNullOrEmpty(normalizer)) {
 							prop.put("normalizer", normalizer);
 						}
+						prop.put("index", keywordMapping.index());
 					}
 					
 					// put extra text fields into fields object
@@ -246,6 +247,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 							if (!Strings.isNullOrEmpty(normalizer)) {
 								fieldProps.put("normalizer", normalizer);
 							}
+							fieldProps.put("index", analyzed.index());
 							fields.put(extraFieldParts[1], fieldProps);
 						}
 					}

@@ -19,6 +19,7 @@ import java.io.Serializable;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Doc;
+import com.b2international.index.Keyword;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
@@ -53,6 +54,8 @@ public final class ValidationRule implements Serializable {
 	private final String messageTemplate;
 	private final Severity severity;
 	private final String type;
+	
+	@Keyword(index = false)
 	private final String implementation;
 	
 	@JsonCreator
