@@ -64,6 +64,8 @@ import com.google.common.util.concurrent.MoreExecutors;
  */
 public class EsDocumentWriter implements Writer {
 
+	private static final int DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES = 5;
+
 	private static final int BATCHS_SIZE = 10_000;
 	
 	private final EsIndexAdmin admin;
@@ -203,6 +205,7 @@ public class EsDocumentWriter implements Writer {
 		org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, ImmutableMap.copyOf(update.getParams()));
 		
 		long versionConflicts = 0;
+		int attempts = DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES;
 		do {
 			UpdateByQueryRequestBuilder ubqrb = UpdateByQueryAction.INSTANCE.newRequestBuilder(client);
 			
@@ -254,6 +257,8 @@ public class EsDocumentWriter implements Writer {
 							t = failure.getCause();
 						}
 						admin.log().error("Index failure during bulk update", failure.getCause());
+					} else {
+						admin.log().warn("Version conflict reason: {}", failure.getMessage());
 					}
 				}
 				if (!versionConflictsOnly) {
@@ -261,8 +266,13 @@ public class EsDocumentWriter implements Writer {
 				}
 			}
 			
+			if (attempts <= 0) {
+				throw new IndexException("There were indexing failures during bulk updates. See logs for all failures.", null);
+			}
+			
 			versionConflicts = r.getVersionConflicts();
 			if (versionConflicts > 0) {
+				--attempts;
 				try {
 					Thread.sleep(100 + random.nextInt(900));
 				} catch (InterruptedException e) {
