@@ -136,7 +136,8 @@ public abstract class SnomedConstants {
 
 		public static final String TOPLEVEL_METADATA = "900000000000441003";
 		public static final String LINKAGE = "106237007";
-		public static final String PHARMACEUTICAL = "373873005"; 
+		public static final String PHARMACEUTICAL = "373873005";
+		public static final String PHYSICAL_OBJECT = "260787004";
 		public static final String QUALIFIER_VALUE_TOPLEVEL_CONCEPT = "362981000";
 		
 		public static final String NOT_REFINABLE = "900000000000007000";
