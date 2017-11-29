@@ -217,6 +217,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 							prop.put("normalizer", normalizer);
 						}
 						prop.put("index", keywordMapping.index());
+						prop.put("doc_values", keywordMapping.index());
 					}
 					
 					// put extra text fields into fields object
