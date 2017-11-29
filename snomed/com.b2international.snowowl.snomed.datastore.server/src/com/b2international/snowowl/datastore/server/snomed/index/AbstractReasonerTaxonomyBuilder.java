@@ -26,7 +26,6 @@ import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.ints.IntIterator;
 import com.b2international.collections.longs.LongKeyIntMap;
-import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
@@ -85,9 +84,6 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	/** Maps SNOMED&nbsp;CT concept IDs to internal IDs. */
 	protected LongKeyIntMap conceptIdToInternalId;
 
-	/** Maps component storage keys indexed in this taxonomy builder to their "containing" concept ID. */
-	protected LongKeyLongMap componentStorageKeyToConceptId;
-
 	/** The mode of operation for this taxonomy builder. */
 	private final Type type;
 	
@@ -118,8 +114,6 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 		this.statementIdToConcreteDomain = PrimitiveMaps.newLongKeyOpenHashMap(source.statementIdToConcreteDomain);
 		this.internalIdToconceptId = PrimitiveLists.newLongArrayList(source.internalIdToconceptId);
 		this.conceptIdToInternalId = PrimitiveMaps.newLongKeyIntOpenHashMap(source.conceptIdToInternalId);
-		
-		this.componentStorageKeyToConceptId = PrimitiveMaps.newLongKeyLongOpenHashMap(source.componentStorageKeyToConceptId);
 	}
 	
 	protected boolean isReasonerMode() {
@@ -186,8 +180,10 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	 * @return the concrete domains associated with a concept, if any.
 	 */
 	public Collection<ConcreteDomainFragment> getConceptConcreteDomainFragments(final long conceptId) {
-		final Collection<ConcreteDomainFragment> concreteDomains = conceptIdToConcreteDomain.get(conceptId);
-		return null == concreteDomains ? Collections.<ConcreteDomainFragment>emptySet() : concreteDomains;
+		if (conceptIdToConcreteDomain == null || conceptIdToConcreteDomain.isEmpty() || conceptIdToConcreteDomain.get(conceptId) == null) {
+			return Collections.<ConcreteDomainFragment>emptySet();
+		}
+		return conceptIdToConcreteDomain.get(conceptId);
 	}
 
 	/**
@@ -196,8 +192,10 @@ public abstract class AbstractReasonerTaxonomyBuilder {
 	 * @return the concrete domains associated with a relationship, if any.
 	 */
 	public Collection<ConcreteDomainFragment> getStatementConcreteDomainFragments(final long statementId) {
-		final Collection<ConcreteDomainFragment> concreteDomains = statementIdToConcreteDomain.get(statementId);
-		return null == concreteDomains ? Collections.<ConcreteDomainFragment>emptySet() : concreteDomains;
+		if (statementIdToConcreteDomain == null || statementIdToConcreteDomain.isEmpty() || statementIdToConcreteDomain.get(statementId) == null) {
+			return Collections.<ConcreteDomainFragment>emptySet();
+		}
+		return statementIdToConcreteDomain.get(statementId);
 	}
 
 	/**

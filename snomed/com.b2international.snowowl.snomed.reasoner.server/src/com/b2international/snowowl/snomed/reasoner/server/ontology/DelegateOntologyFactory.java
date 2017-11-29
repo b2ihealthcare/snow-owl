@@ -28,8 +28,10 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.model.SnomedOntologyUtils;
 
 import uk.ac.manchester.cs.owl.owlapi.EmptyInMemOWLOntologyFactory;
@@ -54,11 +56,15 @@ public class DelegateOntologyFactory extends EmptyInMemOWLOntologyFactory implem
 		final URI relativeUri = SnomedOntologyUtils.BASE_IRI.toURI().relativize(documentIRI.toURI());
 		final String path = relativeUri.getPath();
 		final IBranchPath branchPath = BranchPathUtils.createPath(path);
-        final DelegateOntology ont = new DelegateOntology(getOWLOntologyManager(), ontologyID, branchPath, getIndex());
+        final DelegateOntology ont = new DelegateOntology(getOWLOntologyManager(), ontologyID, branchPath, getIndex(), isConcreteDomainSupported());
         handler.ontologyCreated(ont);
         return ont;
 	}
 	
+	private boolean isConcreteDomainSupported() {
+		return ApplicationContext.getInstance().getService(SnowOwlConfiguration.class).getModuleConfig(SnomedCoreConfiguration.class).isConcreteDomainSupported();
+	}
+
 	private RevisionIndex getIndex() {
 		return ApplicationContext.getInstance().getService(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
 	}

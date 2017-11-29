@@ -3,14 +3,6 @@
 <plugin>
    <extension-point id="namespaceAssigner" name="NamespaceAssigner" schema="schema/namespaceassigner.exsd"/>
    <extension
-         point="com.b2international.snowowl.datastore.changeProcessorFactory">
-      <changeProcessorFactory
-            class="com.b2international.snowowl.snomed.reasoner.server.changeprocessor.SnomedReasonerChangeProcessorFactory"
-            id="com.b2international.snowowl.snomed.reasoner.server.changeprocessor.SnomedReasonerChangeProcessorFactory"
-            repositoryUuid="snomedStore">
-      </changeProcessorFactory>
-   </extension>
-   <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob
             class="com.b2international.snowowl.snomed.reasoner.server.serviceconfig.SnomedReasonerServerConfigJob"

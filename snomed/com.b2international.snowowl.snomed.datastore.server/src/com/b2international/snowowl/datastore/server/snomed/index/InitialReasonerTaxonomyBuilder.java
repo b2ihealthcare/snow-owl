@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRef
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.typeId;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -41,6 +42,7 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
+import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -51,6 +53,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.IsAStatement;
 import com.b2international.snowowl.snomed.datastore.SnomedIsAStatement;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -81,22 +84,24 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 		@Override
 		public void run() {
-			final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
+			final Query<String[]> query = Query.select(String[].class)
+					.from(SnomedRelationshipIndexEntry.class)
+					.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
 					.where(Expressions.builder()
 							.filter(active())
 							.filter(typeId(Concepts.IS_A))
 							.filter(characteristicTypeIds(getAllowedCharacteristicTypes()))
-							.mustNot(modules(Concepts.UK_MODULES))
+							.mustNot(modules(Concepts.UK_MODULES_NOCLASSIFY))
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();
 			
 			try {
-				final Hits<SnomedRelationshipIndexEntry> hits = searcher.search(query);
+				final Hits<String[]> hits = searcher.search(query);
 				final IsAStatement[] statements = new SnomedIsAStatement[hits.getTotal()];
 				int i = 0;
-				for (SnomedRelationshipIndexEntry hit : hits) {
-					statements[i] = new SnomedIsAStatement(hit.getSourceId(), hit.getDestinationId());
+				for (String[] hit : hits) {
+					statements[i] = new SnomedIsAStatement(hit[1], hit[2]);
 					i++;
 				}
 				
@@ -127,21 +132,23 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 		@Override
 		public void run() {
-			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
+			final Query<String> query = Query.select(String.class)
+					.from(SnomedConceptDocument.class)
+					.fields(SnomedConceptDocument.Fields.ID)
 					.where(Expressions.builder()
 							.filter(active())
 							.filter(additionalClause)
-							.mustNot(modules(Concepts.UK_MODULES))
+							.mustNot(modules(Concepts.UK_MODULES_NOCLASSIFY))
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();
 
 			try {
-				final Hits<SnomedConceptDocument> hits = searcher.search(query);
+				final Hits<String> hits = searcher.search(query);
 				final LongSet ids = PrimitiveSets.newLongOpenHashSet(hits.getTotal());
 				
-				for (SnomedConceptDocument hit : hits) {
-					ids.add(Long.parseLong(hit.getId()));
+				for (String conceptId : hits) {
+					ids.add(Long.parseLong(conceptId));
 				}
 				
 				conceptIdsReference.set(ids);
@@ -152,56 +159,14 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		}
 	}
 
-	private final class GetConceptIdsAndKeysRunnable implements Runnable {
-
-		private final String taskName;
-		private final AtomicReference<LongKeyLongMap> conceptIdsReference;
-		private final RevisionSearcher searcher;
-
-		private GetConceptIdsAndKeysRunnable(final RevisionSearcher searcher, final String taskName,
-				final AtomicReference<LongKeyLongMap> conceptIdsReference) {
-
-			this.searcher = searcher;
-			this.taskName = taskName;
-			this.conceptIdsReference = conceptIdsReference;
-		}
-
-		@Override
-		public void run() {
-			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
-					.where(Expressions.builder()
-							.filter(active())
-							.mustNot(modules(Concepts.UK_MODULES))
-							.build())
-					.limit(Integer.MAX_VALUE)
-					.build();
-			
-			try {
-				
-				final Hits<SnomedConceptDocument> hits = searcher.search(query);
-				final LongKeyLongMap storageKeysById = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(hits.getTotal());
-				
-				for (SnomedConceptDocument hit : hits) {
-					storageKeysById.put(Long.parseLong(hit.getId()), hit.getStorageKey());
-				}
-				
-				conceptIdsReference.set(storageKeysById);
-				checkpoint(taskName, "active concept IDs and storage keys collection", stopwatch);
-			} catch (Exception e) {
-				throw new SnowowlRuntimeException(e);
-			}
-			
-		}
-	}
-
 	private final class TaxonomyBuilderRunnable implements Runnable {
 
 		private final String taskName;
-		private final AtomicReference<LongKeyLongMap> conceptIdsReference;
+		private final AtomicReference<LongSet> conceptIdsReference;
 		private final AtomicReference<IsAStatement[]> isAStatementsReference;
 
 		private TaxonomyBuilderRunnable(final String taskName, 
-				final AtomicReference<LongKeyLongMap> conceptIdsReference,
+				final AtomicReference<LongSet> conceptIdsReference,
 				final AtomicReference<IsAStatement[]> isAStatementsReference) {
 
 			this.taskName = taskName;
@@ -212,21 +177,15 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 		@Override
 		public void run() {
 
-			final LongKeyLongMap conceptIds = conceptIdsReference.get();
+			final LongSet conceptIds = conceptIdsReference.get();
 			final int conceptCount = conceptIds.size();
 
 			internalIdToconceptId = PrimitiveLists.newLongArrayListWithExpectedSize(conceptCount);
 			conceptIdToInternalId = PrimitiveMaps.newLongKeyIntOpenHashMapWithExpectedSize(conceptCount);
 
-			LongIterator iterator = conceptIds.keySet().iterator();
+			LongIterator iterator = conceptIds.iterator();
 			while (iterator.hasNext()) {
 				final long conceptId = iterator.next();
-				final long storageKey = conceptIds.get(conceptId);
-
-				synchronized (storageKeyLock) {
-					componentStorageKeyToConceptId.put(storageKey, conceptId);
-				}
-				
 				internalIdToconceptId.add(conceptId);
 				conceptIdToInternalId.put(conceptId, internalIdToconceptId.size() - 1);
 			}
@@ -306,7 +265,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 							.filter(referencedComponentIds(LongSets.toStringSet(componentIds)))
 							.filter(refSetTypes(Collections.singleton(SnomedRefSetType.CONCRETE_DATA_TYPE)))
 							.filter(characteristicTypeIds(characteristicTypes))
-							.mustNot(modules(Concepts.UK_MODULES))
+							.mustNot(modules(Concepts.UK_MODULES_NOCLASSIFY))
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();
@@ -315,11 +274,13 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 				final Hits<SnomedRefSetMemberIndexEntry> hits = searcher.search(query);
 				final LongKeyMap<Collection<ConcreteDomainFragment>> concreteDomainMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(hits.getTotal());
 
-				for (final LongIterator keys = concreteDomainMap.keySet().iterator(); keys.hasNext(); /**/) {
-					final long componentId = keys.next();
-					if (!componentIds.contains(componentId)) {
-						keys.remove(); //no matching active SNOMED CT component
+				for (SnomedRefSetMemberIndexEntry entry : hits) {
+					final long referencedComponentIdL = Long.parseLong(entry.getReferencedComponentId());
+					final ConcreteDomainFragment fragment = new ConcreteDomainFragment(SnomedRefSetUtil.serializeValue(entry.getDataType(), entry.getValue()), entry.getAttributeName(), (byte) entry.getDataType().ordinal(), Long.parseLong(entry.getUnitId()), entry.getStorageKey(), Long.parseLong(entry.getReferenceSetId()));
+					if (!concreteDomainMap.containsKey(referencedComponentIdL)) {
+						concreteDomainMap.put(referencedComponentIdL, newArrayList());
 					}
+					concreteDomainMap.get(referencedComponentIdL).add(fragment);
 				}
 
 				concreteDomainMapReference.set(concreteDomainMap);
@@ -354,13 +315,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 				final Collection<StatementFragment> fragments = getStatementFragments(sourceConceptId);
 
 				for (final StatementFragment fragment : fragments) {
-					final long statementStorageKey = fragment.getStorageKey();
 					final long statemendId = fragment.getStatementId();
-					
-					synchronized (storageKeyLock) {
-						componentStorageKeyToConceptId.put(statementStorageKey, sourceConceptId);
-					}
-					
 					statementIdToConceptIds.put(statemendId, sourceConceptId);
 				}
 			}
@@ -376,7 +331,7 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 					.where(Expressions.builder()
 							.filter(active())
 							.filter(characteristicTypeIds(characteristicTypes))
-							.mustNot(modules(Concepts.UK_MODULES))
+							.mustNot(modules(Concepts.UK_MODULES_NOCLASSIFY))
 							.build())
 					.limit(Integer.MAX_VALUE)
 					.build();
@@ -421,15 +376,15 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	}
 
 	private static void checkpoint(final String taskName, final String message, final Stopwatch stopwatch) {
-		LOGGER.info(MessageFormat.format("--- {0}: {1} [{2}]", taskName, message, stopwatch));
+		LOGGER.info(MessageFormat.format("--- {0}: {1} [{2}]", taskName, message, TimeUtil.toString(stopwatch)));
 	}
 
 	private static void leaving(final String taskName, final Stopwatch stopwatch) {
-		LOGGER.info(MessageFormat.format("<<< {0} [{1}]", taskName, stopwatch));
+		LOGGER.info(MessageFormat.format("<<< {0} [{1}]", taskName, TimeUtil.toString(stopwatch)));
 	}
 
-	private final Object storageKeyLock = new Object();
 	private final Stopwatch stopwatch;
+	private final boolean concreteDomainSupportEnabled;
 	
 	private LongKeyMap<Collection<StatementFragment>> inferredStatementMap;
 	private LongKeyMap<Collection<ConcreteDomainFragment>> inferredConcreteDomainMap;
@@ -440,67 +395,34 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	 * @param searcher - an active revision searcher on a branch where this reasoner taxonomy builder should collect data from
 	 * @param type the mode of operation for this taxonomy builder (intended for classification or change processing)
 	 */
-	public InitialReasonerTaxonomyBuilder(final RevisionSearcher searcher, final Type type) {
+	public InitialReasonerTaxonomyBuilder(final RevisionSearcher searcher, final Type type, boolean concreteDomainSupportEnabled) {
 		super(type);
 		
 		this.stopwatch = Stopwatch.createStarted();
+		this.concreteDomainSupportEnabled = concreteDomainSupportEnabled;
 		
 		final String taskName = MessageFormat.format("Building reasoner taxonomy for branch path ''{0}''", searcher.branch());
 		entering(taskName);
 
-		final AtomicReference<LongKeyLongMap> conceptIdsReference = createAtomicReference();
+		final AtomicReference<LongSet> conceptIdsReference = createAtomicReference();
 		final AtomicReference<IsAStatement[]> isAStatementsReference = createAtomicReference();
 
-		final Runnable getConceptIdsRunnable = new GetConceptIdsAndKeysRunnable(searcher, taskName, conceptIdsReference);
+		final Runnable getConceptIdsRunnable = new GetConceptIdsRunnable(searcher, taskName, conceptIdsReference, Expressions.matchAll());
 		final Runnable getIsAStatementsRunnable = new GetActiveIsAStatementsRunnable(searcher, taskName, isAStatementsReference);
 
 		ForkJoinUtils.runInParallel(getIsAStatementsRunnable, getConceptIdsRunnable);
 
-		final LongKeyLongMap conceptStorageKeysById = conceptIdsReference.get();
-		
-		final LongSet conceptIds = PrimitiveSets.newLongOpenHashSet();
-		final LongIterator iterator = conceptStorageKeysById.keySet().iterator();
-		while (iterator.hasNext()) {
-			final long conceptId = iterator.next(); 
-			conceptIds.add(conceptId);
-		}
+		final LongSet conceptIds = conceptIdsReference.get();
 
-		componentStorageKeyToConceptId = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(conceptIds.size()); // Lower bound estimate
-		
 		final AtomicReference<LongSet> exhaustiveConceptIdsReference = createAtomicReference();
 		final AtomicReference<LongSet> fullyDefinedConceptIdsReference = createAtomicReference();
-		final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> conceptConcreteDomainReference = createAtomicReference();
-		final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> inferredConceptConcreteDomainReference = createAtomicReference();
-		final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> relationshipConcreteDomainReference = createAtomicReference();
 		final AtomicReference<LongKeyLongMap> statementIdToConceptIdReference = createAtomicReference();
 
 		new StatementMapperRunnable(searcher, taskName, statementIdToConceptIdReference).run();
 		
 		final Runnable taxonomyBuilderRunnable = new TaxonomyBuilderRunnable(taskName, conceptIdsReference, isAStatementsReference);
-
-		final Collection<String> allowedCharacteristicTypes = getAllowedCharacteristicTypes();
-		final Runnable getConceptConcreteDomainsRunnable = new GetConcreteDomainRunnable(searcher, taskName, 
-				conceptIds,
-				allowedCharacteristicTypes,
-				conceptConcreteDomainReference);
-
 		final LongSet relationshipIds = statementIdToConceptIdReference.get().keySet();
 
-		// XXX: Change processor mode needs additional concrete domain members as well (relationships only)
-		if (!isReasonerMode()) {
-			allowedCharacteristicTypes.add(Concepts.ADDITIONAL_RELATIONSHIP);
-		}
-		
-		final Runnable getStatementConcreteDomainsRunnable = new GetConcreteDomainRunnable(searcher, taskName, 
-				relationshipIds,
-				allowedCharacteristicTypes,
-				relationshipConcreteDomainReference);
-
-		final Runnable getInferredConceptConcreteDomainsRunnable = new GetConcreteDomainRunnable(searcher, taskName, 
-				conceptIds,
-				Collections.singleton(Concepts.INFERRED_RELATIONSHIP),
-				inferredConceptConcreteDomainReference);
-		
 		final Runnable getExhaustiveConceptIdsRunnable = new GetConceptIdsRunnable(searcher, taskName,
 				exhaustiveConceptIdsReference, 
 				SnomedConceptDocument.Expressions.exhaustive());
@@ -509,42 +431,54 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 				fullyDefinedConceptIdsReference, 
 				SnomedConceptDocument.Expressions.defining());
 
-		ForkJoinUtils.runInParallel(
-				taxonomyBuilderRunnable,
-				getConceptConcreteDomainsRunnable,
-				getInferredConceptConcreteDomainsRunnable,
-				getStatementConcreteDomainsRunnable,
-				getExhaustiveConceptIdsRunnable,
-				getFullyDefinedConceptIdsRunnable);
+		if (concreteDomainSupportEnabled) {
+			final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> conceptConcreteDomainReference = createAtomicReference();
+			final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> inferredConceptConcreteDomainReference = createAtomicReference();
+			final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> relationshipConcreteDomainReference = createAtomicReference();
+			
+			final Collection<String> allowedCharacteristicTypes = getAllowedCharacteristicTypes();
+			// XXX: Change processor mode needs additional concrete domain members as well (relationships only)
+			if (!isReasonerMode()) {
+				allowedCharacteristicTypes.add(Concepts.ADDITIONAL_RELATIONSHIP);
+			}
+			
+			final Runnable getConceptConcreteDomainsRunnable = new GetConcreteDomainRunnable(searcher, taskName, 
+					conceptIds,
+					allowedCharacteristicTypes,
+					conceptConcreteDomainReference);
+			
+			final Runnable getStatementConcreteDomainsRunnable = new GetConcreteDomainRunnable(searcher, taskName, 
+					relationshipIds,
+					allowedCharacteristicTypes,
+					relationshipConcreteDomainReference);
+			
+			final Runnable getInferredConceptConcreteDomainsRunnable = new GetConcreteDomainRunnable(searcher, taskName, 
+					conceptIds,
+					Collections.singleton(Concepts.INFERRED_RELATIONSHIP),
+					inferredConceptConcreteDomainReference);
+			
+			ForkJoinUtils.runInParallel(
+					taxonomyBuilderRunnable,
+					getConceptConcreteDomainsRunnable,
+					getInferredConceptConcreteDomainsRunnable,
+					getStatementConcreteDomainsRunnable,			
+					getExhaustiveConceptIdsRunnable,
+					getFullyDefinedConceptIdsRunnable);
+			
+			
+			conceptIdToConcreteDomain = conceptConcreteDomainReference.get();
+			inferredConcreteDomainMap = inferredConceptConcreteDomainReference.get();
+			statementIdToConcreteDomain = relationshipConcreteDomainReference.get();
+		} else {
+			ForkJoinUtils.runInParallel(
+					taxonomyBuilderRunnable,
+					getExhaustiveConceptIdsRunnable,
+					getFullyDefinedConceptIdsRunnable);
+		}
+		
 
 		exhaustiveConceptIds = exhaustiveConceptIdsReference.get();
 		fullyDefinedConceptIds = fullyDefinedConceptIdsReference.get();
-		conceptIdToConcreteDomain = conceptConcreteDomainReference.get();
-		inferredConcreteDomainMap = inferredConceptConcreteDomainReference.get();
-		statementIdToConcreteDomain = relationshipConcreteDomainReference.get();
-
-		for (final LongIterator itr = conceptIdToConcreteDomain.keySet().iterator(); itr.hasNext(); /* empty */) {
-			final long conceptId = itr.next();
-			final Collection<ConcreteDomainFragment> fragments = getConceptConcreteDomainFragments(conceptId);
-
-			for (final ConcreteDomainFragment fragment : fragments) {
-				synchronized (storageKeyLock) {
-					componentStorageKeyToConceptId.put(fragment.getStorageKey(), conceptId);
-				}
-			}
-		}
-
-		for (final LongIterator itr = statementIdToConcreteDomain.keySet().iterator(); itr.hasNext(); /* empty */) {
-			final long statementId = itr.next();
-			final long conceptId = statementIdToConceptIdReference.get().get(statementId);
-			final Collection<ConcreteDomainFragment> fragments = getConceptConcreteDomainFragments(statementId);
-
-			for (final ConcreteDomainFragment fragment : fragments) {
-				synchronized (storageKeyLock) {
-					componentStorageKeyToConceptId.put(fragment.getStorageKey(), conceptId);
-				}
-			}
-		}
 
 		leaving(taskName, stopwatch);
 	}
@@ -555,8 +489,10 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 	}
 	
 	public Collection<ConcreteDomainFragment> getInferredConceptConcreteDomainFragments(final long conceptId) {
-		final Collection<ConcreteDomainFragment> concreteDomains = inferredConcreteDomainMap.get(conceptId);
-		return null == concreteDomains ? Collections.<ConcreteDomainFragment>emptySet() : concreteDomains;
+		if (inferredConcreteDomainMap == null || inferredConcreteDomainMap.isEmpty() || inferredConcreteDomainMap.get(conceptId) == null) {
+			return Collections.emptySet();
+		}
+		return inferredConcreteDomainMap.get(conceptId);
 	}
 
 	private Collection<String> getAllowedCharacteristicTypes() {

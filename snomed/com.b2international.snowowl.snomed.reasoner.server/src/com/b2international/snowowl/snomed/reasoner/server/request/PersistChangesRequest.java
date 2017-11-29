@@ -19,7 +19,6 @@ import static com.b2international.snowowl.core.ApplicationContext.getServiceForC
 import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.CLASSIFY_WITH_REVIEW;
 import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
@@ -34,12 +33,11 @@ import org.slf4j.LoggerFactory;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.index.revision.RevisionIndex;
-import com.b2international.index.revision.RevisionIndexRead;
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ApiError;
 import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
@@ -49,7 +47,6 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
-import com.b2international.snowowl.datastore.server.snomed.index.AbstractReasonerTaxonomyBuilder.Type;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -58,6 +55,7 @@ import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.classification.EquivalentConceptMerger;
@@ -74,7 +72,7 @@ import com.google.common.collect.Lists;
 /**
  * @since 5.7
  */
-public class PersistChangesRequest implements Request<ServiceProvider, ApiError> {
+class PersistChangesRequest implements Request<ServiceProvider, ApiError> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(PersistChangesRequest.class);
 	
@@ -84,17 +82,23 @@ public class PersistChangesRequest implements Request<ServiceProvider, ApiError>
 	private final String classificationId;
 	private final String userId;
 	private final NamespaceAndModuleAssigner namespaceAndModuleAssigner;
+	private final InitialReasonerTaxonomyBuilder taxonomyBuilder;
 
 	private ReasonerTaxonomy taxonomy;
 	private DatastoreLockContext lockContext;
 	private IOperationLockTarget lockTarget;
 	private LongSet statedDescendantsOfSmp;
 
-	public PersistChangesRequest(String classificationId, ReasonerTaxonomy taxonomy, String userId, NamespaceAndModuleAssigner namespaceAndModuleAssigner) {
+	PersistChangesRequest(String classificationId, ReasonerTaxonomy taxonomy, InitialReasonerTaxonomyBuilder taxonomyBuilder, String userId, NamespaceAndModuleAssigner namespaceAndModuleAssigner) {
 		this.classificationId = classificationId;
 		this.taxonomy = taxonomy;
+		this.taxonomyBuilder = taxonomyBuilder;
 		this.userId = userId;
 		this.namespaceAndModuleAssigner = namespaceAndModuleAssigner;
+	}
+	
+	private boolean isConcreteDomainSupported() {
+		return ApplicationContext.getInstance().getService(SnowOwlConfiguration.class).getModuleConfig(SnomedCoreConfiguration.class).isConcreteDomainSupported();
 	}
 
 	@Override
@@ -186,8 +190,10 @@ public class PersistChangesRequest implements Request<ServiceProvider, ApiError>
 		namespaceAndModuleAssigner.allocateRelationshipIdsAndModules(relationshipRecorder.getAddedSubjects().keys(), editingContext);
 		applyRelationshipChanges(editingContext, relationshipRecorder);
 		
-		namespaceAndModuleAssigner.allocateConcreteDomainModules(concreteDomainRecorder.getAddedSubjects().keySet(), editingContext);
-		applyConcreteDomainChanges(editingContext, concreteDomainRecorder);
+		if (isConcreteDomainSupported()) {
+			namespaceAndModuleAssigner.allocateConcreteDomainModules(concreteDomainRecorder.getAddedSubjects().keySet(), editingContext);
+			applyConcreteDomainChanges(editingContext, concreteDomainRecorder);
+		}
 	}
 
 	private void recordChanges(final SubMonitor subMonitor,
@@ -195,17 +201,11 @@ public class PersistChangesRequest implements Request<ServiceProvider, ApiError>
 			final OntologyChangeRecorder<ConcreteDomainFragment> concreteDomainRecorder) {
 		
 		IBranchPath branchPath = taxonomy.getBranchPath();
-		InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = getIndex().read(branchPath.getPath(), new RevisionIndexRead<InitialReasonerTaxonomyBuilder>() {
-			@Override
-			public InitialReasonerTaxonomyBuilder execute(RevisionSearcher searcher) throws IOException {
-				return new InitialReasonerTaxonomyBuilder(searcher, Type.REASONER);
-			}
-		});
-	
-		final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
+
+		final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, taxonomyBuilder);
 		relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipRecorder);
 	
-		final ConceptConcreteDomainNormalFormGenerator conceptConcreteDomainGenerator = new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder);
+		final ConceptConcreteDomainNormalFormGenerator conceptConcreteDomainGenerator = new ConceptConcreteDomainNormalFormGenerator(taxonomy, taxonomyBuilder);
 		conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), concreteDomainRecorder);
 	}
 
