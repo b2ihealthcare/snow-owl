@@ -35,50 +35,60 @@ import com.google.common.collect.Multiset;
 public interface NamespaceAndModuleAssigner {
 
 	/**
-	 * Reserves SCTIDs and loads module concepts for the new relationships of each
-	 * source concept passed in as a {@link Multiset} of concept IDs.
+	 * Reserves SCTIDs and loads module concepts for the new relationships of each source concept passed in as a {@link Multiset} of concept IDs.
 	 * 
-	 * The allocated values and modules can be later be retrieved by
-	 * {@link #getRelationshipId(String)} and
-	 * {@link #getRelationshipModule(String)}, respectively.
+	 * The allocated values and modules can be later be retrieved by {@link #getRelationshipId(String)} and {@link #getRelationshipModule(String)},
+	 * respectively.
 	 * 
-	 * @param conceptIds the number of relationships to allocate values for, keyed by source concept ID
-	 * @param context the active SNOMED CT editing context
+	 * @param conceptIds
+	 *            the number of relationships to allocate values for, keyed by source concept ID
+	 * @param context
+	 *            the active SNOMED CT editing context
 	 */
-	public void allocateRelationshipIdsAndModules(final Multiset<String> conceptIds, final SnomedEditingContext context);
+	void allocateRelationshipIdsAndModules(final Multiset<String> conceptIds, final SnomedEditingContext context);
 
 	/**
 	 * Returns an SCTID to be registered to a relationship based on its source concept ID.
 	 * 
-	 * @param sourceConceptId the concept ID of the relationship to allocate the SCTID to
+	 * @param sourceConceptId
+	 *            the concept ID of the relationship to allocate the SCTID to
 	 * @return SCTID for the relationship
 	 */
-	public String getRelationshipId(final String sourceConceptId);
+	String getRelationshipId(final String sourceConceptId);
 
 	/**
 	 * Returns a module concept to be assigned to a relationship based on its source concept ID.
 	 * 
-	 * @param sourceConceptId the concept ID of the relationship to determine the module for
+	 * @param sourceConceptId
+	 *            the concept ID of the relationship to determine the module for
 	 * @return the module concept for the relationship
 	 */
-	public Concept getRelationshipModule(final String sourceConceptId);
+	Concept getRelationshipModule(final String sourceConceptId);
 
 	/**
 	 * Loads modules for the new concrete domains of each concept passed in as a set of concept IDs.
 	 * 
 	 * The allocated modules can be later retrieved via the {@link #getConcreteDomainModule(String)} method.
 	 * 
-	 * @param conceptIds the set of source concept IDs to look up modules for
-	 * @param context the active SNOMED CT editing context
+	 * @param conceptIds
+	 *            the set of source concept IDs to look up modules for
+	 * @param context
+	 *            the active SNOMED CT editing context
 	 */
-	public void allocateConcreteDomainModules(final Set<String> conceptIds, final SnomedEditingContext context);
+	void allocateConcreteDomainModules(final Set<String> conceptIds, final SnomedEditingContext context);
 
 	/**
-	 * Returns a module concept to be assigned to a concrete domain based on its
-	 * source concept ID.
+	 * Returns a module concept to be assigned to a concrete domain based on its source concept ID.
 	 * 
-	 * @param sourceConceptId the ID of the referenced concept to determine the module for
+	 * @param sourceConceptId
+	 *            the ID of the referenced concept to determine the module for
 	 * @return module concept id for the concrete domain
 	 */
-	public Concept getConcreteDomainModule(final String sourceConceptId);
+	Concept getConcreteDomainModule(final String sourceConceptId);
+
+	/**
+	 * After successfully allocating and using the IDs the clients are responsible of calling this method to ensure that the allocated IDs will be
+	 * registered in the underlying ID service.
+	 */
+	void registerAllocatedIds();
 }

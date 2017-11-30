@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.reasoner.server.diff;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -38,8 +39,9 @@ import com.google.common.collect.Multiset;
  * 
  * @since 5.11.5
  */
-public class SourceConceptNamespaceAndModuleAssigner implements NamespaceAndModuleAssigner {
+public final class SourceConceptNamespaceAndModuleAssigner implements NamespaceAndModuleAssigner {
 
+	private Set<String> reservedIds = newHashSet();
 	private Map<String, Iterator<String>> namespaceToRelationshipIdMap = newHashMap();
 	private Map<String, Concept> conceptIdToRelationshipModuleMap = newHashMap();
 	private Map<String, Concept> conceptIdToConcreteDomainModuleMap = newHashMap();
@@ -71,6 +73,7 @@ public class SourceConceptNamespaceAndModuleAssigner implements NamespaceAndModu
 		ISnomedIdentifierService identifierService = getServiceForClass(ISnomedIdentifierService.class);
 		for (Multiset.Entry<String> namespaceWithCount : reservedIdsByNamespace.entrySet()) {
 			Collection<String> reservedIds = identifierService.reserve(namespaceWithCount.getElement(), ComponentCategory.RELATIONSHIP, namespaceWithCount.getCount());
+			this.reservedIds.addAll(reservedIds);
 			namespaceToRelationshipIdMap.put(namespaceWithCount.getElement(), reservedIds.iterator());
 		}
 
@@ -86,5 +89,10 @@ public class SourceConceptNamespaceAndModuleAssigner implements NamespaceAndModu
 			Concept concept = editingContext.lookup(conceptId, Concept.class);
 			conceptIdToConcreteDomainModuleMap.put(conceptId, concept.getModule());
 		}
+	}
+	
+	@Override
+	public void registerAllocatedIds() {
+		getServiceForClass(ISnomedIdentifierService.class).register(reservedIds);	
 	}
 }

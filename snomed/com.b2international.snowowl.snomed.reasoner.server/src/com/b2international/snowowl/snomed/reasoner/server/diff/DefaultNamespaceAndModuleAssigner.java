@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.reasoner.server.diff;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -33,8 +32,9 @@ import com.google.common.collect.Multiset;
  * 
  * @since 5.11.5
  */
-public class DefaultNamespaceAndModuleAssigner implements NamespaceAndModuleAssigner {
+public final class DefaultNamespaceAndModuleAssigner implements NamespaceAndModuleAssigner {
 
+	private Set<String> reservedIds;
 	private Iterator<String> relationshipIds;
 	private Concept defaultRelationshipModuleConcept;
 	private Concept defaultConcreteDomainModuleConcept;
@@ -60,8 +60,7 @@ public class DefaultNamespaceAndModuleAssigner implements NamespaceAndModuleAssi
 		
 		ISnomedIdentifierService identifierService = getServiceForClass(ISnomedIdentifierService.class);
 		String defaultNamespace = editingContext.getDefaultNamespace();
-		Collection<String> reservedIds = identifierService.reserve(defaultNamespace, ComponentCategory.RELATIONSHIP, conceptIds.size());
-
+		reservedIds = identifierService.reserve(defaultNamespace, ComponentCategory.RELATIONSHIP, conceptIds.size());
 		relationshipIds = reservedIds.iterator();
 		defaultRelationshipModuleConcept = editingContext.getDefaultModuleConcept();
 	}
@@ -69,5 +68,10 @@ public class DefaultNamespaceAndModuleAssigner implements NamespaceAndModuleAssi
 	@Override
 	public void allocateConcreteDomainModules(Set<String> conceptIds, final SnomedEditingContext editingContext) {
 		defaultConcreteDomainModuleConcept = editingContext.getDefaultModuleConcept();
+	}
+	
+	@Override
+	public void registerAllocatedIds() {
+		getServiceForClass(ISnomedIdentifierService.class).register(reservedIds);
 	}
 }

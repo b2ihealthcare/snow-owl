@@ -72,7 +72,7 @@ import com.google.common.collect.Lists;
 /**
  * @since 5.7
  */
-class PersistChangesRequest implements Request<ServiceProvider, ApiError> {
+final class PersistChangesRequest implements Request<ServiceProvider, ApiError> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(PersistChangesRequest.class);
 	
@@ -169,6 +169,9 @@ class PersistChangesRequest implements Request<ServiceProvider, ApiError> {
 					.parentContextDescription(SAVE_CLASSIFICATION_RESULTS)
 					.commitOne(subMonitor.newChild(2));
 
+			// register reserved IDs
+			namespaceAndModuleAssigner.registerAllocatedIds();
+			
 			return new ApiError.Builder("OK").code(200).build();
 		} catch (CommitException e) {
 			if (editingContext != null) {
@@ -199,9 +202,6 @@ class PersistChangesRequest implements Request<ServiceProvider, ApiError> {
 	private void recordChanges(final SubMonitor subMonitor,
 			final OntologyChangeRecorder<StatementFragment> relationshipRecorder,
 			final OntologyChangeRecorder<ConcreteDomainFragment> concreteDomainRecorder) {
-		
-		IBranchPath branchPath = taxonomy.getBranchPath();
-
 		final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, taxonomyBuilder);
 		relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipRecorder);
 	
