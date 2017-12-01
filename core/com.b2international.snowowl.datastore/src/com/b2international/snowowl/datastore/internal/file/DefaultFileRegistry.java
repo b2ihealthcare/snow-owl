@@ -21,12 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.UUID;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.google.common.io.ByteSink;
@@ -40,9 +38,6 @@ import com.google.common.io.Files;
  */
 public final class DefaultFileRegistry implements InternalFileRegistry {
 
-	private static final int ZIP_HEADER_LEN = 4; /*4 bytes*/
-	private static final byte[] ZIP_HEADER = new byte[]{80, 75, 3, 4};
-	
 	private final Path folder;
 
 	public DefaultFileRegistry(Path folder) {
@@ -58,9 +53,6 @@ public final class DefaultFileRegistry implements InternalFileRegistry {
 		}
 		
 		final BufferedInputStream bin = new BufferedInputStream(in);
-		if (!isZip(bin)) {
-			throw new BadRequestException("Attachment of '%s' is not a zip file", id);
-		}
 		
 		try {
 			new ByteSource() {
@@ -108,16 +100,4 @@ public final class DefaultFileRegistry implements InternalFileRegistry {
 		return this.folder.resolve(id.toString()).toFile();
 	}
 	
-	private static boolean isZip(InputStream in) {
-		try {
-			in.mark(ZIP_HEADER_LEN);
-			byte[] header = new byte[ZIP_HEADER_LEN];
-			in.read(header, 0, ZIP_HEADER_LEN);
-			in.reset();
-			return Arrays.equals(ZIP_HEADER, header);
-		} catch (IOException e) {
-			throw new SnowowlRuntimeException("Failed to check zip header", e);
-		}
-	}
-
 }
