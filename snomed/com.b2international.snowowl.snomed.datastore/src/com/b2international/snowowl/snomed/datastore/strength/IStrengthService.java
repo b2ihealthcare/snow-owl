@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.strength;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
@@ -31,5 +32,5 @@ public interface IStrengthService {
 	 * @param entries
 	 * @return
 	 */
-	Collection<StrengthEntry> getStrengths(Collection<SnomedRefSetMemberIndexEntry> entries);
+	Collection<StrengthEntry> getStrengths(Collection<SnomedReferenceSetMember> entries);
 }
