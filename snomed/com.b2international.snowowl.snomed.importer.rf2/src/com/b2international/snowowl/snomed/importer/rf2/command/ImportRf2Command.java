@@ -239,26 +239,11 @@ final class ImportRf2Command extends AbstractRf2ImporterCommand {
 				.setRf2ArchiveId(rf2ArchiveId)
 				.setReleaseType(releaseType)
 				.setCreateVersions(createVersions)
+				.setUserId(authenticator.getUsername())
 				.build(codeSystem.getRepositoryUuid(), branchPath)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();
 
-//			final SnomedImportResult result = new ImportUtil().doImport(codeSystem, authenticator.getUsername(), contentSubType, branchPath,
-//					archiveFile, createVersions, new ConsoleProgressMonitor());
-//
-//			Set<SnomedValidationDefect> validationDefects = result.getValidationDefects();
-//			
-//			boolean criticalFound = FluentIterable.from(validationDefects).anyMatch(new Predicate<SnomedValidationDefect>() {
-//				@Override public boolean apply(SnomedValidationDefect defect) {
-//					return defect.getDefectType().isCritical();
-//				}
-//			});
-			
-//			if (criticalFound) {
-//				interpreter.println("SNOMED CT import has been canceled due to critical errors found in the RF2 release.");
-//			} else {
-//			}
-			
 			interpreter.println("SNOMED CT import has successfully finished.");
 
 		} catch (final Exception e) {

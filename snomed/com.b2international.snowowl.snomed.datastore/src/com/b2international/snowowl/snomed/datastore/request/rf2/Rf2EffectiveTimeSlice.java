@@ -38,7 +38,6 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.graph.LongTarjan;
-import com.b2international.index.revision.Purge;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -46,7 +45,6 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContextProvider;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.datastore.request.repository.PurgeRequest;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
@@ -159,10 +157,10 @@ final class Rf2EffectiveTimeSlice {
 		return new LongTarjan(60000, dependenciesByComponent::get).run(dependenciesByComponent.keySet());
 	}
 
-	public void doImport(BranchContext context, boolean createVersions) throws Exception {
+	public void doImport(String userId, BranchContext context, boolean createVersions) throws Exception {
 		Stopwatch w = Stopwatch.createStarted();
 		System.err.println("Importing components from " + effectiveTime);
-		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.service(TransactionContextProvider.class).get(context), storageKeysByComponent, storageKeysByRefSet, loadOnDemand)) {
+		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.service(TransactionContextProvider.class).get(context, userId), storageKeysByComponent, storageKeysByRefSet, loadOnDemand)) {
 			final Iterator<LongSet> importPlan = getImportPlan().iterator();
 			while (importPlan.hasNext()) {
 				LongSet componentsToImportInBatch = importPlan.next();
@@ -202,7 +200,7 @@ final class Rf2EffectiveTimeSlice {
 				
 				// TODO consider moving preCommit into commit method
 				tx.preCommit();
-				tx.commit("info@b2international.com", "Imported components from " + effectiveTime, DatastoreLockContextDescriptions.ROOT);
+				tx.commit(userId, "Imported components from " + effectiveTime, DatastoreLockContextDescriptions.ROOT);
 			}
 			
 			if (createVersions) {

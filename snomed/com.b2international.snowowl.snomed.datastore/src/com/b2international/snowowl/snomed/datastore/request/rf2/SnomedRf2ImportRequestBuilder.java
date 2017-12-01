@@ -30,11 +30,17 @@ public final class SnomedRf2ImportRequestBuilder
 		extends BaseRequestBuilder<SnomedRf2ImportRequestBuilder, BranchContext, Boolean> 
 		implements RevisionIndexRequestBuilder<Boolean> {
 
+	private String userId;
 	private UUID rf2ArchiveId;
 	private Rf2ReleaseType releaseType;
 	private boolean createVersions;
 	
 	SnomedRf2ImportRequestBuilder() {
+	}
+	
+	public SnomedRf2ImportRequestBuilder setUserId(String userId) {
+		this.userId = userId;
+		return getSelf();
 	}
 	
 	public SnomedRf2ImportRequestBuilder setRf2ArchiveId(UUID rf2ArchiveId) {
@@ -57,6 +63,7 @@ public final class SnomedRf2ImportRequestBuilder
 		final SnomedRf2ImportRequest req = new SnomedRf2ImportRequest(rf2ArchiveId);
 		req.setReleaseType(releaseType);
 		req.setCreateVersions(createVersions);
+		req.setUserId(userId);
 		return req;
 	}
 

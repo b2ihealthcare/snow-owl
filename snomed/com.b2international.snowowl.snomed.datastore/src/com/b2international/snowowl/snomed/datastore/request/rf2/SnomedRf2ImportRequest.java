@@ -28,6 +28,7 @@ import java.util.zip.ZipFile;
 
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.NotEmpty;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
@@ -71,6 +72,9 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 	@NotNull
 	private Rf2ReleaseType type;
 
+	@NotEmpty
+	private String userId;
+	
 	private boolean createVersions = true;
 
 	SnomedRf2ImportRequest(UUID rf2ArchiveId) {
@@ -85,6 +89,10 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		this.createVersions = createVersions;
 	}
 	
+	void setUserId(String userId) {
+		this.userId = userId;
+	}
+	
 	@Override
 	public Boolean execute(BranchContext context) {
 		final FeatureToggles features = context.service(FeatureToggles.class);
@@ -95,7 +103,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 
 		try {
 			features.enable(feature);
-			doImport(context, rf2Archive);
+			doImport(userId, context, rf2Archive);
 			return Boolean.TRUE;
 		} catch (Exception e) {
 			throw new SnowowlRuntimeException(e);
@@ -104,7 +112,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		}
 	}
 
-	void doImport(final BranchContext context, final File rf2Archive) throws Exception {
+	void doImport(final String userId, final BranchContext context, final File rf2Archive) throws Exception {
 		try (final DB db = createDb()) {
 			final Map<String, Long> storageKeysByComponent = db.hashMap("storageKeysByComponent", Serializer.STRING, Serializer.LONG).create();
 			final Map<String, Long> storageKeysByRefSet = db.hashMap("storageKeysByRefSet", Serializer.STRING, Serializer.LONG).create();
@@ -146,7 +154,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 			w.reset().start();
 
 			for (Rf2EffectiveTimeSlice slice : effectiveTimeSlices.consumeInOrder()) {
-				slice.doImport(context, createVersions);
+				slice.doImport(userId, context, createVersions);
 			}
 		}
 	}

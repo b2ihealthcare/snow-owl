@@ -145,7 +145,7 @@ public class SnomedSubsetImporter {
 	 *             if there was an error during the import
 	 */
 	public SnomedUnimportedRefSets doImport() throws SnowowlServiceException {
-		try (TransactionContext context = new ImportOnlySnomedTransactionContext(new SnomedEditingContext(this.branchPath))) {
+		try (TransactionContext context = new ImportOnlySnomedTransactionContext(userId, new SnomedEditingContext(this.branchPath))) {
 			
 			final SubsetInformation information = createSubsetInformation();
 			

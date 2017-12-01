@@ -84,6 +84,11 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 		this.storageKeysByRefSet = storageKeysByRefSet;
 		this.loadOnDemand = loadOnDemand;
 	}
+	
+	@Override
+	public String userId() {
+		return getDelegate().userId();
+	}
 
 	@Override
 	protected TransactionContext getDelegate() {
