@@ -28,6 +28,12 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 public interface TransactionContext extends BranchContext, AutoCloseable {
 
 	/**
+	 * The author of the changes. 
+	 * @return
+	 */
+	String userId();
+	
+	/**
 	 * Adds the given {@link EObject} to this transaction context.
 	 * 
 	 * @param o

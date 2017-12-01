@@ -41,11 +41,18 @@ import com.google.inject.Provider;
  */
 public class ImportOnlySnomedTransactionContext implements TransactionContext {
 
+	private final String userId;
 	private final SnomedEditingContext editingContext;
 	private Branch branch;
 
-	public ImportOnlySnomedTransactionContext(final SnomedEditingContext editingContext) {
+	public ImportOnlySnomedTransactionContext(final String userId, final SnomedEditingContext editingContext) {
+		this.userId = userId;
 		this.editingContext = editingContext;
+	}
+
+	@Override
+	public String userId() {
+		return userId;
 	}
 	
 	@Override
@@ -60,7 +67,7 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 		}
 		return branch;
 	}
-
+	
 	@Override
 	public String branchPath() {
 		return this.editingContext.getBranch();

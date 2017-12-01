@@ -40,12 +40,19 @@ import com.b2international.snowowl.datastore.exception.RepositoryLockException;
  */
 public final class CDOTransactionContext extends DelegatingBranchContext implements TransactionContext {
 
-	private CDOEditingContext editingContext;
+	private final String userId;
+	private final CDOEditingContext editingContext;
 	private boolean isNotificationEnabled = true;
 
-	CDOTransactionContext(BranchContext context, CDOEditingContext editingContext) {
+	CDOTransactionContext(BranchContext context, CDOEditingContext editingContext, String userId) {
 		super(context);
 		this.editingContext = editingContext;
+		this.userId = userId;
+	}
+	
+	@Override
+	public String userId() {
+		return userId;
 	}
 	
 	@Override

@@ -60,7 +60,7 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	public CommitResult execute(BranchContext context) {
 		final Metrics metrics = context.service(Metrics.class);
 		metrics.setExternalValue("preRequest", preRequestPreparationTime);
-		try (final TransactionContext transaction = context.service(TransactionContextProvider.class).get(context)) {
+		try (final TransactionContext transaction = context.service(TransactionContextProvider.class).get(context, userId)) {
 			final Object body = executeNext(transaction);
 			return commit(transaction, body);
 		} catch (ApiException e) {
