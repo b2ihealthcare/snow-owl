@@ -59,15 +59,15 @@ public final class EsNode extends Node {
 						Runtime.getRuntime().addShutdownHook(new Thread() {
 							@Override
 							public void run() {
-								AwaitPendingTasks.await(INSTANCE.client(), LOG);
-								INSTANCE.client().close();
 								try {
+									AwaitPendingTasks.await(INSTANCE.client(), LOG);
+									INSTANCE.client().close();
 									INSTANCE.close();
-								} catch (IOException e) {
+									if (!persistent) {
+										FileUtils.deleteDirectory(directory);
+									}
+								} catch (Exception e) {
 									e.printStackTrace();
-								}
-								if (!persistent) {
-									FileUtils.deleteDirectory(directory);
 								}
 							}
 						});
