@@ -57,7 +57,7 @@ Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch
   * Enabled classification of concepts with the UK Clinical extension module
   * Improved performance of SNOMED CT Classification by keeping the initially computed taxonomy in memory until normal form generation and change (https://github.com/b2ihealthcare/snow-owl/pull/181)
   * Generate inferred relationship IDs in bulk [5.x] (#176)
-- File Attachment API now accepts any kind of file now just zip files (3b814b2)
+- File Attachment API now accepts any kind of file not just zip files (3b814b2)
 - Low-level Index API changes:
   * Improved low-level, fluent index Query API (cc7b5c1) 
   * Default number of index shards has been increased to 5 (Elasticsearch default value).
