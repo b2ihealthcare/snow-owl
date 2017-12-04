@@ -20,6 +20,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.util.stream.Collectors.toMap;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -109,8 +110,8 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> newTargetRevisionIdToFeatureIdMap;
 	private Set<CDOID> detachedTargetIds;
 
-	private Map<String, Pair<CDOID, CDOID>> newDonatedComponentsMap = newHashMap();
-	private Set<CDOID> changedComponentCandidates = newHashSet();
+	private Map<CDOID, CDOID> newDonatedComponents = newHashMap();
+	private Set<CDOID> changedDonatedComponents = newHashSet();
 	
 	private Set<String> donatedComponentIds = newHashSet();
 
@@ -238,7 +239,7 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 					if (targetDate.after(sourceDate)) {
 						
 						if (isComponent(sourceDelta) && isComponent(targetDelta)) {
-							changedComponentCandidates.add(sourceDelta.getID());
+							changedDonatedComponents.add(sourceDelta.getID());
 						}
 						
 						return targetFeatureDelta;
@@ -268,14 +269,16 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 	
 	@Override
 	public Collection<IMergeConflictRule> getConflictRules() {
-		if (!newDonatedComponentsMap.isEmpty() || !changedComponentCandidates.isEmpty()) {
-			super.getConflictRules().add(new SnomedDonatedComponentResolverRule(newDonatedComponentsMap.values(), changedComponentCandidates));
+		if (!newDonatedComponents.isEmpty() || !changedDonatedComponents.isEmpty()) {
+			// XXX do not validate other domain specific merge conflicts!
+			return Collections.singletonList(new SnomedDonatedComponentResolverRule(newDonatedComponents, changedDonatedComponents));
 		}
 		return super.getConflictRules();
 	}
 	
-	private void collectDonatedComponents(Map<CDOID, InternalCDORevision> newSourceComponentRevisions, Map<CDOID, InternalCDORevision> newTargetComponentRevisions, CDOBranch sourceBranch, CDOBranch targetBranch) {
-		
+	private void collectDonatedComponents(Map<CDOID, InternalCDORevision> newSourceComponentRevisions,
+			Map<CDOID, InternalCDORevision> newTargetComponentRevisions, CDOBranch sourceBranch, CDOBranch targetBranch) {
+	
 		Set<String> donatedDescriptionIdCandidates = newHashSet();
 		Set<String> donatedRelationshipIdCandidates = newHashSet();
 		
@@ -301,7 +304,8 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 						
 					} else { // must be concepts
 						
-						newDonatedComponentsMap.put(id, Pair.of(sourceRevision.getID(), targetRevision.getID()));
+						donatedComponentIds.add(id);
+						newDonatedComponents.put(sourceRevision.getID(), targetRevision.getID());
 						
 					}
 				}
@@ -336,13 +340,11 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 				
 				if (conceptIdOnSource.equals(conceptIdOnTarget)) {
 					
-					if (!newDonatedComponentsMap.keySet().contains(conceptIdOnSource)) {
-						newDonatedComponentsMap.put(descriptionId,
-								Pair.of(newComponentIdsInSource.get(descriptionId).getID(), newComponentIdsInTarget.get(descriptionId).getID()));
-					} else {
-						donatedComponentIds.add(descriptionId); // to avoid duplicate ID conflict
+					if (!donatedComponentIds.contains(conceptIdOnSource)) {
+						newDonatedComponents.put(newComponentIdsInSource.get(descriptionId).getID(), newComponentIdsInTarget.get(descriptionId).getID());
 					}
 					
+					donatedComponentIds.add(descriptionId); // to avoid duplicate ID conflict
 				}
 			}
 			
@@ -376,19 +378,16 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 				
 				if (conceptIdOnSource.equals(conceptIdOnTarget)) {
 					
-					if (!newDonatedComponentsMap.keySet().contains(conceptIdOnSource)) {
-						newDonatedComponentsMap.put(relationshipId,
-								Pair.of(newComponentIdsInSource.get(relationshipId).getID(), newComponentIdsInTarget.get(relationshipId).getID()));
-					} else {
-						donatedComponentIds.add(relationshipId); // to avoid duplicate ID conflict
+					if (!donatedComponentIds.contains(conceptIdOnSource)) {
+						newDonatedComponents.put(newComponentIdsInSource.get(relationshipId).getID(), newComponentIdsInTarget.get(relationshipId).getID());
 					}
 					
+					donatedComponentIds.add(relationshipId); // to avoid duplicate ID conflict
 				}
 			}
 			
 		}
 		
-		donatedComponentIds.addAll(newDonatedComponentsMap.keySet());
 	}
 	
 	private Multimap<CDOID, Pair<EStructuralFeature, CDOID>> extractNewRevisionIdToFeatureIdMap(Collection<InternalCDORevision> newComponentRevisions) {
