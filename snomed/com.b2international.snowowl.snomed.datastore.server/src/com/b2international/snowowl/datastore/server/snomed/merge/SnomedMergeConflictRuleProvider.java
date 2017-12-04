@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.merge;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.util.Collection;
-import java.util.List;
 
 import com.b2international.snowowl.datastore.cdo.IMergeConflictRule;
 import com.b2international.snowowl.datastore.cdo.IMergeConflictRuleProvider;
@@ -26,18 +23,21 @@ import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedInv
 import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedLanguageRefsetMembersMergeConflictRule;
 import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedRefsetMemberReferencingDetachedComponentRule;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.7
  */
 public class SnomedMergeConflictRuleProvider implements IMergeConflictRuleProvider {
 
-	private List<IMergeConflictRule> rules = newArrayList();
+	private ImmutableList<IMergeConflictRule> rules;
 
 	public SnomedMergeConflictRuleProvider() {
-		rules.add(new SnomedRefsetMemberReferencingDetachedComponentRule());
-		rules.add(new SnomedLanguageRefsetMembersMergeConflictRule());
-		rules.add(new SnomedInvalidRelationshipMergeConflictRule());
+		rules = ImmutableList.<IMergeConflictRule>builder()
+				.add(new SnomedRefsetMemberReferencingDetachedComponentRule())
+				.add(new SnomedLanguageRefsetMembersMergeConflictRule())
+				.add(new SnomedInvalidRelationshipMergeConflictRule())
+				.build();
 	}
 	
 	@Override
