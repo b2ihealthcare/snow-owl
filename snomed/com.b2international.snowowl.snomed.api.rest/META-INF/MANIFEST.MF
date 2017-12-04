@@ -73,7 +73,7 @@ Import-Package: com.b2international.commons,
  org.slf4j;version="1.7.2"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Web-ContextPath: /snowowl/snomed-ct/v2
+Web-ContextPath: /snowowl/snomed-ct/v3
 Require-Bundle: com.google.guava;bundle-version="[18.0.0,19.0.0)",
  org.eclipse.equinox.security;bundle-version="1.1.100",
  com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.6.6",

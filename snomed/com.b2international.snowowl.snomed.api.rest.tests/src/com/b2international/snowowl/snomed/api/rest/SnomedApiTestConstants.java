@@ -38,7 +38,7 @@ public abstract class SnomedApiTestConstants {
 	/**
 	 * The context-relative base URL for SNOMED CT-related controllers.
 	 */
-	public static final String SCT_API = "/snomed-ct/v2";
+	public static final String SCT_API = "/snomed-ct/v3";
 
 	/**
 	 * An acceptability map which specifies that the corresponding description is acceptable in the UK language reference set.
