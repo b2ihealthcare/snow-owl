@@ -1,6 +1,105 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.0.0
+
+### Breaking changes
+
+This section discusses the changes that you need to be aware of when migrating your application to Snow Owl 6.0.0.
+
+#### Datasets created before 6.0.0
+Snow Owl v6.0.0 does not support Lucene based indexes anymore. We've decided to remove that module completely in favor of the now fully supported and stable Elasticsearch based module.
+All datasets (including the ones created with the experimental Elasticsearch module) need a full `reindex`. 
+See [Admin Console Reference Guide](/documentation/src/main/asciidoc/administrative_console_reference.adoc#diagnostics-and-maintenance) for details.
+
+#### API changes
+Removed `offset` properties from all collection resource representation classes. `Offset+Limit` based paging is resource-intensive, therefore it has been completely removed. 
+Your queries should either search for the topN hits or if you need to scroll a large result set, then user the `scrollId` returned in the collection resource (alternatively you can scroll a live result set using the `searchAfter` parameter).
+Read more about scrolling here: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
+
+#### @Analyzed annotations
+Replaced `@Analyzed` with `@Text` and `@Keyword` to better reflect Elasticsearch field types `text` and `keyword`.
+
+### Added
+- Generic Terminology Validation API (750806e, ed64eae, 6102b86)
+- SNOMED CT Request API based Validation Rule Support (f67aee5)
+- A new, improved, but **experimental** SNOMED CT RF2 importer implementation 
+- SNOMED CT Java API:
+  * Support filtering SNOMED CT Descriptions by their `semantic tag` (659234e)
+  * Support filtering SNOMED CT Components by multiple `namespace` IDs (7a7a5c1)
+  * Support filtering SNOMED CT Components by `module` ECL query and by module ID set (416d1a9)
+  * Support filtering SNOMED CT Descriptions by `case significance` (ECL or ID set) (416d1a9)
+  * Support filtering by `term regex` in description search (e47ae40)
+  * Support multiple SNOMED CT Reference Set IDs in `isActiveMemberOf` filter
+  * Support language refset, acceptableIn and preferredIn filtering in description search (59e7b57)
+- SNOMED CT ECL
+  * ECL implementation now compatible with latest v1.3 spec (https://confluence.ihtsdotools.org/display/DOCECL/Previous+Versions)
+  * Support nested expressions in `memberOf` rules (v1.2 spec change)
+  * Support nested expressions in attribute part of dotted expressions (v1.3 spec change)
+  * Support nested expressions in attribute part of refinement expressions (v1.3 spec change) 
+- Low-level index API:
+  * Support regular expression queries (0cb1c1c786c0fd7bcbc4c7b1e7d54c64a5c0baad)
+  * Support terms aggregations with tophits (50fd7338831dea7c4f84efc7aaefb4ee38e8ecd7)
+  * Support `Map` and `String[]` return types in index search API (33c3bd9)
+  * Scroll support to Index API (de439e9)
+  * SearchAfter based paging support to Index API (ee36a25)
+
+### Changed
+- Java API changes:
+  * Type of Remote Job properties `parameters` and `result` changed to `String` (contains a JSON serialized object)
+  * Also added `getParameterAs` and `getReturnAs` methods to convert them to Java Objects easily
+  * `Void` return types have been changed to Boolean (fixes unanswered client side requests)
+  * `Empty`-ish values are accepted in `filterBy*` methods (empty `Collection`s and empty `String` values)
+- SNOMED CT RF2 import console command now accepts a single Code System short name instead of a descriptor file (bd7aea3d56822b405feb4adbf039cd4ce4599729)
+- SNOMED CT Identifier Generation:
+  * Improve Sequential ID generation by skipping exponentially growing chunks of reserved/assigned IDs in order to find the next available ID faster (#180) 
+- SNOMED CT Classification changes:
+  * Enabled classification of concepts with the UK Clinical extension module
+  * Improved performance of SNOMED CT Classification by keeping the initially computed taxonomy in memory until normal form generation and change (https://github.com/b2ihealthcare/snow-owl/pull/181)
+  * Generate inferred relationship IDs in bulk [5.x] (#176)
+- File Attachment API now accepts any kind of file now just zip files (3b814b2)
+- Low-level Index API changes:
+  * Improved low-level, fluent index Query API (cc7b5c1) 
+  * Default number of index shards has been increased to 5 (Elasticsearch default value).
+  * ES module now executes bulk updates in parallel (5c5159b601a47e0d0bfad10eee70745eaa9641f1)  
+  * Scripting language from Groovy to Painless in index layer scripts (see https://www.elastic.co/guide/en/elasticsearch/reference/5.0/breaking_50_scripting.html)
+- Dependencies:
+  * Bump Lucene to 7.0.1
+  * Bump Elasticsearch to 6.0.0
+  * Bump Jackson to 2.8.6
+  * Bump Netty to 4.1.13
+  * Bump SnakeYAML to 1.17.0
+  * Add Jackson CBOR dataformat 2.8.6
+  * Remove Compression LZF
+
+### Removed
+- ESCG support (it was deprecated since the introduction of ECL queries, v5.4)
+- Bunch of deprecated, unused API and functionality, related commits:
+  * 1c5fe51
+  * 3d6d189
+  * 6ac0954
+  * 895a792
+  * 6d4cf50
+  * 5c10b7c
+  * f40d41e
+  * 16748d7
+  * 5bea2d3
+  * dcefb54
+- Modules (completely removed or merged into a corresponding core module)
+  * `com.b2international.snowowl.index.lucene`
+  * `com.b2international.snowowl.index.diff`
+  * `com.b2international.snowowl.importer`
+  * `com.b2international.snowowl.snomed.mrcm.core`
+  * `com.b2international.snowowl.snomed.mrcm.core.server`
+  * `com.b2international.snowowl.snomed.mrcm.core.server.tests`
+  * `com.b2international.snowowl.authorization.server`
+  * `com.b2international.snowowl.terminologyregistry.core.server`
+
+### Bugs
+- Retry update-by-query requests in case of version conflicts (4a4ecf1)
+- Fix partial field loading issue in SNOMED CT Reference Set Member API (2302aa0) 
+- Fix bootstrap initialization order issue by moving ClientPreferences init to Environment constructor (1a882e0)
+
 ## 5.11.5
 
 ### Changed
