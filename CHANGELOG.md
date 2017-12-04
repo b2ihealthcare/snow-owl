@@ -14,7 +14,7 @@ See [Admin Console Reference Guide](/documentation/src/main/asciidoc/administrat
 
 #### API changes
 Removed `offset` properties from all collection resource representation classes. `Offset+Limit` based paging is resource-intensive, therefore it has been completely removed. 
-Your queries should either search for the topN hits or if you need to scroll a large result set, then user the `scrollId` returned in the collection resource (alternatively you can scroll a live result set using the `searchAfter` parameter).
+Your queries should either search for the topN hits or if you need to scroll a large result set, then use the `scrollId` returned in the collection resource (alternatively you can scroll a live result set using the `searchAfter` parameter).
 Read more about scrolling here: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
 
 #### @Analyzed annotations
