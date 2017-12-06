@@ -94,7 +94,8 @@ public class ExtendScriptASTTransformation extends AbstractASTTransformation {
         return sourceUnit;
     }
     
-    protected void addError(String msg, ASTNode expr) {
+    @Override
+    public void addError(String msg, ASTNode expr) {
         // for some reason the source unit is null sometimes, e.g. in testNotAllowedInScriptInnerClassMethods
         sourceUnit.getErrorCollector().addErrorAndContinue(new SyntaxErrorMessage(
                 new SyntaxException(msg + '\n', expr.getLineNumber(), expr.getColumnNumber(),

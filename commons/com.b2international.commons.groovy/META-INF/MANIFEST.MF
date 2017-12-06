@@ -8,7 +8,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.b2international.commons.groovy.classloader,com.b2i
  nternational.commons.groovy.transform
 Bundle-ClassPath: .
-Require-Bundle: org.codehaus.groovy;bundle-version="[2.0.7,2.1.0)",
+Require-Bundle: org.codehaus.groovy;bundle-version="[2.4.13,2.5.0)",
  com.google.guava;bundle-version="[18.0.0,19.0.0)",
  org.eclipse.jdt.groovy.core,
  org.eclipse.core.resources,
