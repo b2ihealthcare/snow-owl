@@ -21,22 +21,19 @@
    <feature url="features/org.eclipse.emf.sdk_2.12.0.v20160526-0356.jar" id="org.eclipse.emf.sdk" version="2.12.0.v20160526-0356">
       <category name="Modeling"/>
    </feature>
-   <feature url="features/org.emfjson.feature_0.10.0.jar" id="org.emfjson.feature" version="0.10.0">
-      <category name="Modeling"/>
-   </feature>
    <feature url="features/org.eclipse.net4j_4.1.0.v20120612-0600.jar" id="org.eclipse.net4j" version="4.1.0.v20120612-0600">
       <category name="CDO"/>
    </feature>
    <feature url="features/org.eclipse.net4j.db_4.1.0.v20120609-0625.jar" id="org.eclipse.net4j.db" version="4.1.0.v20120609-0625">
       <category name="CDO"/>
    </feature>
-   <feature url="features/org.codehaus.groovy20.feature_2.9.1.xx-201411061342-e43j8-RELEASE.jar" id="org.codehaus.groovy20.feature" version="2.9.1.xx-201411061342-e43j8-RELEASE">
+   <feature url="features/org.codehaus.groovy24.feature_2.9.2.xx-201712050253-e43j8.jar" id="org.codehaus.groovy24.feature" version="2.9.2.xx-201712050253-e43j8">
       <category name="IDE Tools"/>
    </feature>
-   <feature url="features/org.codehaus.groovy.jdt.patch_2.9.1.xx-201411061342-e43j8-RELEASE.jar" id="org.codehaus.groovy.jdt.patch" version="2.9.1.xx-201411061342-e43j8-RELEASE" patch="true">
+   <feature url="features/org.codehaus.groovy.jdt.patch_2.9.2.xx-201712050253-e43j8.jar" id="org.codehaus.groovy.jdt.patch" version="2.9.2.xx-201712050253-e43j8" patch="true">
       <category name="IDE Tools"/>
    </feature>
-   <feature url="features/org.codehaus.groovy.headless.feature_2.9.1.xx-201411061342-e43j8-RELEASE.jar" id="org.codehaus.groovy.headless.feature" version="2.9.1.xx-201411061342-e43j8-RELEASE">
+   <feature url="features/org.codehaus.groovy.headless.feature_2.9.2.xx-201712050253-e43j8.jar" id="org.codehaus.groovy.headless.feature" version="2.9.2.xx-201712050253-e43j8">
       <category name="IDE Tools"/>
    </feature>
    <feature url="features/org.eclipse.jdt_3.9.2.v20140221-1700.jar" id="org.eclipse.jdt" version="3.9.2.v20140221-1700">
@@ -135,6 +132,7 @@
    <bundle id="io.netty.handler" version="4.1.13.Final" />
    <bundle id="io.netty.resolver" version="4.1.13.Final" />
    <bundle id="io.netty.transport" version="4.1.13.Final" />
+   <bundle id="org.jetbrains.kotlin.osgi-bundle" version="1.1.51" />
    <category-def name="Eclipse Runtime" label="Eclipse RT Components"/>
    <category-def name="Modeling" label="Modeling Components"/>
    <category-def name="IDE Tools" label="Development Environment Tools"/>
