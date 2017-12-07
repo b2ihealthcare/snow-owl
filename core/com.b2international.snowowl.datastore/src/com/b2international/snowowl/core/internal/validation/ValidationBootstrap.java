@@ -35,6 +35,8 @@ import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
 import com.b2international.snowowl.core.validation.ValidationRequests;
+import com.b2international.snowowl.core.validation.eval.GroovyScriptValidationRuleEvaluator;
+import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.datastore.config.IndexSettings;
@@ -64,6 +66,9 @@ public final class ValidationBootstrap extends DefaultBootstrapFragment implemen
 			
 			final ValidationRepository repository = new ValidationRepository(validationIndex);
 			env.services().registerService(ValidationRepository.class, repository);
+			
+			// register always available validation rule evaluators
+			ValidationRuleEvaluator.Registry.register(new GroovyScriptValidationRuleEvaluator());
 			
 			// initialize validation thread pool
 			// TODO make this configurable
