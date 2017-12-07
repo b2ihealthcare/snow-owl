@@ -30,21 +30,26 @@ import java.util.stream.StreamSupport;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.view.CDOStaleReferencePolicy;
+import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.spi.cdo.InternalCDOObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Concepts;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptsContainerCdoIdSupplier;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -67,6 +72,11 @@ public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConfl
 	@Override
 	public Collection<MergeConflict> validate(final CDOTransaction transaction) {
 
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		
+		// XXX This is important to avoid ObjectNotFoundExceptions due to the removal of extension concepts
+		transaction.options().setStaleReferencePolicy(CDOStaleReferencePolicy.PROXY);
+		
 		Map<CDOID, Component> newComponentsMap = StreamSupport
 				.stream(ComponentUtils2.getNewObjects(transaction, Component.class).spliterator(), false)
 				.collect(toMap(CDOObject::cdoID, Function.identity()));
@@ -75,11 +85,11 @@ public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConfl
 				ComponentUtils2.getDirtyObjects(transaction, Relationship.class));
 		
 		Multimap<CDOID, Relationship> destinationToRelationshipsMap = HashMultimap.create();
-		allNewAndDirtyRelationships.forEach(r -> destinationToRelationshipsMap.put(r.getDestination().cdoID(), r));
 		
-		Optional<Concepts> concepts = Optional.<Concepts>ofNullable(
-				CDOUtils.getObjectIfExists(transaction, SnomedConceptsContainerCdoIdSupplier.INSTANCE.getDefaultContainerCdoId()));
-
+		StreamSupport.stream(allNewAndDirtyRelationships.spliterator(), false)
+			.filter(r -> !newDonatedComponents.containsKey(r.getSource().cdoID()) && newDonatedComponents.containsKey(r.getDestination().cdoID()))
+			.forEach(r -> destinationToRelationshipsMap.put(r.getDestination().cdoID(), r));
+		
 		for (final Entry<CDOID, CDOID> entry : newDonatedComponents.entrySet()) {
 
 			final CDOID sourceCDOID = entry.getKey();
@@ -95,7 +105,9 @@ public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConfl
 					final Concept extensionConcept = (Concept) sourceComponent.get();
 					final Concept donatedConcept = (Concept) targetComponent.get();
 					
-					LOGGER.info(">>> Processing donated concept with id '{}'", extensionConcept.getId());
+					LOGGER.info(">>> Processing donated concept with id '{}'", donatedConcept.getId());
+					
+					unfreezeRevision(extensionConcept);
 					
 					final List<Description> additionalExtensionDescriptions = extensionConcept.getDescriptions().stream()
 							.filter(extension -> !donatedConcept.getDescriptions().stream()
@@ -111,20 +123,19 @@ public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConfl
 					// inactivation indicator refset members?
 					// concrete domain refset members?
 					
-					
 					// handle inbound relationships
 					if (destinationToRelationshipsMap.containsKey(extensionConcept.cdoID())) {
 						
 						Collection<Relationship> inboundRelationships = destinationToRelationshipsMap.get(extensionConcept.cdoID());
 						
 						for (Relationship relationship : inboundRelationships) {
-
-							LOGGER.info("Replacing inbound reference from '{}' to '{}' with id: '{}'", relationship.getSource().getId(),
-									extensionConcept.getId(), relationship.getId());
-
+							
 							Concept relationshipSourceConcept = relationship.getSource();
-							EcoreUtil.remove(relationshipSourceConcept); // this is a workaround for frozen revisions 
-							concepts.get().getConcepts().add(relationshipSourceConcept);
+							
+							LOGGER.info("Replacing inbound reference from '{}' to '{}' with id '{}'", relationshipSourceConcept.getId(),
+									donatedConcept.getId(), relationship.getId());
+
+							unfreezeRevision(relationshipSourceConcept);
 							relationship.setDestination(donatedConcept);
 							
 						}
@@ -134,7 +145,7 @@ public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConfl
 					EcoreUtil.remove(extensionConcept);
 
 					for (final Description extensionDescription : additionalExtensionDescriptions) {
-						LOGGER.info("Adding extension description to the donated version: '{}' - '{}'", extensionDescription.getId(),
+						LOGGER.info("Adding extension description to the donated version '{}' - '{}'", extensionDescription.getId(),
 								extensionDescription.getTerm());
 						donatedConcept.getDescriptions().add(extensionDescription);
 					}
@@ -148,18 +159,14 @@ public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConfl
 
 							if (newDestinationConcept.isPresent()) {
 								
-								LOGGER.info("Replacing outbound reference from '{}' to '{}' with id: '{}'", extensionRelationship.getSource().getId(),
-										extensionRelationship.getDestination().getId(), extensionRelationship.getId());
+								LOGGER.info("Replacing outbound reference from '{}' to '{}' with id '{}'", donatedConcept.getId(),
+										newDestinationConcept.get().getId(), extensionRelationship.getId());
 
 								extensionRelationship.setDestination(newDestinationConcept.get());
 							}
 						}
 						
-						LOGGER.info("Adding extension relationship to the donated version: '{}' - '{}' - '{}' - '{}'", 
-								extensionRelationship.getId(),
-								extensionRelationship.getSource().getId(), 
-								extensionRelationship.getType().getId(),
-								extensionRelationship.getDestination().getId());
+						LOGGER.info("Adding extension relationship to the donated version with id '{}'", extensionRelationship.getId());
 						
 						donatedConcept.getOutboundRelationships().add(extensionRelationship);
 					}
@@ -218,7 +225,25 @@ public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConfl
 			}
 		}
 
+		LOGGER.info("Donated component resolution finished in {}", TimeUtil.toString(stopwatch));
+		
 		return emptySet();
+	}
+	
+	private void unfreezeRevision(Concept concept) {
+		copyRevision(concept);
+		TreeIterator<EObject> allContents = concept.eAllContents();
+		while (allContents.hasNext()) {
+			copyRevision(allContents.next());
+		}
+	}
+
+	private void copyRevision(EObject eObject) {
+		if (eObject instanceof InternalCDOObject) {
+			InternalCDOObject internalCDOObject = (InternalCDOObject) eObject;
+			InternalCDORevision revision = internalCDOObject.cdoRevision().copy();
+			internalCDOObject.cdoInternalSetRevision(revision);
+		}
 	}
 	
 }
