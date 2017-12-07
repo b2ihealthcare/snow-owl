@@ -66,8 +66,13 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.commons.Pair;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.file.FileRegistry;
+import com.b2international.snowowl.datastore.internal.file.InternalFileRegistry;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
@@ -76,10 +81,15 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.Rf2ExportResult;
+import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
@@ -282,6 +292,74 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}
 
+	@Test
+	public void executeMultipleExportsAtTheSameTime() throws Exception {
+		
+		Promise<Rf2ExportResult> first = SnomedRequests.rf2().prepareExport()
+			.setUserId("System")
+			.setCodeSystem("SNOMEDCT")
+			.setReleaseType(Rf2ReleaseType.FULL)
+			.setCountryNamespaceElement("INT")
+			.setRefSetExportLayout(Rf2RefSetExportLayout.COMBINED)
+			.setReferenceBranch(branchPath.getPath())
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class));
+		
+		Promise<Rf2ExportResult> second = SnomedRequests.rf2().prepareExport()
+			.setUserId("System")
+			.setCodeSystem("SNOMEDCT")
+			.setCountryNamespaceElement("INT")
+			.setRefSetExportLayout(Rf2RefSetExportLayout.COMBINED)
+			.setReleaseType(Rf2ReleaseType.SNAPSHOT)
+			.setReferenceBranch(branchPath.getPath())
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class));
+		
+		String message = Promise.all(first, second)
+			.then(new Function<List<Object>, String>() {
+				@Override
+				public String apply(List<Object> input) {
+					
+					Rf2ExportResult firstResult = (Rf2ExportResult) input.get(0);
+					Rf2ExportResult secondResult = (Rf2ExportResult) input.get(1);
+					
+					InternalFileRegistry fileRegistry = (InternalFileRegistry) ApplicationContext.getServiceForClass(FileRegistry.class);
+					
+					File firstArchive = fileRegistry.getFile(firstResult.getRegistryId());
+					File secondArchive = fileRegistry.getFile(secondResult.getRegistryId());
+					
+					final Map<String, Boolean> firstArchiveMap = ImmutableMap.<String, Boolean>builder()
+							.put("sct2_Concept_Full", true)
+							.build();
+							
+					final Map<String, Boolean> secondArchiveMap = ImmutableMap.<String, Boolean>builder()
+							.put("sct2_Concept_Snapshot", true)
+							.build();
+					
+					try {
+						assertArchiveContainsFiles(firstArchive, firstArchiveMap);
+						assertArchiveContainsFiles(secondArchive, secondArchiveMap);
+					} catch (Exception e) {
+						return e.getMessage();
+					}
+					
+					fileRegistry.delete(firstResult.getRegistryId());
+					fileRegistry.delete(secondResult.getRegistryId());
+					
+					return null;
+				}
+			})
+			.fail(new Function<Throwable, String>() {
+				@Override
+				public String apply(Throwable input) {
+					return input.getMessage();
+				}
+			})
+			.getSync();
+		
+		assertNull(message, message);
+	}
+	
 	@Test
 	public void exportDeltaInDateRangeFromVersion() throws Exception {
 		createCodeSystem(branchPath, "SNOMEDCT-DELTA").statusCode(201);
