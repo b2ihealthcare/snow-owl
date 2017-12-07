@@ -834,20 +834,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="org.emfjson.core"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.emfjson.jackson"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.junit"
          download-size="0"
          install-size="0"
