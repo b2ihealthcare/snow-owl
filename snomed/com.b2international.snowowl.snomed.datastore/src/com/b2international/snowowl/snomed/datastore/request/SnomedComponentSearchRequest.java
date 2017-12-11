@@ -17,11 +17,8 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.namespaces;
 
-import java.util.Collection;
-
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 
 /**
@@ -43,21 +40,9 @@ public abstract class SnomedComponentSearchRequest<R, D extends SnomedComponentD
 		
 	}
 	
-	protected final void addActiveMemberOfClause(ExpressionBuilder queryBuilder) {
-		if (containsKey(OptionKey.ACTIVE_MEMBER_OF)) {
-			final Collection<String> refSetIds = getCollection(OptionKey.ACTIVE_MEMBER_OF, String.class);
-			
-			final Expression referringRefSetExpression = SnomedComponentDocument.Expressions.referringRefSets(refSetIds);
-			final Expression referringMappingRefSetExpression = SnomedComponentDocument.Expressions.referringMappingRefSets(refSetIds);
-			
-			final Expression expression = Expressions
-					.builder()
-					.should(referringRefSetExpression)
-					.should(referringMappingRefSetExpression)
-					.build();
-				
-			queryBuilder.filter(expression);
-		}
+	protected final void addActiveMemberOfClause(BranchContext context, ExpressionBuilder queryBuilder) {
+		addEclFilter(context, queryBuilder, SnomedComponentSearchRequest.OptionKey.ACTIVE_MEMBER_OF, SnomedComponentDocument.Expressions::referringRefSets);
+		addEclFilter(context, queryBuilder, SnomedComponentSearchRequest.OptionKey.ACTIVE_MEMBER_OF, SnomedComponentDocument.Expressions::referringMappingRefSets);
 	}
 	
 	protected final void addNamespaceFilter(ExpressionBuilder queryBuilder) {
