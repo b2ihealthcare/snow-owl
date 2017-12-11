@@ -36,6 +36,11 @@ public class CompositeClassLoader extends ClassLoader {
 	}
 
 	@Override
+	protected Class<?> findClass(String name) throws ClassNotFoundException {
+		return loadClass(name);
+	}
+	
+	@Override
 	public Class loadClass(String name) throws ClassNotFoundException {
 		for (final Iterator<ClassLoader> iterator = classLoaders.iterator(); iterator.hasNext();) {
 			final ClassLoader classLoader = iterator.next();

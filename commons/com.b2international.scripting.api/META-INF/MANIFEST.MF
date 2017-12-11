@@ -6,5 +6,5 @@ Bundle-Version: 6.1.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Require-Bundle: com.google.guava;bundle-version="[18.0.0,19.0.0)"
+Require-Bundle: com.b2international.commons;bundle-version="6.1.0";visibility:=reexport
 Export-Package: com.b2international.scripting.api

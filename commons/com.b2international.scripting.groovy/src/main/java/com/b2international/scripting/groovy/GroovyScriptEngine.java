@@ -20,6 +20,7 @@ import java.util.Map;
 import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
 
+import com.b2international.commons.CompositeClassLoader;
 import com.b2international.scripting.api.ScriptEngine;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -37,7 +38,10 @@ public final class GroovyScriptEngine implements ScriptEngine {
 	private final LoadingCache<ClassLoader, GroovyShell> shells = CacheBuilder.newBuilder().build(new CacheLoader<ClassLoader, GroovyShell>() {
 		@Override
 		public GroovyShell load(ClassLoader ctx) throws Exception {
-			return new GroovyShell(ctx);
+			final CompositeClassLoader classLoader = new CompositeClassLoader();
+			classLoader.add(ctx);
+			classLoader.add(GroovyScriptEngine.class.getClassLoader());
+			return new GroovyShell(classLoader);
 		}
 	});
 	private final LoadingCache<Pair<ClassLoader, String>, Class<? extends Script>> scriptCache = CacheBuilder.newBuilder().build(new CacheLoader<Pair<ClassLoader, String>, Class<? extends Script>>() {
