@@ -24,7 +24,7 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilde
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
- * @since 5.10.19
+ * @since 6.1.0
  */
 public class SnomedMRCMModuleScopeRefSetExporter extends SnomedRefSetExporter {
 

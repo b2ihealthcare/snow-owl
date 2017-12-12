@@ -20,7 +20,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeR
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 
 /**
- * @since 5.10.19
+ * @since 6.1.0
  */
 public class SnomedMRCMAttributeRangeReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedMRCMAttributeRangeReferenceSetMemberBuilder, SnomedMRCMAttributeRangeRefSetMember> {
 

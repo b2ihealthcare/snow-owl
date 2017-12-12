@@ -39,7 +39,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * @since 5.10.19
+ * @since 6.1.0
  */
 public class SnomedMRCMDomainRefSetImporter extends AbstractSnomedRefSetImporter<MRCMDomainRefSetRow, SnomedMRCMDomainRefSetMember> {
 

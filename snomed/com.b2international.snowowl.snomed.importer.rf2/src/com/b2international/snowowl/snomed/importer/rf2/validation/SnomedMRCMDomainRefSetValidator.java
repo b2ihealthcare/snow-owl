@@ -28,7 +28,7 @@ import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 
 /**
- * @since 5.10.19
+ * @since 6.1.0
  */
 public class SnomedMRCMDomainRefSetValidator extends SnomedRefSetValidator {
 

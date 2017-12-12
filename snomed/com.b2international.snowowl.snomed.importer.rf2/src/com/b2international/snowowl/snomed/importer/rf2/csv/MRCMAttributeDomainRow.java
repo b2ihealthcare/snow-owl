@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.importer.rf2.csv;
 
 /**
- * @since 5.10.19
+ * @since 6.1.0
  */
 public class MRCMAttributeDomainRow extends RefSetRow {
 

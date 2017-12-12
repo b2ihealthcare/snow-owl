@@ -22,7 +22,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Strings;
 
 /**
- * @since 5.10.19
+ * @since 6.1.0
  */
 public class SnomedMRCMDomainMemberUpdateDelegate extends SnomedRefSetMemberUpdateDelegate {
 

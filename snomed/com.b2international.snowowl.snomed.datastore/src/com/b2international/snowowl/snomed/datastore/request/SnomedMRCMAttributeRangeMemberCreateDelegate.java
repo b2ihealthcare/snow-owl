@@ -23,7 +23,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
- * @since 5.10.19
+ * @since 6.1.0
  */
 public class SnomedMRCMAttributeRangeMemberCreateDelegate extends SnomedRefSetMemberCreateDelegate {
 
