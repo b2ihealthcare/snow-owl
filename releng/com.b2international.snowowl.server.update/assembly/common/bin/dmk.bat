@@ -182,7 +182,7 @@ rem ------------------------------
 	set JAVA_OPTS=%JAVA_OPTS% -XX:+UseGCLogFileRotation
 	set JAVA_OPTS=%JAVA_OPTS% -XX:NumberOfGCLogFiles=10
 	set JAVA_OPTS=%JAVA_OPTS% -XX:GCLogFileSize=2M
-	set JAVA_OPTS=%JAVA_OPTS% -Xloggc:$KERNEL_HOME%\`date +%F_%H%M-%S`-gc.log \
+	set JAVA_OPTS=%JAVA_OPTS% -Xloggc:%KERNEL_HOME%\gc.log \
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl 
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl 
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl
