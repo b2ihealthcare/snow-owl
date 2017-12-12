@@ -155,6 +155,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			ClusterHealthResponse clusterHealthResponse = client().admin().cluster()
 				.prepareHealth(indexes.toArray(new String[indexes.size()]))
 				.setWaitForYellowStatus()
+				.setTimeout("3m") // wait 3 minutes for yellow status
 				.get();
 			if (clusterHealthResponse.isTimedOut()) {
 				throw new IndexException("Failed to wait for yellow health status of index " + name, null);
