@@ -12,7 +12,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<!-- Maven Dependency Versions -->
-		<jackson.version>2.8.6</jackson.version>
+		<jackson.version>2.8.10</jackson.version>
 		<netty.version>4.1.13.Final</netty.version>
 		<slf4j.version>[1.7.2,1.7.3)</slf4j.version>
 		<logback.version>[1.0.7,1.0.8)</logback.version>
@@ -284,6 +284,13 @@
 						</filter>
 						<filter>
 							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.dataformat.jackson-dataformat-xml</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
 							<id>com.fasterxml.jackson.dataformat.jackson-dataformat-afterburner</id>
 							<restrictTo>
 								<version>${jackson.version}</version>
@@ -466,8 +473,44 @@
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
+					<groupId>com.fasterxml.jackson.dataformat</groupId>
+					<artifactId>jackson-dataformat-xml</artifactId>
+					<version>${jackson.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
 					<groupId>com.fasterxml.jackson.module</groupId>
 					<artifactId>jackson-module-afterburner</artifactId>
+					<version>${jackson.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>com.fasterxml.jackson.module</groupId>
+					<artifactId>jackson-module-jaxb-annotations</artifactId>
+					<version>${jackson.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>com.fasterxml.jackson.module</groupId>
+					<artifactId>jackson-module-jsonSchema</artifactId>
+					<version>${jackson.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>com.fasterxml.jackson.module</groupId>
+					<artifactId>jackson-module-scala_2.10</artifactId>
+					<version>${jackson.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>com.fasterxml.jackson.datatype</groupId>
+					<artifactId>jackson-datatype-guava</artifactId>
+					<version>${jackson.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>com.fasterxml.jackson.jaxrs</groupId>
+					<artifactId>jackson-jaxrs-json-provider</artifactId>
 					<version>${jackson.version}</version>
 					<scope>provided</scope>
 				</dependency>
