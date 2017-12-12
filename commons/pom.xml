@@ -25,6 +25,8 @@
 		<module>com.b2international.index.api.tests.tools</module>
 		<module>com.b2international.index.es</module>
 		<module>com.b2international.mapdb</module>
+		<module>com.b2international.scripting.api</module>
+		<module>com.b2international.scripting.groovy</module>
 	</modules>
 	
 </project>
