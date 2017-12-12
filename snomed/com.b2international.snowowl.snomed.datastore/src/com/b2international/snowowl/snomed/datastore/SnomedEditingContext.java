@@ -1311,7 +1311,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				Description description = (Description) eObject;
 				// maybe description was already removed before save, so the delete is reflected on the ui
 				if (description.getConcept() != null) {
-					description.getConcept().getDescriptions().remove(description);
+					description.setConcept(null);
 				}
 			}  else {
 				throw new IllegalArgumentException("Don't know how to delete " + eObject.eClass());
