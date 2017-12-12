@@ -87,8 +87,15 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument> extends S
 	}
 
 	protected final void addEclFilter(BranchContext context, ExpressionBuilder queryBuilder, Collection<String> optionValues, Function<Collection<String>, Expression> matchingIdsToExpression) {
+		Collection<String> eclFilter = evaluateEclFilter(context, optionValues);
+		if (eclFilter != null) {
+			queryBuilder.filter(matchingIdsToExpression.apply(eclFilter));
+		}
+	}
+
+	protected final Collection<String> evaluateEclFilter(BranchContext context, Collection<String> optionValues) {
 		if (optionValues.isEmpty()) {
-			return;
+			return null;
 		}
 		Collection<String> idFilter = FluentIterable.from(optionValues).transform(new Function<String, String>() {
 			@Override
@@ -104,7 +111,7 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument> extends S
 
 				// unless it is an Any ECL expression, which allows any value
 				if (Ecl.ANY.equals(expression)) {
-					return;
+					return null;
 				}
 				
 				// TODO replace sync call to concept search with async promise
@@ -120,7 +127,7 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument> extends S
 				}
 			}
 		}
-		queryBuilder.filter(matchingIdsToExpression.apply(idFilter));
+		return idFilter;
 	}
 	
 }
