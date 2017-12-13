@@ -15,7 +15,7 @@ Visit us at http://b2i.sg
    </copyright>
 
    <includes
-         id="org.codehaus.groovy20.feature"
+         id="org.codehaus.groovy24.feature"
          version="0.0.0"/>
 
    <plugin
@@ -828,20 +828,6 @@ Visit us at http://b2i.sg
 
    <plugin
          id="xstream"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.emfjson.core"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.emfjson.jackson"
          download-size="0"
          install-size="0"
          version="0.0.0"

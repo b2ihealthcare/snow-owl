@@ -88,6 +88,7 @@ import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
+import com.b2international.snowowl.datastore.server.RepositoryClassLoaderProviderRegistry;
 import com.b2international.snowowl.datastore.server.ReviewConfiguration;
 import com.b2international.snowowl.datastore.server.cdo.CDOConflictProcessorBroker;
 import com.b2international.snowowl.datastore.server.internal.merge.MergeServiceImpl;
@@ -122,6 +123,7 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		initIndex(mapper);
 		initializeBranchingSupport(mergeMaxResults);
 		bind(Repository.class, this);
+		bind(ClassLoader.class, env.service(RepositoryClassLoaderProviderRegistry.class).get(repositoryId).getClassLoader());
 		checkHealth();
 	}
 

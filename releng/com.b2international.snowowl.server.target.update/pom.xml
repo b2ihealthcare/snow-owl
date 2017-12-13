@@ -24,70 +24,98 @@
 					<resolver>p2</resolver>
 					<pomDependencies>consider</pomDependencies>
 					<filters>
-						<!-- Restricted Logging API and implementation to version of Virgo 3.6.x -->
 						<filter>
 							<type>osgi-bundle</type>
 							<id>com.google.guava</id>
 							<restrictTo>
-								<versionRange>[18.0.0,19.0.0)</versionRange>
+								<versionRange>${guava.version}</versionRange>
 							</restrictTo>
 						</filter>
+						<!-- Restricted Logging API and implementation to version of Virgo 3.7.x -->
 						<filter>
 							<type>p2-installable-unit</type>
 							<id>org.slf4j.api</id>
 							<restrictTo>
-								<versionRange>[1.7.2,1.7.3)</versionRange>
+								<versionRange>${slf4j.version}</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
 							<type>p2-installable-unit</type>
 							<id>ch.qos.logback.classic</id>
 							<restrictTo>
-								<versionRange>[1.0.7,1.0.8)</versionRange>
+								<versionRange>${logback.version}</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
 							<type>p2-installable-unit</type>
 							<id>ch.qos.logback.core</id>
 							<restrictTo>
-								<versionRange>[1.0.7,1.0.8)</versionRange>
+								<versionRange>${logback.version}</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
 							<type>p2-installable-unit</type>
 							<id>ch.qos.logback.slf4j</id>
 							<restrictTo>
-								<versionRange>[1.0.7,1.0.8)</versionRange>
+								<versionRange>${logback.version}</versionRange>
 							</restrictTo>
 						</filter>
-						<!--
+						<!-- Restrict Jackson bundles to the selected version -->
 						<filter>
 							<type>p2-installable-unit</type>
-							<id>org.eclipse.swt.cocoa.macosx.x86_64</id>
+							<id>com.fasterxml.jackson.core.jackson-annotations</id>
 							<restrictTo>
-								<versionRange>[3.8.0,3.9.0)</versionRange>
-							</restrictTo>
-						</filter>
-						<filter>
-							<type>p2-installable-unit</type>
-							<id>org.eclipse.swt.gtk.linux.x86_64</id>
-							<restrictTo>
-								<versionRange>[3.8.0,3.9.0)</versionRange>
+								<version>${jackson.version}</version>
 							</restrictTo>
 						</filter>
 						<filter>
 							<type>p2-installable-unit</type>
-							<id>org.eclipse.swt.win32.win32.x86_64</id>
+							<id>com.fasterxml.jackson.core.jackson-core</id>
 							<restrictTo>
-								<versionRange>[3.8.0,3.9.0)</versionRange>
+								<version>${jackson.version}</version>
 							</restrictTo>
 						</filter>
-						-->
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.core.jackson-databind</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.dataformat.jackson-dataformat-yaml</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.dataformat.jackson-dataformat-cbor</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.dataformat.jackson-dataformat-csv</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>p2-installable-unit</type>
+							<id>com.fasterxml.jackson.dataformat.jackson-dataformat-afterburner</id>
+							<restrictTo>
+								<version>${jackson.version}</version>
+							</restrictTo>
+						</filter>
+						<!-- Restrict Apache Commons Collections to versions above and including 3.2.2 -->
 						<filter>
 							<type>p2-installable-unit</type>
 							<id>org.apache.commons.collections</id>
 							<restrictTo>
-								<versionRange>[3.2.2,3.3.0)</versionRange>
+								<versionRange>${commons.collections.version}</versionRange>
 							</restrictTo>
 						</filter>
 					</filters>

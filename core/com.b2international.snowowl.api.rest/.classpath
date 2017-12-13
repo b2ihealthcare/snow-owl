@@ -6,11 +6,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jackson-datatype-guava-2.6.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jackson-jaxrs-json-provider-2.6.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jackson-module-jaxb-annotations-2.6.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jackson-module-jsonSchema-2.6.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jackson-module-scala_2.10-2.6.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/aopalliance-1.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/classmate-1.1.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/commons-lang-2.5.jar"/>
@@ -24,12 +19,8 @@
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/json4s-native_2.10-3.2.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jsr311-api-1.1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/objenesis-2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/paranamer-2.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/scala-library-2.10.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/scala-reflect-2.10.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/scalap-2.10.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-aop-4.0.5.RELEASE.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-beans-4.0.5.RELEASE.jar" sourcepath="C:/Users/mczotter/.m2/repository/org/springframework/spring-beans/4.0.5.RELEASE/spring-beans-4.0.5.RELEASE-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-beans-4.0.5.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-context-4.0.5.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-core-4.0.5.RELEASE.jar"/>
 	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-expression-4.0.5.RELEASE.jar"/>

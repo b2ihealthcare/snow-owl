@@ -18,7 +18,6 @@
    <windowImages/>
 
    <launcher name="SnowOwlServer">
-      <solaris/>
       <win useIco="false">
          <bmp/>
       </win>
@@ -33,7 +32,6 @@
    <features>
       <feature id="com.b2international.snowowl.server.core.feature"/>
       <feature id="com.b2international.snowowl.server.product.feature"/>
-      <feature id="com.b2international.snowowl.scripting.server.feature"/>
       <feature id="com.b2international.snowowl.snomed.core.feature"/>
       <feature id="com.b2international.snowowl.server.dependencies.feature"/>
       <feature id="com.b2international.snowowl.api.feature"/>

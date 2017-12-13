@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/com.b2international.snowowl.scripting.server.feature_6.1.0.qualifier.jar" id="com.b2international.snowowl.scripting.server.feature" version="6.1.0.qualifier">
-      <category name="scripting"/>
-   </feature>
    <feature url="features/com.b2international.snowowl.server.core.feature_6.1.0.qualifier.jar" id="com.b2international.snowowl.server.core.feature" version="6.1.0.qualifier">
       <category name="server-core"/>
    </feature>

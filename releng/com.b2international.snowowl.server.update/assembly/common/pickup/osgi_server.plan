@@ -16,6 +16,9 @@
 		<artifact type="bundle" name="com.b2international.index.es" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.org.apache.lucene" version="0.0.0"/>
         
+        <artifact type="bundle" name="com.b2international.scripting.api" version="0.0.0"/>
+		<artifact type="bundle" name="com.b2international.scripting.groovy" version="0.0.0"/>
+        
         <artifact type="bundle" name="com.b2international.snowowl.core" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.identity" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.identity.file" version="0.0.0"/>
@@ -35,7 +38,6 @@
         <!-- Note: Terminology extension bundles should be defined before the server.product line -->
         <artifact type="bundle" name="com.b2international.snowowl.server.product" version="0.0.0"/>
 
-        <artifact type="bundle" name="com.b2international.snowowl.scripting.core" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.snomed.importer.rf2" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.api.rest" version="0.0.0"/>
 		<artifact type="bundle" name="com.b2international.snowowl.snomed.api.rest" version="0.0.0"/>

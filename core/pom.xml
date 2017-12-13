@@ -35,11 +35,6 @@
 		<module>com.b2international.snowowl.datastore.server.tests</module>
 		<module>com.b2international.snowowl.dependencies</module>
 		
-		<!-- Scripting modules -->
-		<module>com.b2international.snowowl.scripting.core</module>
-		<module>com.b2international.snowowl.scripting.server.feature</module>
-		<module>com.b2international.snowowl.scripting.services</module>
-	
 		<!-- Product modules -->
 		<module>com.b2international.snowowl.server.console</module>
 		<module>com.b2international.snowowl.server.product</module>

@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Scripting Groovy Module
+Bundle-SymbolicName: com.b2international.scripting.groovy;singleton:=true
+Bundle-Version: 6.1.0.qualifier
+Bundle-Vendor: B2i Healthcare
+Fragment-Host: com.b2international.scripting.api;bundle-version="6.1.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.codehaus.groovy;bundle-version="[2.4.13,2.5.0)",
+ org.junit;bundle-version="4.12.0";resolution:=optional,
+ org.eclipse.xtext.util;bundle-version="2.11.0"
+Bundle-ClassPath: .
