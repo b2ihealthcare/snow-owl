@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.validation;
 
 import com.b2international.snowowl.core.validation.issue.ValidationIssueRequests;
 import com.b2international.snowowl.core.validation.rule.ValidationRuleRequests;
+import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteListRequests;
 
 /**
  * @since 6.0
@@ -33,8 +34,13 @@ public final class ValidationRequests {
 		return ValidationRuleRequests.INSTANCE;
 	}
 
+	public static ValidationWhiteListRequests whiteList() {
+		return ValidationWhiteListRequests.INSTANCE;
+	}
+
 	public static ValidateRequestBuilder prepareValidate() {
 		return new ValidateRequestBuilder();
 	}
+	
 	
 }
