@@ -33,10 +33,9 @@ import org.junit.After;
 import org.junit.Before;
 
 import com.b2international.index.DefaultIndex;
-import com.b2international.index.DocSearcher;
+import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClient;
-import com.b2international.index.IndexRead;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
@@ -163,6 +162,14 @@ public abstract class BaseRevisionIndexTest {
 		return Indexes.createIndexClient(UUID.randomUUID().toString(), mapper, mappings);
 	}
 	
+	protected final void indexDocument(final String key, final Object doc) {
+		rawIndex().write(index -> {
+			index.put(key, doc);
+			index.commit();
+			return null;
+		});
+	}
+	
 	protected final <T extends Revision> T getRevision(final String branch, final Class<T> type, final long storageKey) {
 		return index().read(branch, new RevisionIndexRead<T>() {
 			@Override
@@ -196,22 +203,12 @@ public abstract class BaseRevisionIndexTest {
 		});
 	}
 	
-	protected final <T> Iterable<T> search(final String branchPath, final Query<T> query) {
-		return index().read(branchPath, new RevisionIndexRead<Iterable<T>>() {
-			@Override
-			public Iterable<T> execute(RevisionSearcher index) throws IOException {
-				return index.search(query);
-			}
-		});
+	protected final <T> Hits<T> search(final String branchPath, final Query<T> query) {
+		return index().read(branchPath, index -> index.search(query));
 	}
 	
-	protected final <T> Iterable<T> searchRaw(final Query<T> query) {
-		return rawIndex().read(new IndexRead<Iterable<T>>() {
-			@Override
-			public Iterable<T> execute(DocSearcher index) throws IOException {
-				return index.search(query);
-			}
-		});
+	protected final <T> Hits<T> searchRaw(final Query<T> query) {
+		return rawIndex().read(index -> index.search(query));
 	}
 	
 	protected void assertDocEquals(Object expected, Object actual) {
