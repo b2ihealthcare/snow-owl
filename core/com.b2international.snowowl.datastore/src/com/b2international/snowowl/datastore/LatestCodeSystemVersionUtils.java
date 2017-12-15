@@ -54,5 +54,22 @@ public abstract class LatestCodeSystemVersionUtils {
 	public static boolean isLatestVersion(final ICodeSystemVersion version) {
 		return MAIN_BRANCH.equals(version.getVersionId());
 	}
+	
+	/**
+	 * Returns the latest version from the set of code system version entries.
+	 */
+	public static CodeSystemVersionEntry getLatestVersion(CodeSystemVersions versions) {
+		if (!versions.isEmpty()) {
+			CodeSystemVersionEntry latest = versions.first().get();
+			
+			for (CodeSystemVersionEntry version : versions) {
+				if( version.getEffectiveDate() > latest.getEffectiveDate() ) {
+					latest = version;
+				}
+			}
+			return latest;
+		}
+		return null;
+	}
 
 }
