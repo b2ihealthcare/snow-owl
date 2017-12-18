@@ -19,10 +19,13 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobNotification;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * @since 6.1
@@ -36,6 +39,9 @@ final class ValidationWhiteListCreateRequest implements Request<ServiceProvider,
 	@Override
 	public String execute(ServiceProvider context) {
 		context.service(ValidationRepository.class).save(id, new ValidationWhiteList(id, ruleId, componentIdentifier));
+		
+		WhiteListNotification.added(id).publish(context.service(IEventBus.class));
+		
 		return id;
 	}
 

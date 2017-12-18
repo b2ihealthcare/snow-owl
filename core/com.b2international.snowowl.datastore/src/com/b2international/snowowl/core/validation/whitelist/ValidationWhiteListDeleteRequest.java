@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.validation.whitelist;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * @since 6.1
@@ -33,6 +34,9 @@ final class ValidationWhiteListDeleteRequest implements Request<ServiceProvider,
 	@Override
 	public Boolean execute(ServiceProvider context) {
 		context.service(ValidationRepository.class).remove(ValidationWhiteList.class, id);
+		
+		WhiteListNotification.removed(id).publish(context.service(IEventBus.class));
+		
 		return Boolean.TRUE;
 	}
 
