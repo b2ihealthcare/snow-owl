@@ -22,6 +22,7 @@ import java.util.Collection;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 
 /**
@@ -43,19 +44,17 @@ public abstract class SnomedComponentSearchRequest<R, D extends SnomedComponentD
 		
 	}
 	
-	protected final void addActiveMemberOfClause(ExpressionBuilder queryBuilder) {
+	protected final void addActiveMemberOfClause(BranchContext context, ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.ACTIVE_MEMBER_OF)) {
-			final Collection<String> refSetIds = getCollection(OptionKey.ACTIVE_MEMBER_OF, String.class);
+			final Collection<String> refSetFilters = getCollection(OptionKey.ACTIVE_MEMBER_OF, String.class);
 			
-			final Expression referringRefSetExpression = SnomedComponentDocument.Expressions.referringRefSets(refSetIds);
-			final Expression referringMappingRefSetExpression = SnomedComponentDocument.Expressions.referringMappingRefSets(refSetIds);
+			final Collection<String> referringRefSetIds = evaluateEclFilter(context, refSetFilters);
 			
 			final Expression expression = Expressions
 					.builder()
-					.should(referringRefSetExpression)
-					.should(referringMappingRefSetExpression)
+					.should(SnomedComponentDocument.Expressions.referringRefSets(referringRefSetIds))
+					.should(SnomedComponentDocument.Expressions.referringMappingRefSets(referringRefSetIds))
 					.build();
-				
 			queryBuilder.filter(expression);
 		}
 	}

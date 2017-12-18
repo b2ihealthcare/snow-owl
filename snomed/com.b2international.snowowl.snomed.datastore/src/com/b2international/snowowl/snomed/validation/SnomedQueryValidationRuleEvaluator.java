@@ -112,11 +112,13 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 	private static abstract class SnomedCoreComponentValidationQuery<SB extends SnomedComponentSearchRequestBuilder<SB, R>, R extends PageableCollectionResource<T>, T extends SnomedCoreComponent> extends SnomedComponentValidationQuery<SB, R, T> {
 		
 		@JsonProperty private List<String> namespace;
+		@JsonProperty private String isActiveMemberOf;
 		
 		@Override
 		protected SB prepareSearch(SB req) {
 			return super.prepareSearch(req)
-					.filterByNamespaces(namespace);
+					.filterByNamespaces(namespace)
+					.isActiveMemberOf(isActiveMemberOf);
 		}
 		
 	}
