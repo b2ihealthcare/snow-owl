@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server;
+package com.b2international.snowowl.snomed.datastore.id;
 
 import java.util.Set;
 
@@ -32,7 +32,7 @@ import com.google.common.collect.Multiset;
  * 
  * @since 5.11.5
  */
-public interface NamespaceAndModuleAssigner {
+public interface SnomedNamespaceAndModuleAssigner {
 
 	/**
 	 * Reserves SCTIDs and loads module concepts for the new relationships of each source concept passed in as a {@link Multiset} of concept IDs.

@@ -21,8 +21,8 @@ import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.id.SnomedNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 
@@ -32,9 +32,9 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRef
 public class ConcreteDomainPersister {
 
 	private final SnomedRefSetEditingContext context;
-	private final NamespaceAndModuleAssigner namespaceAndModuleAssigner;
+	private final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner;
 
-	public ConcreteDomainPersister(final SnomedEditingContext context, NamespaceAndModuleAssigner namespaceAndModuleAssigner) {
+	public ConcreteDomainPersister(final SnomedEditingContext context, SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner) {
 		this.context = context.getRefSetEditingContext();
 		this.namespaceAndModuleAssigner = namespaceAndModuleAssigner;
 	}

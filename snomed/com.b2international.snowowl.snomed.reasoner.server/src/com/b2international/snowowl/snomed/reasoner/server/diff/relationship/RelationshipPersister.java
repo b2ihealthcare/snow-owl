@@ -21,8 +21,8 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
+import com.b2international.snowowl.snomed.datastore.id.SnomedNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 
@@ -36,9 +36,9 @@ public class RelationshipPersister {
 	private final Concept universalRelationshipConcept;
 	
 	private final SnomedEditingContext context;
-	private final NamespaceAndModuleAssigner namespaceAndModuleAssigner;
+	private final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner;
 	
-	public RelationshipPersister(final SnomedEditingContext context, final NamespaceAndModuleAssigner namespaceAndModuleAssigner) {
+	public RelationshipPersister(final SnomedEditingContext context, final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner) {
 		this.context = context;
 		this.namespaceAndModuleAssigner = namespaceAndModuleAssigner;
 

@@ -52,6 +52,7 @@ import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.id.SnomedNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
@@ -72,7 +73,6 @@ import com.b2international.snowowl.snomed.reasoner.classification.entry.Relation
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.model.LongConcepts;
 import com.b2international.snowowl.snomed.reasoner.preferences.IReasonerPreferencesService;
-import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
@@ -152,7 +152,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	
 	private final Cache<String, ReasonerTaxonomy> taxonomyResultRegistry;
 	private final Cache<String, InitialReasonerTaxonomyBuilder> taxonomyBuilderRegistry;
-	private final NamespaceAndModuleAssigner namespaceAndModuleAssigner;
+	private final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner;
 	private final boolean concreteDomainSupportEnabled;
 	
 	public SnomedReasonerServerService(int maximumReasonerCount, int maximumTaxonomiesToKeep) {
@@ -191,8 +191,8 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 
-	private static NamespaceAndModuleAssigner getNamespaceModuleAssigner() {
-		return Extensions.getFirstPriorityExtension(NAMESPACE_ASSIGNER_EXTENSION, NamespaceAndModuleAssigner.class);
+	private static SnomedNamespaceAndModuleAssigner getNamespaceModuleAssigner() {
+		return Extensions.getFirstPriorityExtension(NAMESPACE_ASSIGNER_EXTENSION, SnomedNamespaceAndModuleAssigner.class);
 	}
 
 	private void setStale(IBranchPath branchPath) {

@@ -2,6 +2,7 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="snomedImportPostProcessor" name="SNOMED CT Import Post Processor" schema="schema/snomedImportPostProcessor.exsd"/>
+   <extension-point id="snomedNamespaceAndModuleAssigner" name="SNOMED CT Namespace and Module Assigner" schema="schema/snomedNamespaceAndModuleAssigner.exsd"/>
    <extension
          point="com.b2international.snowowl.core.terminologyComponent">
       <terminologyComponent

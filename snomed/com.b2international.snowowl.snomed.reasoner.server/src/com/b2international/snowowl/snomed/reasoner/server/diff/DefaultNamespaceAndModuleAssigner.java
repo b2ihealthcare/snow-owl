@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
+import com.b2international.snowowl.snomed.datastore.id.SnomedNamespaceAndModuleAssigner;
 import com.google.common.collect.Multiset;
 
 /**
@@ -32,7 +32,7 @@ import com.google.common.collect.Multiset;
  * 
  * @since 5.11.5
  */
-public final class DefaultNamespaceAndModuleAssigner implements NamespaceAndModuleAssigner {
+public final class DefaultNamespaceAndModuleAssigner implements SnomedNamespaceAndModuleAssigner {
 
 	private Set<String> reservedIds;
 	private Iterator<String> relationshipIds;

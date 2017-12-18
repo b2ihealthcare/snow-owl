@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ApiError;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
-import com.b2international.snowowl.snomed.reasoner.server.NamespaceAndModuleAssigner;
+import com.b2international.snowowl.snomed.datastore.id.SnomedNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
 
 /**
@@ -33,7 +33,7 @@ public final class PersistChangesRequestBuilder extends BaseRequestBuilder<Persi
 	private String classificationId;
 	private ReasonerTaxonomy taxonomy;
 	private String userId;
-	private NamespaceAndModuleAssigner namespaceAndModuleAssigner;
+	private SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner;
 	private InitialReasonerTaxonomyBuilder taxonomyBuilder;
 
 	public PersistChangesRequestBuilder setClassificationId(String classificationId) {
@@ -51,7 +51,7 @@ public final class PersistChangesRequestBuilder extends BaseRequestBuilder<Persi
 		return getSelf();
 	}
 
-	public PersistChangesRequestBuilder setNamespaceAndModuleAssigner(NamespaceAndModuleAssigner namespaceAndModuleAssigner) {
+	public PersistChangesRequestBuilder setNamespaceAndModuleAssigner(SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner) {
 		this.namespaceAndModuleAssigner = namespaceAndModuleAssigner;
 		return getSelf();
 	}
