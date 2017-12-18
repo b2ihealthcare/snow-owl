@@ -68,7 +68,7 @@ public final class ValidationBootstrap extends DefaultBootstrapFragment implemen
 			env.services().registerService(ValidationRepository.class, repository);
 			
 			// register always available validation rule evaluators
-			ValidationRuleEvaluator.Registry.register(new GroovyScriptValidationRuleEvaluator());
+			ValidationRuleEvaluator.Registry.register(new GroovyScriptValidationRuleEvaluator(env.getConfigDirectory().toPath()));
 			
 			// initialize validation thread pool
 			// TODO make this configurable

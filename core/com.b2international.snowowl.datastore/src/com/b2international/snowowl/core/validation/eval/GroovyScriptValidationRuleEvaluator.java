@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.core.validation.eval;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.b2international.scripting.api.ScriptEngine;
 import com.b2international.snowowl.core.ComponentIdentifier;
@@ -26,11 +29,21 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 6.1
  */
-public class GroovyScriptValidationRuleEvaluator implements ValidationRuleEvaluator {
+public final class GroovyScriptValidationRuleEvaluator implements ValidationRuleEvaluator {
 
+	private final Path validationResourcesDirectory;
+
+	public GroovyScriptValidationRuleEvaluator(Path validationResourcesDirectory) {
+		this.validationResourcesDirectory = validationResourcesDirectory;
+	}
+	
 	@Override
 	public List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule) throws Exception {
-		return ScriptEngine.run("groovy", context.service(ClassLoader.class), rule.getImplementation(), ImmutableMap.<String, Object>of("ctx", context));
+		final String script = Files
+			.lines(validationResourcesDirectory.resolve(rule.getImplementation()))
+			.collect(Collectors.joining(System.getProperty("line.separator")));
+		
+		return ScriptEngine.run("groovy", context.service(ClassLoader.class), script, ImmutableMap.<String, Object>of("ctx", context));
 	}
 
 	@Override
