@@ -173,6 +173,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		public static final String PREFERRED_IN = "preferredIn";
 		public static final String ACCEPTABLE_IN = "acceptableIn";
 		public static final String SEMANTIC_TAG = "semanticTag";
+		public static final String ORIGINAL_TERM = Fields.TERM + ".original";
 	}
 	
 	public final static class Expressions extends SnomedComponentDocument.Expressions {
@@ -201,7 +202,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public static Expression matchTermOriginal(String term) {
-			return exactMatch(Fields.TERM + ".original", term);
+			return exactMatch(Fields.ORIGINAL_TERM, term);
 		}
 		
 		public static Expression matchTermRegex(String regex) {
