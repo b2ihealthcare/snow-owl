@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.index.Doc;
+import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.IStatement;
 import com.b2international.snowowl.core.date.EffectiveTimes;
