@@ -326,17 +326,18 @@ public class EsDocumentSearcher implements DocSearcher {
 		Terms aggregationResult = response.getAggregations().<Terms>get(aggregationName);
 		for (org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket bucket : aggregationResult.getBuckets()) {
 			final TopHits topHits = bucket.getAggregations().get(topHitsAggName(aggregation));
+			final ImmutableList.Builder<T> hits = ImmutableList.builder();
 			
-			ImmutableList.Builder<T> hits = ImmutableList.builder();
-			
-			final SearchHits topSearchHits = topHits.getHits();
-			for (SearchHit hit : topSearchHits) {
-				final byte[] bytes = BytesReference.toBytes(hit.getSourceRef());
-				T value = reader.readValue(bytes, 0, bytes.length);
-				hits.add(value);
+			if (topHits != null) {
+				final SearchHits topSearchHits = topHits.getHits();
+				for (SearchHit hit : topSearchHits) {
+					final byte[] bytes = BytesReference.toBytes(hit.getSourceRef());
+					T value = reader.readValue(bytes, 0, bytes.length);
+					hits.add(value);
+				}
 			}
 			
-			buckets.put(bucket.getKey(), new Bucket<>(bucket.getKey(), new Hits<>(hits.build(), null, null, aggregation.getBucketHitsLimit(), (int) topSearchHits.getTotalHits())));
+			buckets.put(bucket.getKey(), new Bucket<>(bucket.getKey(), new Hits<>(hits.build(), null, null, aggregation.getBucketHitsLimit(), (int) bucket.getDocCount())));
 		}
 		
 		return new Aggregation<>(aggregationName, buckets.build());
@@ -360,9 +361,11 @@ public class EsDocumentSearcher implements DocSearcher {
 		}
 		
 		// add top hits agg to get the top N items for each bucket
-		termsAgg.subAggregation(AggregationBuilders.topHits(topHitsAggName(aggregation))
-				.fetchSource(true)
-				.size(aggregation.getBucketHitsLimit()));
+		if (aggregation.getBucketHitsLimit() > 0) {
+			termsAgg.subAggregation(AggregationBuilders.topHits(topHitsAggName(aggregation))
+					.fetchSource(true)
+					.size(aggregation.getBucketHitsLimit()));
+		}
 		
 		return termsAgg;
 	}
