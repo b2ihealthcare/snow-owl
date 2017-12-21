@@ -87,7 +87,7 @@ import com.google.common.collect.ImmutableList;
  */
 public class SnomedReasonerServerService extends CollectingService<Reasoner, ClassificationSettings> implements SnomedReasonerService, IDisposableService {
 
-	private static final String NAMESPACE_ASSIGNER_EXTENSION = "com.b2international.snowowl.snomed.reasoner.server.namespaceAssigner";
+	private static final String NAMESPACE_ASSIGNER_EXTENSION = "com.b2international.snowowl.snomed.datastore.snomedNamespaceAndModuleAssigner";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedReasonerServerService.class);
 	
