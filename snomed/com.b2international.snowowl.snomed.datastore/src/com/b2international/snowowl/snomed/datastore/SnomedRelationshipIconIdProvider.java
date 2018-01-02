@@ -17,19 +17,17 @@ package com.b2international.snowowl.snomed.datastore;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IBranchPoint;
-import com.b2international.snowowl.core.api.IComponentIconIdProvider;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 
 /**
  * Icon ID provider always returning the 'Defining relationship' relationship characteristic type concept ID.
- *
+ * @deprecated
  */
-public class SnomedRelationshipIconIdProvider implements IComponentIconIdProvider<String> {
+public class SnomedRelationshipIconIdProvider {
 
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.core.api.IComponentIconIdProvider#getIconId(com.b2international.snowowl.core.api.IBranchPoint, java.lang.Object)
 	 */
-	@Override
 	public String getIconId(IBranchPoint branchPoint, String componentId) {
 		return Concepts.DEFINING_RELATIONSHIP;
 	}
@@ -37,7 +35,6 @@ public class SnomedRelationshipIconIdProvider implements IComponentIconIdProvide
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.core.api.IComponentIconIdProvider#getIconId(com.b2international.snowowl.core.api.IBranchPath, java.lang.Object)
 	 */
-	@Override
 	public String getIconId(IBranchPath branchPath, String componentId) {
 		return Concepts.DEFINING_RELATIONSHIP;
 	}

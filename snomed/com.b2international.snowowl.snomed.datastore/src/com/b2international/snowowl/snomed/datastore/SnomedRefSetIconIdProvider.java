@@ -17,20 +17,18 @@ package com.b2international.snowowl.snomed.datastore;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IBranchPoint;
-import com.b2international.snowowl.core.api.IComponentIconIdProvider;
 import com.google.common.base.Preconditions;
 
 /**
  * Icon ID provider for SNOMED&nbsp;CT reference sets.
  * <br>The implementation always falls back to the {@link SnomedConceptIconIdProvider}.
- *
+ * @deprecated
  */
-public class SnomedRefSetIconIdProvider implements IComponentIconIdProvider<String> {
+public class SnomedRefSetIconIdProvider {
 
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.core.api.IComponentIconIdProvider#getIconId(com.b2international.snowowl.core.api.IBranchPoint, java.lang.Object)
 	 */
-	@Override
 	public String getIconId(final IBranchPoint branchPoint, final String componentId) {
 		
 		Preconditions.checkNotNull(branchPoint, "Branch point argument cannot be null.");
@@ -42,7 +40,6 @@ public class SnomedRefSetIconIdProvider implements IComponentIconIdProvider<Stri
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.core.api.IComponentIconIdProvider#getIconId(com.b2international.snowowl.core.api.IBranchPath, java.lang.Object)
 	 */
-	@Override
 	public String getIconId(final IBranchPath branchPath, final String componentId) {
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkNotNull(componentId, "SNOMED CT reference set identifier concept ID argument cannot be null.");

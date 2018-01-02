@@ -5,9 +5,7 @@
    <extension-point id="terminologyComponent" name="terminologyComponent" schema="schema/terminologyComponent.exsd"/>
    <extension-point id="representation" name="representation" schema="schema/representation.exsd"/>
    <extension-point id="lookupService" name="lookupService" schema="schema/lookupService.exsd"/>
-   <extension-point id="searchResultProvider" name="searchResultProvider" schema="schema/searchResultProvider.exsd"/>
    <extension-point id="nameProviderFactory" name="nameProviderFactory" schema="schema/nameProviderFactory.exsd"/>
-   <extension-point id="componentIconIdProvider" name="componentIconIdProvider" schema="schema/componentIconIdProvider.exsd"/>
    <extension-point id="valueSetMembershipLookupService" name="Value Set Membership Lookup Service" schema="schema/valueSetMembershipLookupService.exsd"/>
    <extension-point id="mappingSetMembershipLookupService" name="Mapping Set Membership Lookup Service" schema="schema/mappingSetMembershipLookupService.exsd"/>
    <extension-point id="bootstrapFragments" name="bootstrapFragments" schema="schema/bootstrapFragments.exsd"/>

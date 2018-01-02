@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,29 @@ import com.google.common.collect.ImmutableMap;
  * @param <K>
  * @param <T>
  */
-public abstract class AbstractSearchResultProvider<K extends Serializable, T extends IComponent<K>> implements ISearchResultProvider<K, T> {
+public abstract class AbstractSearchResultProvider<K extends Serializable, T extends IComponent<K>> {
 
 	private static final Map<String, Object> EMPTY = ImmutableMap.of();
 	
-	@Override
+	/**
+	 * Returns with a terminology independent component after performing a
+	 * custom search. Client should implement the process of the component
+	 * search.
+	 * 
+	 * @return the found component. This is the result of the search result.
+	 */
 	public T getSearchResult() {
 		return getSearchResult(EMPTY);
 	}
+	
+	/**
+	 * Returns with a terminology independent component after performing a
+	 * custom search. Client should implement the process of the component
+	 * search.
+	 * 
+	 * @param searchContext key-value pairs providing additional information
+	 * @return the found component. This is the result of the search result.
+	 */
+	public abstract T getSearchResult(Map<String, Object> searchContext);
+	
 }

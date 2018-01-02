@@ -25,7 +25,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IBranchPoint;
-import com.b2international.snowowl.core.api.IComponentIconIdProvider;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -39,14 +38,13 @@ import com.google.common.collect.Lists;
 
 /**
  * Icon ID provider for SNOMED&nbsp;CT concepts.
- *
+ * @deprecated
  */
-public class SnomedConceptIconIdProvider implements IComponentIconIdProvider<String> {
+class SnomedConceptIconIdProvider {
 
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.core.api.IComponentIconIdProvider#getIconId(com.b2international.snowowl.core.api.IBranchPath, java.lang.Object)
 	 */
-	@Override
 	public String getIconId(final IBranchPath branchPath, final String componentId) {
 		
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
@@ -58,7 +56,6 @@ public class SnomedConceptIconIdProvider implements IComponentIconIdProvider<Str
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.core.api.IComponentIconIdProvider#getIconId(com.b2international.snowowl.core.api.IBranchPoint, java.lang.Object)
 	 */
-	@Override
 	public String getIconId(final IBranchPoint branchPoint, final String componentId) {
 		
 		Preconditions.checkNotNull(branchPoint, "Branch point argument cannot be null.");

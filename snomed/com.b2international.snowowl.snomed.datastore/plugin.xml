@@ -360,29 +360,6 @@
       </serviceConfigJob>
    </extension>
    <extension
-         point="com.b2international.snowowl.core.componentIconIdProvider">
-      <provider
-            class="com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider"
-            id="com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
-      </provider>
-      <provider
-            class="com.b2international.snowowl.snomed.datastore.SnomedRefSetIconIdProvider"
-            id="com.b2international.snowowl.snomed.datastore.SnomedRefSetIconIdProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.refset">
-      </provider>
-      <provider
-            class="com.b2international.snowowl.snomed.datastore.SnomedDescriptionIconIdProvider"
-            id="com.b2international.snowowl.snomed.datastore.SnomedDescriptionIconIdProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.description">
-      </provider>
-      <provider
-            class="com.b2international.snowowl.snomed.datastore.SnomedRelationshipIconIdProvider"
-            id="com.b2international.snowowl.snomed.datastore.SnomedRelationshipIconIdProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.relationship">
-      </provider>
-   </extension>
-   <extension
          point="com.b2international.snowowl.datastore.repository">
       <repository
             name="SNOMED CT Store"

@@ -32,12 +32,9 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.ExtendedComponent;
-import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.api.IComponentIconIdProvider;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.IMappingSetMembershipLookupService;
 import com.b2international.snowowl.core.api.INameProviderFactory;
-import com.b2international.snowowl.core.api.ISearchResultProvider;
 import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
 import com.b2international.snowowl.core.api.IValueSetMembershipLookupService;
 import com.google.common.base.Function;
@@ -97,13 +94,10 @@ public class CoreTerminologyBroker {
 	public static final String TERMINOLOGY_COMPONENT_EXTENSION_POINT_ID = "com.b2international.snowowl.core.terminologyComponent";
 	public static final String TERMINOLOGY_EXTENSION_POINT_ID = "com.b2international.snowowl.core.terminology";
 	public static final String REPRESENTATION_EXTENSION_POINT_ID = "com.b2international.snowowl.core.representation";
-	public static final String SEARCH_RESULT_PROVIDER_EXTENSION_POINT_ID = "com.b2international.snowowl.core.searchResultProvider";
 	public static final String REFSET_MEMBERSHIP_LOOKUP_SERVICE_EXTENSION_POINT_ID = "com.b2international.snowowl.core.refSetMembershipLookupService";
 	public static final String VALUE_SET_MEMBERSHIP_LOOKUP_SERVICE_EXTENSION_POINT_ID = "com.b2international.snowowl.core.valueSetMembershipLookupService";
 	public static final String MAPPING_SET_MEMBERSHIP_LOOKUP_SERVICE_EXTENSION_POINT_ID = "com.b2international.snowowl.core.mappingSetMembershipLookupService";
-	public static final String TERMINOLOGY_BROWSER_FACTORY_EXTENSION_POINT_ID = "com.b2international.snowowl.core.terminologyBrowserFactory";
 	public static final String LOOKUP_SERVICE_EXTENSION_POINT_ID = "com.b2international.snowowl.core.lookupService";
-	public static final String COMPONENT_ICON_ID_PROVIDER_EXTENSION_POINT_ID = "com.b2international.snowowl.core.componentIconIdProvider";
 	public static final String NAME_PROVIDER_SERVICE_EXTENSION_POINT_ID = "com.b2international.snowowl.core.nameProviderFactory";
 	public static final String TERMINOLOGY_ID_ATTRIBUTE = "terminologyId";
 	public static final String TERMINOLOGY_COMPONENT_ID_ATTRIBUTE = "terminologyComponentId";
@@ -508,23 +502,6 @@ public class CoreTerminologyBroker {
 		return (ILookupService<String, T, V>) createExecutableExtension(getTerminologyComponentLevelConfigurationElement(terminologyComponentId, LOOKUP_SERVICE_EXTENSION_POINT_ID));
 	}
 
-	/**
-	 * Returns with the {@link IComponentIconIdProvider component icon ID provider} for a terminology component type given by its unique ID.
-	 * @param terminologyComponentId the terminology component ID.
-	 * @return the component icon ID provider instance.
-	 */
-	@SuppressWarnings("unchecked")
-	public <K> IComponentIconIdProvider<K> getComponentIconIdProvider(final String terminologyComponentId) {
-		Preconditions.checkNotNull(terminologyComponentId, "Terminology component ID argument cannot be null.");
-		return (IComponentIconIdProvider<K>) createExecutableExtension(getTerminologyComponentLevelConfigurationElement(terminologyComponentId,
-				COMPONENT_ICON_ID_PROVIDER_EXTENSION_POINT_ID));
-	}
-
-	/**Sugar for {@link #getComponentIconIdProvider(String)}.*/
-	public <K> IComponentIconIdProvider<K> getComponentIconIdProvider(final short terminologyComponentId) {
-		return getComponentIconIdProvider(getTerminologyComponentId(terminologyComponentId));
-	}
-	
 	public Object createExecutableExtension(final IConfigurationElement configurationElement) {
 		Preconditions.checkNotNull(configurationElement, "Configuration element argument cannot be null.");
 
@@ -740,11 +717,6 @@ public class CoreTerminologyBroker {
 					}
 
 				});
-	}
-
-	public ISearchResultProvider<String, IComponent<String>> getSearchResultProvider(final String terminologyComponentId) {
-		return (ISearchResultProvider<String, IComponent<String>>) createExecutableExtension(getTerminologyComponentLevelConfigurationElement(terminologyComponentId,
-				SEARCH_RESULT_PROVIDER_EXTENSION_POINT_ID));
 	}
 
 }

@@ -17,19 +17,17 @@ package com.b2international.snowowl.snomed.datastore;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IBranchPoint;
-import com.b2international.snowowl.core.api.IComponentIconIdProvider;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 
 /**
  * Icon ID provider always providing the SNOMED&nbsp;CT concept ID of the 'Synonym' description type concept.
- *
+ * @deprecated
  */
-public class SnomedDescriptionIconIdProvider implements IComponentIconIdProvider<String> {
+class SnomedDescriptionIconIdProvider {
 
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.core.api.IComponentIconIdProvider#getIconId(com.b2international.snowowl.core.api.IBranchPoint, java.lang.Object)
 	 */
-	@Override
 	public String getIconId(final IBranchPoint branchPoint, final String componentId) {
 		return Concepts.SYNONYM;
 	}
@@ -37,7 +35,6 @@ public class SnomedDescriptionIconIdProvider implements IComponentIconIdProvider
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.core.api.IComponentIconIdProvider#getIconId(com.b2international.snowowl.core.api.IBranchPath, java.lang.Object)
 	 */
-	@Override
 	public String getIconId(final IBranchPath branchPath, final String componentId) {
 		return Concepts.SYNONYM;
 	}
