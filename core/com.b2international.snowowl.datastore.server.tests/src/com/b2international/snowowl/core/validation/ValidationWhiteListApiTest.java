@@ -64,7 +64,7 @@ public class ValidationWhiteListApiTest {
 	
 	@Test
 	public void createWhiteList() throws Exception {
-		final String whiteListId = generateWhiteList("58");
+		final String whiteListId = createWhiteLists("58");
 		
 		assertThat(whiteListId).isNotEmpty();
 		
@@ -75,8 +75,8 @@ public class ValidationWhiteListApiTest {
 
 	@Test
 	public void deleteWhiteList() throws Exception {
-		final String whiteList1 = generateWhiteList("1");
-		final String whiteList2 = generateWhiteList("2");
+		final String whiteList1 = createWhiteLists("1");
+		final String whiteList2 = createWhiteLists("2");
 		
 		ValidationRequests.whiteList().prepareDelete(whiteList2).buildAsync().getRequest().execute(context);
 		
@@ -88,8 +88,8 @@ public class ValidationWhiteListApiTest {
 
 	@Test
 	public void filterByRuleId() throws Exception{
-		generateWhiteList("3");
-		generateWhiteList("4");
+		createWhiteLists("3");
+		createWhiteLists("4");
 		
 		final ValidationWhiteLists whiteLists = ValidationRequests.whiteList().prepareSearch()
 			.filterByRuleId("3")
@@ -104,8 +104,8 @@ public class ValidationWhiteListApiTest {
 	public void filterByComponentIdentifier() throws Exception{
 		final ComponentIdentifier componentIdentifier = ComponentIdentifier.of((short) 100, "12345678");
 		
-		generateWhiteList("5");
-		generateWhiteList("6", componentIdentifier);
+		createWhiteLists("5");
+		createWhiteLists("6", componentIdentifier);
 		
 		final ValidationWhiteLists whiteLists = ValidationRequests.whiteList().prepareSearch()
 			.filterByComponentIdentifier(componentIdentifier)
@@ -123,11 +123,11 @@ public class ValidationWhiteListApiTest {
 	}
 	
 	
-	private String generateWhiteList(final String ruleId) throws Exception {
-		return generateWhiteList(ruleId, ComponentIdentifier.unknown());
+	private String createWhiteLists(final String ruleId) throws Exception {
+		return createWhiteLists(ruleId, ComponentIdentifier.unknown());
 	}
 	
-	private String generateWhiteList(final String ruleId, final ComponentIdentifier componentIdentifier) {
+	private String createWhiteLists(final String ruleId, final ComponentIdentifier componentIdentifier) {
 		return ValidationRequests.whiteList().prepareCreate()
 			.setId(UUID.randomUUID().toString())
 			.setRuleId(ruleId)
