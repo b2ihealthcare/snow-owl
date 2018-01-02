@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public final class ValidationWhiteListSearchRequestBuilder
 		return addOption(OptionKey.RULE_ID, ruleId);
 	}
 
-	public ValidationWhiteListSearchRequestBuilder filterByRuleId(Iterable<String> ruleIds) {
+	public ValidationWhiteListSearchRequestBuilder filterByRuleIds(Iterable<String> ruleIds) {
 		return addOption(OptionKey.RULE_ID, ruleIds);
 	}
 
@@ -43,7 +43,7 @@ public final class ValidationWhiteListSearchRequestBuilder
 		return addOption(OptionKey.COMPONENT_IDENTIFIER, componentIdentifier);
 	}
 
-	public ValidationWhiteListSearchRequestBuilder filterByComponentIdentifier(Iterable<ComponentIdentifier> componentIdentifiers) {
+	public ValidationWhiteListSearchRequestBuilder filterByComponentIdentifiers(Iterable<ComponentIdentifier> componentIdentifiers) {
 		return addOption(OptionKey.COMPONENT_IDENTIFIER, componentIdentifiers);
 	}
 	
