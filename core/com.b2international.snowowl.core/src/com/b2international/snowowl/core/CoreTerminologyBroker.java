@@ -31,7 +31,6 @@ import org.eclipse.core.runtime.Platform;
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.api.ExtendedComponent;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.IMappingSetMembershipLookupService;
 import com.b2international.snowowl.core.api.INameProviderFactory;
@@ -114,10 +113,8 @@ public class CoreTerminologyBroker {
 	private static final Map<Integer, String> INT_TO_ID_CACHE = Maps.newConcurrentMap();
 	private static final Map<String, Integer> ID_TO_INT_CACHE = Maps.newConcurrentMap();
 	private static final Map<String, Short> ID_TO_SHORT_CACHE = Maps.newConcurrentMap();
-	private static final HashMultimap<Short, String> SHORT_TO_CLASS_CACHE = HashMultimap.<Short, String> create();
 	private static final Map<Class<?>, Integer> CLASS_TO_INT_CACHE = Maps.newConcurrentMap();
 	private static final Map<Class<?>, String> CLASS_TO_ID_CACHE = Maps.newConcurrentMap();
-	private static final Map<Class<?>, Short> CLASS_TO_SHORT_CACHE = Maps.newConcurrentMap();
 
 	private static CoreTerminologyBroker instance;
 	private Map<String, ICoreTerminologyComponentInformation> registeredTerminologyComponents;
@@ -194,43 +191,9 @@ public class CoreTerminologyBroker {
 		return instance;
 	}
 
-	public synchronized Set<String> getClassesForComponentId(final short terminologyComponentId) {
-
-		if (UNSPECIFIED_NUMBER_SHORT == terminologyComponentId) {
-			return Collections.emptySet();
-		}
-
-		final Set<String> classes = SHORT_TO_CLASS_CACHE.get(terminologyComponentId);
-		if (!CompareUtils.isEmpty(classes)) {
-			return classes;
-		}
-
-		final Set<String> representationClasses = getClassesForComponentId(getTerminologyComponentId(terminologyComponentId));
-		
-		for (String representationClass : representationClasses) {
-			SHORT_TO_CLASS_CACHE.put(terminologyComponentId, representationClass);
-		}
-		return SHORT_TO_CLASS_CACHE.get(terminologyComponentId);
-	}
-
-	public synchronized Set<String> getClassesForComponentId(final String componentId) {
-		final Set<String> representationClasses = newHashSet();
-		for (final IConfigurationElement element : Platform.getExtensionRegistry().getConfigurationElementsFor(REPRESENTATION_EXTENSION_POINT_ID)) {
-
-			if (componentId.equals(String.valueOf(element.getAttribute(TERMINOLOGY_COMPONENT_ID_ATTRIBUTE)))) {
-				representationClasses.add(element.getAttribute(CLASS_ATTRIBUTE));
-			}
-
-		}
-		return representationClasses;
-	}
-
 	public String getTerminologyComponentId(final Object object) {
 		Preconditions.checkNotNull(object, "Object argument cannot be null.");
-
-		if (object instanceof ExtendedComponent) {
-			return getTerminologyComponentId(((ExtendedComponent) object).getTerminologyComponentId());
-		} else if (object instanceof ITerminologyComponentIdProvider) {
+		if (object instanceof ITerminologyComponentIdProvider) {
 			return ((ITerminologyComponentIdProvider) object).getTerminologyComponentId();
 		} else {
 			return getTerminologyComponentId(object.getClass());
@@ -242,7 +205,7 @@ public class CoreTerminologyBroker {
 	 * @param terminologyComponentClass
 	 * @return
 	 */
-	public String getTerminologyComponentId(final Class<?> terminologyComponentClass) {
+	private String getTerminologyComponentId(final Class<?> terminologyComponentClass) {
 		String terminologyComponentId = CLASS_TO_ID_CACHE.get(terminologyComponentClass);
 		if (terminologyComponentId != null) {
 			return terminologyComponentId;
@@ -265,24 +228,6 @@ public class CoreTerminologyBroker {
 	 */
 	public short getTerminologyComponentIdShort(Class<?> terminologyComponentClass) {
 		return getTerminologyComponentIdAsShort(getTerminologyComponentId(terminologyComponentClass));
-	}
-
-	public short getTerminologyComponentIdAsShort(final Object object) {
-		Preconditions.checkNotNull(object, "Object argument cannot be null.");
-
-		Short id = CLASS_TO_SHORT_CACHE.get(object.getClass());
-		if (null != id) {
-			return id.shortValue();
-		} else if (object instanceof ExtendedComponent) {
-			return ((ExtendedComponent) object).getTerminologyComponentId();
-		}
-
-		final int asInt = getTerminologyComponentIdAsInt(object);
-		if (asInt < Integer.MIN_VALUE || asInt > Integer.MAX_VALUE)
-			throw new NumberFormatException("Value out of range. Value:\"" + asInt);
-		id = Short.valueOf((short) asInt);
-		CLASS_TO_SHORT_CACHE.put(object.getClass(), id);
-		return (short) asInt;
 	}
 
 	public short getTerminologyComponentIdAsShort(final String terminologyComponentId) {
@@ -312,9 +257,7 @@ public class CoreTerminologyBroker {
 		final Integer componentId = CLASS_TO_INT_CACHE.get(object.getClass());
 		if (null != componentId) {
 			return componentId.intValue();
-		} else if (object instanceof ExtendedComponent) {
-			return (int) ((ExtendedComponent) object).getTerminologyComponentId();
-		}
+			}
 
 		for (final IConfigurationElement element : Platform.getExtensionRegistry().getConfigurationElementsFor(REPRESENTATION_EXTENSION_POINT_ID)) {
 			final String representationClass = element.getAttribute(CLASS_ATTRIBUTE);
@@ -367,113 +310,6 @@ public class CoreTerminologyBroker {
 		throw new IllegalArgumentException("No terminology component extension has been registered with the passed in ID: " + terminologyComponentId);
 	}
 
-	public String getTerminologyId(final Object object) {
-		Preconditions.checkNotNull(object, "Object argument cannot be null.");
-
-		for (final IConfigurationElement element : Platform.getExtensionRegistry().getConfigurationElementsFor(REPRESENTATION_EXTENSION_POINT_ID)) {
-			final String representationClass = element.getAttribute(CLASS_ATTRIBUTE);
-			if (ClassUtils.isClassAssignableFrom(object.getClass(), representationClass)) {
-				final String terminologyComponentId = element.getAttribute(TERMINOLOGY_COMPONENT_ID_ATTRIBUTE);
-
-				//iterate through all registered terminology component extensions
-				for (final IConfigurationElement terminologComponents : Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_COMPONENT_EXTENSION_POINT_ID)) {
-					if (terminologyComponentId.equals(terminologComponents.getAttribute(ID_ATTRIBUTE))) {
-						return terminologComponents.getAttribute(TERMINOLOGY_ID_ATTRIBUTE);
-					}
-				}
-			}
-		}
-		throw new IllegalArgumentException("No terminology extension has been registered for the passed in object: " + object.getClass());
-	}
-
-	public String getTerminologyOid(final Object object) {
-		Preconditions.checkNotNull(object, "Object argument cannot be null.");
-
-		for (final IConfigurationElement element : Platform.getExtensionRegistry().getConfigurationElementsFor(REPRESENTATION_EXTENSION_POINT_ID)) {
-			final String representationClass = element.getAttribute(CLASS_ATTRIBUTE);
-			if (ClassUtils.isClassAssignableFrom(object.getClass(), representationClass)) {
-				final String terminologyComponentId = element.getAttribute(TERMINOLOGY_COMPONENT_ID_ATTRIBUTE);
-				return getTerminologyOidByTerminologyComponentId(terminologyComponentId);
-			}
-		}
-		throw new IllegalArgumentException("No terminology extension has been registered for the passed in object: " + object.getClass());
-	}
-
-	public String getTerminologyOidByTerminologyComponentId(final String terminologyComponentId) {
-		//iterate through all registered terminology component extensions
-		for (final IConfigurationElement terminologComponents : Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_COMPONENT_EXTENSION_POINT_ID)) {
-			if (terminologyComponentId.equals(terminologComponents.getAttribute(ID_ATTRIBUTE))) {
-				final String terminologyId = terminologComponents.getAttribute(TERMINOLOGY_ID_ATTRIBUTE);
-				for (final IConfigurationElement terminology : Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_EXTENSION_POINT_ID)) {
-					if (terminologyId.equals(terminology.getAttribute(ID_ATTRIBUTE))) {
-						return terminology.getAttribute(OID_ATTRIBUTE);
-					}
-				}
-			}
-		}
-		throw new IllegalArgumentException("No terminology extension has been registered for the passed in terminology component id: " + terminologyComponentId);
-	}
-
-	public int getTopLevelDepth(final String terminologyId) {
-		Preconditions.checkNotNull(terminologyId, "Terminology identifier argument cannot be null.");
-		Preconditions.checkArgument(!StringUtils.isEmpty(terminologyId), "Terminology identifier argument cannot be empty string.");
-		//iterate through all registered terminology component extensions
-		for (final IConfigurationElement terminology : Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_EXTENSION_POINT_ID)) {
-			if (terminologyId.equals(terminology.getAttribute(ID_ATTRIBUTE))) {
-				final String topLevelAttribute = terminology.getAttribute(TOP_LEVEL_ATTRIBUTE);
-				try {
-					return Integer.parseInt(topLevelAttribute);
-				} catch (final NumberFormatException e) {
-					throw new RuntimeException("Terminology level depth was not an integer. Top level depth: " + topLevelAttribute + " for terminology: " + terminologyId);
-				}
-			}
-		}
-		throw new RuntimeException("No top level depth was registered for " + terminologyId);
-	}
-
-	public int getTopLevelDepth(final Object object) {
-		return getTopLevelDepth(getTerminologyId(object));
-	}
-
-	public boolean isHierarchical(final String terminologyComponentId) {
-		Preconditions.checkNotNull(terminologyComponentId, "Terminology component identifier argument cannot be null.");
-		Preconditions.checkArgument(!StringUtils.isEmpty(terminologyComponentId), "Terminology component identifier argument cannot be empty string.");
-
-		//iterate through all registered terminology component extensions
-		for (final IConfigurationElement terminologComponents : Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_COMPONENT_EXTENSION_POINT_ID)) {
-			if (terminologyComponentId.equals(terminologComponents.getAttribute(ID_ATTRIBUTE))) {
-				return Boolean.valueOf(terminologComponents.getAttribute(HIERARCHICAL_ATTRIBUTE));
-			}
-		}
-		throw new IllegalArgumentException("No terminology component extension has been registered with the passed in ID: " + terminologyComponentId);
-	}
-
-	public boolean isHierarchical(final Object object) {
-		return isHierarchical(getTerminologyComponentId(object));
-	}
-
-//	public Collection<IRefSetMembershipLookupService<String>> getRefSetMembershipLookupServices() {
-//		final Set<IRefSetMembershipLookupService<String>> searchers = Sets.newHashSet();
-//		final Iterator<IConfigurationElement> terminologyElements = Iterators.forArray(Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_EXTENSION_POINT_ID));
-//		final Set<String> allTerminologyIds = Sets.newHashSet(Iterators.transform(terminologyElements, new Function<IConfigurationElement, String>() {
-//
-//			//implements com.google.common.base.Function<org.eclipse.core.runtime.IConfigurationElement,java.lang.String>.apply
-//			@Override
-//			public String apply(final IConfigurationElement configurationElement) {
-//				return configurationElement.getAttribute(ID_ATTRIBUTE);
-//			}
-//		}));
-//
-//		for (final String terminologyId : allTerminologyIds) {
-//			final Collection<IConfigurationElement> elements = getAllTerminologyLevelConfigurationElement(terminologyId, REFSET_MEMBERSHIP_LOOKUP_SERVICE_EXTENSION_POINT_ID);
-//			for (final IConfigurationElement element : elements) {
-//				searchers.add((IRefSetMembershipLookupService<String>) createExecutableExtension(element));
-//			}
-//		}
-//
-//		return searchers;
-//	}
-
 	public Collection<IValueSetMembershipLookupService> getValueSetMembershipLookupServices() {
 		final Set<IValueSetMembershipLookupService> searchers = Sets.newHashSet();
 		final IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(VALUE_SET_MEMBERSHIP_LOOKUP_SERVICE_EXTENSION_POINT_ID);
@@ -512,10 +348,6 @@ public class CoreTerminologyBroker {
 		}
 	}
 
-	public Collection<String> getAllRegisteredTerminologyComponentsForTerminology(final String terminologyId) {
-		return terminologyToComponentsSupplier.get().get(Preconditions.checkNotNull(terminologyId, "Terminology identifier argument cannot be null."));
-	}
-	
 	public String getTerminologyIdForTerminologyComponentId(final String terminologyComponentId) {
 		return componentToTerminologySupplier.get().get(Preconditions.checkNotNull(terminologyComponentId, "Terminology component ID argument cannot be null."));
 	}
@@ -524,54 +356,6 @@ public class CoreTerminologyBroker {
 		return terminologyToComponentsSupplier.get().keySet();
 	}
 	
-	public Multimap<String, String> getAllRegisteredTerminologiesWithComponents() {
-		return terminologyToComponentsSupplier.get();
-	}
-	
-	public Collection<IConfigurationElement> getAllTerminologyLevelConfigurationElement(final String terminologyId, final String extensionPointId) {
-		Preconditions.checkNotNull(terminologyId, "Terminology identifier argument cannot be null.");
-		Preconditions.checkNotNull(extensionPointId, "Extension point identifier name argument cannot be null.");
-		Preconditions.checkArgument(!StringUtils.isEmpty(terminologyId), "Terminology identifier argument cannot be empty string.");
-		Preconditions.checkArgument(!StringUtils.isEmpty(extensionPointId), "Extension point identifier argument cannot be empty string.");
-
-		final Set<IConfigurationElement> elements = Sets.newHashSet();
-		for (final IConfigurationElement element : Platform.getExtensionRegistry().getConfigurationElementsFor(extensionPointId)) {
-			if (terminologyId.equals(element.getAttribute(TERMINOLOGY_ID_ATTRIBUTE))) {
-				elements.add(element);
-			}
-		}
-		return elements;
-	}
-
-	public IConfigurationElement getTerminologyLevelConfigurationElementUnsafe(final String terminologyId, final String extensionPointId) {
-		Preconditions.checkNotNull(terminologyId, "Terminology identifier argument cannot be null.");
-		Preconditions.checkNotNull(extensionPointId, "Extension point identifier name argument cannot be null.");
-		Preconditions.checkArgument(!StringUtils.isEmpty(terminologyId), "Terminology identifier argument cannot be empty string.");
-		Preconditions.checkArgument(!StringUtils.isEmpty(extensionPointId), "Extension point identifier argument cannot be empty string.");
-
-		for (final IConfigurationElement element : Platform.getExtensionRegistry().getConfigurationElementsFor(extensionPointId)) {
-			if (terminologyId.equals(element.getAttribute(TERMINOLOGY_ID_ATTRIBUTE))) {
-				return element;
-			}
-		}
-		return null;
-	}
-	
-	public IConfigurationElement getTerminologyLevelConfigurationElement(final String terminologyId, final String extensionPointId) {
-		Preconditions.checkNotNull(terminologyId, "Terminology identifier argument cannot be null.");
-		Preconditions.checkNotNull(extensionPointId, "Extension point identifier name argument cannot be null.");
-		Preconditions.checkArgument(!StringUtils.isEmpty(terminologyId), "Terminology identifier argument cannot be empty string.");
-		Preconditions.checkArgument(!StringUtils.isEmpty(extensionPointId), "Extension point identifier argument cannot be empty string.");
-
-		final IConfigurationElement configurationElement = getTerminologyLevelConfigurationElementUnsafe(terminologyId, extensionPointId);
-		if (null == configurationElement) {
-			throw new RuntimeException("No configuration element has been registered for '" + extensionPointId + "' extension with the '" + terminologyId
-					+ "' terminology component identifier.");
-		}
-		
-		return configurationElement;
-	}
-
 	public IConfigurationElement getTerminologyComponentLevelConfigurationElement(final String terminologyComponentId, final String extensionPointId) {
 		Preconditions.checkNotNull(terminologyComponentId, "Terminology component identifier argument cannot be null.");
 		Preconditions.checkNotNull(extensionPointId, "Extension point identifier name argument cannot be null.");
@@ -594,26 +378,6 @@ public class CoreTerminologyBroker {
 		return primaryTerminologyComponentSupplier.get().get(terminologyId);
 	}
 	
-	public String getPrimaryComponentIdByOid(final String oid) {
-		return getTerminologyAttributeValueByOid(PRIMARY_COMPONENT_ID_ATTRIBUTE, oid);
-	}
-
-	public String getTerminologyIdByOid(final String oid) {
-		return getTerminologyAttributeValueByOid(ID_ATTRIBUTE, oid);
-	}
-
-	public String getTerminologyId(final String terminologyComponentId) {
-		Preconditions.checkNotNull(terminologyComponentId, "Terminology component identifier argument cannot be null.");
-		Preconditions.checkArgument(!StringUtils.isEmpty(terminologyComponentId), "Terminology component identifier argument cannot be empty string.");
-
-		for (final IConfigurationElement terminologComponents : Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_COMPONENT_EXTENSION_POINT_ID)) {
-			if (terminologyComponentId.equals(terminologComponents.getAttribute(ID_ATTRIBUTE))) {
-				return terminologComponents.getAttribute(TERMINOLOGY_ID_ATTRIBUTE);
-			}
-		}
-		throw new IllegalArgumentException("No terminology extension has been registered for the passed in terminology component identifier: " + terminologyComponentId);
-	}
-
 	public boolean isEffectiveTimeSupported(final String terminologyId) {
 		Preconditions.checkNotNull(terminologyId, "terminologyId");
 		//iterate through all registered terminology component extensions
@@ -656,19 +420,6 @@ public class CoreTerminologyBroker {
 	public ICoreTerminologyComponentInformation getComponentInformation(final String terminologyComponentId) {
 		Preconditions.checkNotNull(terminologyComponentId, "Terminology component identifier argument cannot be null.");
 		return UNSPECIFIED.equals(terminologyComponentId) ? UNSPECIFIED_COMPONENT : internalGetRegisteredComponents().get(terminologyComponentId);
-	}
-
-	private String getTerminologyAttributeValueByOid(final String attribute, final String oid) {
-		Preconditions.checkArgument(!StringUtils.isEmpty(attribute), "Terminology extension attribute argument cannot be empty.");
-		Preconditions.checkNotNull(oid, "Terminology OID argument cannot be null.");
-		Preconditions.checkArgument(!StringUtils.isEmpty(oid), "Terminology OID argument cannot be empty.");
-
-		for (final IConfigurationElement terminologComponents : Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_EXTENSION_POINT_ID)) {
-			if (oid.equals(terminologComponents.getAttribute(OID_ATTRIBUTE))) {
-				return terminologComponents.getAttribute(attribute);
-			}
-		}
-		throw new IllegalArgumentException("No terminology extension has been registered for the passed in terminology OID: " + oid);
 	}
 
 	private Map<String, ICoreTerminologyComponentInformation> internalGetRegisteredComponents() {
