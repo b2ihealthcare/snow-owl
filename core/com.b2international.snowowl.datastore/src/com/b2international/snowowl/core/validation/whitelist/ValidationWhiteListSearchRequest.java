@@ -44,7 +44,7 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 		/**
 		 * Filter matches by component identifier.
 		 */
-		COMPONENTENT_IDENTIFIER
+		COMPONENT_IDENTIFIER
 		
 	}
 	
@@ -64,8 +64,8 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 			queryBuilder.filter(Expressions.matchAny(ValidationWhiteList.Fields.RULE_ID, ruleIds));
 		}
 		
-		if(containsKey(OptionKey.COMPONENTENT_IDENTIFIER)) {
-			Set<String> componentIds = getCollection(OptionKey.COMPONENTENT_IDENTIFIER, ComponentIdentifier.class).stream().map(ComponentIdentifier::getComponentId).collect(Collectors.toSet());
+		if(containsKey(OptionKey.COMPONENT_IDENTIFIER)) {
+			Set<String> componentIds = getCollection(OptionKey.COMPONENT_IDENTIFIER, ComponentIdentifier.class).stream().map(ComponentIdentifier::getComponentId).collect(Collectors.toSet());
 			queryBuilder.filter(Expressions.matchAny(ValidationWhiteList.Fields.COMPONENT_IDENTIFIER, componentIds));
 		}
 		

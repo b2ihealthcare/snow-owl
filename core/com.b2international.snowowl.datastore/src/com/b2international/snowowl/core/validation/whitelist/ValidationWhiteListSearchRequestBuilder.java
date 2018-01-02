@@ -35,8 +35,16 @@ public final class ValidationWhiteListSearchRequestBuilder
 		return addOption(OptionKey.RULE_ID, ruleId);
 	}
 
+	public ValidationWhiteListSearchRequestBuilder filterByRuleId(Iterable<String> ruleIds) {
+		return addOption(OptionKey.RULE_ID, ruleIds);
+	}
+
 	public ValidationWhiteListSearchRequestBuilder filterByComponentIdentifier(ComponentIdentifier componentIdentifier) {
-		return addOption(OptionKey.COMPONENTENT_IDENTIFIER, componentIdentifier);
+		return addOption(OptionKey.COMPONENT_IDENTIFIER, componentIdentifier);
+	}
+
+	public ValidationWhiteListSearchRequestBuilder filterByComponentIdentifier(Iterable<ComponentIdentifier> componentIdentifiers) {
+		return addOption(OptionKey.COMPONENT_IDENTIFIER, componentIdentifiers);
 	}
 	
 	@Override
