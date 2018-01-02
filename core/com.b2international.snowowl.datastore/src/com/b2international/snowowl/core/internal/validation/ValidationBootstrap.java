@@ -39,6 +39,7 @@ import com.b2international.snowowl.core.validation.eval.GroovyScriptValidationRu
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
+import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,7 +61,7 @@ public final class ValidationBootstrap extends DefaultBootstrapFragment implemen
 			final Index validationIndex = Indexes.createIndex(
 				"validations", 
 				mapper, 
-				new Mappings(ValidationIssue.class, ValidationRule.class), 
+				new Mappings(ValidationIssue.class, ValidationRule.class, ValidationWhiteList.class), 
 				env.service(IndexSettings.class)
 			);
 			
