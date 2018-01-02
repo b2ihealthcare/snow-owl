@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import java.util.Set;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
@@ -60,8 +58,6 @@ import com.google.common.collect.Sets;
  *
  */
 public class CoreTerminologyBroker {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(CoreTerminologyBroker.class);
 
 	/**
 	 * Represents an available terminology with a human readable name.
@@ -205,23 +201,6 @@ public class CoreTerminologyBroker {
 			}
 		}
 		return instance;
-	}
-
-	/**
-	 * Returns with the terminology independent {@link IComponent component} representation of the specified object after adapting it.
-	 * Returns with {@code null} if the object cannot be adapted to any terminology independent component.
-	 * <br>This method swallows all the exceptions occurred during the adaption process and returns with {@code null}.
-	 * @param object the object to adapt. Cannot be {@code null}.
-	 * @return the terminology independent component.
-	 */
-	public IComponent<?> adapt(final Object object) {
-		Preconditions.checkNotNull(object, "Object argument cannot be null.");
-		try {
-			return (IComponent<?>) Platform.getAdapterManager().getAdapter(object, IComponent.class);
-		} catch (final Throwable t) {
-			LOGGER.error("Error while adapting object: " + object, t);
-			return null;
-		}
 	}
 
 	public synchronized Set<String> getClassesForComponentId(final short terminologyComponentId) {

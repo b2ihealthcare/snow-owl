@@ -27,6 +27,7 @@ import com.b2international.snowowl.api.impl.history.domain.HistoryInfo;
 import com.b2international.snowowl.api.impl.history.domain.HistoryInfoDetails;
 import com.b2international.snowowl.api.impl.history.domain.HistoryVersion;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -96,10 +97,12 @@ public abstract class AbstractHistoryServiceImpl implements IHistoryService {
 
 	protected final String handledRepositoryUuid;
 	protected final ComponentCategory handledCategory;
+	private final short terminologyComponentId;
 
-	protected AbstractHistoryServiceImpl(final String handledRepositoryUuid, final ComponentCategory handledCategory) {
+	protected AbstractHistoryServiceImpl(final String handledRepositoryUuid, final ComponentCategory handledCategory, final short terminologyComponentId) {
 		this.handledRepositoryUuid = handledRepositoryUuid;
 		this.handledCategory = handledCategory;
+		this.terminologyComponentId = terminologyComponentId;
 	}
 
 	@Override
@@ -123,7 +126,7 @@ public abstract class AbstractHistoryServiceImpl implements IHistoryService {
 			throw new ComponentNotFoundException(handledCategory, componentId);
 		}
 
-		final HistoryInfoConfiguration configuration = HistoryInfoConfigurationImpl.create(branch, storageKey);
+		final HistoryInfoConfiguration configuration = HistoryInfoConfigurationImpl.create(branch, storageKey, ComponentIdentifier.of(terminologyComponentId, componentId));
 		final Collection<com.b2international.snowowl.core.api.IHistoryInfo> sourceHistoryInfos = getHistoryService().getHistory(configuration);			
 		final Collection<IHistoryInfo> targetHistoryInfos = Collections2.transform(sourceHistoryInfos, CONVERTER);
 
@@ -131,4 +134,5 @@ public abstract class AbstractHistoryServiceImpl implements IHistoryService {
 	}
 
 	protected abstract long getStorageKey(IBranchPath branchPath, final String componentId);
+	
 }
