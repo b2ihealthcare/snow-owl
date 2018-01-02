@@ -28,16 +28,10 @@ public final class ValidationWhiteListCreateRequestBuilder
 	extends BaseRequestBuilder<ValidationWhiteListCreateRequestBuilder, ServiceProvider, String> 
 	implements SystemRequestBuilder<String> {
 
-	private String id;
 	private String ruleId;
 	private ComponentIdentifier componentIdentifier;
 	
 	ValidationWhiteListCreateRequestBuilder() {}
-	
-	public ValidationWhiteListCreateRequestBuilder setId(String id) {
-		this.id = id;
-		return getSelf();
-	}
 	
 	public ValidationWhiteListCreateRequestBuilder setRuleId(String ruleId) {
 		this.ruleId = ruleId;
@@ -52,7 +46,6 @@ public final class ValidationWhiteListCreateRequestBuilder
 	@Override
 	protected Request<ServiceProvider, String> doBuild() {
 		ValidationWhiteListCreateRequest req = new ValidationWhiteListCreateRequest();
-		req.setId(id);
 		req.setRuleId(ruleId);
 		req.setComponentIdentifier(componentIdentifier);
 		return req;

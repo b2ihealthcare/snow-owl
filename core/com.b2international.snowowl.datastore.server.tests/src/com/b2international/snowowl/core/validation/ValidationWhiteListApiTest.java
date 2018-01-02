@@ -129,7 +129,6 @@ public class ValidationWhiteListApiTest {
 	
 	private String createWhiteLists(final String ruleId, final ComponentIdentifier componentIdentifier) {
 		return ValidationRequests.whiteList().prepareCreate()
-			.setId(UUID.randomUUID().toString())
 			.setRuleId(ruleId)
 			.setComponentIdentifier(componentIdentifier)
 			.buildAsync().getRequest()

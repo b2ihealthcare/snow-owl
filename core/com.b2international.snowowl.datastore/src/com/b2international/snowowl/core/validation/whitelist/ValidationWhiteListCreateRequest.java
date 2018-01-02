@@ -15,16 +15,16 @@
  */
 package com.b2international.snowowl.core.validation.whitelist;
 
+import java.util.UUID;
+
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobNotification;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
@@ -32,12 +32,14 @@ import com.b2international.snowowl.eventbus.IEventBus;
  */
 final class ValidationWhiteListCreateRequest implements Request<ServiceProvider, String> {
 
-	private String id;
 	@NotEmpty private String ruleId;
 	@NotNull private ComponentIdentifier componentIdentifier;
 	
 	@Override
 	public String execute(ServiceProvider context) {
+		
+		final String id = UUID.randomUUID().toString();
+		
 		context.service(ValidationRepository.class).save(id, new ValidationWhiteList(id, ruleId, componentIdentifier));
 		
 		WhiteListNotification.added(id).publish(context.service(IEventBus.class));
@@ -45,10 +47,6 @@ final class ValidationWhiteListCreateRequest implements Request<ServiceProvider,
 		return id;
 	}
 
-	void setId(String id) {
-		this.id = id;
-	}
-	
 	void setRuleId(String ruleId) {
 		this.ruleId = ruleId;
 	}
