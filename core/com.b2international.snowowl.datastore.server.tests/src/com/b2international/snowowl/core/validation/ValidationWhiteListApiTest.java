@@ -80,7 +80,7 @@ public class ValidationWhiteListApiTest {
 		
 		ValidationRequests.whiteList().prepareDelete(whiteList2).buildAsync().getRequest().execute(context);
 		
-		final ValidationWhiteLists WhiteLists = getAllWhiteLists();
+		final ValidationWhiteLists WhiteLists = getWhiteLists();
 		
 		assertThat(WhiteLists.stream().map(ValidationWhiteList::getId).collect(Collectors.toList())).doesNotContain(whiteList2);
 		assertThat(WhiteLists.getItems().size()).isEqualTo(1);
@@ -118,7 +118,7 @@ public class ValidationWhiteListApiTest {
 	
 	@Test
 	public void getAllValidationWhiteLists() throws Exception {
-		final ValidationWhiteLists validationWhiteLists = getAllWhiteLists();
+		final ValidationWhiteLists validationWhiteLists = getWhiteLists();
 		assertThat(validationWhiteLists).isEmpty();
 	}
 	
@@ -136,7 +136,7 @@ public class ValidationWhiteListApiTest {
 			.execute(context);
 	}
 	
-	private ValidationWhiteLists getAllWhiteLists() throws Exception {
+	private ValidationWhiteLists getWhiteLists() throws Exception {
 		return ValidationRequests.whiteList().prepareSearch()
 			.all()
 			.buildAsync().getRequest()
