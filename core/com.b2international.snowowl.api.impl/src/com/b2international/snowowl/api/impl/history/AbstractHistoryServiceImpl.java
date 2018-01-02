@@ -15,21 +15,16 @@
  */
 package com.b2international.snowowl.api.impl.history;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.List;
 
 import com.b2international.commons.ChangeKind;
-import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.api.impl.history.domain.HistoryInfo;
 import com.b2international.snowowl.api.impl.history.domain.HistoryInfoDetails;
 import com.b2international.snowowl.api.impl.history.domain.HistoryVersion;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.history.IHistoryService;
 import com.b2international.snowowl.core.history.domain.ChangeType;
@@ -37,12 +32,12 @@ import com.b2international.snowowl.core.history.domain.IHistoryInfo;
 import com.b2international.snowowl.core.history.domain.IHistoryInfoDetails;
 import com.b2international.snowowl.core.history.domain.IHistoryVersion;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.history.HistoryInfoConfiguration;
 import com.b2international.snowowl.datastore.history.HistoryInfoConfigurationImpl;
 import com.b2international.snowowl.datastore.history.HistoryService;
-import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
@@ -106,21 +101,8 @@ public abstract class AbstractHistoryServiceImpl implements IHistoryService {
 	}
 
 	@Override
-	public List<IHistoryInfo> getHistory(final IComponentRef componentRef) {
-		checkNotNull(componentRef, "Component reference may not be null.");
-
-		final InternalComponentRef internalComponentRef = ClassUtils.checkAndCast(componentRef, InternalComponentRef.class);
-		internalComponentRef.checkStorageExists();
-		final String repositoryUuid = internalComponentRef.getRepositoryId();
-
-		if (!handledRepositoryUuid.equals(repositoryUuid)) {
-			throw new IllegalArgumentException(MessageFormat.format(
-					"Component reference points to repository ''{0}'', but this service handles ''{1}''.",
-					repositoryUuid, handledRepositoryUuid));
-		}
-
-		final IBranchPath branch = internalComponentRef.getBranch().branchPath();
-		final String componentId = internalComponentRef.getComponentId();
+	public List<IHistoryInfo> getHistory(final String branchPath, final String componentId) {
+		final IBranchPath branch = BranchPathUtils.createPath(branchPath);
 		final long storageKey = getStorageKey(branch, componentId);
 		if (!CDOIDUtils.checkId(storageKey)) {
 			throw new ComponentNotFoundException(handledCategory, componentId);

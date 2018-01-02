@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.util.Set;
 
 import com.b2international.commons.ExplicitFirstOrdering;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -84,7 +83,7 @@ public abstract class DescriptionRequestHelper {
 	}
 
 	/**
-	 * Retrieves the preferred term for the concept identified by the given {@link IComponentRef component reference}, if it exists. 
+	 * Retrieves the preferred term for the concept identified by the given identifier, if it exists. 
 	 * <p>
 	 * The first active description with "synonym" or descendant as the type will be returned, where all of the following conditions apply:
 	 * <ul>
@@ -117,7 +116,7 @@ public abstract class DescriptionRequestHelper {
 	}
 
 	/**
-	 * Retrieves the fully specified name for the concept identified by the given {@link IComponentRef component reference}, if it exists. 
+	 * Retrieves the fully specified name for the concept identified by the given identifier, if it exists. 
 	 * <p>
 	 * The first active description with "fully specified name" as the type will be returned, where all of the following conditions apply:
 	 * <ul>

@@ -16,7 +16,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.datastore.server,
  com.b2international.snowowl.datastore.server.cdo,
- com.b2international.snowowl.datastore.server.domain,
  com.b2international.snowowl.datastore.server.history,
  com.b2international.snowowl.datastore.server.importer,
  com.b2international.snowowl.datastore.server.index,

@@ -30,19 +30,13 @@ import javax.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.ClassUtils;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.domain.IComponentRef;
-import com.b2international.snowowl.core.domain.IStorageRef;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
-import com.b2international.snowowl.datastore.server.domain.InternalComponentRef;
-import com.b2international.snowowl.datastore.server.domain.InternalStorageRef;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
@@ -123,21 +117,15 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	}
 
 	@Override
-	public ISnomedBrowserConcept getConceptDetails(final IComponentRef conceptRef, final List<ExtendedLocale> locales) {
-
-		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
-		internalConceptRef.checkStorageExists();
-		
-		final IBranchPath branchPath = internalConceptRef.getBranch().branchPath();
-		final String conceptId = conceptRef.getComponentId();
+	public ISnomedBrowserConcept getConceptDetails(final String branchPath, final String conceptId, final List<ExtendedLocale> locales) {
 		final SnomedConcept concept = SnomedRequests.prepareGetConcept(conceptId)
 				.setLocales(locales)
 				.setExpand("pt(),fsn(),descriptions(limit:"+Integer.MAX_VALUE+"),relationships(limit:"+Integer.MAX_VALUE+")")
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 				.execute(bus)
 				.getSync();
 		
-		final DescriptionService descriptionService = new DescriptionService(bus, conceptRef.getBranchPath());
+		final DescriptionService descriptionService = new DescriptionService(bus, branchPath);
 		
 		final SnomedDescription fullySpecifiedName = concept.getFsn();
 		final SnomedDescription preferredSynonym = concept.getPt();
@@ -150,7 +138,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		result.setEffectiveTime(concept.getEffectiveTime());
 		result.setModuleId(concept.getModuleId());
 		
-		populateLeafFields(branchPath.getPath(), conceptId, result);
+		populateLeafFields(branchPath, conceptId, result);
 		
 		result.setDescriptions(convertDescriptions(concept.getDescriptions()));
 		
@@ -164,7 +152,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			result.setPreferredSynonym(preferredSynonym.getTerm());
 		}
 
-		result.setRelationships(convertRelationships(concept.getRelationships(), conceptRef, locales));
+		result.setRelationships(convertRelationships(branchPath, conceptId, concept.getRelationships(), locales));
 		
 		return result;
 	}
@@ -182,8 +170,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				.execute(bus)
 				.getSync()
 				.getResultAs(String.class);
-		final IComponentRef componentRef = SnomedServiceHelper.createComponentRef(branchPath, createdConceptId);
-		return getConceptDetails(componentRef, locales);
+		return getConceptDetails(branchPath, createdConceptId, locales);
 	}
 
 	@Override
@@ -191,9 +178,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		final Stopwatch watch = Stopwatch.createStarted();
 		
 		LOGGER.info("Update concept start {}", newVersionConcept.getFsn());
-		final IComponentRef componentRef = SnomedServiceHelper.createComponentRef(branchPath, newVersionConcept.getConceptId());
-
-		final ISnomedBrowserConcept existingVersionConcept = getConceptDetails(componentRef, locales);
+		
+		final ISnomedBrowserConcept existingVersionConcept = getConceptDetails(branchPath, newVersionConcept.getConceptId(), locales);
 
 		// Concept update
 		final SnomedConceptUpdateRequest conceptUpdate = inputFactory.createComponentUpdate(existingVersionConcept, newVersionConcept, SnomedConceptUpdateRequest.class);
@@ -263,7 +249,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			.getSync();
 		LOGGER.info("Committed changes for concept {}", newVersionConcept.getFsn());
 
-		return getConceptDetails(componentRef, locales);
+		return getConceptDetails(branchPath, newVersionConcept.getConceptId(), locales);
 	}
 	
 	private String getCommitComment(String userId, ISnomedBrowserConcept snomedConceptInput, String action) {
@@ -312,10 +298,8 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		return SnomedBrowserDescriptionType.getByConceptId(typeId);
 	}
 
-	private List<ISnomedBrowserRelationship> convertRelationships(final Iterable<SnomedRelationship> relationships, final IComponentRef sourceConceptRef, final List<ExtendedLocale> locales) {
-		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(sourceConceptRef, InternalComponentRef.class);
-		final IBranchPath branchPath = internalConceptRef.getBranch().branchPath();
-		final DescriptionService descriptionService = new DescriptionService(bus, sourceConceptRef.getBranchPath());
+	private List<ISnomedBrowserRelationship> convertRelationships(final String branchPath, final String conceptId, final Iterable<SnomedRelationship> relationships, final List<ExtendedLocale> locales) {
+		final DescriptionService descriptionService = new DescriptionService(bus, branchPath);
 
 		final ImmutableMap.Builder<String, ISnomedBrowserRelationship> convertedRelationshipBuilder = ImmutableMap.builder();
 		for (final SnomedRelationship relationship : relationships) {
@@ -332,7 +316,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		
 		final Map<String, ISnomedBrowserRelationship> convertedRelationships = convertedRelationshipBuilder.build();
 		
-		final List<SnomedBrowserRelationshipType> types = new FsnJoinerOperation<SnomedBrowserRelationshipType>(sourceConceptRef.getComponentId(), 
+		final List<SnomedBrowserRelationshipType> types = new FsnJoinerOperation<SnomedBrowserRelationshipType>(conceptId, 
 				locales, 
 				descriptionService) {
 			
@@ -361,7 +345,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			}
 		});
 		
-		final List<SnomedBrowserRelationshipTarget> targets = new FsnJoinerOperation<SnomedBrowserRelationshipTarget>(sourceConceptRef.getComponentId(), 
+		final List<SnomedBrowserRelationshipTarget> targets = new FsnJoinerOperation<SnomedBrowserRelationshipTarget>(conceptId, 
 				locales, 
 				descriptionService) {
 			
@@ -405,14 +389,14 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 		return ImmutableList.copyOf(convertedRelationships.values());
 	}
 	
-	private SnomedConcepts getConcepts(final IBranchPath branchPath, final Set<String> destinationConceptIds) {
+	private SnomedConcepts getConcepts(final String branchPath, final Set<String> destinationConceptIds) {
 		if (destinationConceptIds.isEmpty()) {
 			return new SnomedConcepts(0, 0);
 		}
 		return SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByIds(destinationConceptIds)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 				.execute(bus)
 				.getSync();
 	}
@@ -438,19 +422,17 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	}
 
 	@Override
-	public List<ISnomedBrowserParentConcept> getConceptParents(final IComponentRef conceptRef, final List<ExtendedLocale> locales) {
-		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
-		final IBranchPath branchPath = internalConceptRef.getBranch().branchPath();
-		final DescriptionService descriptionService = new DescriptionService(bus, conceptRef.getBranchPath());
+	public List<ISnomedBrowserParentConcept> getConceptParents(final String branchPath, final String componentId, final List<ExtendedLocale> locales) {
+		final DescriptionService descriptionService = new DescriptionService(bus, branchPath);
 
-		return new FsnJoinerOperation<ISnomedBrowserParentConcept>(conceptRef.getComponentId(), locales, descriptionService) {
+		return new FsnJoinerOperation<ISnomedBrowserParentConcept>(componentId, locales, descriptionService) {
 			
 			@Override
 			protected Iterable<SnomedConcept> getConceptEntries(String conceptId) {
 				return SnomedRequests.prepareGetConcept(conceptId)
 						.setExpand("ancestors(form:\"inferred\",direct:true)")
 						.setLocales(locales)
-						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 						.execute(bus)
 						.getSync().getAncestors();
 			}
@@ -471,12 +453,10 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	}
 	
 	@Override
-	public List<ISnomedBrowserChildConcept> getConceptChildren(final IComponentRef conceptRef, final List<ExtendedLocale> locales, final boolean stated) {
-		final InternalComponentRef internalConceptRef = ClassUtils.checkAndCast(conceptRef, InternalComponentRef.class);
-		final String branch = internalConceptRef.getBranch().path();
-		final DescriptionService descriptionService = new DescriptionService(bus, conceptRef.getBranchPath());
+	public List<ISnomedBrowserChildConcept> getConceptChildren(final String branchPath, final String componentId, final List<ExtendedLocale> locales, final boolean stated) {
+		final DescriptionService descriptionService = new DescriptionService(bus, branchPath);
 
-		return new FsnJoinerOperation<ISnomedBrowserChildConcept>(conceptRef.getComponentId(), locales, descriptionService) {
+		return new FsnJoinerOperation<ISnomedBrowserChildConcept>(componentId, locales, descriptionService) {
 			
 			@Override
 			protected Iterable<SnomedConcept> getConceptEntries(String conceptId) {
@@ -485,7 +465,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 						.filterByActive(true)
 						.filterByParent(stated ? null : conceptId)
 						.filterByStatedParent(stated ? conceptId : null)
-						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 						.execute(bus)
 						.getSync();
 				
@@ -502,7 +482,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 				convertedConcept.setModuleId(conceptEntry.getModuleId());
 				convertedConcept.setFsn(optionalFsn.or(childConceptId));
 
-				populateLeafFields(branch, childConceptId, convertedConcept);
+				populateLeafFields(branchPath, childConceptId, convertedConcept);
 
 				return convertedConcept;
 			}
@@ -528,16 +508,12 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 	}
 
 	@Override
-	public List<ISnomedBrowserDescriptionResult> getDescriptions(final IStorageRef storageRef, final String query, final List<ExtendedLocale> locales, final ISnomedBrowserDescriptionResult.TermType resultConceptTermType, final String scrollKeepAlive, final String scrollId, final int limit) {
-		checkNotNull(storageRef, "Storage reference may not be null.");
+	public List<ISnomedBrowserDescriptionResult> getDescriptions(final String branchPath, final String query, final List<ExtendedLocale> locales, final ISnomedBrowserDescriptionResult.TermType resultConceptTermType, final String scrollKeepAlive, final String scrollId, final int limit) {
+		checkNotNull(branchPath, "BranchPath may not be null.");
 		checkNotNull(query, "Query may not be null.");
 		checkArgument(query.length() >= 3, "Query must be at least 3 characters long.");
 
-		final InternalStorageRef internalStorageRef = ClassUtils.checkAndCast(storageRef, InternalStorageRef.class);
-		internalStorageRef.checkStorageExists();
-
-		final IBranchPath branchPath = internalStorageRef.getBranch().branchPath();
-		final DescriptionService descriptionService = new DescriptionService(bus, storageRef.getBranchPath());
+		final DescriptionService descriptionService = new DescriptionService(bus, branchPath);
 		
 		final Collection<SnomedDescription> descriptions = SnomedRequests.prepareSearchDescription()
 			.setScroll(scrollKeepAlive)
@@ -545,7 +521,7 @@ public class SnomedBrowserService implements ISnomedBrowserService {
 			.setLimit(limit)
 			.filterByTerm(query)
 			.sortBy(SearchIndexResourceRequest.SCORE)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 			.execute(bus)
 			.getSync()
 			.getItems();
