@@ -32,7 +32,6 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.ExtendedComponent;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.IComponentIconIdProvider;
 import com.b2international.snowowl.core.api.ILookupService;
@@ -41,8 +40,6 @@ import com.b2international.snowowl.core.api.INameProviderFactory;
 import com.b2international.snowowl.core.api.ISearchResultProvider;
 import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
 import com.b2international.snowowl.core.api.IValueSetMembershipLookupService;
-import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
-import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowserFactory;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
@@ -501,33 +498,6 @@ public class CoreTerminologyBroker {
 		}
 
 		return searchers;
-	}
-
-	private static final IClientTerminologyBrowser<IComponent<String>, String> EMPTY_CLIENT_BROWSER = new ClientTerminologyBrowserAdapter<IComponent<String>, String>() {
-		@Override public boolean isTerminologyAvailable() {
-			return true;
-		}
-	};
-	
-	/**Returns with the {@link IClientTerminologyBrowserFactory terminology browser factory} for the given terminology component ID argument.
-	 *<p>If there are no registered terminology browser factories associated with the given terminology component ID, this method returns with a factory 
-	 *which creates an {@link ClientTerminologyBrowserAdapter empty terminology browser}. That empty terminology browser instance always returns with {@code true}
-	 *for {@link IClientTerminologyBrowser#isTerminologyAvailable()} invocation.*/
-	public IClientTerminologyBrowserFactory<String, IComponent<String>, IClientTerminologyBrowser<IComponent<String>, String>> getTerminologyBrowserFactory(
-			final String terminologyComponentId) {
-		
-		final IConfigurationElement configurationElement = getTerminologyLevelConfigurationElementUnsafe(getTerminologyId(terminologyComponentId), TERMINOLOGY_BROWSER_FACTORY_EXTENSION_POINT_ID);
-		if (null == configurationElement) {
-			return new IClientTerminologyBrowserFactory<String, IComponent<String>, IClientTerminologyBrowser<IComponent<String>,String>>() {
-				@Override public IClientTerminologyBrowser<IComponent<String>, String> getTerminologyBrowser() {
-					return EMPTY_CLIENT_BROWSER;
-				}
-				@Override public IClientTerminologyBrowser<IComponent<String>, String> getTerminologyBrowser(IBranchPath branchPath) {
-					return EMPTY_CLIENT_BROWSER;
-				}
-			};
-		}
-		return (IClientTerminologyBrowserFactory<String, IComponent<String>, IClientTerminologyBrowser<IComponent<String>, String>>) createExecutableExtension(configurationElement);
 	}
 
 	public INameProviderFactory getNameProviderFactory(final String terminologyComponentId) {

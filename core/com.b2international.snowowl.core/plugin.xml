@@ -3,7 +3,6 @@
 <plugin>
    <extension-point id="terminology" name="terminology" schema="schema/terminology.exsd"/>
    <extension-point id="terminologyComponent" name="terminologyComponent" schema="schema/terminologyComponent.exsd"/>
-   <extension-point id="terminologyBrowserFactory" name="terminologyBrowserFactory" schema="schema/terminologyBrowserFactory.exsd"/>
    <extension-point id="representation" name="representation" schema="schema/representation.exsd"/>
    <extension-point id="lookupService" name="lookupService" schema="schema/lookupService.exsd"/>
    <extension-point id="searchResultProvider" name="searchResultProvider" schema="schema/searchResultProvider.exsd"/>

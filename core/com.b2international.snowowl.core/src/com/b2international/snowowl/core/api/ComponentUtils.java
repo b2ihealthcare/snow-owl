@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.component.IdProvider;
 import com.b2international.snowowl.core.api.component.LabelProvider;
 import com.google.common.base.Function;
@@ -61,20 +60,6 @@ public final class ComponentUtils {
 		}
 	}
 	
-	private static final class ComponentFunction<K, C extends IComponent<K>> implements Function<K, C> {
-
-		private final IClientTerminologyBrowser<C, K> terminologyBrowser;
-		
-		private ComponentFunction(final IClientTerminologyBrowser<C, K> terminologyBrowser) {
-			this.terminologyBrowser = terminologyBrowser;
-		}
-
-		@Override
-		public C apply(final K input) {
-			return terminologyBrowser.getConcept(input);
-		}
-	}
-
 	private ComponentUtils() {
 		// Suppress instantiation 
 	}
@@ -85,10 +70,6 @@ public final class ComponentUtils {
 	
 	public static Function<LabelProvider, String> getLabelFunction() {
 		return LabelFunction.INSTANCE;
-	}
-	
-	public static <K, C extends IComponent<K>> Function<K, C> getComponentFunction(final IClientTerminologyBrowser<C, K> terminologyBrowser) {
-		return new ComponentFunction<K, C>(checkNotNull(terminologyBrowser, "terminologyBrowser"));
 	}
 	
 	public static <K extends Comparable<K>, T extends IdProvider<K>> Ordering<T> getIdOrdering() {
