@@ -17,8 +17,6 @@ package com.b2international.snowowl.core.api;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.core.api.index.IIndexEntry;
-
 /**
  * Strategy interface for component set membership search result providers.
  * 
@@ -39,6 +37,6 @@ public interface MembershipSearchResultProviderStrategy<S> {
 	 * @param componentId
 	 * @return
 	 */
-	Collection<IIndexEntry> getComponents(S service, String terminologyComponentId, String componentId);
+	Collection<IComponent<String>> getComponents(S service, String terminologyComponentId, String componentId);
 
 }

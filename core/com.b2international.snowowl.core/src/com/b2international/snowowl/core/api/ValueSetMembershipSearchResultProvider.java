@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.google.common.collect.Sets;
 
 /**
@@ -47,10 +46,10 @@ public enum ValueSetMembershipSearchResultProvider {
 	 * @return a collection of value set members with their globally unique
 	 *         storage key referencing to the component.
 	 */
-	public Collection<IIndexEntry> getValueSetMembers(final String codeSystemShortName, final String componentId) {
+	public Collection<IComponent<String>> getValueSetMembers(final String codeSystemShortName, final String componentId) {
 		return getUnmodifiableSet(codeSystemShortName, componentId, new MembershipSearchResultProviderStrategy<IValueSetMembershipLookupService>() {
 			@Override
-			public Collection<IIndexEntry> getComponents(IValueSetMembershipLookupService service, String codeSystemShortName, String componentId) {
+			public Collection<IComponent<String>> getComponents(IValueSetMembershipLookupService service, String codeSystemShortName, String componentId) {
 				return service.getMembers(codeSystemShortName, componentId);
 			}
 		});
@@ -69,17 +68,17 @@ public enum ValueSetMembershipSearchResultProvider {
 	 * @return a collection of value sets with their globally unique
 	 *         storage key referencing to the component.
 	 */
-	public Collection<IIndexEntry> getValueSets(final String codeSystemShortName, final String componentId) {
+	public Collection<IComponent<String>> getValueSets(final String codeSystemShortName, final String componentId) {
 		return getUnmodifiableSet(codeSystemShortName, componentId, new MembershipSearchResultProviderStrategy<IValueSetMembershipLookupService>() {
 			@Override
-			public Collection<IIndexEntry> getComponents(IValueSetMembershipLookupService service, String codeSystemShortName, String componentId) {
+			public Collection<IComponent<String>> getComponents(IValueSetMembershipLookupService service, String codeSystemShortName, String componentId) {
 				return service.getValueSets(codeSystemShortName, componentId);
 			}
 		});
 	}
 
-	private Collection<IIndexEntry> getUnmodifiableSet(final String codeSystemShortName, final String componentId, MembershipSearchResultProviderStrategy<IValueSetMembershipLookupService> provider) {
-		final Set<IIndexEntry> result = Sets.newHashSet();
+	private Collection<IComponent<String>> getUnmodifiableSet(final String codeSystemShortName, final String componentId, MembershipSearchResultProviderStrategy<IValueSetMembershipLookupService> provider) {
+		final Set<IComponent<String>> result = Sets.newHashSet();
 		final Collection<IValueSetMembershipLookupService> lookupServices = CoreTerminologyBroker.getInstance().getValueSetMembershipLookupServices();
 		for (final IValueSetMembershipLookupService service : lookupServices) {
 			result.addAll(provider.getComponents(service, codeSystemShortName, componentId));

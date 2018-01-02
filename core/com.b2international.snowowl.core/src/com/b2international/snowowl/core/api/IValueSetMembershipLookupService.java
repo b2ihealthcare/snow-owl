@@ -17,16 +17,14 @@ package com.b2international.snowowl.core.api;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.core.api.index.IIndexEntry;
-
 /**
  * Terminology independent value set membership lookup service.
  * 
  */
 public interface IValueSetMembershipLookupService {
 
-	public Collection<IIndexEntry> getMembers(final String codeSystemShortName, final String componentId);
+	public Collection<IComponent<String>> getMembers(final String codeSystemShortName, final String componentId);
 	
-	public Collection<IIndexEntry> getValueSets(final String codeSystemShortName, final String componentId);
+	public Collection<IComponent<String>> getValueSets(final String codeSystemShortName, final String componentId);
 
 }

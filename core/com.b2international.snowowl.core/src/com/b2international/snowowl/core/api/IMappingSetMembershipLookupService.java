@@ -17,15 +17,13 @@ package com.b2international.snowowl.core.api;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.core.api.index.IIndexEntry;
-
 /**
  * @since 3.0
  */
 public interface IMappingSetMembershipLookupService {
 
-	Collection<IIndexEntry> getMappings(String codeSystemShortName, String componentId);
+	Collection<IComponent<String>> getMappings(String codeSystemShortName, String componentId);
 
-	Collection<IIndexEntry> getMappingSets(String codeSystemShortName, String componentId);
+	Collection<IComponent<String>> getMappingSets(String codeSystemShortName, String componentId);
 
 }

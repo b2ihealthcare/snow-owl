@@ -27,8 +27,8 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import com.b2international.index.WithScore;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.Revision;
+import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.api.component.IconIdProvider;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
@@ -36,7 +36,7 @@ import com.google.common.base.Objects.ToStringHelper;
 /**
  * @since 4.7
  */
-public abstract class RevisionDocument extends Revision implements IIndexEntry, IconIdProvider<String>, WithScore {
+public abstract class RevisionDocument extends Revision implements IComponent<String>, IconIdProvider<String>, WithScore {
 
 	public static abstract class Expressions {
 

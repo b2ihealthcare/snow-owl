@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
 import com.google.common.collect.Sets;
 
 /**
@@ -30,26 +29,26 @@ public enum MappingSetMembershipSearchResultProvider {
 
 	INSTANCE;
 
-	public Collection<IIndexEntry> getMappingSetMappings(final String codeSystemShortName, final String componentId) {
+	public Collection<IComponent<String>> getMappingSetMappings(final String codeSystemShortName, final String componentId) {
 		return getUnmodifiableSet(codeSystemShortName, componentId, new MembershipSearchResultProviderStrategy<IMappingSetMembershipLookupService>() {
 			@Override
-			public Collection<IIndexEntry> getComponents(IMappingSetMembershipLookupService service, String terminologyComponentId, String componentId) {
+			public Collection<IComponent<String>> getComponents(IMappingSetMembershipLookupService service, String terminologyComponentId, String componentId) {
 				return service.getMappings(terminologyComponentId, componentId);
 			}
 		});
 	}
 
-	public Collection<IIndexEntry> getMappingSets(final String codeSystemShortName, final String componentId) {
+	public Collection<IComponent<String>> getMappingSets(final String codeSystemShortName, final String componentId) {
 		return getUnmodifiableSet(codeSystemShortName, componentId, new MembershipSearchResultProviderStrategy<IMappingSetMembershipLookupService>() {
 			@Override
-			public Collection<IIndexEntry> getComponents(IMappingSetMembershipLookupService service, String terminologyComponentId, String componentId) {
+			public Collection<IComponent<String>> getComponents(IMappingSetMembershipLookupService service, String terminologyComponentId, String componentId) {
 				return service.getMappingSets(terminologyComponentId, componentId);
 			}
 		});
 	}
 
-	private Collection<IIndexEntry> getUnmodifiableSet(final String terminologyComponentId, final String componentId, MembershipSearchResultProviderStrategy<IMappingSetMembershipLookupService> provider) {
-		Set<IIndexEntry> result = Sets.newHashSet();
+	private Collection<IComponent<String>> getUnmodifiableSet(final String terminologyComponentId, final String componentId, MembershipSearchResultProviderStrategy<IMappingSetMembershipLookupService> provider) {
+		Set<IComponent<String>> result = Sets.newHashSet();
 		Collection<IMappingSetMembershipLookupService> lookupServices = CoreTerminologyBroker.getInstance().getMappingSetMembershipLookupServices();
 		for (IMappingSetMembershipLookupService service : lookupServices) {
 			result.addAll(provider.getComponents(service, terminologyComponentId, componentId));

@@ -21,7 +21,6 @@ Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.core,
  com.b2international.snowowl.core.api,
  com.b2international.snowowl.core.api.component,
- com.b2international.snowowl.core.api.index,
  com.b2international.snowowl.core.api.preferences,
  com.b2international.snowowl.core.api.preferences.io,
  com.b2international.snowowl.core.branch,
