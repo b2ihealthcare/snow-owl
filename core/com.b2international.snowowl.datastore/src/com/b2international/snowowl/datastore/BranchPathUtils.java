@@ -32,7 +32,6 @@ import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.commons.collections.BackwardListIterator;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBaseBranchPath;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.NullBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
@@ -74,13 +73,6 @@ public abstract class BranchPathUtils {
 	 */
 	public static IBranchPath createPath(final String path) {
 		return getOrCache(new BranchPath(checkNotNull(path, "Path argument cannot be null.")));
-	}
-	
-	/**Sugar for unwrapping a {@link IBaseBranchPath base branch path} into a common {@link IBranchPath branch path} instance.*/
-	public static IBranchPath createPath(final IBranchPath branchPath) {
-		return checkNotNull(branchPath, "branchPath") instanceof IBaseBranchPath
-			? createPath(branchPath.getPath())
-			: branchPath;
 	}
 	
 	/**
@@ -128,43 +120,6 @@ public abstract class BranchPathUtils {
 		final Iterable<String> allSegments = Iterables.concat(sourceSegments, appendedSegments);
 		
 		return BranchPathUtils.createPath(Joiner.on(IBranchPath.SEPARATOR_CHAR).join(allSegments));
-	}
-	
-	/**
-	 * Converts the given branch path argument into a {@link IBaseBranchPath} instance.
-	 * <p>The branch path representing the {@link IBranchPath#MAIN_BRANCH MAIN} branch is prohibited. 
-	 * @param logicalPath the branch path to convert. Cannot be the MAIN path.
-	 * @param contextPath the branch path to use for opening an index service.
-	 * @return the converted branch path representing the base of a particular branch.
-	 */
-	public static IBranchPath convertIntoBasePath(final IBranchPath logicalPath, final IBranchPath contextPath) {
-		checkNotNull(logicalPath, "logicalPath");
-		checkNotNull(contextPath, "contextPath");
-		checkArgument(!isMain(logicalPath), "Cannot convert MAIN branch path into base path.");
-		
-		if (logicalPath instanceof IBaseBranchPath) {
-			final IBranchPath existingContextPath = ((IBaseBranchPath) logicalPath).getContextPath();
-			checkArgument(contextPath.equals(existingContextPath), "Base branch path references a different context path (%s instead of %s).", existingContextPath, contextPath);
-			return logicalPath;
-		} else {
-			return new BaseBranchPath(logicalPath, contextPath);
-		}
-	}
-	
-	public static IBranchPath convertIntoBasePath(final IBranchPath logicalPath) {
-		checkNotNull(logicalPath, "logicalPath");
-		checkArgument(!isMain(logicalPath), "Cannot convert MAIN branch path into base path.");
-		return convertIntoBasePath(logicalPath, logicalPath);
-	}
-	
-	/**
-	 * Returns with {@code true} if the {@link IBranchPath branch path} argument is assignable to
-	 * the {@link IBaseBranchPath} interface. Otherwise {@code false}.
-	 * @param branchPath the branch path to check.
-	 * @return {@code true} if base path. Otherwise {@code false}.
-	 */
-	public static boolean isBasePath(final IBranchPath branchPath) {
-		return checkNotNull(branchPath, "branchPath") instanceof IBaseBranchPath; 
 	}
 	
 	/**

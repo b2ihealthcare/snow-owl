@@ -15,9 +15,7 @@
  */
 package com.b2international.snowowl.datastore.cdo;
 
-import static com.b2international.snowowl.datastore.BranchPathUtils.isBasePath;
 import static com.b2international.snowowl.datastore.BranchPointUtils.create;
-import static com.b2international.snowowl.datastore.BranchPointUtils.createBase;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Comparator;
@@ -114,11 +112,7 @@ import com.google.common.primitives.Longs;
 	
 	@Override
 	public CDOView createView(final IBranchPath branchPath) {
-		if (isBasePath(checkNotNull(branchPath, "branchPath"))) {
-			return createView(createBase(getUuid(), branchPath));
-		} else {
-			return createView(create(getUuid(), branchPath));
-		}
+		return createView(create(getUuid(), branchPath));
 	}
 	
 	@Override
