@@ -24,7 +24,6 @@ import org.eclipse.net4j.signal.ISignalProtocol;
 import org.eclipse.net4j.util.event.IListener;
 
 import com.b2international.snowowl.core.api.IBranchPoint;
-import com.b2international.snowowl.datastore.Authenticator;
 import com.b2international.snowowl.identity.domain.User;
 
 

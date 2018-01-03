@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore;
+package com.b2international.snowowl.datastore.cdo;
 
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -30,7 +30,7 @@ import com.google.common.base.Charsets;
  * Client side utility class for user authentication.
  * 
  */
-public class Authenticator {
+final class Authenticator {
 	
 	private final IApplicationSessionManager sessionManager;
 	
