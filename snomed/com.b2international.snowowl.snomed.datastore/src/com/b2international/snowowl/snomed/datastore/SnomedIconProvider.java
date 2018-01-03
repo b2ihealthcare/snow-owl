@@ -27,7 +27,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.core.api.component.IconIdProvider;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.BranchPointUtils;
 import com.b2international.snowowl.datastore.ComponentIconProvider;
@@ -169,18 +168,7 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 			return iconId;
 		}
 		
-		// Option 2: Get the index entry and retrieve the icon ID from it
-		final IconIdProvider<String> entry = getIndexEntry(componentId, branchPath);
-		if (entry == null) {
-			return Concepts.ROOT_CONCEPT; 
-		}
-		
-		iconId = entry.getIconId();
-		if (!StringUtils.isEmpty(iconId)) {
-			return iconId;
-		}
-		
-		return iconId;
+		return Concepts.ROOT_CONCEPT; 
 	}
 	
 	/**
@@ -189,7 +177,7 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 	 */
 	public Collection<String> getAvailableIconIds() {
 		return Collections.unmodifiableCollection(imageConceptIds);
-	} 
+	}
 	
 	private Collection<String> readAvailableImageNames() {
 		if (imageConceptIds == null) {
@@ -210,10 +198,6 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 			}
 		}
 		return imageConceptIds;
-	}
-
-	private IconIdProvider<String> getIndexEntry(String componentId, final IBranchPath branchPath) {
-		throw new UnsupportedOperationException("TODO refactor icon providers");
 	}
 
 	/** @return the File pointing at the icon .png for the specified concept */
