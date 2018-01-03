@@ -354,6 +354,10 @@ public class CoreTerminologyBroker {
 		return terminologyToComponentsSupplier.get().keySet();
 	}
 	
+	public Multimap<String, String> getAllRegisteredTerminologiesWithComponents() {
+		return terminologyToComponentsSupplier.get();
+	}
+	
 	public IConfigurationElement getTerminologyComponentLevelConfigurationElement(final String terminologyComponentId, final String extensionPointId) {
 		Preconditions.checkNotNull(terminologyComponentId, "Terminology component identifier argument cannot be null.");
 		Preconditions.checkNotNull(extensionPointId, "Extension point identifier name argument cannot be null.");
