@@ -1390,17 +1390,17 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	protected <T> ILookupService<String, T, CDOView> getComponentLookupService(Class<T> type) {
+	protected <T> ILookupService<T, CDOView> getComponentLookupService(Class<T> type) {
 		if (type == Concept.class) {
-			return (ILookupService<String, T, CDOView>) new SnomedConceptLookupService();
+			return (ILookupService<T, CDOView>) new SnomedConceptLookupService();
 		} else if (type == Description.class) {
-			return (ILookupService<String, T, CDOView>) new SnomedDescriptionLookupService();
+			return (ILookupService<T, CDOView>) new SnomedDescriptionLookupService();
 		} else if (type == Relationship.class) {
-			return (ILookupService<String, T, CDOView>) new SnomedRelationshipLookupService();
+			return (ILookupService<T, CDOView>) new SnomedRelationshipLookupService();
 		} else if (SnomedRefSet.class.isAssignableFrom(type)) {
-			return (ILookupService<String, T, CDOView>) new SnomedRefSetLookupService();
+			return (ILookupService<T, CDOView>) new SnomedRefSetLookupService();
 		} else if (SnomedRefSetMember.class.isAssignableFrom(type)) {
-			return (ILookupService<String, T, CDOView>) new SnomedRefSetMemberLookupService();
+			return (ILookupService<T, CDOView>) new SnomedRefSetMemberLookupService();
 		} else {
 			return super.getComponentLookupService(type);
 		}

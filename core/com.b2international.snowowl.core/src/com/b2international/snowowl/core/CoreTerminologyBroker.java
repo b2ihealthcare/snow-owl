@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core;
 
 import static com.google.common.base.Strings.nullToEmpty;
-import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -29,7 +28,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 
 import com.b2international.commons.ClassUtils;
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.IMappingSetMembershipLookupService;
@@ -334,8 +332,8 @@ public class CoreTerminologyBroker {
 		return (INameProviderFactory) createExecutableExtension(getTerminologyComponentLevelConfigurationElement(terminologyComponentId, NAME_PROVIDER_SERVICE_EXTENSION_POINT_ID));
 	}
 
-	public <T, V> ILookupService<String, T, V> getLookupService(final String terminologyComponentId) {
-		return (ILookupService<String, T, V>) createExecutableExtension(getTerminologyComponentLevelConfigurationElement(terminologyComponentId, LOOKUP_SERVICE_EXTENSION_POINT_ID));
+	public <T, V> ILookupService<T, V> getLookupService(final String terminologyComponentId) {
+		return (ILookupService<T, V>) createExecutableExtension(getTerminologyComponentLevelConfigurationElement(terminologyComponentId, LOOKUP_SERVICE_EXTENSION_POINT_ID));
 	}
 
 	public Object createExecutableExtension(final IConfigurationElement configurationElement) {

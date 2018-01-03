@@ -252,7 +252,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		}
  	}
 	
-	protected <T> ILookupService<String, T, CDOView> getComponentLookupService(Class<T> type) {
+	protected <T> ILookupService<T, CDOView> getComponentLookupService(Class<T> type) {
 		throw new UnsupportedOperationException("Lookup not supported for type: " + type.getName());
 	}
 

@@ -162,7 +162,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	@Override
-	protected <T> ILookupService<String, T, CDOView> getComponentLookupService(Class<T> type) {
+	protected <T> ILookupService<T, CDOView> getComponentLookupService(Class<T> type) {
 		return getSnomedEditingContext().getComponentLookupService(type);
 	}
 	
