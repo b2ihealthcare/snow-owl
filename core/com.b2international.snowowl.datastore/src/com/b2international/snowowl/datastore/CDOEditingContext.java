@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,6 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
-import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -163,7 +162,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 			containerVersion = visibleContainerRevision.getVersion();
 			
 			final CDOQuery query = transaction.createQuery("sql", sqlGetIndexFormatted);
-			query.setParameter(CDOQueryUtils.CDO_OBJECT_QUERY, false);
+			query.setParameter(org.eclipse.emf.cdo.server.internal.db.SQLQueryHandler.CDO_OBJECT_QUERY, false);
 			query.setParameter("cdoId", cdoId);
 			query.setParameter("containerId", containerId);
 			query.setParameter("containerVersion", containerVersion);

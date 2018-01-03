@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.cdo;
 
-import static com.b2international.snowowl.datastore.BranchPointUtils.create;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Comparator;
@@ -36,7 +35,6 @@ import org.eclipse.net4j.util.ref.ReferenceType;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.IBranchPoint;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
@@ -100,19 +98,6 @@ import com.google.common.primitives.Longs;
 	@Override
 	public CDOView createView() {
 		return createView(getMainBranch());
-	}
-	
-	@Override
-	public CDOView createView(final IBranchPoint branchPoint) {
-		checkNotNull(branchPoint, "Branch point argument cannot be null.");
-		final CDOBranch branch = checkNotNull(getBranch(branchPoint.getBranchPath()), "Branch '%s' does not exist.",
-				branchPoint.getBranchPath());
-		return createView(branch, branchPoint.getTimestamp());
-	}
-	
-	@Override
-	public CDOView createView(final IBranchPath branchPath) {
-		return createView(create(getUuid(), branchPath));
 	}
 	
 	@Override

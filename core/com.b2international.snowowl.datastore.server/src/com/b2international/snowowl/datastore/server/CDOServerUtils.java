@@ -25,25 +25,20 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.branch.CDOBranchVersion;
-import org.eclipse.emf.cdo.common.commit.CDOChangeSetData;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
-import org.eclipse.emf.cdo.common.revision.CDORevisionUtil;
 import org.eclipse.emf.cdo.eresource.EresourcePackage;
 import org.eclipse.emf.cdo.internal.server.Repository;
-import org.eclipse.emf.cdo.net4j.CDONet4jSession;
 import org.eclipse.emf.cdo.server.IRepository;
 import org.eclipse.emf.cdo.server.IRepository.WriteAccessHandler;
 import org.eclipse.emf.cdo.server.IStore;
@@ -51,7 +46,6 @@ import org.eclipse.emf.cdo.server.IStoreAccessor;
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
 import org.eclipse.emf.cdo.server.db.IDBStore;
 import org.eclipse.emf.cdo.server.db.IDBStoreAccessor;
-import org.eclipse.emf.cdo.spi.common.commit.CDORevisionAvailabilityInfo;
 import org.eclipse.emf.cdo.spi.common.commit.InternalCDOCommitInfoManager.CommitInfoLoader;
 import org.eclipse.emf.cdo.spi.server.InternalCommitContext;
 import org.eclipse.emf.cdo.spi.server.InternalRepository;
@@ -60,12 +54,7 @@ import org.eclipse.emf.cdo.spi.server.InternalStore;
 import org.eclipse.emf.cdo.spi.server.InternalTransaction;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
-import org.eclipse.emf.cdo.view.CDOView;
-import org.eclipse.emf.spi.cdo.InternalCDOSession;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
-import org.eclipse.net4j.util.om.monitor.EclipseMonitor;
-import org.eclipse.net4j.util.om.monitor.OMMonitor;
-import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -418,75 +407,6 @@ public abstract class CDOServerUtils {
 	}
 
 	/**
-	 * Compares the revisions between the given two {@link CDOBranchPoint branch points} and returns with the {@link CDOChangeSetData change set data}. 
-	 * Clients may restrict the compare process to specific model packages by giving the unique namespace URIs to the model.
-	 * <p>Since this method works on the {@link InternalRepository repository} directly, clients may use this 
-	 * instead of {@link CDOView#compareRevisions(CDOBranchPoint, String...)} or 
-	 * {@link CDONet4jSession#compareRevisions(CDOBranchPoint, CDOBranchPoint, String...)} as to avoid timeout exception due to the {@link OMMonitor monitor}. 
-	 * @param sourceBranchPoint the source branch point.
-	 * @param targetBranchPoint the target branch point.
-	 * @param nsUris the unique namespace of the model packages.  
-	 * @return a {@link CDOChangeSetData change set data} representing the change set between the two {@link CDOBranchPoint branch points}.  
-	 */
-	public static CDOChangeSetData compareRevisions(final CDOBranchPoint sourceBranchPoint, final CDOBranchPoint targetBranchPoint, final String... nsUris) {
-		
-		Preconditions.checkNotNull(sourceBranchPoint, "Source CDO branch point argument cannot be null.");
-		Preconditions.checkNotNull(targetBranchPoint, "Target CDO branch point argument cannot be null.");
-		
-		CDOBranchPoint source = sourceBranchPoint;
-		CDOBranchPoint target = targetBranchPoint;
-		
-		final ICDOConnection connection = getConnectionManager().get(source);
-		final String uuid = connection.getUuid();
-		final InternalCDOSession session = (InternalCDOSession) connection.getSession();
-		
-		final long now = session.getLastUpdateTime();
-		
-		if (CDOBranchPoint.UNSPECIFIED_DATE == target.getTimeStamp()) {
-			target = target.getBranch().getPoint(now);
-		}
-		
-		if (CDOBranchPoint.UNSPECIFIED_DATE == source.getTimeStamp()) {
-			source = source.getBranch().getPoint(now);
-		}
-		
-		final CDORevisionAvailabilityInfo targetInfo = session.createRevisionAvailabilityInfo(target);
-		final CDORevisionAvailabilityInfo sourceInfo = session.createRevisionAvailabilityInfo(sourceBranchPoint);
-		
-		final EclipseMonitor monitor = getNullOmMonitor();
-		monitor.begin();
-		final Async async = monitor.forkAsync();
-	
-		
-		try {
-			
-			//sets the accessor on the store thread local
-			StoreThreadLocal.setAccessor(getAccessorByUuid(uuid));
-			final Set<CDOID> ids = CDOUtils.getRepositoryByUuid(uuid).getMergeData(targetInfo, sourceInfo, null, null, nsUris, monitor);
-	
-			return CDORevisionUtil.createChangeSetData(ids, sourceInfo, targetInfo);
-			
-		} finally {
-			
-			if (null != async) {
-				
-				async.stop();
-				
-			}
-			
-			if (null != monitor) {
-				
-				monitor.done();
-				
-			}
-			
-			StoreThreadLocal.release();
-			
-		}
-		
-	}
-
-	/**
 	 * Returns with a {@link Throwable} if a CDO resource given as a revision already exists. Otherwise returns with {@code null}.
 	 * @param revision the revision to check.
 	 * @return a {@link Throwable} if the CDO resource already exists.
@@ -622,11 +542,6 @@ public abstract class CDOServerUtils {
 	/*returns with the connection manager.*/
 	private static ICDOConnectionManager getConnectionManager() {
 		return ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
-	}
-
-	/*returns with a OM monitor instance wrapping a null progress monitor*/
-	private static EclipseMonitor getNullOmMonitor() {
-		return new EclipseMonitor(new NullProgressMonitor());
 	}
 
 	/*returns with the DB accessor*/

@@ -16,18 +16,11 @@
 package com.b2international.snowowl.datastore;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-import static com.b2international.snowowl.datastore.BranchPathUtils.isMain;
-import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.eclipse.emf.cdo.common.branch.CDOBranchPoint.UNSPECIFIED_DATE;
 
-import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
-import org.eclipse.emf.cdo.common.revision.CDORevision;
-import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.IBranchPoint;
@@ -52,11 +45,6 @@ public abstract class BranchPointUtils {
 		return new BranchPoint(connection, branchPath, timestamp);
 	}
 
-	/**Sugar for {@link #create(ICDOConnection, IBranchPath, long)}.*/
-	public static IBranchPoint create(final String repositoryUuid, final IBranchPath branchPath, final long timestamp) {
-		return new BranchPoint(getConnectionManager().getByUuid(repositoryUuid), branchPath, timestamp);
-	}
-	
 	/**
 	 * Creates a new branch point instance representing the HEAD of the branch.
 	 * @param connection connection to the remote repository.
@@ -73,69 +61,6 @@ public abstract class BranchPointUtils {
 		
 	}
 
-	/**Sugar for {@link #create(ICDOConnection, IBranchPath)}.*/
-	public static IBranchPoint create(final String repositoryUuid, final IBranchPath branchPath) {
-		return create(
-				getConnectionManager().getByUuid(checkNotNull(repositoryUuid, "Repository UUID argument cannot be null.")), 
-				checkNotNull(branchPath, "branchPath"));
-	}
-	
-	/**
-	 * Creates a new {@link IBranchPoint branch point} representing the base of the branch.
-	 * @param repositoryUuid the repository UUID.
-	 * @param branchPath the branch path identifying the branch.
-	 * @return the branch point representing the base of the branch.
-	 */
-	public static IBranchPoint createBase(final String repositoryUuid, final IBranchPath branchPath) {
-		checkArgument(!isMain(checkNotNull(branchPath, "branchPath")), "Base branch path cannot be the MAIN path.");
-		final CDOBranchPoint branchPoint = convert(create(
-				getConnectionManager().getByUuid(checkNotNull(repositoryUuid, "Repository UUID argument cannot be null.")), 
-				branchPath));
-		
-		final long baseTimestamp = branchPoint.getBranch().getBase().getTimeStamp();
-		return create(repositoryUuid, branchPath, baseTimestamp);
-	}
-	
-	/**
-	 * Creates a branch point which is identical to the {@link CDOView object's view}.
-	 * @param object the CDO object.
-	 * @return the branch point where the object lives.
-	 */
-	public static IBranchPoint create(final CDOObject object) {
-		return create(check(object).cdoView());
-	}
-	
-	/**
-	 * Creates a new branch point instance which is identical the {@link CDOView#getBranch() view's branch}
-	 * and {@link CDOView#getTimeStamp() view's point in time}.
-	 * @param view the CDO view.
-	 * @return the branch point.
-	 */
-	public static IBranchPoint create(final CDOView view) {
-		return create(getConnectionManager().get(view), createPath(check(view)), check(view).getTimeStamp());
-	}
-	
-	/**
-	 * Creates a new branch point instance which is identical the {@link CDORevision#getBranch() revision's branch}
-	 * and {@link CDORevision#getTimeStamp() revisions's point in time}.
-	 * @param revision the CDO revision.
-	 * @return the branch point.
-	 */
-	public static IBranchPoint create(final CDORevision revision) {
-		checkNotNull(revision, "CDO revision argument cannot be null.");
-		return create(getConnectionManager().get(revision), createPath(revision.getBranch()), revision.getTimeStamp());
-	}
-	
-	/**
-	 * Creates a new branch point instance based on the given CDO specific {@link CDOBranchPoint branch point}.
-	 * @param branchPoint the CDO branch point.
-	 * @return the branch point.
-	 */
-	public static IBranchPoint create(final CDOBranchPoint branchPoint) {
-		checkNotNull(branchPoint, "branchPoint");
-		return create(getConnectionManager().get(branchPoint.getBranch()), createPath(branchPoint.getBranch()), branchPoint.getTimeStamp());
-	}
-	
 	/**
 	 * Counter part of the {@link #create(CDOBranchPoint)}.
 	 * @param branchPoint the branch point.

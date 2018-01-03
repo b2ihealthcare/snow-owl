@@ -53,11 +53,7 @@ public abstract class CDOViewFunction<T, V extends CDOView> implements CDOFuncti
 	public CDOViewFunction(final String repositoryUuid, final IBranchPath branchPath) {
 		this(check(getConnection(repositoryUuid)), Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null."));
 	}
-	/**Sugar for {@link #CDOViewFunction(ICDOConnection, IBranchPath)}.<br>Creates a new view function opened on the HEAD of the current branch.*/
-	public CDOViewFunction(final EPackage ePackage, final IBranchPath branchPath) {
-		this(check(getConnection(ePackage)), Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null."));
-	}
-	
+
 	/**Creates a function that can make any operation in a {@link CDOView view} opened on a branch in a {@link IBranchPoint#getTimestamp() point in time}.*/
 	public CDOViewFunction(final IBranchPoint branchPoint) {
 		this(BranchPointUtils.convert(Preconditions.checkNotNull(branchPoint, "Branch point argument cannot be null.")));
