@@ -417,7 +417,7 @@ public final class ImportUtil {
 		final IDatastoreOperationLockManager lockManager = ApplicationContext.getInstance().getServiceChecked(IDatastoreOperationLockManager.class);
 		
 		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
-		String importFeatureToggle = ImportUtil.createFeatureToggleString(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath);
+		final String importFeatureToggle = ImportUtil.createFeatureToggleString(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath);
 		try {
 			features.enable(importFeatureToggle);
 			OperationLockRunner.with(lockManager).run(new Runnable() { 
