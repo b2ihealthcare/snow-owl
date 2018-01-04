@@ -293,11 +293,6 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		}
 	}
 
-	private String getComponentLabel(final String componentType, String componentId) {
-		// XXX: Which branch path to use for an external terminology?
-		return CoreTerminologyBroker.getInstance().getNameProviderFactory(componentType).getNameProvider().getComponentLabel(branchPath, componentId);
-	}
-
 	@Deprecated
 	private String getConceptLabel(String conceptId) {
 		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, conceptId);
