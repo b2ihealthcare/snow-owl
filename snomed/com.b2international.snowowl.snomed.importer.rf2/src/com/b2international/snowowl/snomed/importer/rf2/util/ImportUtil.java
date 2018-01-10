@@ -606,7 +606,7 @@ public final class ImportUtil {
 		return ImmutableList.copyOf(listOfFiles);
 	}
 	
-	public static String createFeatureToggleString(String repositoryUUId, IBranchPath branchPath) {
-		return String.format("%s%s.import", repositoryUUId, branchPath.getPath());
+	public static String createFeatureToggleString(String repositoryUuId, IBranchPath branchPath) {
+		return String.format("%s-%s.import", repositoryUuId, branchPath.getPath());
 	}
 }
