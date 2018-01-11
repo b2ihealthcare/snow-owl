@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Map;
 
+import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.ecore.EObject;
@@ -74,7 +75,7 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 	}
 	
 	@Override
-	public <T extends EObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
+	public <T extends CDOObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
 		return editingContext.lookup(componentIds, type);
 	}
 	

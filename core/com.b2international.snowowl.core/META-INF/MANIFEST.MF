@@ -15,7 +15,8 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  xstream;bundle-version="1.4.7",
  org.eclipse.xtext.util;bundle-version="[2.11.0,2.13.0)",
  io.reactivex.rxjava2.rxjava;bundle-version="2.0.7";visibility:=reexport,
- org.reactivestreams.reactive-streams;bundle-version="1.0.0";visibility:=reexport
+ org.reactivestreams.reactive-streams;bundle-version="1.0.0";visibility:=reexport,
+ org.eclipse.emf.cdo;bundle-version="4.1.10"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.core,

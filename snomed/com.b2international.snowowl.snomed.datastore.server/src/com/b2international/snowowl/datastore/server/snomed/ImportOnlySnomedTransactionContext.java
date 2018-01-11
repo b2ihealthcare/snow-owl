@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.snomed;
 import java.util.Collection;
 import java.util.Map;
 
+import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.ecore.EObject;
@@ -155,7 +156,7 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 	}
 	
 	@Override
-	public <T extends EObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
+	public <T extends CDOObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
 		return editingContext.lookup(componentIds, type);
 	}
 	
