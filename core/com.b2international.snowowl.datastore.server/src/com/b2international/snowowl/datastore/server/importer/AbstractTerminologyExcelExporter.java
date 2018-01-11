@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFHyperlink;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
 import com.b2international.commons.AlphaNumericComparator;
@@ -55,7 +54,7 @@ import com.google.common.collect.Ordering;
  * @param <M>
  *            the terminology component member/mapping/concept.
  */
-public abstract class AbstractTerminologyExcelExporter<T, M extends CDOObject> extends AbstractFilteredComponentsTerminologyExporter {
+public abstract class AbstractTerminologyExcelExporter<T, M> extends AbstractFilteredComponentsTerminologyExporter {
 
 	// necessary for auto sizing column in the excel
 	// basic java supports Sarif, Sans-serif, Monospaced, Dialog, DialogInput font styles,
@@ -66,19 +65,8 @@ public abstract class AbstractTerminologyExcelExporter<T, M extends CDOObject> e
 	private static final AlphaNumericComparator COMPARATOR = new AlphaNumericComparator();
 	
 	// The two fields below are non-static because the type parameter needs to be known
-	private final Function<M, String> getLowerCaseMemberCodeFunction = new Function<M, String>() {
-		@Override
-		public String apply(M input) {
-			return getMemberCode(input).toLowerCase(Locale.ENGLISH);
-		}
-	};
-
-	private final Function<T, String> getLowerCaseComponentNameFunction = new Function<T, String>() {
-		@Override
-		public String apply(T input) {
-			return getComponentName(input).toLowerCase(Locale.ENGLISH);
-		}
-	};
+	private final Function<M, String> getLowerCaseMemberCodeFunction = input -> getMemberCode(input).toLowerCase(Locale.ENGLISH);
+	private final Function<T, String> getLowerCaseComponentNameFunction = input -> getComponentName(input).toLowerCase(Locale.ENGLISH);
 
 	private final Workbook workbook = new XSSFWorkbook();
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,11 +66,6 @@ public abstract class Net4jProtocolConstants {
 	public static final short LOINC_IMPORT_SIGNAL = 701;
 	public static final short LOINC_EXPORT_SIGNAL = 702;
 	public static final short LOINC_INDEX_SEARCHER_SIGNAL = 703;
-	
-	// Local terminology protocol
-	public static final short LOCAL_TERMINOLOGY_IMPORT_SIGNAL = 751;
-	public static final short LOCAL_TERMINOLOGY_EXPORT_SIGNAL = 752;
-	public static final short LOCAL_TERMINOLOGY_SEARCHER_SIGNAL = 753;
 	
 	// Value set protocol
 	public static final short VALUE_SET_EXCEL_IMPORT_SIGNAL = 801;

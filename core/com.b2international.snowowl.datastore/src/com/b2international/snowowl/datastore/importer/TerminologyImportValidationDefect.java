@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.importer;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -24,7 +25,7 @@ import com.google.common.collect.Sets;
  * 
  * @since SNow&nbsp;Owl 3.0.1
  */
-public class TerminologyImportValidationDefect {
+public class TerminologyImportValidationDefect implements Serializable {
 	
 	private final String sheetName;
 	private final Set<Defect> defects;
@@ -59,7 +60,7 @@ public class TerminologyImportValidationDefect {
 	/**
 	 * Represents a terminology import defect with a defect type and an error message. 
 	 */
-	public class Defect {
+	public class Defect implements Serializable {
 		
 		private final DefectType defectType;
 		private final String errorMessage;

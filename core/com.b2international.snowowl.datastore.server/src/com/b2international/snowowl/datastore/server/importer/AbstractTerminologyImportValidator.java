@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.Row;
-import org.eclipse.emf.cdo.CDOObject;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.datastore.importer.TerminologyImportType;
@@ -43,7 +42,7 @@ import com.google.common.collect.Sets;
  * @param <T>
  *            the terminology for the validation process.
  */
-public abstract class AbstractTerminologyImportValidator<T extends CDOObject> {
+public abstract class AbstractTerminologyImportValidator<T> {
 
 	private final TerminologyImportType importType;
 	private final TerminologyImportExcelParser excelParser;
