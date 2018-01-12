@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server;
 
-import java.util.Collections;
-import java.util.Comparator;
-
 import javax.annotation.Nullable;
 
 import org.eclipse.core.runtime.CoreException;
@@ -27,16 +24,20 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.ecore.EClass;
 
 import com.b2international.commons.ClassUtils;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
+import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.primitives.Ints;
 
 /**
  * Broker for registered {@link IEClassProvider} instances.
@@ -56,23 +57,38 @@ public enum EClassProviderBroker {
 	 * @param cdoId the unique CDO ID.
 	 * @return the {@link EClass} of an object.
 	 */
-	@Nullable public EClass getEClass(final IBranchPath branchPath, final long storageKey) {
+	@Nullable private EClass getEClass(final IBranchPath branchPath, final long storageKey) {
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		
 		final ICDOConnection connection = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).get(storageKey);
 		final String repositoryUuid = connection.getUuid();
 		
-		for (final IEClassProvider provider : getProviders().get(repositoryUuid)) {
-			
-			final EClass eClass = provider.getEClass(branchPath, storageKey);
-			
-			if (null != eClass) {
-				return eClass;
-			}
-			
-		}
-		
-		return null;
+		return ApplicationContext
+				.getInstance()
+				.getService(RepositoryManager.class)
+				.get(repositoryUuid)
+				.service(RevisionIndex.class)
+				.read(branchPath.getPath(), searcher -> {
+					for (final IEClassProvider provider : getProviders().get(repositoryUuid)) {
+						final EClass eClass = provider.getEClass(searcher, storageKey);
+						if (null != eClass) {
+							return eClass;
+						}
+					}
+					
+					// look for the storageKey as generic CodeSystem or CodeSystemVersion doc
+					CodeSystemEntry codeSystem = searcher.searcher().get(CodeSystemEntry.class, Long.toString(storageKey));
+					if (codeSystem != null) {
+						return TerminologymetadataPackage.Literals.CODE_SYSTEM;
+					}
+					
+					CodeSystemVersionEntry version = searcher.searcher().get(CodeSystemVersionEntry.class, Long.toString(storageKey));
+					if (version != null) {
+						return TerminologymetadataPackage.Literals.CODE_SYSTEM_VERSION;
+					}
+					
+					return null;
+				});
 	} 
 
 	/**
@@ -105,7 +121,6 @@ public enum EClassProviderBroker {
 							final String repositoryUuid = provider.getRepositoryUuid();
 							
 							providers.put(repositoryUuid, provider);
-							Collections.sort(providers.get(repositoryUuid), COMPARATOR);
 						
 						} catch (final CoreException e) {
 							throw new SnowowlRuntimeException("Cannot instantiate EClass provider." + element.getAttribute(CLASS_ATTRIBUTE)); 
@@ -124,11 +139,5 @@ public enum EClassProviderBroker {
 
 	private static final String ECLASS_PROVIDER_EXTENSION_ID = "com.b2international.snowowl.datastore.server.eclassProvider";
 	private static final String CLASS_ATTRIBUTE = "class";
-	
-	private static final Comparator<IEClassProvider> COMPARATOR = new Comparator<IEClassProvider>() {
-		@Override public int compare(final IEClassProvider o1, final IEClassProvider o2) {
-			return Ints.compare(o1.getPriority(), o2.getPriority());
-		}
-	};
 	
 }

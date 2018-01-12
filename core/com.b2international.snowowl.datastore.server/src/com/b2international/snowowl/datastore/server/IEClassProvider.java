@@ -15,9 +15,11 @@
  */
 package com.b2international.snowowl.datastore.server;
 
+import java.io.IOException;
+
 import org.eclipse.emf.ecore.EClass;
 
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.index.revision.RevisionSearcher;
 
 /**
  * Interface for providing {@link EClass}.
@@ -26,17 +28,12 @@ public interface IEClassProvider {
 
 	/**
 	 * Returns with the {@link EClass} of an object identified by a unique storage key.
-	 * @param branchPath the branch path.
+	 * @param searcher - a searcher to use to get the EClass for the storageKey
 	 * @param storageKey the unique storage key.
 	 * @return the {@link EClass}.
+	 * @throws IOException 
 	 */
-	EClass getEClass(IBranchPath branchPath, final long storageKey);
-	
-	/**
-	 * Returns with the priority of the implementation. The less the more important. 
-	 * @return the priority.
-	 */
-	int getPriority();
+	EClass getEClass(RevisionSearcher searcher, final long storageKey) throws IOException;
 	
 	/**
 	 * Returns with the UUID of the repository where the current provider works on.  

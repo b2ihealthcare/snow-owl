@@ -27,12 +27,7 @@ import org.eclipse.emf.ecore.EClass;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.Revision;
-import com.b2international.index.revision.RevisionIndex;
-import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.IEClassProvider;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -59,42 +54,29 @@ public class SnomedEClassProvider implements IEClassProvider {
 			
 	
 	@Override
-	public EClass getEClass(IBranchPath branchPath, final long storageKey) {
-		return ApplicationContext.getServiceForClass(RepositoryManager.class)
-			.get(getRepositoryUuid())
-			.service(RevisionIndex.class)
-			.read(branchPath.getPath(), new RevisionIndexRead<EClass>() {
-				@Override
-				public EClass execute(RevisionSearcher index) throws IOException {
-					for (Entry<Class<? extends Revision>, EClass> entry : SUPPORTED_TYPES.entrySet()) {
-						final Revision rev = index.get(entry.getKey(), storageKey);
-						if (rev != null) {
-							final EClass value = entry.getValue();
-							if (SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER == value) {
-								final SnomedRefSetMemberIndexEntry member = (SnomedRefSetMemberIndexEntry) rev;
-								return getRefSetMemberClass(member.getReferenceSetType());
-							} else {
-								return value;
-							}
-						}
-					}
-					// if still not found, then try to look for the refset storage key field
-					final Hits<SnomedConceptDocument> hits = index.search(Query.select(SnomedConceptDocument.class)
-							.where(SnomedConceptDocument.Expressions.refSetStorageKey(storageKey))
-							.limit(0)
-							.build());
-					if (hits.getTotal() > 0) {
-						return SnomedRefSetPackage.Literals.SNOMED_REF_SET;
-					} else {
-						return null;
-					}
+	public EClass getEClass(RevisionSearcher index, final long storageKey) throws IOException {
+		for (Entry<Class<? extends Revision>, EClass> entry : SUPPORTED_TYPES.entrySet()) {
+			final Revision rev = index.get(entry.getKey(), storageKey);
+			if (rev != null) {
+				final EClass value = entry.getValue();
+				if (SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER == value) {
+					final SnomedRefSetMemberIndexEntry member = (SnomedRefSetMemberIndexEntry) rev;
+					return getRefSetMemberClass(member.getReferenceSetType());
+				} else {
+					return value;
 				}
-			});
-	}
-	
-	@Override
-	public int getPriority() {
-		return 1;
+			}
+		}
+		// if still not found, then try to look for the refset storage key field
+		final Hits<SnomedConceptDocument> hits = index.search(Query.select(SnomedConceptDocument.class)
+				.where(SnomedConceptDocument.Expressions.refSetStorageKey(storageKey))
+				.limit(0)
+				.build());
+		if (hits.getTotal() > 0) {
+			return SnomedRefSetPackage.Literals.SNOMED_REF_SET;
+		} else {
+			return null;
+		}
 	}
 	
 	@Override
