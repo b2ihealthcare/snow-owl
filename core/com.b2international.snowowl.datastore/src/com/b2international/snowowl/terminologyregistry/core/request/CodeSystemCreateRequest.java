@@ -15,14 +15,12 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
 import com.google.common.base.Strings;
@@ -114,16 +112,6 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		
 		if (!Strings.isNullOrEmpty(extensionOf) && getCodeSystem(extensionOf, context) == null) {
 			throw new BadRequestException("Couldn't find base Code System with unique ID %s.", extensionOf);
-		}
-		
-		final Branch branch = RepositoryRequests
-				.branching()
-				.prepareGet(branchPath)
-				.build()
-				.execute(context);
-		
-		if (branch.isDeleted()) {
-			throw new BadRequestException("Branch with identifier %s is deleted.", branchPath);
 		}
 	}
 	
