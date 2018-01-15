@@ -30,7 +30,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.CDOEditingContext;
 
 /**
  * Abstract exporter to export terminology.
@@ -56,13 +55,6 @@ public abstract class AbstractTerminologyExporter implements ITerminologyExporte
 	 * @return
 	 */
 	protected abstract String getTerminologyName();
-	
-	/**
-	 * Gets the terminology specific editing context.
-	 * 
-	 * @return
-	 */
-	protected abstract CDOEditingContext getEditingContext();
 	
 	/**
 	 * Initializes resources for the export.

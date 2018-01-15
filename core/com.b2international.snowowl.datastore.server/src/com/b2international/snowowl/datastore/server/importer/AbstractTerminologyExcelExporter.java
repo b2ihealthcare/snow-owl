@@ -122,8 +122,6 @@ public abstract class AbstractTerminologyExcelExporter<T, M> extends AbstractFil
 
 		exportTerminologyComponents(monitor);
 
-		getEditingContext().close();
-
 		workbook.write(outputStream);
 		outputStream.close();
 
