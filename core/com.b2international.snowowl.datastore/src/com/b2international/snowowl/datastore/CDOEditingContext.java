@@ -433,19 +433,11 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 * @return an immutable list of the available code systems.
 	 */
 	public List<CodeSystem> getCodeSystems() {
-		if (!getBranch().equals(IBranchPath.MAIN_BRANCH)) {
-			throw new IllegalStateException(String.format("Snomed Code Systems are maintained on MAIN branch, this editing context uses %s", getBranch()));
-		}
-		
 		final CDOResource cdoResource = transaction.getOrCreateResource(getMetaRootResourceName());
 		return FluentIterable.from(cdoResource.getContents()).filter(CodeSystem.class).toList();
 	}
 	
 	public CodeSystem getCodeSystem(final String uniqueId) {
-		if (!getBranch().equals(IBranchPath.MAIN_BRANCH)) {
-			throw new IllegalStateException(String.format("Snomed Code Systems are maintained on MAIN branch, this editing context uses %s", getBranch()));
-		}
-		
 		final Optional<CodeSystem> optional = FluentIterable.from(getCodeSystems()).firstMatch(new Predicate<CodeSystem>() {
 			@Override
 			public boolean apply(final CodeSystem input) {
