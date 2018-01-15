@@ -106,6 +106,11 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	}
 	
 	@Override
+	public long commit() {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
 	public long commit(String userId, String commitComment, String parentContextDescription) {
 		try {
 			if (this.editingContext.isDirty()) {

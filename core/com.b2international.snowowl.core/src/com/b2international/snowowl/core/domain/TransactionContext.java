@@ -65,6 +65,13 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	/**
 	 * Commits any changes made to {@link EObject}s into the store.
 	 * 
+	 * @return
+	 */
+	long commit();
+	
+	/**
+	 * Commits any changes made to {@link EObject}s into the store.
+	 * 
 	 * @param userId
 	 *            - the owner of the commit
 	 * @param commitComment

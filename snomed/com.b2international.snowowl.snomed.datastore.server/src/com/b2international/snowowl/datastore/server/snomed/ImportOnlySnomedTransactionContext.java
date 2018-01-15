@@ -129,6 +129,11 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 	}
 
 	@Override
+	public long commit() {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
 	public long commit(final String userId, final String commitComment, final String parentContextDescription) {
 		try {
 			final CDOCommitInfo info = new CDOServerCommitBuilder(userId, commitComment, editingContext.getTransaction())

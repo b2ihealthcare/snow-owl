@@ -160,7 +160,7 @@ final class Rf2EffectiveTimeSlice {
 	public void doImport(String userId, BranchContext context, boolean createVersions) throws Exception {
 		Stopwatch w = Stopwatch.createStarted();
 		System.err.println("Importing components from " + effectiveTime);
-		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.service(TransactionContextProvider.class).get(context, userId), storageKeysByComponent, storageKeysByRefSet, loadOnDemand)) {
+		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.service(TransactionContextProvider.class).get(context, userId, null, DatastoreLockContextDescriptions.ROOT), storageKeysByComponent, storageKeysByRefSet, loadOnDemand)) {
 			final Iterator<LongSet> importPlan = getImportPlan().iterator();
 			while (importPlan.hasNext()) {
 				LongSet componentsToImportInBatch = importPlan.next();
