@@ -43,6 +43,8 @@ import org.slf4j.Logger;
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.commons.Pair;
+import com.b2international.commons.Pair.IdenticalPair;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -52,6 +54,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -78,7 +81,9 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 
 /**
@@ -106,15 +111,15 @@ public enum SnomedModuleDependencyCollectorService {
 	 * @return a collection of module dependency members.
 	 * @throws IOException 
 	 */
-	public Collection<SnomedModuleDependencyRefSetMember> collectModuleMembers(final RevisionSearcher searcher, final CDOView view, final LongCollection unpublishedStorageKeys) throws IOException {
+	public ListMultimap<Pair<String, String>, String> collectModuleMembers(final RevisionSearcher searcher, final CDOEditingContext context, final LongCollection unpublishedStorageKeys) throws IOException {
 	
 		final Stopwatch stopwatch = createStarted();
-		final Collection<SnomedModuleDependencyRefSetMember> members = newHashSet();
+		final ListMultimap<Pair<String, String>, String> members = ArrayListMultimap.create();
 		
 		try {
 			
 			LOGGER.info("Initializing resources to resolve module dependencies... [1 of 6]");
-			setConfiguration(initConfiguration(check(view), checkNotNull(unpublishedStorageKeys, "unpublishedStorageKeys")));
+			setConfiguration(initConfiguration(check(context.getTransaction()), checkNotNull(unpublishedStorageKeys, "unpublishedStorageKeys")));
 
 			LOGGER.info("Processing unversioned concept... [2 of 6]");
 			tryCreateMembersForConceptChanges(searcher);
@@ -131,7 +136,7 @@ public enum SnomedModuleDependencyCollectorService {
 			LOGGER.info("Processing unversioned module concepts... [6 of 6]");
 			tryCreateMembersForNewModules(searcher);
 			
-			members.addAll(getMembers());
+			members.putAll(createMembers(context));
 			
 		} finally {
 			reset();
@@ -403,6 +408,17 @@ public enum SnomedModuleDependencyCollectorService {
 
 	private Collection<SnomedModuleDependencyRefSetMember> getMembers() {
 		return getConfiguration().getMembers();
+	}
+	
+	private ListMultimap<Pair<String, String>, String> createMembers(CDOEditingContext context) {
+		final ListMultimap<Pair<String, String>, String> modules = ArrayListMultimap.create();
+
+		for (SnomedModuleDependencyRefSetMember member : getMembers()) {
+			final Pair<String, String> pair = IdenticalPair.of(member.getModuleId(), member.getReferencedComponentId());
+			modules.put(pair, member.getUuid());
+		}
+
+		return modules;
 	}
 	
 	private Multimap<Long, Long> getModuleMapping() {
