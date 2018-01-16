@@ -21,6 +21,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EClass;
@@ -29,6 +30,8 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.Pair;
+import com.b2international.commons.Pair.IdenticalPair;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
@@ -57,11 +60,13 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.id.AbstractSnomedIdentifierService.SctIdStatusException;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.google.common.base.Function;
+import com.google.common.collect.ListMultimap;
 
 /**
  * Publish manager for SNOMED&nbsp;CT ontology.
@@ -75,7 +80,9 @@ import com.google.common.base.Function;
 public class SnomedPublishManager extends PublishManager {
 
 	private Set<String> componentIdsToPublish = newHashSet();
-	private Collection<SnomedModuleDependencyRefSetMember> newModuleDependencyRefSetMembers;
+	
+	// Map<Pair<moduleId, referencedComponentId>, Uuid> 
+	private ListMultimap<Pair<String, String>, String> incomingModuleDependencyRefSetMembers;
 	
 	@Override
 	protected LongSet getUnversionedComponentStorageKeys(final String branch) {
@@ -157,13 +164,13 @@ public class SnomedPublishManager extends PublishManager {
 
 	private void collectModuleDependencyChanges(final LongSet storageKeys, PublishOperationConfiguration config) {
 		LOGGER.info("Collecting module dependency changes...");
-		newModuleDependencyRefSetMembers = ApplicationContext.getServiceForClass(RepositoryManager.class)
+		incomingModuleDependencyRefSetMembers = ApplicationContext.getServiceForClass(RepositoryManager.class)
 			.get(getRepositoryUuid())
 			.service(RevisionIndex.class)
-			.read(getBranchPathForPublication(config), new RevisionIndexRead<Collection<SnomedModuleDependencyRefSetMember>>() {
+			.read(getBranchPathForPublication(config), new RevisionIndexRead<ListMultimap<Pair<String, String>, String>>() {
 				@Override
-				public Collection<SnomedModuleDependencyRefSetMember> execute(RevisionSearcher searcher) throws IOException {
-					return SnomedModuleDependencyCollectorService.INSTANCE.collectModuleMembers(searcher, getTransaction(), storageKeys);
+				public ListMultimap<Pair<String, String>, String> execute(RevisionSearcher searcher) throws IOException {
+					return SnomedModuleDependencyCollectorService.INSTANCE.collectModuleMembers(searcher, getEditingContext(), storageKeys);
 				}
 			});
 		LOGGER.info("Collecting module dependency changes successfully finished.");
@@ -201,7 +208,7 @@ public class SnomedPublishManager extends PublishManager {
 	@Override
 	protected void postProcess(PublishOperationConfiguration config) {
 		LOGGER.info("Adjusting effective time changes on module dependency...");
-		adjustNewModuleDependencyRefSetMembers(config.getEffectiveTime());
+		adjustDependencyRefSetMembers(config.getEffectiveTime());
 		LOGGER.info("Effective time adjustment successfully finished on module dependency.");
 	}
 	
@@ -234,12 +241,31 @@ public class SnomedPublishManager extends PublishManager {
 
 	/**Updates all new module dependency reference set members.
 	 * @param date */
-	private void adjustNewModuleDependencyRefSetMembers(Date effectiveTime) {
+	private void adjustDependencyRefSetMembers(Date effectiveTime) {
+		// Update existing, add new members to moduleDependecyRefSet
 		final SnomedRegularRefSet moduleDependencyRefSet = getEditingContext().lookup(REFSET_MODULE_DEPENDENCY_TYPE, SnomedRegularRefSet.class);
-		for (final SnomedModuleDependencyRefSetMember member : newModuleDependencyRefSetMembers) {
-			adjustRelased(member);
-			adjustEffectiveTime(member, effectiveTime);
-			moduleDependencyRefSet.getMembers().add(member);
+		if (!incomingModuleDependencyRefSetMembers.isEmpty()) {
+			for (SnomedRefSetMember refSetmember : moduleDependencyRefSet.getMembers()) {
+				if (refSetmember instanceof SnomedModuleDependencyRefSetMember) {
+					final SnomedModuleDependencyRefSetMember member = (SnomedModuleDependencyRefSetMember) refSetmember;
+					final Pair<String, String> pair = IdenticalPair.of(member.getModuleId(), member.getReferencedComponentId());
+					final List<String> existingUuids = incomingModuleDependencyRefSetMembers.get(pair);
+					for (String existingUuid : existingUuids) {
+						if (member.getUuid().equals(existingUuid)) {
+							// Update existing member
+							adjustRelased(member);
+							adjustEffectiveTime(member, effectiveTime);
+							System.err.println("sourceEffectiveTime: " + member.getSourceEffectiveTime() + " targetEffectiveTime: "
+									+ member.getTargetEffectiveTime());
+						} else {
+							// Add new member
+							adjustRelased(member);
+							adjustEffectiveTime(member, effectiveTime);
+							moduleDependencyRefSet.getMembers().add(member);
+						}
+					}
+				}
+			}
 		}
 	}
 
