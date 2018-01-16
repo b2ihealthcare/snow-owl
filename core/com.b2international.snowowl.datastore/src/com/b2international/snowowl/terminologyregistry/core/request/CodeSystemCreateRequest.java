@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
@@ -108,6 +109,14 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		
 		if (getCodeSystem(shortName, context) != null) {
 			throw new AlreadyExistsException("Code system", shortName);
+		}
+		
+		if (!Strings.isNullOrEmpty(shortName) ) {
+			try {
+				Branch.BranchNameValidator.DEFAULT.checkName(shortName);
+			} catch(BadRequestException e) {
+				throw new BadRequestException(e.getMessage(), shortName);
+			}
 		}
 		
 		if (!Strings.isNullOrEmpty(extensionOf) && getCodeSystem(extensionOf, context) == null) {
