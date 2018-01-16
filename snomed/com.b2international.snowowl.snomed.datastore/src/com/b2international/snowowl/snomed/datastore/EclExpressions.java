@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,18 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-
 /**
- * Class for ESCG expression constants.
- *
+ * Class for ECL expression constants.
+ * <p>
+ * Although the literals are valid ECL expressions, consumers are allowed to
+ * take shortcuts, and not pass them through to an expression-evaluating
+ * request.
  */
-public abstract class EscgExpressionConstants {
+public abstract class EclExpressions {
 
-	public static final String UNRESTRICTED_EXPRESSION = "<<" + Concepts.ROOT_CONCEPT;
-	public static final String REJECT_ALL_EXPRESSION = "com.b2international.snowowl.snomed.datastore.EscgExpressionConstants.REJECT_ALL_EXPRESSION";
+	public static final String ALL_CONCEPTS = "(*)";
 	
-	private EscgExpressionConstants() {
-	}
+	public static final String NO_CONCEPTS = "(* MINUS *)";
 	
-	
+	private EclExpressions() { }
 }
