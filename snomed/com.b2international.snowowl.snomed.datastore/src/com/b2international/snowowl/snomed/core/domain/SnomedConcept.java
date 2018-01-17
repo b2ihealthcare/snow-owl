@@ -47,6 +47,7 @@ import com.google.common.collect.Multimap;
  * <li>{@code ancestors(direct:true|false)} - returns the all or the only the direct ancestors of the concept based on the inferred tree.</li>
  * <li>{@code statedDescendants(direct:true|false)} - returns the all or the only the direct descendants of the concept based on the stated tree.</li> 
  * <li>{@code statedAncestors(direct:true|false)} - returns the all or the only the direct ancestors of the concept based on the stated tree.</li>
+ * <li>{@code members()} - returns the reference set members referencing this component</li>
  * </ul>
  * 
  * The number of expanded fields can be controlled with the {@code limit:} directive.

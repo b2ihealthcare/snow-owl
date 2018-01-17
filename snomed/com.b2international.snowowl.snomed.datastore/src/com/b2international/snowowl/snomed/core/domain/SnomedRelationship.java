@@ -37,6 +37,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * <li>{@code source()} - returns the source concept of the relationship</li>
  * <li>{@code destination()} - returns the destination concept of the relationship</li>
  * <li>{@code type()} - returns the concept representing the type of the relationship</li>
+ * <li>{@code members()} - returns the reference set members referencing this component</li>
  * </ul>
  * 
  * Expand parameters can be nested to further expand or filter the details returned. 
