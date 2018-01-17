@@ -35,16 +35,17 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.view.CDOView;
+import org.eclipse.xtext.util.Pair;
+import org.eclipse.xtext.util.Tuples;
 import org.slf4j.Logger;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongKeyLongMap;
-import com.b2international.commons.Pair;
-import com.b2international.commons.Pair.IdenticalPair;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -84,6 +85,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
 /**
@@ -111,10 +113,10 @@ public enum SnomedModuleDependencyCollectorService {
 	 * @return a collection of module dependency members.
 	 * @throws IOException 
 	 */
-	public ListMultimap<Pair<String, String>, String> collectModuleMembers(final RevisionSearcher searcher, final CDOEditingContext context, final LongCollection unpublishedStorageKeys) throws IOException {
+	public Map<Pair<String, String>, String> collectModuleMembers(final RevisionSearcher searcher, final CDOEditingContext context, final LongCollection unpublishedStorageKeys) throws IOException {
 	
 		final Stopwatch stopwatch = createStarted();
-		final ListMultimap<Pair<String, String>, String> members = ArrayListMultimap.create();
+		final Map<Pair<String, String>, String> members = Maps.newHashMap();
 		
 		try {
 			
@@ -410,11 +412,12 @@ public enum SnomedModuleDependencyCollectorService {
 		return getConfiguration().getMembers();
 	}
 	
-	private ListMultimap<Pair<String, String>, String> createMembers(CDOEditingContext context) {
-		final ListMultimap<Pair<String, String>, String> modules = ArrayListMultimap.create();
+	private Map<Pair<String, String>, String> createMembers(CDOEditingContext context) {
+		final Map<Pair<String, String>, String> modules = Maps.newHashMap();
 
 		for (SnomedModuleDependencyRefSetMember member : getMembers()) {
-			final Pair<String, String> pair = IdenticalPair.of(member.getModuleId(), member.getReferencedComponentId());
+			final Pair<String, String> pair = Tuples.pair(member.getModuleId(), member.getReferencedComponentId());
+			System.err.println(member.getUuid());
 			modules.put(pair, member.getUuid());
 		}
 
