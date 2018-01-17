@@ -257,8 +257,7 @@ public class SnomedPublishManager extends PublishManager {
 					memberToAdd.setRefSet(moduleDependencyRefSet);
 					memberToAdd.setModuleId(k.getFirst());
 					memberToAdd.setReferencedComponentId(k.getSecond());
-					// Persist new EObject
-//					getEditingContext().add(memberToAdd);
+					
 					adjustRelased(memberToAdd);
 					adjustEffectiveTime(memberToAdd, effectiveTime);
 					moduleDependencyRefSet.getMembers().add(memberToAdd);
@@ -274,7 +273,7 @@ public class SnomedPublishManager extends PublishManager {
 				final SnomedModuleDependencyRefSetMember dependecyMember = (SnomedModuleDependencyRefSetMember) refSetmember;
 				final Pair<String, String> pair = Tuples.pair(dependecyMember.getModuleId(), dependecyMember.getReferencedComponentId());
 				final String existingUuid = incomingModuleDependencyRefSetMembers.get(pair);
-				if(!Strings.isNullOrEmpty(existingUuid)) {
+				if (!Strings.isNullOrEmpty(existingUuid)) {
 					if (dependecyMember.getUuid().equals(existingUuid)) {
 						// Update existing member
 						adjustRelased(dependecyMember);
