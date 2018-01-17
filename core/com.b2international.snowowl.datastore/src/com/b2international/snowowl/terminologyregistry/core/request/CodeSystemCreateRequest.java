@@ -111,14 +111,6 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 			throw new AlreadyExistsException("Code system", shortName);
 		}
 		
-		if (!Strings.isNullOrEmpty(shortName) ) {
-			try {
-				Branch.BranchNameValidator.DEFAULT.checkName(shortName);
-			} catch(BadRequestException e) {
-				throw new BadRequestException(e.getMessage(), shortName);
-			}
-		}
-		
 		if (!Strings.isNullOrEmpty(extensionOf) && getCodeSystem(extensionOf, context) == null) {
 			throw new BadRequestException("Couldn't find base Code System with unique ID %s.", extensionOf);
 		}
