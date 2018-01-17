@@ -104,8 +104,4 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 		return null;
 	}
 	
-	private IEventBus getBus() {
-		return ApplicationContext.getServiceForClass(IEventBus.class);
-	}
-	
 }
