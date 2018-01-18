@@ -26,13 +26,13 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOState;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.spi.cdo.FSMUtil;
 
-import com.b2international.collections.longs.LongValueMap;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -41,6 +41,7 @@ import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.exceptions.ConflictException;
@@ -203,8 +204,13 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	@Override
-	protected <T extends EObject> LongValueMap<String> getStorageKeys(Collection<String> componentIds, Class<T> type) {
-		return getSnomedEditingContext().getStorageKeys(componentIds, type);
+	protected String getId(CDOObject component) {
+		return getSnomedEditingContext().getId(component);
+	}
+	
+	@Override
+	protected <T extends CDOObject> Iterable<? extends IComponent> fetchComponents(Collection<String> componentIds, Class<T> type) {
+		return getSnomedEditingContext().fetchComponents(componentIds, type);
 	}
 
 	public SnomedEditingContext getSnomedEditingContext() {

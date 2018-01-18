@@ -17,11 +17,13 @@ package com.b2international.snowowl.datastore.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
@@ -31,6 +33,7 @@ import org.eclipse.emf.spi.cdo.CDOStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.functions.LongToStringFunction;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
@@ -49,6 +52,7 @@ import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
+import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
@@ -70,6 +74,8 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 	private final Set<CodeSystem> dirtyCodeSystems = newHashSet();
 	private final Set<CodeSystemVersion> newCodeSystemVersions = newHashSet();
 	private final Set<CodeSystemVersion> dirtyCodeSystemVersions = newHashSet();
+	private final Set<Long> detachedCodeSystemIds = newHashSet();
+	private final Set<Long> detachedCodeSystemVersionIds = newHashSet();
 
 	private ICDOCommitChangeSet commitChangeSet;
 	private IndexCommitChangeSet indexChangeSet;
@@ -101,6 +107,8 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 
 			processNewCodeSystemsAndVersions(commitChangeSet);
 			processDirtyCodeSystemsAndVersions(commitChangeSet);
+			detachedCodeSystemIds.addAll(newArrayList(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(TerminologymetadataPackage.Literals.CODE_SYSTEM))));
+			detachedCodeSystemVersionIds.addAll(newArrayList(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(TerminologymetadataPackage.Literals.CODE_SYSTEM_VERSION))));
 
 			index.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
 				@Override
@@ -161,6 +169,19 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 			indexCommitChangeSet.putRawMappings(Long.toString(entry.getStorageKey()), entry);
 			indexCommitChangeSet.putChangedComponents(ComponentIdentifier.of(ICodeSystemVersion.TERMINOLOGY_COMPONENT_ID, entry.getVersionId()));
 		}
+		
+		// apply code system and version deletions
+		List<String> detachedCodeSystemDocIds = LongToStringFunction.copyOf(detachedCodeSystemIds);
+		indexCommitChangeSet.putRawDeletions(CodeSystemEntry.class, detachedCodeSystemDocIds);
+		detachedCodeSystemDocIds.stream()
+			.map(componentId -> ComponentIdentifier.of(ICodeSystemVersion.TERMINOLOGY_COMPONENT_ID, componentId))
+			.forEach(indexCommitChangeSet::putDeletedComponents);
+		
+		List<String> detachedCodeSystemVersionDocIds = LongToStringFunction.copyOf(detachedCodeSystemVersionIds);
+		indexCommitChangeSet.putRawDeletions(CodeSystemVersionEntry.class, detachedCodeSystemVersionDocIds);
+		detachedCodeSystemDocIds.stream()
+			.map(componentId -> ComponentIdentifier.of(ICodeSystemVersion.TERMINOLOGY_COMPONENT_ID, componentId))
+			.forEach(indexCommitChangeSet::putDeletedComponents);
 
 		preUpdateDocuments(commitChangeSet, index);
 

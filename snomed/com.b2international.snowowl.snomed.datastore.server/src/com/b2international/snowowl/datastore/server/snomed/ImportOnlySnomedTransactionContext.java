@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.snomed;
 import java.util.Collection;
 import java.util.Map;
 
+import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.ecore.EObject;
@@ -128,6 +129,11 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 	}
 
 	@Override
+	public long commit() {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
 	public long commit(final String userId, final String commitComment, final String parentContextDescription) {
 		try {
 			final CDOCommitInfo info = new CDOServerCommitBuilder(userId, commitComment, editingContext.getTransaction())
@@ -155,7 +161,7 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 	}
 	
 	@Override
-	public <T extends EObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
+	public <T extends CDOObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
 		return editingContext.lookup(componentIds, type);
 	}
 	

@@ -112,7 +112,6 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		}
 	}
 
-	@Override
 	protected CDOEditingContext getEditingContext() {
 		return context;
 	}

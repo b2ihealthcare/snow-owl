@@ -106,6 +106,11 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	}
 	
 	@Override
+	public long commit() {
+		throw new UnsupportedOperationException("TODO implement me");
+	}
+	
+	@Override
 	public long commit(String userId, String commitComment, String parentContextDescription) {
 		try {
 			if (this.editingContext.isDirty()) {
@@ -206,7 +211,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	}
 	
 	@Override
-	public <T extends EObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
+	public <T extends CDOObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
 		final Map<String, T> resolvedComponentById = newHashMap();
 		Set<String> unresolvedComponentIds = newHashSet();
 

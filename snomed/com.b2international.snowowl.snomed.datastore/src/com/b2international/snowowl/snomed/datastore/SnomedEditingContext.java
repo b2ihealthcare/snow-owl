@@ -65,8 +65,6 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
-import com.b2international.collections.PrimitiveMaps;
-import com.b2international.collections.longs.LongValueMap;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.index.revision.Revision;
@@ -75,7 +73,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
@@ -425,7 +422,19 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	@Override
-	protected <T extends EObject> LongValueMap<String> getStorageKeys(Collection<String> componentIds, Class<T> type) {
+	protected String getId(CDOObject component) {
+		if (component instanceof Component) {
+			return ((Component) component).getId();
+		} else if (component instanceof SnomedRefSetMember) {
+			return ((SnomedRefSetMember) component).getUuid();
+		} else if (component instanceof SnomedRefSet) {
+			return ((SnomedRefSet) component).getIdentifierId();
+		}
+		throw new UnsupportedOperationException("Cannot get ID for " + component);
+	}
+	
+	@Override
+	protected <T extends CDOObject> Iterable<? extends IComponent> fetchComponents(Collection<String> componentIds, Class<T> type) {
 		if (type.isAssignableFrom(Concept.class)) {
 			return SnomedRequests.prepareSearchConcept()
 					.all()
@@ -433,7 +442,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					.setFields(SnomedDocument.Fields.ID, Revision.STORAGE_KEY)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-					.then(this::toStorageKeyMap)
 					.getSync();
 		} else if (type.isAssignableFrom(Description.class)) {
 			return SnomedRequests.prepareSearchDescription()
@@ -442,7 +450,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					.setFields(SnomedDocument.Fields.ID, Revision.STORAGE_KEY)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-					.then(this::toStorageKeyMap)
 					.getSync();
 		} else if (type.isAssignableFrom(Relationship.class)) {
 			return SnomedRequests.prepareSearchRelationship()
@@ -451,7 +458,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					.setFields(SnomedDocument.Fields.ID, Revision.STORAGE_KEY)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-					.then(this::toStorageKeyMap)
 					.getSync();
 		} else if (type.isAssignableFrom(SnomedRefSetMember.class)) {
 			return SnomedRequests.prepareSearchMember()
@@ -460,7 +466,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					.setFields(SnomedDocument.Fields.ID, Revision.STORAGE_KEY)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-					.then(this::toStorageKeyMap)
 					.getSync();
 		} else if (type.isAssignableFrom(SnomedRefSet.class)) {
 			return SnomedRequests.prepareSearchRefSet()
@@ -469,18 +474,9 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					.setFields(SnomedDocument.Fields.ID, SnomedConceptDocument.Fields.REFSET_STORAGEKEY)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-					.then(this::toStorageKeyMap)
 					.getSync();
 		}
 		throw new UnsupportedOperationException("Cannot get storage keys for " + type);
-	}
-	
-	private LongValueMap<String> toStorageKeyMap(CollectionResource<? extends IComponent> resources) {
-		final LongValueMap<String> storageKeysById = PrimitiveMaps.newObjectKeyLongOpenHashMap();
-		for (IComponent component : resources) {
-			storageKeysById.put(component.getId(), component.getStorageKey());
-		}
-		return storageKeysById;
 	}
 	
 	public void releaseIds() {

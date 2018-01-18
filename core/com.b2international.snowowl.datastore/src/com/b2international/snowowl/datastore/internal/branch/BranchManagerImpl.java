@@ -89,7 +89,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		}
 		final String path = toAbsolutePath(parent.path(), name);
 		Branch existingBranch = getBranchFromStore(path);
-		if (existingBranch != null) {
+		if (existingBranch != null && !existingBranch.isDeleted()) {
 			// throw AlreadyExistsException if exists before trying to enter the sync block
 			throw new AlreadyExistsException(Branch.class.getSimpleName(), path);
 		} else {
@@ -106,7 +106,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 			public InternalBranch call() throws Exception {
 				// check again and return if exists, otherwise open the child branch
 				final Branch existingBranch = getBranchFromStore(toAbsolutePath(parentPath, name));
-				if (existingBranch != null) {
+				if (existingBranch != null && !existingBranch.isDeleted()) {
 					return (InternalBranch) existingBranch;
 				} else {
 					final InternalBranch createdBranch = doReopen(parent, name, metadata);

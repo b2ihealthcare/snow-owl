@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Map;
 
+import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.ecore.EObject;
@@ -41,13 +42,23 @@ import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 public final class CDOTransactionContext extends DelegatingBranchContext implements TransactionContext {
 
 	private final String userId;
+	private final String commitComment;
+	private final String parentContextDescription;
 	private final CDOEditingContext editingContext;
+	
 	private boolean isNotificationEnabled = true;
 
-	CDOTransactionContext(BranchContext context, CDOEditingContext editingContext, String userId) {
+	CDOTransactionContext(BranchContext context, CDOEditingContext editingContext, String userId, String commitComment, String parentContextDescription) {
 		super(context);
 		this.editingContext = editingContext;
 		this.userId = userId;
+		this.commitComment = commitComment;
+		this.parentContextDescription = parentContextDescription;
+	}
+	
+	@Override
+	public long commit() {
+		return commit(userId(), commitComment, parentContextDescription);
 	}
 	
 	@Override
@@ -74,7 +85,7 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 	}
 	
 	@Override
-	public <T extends EObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
+	public <T extends CDOObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
 		return editingContext.lookup(componentIds, type);
 	}
 	
