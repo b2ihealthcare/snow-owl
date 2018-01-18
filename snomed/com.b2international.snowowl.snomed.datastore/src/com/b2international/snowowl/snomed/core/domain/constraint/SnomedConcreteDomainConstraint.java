@@ -47,8 +47,8 @@ public final class SnomedConcreteDomainConstraint extends SnomedConstraint {
 		this.valueType = valueType;
 	}
 
-	public void setAttributeName(String typeExpression) {
-		this.attributeName = typeExpression;
+	public void setAttributeName(String attributeName) {
+		this.attributeName = attributeName;
 	}
 
 	public void setDisplayName(String displayName) {
