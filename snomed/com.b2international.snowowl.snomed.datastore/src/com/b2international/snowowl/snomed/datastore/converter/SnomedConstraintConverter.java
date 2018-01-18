@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,9 +48,10 @@ final class SnomedConstraintConverter extends BaseResourceConverter<SnomedConstr
 		switch (entry.getPredicateType()) {
 		case DATATYPE:
 			final SnomedConcreteDomainConstraint cConstraint = new SnomedConcreteDomainConstraint();
-			cConstraint.setCharacteristicTypeExpresion(entry.getCharacteristicTypeExpression());
-			cConstraint.setTypeExpression(entry.getDataTypeName());
 			cConstraint.setValueType(entry.getDataType());
+			cConstraint.setAttributeName(entry.getDataTypeName());
+			cConstraint.setDisplayName(entry.getDataTypeLabel());
+			cConstraint.setCharacteristicTypeExpresion(entry.getCharacteristicTypeExpression());
 			constraint = cConstraint;
 			break;
 		case DESCRIPTION:
@@ -78,5 +79,4 @@ final class SnomedConstraintConverter extends BaseResourceConverter<SnomedConstr
 		constraint.setDescendantIds(entry.getDescendantIds());
 		return constraint;
 	}
-
 }
