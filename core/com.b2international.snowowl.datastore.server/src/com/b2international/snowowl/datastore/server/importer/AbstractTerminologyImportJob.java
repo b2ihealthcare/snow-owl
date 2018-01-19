@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.datastore.importer.TerminologyImportResult;
 import com.b2international.snowowl.datastore.importer.TerminologyImportType;
 
 /**
