@@ -48,6 +48,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
@@ -269,6 +270,12 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			return getSelf();
 		}
 		
+		@JsonIgnore
+		public Builder parents(final long ...parents) {
+			return parents(PrimitiveSets.newLongOpenHashSet(parents));
+		}
+
+		@JsonProperty("parents")
 		public Builder parents(final LongSet parents) {
 			this.parents = parents;
 			return getSelf();

@@ -354,7 +354,7 @@ public class EsDocumentSearcher implements DocSearcher {
 			checkArgument(!isScriptAgg, "Specify either field or script parameter, not both");
 			termsAgg.field(aggregation.getField());
 		} else if (isScriptAgg) {
-			final String rawScript = mapping.getScript(aggregation.getScript()).script();
+			final String rawScript = aggregation.getScript();
 			termsAgg.script(new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, Collections.emptyMap()));
 		} else {
 			throw new IllegalArgumentException("Specify either field or script parameter");
