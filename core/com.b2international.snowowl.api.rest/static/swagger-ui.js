@@ -1395,7 +1395,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
 
     HeaderView.prototype.showSct = function(e) {
       return this.trigger('update-swagger-ui', {
-        url: "/snowowl/snomed-ct/v2/api-docs"
+        url: "/snowowl/snomed-ct/v3/api-docs"
       });
     };
 
