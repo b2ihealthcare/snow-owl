@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,8 @@ import org.eclipse.emf.ecore.EClass;
 import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -412,6 +414,20 @@ public abstract class SnomedRefSetUtil {
 			case INTEGER: return (T) Integer.valueOf(serializedValue);
 			case DATE: return (T) new Date(Long.valueOf(serializedValue));
 			case STRING: return (T) serializedValue;
+			default: throw new IllegalArgumentException("Unknown datatype: " + dataType);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> T defaultValueForDataType(final DataType dataType) {
+		checkArgument(null != dataType, "Datatype argument cannot be null.");
+		
+		switch (dataType) {
+			case BOOLEAN: return (T) Boolean.FALSE;
+			case DECIMAL: return (T) BigDecimal.ZERO;
+			case INTEGER: return (T) Integer.valueOf(0);
+			case DATE: return (T) Dates.todayGmt();
+			case STRING: return (T) "";
 			default: throw new IllegalArgumentException("Unknown datatype: " + dataType);
 		}
 	}
