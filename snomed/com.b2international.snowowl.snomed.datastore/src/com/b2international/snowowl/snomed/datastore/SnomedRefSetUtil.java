@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.ecore.EClass;
 
@@ -40,7 +41,6 @@ import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -53,6 +53,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.google.common.collect.ImmutableSet.Builder;
 
 /** 
@@ -113,7 +114,20 @@ public abstract class SnomedRefSetUtil {
 			.put(Concepts.REFSET_SUBPACK_QUANTITY, DataType.INTEGER)
 			.build();
 
-	public static final ImmutableSet<DataType> UNSUPPORTED_DATATYPES = ImmutableSet.<DataType> of(DataType.DATE);
+	/**
+	 * The set of all available datatypes.
+	 */
+	public static final Set<DataType> ALL_DATATYPES = ImmutableSet.copyOf(DataType.values());
+	
+	/**
+	 * The set of datatypes for which no UI/constraint support exists at this time.
+	 */
+	public static final Set<DataType> UNSUPPORTED_DATATYPES = ImmutableSet.of(DataType.DATE);
+	
+	/**
+	 * The set of supported datatypes: a difference of {@link #ALL_DATATYPES} and {@link #UNSUPPORTED_DATATYPES}.
+	 */
+	public static final Set<DataType> SUPPORTED_DATATYPES = ImmutableSet.copyOf(Sets.difference(ALL_DATATYPES, UNSUPPORTED_DATATYPES));
 	
 	private static SnomedCoreConfiguration getCoreConfiguration() {
 		return SnowOwlApplication.INSTANCE.getConfiguration().getModuleConfig(SnomedCoreConfiguration.class);
