@@ -18,13 +18,14 @@ package com.b2international.snowowl.core.domain;
 import java.io.Serializable;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.api.component.IdProvider;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 
 /**
  * Represents an identifiable component of a code system.
  */
-public interface IComponent extends Serializable {
+public interface IComponent extends Serializable, IdProvider<String> {
 
 	/**
 	 * Unique terminology independent node identifier to make actual root elements searchable.
