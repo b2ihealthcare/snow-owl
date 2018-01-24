@@ -26,7 +26,7 @@ import org.eclipse.net4j.util.io.ExtendedDataInputStream;
 import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
-import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportProtocolConstants;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedUnimportedRefSets;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedUnimportedRefSets.StoreRefSetMember;
@@ -55,7 +55,7 @@ public class SnomedSubsetImportIndication extends IndicationWithMonitoring {
 	private String namespace;
 	private String branchPath;
 	private int sheetNumber;
-	private int refSetType;
+	private String refSetParent;
 	private String userId;
 
 	public SnomedSubsetImportIndication(final SnomedImportServerProtocol protocol) {
@@ -74,7 +74,7 @@ public class SnomedSubsetImportIndication extends IndicationWithMonitoring {
 		idColumnNumber = in.readInt();
 		firstConceptRowNumber = in.readInt();
 		sheetNumber = in.readInt();
-		refSetType = in.readInt();
+		refSetParent = in.readUTF();
 		subsetName = in.readUTF();
 		fileExtension = in.readUTF();
 		effectiveTime = in.readUTF();
@@ -113,7 +113,7 @@ public class SnomedSubsetImportIndication extends IndicationWithMonitoring {
 	@Override
 	protected void responding(final ExtendedDataOutputStream out, final OMMonitor monitor) throws Exception {
 
-		final SnomedSubsetImporter importer = new SnomedSubsetImporter(branchPath, userId, hasHeader, skipEmptyLines, idColumnNumber, firstConceptRowNumber, sheetNumber, refSetType, subsetName,
+		final SnomedSubsetImporter importer = new SnomedSubsetImporter(branchPath, userId, hasHeader, skipEmptyLines, idColumnNumber, firstConceptRowNumber, sheetNumber, refSetParent, subsetName,
 				fileExtension, effectiveTime, namespace, fieldSeparator, quoteCharacter, lineFeedCharacter, file);
 
 		monitor.begin(1);
@@ -137,7 +137,8 @@ public class SnomedSubsetImportIndication extends IndicationWithMonitoring {
 			}
 
 			monitor.worked();
-		} catch (final SnowowlServiceException e) {
+		} catch (final SnowowlRuntimeException e) {
+			e.printStackTrace();
 			throw new RemoteException(e.getMessage(), true);
 		} finally {
 			monitor.done();

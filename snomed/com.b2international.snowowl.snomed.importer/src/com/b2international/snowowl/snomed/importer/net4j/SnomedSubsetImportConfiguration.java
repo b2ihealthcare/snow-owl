@@ -227,7 +227,7 @@ public final class SnomedSubsetImportConfiguration {
 	 */
 	public class SubsetEntry {
 
-		private int refSetType;
+		private String refSetParent;
 		private int idColumnNumber;
 		private int firstConceptRowNumber;
 		private boolean isInclude;
@@ -362,14 +362,14 @@ public final class SnomedSubsetImportConfiguration {
 			return sheetNumber;
 		}
 
-		public void setRefSetType(final int refSetType) {
-			this.refSetType = refSetType;
+		public void setRefSetParent(String refSetParent) {
+			this.refSetParent = refSetParent;
 		}
 		
-		public int getRefSetType() {
-			return refSetType;
+		public String getRefSetParent() {
+			return refSetParent;
 		}
-
+		
 		public int getFirstConceptRowNumber() {
 			return firstConceptRowNumber;
 		}

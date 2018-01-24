@@ -30,6 +30,7 @@ import com.b2international.snowowl.snomed.importer.net4j.SnomedSubsetImportConfi
 import com.b2international.snowowl.snomed.importer.net4j.SnomedSubsetImportUtil;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedUnimportedRefSets;
 import com.b2international.snowowl.snomed.importer.rf2.net4j.SnomedSubsetImporter;
+import com.google.common.base.Strings;
 
 /**
  * DSV import from OSGI console.
@@ -42,12 +43,7 @@ public class ImportRefSetSubsetCommand extends AbstractRf2ImporterCommand {
 				"<path>\t\tSpecifies the file to be used for importing.",
 				"<hasHeader>\t\tSet to true if the source text file has a header row, false otherwise.",
 				"<skipEmptyLines>\tSet to true if the source text file has empty lines which should be ignored, false otherwise.",
-				"<parentConcept>\tSet to one of the following possible parent concepts:",
-				"\t\t\t0: Simple type",
-				"\t\t\t1: B2i examples",
-				"\t\t\t2: KP Convergent Medical Terminology",
-				"\t\t\t3: CORE Problem List",
-				"\t\t\t4: Infoway Primary Health Care"
+				"<parentConcept>\tUse this concept as parent of the newly imported reference set",
 		});
 	}
 
@@ -102,7 +98,7 @@ public class ImportRefSetSubsetCommand extends AbstractRf2ImporterCommand {
 			
 			interpreter.println("Importing " + entry.getSubsetName() + "...");
 			
-			SnomedSubsetImporter importer = new SnomedSubsetImporter(IBranchPath.MAIN_BRANCH, authenticator.getUsername(), entry.isHasHeader(), entry.isSkipEmptyLines(), entry.getIdColumnNumber(), entry.getFirstConceptRowNumber(), entry.getSheetNumber(), entry.getRefSetType(), entry.getSubsetName(), entry.getExtension(), entry.getEffectiveTime(), entry.getNamespace(), entry.getFieldSeparator(), entry.getQuoteCharacter(), entry.getLineFeedCharacter(), refsetFile);
+			SnomedSubsetImporter importer = new SnomedSubsetImporter(IBranchPath.MAIN_BRANCH, authenticator.getUsername(), entry.isHasHeader(), entry.isSkipEmptyLines(), entry.getIdColumnNumber(), entry.getFirstConceptRowNumber(), entry.getSheetNumber(), entry.getRefSetParent(), entry.getSubsetName(), entry.getExtension(), entry.getEffectiveTime(), entry.getNamespace(), entry.getFieldSeparator(), entry.getQuoteCharacter(), entry.getLineFeedCharacter(), refsetFile);
 			SnomedUnimportedRefSets unimportedRefSets = importer.doImport();
 			
 			if (0 == unimportedRefSets.getUnimportedRefSetMembers().size()) {
@@ -121,19 +117,10 @@ public class ImportRefSetSubsetCommand extends AbstractRf2ImporterCommand {
 	}
 
 	private boolean setParentRefSet(SubsetEntry entry, String parentRefSet) {
-		int parentRefSetNumber;
-		try {
-			parentRefSetNumber = Integer.parseInt(parentRefSet);
-		} catch (NumberFormatException e) {
+		if (Strings.isNullOrEmpty(parentRefSet)) {
 			return false;
 		}
-		
-		if (parentRefSetNumber < 0 || parentRefSetNumber > 4) {
-			return false;
-		}
-		
-		entry.setRefSetType(parentRefSetNumber);
-		
+		entry.setRefSetParent(parentRefSet);
 		return true;
 	}
 }
