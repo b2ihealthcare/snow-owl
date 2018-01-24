@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,6 +86,8 @@ public class SnomedSubsetImportRequest extends RequestWithMonitoring<SnomedUnimp
 		out.writeUTF(entry.getExtension());
 		out.writeUTF(entry.getEffectiveTime()); 
 		out.writeUTF(entry.getNamespace());
+		out.writeUTF(entry.getModuleId());
+		out.writeUTF(entry.getLanguageRefSetId());
 		out.writeUTF(entry.getFieldSeparator());
 		out.writeUTF(entry.getQuoteCharacter());
 		out.writeUTF(entry.getLineFeedCharacter());

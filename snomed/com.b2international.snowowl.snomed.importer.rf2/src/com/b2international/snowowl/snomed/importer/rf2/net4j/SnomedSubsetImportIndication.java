@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,8 @@ public class SnomedSubsetImportIndication extends IndicationWithMonitoring {
 	private String effectiveTime;
 	private String subsetName;
 	private String namespace;
+	private String moduleId;
+	private String languageRefSetId;
 	private String branchPath;
 	private int sheetNumber;
 	private String refSetParent;
@@ -79,6 +81,8 @@ public class SnomedSubsetImportIndication extends IndicationWithMonitoring {
 		fileExtension = in.readUTF();
 		effectiveTime = in.readUTF();
 		namespace = in.readUTF();
+		moduleId = in.readUTF();
+		languageRefSetId = in.readUTF();
 		fieldSeparator = in.readUTF();
 		quoteCharacter = in.readUTF();
 		lineFeedCharacter = in.readUTF();
@@ -113,8 +117,24 @@ public class SnomedSubsetImportIndication extends IndicationWithMonitoring {
 	@Override
 	protected void responding(final ExtendedDataOutputStream out, final OMMonitor monitor) throws Exception {
 
-		final SnomedSubsetImporter importer = new SnomedSubsetImporter(branchPath, userId, hasHeader, skipEmptyLines, idColumnNumber, firstConceptRowNumber, sheetNumber, refSetParent, subsetName,
-				fileExtension, effectiveTime, namespace, fieldSeparator, quoteCharacter, lineFeedCharacter, file);
+		final SnomedSubsetImporter importer = new SnomedSubsetImporter(branchPath, 
+				userId, 
+				hasHeader, 
+				skipEmptyLines, 
+				idColumnNumber, 
+				firstConceptRowNumber, 
+				sheetNumber, 
+				refSetParent,
+				subsetName,
+				fileExtension, 
+				effectiveTime, 
+				namespace, 
+				moduleId,
+				languageRefSetId,
+				fieldSeparator, 
+				quoteCharacter, 
+				lineFeedCharacter, 
+				file);
 
 		monitor.begin(1);
 

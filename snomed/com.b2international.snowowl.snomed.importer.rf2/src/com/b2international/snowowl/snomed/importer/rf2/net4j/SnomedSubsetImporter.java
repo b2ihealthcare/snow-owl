@@ -45,7 +45,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.server.snomed.ImportOnlySnomedTransactionContext;
 import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -89,9 +88,27 @@ public class SnomedSubsetImporter {
 	private final String userId;
 	private final Set<String> importedConceptIds;
 	private final String refSetParent;
+	private final String moduleId;
+	private final String languageRefSetId;
 
-	public SnomedSubsetImporter(final String branchPath, String userId, boolean hasHeader, boolean skipEmptyLines, int idColumnNumber, int firstConceptRowNumber, int sheetNumber, String refSetParent, String subsetName, String fileExtension,
-			String effectiveTime, String namespace, String fieldSeparator, String quoteCharacter, String lineFeedCharacter, File importFile) throws SnowowlServiceException {
+	public SnomedSubsetImporter(final String branchPath, 
+			final String userId, 
+			final boolean hasHeader, 
+			final boolean skipEmptyLines, 
+			final int idColumnNumber, 
+			final int firstConceptRowNumber, 
+			final int sheetNumber, 
+			final String refSetParent, 
+			final String subsetName, 
+			final String fileExtension,
+			final String effectiveTime, 
+			final String namespace,
+			final String moduleId,
+			final String languageRefSetId,
+			final String fieldSeparator, 
+			final String quoteCharacter, 
+			final String lineFeedCharacter, 
+			final File importFile) throws SnowowlServiceException {
 		this.userId = userId;
 		this.branchPath = BranchPathUtils.createPath(branchPath);
 		this.hasHeader = hasHeader;
@@ -102,6 +119,8 @@ public class SnomedSubsetImporter {
 		this.fileExtension = fileExtension;
 		this.effectiveTime = effectiveTime;
 		this.namespace = namespace;
+		this.moduleId = moduleId;
+		this.languageRefSetId = languageRefSetId;
 		this.quoteCharacter = quoteCharacter;
 		this.importFile = importFile;
 		this.importedConceptIds = Sets.newHashSet();
@@ -153,7 +172,8 @@ public class SnomedSubsetImporter {
 					unimportedRefSets = new SnomedUnimportedRefSets(importFile.getName(), information.getSubsetName(), information.getNameSpace(), null);
 				}
 				
-				final SubsetImporterCallback callBack = createCallBack(context, unimportedRefSets, information);
+				final String label = information.getSubsetName();
+				final SubsetImporterCallback callBack = new SubsetImporterCallback(label, unimportedRefSets, context, idColumnNumber, hasHeader, refSetParent, moduleId, languageRefSetId);
 				final CsvSettings csvSettings = createCSVSettings();
 				
 				if (fileExtension.equals("csv")) {
@@ -191,12 +211,6 @@ public class SnomedSubsetImporter {
 		});
 	}
 	
-	// Creates the SubsetImporterCallBack for the given RefSet type
-	private SubsetImporterCallback createCallBack(TransactionContext context, SnomedUnimportedRefSets unimportedRefSets, SubsetInformation information) {
-		final String label = information.getSubsetName();
-		return new SubsetImporterCallback(label, unimportedRefSets, context, idColumnNumber, hasHeader, refSetParent);
-	}
-
 	// Sets the CVS settings
 	private CsvSettings createCSVSettings() {
 		return new CsvSettings("".equals(quoteCharacter) ? '\0' : quoteCharacter.charAt(0), fieldSeparatorCharacter, lineFeedCharacter, true);
@@ -270,17 +284,19 @@ public class SnomedSubsetImporter {
 		private final boolean hasHeader;
 		private final String refSetId;
 		private final TransactionContext context;
+		private final String languageRefSetId;
 
 		private SubsetImporterCallback(String label, SnomedUnimportedRefSets unimportedRefSet, TransactionContext context,
-				int idColumnNumber, boolean hasHeader, String refSetType) {
+				int idColumnNumber, boolean hasHeader, String refSetParent, String moduleId, String languageRefSetId) {
 			
 			this.unImportedRefSets = unimportedRefSet;
 			this.context = context;
 			this.idColumnNumber = idColumnNumber;
-			this.hasHeader = hasHeader; 
-			this.moduleId = context.lookup(refSetType, Concept.class).getModule().getId();
+			this.hasHeader = hasHeader;
+			this.moduleId = moduleId;
+			this.languageRefSetId = languageRefSetId;
+			
 			SnomedEditingContext editingContext = context.service(SnomedEditingContext.class);
-			final String languageReferenceSetId = editingContext.getLanguageRefSetId();
 			
 			SnomedRefSetCreateRequestBuilder refSetCreateReq = SnomedRequests
 					.prepareNewRefSet()
@@ -292,11 +308,11 @@ public class SnomedSubsetImporter {
 					.setModuleId(moduleId)
 					.addRelationship(SnomedRequests.prepareNewRelationship()
 							.setId(generateComponentId(context, ComponentCategory.RELATIONSHIP, unimportedRefSet.getNameSpace()))
-							.setDestinationId(refSetType)
+							.setDestinationId(refSetParent)
 							.setTypeId(Concepts.IS_A))
 					.addRelationship(SnomedRequests.prepareNewRelationship()
 							.setId(generateComponentId(context, ComponentCategory.RELATIONSHIP, unimportedRefSet.getNameSpace()))
-							.setDestinationId(refSetType)
+							.setDestinationId(refSetParent)
 							.setTypeId(Concepts.IS_A)
 							.setCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP))
 					.addDescription(SnomedRequests
@@ -305,14 +321,14 @@ public class SnomedSubsetImporter {
 							.setModuleId(moduleId)
 							.setTerm(String.format("%s (%s)", label, "foundation metadata concept"))
 							.setTypeId(Concepts.FULLY_SPECIFIED_NAME)
-							.preferredIn(languageReferenceSetId))
+							.preferredIn(languageRefSetId))
 					.addDescription(SnomedRequests
 							.prepareNewDescription()
 							.setId(generateComponentId(context, ComponentCategory.DESCRIPTION, unimportedRefSet.getNameSpace()))
 							.setModuleId(moduleId)
 							.setTerm(label)
 							.setTypeId(Concepts.SYNONYM)
-							.preferredIn(languageReferenceSetId))
+							.preferredIn(languageRefSetId))
 					.setRefSet(refSetCreateReq);
 			
 			final String cmtRefSetId = getIdIfCMTConcept(label);

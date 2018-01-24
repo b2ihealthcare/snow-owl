@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,16 +41,21 @@ import com.google.common.collect.Sets;
  */
 public final class SnomedSubsetImportConfiguration {
 
-	private static final String NAMESPACE = "([0-9]){7}";
 	private static final String EFFECTIVE_TIME_FULL = "([1-9]){1}([0-9]){3}((0{1}[1-9]{1})|(1{1}[0-2]{1})){1}(0[1-9]|[12][0-9]|3[01]){1}";
 	private static final String EFFECTIVE_TIME_MINUS_DAY = "([1-9]){1}([0-9]){3}((0{1}[1-9]{1})|(1{1}[0-2]{1})){1}";
 
 	private Set<SubsetEntry> entries = Sets.newHashSet();
 	private final List<SnomedUnimportedRefSets> unimportedRefSets = Lists.newArrayList();
 	private final String branchPath;
+	private final String namespace;
+	private final String moduleId;
+	private final String languageRefSetId;
 
-	public SnomedSubsetImportConfiguration(String branchPath) {
+	public SnomedSubsetImportConfiguration(String branchPath, String namespace, String moduleId, String languageRefSetId) {
 		this.branchPath = branchPath;
+		this.namespace = namespace;
+		this.moduleId = moduleId;
+		this.languageRefSetId = languageRefSetId;
 	}
 	
 	public String getBranchPath() {
@@ -123,7 +128,7 @@ public final class SnomedSubsetImportConfiguration {
 		subsetName = subsetName.replace('_', ' ');
 
 		final String[] fileNameFields = subsetName.split(" ");
-		subsetName = setFileNameNamespaceEffectiveTime(subsetEntry, fileNameFields);
+		subsetName = setPropertiesFromFileNameParts(subsetEntry, fileNameFields);
 		
 		subsetName = subsetName.trim();
 		subsetName = StringUtils.splitCamelCaseAndCapitalize(subsetName);
@@ -137,32 +142,27 @@ public final class SnomedSubsetImportConfiguration {
 	}
 
 	// Sets the filename, namespace and the effective time for the subset
-	private String setFileNameNamespaceEffectiveTime(final SubsetEntry subsetEntry, final String[] fileNameFields) {
+	private String setPropertiesFromFileNameParts(final SubsetEntry subsetEntry, final String[] fileNameParts) {
 		
 		final StringBuilder fileNameBuilder = new StringBuilder();
 		
-		for (String fileNameField : fileNameFields) {
+		for (String fileNamePart : fileNameParts) {
 			
-			if (fileNameField.matches(NAMESPACE)) {
-				subsetEntry.setNamespace(fileNameField);
-				continue;
-			}
-			
-			if (fileNameField.matches(EFFECTIVE_TIME_FULL) || fileNameField.matches("\\("+ EFFECTIVE_TIME_FULL +"\\)")) {
+			if (fileNamePart.matches(EFFECTIVE_TIME_FULL) || fileNamePart.matches("\\("+ EFFECTIVE_TIME_FULL +"\\)")) {
 				
-				if (fileNameField.startsWith("(") && fileNameField.endsWith(")")) {
-					fileNameField = fileNameField.substring(1, fileNameField.length()-1);
+				if (fileNamePart.startsWith("(") && fileNamePart.endsWith(")")) {
+					fileNamePart = fileNamePart.substring(1, fileNamePart.length()-1);
 				}
 				
-				subsetEntry.setEffectiveTime(fileNameField);
+				subsetEntry.setEffectiveTime(fileNamePart);
 				continue;
 			}
 			
-			if (fileNameField.contains("(") || fileNameField.contains(")") || fileNameField.matches(EFFECTIVE_TIME_MINUS_DAY)) {
+			if (fileNamePart.contains("(") || fileNamePart.contains(")") || fileNamePart.matches(EFFECTIVE_TIME_MINUS_DAY)) {
 				continue;
 			}
 			
-			fileNameBuilder.append(fileNameField);
+			fileNameBuilder.append(fileNamePart);
 		}
 		
 		return fileNameBuilder.toString();
@@ -172,6 +172,9 @@ public final class SnomedSubsetImportConfiguration {
 	private void setProperties(final SubsetEntry subsetEntry) {
 		subsetEntry.setHasHeader(true);
 		subsetEntry.setSkipEmptyLines(true);
+		subsetEntry.setNamespace(namespace);
+		subsetEntry.setModuleId(moduleId);
+		subsetEntry.setLanguageRefSetId(languageRefSetId);
 	}
 
 	/**
@@ -243,10 +246,20 @@ public final class SnomedSubsetImportConfiguration {
 		private URL fileURL;
 		private List<String> headings;
 		private Integer sheetNumber;
+		private String moduleId;
+		private String languageRefSetId;
 
 		public SubsetEntry(final boolean isInclude) {
 			this.isInclude = isInclude;
 			headings = Lists.newArrayList();
+		}
+
+		public void setLanguageRefSetId(String languageRefSetId) {
+			this.languageRefSetId = languageRefSetId;
+		}
+		
+		public String getLanguageRefSetId() {
+			return languageRefSetId;
 		}
 
 		public URL getFileURL() {
@@ -344,6 +357,14 @@ public final class SnomedSubsetImportConfiguration {
 		
 		public String getNamespace() {
 			return namespace;
+		}
+
+		public void setModuleId(String moduleId) {
+			this.moduleId = moduleId;
+		}
+		
+		public String getModuleId() {
+			return moduleId;
 		}
 		
 		public void setEffectiveTime(final String effectiveTime) {
