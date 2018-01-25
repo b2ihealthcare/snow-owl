@@ -19,7 +19,11 @@ import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getVersion;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
-import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.createImport;
+import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.deleteImport;
+import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.getImport;
+import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.uploadImportFile;
+import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.waitForImportJob;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
 
@@ -203,5 +207,52 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "555231000005107").statusCode(200);
 		getVersion("SNOMEDCT-NE", "2015-02-05").statusCode(200);
 	}
-
+	
+	@Test
+	public void importMoreThanOneLanguageCodeDescription() {
+		final String enDescriptionId = "41320138114";
+		final String svDescriptionId = "24688171113";
+		final String conceptIdODescription = "301795004";
+		
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, enDescriptionId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, svDescriptionId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptIdODescription).statusCode(404);
+		
+		final Map<?, ?> importConfiguration = ImmutableMap.builder()
+				.put("type", Rf2ReleaseType.DELTA.name())
+				.put("branchPath",  branchPath.getPath())
+				.put("createVersions", false)
+				.build();
+		
+		importArchive("SnomedCT_Release_INT_20150131_new_concept_for_languageCode.zip");
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptIdODescription).statusCode(200);
+		
+		importArchive("SnomedCT_Release_INT_20150201_new_description_with2_language_code.zip", importConfiguration);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, enDescriptionId).statusCode(200);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, svDescriptionId).statusCode(200);
+	}
+	
+	@Test
+	public void importFromMoreThanOneLanguageRefset() {
+		final String enLanguageRefsetConceptId = "34d07985-48a0-41e7-b6ec-b28e6b00adfc";
+		final String svLanguageRefsetConceptId = "34d07985-48a0-41e7-b6ec-b28e6b00adfb";
+		final String conceptIdOfDescriptions = "301795004";
+		
+		getComponent(branchPath, SnomedComponentType.MEMBER, enLanguageRefsetConceptId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, svLanguageRefsetConceptId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptIdOfDescriptions).statusCode(404);
+		
+		final Map<?, ?> importConfiguration = ImmutableMap.builder()
+				.put("type", Rf2ReleaseType.DELTA.name())
+				.put("branchPath",  branchPath.getPath())
+				.put("createVersions", false)
+				.build();
+		importArchive("SnomedCT_Release_INT_20150131_new_concept_for_languageCode.zip");
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptIdOfDescriptions);
+		
+		importArchive("SnomedCT_Release_INT_20150201_new_description_with2_language_code.zip", importConfiguration);
+		getComponent(branchPath, SnomedComponentType.MEMBER, enLanguageRefsetConceptId).statusCode(200);
+		getComponent(branchPath, SnomedComponentType.MEMBER, svLanguageRefsetConceptId).statusCode(200);
+	}
+	
 }
