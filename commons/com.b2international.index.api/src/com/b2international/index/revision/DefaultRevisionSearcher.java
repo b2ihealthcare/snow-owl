@@ -102,6 +102,10 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 	
 	@Override
 	public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {
+		aggregation.query(Expressions.builder()
+				.must(aggregation.getQuery())
+				.filter(Revision.branchFilter(branch))
+			.build());
 		return searcher.aggregate(aggregation);
 	}
 	
