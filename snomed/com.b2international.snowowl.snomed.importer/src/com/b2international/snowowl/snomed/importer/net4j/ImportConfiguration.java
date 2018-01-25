@@ -18,6 +18,8 @@ package com.b2international.snowowl.snomed.importer.net4j;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,6 +27,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
 import com.b2international.commons.ZipURLHandler;
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet;
 import com.google.common.collect.Maps;
@@ -58,10 +61,10 @@ public final class ImportConfiguration {
 	private File archiveFile;
 	private File rootFile;
 	private File conceptsFile;
-	private File descriptionsFile;
+	private Collection<File> descriptionsFiles = Collections.emptySet();
 	private File relationshipsFile;
 	private File statedRelationshipsFile;
-	private File languageRefSetFile;
+	private Collection<File> languageRefSetFiles = Collections.emptySet();
 	private File descriptionType;
 	private File textDefinitionFile;
 	
@@ -115,14 +118,14 @@ public final class ImportConfiguration {
 		this.conceptsFile = conceptsFile;
 	}
 
-	public File getDescriptionsFile() {
-		return descriptionsFile;
+	public Collection<File> getDescriptionsFiles() {
+		return descriptionsFiles;
 	}
 
-	public void setDescriptionsFile(final File descriptionsFile) {
-		this.descriptionsFile = descriptionsFile;
+	public void setDescriptionsFiles(final Collection<File> descriptionsFiles) {
+		this.descriptionsFiles = Collections3.toImmutableSet(descriptionsFiles);
 	}
-
+	
 	public File getRelationshipsFile() {
 		return relationshipsFile;
 	}
@@ -131,14 +134,18 @@ public final class ImportConfiguration {
 		this.relationshipsFile = relationshipsFile;
 	}
 
-	public File getLanguageRefSetFile() {
-		return languageRefSetFile;
+	public Collection<File> getLanguageRefSetFiles() {
+		return languageRefSetFiles;
 	}
 
-	public void setLanguageRefSetFile(final File languageRefSetFile) {
-		this.languageRefSetFile = languageRefSetFile;
+	public void setLanguageRefSetFiles(final Collection<File> languageRefSetFiles) {
+		this.languageRefSetFiles = Collections3.toImmutableSet(languageRefSetFiles);
 	}
-
+	
+	public void addLanguageRefSetFiles(final File languageRefSetFile) {
+		this.languageRefSetFiles.add(languageRefSetFile);
+	}
+	
 	public ImportSourceKind getSourceKind() {
 		return sourceKind;
 	}
