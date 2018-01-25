@@ -107,13 +107,20 @@ public class ListLanguageRefSetsCommand extends AbstractRf2ImporterCommand {
 			// Setting up configuration only with the required fields
 			config.setSourceKind(ImportSourceKind.ARCHIVE);
 			config.setArchiveFile(archiveFile);
-			config.setDescriptionsFile(new File(archiveFileSet.getFileName(zipFiles, ReleaseComponentType.DESCRIPTION, contentSubType)));
-			config.setLanguageRefSetFile(languageRefSetFile);
+			final Collection<String> allFileName = archiveFileSet.getAllFileName(zipFiles, ReleaseComponentType.DESCRIPTION, contentSubType);
+			final Collection<File> descriptionFileNames = Collections.emptySet();
+			for (String fileName : allFileName) {
+				descriptionFileNames.add(new File(fileName));
+			}
+			config.setDescriptionsFiles(descriptionFileNames);
+			config.addLanguageRefSetFiles(languageRefSetFile);
 	
 			final SnomedRefSetNameCollector provider = new SnomedRefSetNameCollector(config, new NullProgressMonitor(), "");
 	
 			try {
-				provider.parse(config.toURL(config.getLanguageRefSetFile()));
+				for (File langFile : config.getLanguageRefSetFiles()) {
+					provider.parse(config.toURL(langFile));
+				}
 			} catch (final IOException e) {
 				interpreter.println(e);
 				return;

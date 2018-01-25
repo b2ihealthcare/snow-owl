@@ -37,6 +37,7 @@ import com.b2international.snowowl.snomed.importer.net4j.SnomedImportProtocolCon
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 
 /**
@@ -92,12 +93,12 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 			receivedFilesDirectory.deleteOnExit();
 			
 			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setConceptsFile(f); }}, monitor.fork());
-			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setDescriptionsFile(f); }}, monitor.fork());
+			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setDescriptionsFiles(ImmutableList.of(f)); }}, monitor.fork());
 			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setTextDefinitionFile(f); }}, monitor.fork());
 			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setRelationshipsFile(f); }}, monitor.fork());
 			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setStatedRelationshipsFile(f); }}, monitor.fork());
 			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setDescriptionType(f); }}, monitor.fork());
-			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setLanguageRefSetFile(f); }}, monitor.fork());
+			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setLanguageRefSetFiles(ImmutableList.of(f)); }}, monitor.fork());
 			
 			final int refSetUrlCount = in.readInt();
 			

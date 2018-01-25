@@ -131,7 +131,7 @@ public class SnomedRefSetNameCollector {
 		}
 		
 		// Step 2: Get descriptions for reference set IDs using the description file (if present)
-		if (configuration.getDescriptionsFile() != null) {
+		if (!configuration.getDescriptionsFiles().isEmpty()) {
 			readDescriptionFile(unlabeledRefSetIds, convertedMonitor.newChild(1));
 		}
 
@@ -173,11 +173,15 @@ public class SnomedRefSetNameCollector {
 					subMonitor.setWorkRemaining(LARGE_WORK_REMAINING);
 				}
 			};
-
-			URL url = configuration.toURL(configuration.getDescriptionsFile());
-			descriptionReader = new InputStreamReader(url.openStream());
-			CsvParser parser = new CsvParser(descriptionReader, getFileName(url), CSV_SETTINGS, descriptionParserCallback, DESCRIPTION_FIELD_COUNT);
-			parser.parse();
+			if (!configuration.getDescriptionsFiles().isEmpty()) {
+				for(File descFile : configuration.getDescriptionsFiles()) {
+					URL url = configuration.toURL(descFile);
+					descriptionReader = new InputStreamReader(url.openStream());
+					CsvParser parser = new CsvParser(descriptionReader, getFileName(url), CSV_SETTINGS, descriptionParserCallback, DESCRIPTION_FIELD_COUNT);
+					parser.parse();
+					
+				}
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {

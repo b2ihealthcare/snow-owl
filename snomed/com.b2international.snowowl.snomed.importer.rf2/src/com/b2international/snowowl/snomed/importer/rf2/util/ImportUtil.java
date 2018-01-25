@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -206,9 +207,9 @@ public final class ImportUtil {
 		// read and copy entries to temporary files
 		try (final ZipFile archive = new ZipFile(releaseArchive)) {
 			config.setConceptsFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, CONCEPT, contentSubType)));
-			config.setDescriptionsFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, DESCRIPTION, contentSubType)));
+			config.setDescriptionsFiles(createTemporaryFile(tempDir, archive, archiveFileSet.getAllFileName(zipFiles, DESCRIPTION, contentSubType)));
 			config.setRelationshipsFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, RELATIONSHIP, contentSubType)));
-			config.setLanguageRefSetFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, LANGUAGE_REFERENCE_SET, contentSubType)));
+			config.setLanguageRefSetFiles(createTemporaryFile(tempDir, archive, archiveFileSet.getAllFileName(zipFiles, LANGUAGE_REFERENCE_SET, contentSubType)));
 			
 			// These paths might turn out to be empty
 			config.setStatedRelationshipsFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, STATED_RELATIONSHIP, contentSubType)));
@@ -232,6 +233,18 @@ public final class ImportUtil {
 			return file;
 		}
 		return new File("");
+	}
+	
+	private Collection<File> createTemporaryFile(final File tmpDir, final ZipFile archive, final Collection<String> entryPaths) throws IOException {
+		if (!entryPaths.isEmpty()) {
+			final Collection<File> files = new ArrayList<File>();
+			for (String entryPath : entryPaths) {
+				files.add(createTemporaryFile(tmpDir, archive, entryPath));
+			}
+			return files;
+		}
+		return Collections.emptySet();
+		
 	}
 
 	private RepositoryState loadRepositoryState(RevisionSearcher searcher) throws IOException {
@@ -337,10 +350,14 @@ public final class ImportUtil {
 				final URL url = configuration.toURL(configuration.getConceptsFile());
 				importers.add(new SnomedConceptImporter(context, url.openStream(), configuration.getMappedName(url.getPath())));
 			}
-
-			if (ImportConfiguration.isValidReleaseFile(configuration.getDescriptionsFile())) {
-				final URL url = configuration.toURL(configuration.getDescriptionsFile());
-				importers.add(new SnomedDescriptionImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.DESCRIPTION));
+			
+			if (!configuration.getDescriptionsFiles().isEmpty()) {
+				for (File descriptionFile : configuration.getDescriptionsFiles()) {
+					if (ImportConfiguration.isValidReleaseFile(descriptionFile)) {
+						final URL url = configuration.toURL(descriptionFile);
+						importers.add(new SnomedDescriptionImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.DESCRIPTION));
+					}
+				}
 			}
 			
 			if (ImportConfiguration.isValidReleaseFile(configuration.getTextDefinitionFile())) {

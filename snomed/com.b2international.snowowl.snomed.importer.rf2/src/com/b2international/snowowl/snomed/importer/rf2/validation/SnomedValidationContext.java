@@ -137,8 +137,10 @@ public final class SnomedValidationContext {
 			releaseFileValidators.add(new SnomedConceptValidator(configuration, this));
 		}
 
-		if (isValidReleaseFile(configuration.getDescriptionsFile())) {
-			releaseFileValidators.add(new SnomedDescriptionValidator(configuration, this, configuration.getDescriptionsFile()));
+		for (File descFile : configuration.getDescriptionsFiles()) {
+			if (isValidReleaseFile(descFile)) {
+				releaseFileValidators.add(new SnomedDescriptionValidator(configuration, this, descFile));
+			}
 		}
 
 		if (isValidReleaseFile(configuration.getTextDefinitionFile())) {
@@ -162,9 +164,12 @@ public final class SnomedValidationContext {
 
 		//if the reference file URL set does not contain a language validator yet, specify one 
 		if (!Iterables.any(releaseFileValidators, Predicates.instanceOf(SnomedLanguageRefSetValidator.class))) {
-			
-			if (isValidReleaseFile(configuration.getLanguageRefSetFile())) {
-				releaseFileValidators.add(new SnomedLanguageRefSetValidator(configuration, configuration.toURL(configuration.getLanguageRefSetFile()), this));
+			Collection<File> languageRefSetFiles = configuration.getLanguageRefSetFiles();
+			for (File langFile : languageRefSetFiles) {
+				if (isValidReleaseFile(langFile)) {
+					releaseFileValidators.add(new SnomedLanguageRefSetValidator(configuration, configuration.toURL(langFile), this));
+				}
+				
 			}
 			
 		}

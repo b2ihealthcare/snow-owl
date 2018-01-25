@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collection;
 
 import org.eclipse.net4j.signal.RequestWithMonitoring;
 import org.eclipse.net4j.util.io.ExtendedDataInputStream;
@@ -69,16 +70,23 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 			}
 			
 			out.writeUTF(importConfiguration.getCodeSystemShortName());
-			
+			final Collection<File> descriptionsFiles = importConfiguration.getDescriptionsFiles();
+			final Collection<File> languageRefSetFiles = importConfiguration.getLanguageRefSetFiles();
 			monitor.worked(); // 1
 			
+			for (File descfile : descriptionsFiles) {
+				writeComponent(out, descfile, monitor);
+			}
+			
+			for (File langFile : languageRefSetFiles) {
+				writeComponent(out, langFile, monitor.fork()); // + 7
+			}
+			
 			writeComponent(out, importConfiguration.getConceptsFile(), monitor.fork());
-			writeComponent(out, importConfiguration.getDescriptionsFile(), monitor.fork());
 			writeComponent(out, importConfiguration.getTextDefinitionFile(), monitor.fork());
 			writeComponent(out, importConfiguration.getRelationshipsFile(), monitor.fork());
 			writeComponent(out, importConfiguration.getStatedRelationshipsFile(), monitor.fork());
 			writeComponent(out, importConfiguration.getDescriptionType(), monitor.fork());
-			writeComponent(out, importConfiguration.getLanguageRefSetFile(), monitor.fork()); // + 7
 			
 			out.writeInt(importConfiguration.getRefSetUrls().size());
 			

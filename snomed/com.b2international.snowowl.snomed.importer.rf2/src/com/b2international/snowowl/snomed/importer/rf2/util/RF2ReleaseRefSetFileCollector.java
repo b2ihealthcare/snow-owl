@@ -67,9 +67,10 @@ public class RF2ReleaseRefSetFileCollector {
 		// Add reference set URLs from the first wizard page in case they're not present
 		try {
 			
-			if (null != configuration.getLanguageRefSetFile()) {
-				collectedUrlSet.add(configuration.toURL(configuration.getLanguageRefSetFile()));
+			for (File langFiles : configuration.getLanguageRefSetFiles()) {
+				collectedUrlSet.add(configuration.toURL(langFiles));
 			}
+		
 			
 			if (null != configuration.getDescriptionType()) {
 				collectedUrlSet.add(configuration.toURL(configuration.getDescriptionType()));
