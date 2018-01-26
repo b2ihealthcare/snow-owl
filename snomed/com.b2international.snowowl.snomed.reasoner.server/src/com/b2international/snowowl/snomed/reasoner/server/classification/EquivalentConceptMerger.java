@@ -46,7 +46,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.Inact
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
@@ -85,33 +84,20 @@ public class EquivalentConceptMerger {
 		// First resolve the equivalencies Map, to find the equivalent concept instances
 		final Multimap<Concept, Concept> equivalentConcepts = resolveEquivalencies();
 		final Iterable<Concept> concepts = Iterables.concat(equivalentConcepts.keySet(), equivalentConcepts.values());
+		final Iterable<String> destinationIds = Iterables.transform(concepts, Concept::getId);
+		SnomedRelationships inboundRelationships = SnomedRequests.prepareSearchRelationship()
+				.all()
+				.filterByActive(true)
+				.filterByDestination(destinationIds)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, editingContext.getBranch())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
 		final Multimap<String, Relationship> inboundRelationshipMap = HashMultimap.create(FluentIterable
-				.from(concepts)
-				.transformAndConcat(new Function<Concept, Iterable<SnomedRelationshipIndexEntry>>() {
-					@Override
-					public Iterable<SnomedRelationshipIndexEntry> apply(Concept input) {
-						final SnomedRelationships relationships = SnomedRequests.prepareSearchRelationship()
-							.all()
-							.filterByActive(true)
-							.filterByDestination(input.getId())
-							.build(SnomedDatastoreActivator.REPOSITORY_UUID, editingContext.getBranch())
-							.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-							.getSync();
-						return SnomedRelationshipIndexEntry.fromRelationships(relationships);
-					}
-				})
-				.transform(new Function<SnomedRelationshipIndexEntry, Relationship>() {
-					@Override
-					public Relationship apply(SnomedRelationshipIndexEntry input) {
-						return (Relationship) editingContext.lookup(input.getStorageKey());
-					}
-				})
-				.index(new Function<Relationship, String>() {
-					@Override
-					public String apply(Relationship input) {
-						return input.getDestination().getId();
-					}
-				}));
+				.from(inboundRelationships)
+				.transform(relationship -> (Relationship) editingContext.lookup(relationship.getStorageKey()))
+				//Exclude relationships that were already marked redundant
+				.filter(relationship -> relationship.getSource() != null && relationship.getDestination() != null)
+				.index( relationship -> relationship.getDestination().getId()));
 		for (Relationship relationship : ComponentUtils2.getNewObjects(editingContext.getTransaction(), Relationship.class)) {
 			inboundRelationshipMap.put(relationship.getDestination().getId(), relationship);
 		}
@@ -202,6 +188,7 @@ public class EquivalentConceptMerger {
 			for (final Relationship replacementOutboundRelationship : conceptToKeep.getOutboundRelationships()) {
 				if (relationshipToRemove.getType().equals(replacementOutboundRelationship.getType())
 						&& relationshipToRemove.getDestination().equals(replacementOutboundRelationship.getDestination())
+						&& relationshipToRemove.getCharacteristicType().equals(replacementOutboundRelationship.getCharacteristicType())
 						&& relationshipToRemove.getModifier().equals(replacementOutboundRelationship.getModifier())) {
 					found = true;
 					break;
@@ -235,6 +222,7 @@ public class EquivalentConceptMerger {
 			for (final Relationship replacementInboundRelationship : Sets.newHashSet(inboundRelationshipMap.get(conceptToKeep.getId()))) {
 				if (relationshipToRemove.getType().equals(replacementInboundRelationship.getType())
 						&& relationshipToRemove.getSource().equals(replacementInboundRelationship.getSource())
+						&& relationshipToRemove.getCharacteristicType().equals(replacementInboundRelationship.getCharacteristicType())
 						&& relationshipToRemove.getModifier().equals(replacementInboundRelationship.getModifier())) {
 					found = true;
 					break;

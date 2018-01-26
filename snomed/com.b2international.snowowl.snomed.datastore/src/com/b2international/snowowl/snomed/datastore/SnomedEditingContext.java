@@ -1085,10 +1085,12 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		// Also check inbound relationships, as these could have been released with different effective times
 		for (Relationship relationship : getInboundRelationships(concept.getId())) {
-			deletionPlan = canDelete(relationship, deletionPlan, force);
-			if (deletionPlan.isRejected()) {
-				deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_MESSAGE, toString(concept)));
-				return deletionPlan;
+			if (relationship != null) {
+				deletionPlan = canDelete(relationship, deletionPlan, force);
+				if (deletionPlan.getRejectionReasons().size() > 0) {
+					deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_MESSAGE, toString(concept)));
+					return deletionPlan;
+				}
 			}
 		}
 		
@@ -1179,7 +1181,9 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		}
 		
 		deletionPlan.markForDeletion(refSetEditingContext.getReferringMembers(relationship));		
-		deletionPlan.markForDeletion(relationship);
+		if (relationship.getSource() != null) {
+			deletionPlan.markForDeletion(relationship);
+		}
 		return deletionPlan;
 	}
 

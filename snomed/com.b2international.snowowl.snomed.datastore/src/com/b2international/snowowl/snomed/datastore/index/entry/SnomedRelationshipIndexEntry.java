@@ -119,15 +119,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				.effectiveTime(input.getEffectiveTime());
 	}
 	
-	public static Collection<SnomedRelationshipIndexEntry> fromRelationships(Iterable<SnomedRelationship> relationships) {
-		return FluentIterable.from(relationships).transform(new Function<SnomedRelationship, SnomedRelationshipIndexEntry>() {
-			@Override
-			public SnomedRelationshipIndexEntry apply(SnomedRelationship input) {
-				return builder(input).build();
-			}
-		}).toSet();
-	}
-	
 	public static final class Expressions extends SnomedComponentDocument.Expressions {
 		
 		private Expressions() {}
