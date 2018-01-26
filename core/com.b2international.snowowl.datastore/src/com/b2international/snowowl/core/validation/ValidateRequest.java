@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
+import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
@@ -61,23 +62,30 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			
 			index.removeAll(Collections.singletonMap(ValidationIssue.class, issuesToDelete));
 			
+			ValidationThreadPool pool = context.service(ValidationThreadPool.class);
+			
 			// evaluate selected rules
 			for (ValidationRule rule : rules) {
 				ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
 				if (evaluator != null) {
-					try {
-						List<ComponentIdentifier> affectedComponents = evaluator.eval(context, rule);
-						if (!affectedComponents.isEmpty()) {
-							for (ComponentIdentifier affectedComponent : affectedComponents) {
-								String issueId = UUID.randomUUID().toString();
-								index.put(issueId, new ValidationIssue(issueId, rule.getId(), branchPath, affectedComponent));
+					pool.submit(() -> {
+						try {
+							List<ComponentIdentifier> affectedComponents = evaluator.eval(context, rule);
+							if (!affectedComponents.isEmpty()) {
+								for (ComponentIdentifier affectedComponent : affectedComponents) {
+									String issueId = UUID.randomUUID().toString();
+									index.put(issueId, new ValidationIssue(issueId, rule.getId(), branchPath, affectedComponent));
+								}
 							}
+							// TODO report successfully executed validation rule
+						} catch (Exception e) {
+							// TODO report failed validation rule
+							e.printStackTrace();
 						}
-						// TODO report successfully executed validation rule
-					} catch (Exception e) {
-						// TODO report failed validation rule
-						e.printStackTrace();
-					}
+						return Boolean.TRUE;
+					})
+					.getSync();
+					
 				}
 			}
 			
