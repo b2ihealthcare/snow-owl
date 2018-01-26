@@ -284,7 +284,6 @@ public class SnomedSubsetImporter {
 		private final boolean hasHeader;
 		private final String refSetId;
 		private final TransactionContext context;
-		private final String languageRefSetId;
 
 		private SubsetImporterCallback(String label, SnomedUnimportedRefSets unimportedRefSet, TransactionContext context,
 				int idColumnNumber, boolean hasHeader, String refSetParent, String moduleId, String languageRefSetId) {
@@ -294,9 +293,6 @@ public class SnomedSubsetImporter {
 			this.idColumnNumber = idColumnNumber;
 			this.hasHeader = hasHeader;
 			this.moduleId = moduleId;
-			this.languageRefSetId = languageRefSetId;
-			
-			SnomedEditingContext editingContext = context.service(SnomedEditingContext.class);
 			
 			SnomedRefSetCreateRequestBuilder refSetCreateReq = SnomedRequests
 					.prepareNewRefSet()
@@ -359,6 +355,7 @@ public class SnomedSubsetImporter {
 
 		@Override
 		public void handleRecord(int recordCount, List<String> record) {
+			if (record.isEmpty()) return;
 			if (hasHeader) {
 				if (firstConceptRowNumber < recordCount) {
 					createMember(record);
