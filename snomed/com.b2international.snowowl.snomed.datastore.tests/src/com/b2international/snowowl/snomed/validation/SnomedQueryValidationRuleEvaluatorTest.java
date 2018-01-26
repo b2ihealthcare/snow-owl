@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.validation;
 import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.concept;
 import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.description;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Map;
@@ -95,8 +94,8 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 		context = TestBranchContext.on(MAIN)
 				.with(ObjectMapper.class, getMapper())
-				.with(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)))
-				.with(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)))
+				.with(EclParser.class, new DefaultEclParser(injector.getProvider(IParser.class), injector.getProvider(IResourceValidator.class)))
+				.with(EclSerializer.class, new DefaultEclSerializer(injector.getProvider(ISerializer.class)))
 				.with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index())
 				.with(ValidationRepository.class, repository)

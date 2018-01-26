@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,8 @@ public class SnomedEclRewriterTest {
 	public void givenRewriter() {
 		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 		rewriter = new SnomedEclRewriter();
-		parser = new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class));
-		serializer = new DefaultEclSerializer(injector.getInstance(ISerializer.class));
+		parser = new DefaultEclParser(injector.getProvider(IParser.class), injector.getProvider(IResourceValidator.class));
+		serializer = new DefaultEclSerializer(injector.getProvider(ISerializer.class));
 	}
 	
 	@Test

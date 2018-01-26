@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,27 +20,28 @@ import org.eclipse.xtext.serializer.ISerializer;
 
 import com.b2international.snowowl.snomed.ecl.ecl.ConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+import com.google.inject.Provider;
 
 /**
  * @since 5.4
  */
 public class DefaultEclSerializer implements EclSerializer {
 
-	private final ISerializer eclSerializer;
+	private final Provider<ISerializer> eclSerializer;
 
-	public DefaultEclSerializer(ISerializer eclSerializer) {
+	public DefaultEclSerializer(Provider<ISerializer> eclSerializer) {
 		this.eclSerializer = eclSerializer;
 	}
 	
 	@Override
 	public String serialize(ExpressionConstraint expression) {
-		return eclSerializer.serialize(expression);
+		return eclSerializer.get().serialize(expression);
 	}
 	
 	@Override
 	public String serializeWithoutTerms(ExpressionConstraint expression) {
 		removeTerms(expression);
-		return eclSerializer.serialize(expression).trim();
+		return eclSerializer.get().serialize(expression).trim();
 	}
 
 	private void removeTerms(EObject expression) {
@@ -52,5 +53,4 @@ public class DefaultEclSerializer implements EclSerializer {
 			}
 		}
 	}
-
 }
