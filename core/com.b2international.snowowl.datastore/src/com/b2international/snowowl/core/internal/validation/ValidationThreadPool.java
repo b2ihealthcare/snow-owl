@@ -33,7 +33,7 @@ public final class ValidationThreadPool implements IDisposableService {
 	private final AtomicBoolean disposed = new AtomicBoolean(false);
 	private final ListeningExecutorService executor;
 	
-	ValidationThreadPool(int nThreads) {
+	public ValidationThreadPool(int nThreads) {
 		this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(nThreads));
 	}
 	

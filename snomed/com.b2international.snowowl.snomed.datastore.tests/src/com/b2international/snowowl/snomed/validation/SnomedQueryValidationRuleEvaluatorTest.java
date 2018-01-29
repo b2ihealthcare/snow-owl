@@ -39,6 +39,7 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
+import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
@@ -98,6 +99,7 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 				.with(EclSerializer.class, new DefaultEclSerializer(injector.getProvider(ISerializer.class)))
 				.with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index())
+				.with(ValidationThreadPool.class, new ValidationThreadPool(1))
 				.with(ValidationRepository.class, repository)
 				.build();
 		evaluator = new SnomedQueryValidationRuleEvaluator();
