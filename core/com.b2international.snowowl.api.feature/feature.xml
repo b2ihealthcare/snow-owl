@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.api.feature"
       label="Snow Owl Administrative Java API Feature"
-      version="6.1.0"
+      version="6.2.0.qualifier"
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
