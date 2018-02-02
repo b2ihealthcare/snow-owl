@@ -1,0 +1,42 @@
+#
+# Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+#
+
+authentication:
+  type: PROP_FILE
+
+# Default username and password for RESTful API authentication
+# NOTE: changing the default username/password is recommended for production environments
+fileAuth:
+  users:
+    -
+      username: snowowl
+      password: snowowl
+
+repository:
+  host: 0.0.0.0
+  port: 2036
+
+  # Disable revision cache when running reindex
+  revisionCache: false
+  database:
+    type: b2i_mysql
+    datasource: com.mysql.jdbc.jdbc2.optional.MysqlDataSource
+    driver: com.mysql.jdbc.Driver
+    scheme: jdbc:mysql://
+    location: localhost:3306/
+    settings: ?useServerPrepStmts=true&useCursorFetch=true
+    
+    # Default username and password to access a local MySQL installation
+    # NOTE: changing the default username/password is recommended for production environments
+    username: snowowl
+    password: snowowl
+  index:
+    # Increase hard commit interval to 15 minutes
+    commitInterval: 900000
+    # Increase translog sync to 5 minutes
+    translogSyncInterval: 300000
+
+metrics:
+  # Enable Request execution metrics logging
+  enabled: true

@@ -1,0 +1,10 @@
+com.b2international.snowowl.datastore.request
+com.b2international.snowowl.datastore.request.compare
+com.b2international.snowowl.datastore.request.job
+com.b2international.snowowl.datastore.request.repository
+com.b2international.snowowl.datastore.request.version
+com.b2international.snowowl.snomed.core.domain
+com.b2international.snowowl.snomed.datastore.id.request
+com.b2international.snowowl.snomed.datastore.request
+com.b2international.snowowl.snomed.datastore.request.dsv
+com.b2international.snowowl.snomed.datastore.request.rf2
