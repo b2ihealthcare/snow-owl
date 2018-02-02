@@ -89,6 +89,8 @@
 									<exclude>io.reactivex*</exclude>
 									<exclude>net.jodah*</exclude>
 									<exclude>org.tartarus.snowball*</exclude>
+									<exclude>org.elasticsearch*</exclude>
+									<exclude>org.mapdb*</exclude>
 									<exclude>*internal*</exclude>
 								</excludes>
 							</javadocOptions>
@@ -116,7 +118,14 @@
 								</additionalArguments>
 								<includes>
 									<include>com.b2international.snowowl.datastore.request</include>
+									<include>com.b2international.snowowl.datastore.request.compare</include>
+									<include>com.b2international.snowowl.datastore.request.job</include>
+									<include>com.b2international.snowowl.datastore.request.repository</include>
+									<include>com.b2international.snowowl.datastore.request.version</include>
 									<include>com.b2international.snowowl.snomed.datastore.request</include>
+									<include>com.b2international.snowowl.snomed.datastore.request.dsv</include>
+									<include>com.b2international.snowowl.snomed.datastore.request.rf2</include>
+									<include>com.b2international.snowowl.snomed.datastore.id.request</include>
 									<include>com.b2international.snowowl.snomed.core.domain</include>
 								</includes>
 							</javadocOptions>
