@@ -26,7 +26,7 @@ public class SerializableMultiStatus extends SerializableStatus {
 	/**
 	 * List of child statuses.
 	 */
-	private IStatus[] children;
+	private SerializableStatus[] children;
 
 	public SerializableMultiStatus(MultiStatus multiStatus) {
 		this(multiStatus.getPlugin(), multiStatus.getCode(), multiStatus.getMessage(), multiStatus.getException());
@@ -73,7 +73,7 @@ public class SerializableMultiStatus extends SerializableStatus {
 	 */
 	public void add(SerializableStatus status) {
 		Assert.isLegal(status != null);
-		IStatus[] result = new SerializableStatus[children.length + 1];
+		SerializableStatus[] result = new SerializableStatus[children.length + 1];
 		System.arraycopy(children, 0, result, 0, children.length);
 		result[result.length - 1] = status;
 		children = result;
@@ -103,7 +103,7 @@ public class SerializableMultiStatus extends SerializableStatus {
 	 * (Intentionally not javadoc'd) Implements the corresponding method on
 	 * <code>IStatus</code>.
 	 */
-	public IStatus[] getChildren() {
+	public SerializableStatus[] getChildren() {
 		return children;
 	}
 
@@ -152,5 +152,12 @@ public class SerializableMultiStatus extends SerializableStatus {
 		buf.append("]"); //$NON-NLS-1$
 		return buf.toString();
 	}
-
+	
+	@Override
+	protected void setChildren(SerializableStatus[] children) {
+		for (SerializableStatus child : children) {
+			add(child);
+		}
+	}
+		
 }
