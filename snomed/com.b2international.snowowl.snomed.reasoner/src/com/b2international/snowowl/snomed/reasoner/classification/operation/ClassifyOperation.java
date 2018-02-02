@@ -70,13 +70,16 @@ public abstract class ClassifyOperation<T> {
 				switch (jobEntry.getState()) {
 				case SCHEDULED: //$FALL-THROUGH$
 				case RUNNING:
+				case CANCEL_REQUESTED:
 					break;
 				case FINISHED:
+					JobRequests.prepareDelete(jobEntry.getId()).buildAsync().execute(getEventBus());
 					return processResults(settings.getClassificationId());
-				case CANCELED: //$FALL-THROUGH$
-				case CANCEL_REQUESTED:
+				case CANCELED:
+					JobRequests.prepareDelete(jobEntry.getId()).buildAsync().execute(getEventBus());
 					throw new OperationCanceledException();
 				case FAILED:
+					JobRequests.prepareDelete(jobEntry.getId()).buildAsync().execute(getEventBus());
 					throw new SnowowlRuntimeException("Failed to retrieve the results of the classification.");
 				default:
 					throw new IllegalStateException("Unexpected state '" + jobEntry.getState() + "'.");
