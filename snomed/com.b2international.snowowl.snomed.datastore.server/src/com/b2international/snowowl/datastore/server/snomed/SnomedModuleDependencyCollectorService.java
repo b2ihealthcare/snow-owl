@@ -82,9 +82,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
@@ -417,7 +415,6 @@ public enum SnomedModuleDependencyCollectorService {
 
 		for (SnomedModuleDependencyRefSetMember member : getMembers()) {
 			final Pair<String, String> pair = Tuples.pair(member.getModuleId(), member.getReferencedComponentId());
-			System.err.println(member.getUuid());
 			modules.put(pair, member.getUuid());
 		}
 
