@@ -20,7 +20,6 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -68,7 +67,6 @@ import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
-import com.google.common.collect.ListMultimap;
 
 
 /**
@@ -248,7 +246,7 @@ public class SnomedPublishManager extends PublishManager {
 		// Update existing, add new members to moduleDependecyRefSet
 		final SnomedRegularRefSet moduleDependencyRefSet = getEditingContext().lookup(REFSET_MODULE_DEPENDENCY_TYPE, SnomedRegularRefSet.class);
 		if (!incomingModuleDependencyRefSetMembers.isEmpty()) {
-			updateExistingMembers(effectiveTime, moduleDependencyRefSet);
+			removeDuplicateMembers(effectiveTime, moduleDependencyRefSet);
 			incomingModuleDependencyRefSetMembers.forEach((k, v) -> {
 					// Create snomedMoudleDependencyRefSetMember out of k+v
 					final SnomedModuleDependencyRefSetMember memberToAdd = SnomedRefSetFactory.eINSTANCE.createSnomedModuleDependencyRefSetMember();
@@ -267,17 +265,14 @@ public class SnomedPublishManager extends PublishManager {
 	}
 		
 
-	private void updateExistingMembers(Date effectiveTime, final SnomedRegularRefSet moduleDependencyRefSet) {
+	private void removeDuplicateMembers(Date effectiveTime, final SnomedRegularRefSet moduleDependencyRefSet) {
 		for (SnomedRefSetMember refSetmember : moduleDependencyRefSet.getMembers()) {
 			if (refSetmember instanceof SnomedModuleDependencyRefSetMember) {
-				final SnomedModuleDependencyRefSetMember dependecyMember = (SnomedModuleDependencyRefSetMember) refSetmember;
-				final Pair<String, String> pair = Tuples.pair(dependecyMember.getModuleId(), dependecyMember.getReferencedComponentId());
+				final SnomedModuleDependencyRefSetMember dependencyMember = (SnomedModuleDependencyRefSetMember) refSetmember;
+				final Pair<String, String> pair = Tuples.pair(dependencyMember.getModuleId(), dependencyMember.getReferencedComponentId());
 				final String existingUuid = incomingModuleDependencyRefSetMembers.get(pair);
 				if (!Strings.isNullOrEmpty(existingUuid)) {
-					if (dependecyMember.getUuid().equals(existingUuid)) {
-						// Update existing member
-						adjustRelased(dependecyMember);
-						adjustEffectiveTime(dependecyMember, effectiveTime);
+					if (dependencyMember.getUuid().equals(existingUuid)) {
 						incomingModuleDependencyRefSetMembers.remove(pair);
 					}
 				}
