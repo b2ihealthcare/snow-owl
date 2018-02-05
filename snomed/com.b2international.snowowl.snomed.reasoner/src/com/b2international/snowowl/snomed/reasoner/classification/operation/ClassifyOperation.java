@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasoner
  * Represents an abstract operation which requires the classification of the SNOMED&nbsp;CT terminology on the active branch path.
  * 
  * @param T the return type of the custom {@link #processResults(IProgressMonitor, long)} method
- * 
  */
 public abstract class ClassifyOperation<T> {
 
@@ -62,27 +61,24 @@ public abstract class ClassifyOperation<T> {
 					throw new OperationCanceledException();
 				}
 
-				RemoteJobEntry jobEntry = JobRequests.prepareGet(settings.getClassificationId())
-						.buildAsync()
-						.execute(getEventBus())
-						.getSync();
+				RemoteJobEntry jobEntry = getEntry();
 
 				switch (jobEntry.getState()) {
-				case SCHEDULED: //$FALL-THROUGH$
-				case RUNNING:
-				case CANCEL_REQUESTED:
-					break;
-				case FINISHED:
-					JobRequests.prepareDelete(jobEntry.getId()).buildAsync().execute(getEventBus());
-					return processResults(settings.getClassificationId());
-				case CANCELED:
-					JobRequests.prepareDelete(jobEntry.getId()).buildAsync().execute(getEventBus());
-					throw new OperationCanceledException();
-				case FAILED:
-					JobRequests.prepareDelete(jobEntry.getId()).buildAsync().execute(getEventBus());
-					throw new SnowowlRuntimeException("Failed to retrieve the results of the classification.");
-				default:
-					throw new IllegalStateException("Unexpected state '" + jobEntry.getState() + "'.");
+					case SCHEDULED: //$FALL-THROUGH$
+					case RUNNING:
+					case CANCEL_REQUESTED:
+						break;
+					case FINISHED:
+						deleteEntry();
+						return processResults(getClassificationId());
+					case CANCELED:
+						deleteEntry();
+						throw new OperationCanceledException();
+					case FAILED:
+						deleteEntry();
+						throw new SnowowlRuntimeException("Failed to retrieve the results of the classification.");
+					default:
+						throw new IllegalStateException("Unexpected state '" + jobEntry.getState() + "'.");
 				}
 
 				try {
@@ -95,6 +91,23 @@ public abstract class ClassifyOperation<T> {
 		} finally {
 			monitor.done();
 		}
+	}
+
+	private String getClassificationId() {
+		return settings.getClassificationId();
+	}
+
+	private RemoteJobEntry getEntry() {
+		return JobRequests.prepareGet(getClassificationId())
+				.buildAsync()
+				.execute(getEventBus())
+				.getSync();
+	}
+
+	private void deleteEntry() {
+		JobRequests.prepareDelete(getClassificationId())
+				.buildAsync()
+				.execute(getEventBus());
 	}
 
 	protected IEventBus getEventBus() {
