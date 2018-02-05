@@ -715,10 +715,6 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	@Override
-	public void preCommit() {
-	}
-	
-	@Override
 	public void close() {
 		// Disposes of the transaction used here, no need to call super.dispose()
 		snomedEditingContext.close();
