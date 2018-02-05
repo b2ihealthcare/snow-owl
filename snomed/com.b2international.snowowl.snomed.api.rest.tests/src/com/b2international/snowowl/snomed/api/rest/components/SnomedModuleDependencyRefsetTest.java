@@ -52,7 +52,6 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 
 		moduleDependencyMembers1.getItems().forEach(member -> {
 			Pair<String, String> pair = Tuples.pair(member.getModuleId(), member.getReferencedComponent().getId());
-			System.err.println(pair + " effective time: " + member.getEffectiveTime());
 			moduleToReferencedComponentAndEffectiveDateMap.put(
 				pair,
 				member.getEffectiveTime()
