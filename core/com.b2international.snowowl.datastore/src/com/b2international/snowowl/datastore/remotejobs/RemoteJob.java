@@ -77,7 +77,7 @@ public final class RemoteJob extends Job {
 					this.response = mapper.writeValueAsString(response);
 				}
 			}
-			return Statuses.ok();
+			return (response instanceof IStatus) ? (IStatus) response : Statuses.ok();
 		} catch (OperationCanceledException e) {
 			return Statuses.cancel();
 		} catch (Throwable e) {

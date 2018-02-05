@@ -26,12 +26,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CommonsActivator;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  * SerializableStatus implementation from the Eclipse ECF project.
  * 
  * @since 3.0
  */
+
+@JsonTypeInfo(
+	    use = JsonTypeInfo.Id.CLASS,
+	    include = JsonTypeInfo.As.PROPERTY,
+	    property = "@class")
 public class SerializableStatus implements IStatus, Serializable {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SerializableStatus.class);
@@ -75,7 +84,7 @@ public class SerializableStatus implements IStatus, Serializable {
 	/**
 	 * Constant to avoid generating garbage.
 	 */
-	private static final IStatus[] theEmptyStatusArray = new IStatus[0];
+	private static final SerializableStatus[] EMPTY_ARRAY = new SerializableStatus[0];
 
 	public SerializableStatus(IStatus status) {
 		setSeverity(status.getSeverity());
@@ -91,6 +100,17 @@ public class SerializableStatus implements IStatus, Serializable {
 		setCode(code);
 		setMessage(message);
 		setException(exception);
+	}
+	
+	@JsonCreator
+	public SerializableStatus(@JsonProperty ("severity") int severity, 
+			@JsonProperty ("plugin") String plugin, 
+			@JsonProperty ("code") int code,
+			@JsonProperty ("message") String message) {
+		setSeverity(severity);
+		setPlugin(plugin);
+		setCode(code);
+		setMessage(message);
 	}
 
 	public SerializableStatus(int severity, String pluginId, String message, Throwable exception) {
@@ -113,8 +133,8 @@ public class SerializableStatus implements IStatus, Serializable {
 	 * (Intentionally not javadoc'd) Implements the corresponding method on
 	 * <code>IStatus</code>.
 	 */
-	public IStatus[] getChildren() {
-		return theEmptyStatusArray;
+	public SerializableStatus[] getChildren() {
+		return EMPTY_ARRAY;
 	}
 
 	/*
@@ -129,6 +149,7 @@ public class SerializableStatus implements IStatus, Serializable {
 	 * (Intentionally not javadoc'd) Implements the corresponding method on
 	 * <code>IStatus</code>.
 	 */
+	@JsonIgnore
 	public Throwable getException() {
 		return exception;
 	}
@@ -161,6 +182,7 @@ public class SerializableStatus implements IStatus, Serializable {
 	 * (Intentionally not javadoc'd) Implements the corresponding method on
 	 * <code>IStatus</code>.
 	 */
+	@JsonIgnore
 	public boolean isMultiStatus() {
 		return false;
 	}
@@ -169,6 +191,7 @@ public class SerializableStatus implements IStatus, Serializable {
 	 * (Intentionally not javadoc'd) Implements the corresponding method on
 	 * <code>IStatus</code>.
 	 */
+	@JsonIgnore
 	public boolean isOK() {
 		return severity == OK;
 	}
@@ -266,6 +289,9 @@ public class SerializableStatus implements IStatus, Serializable {
 	protected void setSeverity(int severity) {
 		Assert.isLegal(severity == OK || severity == ERROR || severity == WARNING || severity == INFO || severity == CANCEL);
 		this.severity = severity;
+	}
+	
+	protected void setChildren(SerializableStatus [] children) {
 	}
 
 	/**
