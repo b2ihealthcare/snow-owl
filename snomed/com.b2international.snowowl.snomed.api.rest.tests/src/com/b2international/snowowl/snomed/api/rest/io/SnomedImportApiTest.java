@@ -248,7 +248,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 				.put("createVersions", false)
 				.build();
 		importArchive("SnomedCT_Release_INT_20150131_new_concept_for_languageCode.zip");
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptIdOfDescriptions);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptIdOfDescriptions).statusCode(200);
 		
 		importArchive("SnomedCT_Release_INT_20150201_new_description_with2_language_code.zip", importConfiguration);
 		getComponent(branchPath, SnomedComponentType.MEMBER, enLanguageRefsetConceptId).statusCode(200);
