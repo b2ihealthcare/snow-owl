@@ -20,22 +20,18 @@ import static com.b2international.snowowl.core.date.EffectiveTimes.UNSET_EFFECTI
 import static com.b2international.snowowl.datastore.BranchPathUtils.bottomToTopIterator;
 import static com.b2international.snowowl.datastore.BranchPathUtils.convertIntoBasePath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createVersionPath;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterators.concat;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
-import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.reverse;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.lucene.search.BooleanClause.Occur.MUST;
 import static org.apache.lucene.search.BooleanClause.Occur.SHOULD;
 import static org.apache.lucene.search.NumericRangeQuery.newLongRange;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -44,7 +40,6 @@ import java.util.Map;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 
-import com.b2international.commons.collections.CloseableList;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -58,6 +53,9 @@ import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterators;
 
 /**
@@ -66,15 +64,21 @@ import com.google.common.collect.Iterators;
 public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 
 	private final Iterator<String> itr;
-	private final CloseableList<SnomedSubExporter> closeables;
 	private final SnomedExportConfiguration configuration;
 	private final Map<IBranchPath, Long> branchPathWithEffectiveTimeMap;
 
+	private final LoadingCache<Long, String> dateCache;
+	
 	public SnomedCompositeExporter(final SnomedExportConfiguration configuration) {
 		this.configuration = checkNotNull(configuration, "configuration");
-		closeables = new CloseableList<SnomedSubExporter>();
 		branchPathWithEffectiveTimeMap = createBranchPathMap();
 		itr = createSubExporters(this.configuration);
+		dateCache = CacheBuilder.newBuilder().build(new CacheLoader<Long, String>() {
+			@Override
+			public String load(Long key) throws Exception {
+				return EffectiveTimes.format(key, DateFormats.SHORT, configuration.getUnsetEffectiveTimeLabel());
+			}
+		});
 	}
 	
 	@Override
@@ -99,8 +103,9 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 			case DELTA:
 				return getDeltaQuery();
 			case SNAPSHOT: //$FALL-THROUGH$
-			case FULL:
 				return getSnapshotQuery();
+			case FULL:
+				return getFullQuery(branchPath);
 			default:
 				throw new IllegalArgumentException("Implementation error. Unknown content subtype: " + contentSubType);
 		}
@@ -128,11 +133,6 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 		} else {
 			return raiseError();
 		}
-	}
-	
-	@Override
-	public void close() throws Exception {
-		closeables.close();
 	}
 	
 	@Override
@@ -184,6 +184,22 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 		return query;
 	}
 	
+	private Query getFullQuery(IBranchPath branchPath) {
+		
+		final BooleanQuery query = new BooleanQuery(true);
+		query.add(getSnapshotQuery(), MUST);
+
+		final String effectiveTimeField = SnomedMappings.effectiveTime().fieldName();
+		
+		final BooleanQuery effectiveTimeQuery = new BooleanQuery(true);
+		effectiveTimeQuery.add(getUnpublishedQuery(UNSET_EFFECTIVE_TIME), SHOULD);
+		
+		effectiveTimeQuery.add(newLongRange(effectiveTimeField, branchPathWithEffectiveTimeMap.get(branchPath), null, true, true), SHOULD);
+		query.add(effectiveTimeQuery, MUST);
+		
+		return query;
+	}
+	
 	protected abstract Query getSnapshotQuery();
 	
 	private Query getUnpublishedQuery(final long effectiveTime) {
@@ -191,17 +207,11 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 	}
 
 	protected SnomedSubExporter createSubExporter(final IBranchPath branchPath, final SnomedIndexExporter exporter) {
-		return createSubExporter(branchPath, exporter, Collections.<String>emptySet());
-	}
-	
-	protected SnomedSubExporter createSubExporter(final IBranchPath branchPath, final SnomedIndexExporter exporter, final Collection<String> ignoredSegmentNames) {
-		final SnomedSubExporter subExporter = new SnomedSubExporter(branchPath, exporter, ignoredSegmentNames);
-		closeables.add(subExporter);
-		return subExporter;
+		return new SnomedSubExporter(branchPath, exporter);
 	}
 	
 	protected final String formatEffectiveTime(final Long effectiveTime) {
-		return EffectiveTimes.format(effectiveTime, DateFormats.SHORT, configuration.getUnsetEffectiveTimeLabel());
+		return dateCache.getUnchecked(effectiveTime);
 	}
 	
 	/**
@@ -282,19 +292,7 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 				
 				return concat(Iterators.transform(branchPaths.iterator(), new Function<IBranchPath, SnomedSubExporter>() {
 					@Override public SnomedSubExporter apply(final IBranchPath branchPath) {
-						
-						final List<IBranchPath> branchPaths = newArrayList(branchPathWithEffectiveTimeMap.keySet());
-						reverse(branchPaths);
-						
-						final Collection<String> ignoredSegmentNames = newHashSet();
-						for (final IBranchPath path : branchPaths) {
-							if (createPath(path).equals(createPath(branchPath))) {
-								break;
-							}
-							ignoredSegmentNames.addAll(configuration.getVersionPathToSegmentNameMappings().get(path));
-						}
-						
-						return createSubExporter(branchPath, SnomedCompositeExporter.this, ignoredSegmentNames);
+						return createSubExporter(branchPath, SnomedCompositeExporter.this);
 					}
 				}));
 			

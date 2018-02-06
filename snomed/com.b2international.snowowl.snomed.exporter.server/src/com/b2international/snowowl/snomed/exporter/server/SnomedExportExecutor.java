@@ -32,7 +32,6 @@ import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Set;
 
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedComponentService;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.AbstractSnomedRelationshipExporter;
 import com.b2international.snowowl.snomed.exporter.server.sandbox.SnomedExportConfiguration;
@@ -145,19 +144,6 @@ public class SnomedExportExecutor {
 			
 			if (null != fileChannel) {
 				fileChannel.close();
-			}
-			
-			if (null != snomedExporter) {
-				try {
-					snomedExporter.close();
-				} catch (final Exception e) {
-					try {
-						snomedExporter.close();
-					} catch (final Exception e1) {
-						e.addSuppressed(e1);
-					}
-					throw new SnowowlRuntimeException("Error while releasing exporter.", e);
-				}
 			}
 			
 		}

@@ -45,10 +45,6 @@ public enum NoopExporter implements SnomedExporter {
 	}
 
 	@Override
-	public void close() throws Exception {
-	}
-
-	@Override
 	public String getRelativeDirectory() {
 		throw new UnsupportedOperationException("Implementation error.");
 	}

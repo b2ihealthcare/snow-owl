@@ -99,9 +99,4 @@ public class SnomedCrossMapSetExporter extends AbstractSnomedCrossMapExporter im
 		return itr;
 	}
 
-	@Override
-	public void close() throws Exception {
-		//nothing
-	}
-	
 }

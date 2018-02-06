@@ -21,6 +21,8 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import org.apache.lucene.search.IndexSearcher;
+
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.ContentSubType;
@@ -74,4 +76,8 @@ public interface SnomedExportConfiguration {
 	 * the combination of country code and namespace otherwise
 	 */
 	String getCountryAndNamespaceElement();
+	
+	Map<String, IndexSearcher> getIndexSearcherMap();
+	
+	void dispose();
 }
