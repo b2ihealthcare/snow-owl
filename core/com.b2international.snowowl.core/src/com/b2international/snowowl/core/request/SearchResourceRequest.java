@@ -60,7 +60,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		private final String field;
 		private final boolean ascending;
 		
-		public SortField(String field, boolean ascending) {
+		private SortField(String field, boolean ascending) {
 			this.field = field;
 			this.ascending = ascending;
 		}
@@ -72,6 +72,15 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		public boolean isAscending() {
 			return ascending;
 		}
+		
+		public static SortField ascending(String field) {
+			return new SortField(field, true);
+		}
+		
+		public static SortField descending(String field) {
+			return new SortField(field, false);
+		}
+		
 	}
 	
 	/**

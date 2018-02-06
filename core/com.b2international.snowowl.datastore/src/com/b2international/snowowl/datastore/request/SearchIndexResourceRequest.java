@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,12 +47,12 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	/**
 	 * Special field name for sorting based on the document's natural occurrence (document order). 
 	 */
-	public static final SortField DOC_ID = new SortField(DocumentMapping._ID, true);
+	public static final SortField DOC_ID = SortField.ascending(DocumentMapping._ID);
 	
 	/**
 	 * Special field name for sorting based on the document score (relevance).
 	 */
-	public static final SortField SCORE = new SortField(SortBy.FIELD_SCORE, false);
+	public static final SortField SCORE = SortField.descending(SortBy.FIELD_SCORE);
 	
 	@Override
 	protected final B doExecute(C context) throws IOException {
