@@ -77,6 +77,11 @@ public abstract class SnomedPageableRf1Exporter<T extends PageableCollectionReso
 	}
 
 	@Override
+	public void close() throws Exception {
+		// ignore
+	}
+
+	@Override
 	public Iterator<String> iterator() {
 		return this;
 	}

@@ -26,7 +26,7 @@ import com.google.common.base.Charsets;
  * Representation of an exporter for SNOMED&nbsp;CT ontology.
  *
  */
-public interface SnomedExporter extends Iterator<String>, Iterable<String> {
+public interface SnomedExporter extends Iterator<String>, Iterable<String>, AutoCloseable {
 	
 	/**Horizontal tab.*/
 	String HT = new String(new byte [] { Ascii.HT }, Charsets.US_ASCII);

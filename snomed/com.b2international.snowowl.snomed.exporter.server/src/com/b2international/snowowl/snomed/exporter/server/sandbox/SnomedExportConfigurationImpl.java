@@ -23,7 +23,6 @@ import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActiva
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Suppliers.memoize;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static java.util.Collections.unmodifiableMap;
 
@@ -33,21 +32,13 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.annotation.Nullable;
 
 import org.apache.lucene.index.IndexCommit;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.ReferenceManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.time.TimeUtil;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.server.index.IndexBranchService;
@@ -56,7 +47,6 @@ import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
 import com.google.common.collect.FluentIterable;
 
@@ -65,7 +55,6 @@ import com.google.common.collect.FluentIterable;
  */
 public class SnomedExportConfigurationImpl implements SnomedExportConfiguration {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedExportConfiguration.class);
 	private static final String SEGMENT_INFO_EXTENSION = ".si";
 	
 	private final IBranchPath currentBranchPath;
@@ -75,9 +64,6 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 
 	private final Date deltaExportStartEffectiveTime;
 	private final Date deltaExportEndEffectiveTime;
-	
-	private final Map<String, ReferenceManager<IndexSearcher>> branchManagerMap = newHashMap();
-	private final Map<String, IndexSearcher> indexSearcherMap = newHashMap();
 
 	private final Supplier<Map<IBranchPath, Collection<String>>> versionPathToSegmentNameMappingSupplier = 
 			memoize(new Supplier<Map<IBranchPath, Collection<String>>>() {
@@ -134,94 +120,8 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 		this.countryAndNameSpaceElement = checkNotNull(countryAndNameSpaceElement, "countryAndNameSpaceElement");
 		this.deltaExportStartEffectiveTime = deltaExportStartEffectiveTime;
 		this.deltaExportEndEffectiveTime = deltaExportEndEffectiveTime;
-		initializeMaps();
 	}
 
-	private void initializeMaps() {
-		try {
-			
-			Stopwatch watch = Stopwatch.createStarted();
-			
-			if (ContentSubType.FULL == contentSubType) {
-				
-				for (ICodeSystemVersion version : getAllVersion()) {
-					
-					IBranchPath versionPath = BranchPathUtils.createVersionPath(version.getVersionId());
-					
-					Stopwatch stopwatch = Stopwatch.createStarted();
-					
-					LOGGER.info("Initializing branch manager and index searcher for {}...", versionPath.getPath());
-
-					ReferenceManager<IndexSearcher> manager = getIndexServerService().getManager(versionPath);
-					branchManagerMap.put(versionPath.getPath(), manager);
-					
-					IndexSearcher searcher = manager.acquire();
-					indexSearcherMap.put(versionPath.getPath(), searcher);
-					
-					LOGGER.info("Branch manager and index searcher initialization for {} took {}", versionPath.getPath(), TimeUtil.toString(stopwatch));
-				}
-				
-				if (!branchManagerMap.containsKey(BranchPathUtils.createMainPath())) {
-					
-					Stopwatch stopwatch = Stopwatch.createStarted();
-					
-					LOGGER.info("Initializing branch manager and index searcher for {}...", currentBranchPath.getPath());
-					
-					ReferenceManager<IndexSearcher> manager = getIndexServerService().getManager(currentBranchPath);
-					branchManagerMap.put(currentBranchPath.getPath(), manager);
-					
-					IndexSearcher searcher = manager.acquire();
-					indexSearcherMap.put(currentBranchPath.getPath(), searcher);
-					
-					LOGGER.info("Branch manager and index searcher initialization for {} took {}", currentBranchPath.getPath(), TimeUtil.toString(stopwatch));
-					
-				}
-				
-			} else {
-				
-				ReferenceManager<IndexSearcher> manager = getIndexServerService().getManager(currentBranchPath);
-				branchManagerMap.put(currentBranchPath.getPath(), manager);
-				
-				IndexSearcher searcher = manager.acquire();
-				indexSearcherMap.put(currentBranchPath.getPath(), searcher);
-				
-			}
-			
-			LOGGER.info("Branch manager and index searcher initialization for export type {} took {}", contentSubType, TimeUtil.toString(watch));
-			
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	@Override
-	public void dispose() {
-		
-		try {
-			
-			for (Entry<String, ReferenceManager<IndexSearcher>> entry : branchManagerMap.entrySet()) {
-				
-				String branchPath = entry.getKey();
-				ReferenceManager<IndexSearcher> manager = entry.getValue();
-				
-				if (manager != null && indexSearcherMap.containsKey(branchPath)) {
-					LOGGER.info("Releasing index searcher for {}", branchPath);
-					manager.release(indexSearcherMap.get(branchPath));
-				}
-				
-			}
-		
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	/*returns with the server side index service.*/
-	@SuppressWarnings("rawtypes")
-	private final IndexServerService<?> getIndexServerService() {
-		return (IndexServerService) ApplicationContext.getInstance().getService(SnomedIndexService.class);
-	}
-	
 	@Override
 	public IBranchPath getCurrentBranchPath() {
 		return currentBranchPath;
@@ -260,11 +160,4 @@ public class SnomedExportConfigurationImpl implements SnomedExportConfiguration 
 	public String getCountryAndNamespaceElement() {
 		return countryAndNameSpaceElement;
 	}
-	
-	@Override
-	public Map<String, IndexSearcher> getIndexSearcherMap() {
-		return indexSearcherMap;
-	}
-	
-	
 }

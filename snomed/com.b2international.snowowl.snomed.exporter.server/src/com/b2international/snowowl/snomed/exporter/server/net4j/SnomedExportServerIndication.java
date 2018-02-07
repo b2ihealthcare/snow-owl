@@ -207,10 +207,6 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		} finally {
 			monitor.done();
 			
-			if (configuration != null) {
-				configuration.dispose();
-			}
-			
 			/* 
 			 * If we couldn't set userId on the AtomicReference at the beginning somehow, this will have no effect, which is good -- we 
 			 * don't want to destroy another user's export directory if currentTimeMillis returned the same value for both users, for example.
