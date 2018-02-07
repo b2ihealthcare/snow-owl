@@ -79,6 +79,7 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 					.sortBy(query.getSortBy())
 					.limit(query.getLimit())
 					.scroll(query.getScrollKeepAlive())
+					.searchAfter(query.getSearchAfter())
 					.withScores(query.isWithScores())
 					.build();
 		} else {
@@ -94,6 +95,7 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 					.sortBy(query.getSortBy())
 					.limit(query.getLimit())
 					.scroll(query.getScrollKeepAlive())
+					.searchAfter(query.getSearchAfter())
 					.withScores(query.isWithScores())
 					.build();
 		}
