@@ -60,41 +60,49 @@ public class RelationshipPersister {
 		final String relationshipId = namespaceAndModuleAssigner.getRelationshipId(conceptId);
 		final Concept moduleConcept = namespaceAndModuleAssigner.getRelationshipModule(conceptId);
 		
-		final Relationship newRel = SnomedFactory.eINSTANCE.createRelationship();
-		newRel.setId(relationshipId);
-		newRel.setType(typeConcept);
-		newRel.setActive(true);
-		newRel.setCharacteristicType(inferredRelationshipConcept);
-		newRel.setSource(sourceConcept);
-		newRel.setDestination(destinationConcept);
-		newRel.setDestinationNegated(addedEntry.isDestinationNegated());
-		newRel.setGroup(addedEntry.getGroup());
-		newRel.setUnionGroup(addedEntry.getUnionGroup());
-		newRel.setModifier(addedEntry.isUniversal() ? universalRelationshipConcept : existentialRelationshipConcept);
-		newRel.setModule(moduleConcept);
+		final Relationship inferredRelationship = SnomedFactory.eINSTANCE.createRelationship();
+		inferredRelationship.setId(relationshipId);
+		inferredRelationship.setType(typeConcept);
+		inferredRelationship.setActive(true);
+		inferredRelationship.setCharacteristicType(inferredRelationshipConcept);
+		inferredRelationship.setSource(sourceConcept);
+		inferredRelationship.setDestination(destinationConcept);
+		inferredRelationship.setDestinationNegated(addedEntry.isDestinationNegated());
+		inferredRelationship.setGroup(addedEntry.getGroup());
+		inferredRelationship.setUnionGroup(addedEntry.getUnionGroup());
+		inferredRelationship.setModifier(addedEntry.isUniversal() ? universalRelationshipConcept : existentialRelationshipConcept);
+		inferredRelationship.setModule(moduleConcept);
 		
 		if (addedEntry.getStatementId() != -1L) {
-			final Relationship originalRel = context.lookup(Long.toString(addedEntry.getStatementId()), Relationship.class);
+			final Relationship statedRelationship = context.lookup(Long.toString(addedEntry.getStatementId()), Relationship.class);
 			
-			for (final SnomedConcreteDataTypeRefSetMember originalMember : originalRel.getConcreteDomainRefSetMembers()) {
-
-				if (!Concepts.STATED_RELATIONSHIP.equals(originalMember.getCharacteristicTypeId())) {
-					continue;
-				}
-				
+			for (final SnomedConcreteDataTypeRefSetMember originalMember : statedRelationship.getConcreteDomainRefSetMembers()) {
+				/* 
+				 * XXX: We only expect STATED and ADDITIONAL concrete domain members to be present on the 
+				 * original (stated) relationship; we will create INFERRED and ADDITIONAL concrete domain members
+				 * on the new (inferred) relationship, respectively.
+				 */
 				final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet = (SnomedConcreteDataTypeRefSet) originalMember.getRefSet();
 				final SnomedConcreteDataTypeRefSetMember refSetMember = context.getRefSetEditingContext().createConcreteDataTypeRefSetMember(
-						newRel.getId(),
+						inferredRelationship.getId(),
 						originalMember.getUomComponentId(),
 						originalMember.getOperatorComponentId(),
 						originalMember.getSerializedValue(), 
-						Concepts.INFERRED_RELATIONSHIP, 
+						getCharacteristicTypeId(originalMember), 
 						originalMember.getLabel(), 
 						moduleConcept.getId(), 
 						concreteDataTypeRefSet);
 				
-				newRel.getConcreteDomainRefSetMembers().add(refSetMember);
+				inferredRelationship.getConcreteDomainRefSetMembers().add(refSetMember);
 			}
+		}
+	}
+
+	private String getCharacteristicTypeId(final SnomedConcreteDataTypeRefSetMember originalMember) {
+		if (Concepts.ADDITIONAL_RELATIONSHIP.equals(originalMember.getCharacteristicTypeId())) {
+			return Concepts.ADDITIONAL_RELATIONSHIP;
+		} else {
+			return Concepts.INFERRED_RELATIONSHIP;
 		}
 	}
 }
