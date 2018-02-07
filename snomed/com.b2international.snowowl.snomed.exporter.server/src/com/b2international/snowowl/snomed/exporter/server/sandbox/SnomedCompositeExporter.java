@@ -44,6 +44,7 @@ import com.b2international.commons.collections.CloseableList;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemService;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.snomed.common.ContentSubType;
@@ -64,6 +65,8 @@ import com.google.common.collect.Iterators;
  */
 public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 
+	private static final Date THRESHOLD_DATE = EffectiveTimes.parse("20170425", DateFormats.SHORT);
+	
 	private final Iterator<String> itr;
 	private final CloseableList<SnomedSubExporter> closeables;
 	private final SnomedExportConfiguration configuration;
@@ -200,9 +203,14 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 		final String effectiveTimeField = SnomedMappings.effectiveTime().fieldName();
 		
 		final BooleanQuery effectiveTimeQuery = new BooleanQuery(true);
+		
 		effectiveTimeQuery.add(getUnpublishedQuery(UNSET_EFFECTIVE_TIME), SHOULD);
 		
-		effectiveTimeQuery.add(newLongRange(effectiveTimeField, branchPathWithEffectiveTimeMap.get(branchPath), null, true, true), SHOULD);
+		if (!BranchPathUtils.isMain(branchPath)) {
+			Long versionBranchEffectiveDate = branchPathWithEffectiveTimeMap.get(BranchPathUtils.createPath(branchPath.getPath()));
+			effectiveTimeQuery.add(newLongRange(effectiveTimeField, versionBranchEffectiveDate, null, true, true), SHOULD);
+		}
+		
 		query.add(effectiveTimeQuery, MUST);
 		
 		return query;
@@ -252,7 +260,10 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 	private Map<IBranchPath, Long> createBranchPathMap() {
 		final Map<IBranchPath, Long> branchPathMap = newLinkedHashMap();
 		for (final ICodeSystemVersion version : getAllVersion()) {
-			branchPathMap.put(createVersionPath(version.getVersionId()), version.getEffectiveDate());
+			Date versionEffectiveDate = new Date(version.getEffectiveDate());
+			if (versionEffectiveDate != null && versionEffectiveDate.after(THRESHOLD_DATE)) {
+				branchPathMap.put(createVersionPath(version.getVersionId()), version.getEffectiveDate());
+			}
 		}
 		branchPathMap.put(createMainPath(), UNSET_EFFECTIVE_TIME);
 		return unmodifiableMap(branchPathMap);
