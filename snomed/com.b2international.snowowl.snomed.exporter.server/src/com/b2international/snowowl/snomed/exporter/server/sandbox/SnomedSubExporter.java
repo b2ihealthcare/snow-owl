@@ -17,24 +17,17 @@ package com.b2international.snowowl.snomed.exporter.server.sandbox;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Suppliers.memoize;
-import static com.google.common.collect.ImmutableSet.copyOf;
-import static com.google.common.collect.Iterables.isEmpty;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.AtomicReaderContext;
-import org.apache.lucene.index.SegmentReader;
-import org.apache.lucene.search.DocIdSet;
-import org.apache.lucene.search.FieldCacheDocIdSet;
-import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ReferenceManager;
-import org.apache.lucene.util.Bits;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -42,6 +35,7 @@ import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
 import com.google.common.collect.AbstractIterator;
 
@@ -50,22 +44,23 @@ import com.google.common.collect.AbstractIterator;
  */
 public class SnomedSubExporter extends AbstractIterator<String> implements Iterator<String>, AutoCloseable {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedSubExporter.class);
+	
 	private final Supplier<DocIdsIterator> itr;
 	private final Supplier<ReferenceManager<IndexSearcher>> manager;
 	private final Supplier<IndexSearcher> searcher;
 	private final SnomedIndexExporter exporter;
 	private final IBranchPath branchPath;
-	private final Collection<String> ignoredSegmentNames;
 
-	protected SnomedSubExporter(final IBranchPath branchPath, final SnomedIndexExporter exporter, final Collection<String> ignoredSegmentNames) {
+	protected SnomedSubExporter(final IBranchPath branchPath, final SnomedIndexExporter exporter) {
+		LOGGER.info("Initializing sub exporter for branch path {} with type {}", branchPath.getPath(), exporter.getClass().getSimpleName());
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 		this.exporter = checkNotNull(exporter, "exporter");
-		itr = createDocIdIterator();
+		Stopwatch stopwatch = Stopwatch.createStarted();
 		manager = createReferenceManager();
 		searcher = createIndexSearcher();
-		this.ignoredSegmentNames = isEmpty(ignoredSegmentNames) 
-			? Collections.<String>emptySet() 
-			: copyOf(ignoredSegmentNames);
+		itr = createDocIdIterator();
+		LOGGER.info("Sub exporter initialization finished in {}", TimeUtil.toString(stopwatch));
 	}
 
 	@Override
@@ -93,36 +88,13 @@ public class SnomedSubExporter extends AbstractIterator<String> implements Itera
 	private Supplier<DocIdsIterator> createDocIdIterator() {
 		return memoize(new Supplier<DocIdsIterator>() {
 			@Override public DocIdsIterator get() {
-				final int maxDoc = getIndexServerService().maxDoc(branchPath);
-				final DocIdCollector collector = DocIdCollector.create(maxDoc);
-				getIndexServerService().search(branchPath, exporter.getExportQuery(branchPath), createFilter(), collector);
 				try {
+					final DocIdCollector collector = DocIdCollector.create(searcher.get().getIndexReader().maxDoc());
+					searcher.get().search(exporter.getExportQuery(branchPath), collector);
 					return collector.getDocIDs().iterator();
 				} catch (final IOException e) {
 					throw new SnowowlRuntimeException("Failed to create iterator.", e);
 				}
-			}
-
-			private Filter createFilter() {
-				return new Filter() {
-					
-					@Override
-					public DocIdSet getDocIdSet(final AtomicReaderContext context, final Bits acceptDocs) throws IOException {
-						
-						final SegmentReader segmentReader = (SegmentReader) context.reader();
-						if (ignoredSegmentNames.contains(segmentReader.getSegmentInfo().info.name)) {
-							return null;
-						}
-						
-						return new FieldCacheDocIdSet(context.reader().maxDoc(), acceptDocs) {
-							protected final boolean matchDoc(int doc) {
-								return null == acceptDocs ? true : acceptDocs.get(doc);
-							}
-						};
-						
-					}
-					
-				};
 			}
 		});
 	}
