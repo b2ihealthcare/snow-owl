@@ -18,12 +18,12 @@ package com.b2international.snowowl.datastore.server.snomed;
 import java.util.Collection;
 
 import org.eclipse.emf.cdo.view.CDOView;
+import org.eclipse.xtext.util.Pair;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -36,7 +36,7 @@ public class ModuleCollectorConfiguration {
 
 	private CDOView view;
 	private IBranchPath branchPath;
-	private Collection<SnomedModuleDependencyRefSetMember> members = Sets.newHashSet();
+	private Collection<Pair<String, String>> members = Sets.newHashSet();
 	private Multimap<Long, Long> moduleMapping = HashMultimap.create();
 	private LongKeyLongMap conceptModuleMapping;
 	private LongCollection unpublishedStorageKeys;
@@ -59,11 +59,11 @@ public class ModuleCollectorConfiguration {
 		this.branchPath = branchPath;
 	}
 	
-	public Collection<SnomedModuleDependencyRefSetMember> getMembers() {
+	public Collection<Pair<String, String>> getMembers() {
 		return members;
 	}
 	
-	public void setMembers(Collection<SnomedModuleDependencyRefSetMember> members) {
+	public void setMembers(Collection<Pair<String, String>> members) {
 		this.members = members;
 	}
 	
