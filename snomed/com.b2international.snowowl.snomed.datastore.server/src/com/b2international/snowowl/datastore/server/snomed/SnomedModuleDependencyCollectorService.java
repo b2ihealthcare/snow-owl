@@ -24,18 +24,12 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.HashMultimap.create;
-import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 import static java.lang.Long.parseLong;
-import static java.util.UUID.randomUUID;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.view.CDOView;
@@ -52,8 +46,6 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -61,7 +53,6 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -76,15 +67,12 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 /**
  * Server side stateless singleton service for resolving SNOMED&nbsp;CT module dependencies.
@@ -111,10 +99,10 @@ public enum SnomedModuleDependencyCollectorService {
 	 * @return a collection of module dependency members.
 	 * @throws IOException 
 	 */
-	public Map<Pair<String, String>, String> collectModuleMembers(final RevisionSearcher searcher, final CDOEditingContext context, final LongCollection unpublishedStorageKeys) throws IOException {
+	public Collection<Pair<String, String>> collectModuleMembers(final RevisionSearcher searcher, final CDOEditingContext context, final LongCollection unpublishedStorageKeys) throws IOException {
 	
 		final Stopwatch stopwatch = createStarted();
-		final Map<Pair<String, String>, String> members = Maps.newHashMap();
+		final Collection<Pair<String, String>> members = Sets.newHashSet();
 		
 		try {
 			
@@ -136,7 +124,7 @@ public enum SnomedModuleDependencyCollectorService {
 			LOGGER.info("Processing unversioned module concepts... [6 of 6]");
 			tryCreateMembersForNewModules(searcher);
 			
-			members.putAll(createMembers(context));
+			members.addAll(getConfiguration().getMembers());
 			
 		} finally {
 			reset();
@@ -160,7 +148,6 @@ public enum SnomedModuleDependencyCollectorService {
 		configuration.setModuleMapping(getModuleMapping(configuration.getExistingModules()));
 		final SnomedRegularRefSet moduleRefSet = getModuleRefSet(view);
 		configuration.setModuleDependencyRefSet(moduleRefSet);
-		configuration.getMembers().addAll(getModuleMembers(moduleRefSet));
 		
 		return configuration;
 	}
@@ -168,8 +155,8 @@ public enum SnomedModuleDependencyCollectorService {
 	private void tryCreateMembersForConceptChanges(RevisionSearcher searcher) throws IOException {
 		for (final SnomedConceptDocument concept : searcher.get(SnomedConceptDocument.class, LongSets.toSet(getUnpublishedStorageKeys()))) {
 			final long conceptModuleId = Long.parseLong(concept.getModuleId());
-			tryCreateMember(conceptModuleId, getConceptModuleMapping().get(PRIMITIVE));
-			tryCreateMember(conceptModuleId, getConceptModuleMapping().get(FULLY_DEFINED));
+			tryAddModulePair(conceptModuleId, getConceptModuleMapping().get(PRIMITIVE));
+			tryAddModulePair(conceptModuleId, getConceptModuleMapping().get(FULLY_DEFINED));
 		}
 		
 	}
@@ -182,9 +169,9 @@ public enum SnomedModuleDependencyCollectorService {
 			final long conceptId = Long.parseLong(description.getConceptId());
 			final long typeId = Long.parseLong(description.getTypeId());
 			final long caseSignificanceId = Long.parseLong(description.getCaseSignificanceId());
-			tryCreateMember(moduleId, getConceptModuleMapping().get(conceptId));
-			tryCreateMember(moduleId, getConceptModuleMapping().get(typeId));
-			tryCreateMember(moduleId, getConceptModuleMapping().get(caseSignificanceId));
+			tryAddModulePair(moduleId, getConceptModuleMapping().get(conceptId));
+			tryAddModulePair(moduleId, getConceptModuleMapping().get(typeId));
+			tryAddModulePair(moduleId, getConceptModuleMapping().get(caseSignificanceId));
 		}
 	}
 
@@ -197,11 +184,11 @@ public enum SnomedModuleDependencyCollectorService {
 			final long destinationId = Long.parseLong(relationship.getDestinationId());
 			final long modifierId = Long.parseLong(relationship.getModifierId());
 			final long characteristicTypeId = Long.parseLong(relationship.getCharacteristicTypeId());
-			tryCreateMember(moduleId, getConceptModuleMapping().get(characteristicTypeId));
-			tryCreateMember(moduleId, getConceptModuleMapping().get(typeId));
-			tryCreateMember(moduleId, getConceptModuleMapping().get(sourceId));
-			tryCreateMember(moduleId, getConceptModuleMapping().get(destinationId));
-			tryCreateMember(moduleId, getConceptModuleMapping().get(modifierId));
+			tryAddModulePair(moduleId, getConceptModuleMapping().get(characteristicTypeId));
+			tryAddModulePair(moduleId, getConceptModuleMapping().get(typeId));
+			tryAddModulePair(moduleId, getConceptModuleMapping().get(sourceId));
+			tryAddModulePair(moduleId, getConceptModuleMapping().get(destinationId));
+			tryAddModulePair(moduleId, getConceptModuleMapping().get(modifierId));
 		}
 	}
 
@@ -211,24 +198,24 @@ public enum SnomedModuleDependencyCollectorService {
 			// member should depend on the reference set
 			final long memberModuleId = Long.parseLong(member.getModuleId());
 			final long refSetId = Long.parseLong(member.getReferenceSetId());
-			tryCreateMember(memberModuleId, getConceptModuleMapping().get(refSetId));
+			tryAddModulePair(memberModuleId, getConceptModuleMapping().get(refSetId));
 			
 			// handle all possible RF2 member fields which refers to a component
-			tryCreateMemberIfNotEmpty(memberModuleId, member.getAcceptabilityId());
-			tryCreateMemberIfNotEmpty(memberModuleId, member.getCharacteristicTypeId());
-			tryCreateMemberIfNotEmpty(memberModuleId, member.getCorrelationId());
-			tryCreateMemberIfNotEmpty(memberModuleId, member.getDescriptionFormat());
-			tryCreateMemberIfNotEmpty(memberModuleId, member.getOperatorId());
-			tryCreateMemberIfNotEmpty(memberModuleId, member.getValueId());
-			tryCreateMemberIfNotEmpty(memberModuleId, member.getUnitId());
-			tryCreateMemberIfNotEmpty(memberModuleId, member.getTargetComponent());
-			tryCreateMemberIfNotEmpty(memberModuleId, member.getMapCategoryId());
+			tryAdddModulePairIfNotEmpty(memberModuleId, member.getAcceptabilityId());
+			tryAdddModulePairIfNotEmpty(memberModuleId, member.getCharacteristicTypeId());
+			tryAdddModulePairIfNotEmpty(memberModuleId, member.getCorrelationId());
+			tryAdddModulePairIfNotEmpty(memberModuleId, member.getDescriptionFormat());
+			tryAdddModulePairIfNotEmpty(memberModuleId, member.getOperatorId());
+			tryAdddModulePairIfNotEmpty(memberModuleId, member.getValueId());
+			tryAdddModulePairIfNotEmpty(memberModuleId, member.getUnitId());
+			tryAdddModulePairIfNotEmpty(memberModuleId, member.getTargetComponent());
+			tryAdddModulePairIfNotEmpty(memberModuleId, member.getMapCategoryId());
 		}
 	}
 
-	private void tryCreateMemberIfNotEmpty(long sourceModule, String dependsOnConceptId) {
+	private void tryAdddModulePairIfNotEmpty(long sourceModule, String dependsOnConceptId) {
 		if (SnomedIdentifiers.isConceptIdentifier(dependsOnConceptId)) {
-			tryCreateMember(sourceModule, getConceptModuleMapping().get(Long.parseLong(dependsOnConceptId)));
+			tryAddModulePair(sourceModule, getConceptModuleMapping().get(Long.parseLong(dependsOnConceptId)));
 		}
 	}
 
@@ -240,53 +227,41 @@ public enum SnomedModuleDependencyCollectorService {
 				final Concept concept = new SnomedConceptLookupService().getComponent(isARelationship.getSourceId(), getView());
 				final Concept module = concept.getModule();
 				
-				tryCreateMember(module.getId(), isARelationship.getModuleId());
+				tryAddModulePair(module.getId(), isARelationship.getModuleId());
 				
 				for (final Description description : concept.getDescriptions()) {
-					tryCreateMember(module, description.getModule());
-					tryCreateMember(module, description.getType().getModule());
-					tryCreateMember(module, description.getCaseSignificance().getModule());
+					tryAddModulePair(module, description.getModule());
+					tryAddModulePair(module, description.getType().getModule());
+					tryAddModulePair(module, description.getCaseSignificance().getModule());
 				}
 				
 				for (final Relationship relationship : concept.getOutboundRelationships()) {
-					tryCreateMember(module, relationship.getModule());
-					tryCreateMember(module, relationship.getCharacteristicType().getModule());
-					tryCreateMember(module, relationship.getDestination().getModule());
-					tryCreateMember(module, relationship.getModifier().getModule());
-					tryCreateMember(module, relationship.getType().getModule());
+					tryAddModulePair(module, relationship.getModule());
+					tryAddModulePair(module, relationship.getCharacteristicType().getModule());
+					tryAddModulePair(module, relationship.getDestination().getModule());
+					tryAddModulePair(module, relationship.getModifier().getModule());
+					tryAddModulePair(module, relationship.getType().getModule());
 				}
 				
 			}
 		}
 	}
 
-	private void tryCreateMember(final long sourceModuleId, final long targetModuleId) {
+	private void tryAddModulePair(final long sourceModuleId, final long targetModuleId) {
 		
-		if (sourceModuleId != targetModuleId && !isKnownModuleDependency(sourceModuleId, targetModuleId)) {
-			
-			final String targetId = Long.toString(targetModuleId);
-			final SnomedModuleDependencyRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedModuleDependencyRefSetMember();
-			member.setUuid(randomUUID().toString());
-			member.setActive(true);
-			member.setReleased(false);
-			member.setModuleId(Long.toString(sourceModuleId));
-			member.setReferencedComponentId(targetId);
-			member.setRefSet(getModuleDependencyRefSet());
-			member.setEffectiveTime(getExistingModuleEffectiveTime(targetId));
-			
-			getMembers().add(member);
-			getModuleMapping().put(sourceModuleId, targetModuleId);
-			
+		if (sourceModuleId != targetModuleId ) {
+			Pair<String, String> pair = Tuples.pair(Long.toString(sourceModuleId), Long.toString(targetModuleId));
+			getConfiguration().getMembers().add(pair);
 		}
 		
 	}
 	
-	private void tryCreateMember(final Concept sourceConcept, final Concept targetConcept) {
-		tryCreateMember(parseLong(sourceConcept.getId()), parseLong(targetConcept.getId()));
+	private void tryAddModulePair(final Concept sourceConcept, final Concept targetConcept) {
+		tryAddModulePair(parseLong(sourceConcept.getId()), parseLong(targetConcept.getId()));
 	}
 	
-	private void tryCreateMember(final String sourceModuleId, final String targetModuleId) {
-		tryCreateMember(parseLong(sourceModuleId), parseLong(targetModuleId));
+	private void tryAddModulePair(final String sourceModuleId, final String targetModuleId) {
+		tryAddModulePair(parseLong(sourceModuleId), parseLong(targetModuleId));
 	}
 
 	private Iterable<SnomedRelationshipIndexEntry> getInboundIsARelationships(final RevisionSearcher searcher, final Set<String> destinationIds) throws IOException {
@@ -323,29 +298,6 @@ public enum SnomedModuleDependencyCollectorService {
 				.getSync();
 	}
 	
-	private boolean isKnownModuleDependency(final long sourceModuleId, final long targetModuleId) {
-		return getModuleMapping().get(sourceModuleId).contains(targetModuleId);
-	}
-
-	private Date getExistingModuleEffectiveTime(final String expectedModuleId) {
-		for (final SnomedReferenceSetMember module : getExistingModules()) {
-			final String sourceEffectiveTime = (String) module.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
-			final String moduleId = module.getModuleId();
-			if (Strings.isNullOrEmpty(sourceEffectiveTime) && moduleId.equals(expectedModuleId)) {
-				return EffectiveTimes.parse(sourceEffectiveTime, DateFormats.SHORT);
-			}
-			final String targetEffectiveTime = (String) module.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
-			if (Strings.isNullOrEmpty(targetEffectiveTime) && moduleId.equals(expectedModuleId)) {
-				return EffectiveTimes.parse(targetEffectiveTime, DateFormats.SHORT);
-			}
-		}
-		return null;
-	}
-
-	private HashSet<SnomedModuleDependencyRefSetMember> getModuleMembers(final SnomedRegularRefSet moduleRefSet) {
-		return newHashSet(filter(moduleRefSet.getMembers(), SnomedModuleDependencyRefSetMember.class));
-	}
-
 	private SnomedRegularRefSet getModuleRefSet(final CDOView view) {
 		return checkNotNull((SnomedRegularRefSet) new SnomedRefSetLookupService().getComponent(REFSET_MODULE_DEPENDENCY_TYPE, view), "Missing module reference set %s", REFSET_MODULE_DEPENDENCY_TYPE);
 	}
@@ -406,31 +358,4 @@ public enum SnomedModuleDependencyCollectorService {
 		return getConfiguration().getConceptModuleMapping();
 	}
 
-	private Collection<SnomedModuleDependencyRefSetMember> getMembers() {
-		return getConfiguration().getMembers();
-	}
-	
-	private Map<Pair<String, String>, String> createMembers(CDOEditingContext context) {
-		final Map<Pair<String, String>, String> modules = Maps.newHashMap();
-
-		for (SnomedModuleDependencyRefSetMember member : getMembers()) {
-			final Pair<String, String> pair = Tuples.pair(member.getModuleId(), member.getReferencedComponentId());
-			modules.put(pair, member.getUuid());
-		}
-
-		return modules;
-	}
-	
-	private Multimap<Long, Long> getModuleMapping() {
-		return getConfiguration().getModuleMapping();
-	}
-	
-	private SnomedRefSet getModuleDependencyRefSet() {
-		return getConfiguration().getModuleDependencyRefSet();
-	}
-	
-	private SnomedReferenceSetMembers getExistingModules() {
-		return getConfiguration().getExistingModules();
-	}
-	
 }
