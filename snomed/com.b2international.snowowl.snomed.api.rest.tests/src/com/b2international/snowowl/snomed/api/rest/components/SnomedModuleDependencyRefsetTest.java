@@ -17,7 +17,9 @@ import java.util.Map;
 
 import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -30,14 +32,17 @@ import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 
+	private static final String ICD_10_MAPPING_MODULE = "449080006";
 	private static final String NORWEGIAN_MODULE_CONCEPT_ID = "51000202101";
 	
 	@Test
@@ -81,29 +86,33 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, mainPath.getPath())
 				.execute(getBus())
 				.getSync();
-
-		coreModuleDependencyMembersAfterVersioning.forEach(member -> {
-			assertEquals("Effective time must be updated after versioning", versionEffectiveDate, member.getEffectiveTime());
-		});
+		
+		for (SnomedReferenceSetMember member : coreModuleDependencyMembersAfterVersioning) {
+			assertEquals(versionEffectiveDate, member.getEffectiveTime());
+		}
 		
 	}
 	
 	@Test
-	public void moduleDependecyDuplicateMemberTest() {
+	public void moduleDependecyMemberEffectiveTimeUpdateTest() {
 
 		final String shortName = "SNOMEDCT-MODULEDEPENDENCY";
 		createCodeSystem(branchPath, shortName).statusCode(201);
 
+		ImmutableSet<String> INT_MODULE_IDS = ImmutableSet.of(Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.MODULE_SCT_CORE, ICD_10_MAPPING_MODULE);
 		Map<Pair<String, String>, Date> moduleToReferencedComponentAndEffectiveDateMap = Maps.newHashMap();
 
-		SnomedReferenceSetMembers moduleDependencyMembers1 = SnomedRequests.prepareSearchMember()
+		SnomedReferenceSetMembers intModuleDependencyMembers = SnomedRequests.prepareSearchMember()
 				.all()
+				.filterByActive(true)
 				.filterByRefSet(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
+				.filterByModules(INT_MODULE_IDS)
+				.filterByReferencedComponent(INT_MODULE_IDS)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getBus())
 				.getSync();
 
-		moduleDependencyMembers1.getItems().forEach(member -> {
+		intModuleDependencyMembers.forEach(member -> {
 			Pair<String, String> pair = Tuples.pair(member.getModuleId(), member.getReferencedComponent().getId());
 			moduleToReferencedComponentAndEffectiveDateMap.put(
 				pair,
@@ -130,36 +139,44 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, inferredRelationshipRequestBody).statusCode(201);
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, statedRelationshipRequestBody).statusCode(201);
 		
-		SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
-				.filterById(NORWEGIAN_MODULE_CONCEPT_ID)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-				.execute(getBus())
-				.getSync();
-
-		concepts.forEach(c -> assertEquals("Effective time must still be null", null, c.getEffectiveTime()));
+		// check for the newly created module concept to have effective set to null
+		SnomedRequests.prepareSearchConcept()
+			.filterById(NORWEGIAN_MODULE_CONCEPT_ID)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getBus())
+			.getSync()
+			.forEach(c -> assertEquals("Effective time must still be null", null, c.getEffectiveTime()));
 				
 		// version branch
-		final String effectiveDate = getNextAvailableEffectiveDateAsString(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+		final String effectiveTime = getNextAvailableEffectiveDateAsString(shortName);
+		final Date effectiveDate = EffectiveTimes.parse(effectiveTime, DateFormats.SHORT);
 		final String versionId = "testForModuleDependencyMembers";
-		createVersion(shortName, versionId, effectiveDate).statusCode(201);
+		createVersion(shortName, versionId, effectiveTime).statusCode(201);
 		getVersion(shortName, versionId).statusCode(200);
-
+		
+		// check for the newly created module concept after versioning to have effective time set to the correct date
+		SnomedRequests.prepareSearchConcept()
+			.filterById(NORWEGIAN_MODULE_CONCEPT_ID)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getBus())
+			.getSync()
+			.forEach(c -> assertEquals("Effective time should have been set to the date of versioning", effectiveDate, c.getEffectiveTime()));
+		
 		SnomedReferenceSetMembers moduleDependencyMembersAfterVersioning = SnomedRequests.prepareSearchMember()
 				.all()
 				.filterByRefSet(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getBus())
 				.getSync();
-		
-		moduleDependencyMembersAfterVersioning.getItems().forEach(member-> {
+
+		moduleDependencyMembersAfterVersioning.forEach(member-> {
 			final Pair<String, String> pair = Tuples.pair(member.getModuleId(), member.getReferencedComponent().getId());
 			final Date originalMemberEffectiveTime = moduleToReferencedComponentAndEffectiveDateMap.get(pair);
-			final Date versionDate = EffectiveTimes.parse(effectiveDate, DateFormats.SHORT);
 			if(originalMemberEffectiveTime != null) {
 				assertEquals("Effective dates on existing module dependency members shouldn't be updated after versioning" , originalMemberEffectiveTime,  member.getEffectiveTime());
 				moduleToReferencedComponentAndEffectiveDateMap.remove(pair);
 			} else {
-				assertEquals("The new members effective time should match the versionDate", versionDate, member.getEffectiveTime());
+				assertEquals("The new members effective time should match the versionDate", effectiveDate, member.getEffectiveTime());
 			}
 
 		});
