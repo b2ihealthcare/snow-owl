@@ -24,18 +24,12 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
 import static com.google.common.collect.HashMultimap.create;
-import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 import static java.lang.Long.parseLong;
-import static java.util.UUID.randomUUID;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.view.CDOView;
@@ -52,8 +46,6 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -61,7 +53,6 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -76,14 +67,10 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
 /**
@@ -101,7 +88,7 @@ public enum SnomedModuleDependencyCollectorService {
 	
 	private static final long PRIMITIVE = parseLong(Concepts.PRIMITIVE);
 	private static final long FULLY_DEFINED = parseLong(Concepts.FULLY_DEFINED);
-	
+
 	/**
 	 * Returns with a collection of {@link SnomedModuleDependencyRefSetMember module dependency members}
 	 * representing the current module dependency state of the SNOMED&nbsp;CT ontology. The list might contain
@@ -111,11 +98,10 @@ public enum SnomedModuleDependencyCollectorService {
 	 * @return a collection of module dependency members.
 	 * @throws IOException 
 	 */
-	public Map<Pair<String, String>, String> collectModuleMembers(final RevisionSearcher searcher, final CDOEditingContext context, final LongCollection unpublishedStorageKeys) throws IOException {
+	public Collection<Pair<String, String>> collectModuleMembers(final RevisionSearcher searcher, final CDOEditingContext context, final LongCollection unpublishedStorageKeys) throws IOException {
 	
 		final Stopwatch stopwatch = createStarted();
-		final Map<Pair<String, String>, String> members = Maps.newHashMap();
-		
+		Collection<Pair<String, String>> members;
 		try {
 			
 			LOGGER.info("Initializing resources to resolve module dependencies... [1 of 6]");
@@ -135,8 +121,7 @@ public enum SnomedModuleDependencyCollectorService {
 			
 			LOGGER.info("Processing unversioned module concepts... [6 of 6]");
 			tryCreateMembersForNewModules(searcher);
-			
-			members.putAll(createMembers(context));
+			members = getConfiguration().getMembers();
 			
 		} finally {
 			reset();
@@ -160,7 +145,6 @@ public enum SnomedModuleDependencyCollectorService {
 		configuration.setModuleMapping(getModuleMapping(configuration.getExistingModules()));
 		final SnomedRegularRefSet moduleRefSet = getModuleRefSet(view);
 		configuration.setModuleDependencyRefSet(moduleRefSet);
-		configuration.getMembers().addAll(getModuleMembers(moduleRefSet));
 		
 		return configuration;
 	}
@@ -261,22 +245,9 @@ public enum SnomedModuleDependencyCollectorService {
 	}
 
 	private void tryCreateMember(final long sourceModuleId, final long targetModuleId) {
-		
-		if (sourceModuleId != targetModuleId && !isKnownModuleDependency(sourceModuleId, targetModuleId)) {
-			
-			final String targetId = Long.toString(targetModuleId);
-			final SnomedModuleDependencyRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedModuleDependencyRefSetMember();
-			member.setUuid(randomUUID().toString());
-			member.setActive(true);
-			member.setReleased(false);
-			member.setModuleId(Long.toString(sourceModuleId));
-			member.setReferencedComponentId(targetId);
-			member.setRefSet(getModuleDependencyRefSet());
-			member.setEffectiveTime(getExistingModuleEffectiveTime(targetId));
-			
-			getMembers().add(member);
-			getModuleMapping().put(sourceModuleId, targetModuleId);
-			
+		if (sourceModuleId != targetModuleId) {
+			final Pair<String, String> pair = Tuples.pair(Long.toString(sourceModuleId), Long.toString(targetModuleId));
+			getConfiguration().getMembers().add(pair);
 		}
 		
 	}
@@ -323,29 +294,6 @@ public enum SnomedModuleDependencyCollectorService {
 				.getSync();
 	}
 	
-	private boolean isKnownModuleDependency(final long sourceModuleId, final long targetModuleId) {
-		return getModuleMapping().get(sourceModuleId).contains(targetModuleId);
-	}
-
-	private Date getExistingModuleEffectiveTime(final String expectedModuleId) {
-		for (final SnomedReferenceSetMember module : getExistingModules()) {
-			final String sourceEffectiveTime = (String) module.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
-			final String moduleId = module.getModuleId();
-			if (Strings.isNullOrEmpty(sourceEffectiveTime) && moduleId.equals(expectedModuleId)) {
-				return EffectiveTimes.parse(sourceEffectiveTime, DateFormats.SHORT);
-			}
-			final String targetEffectiveTime = (String) module.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
-			if (Strings.isNullOrEmpty(targetEffectiveTime) && moduleId.equals(expectedModuleId)) {
-				return EffectiveTimes.parse(targetEffectiveTime, DateFormats.SHORT);
-			}
-		}
-		return null;
-	}
-
-	private HashSet<SnomedModuleDependencyRefSetMember> getModuleMembers(final SnomedRegularRefSet moduleRefSet) {
-		return newHashSet(filter(moduleRefSet.getMembers(), SnomedModuleDependencyRefSetMember.class));
-	}
-
 	private SnomedRegularRefSet getModuleRefSet(final CDOView view) {
 		return checkNotNull((SnomedRegularRefSet) new SnomedRefSetLookupService().getComponent(REFSET_MODULE_DEPENDENCY_TYPE, view), "Missing module reference set %s", REFSET_MODULE_DEPENDENCY_TYPE);
 	}
@@ -406,31 +354,4 @@ public enum SnomedModuleDependencyCollectorService {
 		return getConfiguration().getConceptModuleMapping();
 	}
 
-	private Collection<SnomedModuleDependencyRefSetMember> getMembers() {
-		return getConfiguration().getMembers();
-	}
-	
-	private Map<Pair<String, String>, String> createMembers(CDOEditingContext context) {
-		final Map<Pair<String, String>, String> modules = Maps.newHashMap();
-
-		for (SnomedModuleDependencyRefSetMember member : getMembers()) {
-			final Pair<String, String> pair = Tuples.pair(member.getModuleId(), member.getReferencedComponentId());
-			modules.put(pair, member.getUuid());
-		}
-
-		return modules;
-	}
-	
-	private Multimap<Long, Long> getModuleMapping() {
-		return getConfiguration().getModuleMapping();
-	}
-	
-	private SnomedRefSet getModuleDependencyRefSet() {
-		return getConfiguration().getModuleDependencyRefSet();
-	}
-	
-	private SnomedReferenceSetMembers getExistingModules() {
-		return getConfiguration().getExistingModules();
-	}
-	
 }
