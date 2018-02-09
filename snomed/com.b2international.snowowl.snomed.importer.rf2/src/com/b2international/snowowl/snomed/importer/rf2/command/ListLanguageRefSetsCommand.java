@@ -17,11 +17,12 @@ package com.b2international.snowowl.snomed.importer.rf2.command;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
@@ -41,9 +42,8 @@ import com.google.common.collect.Maps;
 public class ListLanguageRefSetsCommand extends AbstractRf2ImporterCommand {
 
 	public ListLanguageRefSetsCommand() {
-		super("rf2_languages", "<path>", "Lists all available language type reference set identifiers in a release archive", new String[] {
-				"<path>\t\tSpecifies the release archive to scan."
-		});
+		super("rf2_languages", "<path>", "Lists all available language type reference set identifiers in a release archive",
+				new String[] { "<path>\t\tSpecifies the release archive to scan." });
 	}
 
 	@Override
@@ -93,27 +93,33 @@ public class ListLanguageRefSetsCommand extends AbstractRf2ImporterCommand {
 			return;
 		}
 
-		final Collection<String> languageRefSetFileNames = archiveFileSet.getAllFileName(zipFiles, ReleaseComponentType.LANGUAGE_REFERENCE_SET, contentSubType);
-		
 		final Map<String, String> $ = Maps.newHashMap();
+		final ImportConfiguration config = new ImportConfiguration(Branch.MAIN_PATH);
 		
-		for (final String languageRefSetFileName : languageRefSetFileNames) {
+		final Set<File> languageRefSetFiles = archiveFileSet
+				.getAllFileName(zipFiles, ReleaseComponentType.LANGUAGE_REFERENCE_SET, contentSubType)
+				.stream()
+				.map(fileName -> new File(fileName))
+				.collect(Collectors.toSet());
 		
-			final File languageRefSetFile = new File(languageRefSetFileName);
+		config.setLanguageRefSetFiles(languageRefSetFiles);
+		
+		final Set<File> descriptionFileNames = archiveFileSet
+				.getAllFileName(zipFiles, ReleaseComponentType.DESCRIPTION, contentSubType)
+				.stream()
+				.map(fileName -> new File(fileName))
+				.collect(Collectors.toSet());
+		
+		config.setDescriptionsFiles(descriptionFileNames);
+		
+		for (final File languageRefSetFile : languageRefSetFiles) {
+		
 			interpreter.println("Searching for language type reference sets in '" + languageRefSetFile.getName() + "'...");
 			
-			final ImportConfiguration config = new ImportConfiguration(Branch.MAIN_PATH);
 	
 			// Setting up configuration only with the required fields
 			config.setSourceKind(ImportSourceKind.ARCHIVE);
 			config.setArchiveFile(archiveFile);
-			final Collection<String> allFileName = archiveFileSet.getAllFileName(zipFiles, ReleaseComponentType.DESCRIPTION, contentSubType);
-			final Collection<File> descriptionFileNames = Collections.emptySet();
-			for (String fileName : allFileName) {
-				descriptionFileNames.add(new File(fileName));
-			}
-			config.setDescriptionsFiles(descriptionFileNames);
-			config.addLanguageRefSetFiles(languageRefSetFile);
 	
 			final SnomedRefSetNameCollector provider = new SnomedRefSetNameCollector(config, new NullProgressMonitor(), "");
 	
