@@ -65,8 +65,6 @@ import com.google.common.collect.Iterators;
  */
 public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 
-	private static final Date THRESHOLD_DATE = EffectiveTimes.parse("20170425", DateFormats.SHORT);
-	
 	private final Iterator<String> itr;
 	private final CloseableList<SnomedSubExporter> closeables;
 	private final SnomedExportConfiguration configuration;
@@ -203,14 +201,13 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 		final String effectiveTimeField = SnomedMappings.effectiveTime().fieldName();
 		
 		final BooleanQuery effectiveTimeQuery = new BooleanQuery(true);
-		
 		effectiveTimeQuery.add(getUnpublishedQuery(UNSET_EFFECTIVE_TIME), SHOULD);
 		
 		if (!BranchPathUtils.isMain(branchPath)) {
 			Long versionBranchEffectiveDate = branchPathWithEffectiveTimeMap.get(BranchPathUtils.createPath(branchPath.getPath()));
 			effectiveTimeQuery.add(newLongRange(effectiveTimeField, versionBranchEffectiveDate, null, true, true), SHOULD);
 		}
-		
+
 		query.add(effectiveTimeQuery, MUST);
 		
 		return query;
@@ -260,10 +257,7 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 	private Map<IBranchPath, Long> createBranchPathMap() {
 		final Map<IBranchPath, Long> branchPathMap = newLinkedHashMap();
 		for (final ICodeSystemVersion version : getAllVersion()) {
-			Date versionEffectiveDate = new Date(version.getEffectiveDate());
-			if (versionEffectiveDate != null && versionEffectiveDate.after(THRESHOLD_DATE)) {
-				branchPathMap.put(createVersionPath(version.getVersionId()), version.getEffectiveDate());
-			}
+			branchPathMap.put(createVersionPath(version.getVersionId()), version.getEffectiveDate());
 		}
 		branchPathMap.put(createMainPath(), UNSET_EFFECTIVE_TIME);
 		return unmodifiableMap(branchPathMap);
