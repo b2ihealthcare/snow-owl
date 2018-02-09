@@ -70,16 +70,21 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 			}
 			
 			out.writeUTF(importConfiguration.getCodeSystemShortName());
+			
 			final Collection<File> descriptionsFiles = importConfiguration.getDescriptionsFiles();
 			final Collection<File> languageRefSetFiles = importConfiguration.getLanguageRefSetFiles();
 			monitor.worked(); // 1
 			
+			out.writeInt(descriptionsFiles.size());
+			
 			for (File descfile : descriptionsFiles) {
-				writeComponent(out, descfile, monitor);
+				writeComponent(out, descfile, monitor.fork());
 			}
 			
+			out.writeInt(languageRefSetFiles.size());
+			
 			for (File langFile : languageRefSetFiles) {
-				writeComponent(out, langFile, monitor.fork()); // + 7
+				writeComponent(out, langFile, monitor.fork());
 			}
 			
 			writeComponent(out, importConfiguration.getConceptsFile(), monitor.fork());

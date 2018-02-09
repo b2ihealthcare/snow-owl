@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Set;
 
 import org.eclipse.net4j.signal.IndicationWithMonitoring;
 import org.eclipse.net4j.util.io.ExtendedDataInputStream;
@@ -37,7 +38,7 @@ import com.b2international.snowowl.snomed.importer.net4j.SnomedImportProtocolCon
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 
 /**
@@ -88,17 +89,44 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 			importConfiguration.setCodeSystemShortName(codeSystemShortName);
 			
 			monitor.worked();
+			int descriptionFilesSize = in.readInt();
+			
+			final Set<File> descriptionFiles = Sets.newHashSet();
+			final Set<File> languageRefSetFiles = Sets.newHashSet();
+			
+			for (int i= 0; i < descriptionFilesSize; i++) {
+				readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() {
+					@Override
+					public void setFile(final File f) {
+						descriptionFiles.add(f);
+					}
+				}, monitor.fork());
+			}
+
+			importConfiguration.setDescriptionsFiles(descriptionFiles);
+			
+			int languageRefSetFilesSize = in.readInt();
+			
+			for (int i =0; i < languageRefSetFilesSize; i++) {
+				readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() {
+					@Override
+					public void setFile(final File f) {
+						languageRefSetFiles.add(f);
+					}
+				}, monitor.fork());
+			}
+			
+			importConfiguration.setLanguageRefSetFiles(languageRefSetFiles);
 			
 			receivedFilesDirectory = Files.createTempDir();
 			receivedFilesDirectory.deleteOnExit();
 			
 			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setConceptsFile(f); }}, monitor.fork());
-			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setDescriptionsFiles(ImmutableList.of(f)); }}, monitor.fork());
 			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setTextDefinitionFile(f); }}, monitor.fork());
 			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setRelationshipsFile(f); }}, monitor.fork());
 			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setStatedRelationshipsFile(f); }}, monitor.fork());
 			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setDescriptionType(f); }}, monitor.fork());
-			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setLanguageRefSetFiles(ImmutableList.of(f)); }}, monitor.fork());
+			
 			
 			final int refSetUrlCount = in.readInt();
 			
