@@ -174,10 +174,10 @@ public class SnomedRefSetNameCollector {
 				}
 			};
 			if (!configuration.getDescriptionsFiles().isEmpty()) {
-				for(File descFile : configuration.getDescriptionsFiles()) {
-					URL url = configuration.toURL(descFile);
+				for (File descFile : configuration.getDescriptionsFiles()) {
+					final URL url = configuration.toURL(descFile);
 					descriptionReader = new InputStreamReader(url.openStream());
-					CsvParser parser = new CsvParser(descriptionReader, getFileName(url), CSV_SETTINGS, descriptionParserCallback, DESCRIPTION_FIELD_COUNT);
+					final CsvParser parser = new CsvParser(descriptionReader, getFileName(url), CSV_SETTINGS, descriptionParserCallback, DESCRIPTION_FIELD_COUNT);
 					parser.parse();
 					
 				}
