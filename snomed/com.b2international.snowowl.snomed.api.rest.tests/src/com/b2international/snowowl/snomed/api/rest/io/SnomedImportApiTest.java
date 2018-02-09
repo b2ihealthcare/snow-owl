@@ -214,14 +214,14 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		final String svDescriptionId = "24688171113";
 		final String enLanguageRefsetMemberId = "34d07985-48a0-41e7-b6ec-b28e6b00adfc";
 		final String svLanguageRefsetMemberId = "34d07985-48a0-41e7-b6ec-b28e6b00adfb";
-		final String conceptIdODescription = "301795004";
+		final String conceptIdOfDescription = "301795004";
 		
 		
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, enDescriptionId).statusCode(404);
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, svDescriptionId).statusCode(404);
 		getComponent(branchPath, SnomedComponentType.MEMBER, enLanguageRefsetMemberId).statusCode(404);
 		getComponent(branchPath, SnomedComponentType.MEMBER, svLanguageRefsetMemberId).statusCode(404);
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptIdODescription).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptIdOfDescription).statusCode(404);
 		
 		final Map<?, ?> importConfiguration = ImmutableMap.builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
@@ -230,7 +230,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 				.build();
 		
 		importArchive("SnomedCT_Release_INT_20150131_new_concept_for_languageCode.zip");
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptIdODescription).statusCode(200);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptIdOfDescription).statusCode(200);
 		
 		importArchive("SnomedCT_Release_INT_20150201_new_description_with2_language_code.zip", importConfiguration);
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, enDescriptionId).statusCode(200);
