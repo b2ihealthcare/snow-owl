@@ -41,10 +41,10 @@ public final class ImportConfiguration {
 	public static final String ARCHIVE_FILE_PROPERTY = "archiveFile";
 	public static final String ROOT_FILE_PROPERTY = "rootFile";
 	public static final String CONCEPTS_FILE_PROPERTY = "conceptsFile";
-	public static final String DESCRIPTIONS_FILE_PROPERTY = "descriptionsFile";
+	public static final String DESCRIPTIONS_FILES_PROPERTY = "descriptionsFiles";
 	public static final String RELATIONSHIPS_FILE_PROPERTY = "relationshipsFile";
 	public static final String STATED_RELATIONSHIPS_FILE_PROPERTY = "statedRelationshipsFile";
-	public static final String LANGUAGE_REF_SET_FILE_PROPERTY = "languageRefSetFile";
+	public static final String LANGUAGE_REF_SET_FILES_PROPERTY = "languageRefSetFiles";
 	public static final String LANGUAGE_REF_SET_ID_PROPERTY = "languageRefSetId";
 	public static final String IMPORT_SOURCE_KIND_PROPERTY = "sourceKind";
 	public static final String DESCRIPTION_TYPE_REFSET_FILE_PROPERTY = "descriptionType";
@@ -140,10 +140,6 @@ public final class ImportConfiguration {
 
 	public void setLanguageRefSetFiles(final Collection<File> languageRefSetFiles) {
 		this.languageRefSetFiles = Collections3.toImmutableSet(languageRefSetFiles);
-	}
-	
-	public void addLanguageRefSetFiles(final File languageRefSetFile) {
-		this.languageRefSetFiles.add(languageRefSetFile);
 	}
 	
 	public ImportSourceKind getSourceKind() {
