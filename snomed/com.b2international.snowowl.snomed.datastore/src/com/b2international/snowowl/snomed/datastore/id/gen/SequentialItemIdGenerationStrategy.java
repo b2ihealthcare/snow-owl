@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.gen;
 
-import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.store.Store;
-import com.b2international.snowowl.datastore.store.query.Query;
-import com.b2international.snowowl.datastore.store.query.QueryBuilder;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.id.cis.SctId;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.ReservationRangeImpl;
 import com.google.common.base.Function;
@@ -37,7 +32,6 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.BoundType;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableRangeSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.primitives.Ints;
@@ -61,13 +55,8 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 		public ItemIdCounter(final String namespace, final ComponentCategory category) {
 			this.allowedRange = Range.closedOpen(getLowerInclusiveId(namespace), getUpperExclusiveId(namespace));
 			
-			final SctId lastSctId = getLastSctId(namespace, category);
-			if (lastSctId != null) {
-				this.counter = new AtomicLong(lastSctId.getSequence());
-			} else {
-				// getNextItemId() will add 1 to this value immediately
-				this.counter = new AtomicLong(allowedRange.lowerEndpoint() - 1L);
-			}
+			// getNextItemId() will add 1 to this value immediately
+			this.counter = new AtomicLong(allowedRange.lowerEndpoint() - 1L);
 			
 			final FluentIterable<Range<Long>> excludedRangesIterable = FluentIterable.from(reservationService.getReservations())
 				.filter(ReservationRangeImpl.class)
@@ -99,20 +88,6 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 			}
 		}
 
-		private SctId getLastSctId(final String namespace, final ComponentCategory category) {
-			final boolean intNamespace = CompareUtils.isEmpty(namespace);
-
-			final Query query = QueryBuilder.newQuery()
-				.match(SctId.Fields.NAMESPACE, intNamespace ? SnomedIdentifiers.INT_NAMESPACE : namespace)
-				.match(SctId.Fields.PARTITION_ID, (intNamespace ? "0" : "1") + Integer.toString(category.ordinal()))
-				.lessThan(SctId.Fields.SEQUENCE, allowedRange.upperEndpoint())
-				.sortBy(SctId.Fields.SEQUENCE, true, false)
-				.build();
-			
-			final Collection<SctId> hits = store.search(query, 0, 1);
-			return Iterables.getOnlyElement(hits, null);
-		}
-		
 		public long getNextItemId(long stepSize) {
 			long current;
 			long next;
@@ -165,12 +140,10 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 		return CompareUtils.isEmpty(namespace) ? SnomedIdentifiers.MAX_INT_ITEMID : SnomedIdentifiers.MAX_NAMESPACE_ITEMID;
 	}
 	
-	private final Store<SctId> store;
 	private final ISnomedIdentiferReservationService reservationService;
 	private final LoadingCache<Pair<String, ComponentCategory>, ItemIdCounter> lastItemIds;
 	
-	public SequentialItemIdGenerationStrategy(final Store<SctId> store, final ISnomedIdentiferReservationService reservationService) {
-		this.store = store;
+	public SequentialItemIdGenerationStrategy(final ISnomedIdentiferReservationService reservationService) {
 		this.reservationService = reservationService;
 		this.lastItemIds = CacheBuilder.newBuilder().build(CacheLoader.from(new Function<Pair<String, ComponentCategory>, ItemIdCounter>() {
 			@Override public ItemIdCounter apply(final Pair<String,ComponentCategory> input) {

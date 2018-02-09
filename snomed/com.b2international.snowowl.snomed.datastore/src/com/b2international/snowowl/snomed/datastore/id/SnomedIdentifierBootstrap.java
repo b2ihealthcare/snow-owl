@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 						break;
 	
 					case SEQUENTIAL:
-						final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(indexStore, reservationService);
+						final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(reservationService);
 						identifierService = new DefaultSnomedIdentifierService(indexStore, generationStrategy, reservationService, conf);
 						LOGGER.info("Snow Owl is configured to use index-based identifier service with SEQUENTIAL id allocation.");
 						break;
@@ -120,7 +120,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 						LOGGER.info("Snow Owl is configured to use memory-based identifier service with RANDOM id allocation.");
 						break;
 					case SEQUENTIAL:
-						final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(memStore, reservationService);
+						final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(reservationService);
 						identifierService = new DefaultSnomedIdentifierService(memStore, generationStrategy, reservationService, conf);
 						LOGGER.info("Snow Owl is configured to use memory-based identifier service with SEQUENTIAL id allocation.");
 						break;
