@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,16 +25,19 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.index.Doc;
 import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
+import com.b2international.index.query.SortBy;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.ITreeComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -55,6 +58,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * A transfer object representing a SNOMED CT concept.
@@ -69,11 +73,41 @@ import com.google.common.collect.FluentIterable;
 	+ "return params.termScores.containsKey(id) ? params.termScores.get(id) + interest : 0.0d;", 
 	fields={SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.DOI})
 @Script(name="doi", script="return doc.doi.value", fields={SnomedConceptDocument.Fields.DOI})
+@Script(
+	name="termSort", 
+	script=
+	"String term = \"\";"
+	+ "for (description in params._source.descriptions) {"
+	+ "	if (!\"900000000000548007\".equals(description.acceptabilityId) || !\"900000000000013009\".equals(description.typeId)) {"
+	+ "		continue;"
+	+ "	}"
+	+ "for (locale in params.locales) {"
+	+ "		if (locale.equals(description.languageRefSetId)) {"
+	+ "			return description.term;"
+	+ "		}"
+	+ "	}"
+	+ "}"
+	+ "for (description in params._source.descriptions) {"
+	+ "	if (!\"900000000000548007\".equals(description.acceptabilityId) || !\"900000000000003001\".equals(description.typeId)) {"
+	+ "		continue;"
+	+ "	}"
+	+ "	for (locale in params.locales) {"
+	+ "		if (locale.equals(description.languageRefSetId)) {"
+	+ "			return description.term;"
+	+ "		}"
+	+ "	}"
+	+ "}"
+	+ "return doc.id.value",
+	fields={SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.DESCRIPTIONS})
 public class SnomedConceptDocument extends SnomedComponentDocument implements ITreeComponent {
 
 	public static final float DEFAULT_DOI = 1.0f;
 	private static final long serialVersionUID = -824286402410205210L;
 
+	public static SortBy sortByTerm(List<String> languageRefSetPreferenceList, SortBy.Order order) {
+		return SortBy.script("termSort", ImmutableMap.of("locales", languageRefSetPreferenceList), order);
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -177,6 +211,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		public static final String MAP_TARGET_COMPONENT_TYPE = "mapTargetComponentType";
 		public static final String STRUCTURAL = "structural";
 		public static final String DOI = "doi";
+		public static final String DESCRIPTIONS = "descriptions";
 	}
 	
 	public static Builder builder(final SnomedConceptDocument input) {
@@ -249,6 +284,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		private float doi = DEFAULT_DOI;
 		private long refSetStorageKey = CDOUtils.NO_STORAGE_KEY;
 		private boolean structural = false;
+		private List<SnomedDescriptionFragment> descriptions = Collections.emptyList();
 
 		@JsonCreator
 		private Builder() {
@@ -364,6 +400,11 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			return getSelf();
 		}
 		
+		public Builder descriptions(List<SnomedDescriptionFragment> descriptions) {
+			this.descriptions = Collections3.toImmutableList(descriptions);
+			return getSelf();
+		}
+		
 		public SnomedConceptDocument build() {
 			final SnomedConceptDocument entry = new SnomedConceptDocument(id,
 					label,
@@ -381,7 +422,8 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 					refSetStorageKey,
 					structural,
 					referringRefSets,
-					referringMappingRefSets);
+					referringMappingRefSets,
+					descriptions);
 			
 			entry.doi = doi;
 			entry.setScore(score);
@@ -419,6 +461,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	private final int mapTargetComponentType;
 	private final boolean structural;
 	private final long refSetStorageKey;
+	private final List<SnomedDescriptionFragment> descriptions;
 	
 	private LongSet parents;
 	private LongSet ancestors;
@@ -442,7 +485,8 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			final long refSetStorageKey,
 			final boolean structural,
 			final List<String> referringRefSets,
-			final List<String> referringMappingRefSets) {
+			final List<String> referringMappingRefSets,
+			final List<SnomedDescriptionFragment> descriptions) {
 
 		super(id, label, iconId, moduleId, released, active, effectiveTime, namespace, referringRefSets, referringMappingRefSets);
 		this.primitive = primitive;
@@ -452,6 +496,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		this.mapTargetComponentType = mapTargetComponentType;
 		this.refSetStorageKey = refSetStorageKey;
 		this.structural = structural;
+		this.descriptions = descriptions;
 	}
 	
 	@Override
@@ -518,6 +563,10 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	
 	public boolean isStructural() {
 		return structural;
+	}
+	
+	public List<SnomedDescriptionFragment> getDescriptions() {
+		return descriptions;
 	}
 	
 	@Override

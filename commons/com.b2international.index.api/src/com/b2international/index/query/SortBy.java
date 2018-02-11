@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 4.7
  */
-public class SortBy {
+public abstract class SortBy {
 	
 	public static enum Order {
 		ASC, 
@@ -92,6 +92,54 @@ public class SortBy {
 		public String toString() {
 			return field + " " + order;
 		}
+	}
+	
+	public static final class SortByScript extends SortBy {
+
+		private final Order order;
+		private final String name;
+		private final Map<String, Object> arguments;
+
+		public SortByScript(String name, Map<String, Object> arguments, Order order) {
+			this.name = name;
+			this.arguments = arguments;
+			this.order = order;
+		}
+		
+		public Order getOrder() {
+			return order;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		public Map<String, Object> getArguments() {
+			return arguments;
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(name, arguments, order);
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) { return true; }
+			if (obj == null) { return false; }
+			if (getClass() != obj.getClass()) { return false; }
+			
+			SortByScript other = (SortByScript) obj;
+			return Objects.equals(name, other.name) 
+					&& Objects.equals(arguments, other.arguments)
+					&& Objects.equals(order, other.order); 
+		}
+		
+		@Override
+		public String toString() {
+			return name + " " + arguments + " " + order;
+		}
+		
 	}
 	
 	public static final class MultiSortBy extends SortBy {
@@ -156,7 +204,12 @@ public class SortBy {
 		return new SortByField(field, order);
 	}
 	
+	public static SortBy script(String script, Map<String, Object> arguments, Order order) {
+		return new SortByScript(script, arguments, order);
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
+
 }
