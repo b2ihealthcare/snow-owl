@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,20 +30,13 @@ import java.lang.annotation.Target;
 public @interface Script {
 
 	/**
-	 * @return the name of the script
+	 * @return the name of the script.
 	 */
 	String name();
 	
 	/**
-	 * The actual Groovy script.
-	 * @return
+	 * @return the script itself
 	 */
 	String script();
-	
-	/**
-	 * Optionally specify the fields to be loaded for the script
-	 * @return
-	 */
-	String[] fields() default {};
 	
 }

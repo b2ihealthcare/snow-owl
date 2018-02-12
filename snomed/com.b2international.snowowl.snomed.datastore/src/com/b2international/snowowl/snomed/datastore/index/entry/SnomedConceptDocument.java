@@ -25,7 +25,6 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
@@ -70,9 +69,8 @@ import com.google.common.collect.ImmutableMap;
 	script=
 	"double interest = params.useDoi ? (doc.doi.value - params.minDoi) / (params.maxDoi - params.minDoi) : 0;\n"
 	+ "String id = doc.id.value;\n" 
-	+ "return params.termScores.containsKey(id) ? params.termScores.get(id) + interest : 0.0d;", 
-	fields={SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.DOI})
-@Script(name="doi", script="return doc.doi.value", fields={SnomedConceptDocument.Fields.DOI})
+	+ "return params.termScores.containsKey(id) ? params.termScores.get(id) + interest : 0.0d;")
+@Script(name="doi", script="return doc.doi.value")
 @Script(
 	name="termSort", 
 	script=
@@ -97,8 +95,7 @@ import com.google.common.collect.ImmutableMap;
 	+ "		}"
 	+ "	}"
 	+ "}"
-	+ "return doc.id.value",
-	fields={SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.DESCRIPTIONS})
+	+ "return doc.id.value")
 public class SnomedConceptDocument extends SnomedComponentDocument implements ITreeComponent {
 
 	public static final float DEFAULT_DOI = 1.0f;
