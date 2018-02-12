@@ -41,10 +41,10 @@ public final class ImportConfiguration {
 	public static final String ARCHIVE_FILE_PROPERTY = "archiveFile";
 	public static final String ROOT_FILE_PROPERTY = "rootFile";
 	public static final String CONCEPTS_FILE_PROPERTY = "conceptsFile";
-	public static final String DESCRIPTIONS_FILES_PROPERTY = "descriptionsFiles";
+	public static final String DESCRIPTIONS_FILE_PROPERTY = "firstDescriptionFile";
 	public static final String RELATIONSHIPS_FILE_PROPERTY = "relationshipsFile";
 	public static final String STATED_RELATIONSHIPS_FILE_PROPERTY = "statedRelationshipsFile";
-	public static final String LANGUAGE_REF_SET_FILES_PROPERTY = "languageRefSetFiles";
+	public static final String LANGUAGE_REF_SET_FILE_PROPERTY = "firstLanguageRefSetFile";
 	public static final String LANGUAGE_REF_SET_ID_PROPERTY = "languageRefSetId";
 	public static final String IMPORT_SOURCE_KIND_PROPERTY = "sourceKind";
 	public static final String DESCRIPTION_TYPE_REFSET_FILE_PROPERTY = "descriptionType";
@@ -62,9 +62,11 @@ public final class ImportConfiguration {
 	private File rootFile;
 	private File conceptsFile;
 	private Collection<File> descriptionsFiles = Collections.emptySet();
+	private File firstDescriptionFile;
 	private File relationshipsFile;
 	private File statedRelationshipsFile;
 	private Collection<File> languageRefSetFiles = Collections.emptySet();
+	private File firstLanguageRefSetFile;
 	private File descriptionType;
 	private File textDefinitionFile;
 	
@@ -124,6 +126,28 @@ public final class ImportConfiguration {
 
 	public void setDescriptionsFiles(final Collection<File> descriptionsFiles) {
 		this.descriptionsFiles = Collections3.toImmutableSet(descriptionsFiles);
+		if (!descriptionsFiles.isEmpty()) {
+			final File descriptionFile = descriptionsFiles.stream().findFirst().get();
+			if (descriptionFile != null) {
+				firstDescriptionFile = descriptionFile;
+			}
+		}
+	}
+	
+	public void setFirstDescriptionFile(File firstDescriptionFile) {
+		this.firstDescriptionFile = firstDescriptionFile;
+	}
+	
+	public File getFirstDescriptionFile() {
+		return this.firstDescriptionFile;
+	}
+
+	public void setFirstLanguageRefSetFile(File firstLanguageRefSetFile) {
+		this.firstLanguageRefSetFile = firstLanguageRefSetFile;
+	}
+	
+	public File getFirstLanguageRefSetFile() {
+		return this.firstLanguageRefSetFile;
 	}
 	
 	public File getRelationshipsFile() {
@@ -140,6 +164,13 @@ public final class ImportConfiguration {
 
 	public void setLanguageRefSetFiles(final Collection<File> languageRefSetFiles) {
 		this.languageRefSetFiles = Collections3.toImmutableSet(languageRefSetFiles);
+		if (!languageRefSetFiles.isEmpty()) {
+			final File languageRefSetFile = languageRefSetFiles.stream().findFirst().get();
+			if (languageRefSetFile != null) {
+				firstLanguageRefSetFile = languageRefSetFile;
+			}
+		}
+			
 	}
 	
 	public ImportSourceKind getSourceKind() {
