@@ -25,6 +25,7 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
@@ -76,7 +77,7 @@ import com.google.common.collect.ImmutableMap;
 	script=
 	"String term = \"\";"
 	+ "for (description in params._source.descriptions) {"
-	+ "	if (!\"900000000000548007\".equals(description.acceptabilityId) || !\"900000000000013009\".equals(description.typeId)) {"
+	+ "	if (!\"900000000000548007\".equals(description.acceptabilityId) || !params.synonymIds.contains(description.typeId)) {"
 	+ "		continue;"
 	+ "	}"
 	+ "for (locale in params.locales) {"
@@ -101,8 +102,8 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	public static final float DEFAULT_DOI = 1.0f;
 	private static final long serialVersionUID = -824286402410205210L;
 
-	public static SortBy sortByTerm(List<String> languageRefSetPreferenceList, SortBy.Order order) {
-		return SortBy.script("termSort", ImmutableMap.of("locales", languageRefSetPreferenceList), order);
+	public static SortBy sortByTerm(List<String> languageRefSetPreferenceList, Set<String> synonymIds, SortBy.Order order) {
+		return SortBy.script("termSort", ImmutableMap.of("locales", languageRefSetPreferenceList, "synonymIds", synonymIds), order);
 	}
 	
 	public static Builder builder() {

@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -108,7 +109,7 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 				.from(SnomedConceptDocument.class)
 				.fields(SnomedConceptDocument.Fields.ID)
 				.where(Expressions.matchAll())
-				.sortBy(SnomedConceptDocument.sortByTerm(ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK), SortBy.Order.ASC))
+				.sortBy(SnomedConceptDocument.sortByTerm(ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK), Collections.singleton(Concepts.SYNONYM), SortBy.Order.ASC))
 				.build());
 		assertThat(matches).containsSequence(
 			conceptA.getId(),
