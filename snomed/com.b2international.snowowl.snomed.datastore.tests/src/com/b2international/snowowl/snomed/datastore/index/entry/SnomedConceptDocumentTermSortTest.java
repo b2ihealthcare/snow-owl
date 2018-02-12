@@ -138,16 +138,15 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 	}
 	
 	private SnomedDescriptionFragment fsn(String term, String languageRefSetId, Acceptability acceptability) {
-		return descriptionFragment(Concepts.FULLY_SPECIFIED_NAME, term, "en", languageRefSetId, acceptability.getConceptId());
+		return descriptionFragment(Concepts.FULLY_SPECIFIED_NAME, term, languageRefSetId, acceptability.getConceptId());
 	}
 	
 	private SnomedDescriptionFragment synonym(String term, String languageRefSetId, Acceptability acceptability) {
-		return descriptionFragment(Concepts.SYNONYM, term, "en", languageRefSetId, acceptability.getConceptId());
+		return descriptionFragment(Concepts.SYNONYM, term, languageRefSetId, acceptability.getConceptId());
 	}
 
-	private SnomedDescriptionFragment descriptionFragment(String typeId, String term, String languageCode,
-			String languageRefSetId, String acceptabilityId) {
-		return new SnomedDescriptionFragment(RandomSnomedIdentiferGenerator.generateDescriptionId(), typeId, term, languageCode, languageRefSetId, acceptabilityId);
+	private SnomedDescriptionFragment descriptionFragment(String typeId, String term, String languageRefSetId, String acceptabilityId) {
+		return new SnomedDescriptionFragment(RandomSnomedIdentiferGenerator.generateDescriptionId(), typeId, term, languageRefSetId, acceptabilityId);
 	}
 
 }

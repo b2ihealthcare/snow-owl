@@ -32,7 +32,6 @@ public final class SnomedDescriptionFragment implements Serializable {
 	private final String id;
 	private final String typeId;
 	private final String term;
-	private final String languageCode;
 	private final String languageRefSetId;
 	private final String acceptabilityId;
 	
@@ -41,7 +40,6 @@ public final class SnomedDescriptionFragment implements Serializable {
 			@JsonProperty("id") final String id, 
 			@JsonProperty("typeId") final String typeId, 
 			@JsonProperty("term") final String term, 
-			@JsonProperty("languageCode") final String languageCode,
 			@JsonProperty("languageRefSetId") final String languageRefSetId, 
 			@JsonProperty("acceptabilityId") final String acceptabilityId) {
 		this.id = id;
@@ -49,7 +47,6 @@ public final class SnomedDescriptionFragment implements Serializable {
 		this.languageRefSetId = languageRefSetId;
 		this.acceptabilityId = acceptabilityId;
 		this.term = term;
-		this.languageCode = languageCode;
 	}
 
 	public String getId() {
@@ -62,10 +59,6 @@ public final class SnomedDescriptionFragment implements Serializable {
 
 	public String getTerm() {
 		return term;
-	}
-
-	public String getLanguageCode() {
-		return languageCode;
 	}
 
 	public String getLanguageRefSetId() {
