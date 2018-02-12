@@ -76,16 +76,18 @@ import com.google.common.collect.ImmutableMap;
 	name="termSort", 
 	script=
 	"String term = \"\";"
+	// select first preferred SYNONYM
 	+ "for (description in params._source.descriptions) {"
 	+ "	if (!\"900000000000548007\".equals(description.acceptabilityId) || !params.synonymIds.contains(description.typeId)) {"
 	+ "		continue;"
 	+ "	}"
-	+ "for (locale in params.locales) {"
+	+ "	for (locale in params.locales) {"
 	+ "		if (locale.equals(description.languageRefSetId)) {"
 	+ "			return description.term;"
 	+ "		}"
 	+ "	}"
 	+ "}"
+	// if there is no first preferred synonym then select first preferred FSN
 	+ "for (description in params._source.descriptions) {"
 	+ "	if (!\"900000000000548007\".equals(description.acceptabilityId) || !\"900000000000003001\".equals(description.typeId)) {"
 	+ "		continue;"
@@ -96,6 +98,13 @@ import com.google.common.collect.ImmutableMap;
 	+ "		}"
 	+ "	}"
 	+ "}"
+	// if there is no first preferred FSN, then select the first FSN in the list (the index will contain only active description in effective time order)
+	+ "for (description in params._source.descriptions) {"
+	+ "	if (\"900000000000003001\".equals(description.typeId)) {"
+	+ "		return description.term"
+	+ "	}"
+	+ "}"
+	// Otherwise select the ID for sorting
 	+ "return doc.id.value")
 public class SnomedConceptDocument extends SnomedComponentDocument implements ITreeComponent {
 
