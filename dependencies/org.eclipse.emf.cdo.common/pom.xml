@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.b2international.snowowl</groupId>
     <artifactId>dependencies-parent</artifactId>
-    <version>4.6.14-SNAPSHOT</version>
+    <version>4.6.15-SNAPSHOT</version>
   </parent>
   <artifactId>org.eclipse.emf.cdo.common</artifactId>
   <packaging>eclipse-plugin</packaging>
