@@ -16,9 +16,11 @@
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 
 /**
  * A minimum representation of a SNOMED CT Description indexed and added to
@@ -67,6 +69,35 @@ public final class SnomedDescriptionFragment implements Serializable {
 
 	public String getAcceptabilityId() {
 		return acceptabilityId;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(id, typeId, term, languageRefSetId, acceptabilityId);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		SnomedDescriptionFragment other = (SnomedDescriptionFragment) obj;
+		return Objects.equals(id, other.id)
+				&& Objects.equals(typeId, other.typeId)
+				&& Objects.equals(term, other.term)
+				&& Objects.equals(languageRefSetId, other.languageRefSetId)
+				&& Objects.equals(acceptabilityId, other.acceptabilityId);
+	}
+	
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(getClass())
+				.add("id", id)
+				.add("typeId", typeId)
+				.add("term", term)
+				.add("languageRefSetId", languageRefSetId)
+				.add("acceptabilityId", acceptabilityId)
+				.toString();
 	}
 	
 }

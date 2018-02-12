@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.index.change;
 
 import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
-import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateDescriptionId;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -30,7 +29,6 @@ import org.junit.Test;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -106,7 +104,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 	@Test
 	public void deleteAcceptableLanguageMember() throws Exception {
 		// create description as dirty
-		final Description description = createDescriptionWithTwoLangMembers();
+		final Description description = createFsnWithTwoAcceptabilityMembers();
 		final SnomedLanguageRefSetMember acceptableMember = getFirstMember(description, Acceptability.ACCEPTABLE);
 		final SnomedLanguageRefSetMember preferredMember = getFirstMember(description, Acceptability.PREFERRED);
 		
@@ -140,7 +138,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 	@Test
 	public void deletePreferredLanguageMember() throws Exception {
 		// create description as dirty
-		final Description description = createDescriptionWithTwoLangMembers();
+		final Description description = createFsnWithTwoAcceptabilityMembers();
 		final SnomedLanguageRefSetMember acceptableMember = getFirstMember(description, Acceptability.ACCEPTABLE);
 		final SnomedLanguageRefSetMember preferredMember = getFirstMember(description, Acceptability.PREFERRED);
 		
@@ -341,34 +339,6 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 			}
 		}
 		return null;
-	}
-
-	private Description createDescriptionWithTwoLangMembers() {
-		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
-		final SnomedLanguageRefSetMember acceptableMember = createLangMember(description.getId(), Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_US);
-		final SnomedLanguageRefSetMember preferredMember = createLangMember(description.getId(), Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_UK);
-		description.getLanguageRefSetMembers().add(acceptableMember);
-		description.getLanguageRefSetMembers().add(preferredMember);
-		return description;
-	}
-	
-	private Description createDescription(String typeId, String term) {
-		return createDescription(generateConceptId(), typeId, term);
-	}
-	
-	private Description createDescription(String conceptId, String typeId, String term) {
-		final Description description = SnomedFactory.eINSTANCE.createDescription();
-		withCDOID(description, nextStorageKey());
-		description.setActive(true);
-		description.setCaseSignificance(getConcept(Concepts.ENTIRE_TERM_CASE_SENSITIVE));
-		description.setConcept(getConcept(conceptId));
-		description.setId(generateDescriptionId());
-		description.setLanguageCode("en");
-		description.setModule(module());
-		description.setReleased(false);
-		description.setTerm("Term");
-		description.setType(getConcept(typeId));
-		return description;
 	}
 
 }

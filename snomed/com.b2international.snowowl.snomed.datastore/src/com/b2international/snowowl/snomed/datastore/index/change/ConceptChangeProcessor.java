@@ -21,8 +21,13 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.delta.CDOAddFeatureDelta;
@@ -53,16 +58,21 @@ import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.update.IconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMembershipUpdater;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.base.Function;
@@ -73,18 +83,30 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Ordering;
 
 /**
  * @since 4.3
  */
 public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 
-	private static final Function<Concept, String> GET_CONCEPT_ID = new Function<Concept, String>() {
-		@Override
-		public String apply(Concept input) {
-			return input.getId();
+	private static final Comparator<Description> DESCRIPTION_FRAGMENT_EFFECTIVE_TIME_ORDER = (d1, d2) -> {
+		Date leftDate = d1.getEffectiveTime();
+		Date rightDate = d2.getEffectiveTime();
+		if (leftDate == null && rightDate == null) {
+			return 0;
+		} else if (leftDate == null && rightDate != null) {
+			return 1;
+		} else if (leftDate != null && rightDate == null) {
+			return -1;
+		} else {
+			return leftDate.compareTo(rightDate);
 		}
 	};
+	private static final Ordering<Description> DESCRIPTION_FRAGMENT_ORDER = Ordering
+			.from(DESCRIPTION_FRAGMENT_EFFECTIVE_TIME_ORDER)
+			.compound(Ordering.natural().<Description>onResultOf(description -> description.getType().getId()))
+			.compound(Ordering.natural().<Description>onResultOf(Description::getTerm).reverse());
 	
 	private final DoiData doiData;
 	private final IconIdUpdater iconId;
@@ -135,13 +157,19 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			if (refSet != null) {
 				doc.refSet(refSet);
 			}
+			doc.descriptions(toDescriptionFragments(concept));
 			indexNewRevision(concept.cdoID(), doc.build());
 		}
 		
 		// collect dirty concepts for reindex
-		final Map<String, Concept> dirtyConceptsById = Maps.uniqueIndex(commitChangeSet.getDirtyComponents(Concept.class), GET_CONCEPT_ID);
+		final Map<String, Concept> dirtyConceptsById = Maps.uniqueIndex(commitChangeSet.getDirtyComponents(Concept.class), Concept::getId);
 		
 		final Set<String> dirtyConceptIds = collectDirtyConceptIds(searcher, commitChangeSet);
+		
+		final Multimap<String, Description> dirtyDescriptionsByConcept = HashMultimap.create();
+		commitChangeSet.getDirtyComponents(Description.class).forEach(description -> {
+			dirtyDescriptionsByConcept.put(description.getConcept().getId(), description);
+		});
 		
 		// remaining new and dirty reference sets should be connected to a non-new concept, so add them here
 		dirtyConceptIds.addAll(newAndDirtyRefSetsById.keySet());
@@ -171,6 +199,17 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				if (deletedRefSets.contains(currentDoc.getRefSetStorageKey())) {
 					doc.clearRefSet();
 				}
+				
+				if (concept != null) {
+					doc.descriptions(toDescriptionFragments(concept));
+				} else {
+					// TODO check if descriptions got updated
+					Collection<Description> dirtyDescriptions = dirtyDescriptionsByConcept.get(id);
+					if (!dirtyDescriptions.isEmpty()) {
+						
+					}
+				}
+				
 				if (concept != null) {
 					indexChangedRevision(concept.cdoID(), doc.build());				
 				} else {
@@ -223,6 +262,32 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				.update(doc);
 	}
 
+	private List<SnomedDescriptionFragment> toDescriptionFragments(Concept concept) {
+		return concept.getDescriptions()
+				.stream()
+				.filter(Description::isActive)
+				.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getType().getId()))
+				.sorted(DESCRIPTION_FRAGMENT_ORDER)
+				.flatMap(this::toDescriptionFragments)
+				.collect(Collectors.toList());
+	}
+	
+	private Stream<SnomedDescriptionFragment> toDescriptionFragments(Description description) {
+		return description.getLanguageRefSetMembers()
+			.stream()
+			.filter(SnomedLanguageRefSetMember::isActive)
+			.filter(member -> Acceptability.PREFERRED.getConceptId().equals(member.getAcceptabilityId()))
+			.map(member -> {
+				return new SnomedDescriptionFragment(
+					description.getId(), 
+					description.getType().getId(), 
+					description.getTerm(), 
+					member.getRefSetIdentifierId(), 
+					member.getAcceptabilityId()
+				);
+			});
+	}
+
 	private long getEffectiveTime(Concept concept) {
 		return concept.isSetEffectiveTime() ? concept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME;
 	}
@@ -244,7 +309,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 						return false;
 					}
 				}
-			}).transform(GET_CONCEPT_ID).copyInto(dirtyConceptIds);
+			}).transform(Concept::getId).copyInto(dirtyConceptIds);
 
 		// collect dirty concepts due to change in hierarchy
 		dirtyConceptIds.addAll(referringRefSets.keySet());
@@ -280,7 +345,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		dirtyConceptIds.addAll(hits.getHits());
 		
 		// remove all new concept IDs
-		dirtyConceptIds.removeAll(FluentIterable.from(commitChangeSet.getNewComponents(Concept.class)).transform(GET_CONCEPT_ID).toSet());
+		dirtyConceptIds.removeAll(FluentIterable.from(commitChangeSet.getNewComponents(Concept.class)).transform(Concept::getId).toSet());
 		
 		return dirtyConceptIds;
 	}
@@ -371,6 +436,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				.add(SnomedPackage.Literals.COMPONENT__MODULE)
 				.add(SnomedPackage.Literals.CONCEPT__DEFINITION_STATUS)
 				.add(SnomedPackage.Literals.CONCEPT__EXHAUSTIVE)
+				.add(SnomedPackage.Literals.CONCEPT__DESCRIPTIONS)
 				.build();
 		private boolean hasAllowedChanges;
 
