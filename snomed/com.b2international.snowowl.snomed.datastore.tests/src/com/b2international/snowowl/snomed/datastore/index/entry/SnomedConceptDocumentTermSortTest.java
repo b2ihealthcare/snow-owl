@@ -31,7 +31,6 @@ import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -64,36 +63,36 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 		conceptA = concept()
 				.descriptions(
 					ImmutableList.of(
-						fsn("A (tag)", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED), 
-						synonym("A", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED),
-						synonym("Synonym A", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE)
+						fsn("A (tag)", Concepts.REFSET_LANGUAGE_TYPE_UK), 
+						synonym("A", Concepts.REFSET_LANGUAGE_TYPE_UK),
+						synonym("Synonym A", Concepts.REFSET_LANGUAGE_TYPE_UK)
 					)
 				)
 				.build();
 		conceptB = concept()
 				.descriptions(
 					ImmutableList.of(
-						fsn("B (tag)", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED), 
-						synonym("B", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED),
-						synonym("Term B", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE)
+						fsn("B (tag)", Concepts.REFSET_LANGUAGE_TYPE_UK), 
+						synonym("B", Concepts.REFSET_LANGUAGE_TYPE_UK),
+						synonym("Term B", Concepts.REFSET_LANGUAGE_TYPE_UK)
 					)
 				)
 				.build();
 		conceptC = concept()
 				.descriptions(
 					ImmutableList.of(
-						fsn("C (tag)", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED), 
-						synonym("C", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED),
-						synonym("Term C", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE)
+						fsn("C (tag)", Concepts.REFSET_LANGUAGE_TYPE_UK), 
+						synonym("C", Concepts.REFSET_LANGUAGE_TYPE_UK),
+						synonym("Term C", Concepts.REFSET_LANGUAGE_TYPE_UK)
 					)
 				)
 				.build();
 		conceptD = concept()
 				.descriptions(
 					ImmutableList.of(
-						fsn("Alternative Term (tag)", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED), 
-						synonym("Description with D start letter and syonym type", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED),
-						synonym("Term C", Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE)
+						fsn("Alternative Term (tag)", Concepts.REFSET_LANGUAGE_TYPE_UK), 
+						synonym("Description with D start letter and syonym type", Concepts.REFSET_LANGUAGE_TYPE_UK),
+						synonym("Term C", Concepts.REFSET_LANGUAGE_TYPE_UK)
 					)
 				)
 				.build();
@@ -137,16 +136,16 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 				.statedParents(PrimitiveSets.newLongOpenHashSet(-1L));
 	}
 	
-	private SnomedDescriptionFragment fsn(String term, String languageRefSetId, Acceptability acceptability) {
-		return descriptionFragment(Concepts.FULLY_SPECIFIED_NAME, term, languageRefSetId, acceptability.getConceptId());
+	private SnomedDescriptionFragment fsn(String term, String languageRefSetId) {
+		return descriptionFragment(Concepts.FULLY_SPECIFIED_NAME, term, languageRefSetId);
 	}
 	
-	private SnomedDescriptionFragment synonym(String term, String languageRefSetId, Acceptability acceptability) {
-		return descriptionFragment(Concepts.SYNONYM, term, languageRefSetId, acceptability.getConceptId());
+	private SnomedDescriptionFragment synonym(String term, String languageRefSetId) {
+		return descriptionFragment(Concepts.SYNONYM, term, languageRefSetId);
 	}
 
-	private SnomedDescriptionFragment descriptionFragment(String typeId, String term, String languageRefSetId, String acceptabilityId) {
-		return new SnomedDescriptionFragment(RandomSnomedIdentiferGenerator.generateDescriptionId(), nextStorageKey(), typeId, term, languageRefSetId, acceptabilityId);
+	private SnomedDescriptionFragment descriptionFragment(String typeId, String term, String languageRefSetId) {
+		return new SnomedDescriptionFragment(RandomSnomedIdentiferGenerator.generateDescriptionId(), nextStorageKey(), typeId, term, languageRefSetId);
 	}
 
 }

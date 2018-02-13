@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
@@ -73,11 +72,13 @@ import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuil
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -197,7 +198,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 						for (Description dirtyDescription : dirtyDescriptions) {
 							newDescriptions.removeAll(dirtyDescription.getId());
 							if (dirtyDescription.isActive()) {
-								newDescriptions.putAll(dirtyDescription.getId(), toDescriptionFragments(dirtyDescription).collect(Collectors.toList()));
+								newDescriptions.put(dirtyDescription.getId(), toDescriptionFragment(dirtyDescription));
 							}
 						}
 						doc.descriptions(newDescriptions.values().stream().sorted(DESCRIPTION_FRAGMENT_ORDER).collect(Collectors.toList()));
@@ -261,26 +262,26 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				.stream()
 				.filter(Description::isActive)
 				.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getType().getId()))
-				.flatMap(this::toDescriptionFragments)
+				.map(this::toDescriptionFragment)
 				.sorted(DESCRIPTION_FRAGMENT_ORDER)
 				.collect(Collectors.toList());
 	}
 	
-	private Stream<SnomedDescriptionFragment> toDescriptionFragments(Description description) {
-		return description.getLanguageRefSetMembers()
+	private SnomedDescriptionFragment toDescriptionFragment(Description description) {
+		final Set<String> languageRefSetIds = description.getLanguageRefSetMembers()
 			.stream()
 			.filter(SnomedLanguageRefSetMember::isActive)
 			.filter(member -> Acceptability.PREFERRED.getConceptId().equals(member.getAcceptabilityId()))
-			.map(member -> {
-				return new SnomedDescriptionFragment(
-					description.getId(), 
-					CDOIDUtil.getLong(description.cdoID()),
-					description.getType().getId(), 
-					description.getTerm(), 
-					member.getRefSetIdentifierId(), 
-					member.getAcceptabilityId()
-				);
-			});
+			.map(SnomedRefSetMember::getRefSetIdentifierId)
+			.collect(Collectors.toSet());
+		
+		return new SnomedDescriptionFragment(
+			description.getId(), 
+			CDOIDUtil.getLong(description.cdoID()),
+			description.getType().getId(), 
+			description.getTerm(), 
+			ImmutableList.copyOf(languageRefSetIds)
+		);
 	}
 
 	private long getEffectiveTime(Concept concept) {

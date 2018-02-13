@@ -16,11 +16,14 @@
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 
+import com.b2international.commons.collections.Collections3;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 /**
  * A minimum representation of a SNOMED CT Description indexed and added to
@@ -35,8 +38,16 @@ public final class SnomedDescriptionFragment implements Serializable {
 	private final long storageKey;
 	private final String typeId;
 	private final String term;
-	private final String languageRefSetId;
-	private final String acceptabilityId;
+	private final List<String> languageRefSetIds;
+	
+	public SnomedDescriptionFragment(
+			final String id,
+			final long storageKey,
+			final String typeId, 
+			final String term, 
+			final String languageRefSetId) {
+		this(id, storageKey, typeId, term, ImmutableList.of(languageRefSetId));
+	} 
 	
 	@JsonCreator
 	public SnomedDescriptionFragment(
@@ -44,13 +55,11 @@ public final class SnomedDescriptionFragment implements Serializable {
 			@JsonProperty("storageKey") final long storageKey,
 			@JsonProperty("typeId") final String typeId, 
 			@JsonProperty("term") final String term, 
-			@JsonProperty("languageRefSetId") final String languageRefSetId, 
-			@JsonProperty("acceptabilityId") final String acceptabilityId) {
+			@JsonProperty("languageRefSetId") final List<String> languageRefSetIds) {
 		this.id = id;
 		this.storageKey = storageKey;
 		this.typeId = typeId;
-		this.languageRefSetId = languageRefSetId;
-		this.acceptabilityId = acceptabilityId;
+		this.languageRefSetIds = Collections3.toImmutableList(languageRefSetIds);
 		this.term = term;
 	}
 
@@ -70,17 +79,13 @@ public final class SnomedDescriptionFragment implements Serializable {
 		return term;
 	}
 
-	public String getLanguageRefSetId() {
-		return languageRefSetId;
+	public List<String> getLanguageRefSetIds() {
+		return languageRefSetIds;
 	}
 
-	public String getAcceptabilityId() {
-		return acceptabilityId;
-	}
-	
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, storageKey, typeId, term, languageRefSetId, acceptabilityId);
+		return Objects.hash(id, storageKey, typeId, term, languageRefSetIds);
 	}
 	
 	@Override
@@ -93,8 +98,7 @@ public final class SnomedDescriptionFragment implements Serializable {
 				&& Objects.equals(storageKey, other.storageKey)
 				&& Objects.equals(typeId, other.typeId)
 				&& Objects.equals(term, other.term)
-				&& Objects.equals(languageRefSetId, other.languageRefSetId)
-				&& Objects.equals(acceptabilityId, other.acceptabilityId);
+				&& languageRefSetIds.containsAll(other.languageRefSetIds) && other.languageRefSetIds.containsAll(languageRefSetIds);
 	}
 	
 	@Override
@@ -104,8 +108,7 @@ public final class SnomedDescriptionFragment implements Serializable {
 				.add("storageKey", storageKey)
 				.add("typeId", typeId)
 				.add("term", term)
-				.add("languageRefSetId", languageRefSetId)
-				.add("acceptabilityId", acceptabilityId)
+				.add("languageRefSetIds", languageRefSetIds)
 				.toString();
 	}
 	
