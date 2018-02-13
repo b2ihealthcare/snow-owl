@@ -154,10 +154,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		
 		final Set<String> dirtyConceptIds = collectDirtyConceptIds(searcher, commitChangeSet);
 		
-		final Multimap<String, Description> dirtyDescriptionsByConcept = HashMultimap.create();
-		commitChangeSet.getDirtyComponents(Description.class).forEach(description -> {
-			dirtyDescriptionsByConcept.put(description.getConcept().getId(), description);
-		});
+		final Multimap<String, Description> dirtyDescriptionsByConcept = Multimaps.index(getDirtyDescriptions(commitChangeSet), d -> d.getConcept().getId());
 		
 		// remaining new and dirty reference sets should be connected to a non-new concept, so add them here
 		dirtyConceptIds.addAll(newAndDirtyRefSetsById.keySet());
@@ -214,6 +211,23 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		}
 	}
 	
+	private Iterable<Description> getDirtyDescriptions(ICDOCommitChangeSet commitChangeSet) {
+		return FluentIterable.from(commitChangeSet.getDirtyComponents(Description.class))
+			.filter(new Predicate<Description>() {
+				@Override
+				public boolean apply(Description input) {
+					final DirtyDescriptionFeatureDeltaVisitor visitor = new DirtyDescriptionFeatureDeltaVisitor();
+					final CDORevisionDelta revisionDelta = commitChangeSet.getRevisionDeltas().get(input.cdoID());
+					if (revisionDelta != null) {
+						revisionDelta.accept(visitor);
+						return visitor.hasAllowedChanges();
+					} else {
+						return false;
+					}
+				}
+			});
+	}
+
 	/*
 	 * Updates already existing concept document with changes from concept and the current revision.
 	 * New concepts does not have currentRevision and dirty concepts may not have a loaded Concept CDOObject, 
@@ -420,6 +434,67 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 //		}
 // 	}
 
+	private static class DirtyDescriptionFeatureDeltaVisitor implements CDOFeatureDeltaVisitor {
+		
+		private static final Set<EStructuralFeature> ALLOWED_CONCEPT_CHANGE_FEATURES = ImmutableSet.<EStructuralFeature>builder()
+				.add(SnomedPackage.Literals.COMPONENT__ACTIVE)
+				.add(SnomedPackage.Literals.DESCRIPTION__TERM)
+				.add(SnomedPackage.Literals.DESCRIPTION__TYPE)
+				.add(SnomedPackage.Literals.DESCRIPTION__LANGUAGE_REF_SET_MEMBERS)
+				.build();
+		private boolean hasAllowedChanges;
+
+		@Override
+		public void visit(CDOSetFeatureDelta delta) {
+			visitDelta(delta);
+		}
+		
+		@Override
+		public void visit(CDOListFeatureDelta delta) {
+			visitDelta(delta);
+		}
+		
+		@Override
+		public void visit(CDOAddFeatureDelta delta) {
+			visitDelta(delta);
+		}
+		
+		@Override
+		public void visit(CDOClearFeatureDelta delta) {
+			visitDelta(delta);
+		}
+		
+		@Override
+		public void visit(CDOMoveFeatureDelta delta) {
+			visitDelta(delta);
+		}
+		
+		@Override
+		public void visit(CDORemoveFeatureDelta delta) {
+			visitDelta(delta);
+		}
+		
+		@Override
+		public void visit(CDOUnsetFeatureDelta delta) {
+			visitDelta(delta);
+		}
+		
+		@Override
+		public void visit(CDOContainerFeatureDelta delta) {
+			visitDelta(delta);
+		}
+		
+		private void visitDelta(CDOFeatureDelta delta) {
+			hasAllowedChanges |= ALLOWED_CONCEPT_CHANGE_FEATURES.contains(delta.getFeature());
+		}
+
+		public boolean hasAllowedChanges() {
+			return hasAllowedChanges;
+		}
+		
+	}
+	
+	
 	/**
 	 * @since 4.3
 	 */

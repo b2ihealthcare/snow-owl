@@ -351,6 +351,63 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 	}
 	
 	@Test
+	public void updateCaseSignificanceOfConceptDescription() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
+		Description fsn = createFsnWithTwoAcceptabilityMembers();
+		fsn.setConcept(concept);
+		registerExistingObject(concept);
+		registerExistingObject(fsn);
+		
+		indexRevision(MAIN, conceptStorageKey, doc(concept)
+				.descriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build());
+		
+		registerDirty(fsn);
+		registerSetRevisionDelta(fsn, SnomedPackage.Literals.DESCRIPTION__CASE_SIGNIFICANCE, null /*unused*/, null /*unused*/);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getChangedMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void updateTypeOfConceptDescription() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
+		Description description = createFsnWithTwoAcceptabilityMembers();
+		description.setConcept(concept);
+		registerExistingObject(concept);
+		registerExistingObject(description);
+		
+		indexRevision(MAIN, conceptStorageKey, doc(concept)
+				.descriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build());
+		
+		description.setType(getConcept(Concepts.SYNONYM));
+		registerDirty(description);
+		registerSetRevisionDelta(description, SnomedPackage.Literals.DESCRIPTION__TYPE, null /*unused*/, null /*unused*/);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(concept)
+				.descriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.SYNONYM, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build();
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
 	public void indexNewStatedChildConceptOfRoot() throws Exception {
 		// index the ROOT concept as existing concept
 		final long rootConceptId = Long.parseLong(Concepts.ROOT_CONCEPT);
