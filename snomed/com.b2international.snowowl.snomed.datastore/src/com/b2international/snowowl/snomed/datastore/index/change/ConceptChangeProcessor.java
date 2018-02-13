@@ -15,15 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.delta.CDOAddFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOClearFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOContainerFeatureDelta;
@@ -92,23 +90,10 @@ import com.google.common.collect.Ordering;
  */
 public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 
-	private static final Comparator<Description> DESCRIPTION_FRAGMENT_EFFECTIVE_TIME_ORDER = (d1, d2) -> {
-		Date leftDate = d1.getEffectiveTime();
-		Date rightDate = d2.getEffectiveTime();
-		if (leftDate == null && rightDate == null) {
-			return 0;
-		} else if (leftDate == null && rightDate != null) {
-			return 1;
-		} else if (leftDate != null && rightDate == null) {
-			return -1;
-		} else {
-			return leftDate.compareTo(rightDate);
-		}
-	};
-	private static final Ordering<Description> DESCRIPTION_FRAGMENT_ORDER = Ordering
-			.from(DESCRIPTION_FRAGMENT_EFFECTIVE_TIME_ORDER)
-			.compound(Ordering.natural().<Description>onResultOf(description -> description.getType().getId()))
-			.compound(Ordering.natural().<Description>onResultOf(Description::getTerm).reverse());
+	private static final Ordering<SnomedDescriptionFragment> DESCRIPTION_FRAGMENT_ORDER = Ordering.natural()
+			.onResultOf(SnomedDescriptionFragment::getStorageKey)
+			.compound(Ordering.natural().<SnomedDescriptionFragment>onResultOf(description -> description.getTypeId()))
+			.compound(Ordering.natural().<SnomedDescriptionFragment>onResultOf(SnomedDescriptionFragment::getTerm).reverse());
 	
 	private final DoiData doiData;
 	private final IconIdUpdater iconId;
@@ -215,8 +200,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 								newDescriptions.putAll(dirtyDescription.getId(), toDescriptionFragments(dirtyDescription).collect(Collectors.toList()));
 							}
 						}
-						// TODO fix sorting
-						doc.descriptions(newArrayList(newDescriptions.values()));
+						doc.descriptions(newDescriptions.values().stream().sorted(DESCRIPTION_FRAGMENT_ORDER).collect(Collectors.toList()));
 					}
 				}
 				
@@ -277,8 +261,8 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				.stream()
 				.filter(Description::isActive)
 				.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getType().getId()))
-				.sorted(DESCRIPTION_FRAGMENT_ORDER)
 				.flatMap(this::toDescriptionFragments)
+				.sorted(DESCRIPTION_FRAGMENT_ORDER)
 				.collect(Collectors.toList());
 	}
 	
@@ -290,6 +274,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.map(member -> {
 				return new SnomedDescriptionFragment(
 					description.getId(), 
+					CDOIDUtil.getLong(description.cdoID()),
 					description.getType().getId(), 
 					description.getTerm(), 
 					member.getRefSetIdentifierId(), 

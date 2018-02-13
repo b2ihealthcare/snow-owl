@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateDescriptionId;
 import static com.google.common.collect.Sets.newHashSet;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -106,7 +106,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final SnomedConceptDocument expected = doc(concept)
 				.descriptions(ImmutableList.of(
-					new SnomedDescriptionFragment(description.getId(), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
+					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
 				))
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
@@ -129,8 +129,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final SnomedConceptDocument expected = doc(concept)
 				.descriptions(ImmutableList.of(
-					new SnomedDescriptionFragment(fsn.getId(), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED),
-					new SnomedDescriptionFragment(synonym.getId(), Concepts.SYNONYM, synonym.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
+					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED),
+					new SnomedDescriptionFragment(synonym.getId(), CDOIDUtil.getLong(synonym.cdoID()), Concepts.SYNONYM, synonym.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
 				))
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
@@ -153,7 +153,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final SnomedConceptDocument expected = doc(concept)
 				.descriptions(ImmutableList.of(
-					new SnomedDescriptionFragment(fsn.getId(), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
+					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
 				))
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
@@ -181,7 +181,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final SnomedConceptDocument expected = doc(concept)
 				.descriptions(ImmutableList.of(
-					new SnomedDescriptionFragment(fsn.getId(), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
+					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
 				))
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
@@ -210,7 +210,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final SnomedConceptDocument expected = doc(concept)
 				.descriptions(ImmutableList.of(
-					new SnomedDescriptionFragment(synonym.getId(), Concepts.SYNONYM, synonym.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
+					new SnomedDescriptionFragment(synonym.getId(), CDOIDUtil.getLong(synonym.cdoID()), Concepts.SYNONYM, synonym.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
 				))
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
@@ -251,7 +251,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(concept);
 		indexRevision(MAIN, conceptStorageKey, doc(concept)
 				.descriptions(ImmutableList.of(
-					new SnomedDescriptionFragment(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Term", Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
+					new SnomedDescriptionFragment(generateDescriptionId(), nextStorageKey(), Concepts.FULLY_SPECIFIED_NAME, "Term", Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
 				))
 				.build());
 		
@@ -274,7 +274,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(concept);
 		indexRevision(MAIN, conceptStorageKey, doc(concept)
 				.descriptions(ImmutableList.of(
-					new SnomedDescriptionFragment(generateDescriptionId(), Concepts.SYNONYM, "Hello", Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
+					new SnomedDescriptionFragment(generateDescriptionId(), nextStorageKey(), Concepts.SYNONYM, "Hello", Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
 				))
 				.build());
 		
@@ -301,7 +301,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		indexRevision(MAIN, conceptStorageKey, doc(concept)
 				.descriptions(ImmutableList.of(
-					new SnomedDescriptionFragment(fsn.getId(), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
+					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
 				))
 				.build());
 		
@@ -313,7 +313,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final SnomedConceptDocument expected = doc(concept)
 				.descriptions(ImmutableList.of(
-					new SnomedDescriptionFragment(fsn.getId(), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
+					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
 				))
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
@@ -333,7 +333,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		indexRevision(MAIN, conceptStorageKey, doc(concept)
 				.descriptions(ImmutableList.of(
-					new SnomedDescriptionFragment(fsn.getId(), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
+					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
 				))
 				.build());
 		

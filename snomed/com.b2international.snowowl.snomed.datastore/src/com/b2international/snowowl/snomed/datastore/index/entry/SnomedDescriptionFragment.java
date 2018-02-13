@@ -29,9 +29,10 @@ import com.google.common.base.MoreObjects;
  */
 public final class SnomedDescriptionFragment implements Serializable {
 
-	private static final long serialVersionUID = 109221755912417375L;
+	private static final long serialVersionUID = 25732180785342410L;
 	
 	private final String id;
+	private final long storageKey;
 	private final String typeId;
 	private final String term;
 	private final String languageRefSetId;
@@ -39,12 +40,14 @@ public final class SnomedDescriptionFragment implements Serializable {
 	
 	@JsonCreator
 	public SnomedDescriptionFragment(
-			@JsonProperty("id") final String id, 
+			@JsonProperty("id") final String id,
+			@JsonProperty("storageKey") final long storageKey,
 			@JsonProperty("typeId") final String typeId, 
 			@JsonProperty("term") final String term, 
 			@JsonProperty("languageRefSetId") final String languageRefSetId, 
 			@JsonProperty("acceptabilityId") final String acceptabilityId) {
 		this.id = id;
+		this.storageKey = storageKey;
 		this.typeId = typeId;
 		this.languageRefSetId = languageRefSetId;
 		this.acceptabilityId = acceptabilityId;
@@ -53,6 +56,10 @@ public final class SnomedDescriptionFragment implements Serializable {
 
 	public String getId() {
 		return id;
+	}
+	
+	public long getStorageKey() {
+		return storageKey;
 	}
 
 	public String getTypeId() {
@@ -73,7 +80,7 @@ public final class SnomedDescriptionFragment implements Serializable {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, typeId, term, languageRefSetId, acceptabilityId);
+		return Objects.hash(id, storageKey, typeId, term, languageRefSetId, acceptabilityId);
 	}
 	
 	@Override
@@ -83,6 +90,7 @@ public final class SnomedDescriptionFragment implements Serializable {
 		if (getClass() != obj.getClass()) return false;
 		SnomedDescriptionFragment other = (SnomedDescriptionFragment) obj;
 		return Objects.equals(id, other.id)
+				&& Objects.equals(storageKey, other.storageKey)
 				&& Objects.equals(typeId, other.typeId)
 				&& Objects.equals(term, other.term)
 				&& Objects.equals(languageRefSetId, other.languageRefSetId)
@@ -93,6 +101,7 @@ public final class SnomedDescriptionFragment implements Serializable {
 	public String toString() {
 		return MoreObjects.toStringHelper(getClass())
 				.add("id", id)
+				.add("storageKey", storageKey)
 				.add("typeId", typeId)
 				.add("term", term)
 				.add("languageRefSetId", languageRefSetId)
