@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -83,6 +84,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Ordering;
 
 /**
@@ -173,6 +175,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		
 		// remaining new and dirty reference sets should be connected to a non-new concept, so add them here
 		dirtyConceptIds.addAll(newAndDirtyRefSetsById.keySet());
+		dirtyConceptIds.addAll(dirtyDescriptionsByConcept.keySet());
 		
 		if (!dirtyConceptIds.isEmpty()) {
 			// fetch all dirty concept documents by their ID
@@ -203,10 +206,17 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				if (concept != null) {
 					doc.descriptions(toDescriptionFragments(concept));
 				} else {
-					// TODO check if descriptions got updated
 					Collection<Description> dirtyDescriptions = dirtyDescriptionsByConcept.get(id);
 					if (!dirtyDescriptions.isEmpty()) {
-						
+						Multimap<String, SnomedDescriptionFragment> newDescriptions = HashMultimap.create(Multimaps.index(currentDoc.getDescriptions(), SnomedDescriptionFragment::getId));
+						for (Description dirtyDescription : dirtyDescriptions) {
+							newDescriptions.removeAll(dirtyDescription.getId());
+							if (dirtyDescription.isActive()) {
+								newDescriptions.putAll(dirtyDescription.getId(), toDescriptionFragments(dirtyDescription).collect(Collectors.toList()));
+							}
+						}
+						// TODO fix sorting
+						doc.descriptions(newArrayList(newDescriptions.values()));
 					}
 				}
 				
