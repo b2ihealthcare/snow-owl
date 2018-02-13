@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import com.b2international.snowowl.core.internal.validation.ValidationThreadPool
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
+import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
+import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequestBuilder;
 import com.b2international.snowowl.core.validation.rule.ValidationRules;
 
 /**
@@ -36,14 +38,23 @@ import com.b2international.snowowl.core.validation.rule.ValidationRules;
  */
 final class ValidateRequest implements Request<BranchContext, ValidationResult> {
 	
+	List<Severity> severities;
+	
 	ValidateRequest() {}
 	
 	@Override
 	public ValidationResult execute(BranchContext context) {
 		return context.service(ValidationRepository.class).write(index -> {
 			final String branchPath = context.branchPath();
-			final ValidationRules rules = ValidationRequests.rules().prepareSearch()
-					.all() // TODO support filtering rules
+			
+			ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
+
+			if (!severities.isEmpty()) {
+				req.filterBySeverity(severities);
+			}
+			
+			final ValidationRules rules = req
+					.all()
 					.build()
 					.execute(context);
 			
@@ -97,4 +108,8 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 		
 	}
 
+	public void setSeverities(List<Severity> severities) {
+		this.severities = severities;
+	}
+	
 }
