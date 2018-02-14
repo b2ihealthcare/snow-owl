@@ -199,6 +199,8 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 							}
 						}
 						doc.descriptions(newDescriptions.values().stream().sorted(DESCRIPTION_FRAGMENT_ORDER).collect(Collectors.toList()));
+					} else {
+						doc.descriptions(currentDoc.getDescriptions());
 					}
 				}
 				
