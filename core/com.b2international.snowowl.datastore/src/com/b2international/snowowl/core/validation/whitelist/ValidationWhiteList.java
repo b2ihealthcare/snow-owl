@@ -36,21 +36,29 @@ public final class ValidationWhiteList implements Serializable {
 		public static final String ID = "id";
 		public static final String RULE_ID = "ruleId";
 		public static final String COMPONENT_IDENTIFIER = "componentIdentifier";
+		public static final String REPORTER = "reporter";
+		public static final String CREATED_AT = "createdAt";
 	}
 	
 	private final String id;
 	private final String ruleId;
 	private final ComponentIdentifier componentIdentifier;
+	private final String reporter;
+	private long  createdAt;
 
 	@JsonCreator
 	public ValidationWhiteList(
 			@JsonProperty("id") final String id,
 			@JsonProperty("ruleId") final String ruleId,
-			@JsonProperty("componentIdentifier") final ComponentIdentifier componentIdentifier) {
+			@JsonProperty("componentIdentifier") final ComponentIdentifier componentIdentifier,
+			@JsonProperty("reporter") final String reporter,
+			@JsonProperty("createdAt") final long createdAt) {
 	
 		this.id = id;
 		this.ruleId = ruleId;
 		this.componentIdentifier = componentIdentifier;
+		this.reporter = reporter;
+		this.createdAt = createdAt;
 	}
 	
 	public String getId() {
@@ -64,6 +72,14 @@ public final class ValidationWhiteList implements Serializable {
 	public ComponentIdentifier getComponentIdentifier() {
 		return componentIdentifier;
 	}
+
+	public String getReporter() {
+		return reporter;
+	}
+	
+	public long getCreatedAt() {
+		return createdAt;
+	}
 	
 	@Override
 	public String toString() {
@@ -71,6 +87,8 @@ public final class ValidationWhiteList implements Serializable {
 			.add("id", id)
 			.add("ruleId", ruleId)
 			.add("componentIdentifier", componentIdentifier)
+			.add("reporter", reporter)
+			.add("createdAt", createdAt)
 			.toString();
 	}
 	
