@@ -214,7 +214,9 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	}
 	
 	private Iterable<Description> getDirtyDescriptions(ICDOCommitChangeSet commitChangeSet) {
-		return FluentIterable.from(commitChangeSet.getDirtyComponents(Description.class))
+		final Set<Description> dirtyDescriptions = newHashSet();
+		// add dirty descriptions from transaction
+		FluentIterable.from(commitChangeSet.getDirtyComponents(Description.class))
 			.filter(new Predicate<Description>() {
 				@Override
 				public boolean apply(Description input) {
@@ -227,7 +229,14 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 						return false;
 					}
 				}
-			});
+			}).copyInto(dirtyDescriptions);
+		// register descriptions as dirty for each dirty lang. member
+		FluentIterable.from(commitChangeSet.getDirtyComponents(SnomedLanguageRefSetMember.class))
+			.transform(SnomedLanguageRefSetMember::eContainer)
+			.filter(Description.class)
+			.copyInto(dirtyDescriptions);
+		
+		return dirtyDescriptions;
 	}
 
 	/*
