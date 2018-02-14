@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 
@@ -56,7 +57,11 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		SORT_BY;
 	}
 
-	public static class SortField implements Serializable {
+	public static interface Sort extends Serializable {
+		
+	}
+	
+	public static class SortField implements Sort {
 		private final String field;
 		private final boolean ascending;
 		
@@ -79,6 +84,42 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		
 		public static SortField descending(String field) {
 			return new SortField(field, false);
+		}
+		
+	}
+	
+	public static class SortScript implements Sort {
+		
+		private final String script;
+		private final Map<String, Object> arguments;
+		private final boolean ascending;
+		
+		private SortScript(final String script,
+				final Map<String, Object> arguments,
+				final boolean ascending) {
+			this.script = script;
+			this.arguments = arguments;
+			this.ascending = ascending;
+		}
+
+		public String getScript() {
+			return script;
+		}
+		
+		public Map<String, Object> getArguments() {
+			return arguments;
+		}
+		
+		public boolean isAscending() {
+			return ascending;
+		}
+		
+		public static SortScript ascending(String script, final Map<String, Object> arguments) {
+			return new SortScript(script, arguments, true);
+		}
+		
+		public static SortScript descending(String script, final Map<String, Object> arguments) {
+			return new SortScript(script, arguments, false);
 		}
 		
 	}

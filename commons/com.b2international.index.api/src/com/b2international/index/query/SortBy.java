@@ -16,18 +16,16 @@
 package com.b2international.index.query;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 
 import com.b2international.index.mapping.DocumentMapping;
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 
 /**
  * @since 4.7
@@ -175,27 +173,25 @@ public abstract class SortBy {
 	}
 	
 	public static final class Builder {
-		private final Map<String, Order> sortOrderMap = Maps.newLinkedHashMap();
+		private final List<SortBy> sorts = newArrayList();
 		
-		public Builder add(String field, Order order) {
-			sortOrderMap.put(field, order);
+		public Builder sortByField(String field, Order order) {
+			sorts.add(new SortByField(field, order));
+			return this;
+		}
+		
+		public Builder byScript(String script, Map<String, Object> arguments, Order order) {
+			sorts.add(SortBy.script(script, arguments, order));
 			return this;
 		}
 		
 		public SortBy build() {
-			if (sortOrderMap.isEmpty()) {
+			if (sorts.isEmpty()) {
 				return DOC_ID;
-			} else if (sortOrderMap.size() == 1) {
-				Entry<String, Order> onlyElement = Iterables.getOnlyElement(sortOrderMap.entrySet());
-				return new SortByField(onlyElement.getKey(), onlyElement.getValue());
+			} else if (sorts.size() == 1) {
+				return Iterables.getOnlyElement(sorts);
 			} else {
-				Iterable<SortByField> sortByFieldIterable = Iterables.transform(sortOrderMap.entrySet(), new Function<Entry<String, Order>, SortByField>() {
-					@Override
-					public SortByField apply(Entry<String, Order> input) {
-						return new SortByField(input.getKey(), input.getValue());
-					}
-				});
-				return new MultiSortBy(ImmutableList.<SortBy>copyOf(sortByFieldIterable));
+				return new MultiSortBy(sorts);
 			}
 		}
 	}
