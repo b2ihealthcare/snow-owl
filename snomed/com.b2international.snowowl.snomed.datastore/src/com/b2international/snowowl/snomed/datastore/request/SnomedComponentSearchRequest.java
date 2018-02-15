@@ -31,15 +31,28 @@ public abstract class SnomedComponentSearchRequest<R, D extends SnomedComponentD
 	enum OptionKey {
 		
 		/**
-		 * Filters component to be members of the specified reference sets.
+		 * Filters component to be active members of the specified reference sets.
 		 */
 		ACTIVE_MEMBER_OF,
+		
+		/**
+		 * Filters matches to be active/inactive members of the specified reference sets.
+		 */
+		MEMBER_OF,
 		
 		/**
 		 * Namespace part of the component ID to match (?)
 		 */
 		NAMESPACE
 		
+	}
+	
+	protected final void addMemberOfClause(BranchContext context, ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.MEMBER_OF)) {
+			final Collection<String> refSetFilters = getCollection(OptionKey.MEMBER_OF, String.class);
+			final Collection<String> referringRefSetIds = evaluateEclFilter(context, refSetFilters);
+			queryBuilder.filter(SnomedComponentDocument.Expressions.memberOf(referringRefSetIds));
+		}
 	}
 	
 	protected final void addActiveMemberOfClause(BranchContext context, ExpressionBuilder queryBuilder) {
