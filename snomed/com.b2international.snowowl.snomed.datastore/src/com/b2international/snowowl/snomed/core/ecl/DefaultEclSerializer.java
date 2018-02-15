@@ -28,8 +28,8 @@ public class DefaultEclSerializer implements EclSerializer {
 
 	private final ISerializer eclSerializer;
 
-	public DefaultEclSerializer(ISerializer iSerializer) {
-		this.eclSerializer = iSerializer;
+	public DefaultEclSerializer(ISerializer eclSerializer) {
+		this.eclSerializer = eclSerializer;
 	}
 	
 	@Override
