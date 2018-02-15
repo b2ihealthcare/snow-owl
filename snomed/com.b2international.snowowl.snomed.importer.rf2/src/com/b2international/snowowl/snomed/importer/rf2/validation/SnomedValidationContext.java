@@ -143,8 +143,10 @@ public final class SnomedValidationContext {
 			}
 		}
 
-		if (isValidReleaseFile(configuration.getTextDefinitionFile())) {
-			releaseFileValidators.add(new SnomedDescriptionValidator(configuration, this, configuration.getTextDefinitionFile()));
+		for (File textFile : configuration.getTextDefinitionFiles()) {
+			if (isValidReleaseFile(textFile)) {
+				releaseFileValidators.add(new SnomedDescriptionValidator(configuration, this, textFile));
+			}
 		}
 
 		if (isValidReleaseFile(configuration.getRelationshipsFile())) {
@@ -169,10 +171,9 @@ public final class SnomedValidationContext {
 				if (isValidReleaseFile(langFile)) {
 					releaseFileValidators.add(new SnomedLanguageRefSetValidator(configuration, configuration.toURL(langFile), this));
 				}
-				
 			}
-			
 		}
+		
 	}
 	
 	public boolean isValidReleaseFile(final File releaseFile) {
