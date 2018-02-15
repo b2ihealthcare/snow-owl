@@ -202,7 +202,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 						Multimap<String, SnomedDescriptionFragment> newDescriptions = HashMultimap.create(Multimaps.index(currentDoc.getDescriptions(), SnomedDescriptionFragment::getId));
 						for (Description dirtyDescription : dirtyDescriptions) {
 							newDescriptions.removeAll(dirtyDescription.getId());
-							if (dirtyDescription.isActive()) {
+							if (dirtyDescription.isActive() && !getPreferredLanguageMembers(dirtyDescription).isEmpty()) {
 								newDescriptions.put(dirtyDescription.getId(), toDescriptionFragment(dirtyDescription));
 							}
 						}
@@ -285,25 +285,28 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				.stream()
 				.filter(Description::isActive)
 				.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getType().getId()))
+				.filter(description -> !getPreferredLanguageMembers(description).isEmpty())
 				.map(this::toDescriptionFragment)
 				.sorted(DESCRIPTION_FRAGMENT_ORDER)
 				.collect(Collectors.toList());
 	}
 	
-	private SnomedDescriptionFragment toDescriptionFragment(Description description) {
-		final Set<String> languageRefSetIds = description.getLanguageRefSetMembers()
+	private Set<String> getPreferredLanguageMembers(Description description) {
+		return description.getLanguageRefSetMembers()
 			.stream()
 			.filter(SnomedLanguageRefSetMember::isActive)
 			.filter(member -> Acceptability.PREFERRED.getConceptId().equals(member.getAcceptabilityId()))
 			.map(SnomedRefSetMember::getRefSetIdentifierId)
 			.collect(Collectors.toSet());
-		
+	}
+	
+	private SnomedDescriptionFragment toDescriptionFragment(Description description) {
 		return new SnomedDescriptionFragment(
 			description.getId(), 
 			CDOIDUtil.getLong(description.cdoID()),
 			description.getType().getId(), 
 			description.getTerm(), 
-			ImmutableList.copyOf(languageRefSetIds)
+			ImmutableList.copyOf(getPreferredLanguageMembers(description))
 		);
 	}
 

@@ -21,6 +21,7 @@ import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchAnyInt;
 import static com.b2international.index.query.Expressions.matchAnyLong;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.getValue;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -409,6 +410,9 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		
 		public Builder descriptions(List<SnomedDescriptionFragment> descriptions) {
 			this.descriptions = Collections3.toImmutableList(descriptions);
+			for (SnomedDescriptionFragment description : this.descriptions) {
+				checkArgument(!description.getLanguageRefSetIds().isEmpty(), "At least one language reference set ID is required to create a preferred description fragment for description %s.", description.getId());
+			}
 			return getSelf();
 		}
 		
