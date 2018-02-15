@@ -216,7 +216,6 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		final String svLanguageRefsetMemberId = "34d07985-48a0-41e7-b6ec-b28e6b00adfb";
 		final String conceptIdOfDescription = "301795004";
 		
-		
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, enDescriptionId).statusCode(404);
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, svDescriptionId).statusCode(404);
 		getComponent(branchPath, SnomedComponentType.MEMBER, enLanguageRefsetMemberId).statusCode(404);
