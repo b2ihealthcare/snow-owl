@@ -95,8 +95,8 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 		context = TestBranchContext.on(MAIN)
 				.with(ObjectMapper.class, getMapper())
-				.with(EclParser.class, new DefaultEclParser(injector.getProvider(IParser.class), injector.getProvider(IResourceValidator.class)))
-				.with(EclSerializer.class, new DefaultEclSerializer(injector.getProvider(ISerializer.class)))
+				.with(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)))
+				.with(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)))
 				.with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index())
 				.with(ValidationThreadPool.class, new ValidationThreadPool(1))

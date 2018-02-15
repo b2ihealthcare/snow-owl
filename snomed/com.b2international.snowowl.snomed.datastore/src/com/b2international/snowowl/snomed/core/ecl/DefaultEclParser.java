@@ -39,17 +39,16 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.SyntaxException;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.Script;
-import com.google.inject.Provider;
 
 /**
  * @since 5.4
  */
 public class DefaultEclParser implements EclParser {
 
-	private final Provider<IParser> eclParser;
-	private final Provider<IResourceValidator> validator;
+	private final IParser eclParser;
+	private final IResourceValidator validator;
 
-	public DefaultEclParser(Provider<IParser> eclParser, Provider<IResourceValidator> validator) {
+	public DefaultEclParser(IParser eclParser, IResourceValidator validator) {
 		this.eclParser = eclParser;
 		this.validator = validator;
 	}
@@ -62,7 +61,7 @@ public class DefaultEclParser implements EclParser {
 			return null;
 		} else {
 			try (final StringReader reader = new StringReader(expression)) {
-				final IParseResult parseResult = eclParser.get().parse(reader);
+				final IParseResult parseResult = eclParser.parse(reader);
 				if (parseResult.hasSyntaxErrors()) {
 					final Map<Pair<Integer, Integer>, String> errors = newHashMap();
 					for (INode node : parseResult.getSyntaxErrors()) {
@@ -74,7 +73,7 @@ public class DefaultEclParser implements EclParser {
 					final Script script = (Script) parseResult.getRootASTElement();
 					final Resource resource = new ResourceImpl();
 					resource.getContents().add(script);
-					final List<Issue> issues = validator.get().validate(resource, CheckMode.ALL, CancelIndicator.NullImpl);
+					final List<Issue> issues = validator.validate(resource, CheckMode.ALL, CancelIndicator.NullImpl);
 					if (!issues.isEmpty()) {
 						final Map<Pair<Integer, Integer>, String> errors = newHashMap();
 						for (Issue issue : issues) {

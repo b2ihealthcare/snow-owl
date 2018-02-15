@@ -40,8 +40,8 @@ public class SnomedEclRewriterTest {
 	public void givenRewriter() {
 		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 		rewriter = new SnomedEclRewriter();
-		parser = new DefaultEclParser(injector.getProvider(IParser.class), injector.getProvider(IResourceValidator.class));
-		serializer = new DefaultEclSerializer(injector.getProvider(ISerializer.class));
+		parser = new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class));
+		serializer = new DefaultEclSerializer(injector.getInstance(ISerializer.class));
 	}
 	
 	@Test
