@@ -27,7 +27,6 @@ import java.util.UUID;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.util.Pair;
-import org.eclipse.xtext.util.Tuples;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
@@ -82,8 +81,8 @@ public class SnomedPublishManager extends PublishManager {
 
 	private Set<String> componentIdsToPublish = newHashSet();
 	
-	// Map<Pair<moduleId, referencedComponentId>, Uuid> 
-	private Collection<Pair<String, String>> changedModuleDependencyRefSetMembers;
+	// moduleId to referencedComponentId
+	private Collection<Pair<String, String>> moduleToReferenceComponentIds;
 	
 	@Override
 	protected LongSet getUnversionedComponentStorageKeys(final String branch) {
@@ -165,7 +164,7 @@ public class SnomedPublishManager extends PublishManager {
 
 	private void collectModuleDependencyChanges(final LongSet storageKeys, PublishOperationConfiguration config) {
 		LOGGER.info("Collecting module dependency changes...");
-		changedModuleDependencyRefSetMembers = ApplicationContext.getServiceForClass(RepositoryManager.class)
+		moduleToReferenceComponentIds = ApplicationContext.getServiceForClass(RepositoryManager.class)
 			.get(getRepositoryUuid())
 			.service(RevisionIndex.class)
 			.read(getBranchPathForPublication(config), new RevisionIndexRead<Collection<Pair<String, String>>>() {
@@ -243,25 +242,32 @@ public class SnomedPublishManager extends PublishManager {
 	/**Updates all new module dependency reference set members.
 	 * @param date */
 	private void adjustDependencyRefSetMembers(Date effectiveTime) {
-		// Update existing, add new members to moduleDependecyRefSet
-		if (!changedModuleDependencyRefSetMembers.isEmpty()) {
+		// Update existing, add new members to moduleDependencyRefSet
+		if (!moduleToReferenceComponentIds.isEmpty()) {
 			final SnomedRegularRefSet moduleDependencyRefSet = getEditingContext().lookup(REFSET_MODULE_DEPENDENCY_TYPE, SnomedRegularRefSet.class);
-			changedModuleDependencyRefSetMembers.forEach(moduleToRefComp -> {
-				boolean modified = false;
-				for (SnomedRefSetMember refSetmember : moduleDependencyRefSet.getMembers()) {
-					
-					if (refSetmember instanceof SnomedModuleDependencyRefSetMember) {
-						final SnomedModuleDependencyRefSetMember dependencyMember = (SnomedModuleDependencyRefSetMember) refSetmember;
-						final Pair<String, String> pair = Tuples.pair(dependencyMember.getModuleId(), dependencyMember.getReferencedComponentId());
-						
-						if (moduleToRefComp.equals(pair)) {
-							adjustRelased(dependencyMember);
-							adjustEffectiveTime(dependencyMember, effectiveTime);
-							modified = true;
+			moduleToReferenceComponentIds.forEach(moduleToRefComp -> {
+				final SnomedRefSetMember lastMember = moduleDependencyRefSet.getMembers()
+					.stream()
+					.filter(member -> moduleToRefComp.getFirst().equals(member.getModuleId())
+						&& moduleToRefComp.getSecond().equals(member.getReferencedComponentId()))
+					.sorted((o1, o2) -> {
+						if (null == o1.getEffectiveTime() && null == o2.getEffectiveTime()) {
+							return 0;
+						} else if (null == o1.getEffectiveTime() && null != o2.getEffectiveTime()) {
+							return 1;
+						} else if (null != o1.getEffectiveTime() && null == o2.getEffectiveTime()) {
+							return -1;
 						}
-					}
-				}
-				if (!modified) {
+						return o1.getEffectiveTime().compareTo(o2.getEffectiveTime());
+					}).reduce((first, second) -> second).orElse(null);
+					
+				if (lastMember instanceof SnomedModuleDependencyRefSetMember) {
+					
+					SnomedModuleDependencyRefSetMember dependencyRefSetMember = (SnomedModuleDependencyRefSetMember) lastMember;
+					adjustReleased(dependencyRefSetMember);
+					adjustEffectiveTime(dependencyRefSetMember, effectiveTime);
+					
+				} else {
 					
 					final SnomedModuleDependencyRefSetMember memberToAdd = SnomedRefSetFactory.eINSTANCE.createSnomedModuleDependencyRefSetMember();
 					memberToAdd.setUuid(UUID.randomUUID().toString());
@@ -270,7 +276,7 @@ public class SnomedPublishManager extends PublishManager {
 					memberToAdd.setModuleId(moduleToRefComp.getFirst());
 					memberToAdd.setReferencedComponentId(moduleToRefComp.getSecond());
 
-					adjustRelased(memberToAdd);
+					adjustReleased(memberToAdd);
 					adjustEffectiveTime(memberToAdd, effectiveTime);
 					moduleDependencyRefSet.getMembers().add(memberToAdd);
 
@@ -309,7 +315,7 @@ public class SnomedPublishManager extends PublishManager {
 	}
 
 	/**Sets the released flag on the given reference set member.*/
-	private void adjustRelased(final SnomedModuleDependencyRefSetMember member) {
+	private void adjustReleased(final SnomedModuleDependencyRefSetMember member) {
 		if (!member.isReleased()) {
 			member.setReleased(true);
 		}
