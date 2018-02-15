@@ -70,7 +70,6 @@ public class RF2ReleaseRefSetFileCollector {
 			for (File langFiles : configuration.getLanguageRefSetFiles()) {
 				collectedUrlSet.add(configuration.toURL(langFiles));
 			}
-		
 			
 			if (null != configuration.getDescriptionType()) {
 				collectedUrlSet.add(configuration.toURL(configuration.getDescriptionType()));
