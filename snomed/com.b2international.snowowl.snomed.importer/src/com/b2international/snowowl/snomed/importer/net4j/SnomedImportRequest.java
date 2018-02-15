@@ -54,7 +54,8 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 	@Override
 	protected void requesting(final ExtendedDataOutputStream out, final OMMonitor monitor) throws Exception {
 
-		monitor.begin(1 + 7 + importConfiguration.getRefSetUrls().size());
+		monitor.begin(1 + importConfiguration.getDescriptionsFiles().size() + importConfiguration.getLanguageRefSetFiles().size()
+				+ importConfiguration.getTextDefinitionFiles().size() + 4 + importConfiguration.getRefSetUrls().size());
 		
 		try {
 			
@@ -71,27 +72,34 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 			
 			out.writeUTF(importConfiguration.getCodeSystemShortName());
 			
+			monitor.worked(); // 1
+			
 			final Collection<File> descriptionsFiles = importConfiguration.getDescriptionsFiles();
 			final Collection<File> languageRefSetFiles = importConfiguration.getLanguageRefSetFiles();
-			monitor.worked(); // 1
+			final Collection<File> textDefinitionFiles = importConfiguration.getTextDefinitionFiles();
 			
 			out.writeInt(descriptionsFiles.size());
 			
 			for (File descfile : descriptionsFiles) {
-				writeComponent(out, descfile, monitor.fork());
+				writeComponent(out, descfile, monitor.fork()); // + getDescriptionFiles().size()
 			}
 			
 			out.writeInt(languageRefSetFiles.size());
 			
 			for (File langFile : languageRefSetFiles) {
-				writeComponent(out, langFile, monitor.fork());
+				writeComponent(out, langFile, monitor.fork()); // + getLanguageRefSetFiles().size()
+			}
+			
+			out.writeInt(textDefinitionFiles.size());
+			
+			for (File textFile : textDefinitionFiles) {
+				writeComponent(out, textFile, monitor.fork()); // + getTextDefinitionFiles().size()
 			}
 			
 			writeComponent(out, importConfiguration.getConceptsFile(), monitor.fork());
-			writeComponent(out, importConfiguration.getTextDefinitionFile(), monitor.fork());
 			writeComponent(out, importConfiguration.getRelationshipsFile(), monitor.fork());
 			writeComponent(out, importConfiguration.getStatedRelationshipsFile(), monitor.fork());
-			writeComponent(out, importConfiguration.getDescriptionType(), monitor.fork());
+			writeComponent(out, importConfiguration.getDescriptionType(), monitor.fork()); // + 4
 			
 			out.writeInt(importConfiguration.getRefSetUrls().size());
 			
