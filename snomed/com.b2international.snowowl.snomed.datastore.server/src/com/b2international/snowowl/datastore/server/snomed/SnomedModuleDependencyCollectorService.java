@@ -20,10 +20,8 @@ import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
 import static com.b2international.snowowl.datastore.server.snomed.ModuleCollectorConfigurationThreadLocal.getConfiguration;
 import static com.b2international.snowowl.datastore.server.snomed.ModuleCollectorConfigurationThreadLocal.reset;
 import static com.b2international.snowowl.datastore.server.snomed.ModuleCollectorConfigurationThreadLocal.setConfiguration;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Stopwatch.createStarted;
-import static com.google.common.collect.HashMultimap.create;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 import static java.lang.Long.parseLong;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -55,11 +53,8 @@ import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -67,11 +62,9 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 /**
@@ -144,10 +137,6 @@ public enum SnomedModuleDependencyCollectorService {
 		configuration.setBranchPath(branchPath);
 		configuration.setConceptModuleMapping(getConceptModuleMapping(branchPath));
 		configuration.setUnpublishedStorageKeys(unpublishedStorageKeys);
-		configuration.setExistingModules(getExistingModules(branchPath));
-		configuration.setModuleMapping(getModuleMapping(configuration.getExistingModules()));
-		final SnomedRegularRefSet moduleRefSet = getModuleRefSet(view);
-		configuration.setModuleDependencyRefSet(moduleRefSet);
 		
 		return configuration;
 	}
@@ -298,28 +287,6 @@ public enum SnomedModuleDependencyCollectorService {
 				.getSync();
 	}
 	
-	private SnomedRegularRefSet getModuleRefSet(final CDOView view) {
-		return checkNotNull((SnomedRegularRefSet) new SnomedRefSetLookupService().getComponent(REFSET_MODULE_DEPENDENCY_TYPE, view), "Missing module reference set %s", REFSET_MODULE_DEPENDENCY_TYPE);
-	}
-	
-	private SnomedReferenceSetMembers getExistingModules(final IBranchPath branchPath) {
-		return SnomedRequests.prepareSearchMember()
-				.all()
-				.filterByActive(true)
-				.filterByRefSet(REFSET_MODULE_DEPENDENCY_TYPE)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-				.execute(getBus())
-				.getSync();
-	}
-	
-	private Multimap<Long, Long> getModuleMapping(final SnomedReferenceSetMembers existingModules) {
-		final Multimap<Long, Long> moduleMapping = create();
-		for (final SnomedReferenceSetMember module : existingModules) {
-			moduleMapping.put(parseLong(module.getModuleId()), parseLong(module.getReferencedComponent().getId()));
-		}
-		return moduleMapping;
-	}
-
 	private LongKeyLongMap getConceptModuleMapping(final IBranchPath branchPath) {
 		return SnomedRequests.prepareSearchConcept()
 				.all()

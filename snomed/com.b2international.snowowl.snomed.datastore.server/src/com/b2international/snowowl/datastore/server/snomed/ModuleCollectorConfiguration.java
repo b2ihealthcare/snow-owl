@@ -23,10 +23,6 @@ import org.eclipse.xtext.util.Pair;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongKeyLongMap;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 /**
@@ -37,12 +33,9 @@ public class ModuleCollectorConfiguration {
 	private CDOView view;
 	private IBranchPath branchPath;
 	private Collection<Pair<String, String>> members = Sets.newHashSet();
-	private Multimap<Long, Long> moduleMapping = HashMultimap.create();
 	private LongKeyLongMap conceptModuleMapping;
 	private LongCollection unpublishedStorageKeys;
-	private SnomedReferenceSetMembers existingModules;
-	private SnomedRefSet moduleDependencyRefSet;
-	
+
 	public CDOView getView() {
 		return view;
 	}
@@ -67,14 +60,6 @@ public class ModuleCollectorConfiguration {
 		this.members = members;
 	}
 	
-	public Multimap<Long, Long> getModuleMapping() {
-		return moduleMapping;
-	}
-	
-	public void setModuleMapping(Multimap<Long, Long> moduleMapping) {
-		this.moduleMapping = moduleMapping;
-	}
-	
 	public LongKeyLongMap getConceptModuleMapping() {
 		return conceptModuleMapping;
 	}
@@ -91,19 +76,4 @@ public class ModuleCollectorConfiguration {
 		this.unpublishedStorageKeys = unpublishedStorageKeys;
 	}
 	
-	public SnomedReferenceSetMembers getExistingModules() {
-		return existingModules;
-	}
-	
-	public void setExistingModules(SnomedReferenceSetMembers existingModules) {
-		this.existingModules = existingModules;
-	}
-	
-	public SnomedRefSet getModuleDependencyRefSet() {
-		return moduleDependencyRefSet;
-	}
-	
-	public void setModuleDependencyRefSet(SnomedRefSet moduleDependencyRefSet) {
-		this.moduleDependencyRefSet = moduleDependencyRefSet;
-	}
 }
