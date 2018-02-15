@@ -272,11 +272,11 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			inferred.update(id, doc);
 		}
 		
-		final Collection<String> currentReferringRefSets = currentVersion == null ? Collections.<String> emptySet()
-				: currentVersion.getReferringRefSets();
-		final Collection<String> currentReferringMappingRefSets = currentVersion == null ? Collections.<String> emptySet()
-				: currentVersion.getReferringMappingRefSets();
-		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentReferringRefSets, currentReferringMappingRefSets)
+		final Collection<String> currentMemberOf = currentVersion == null ? Collections.<String> emptySet()
+				: currentVersion.getMemberOf();
+		final Collection<String> currentActiveMemberOf = currentVersion == null ? Collections.<String> emptySet()
+				: currentVersion.getActiveMemberOf();
+		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentMemberOf, currentActiveMemberOf)
 				.update(doc);
 	}
 

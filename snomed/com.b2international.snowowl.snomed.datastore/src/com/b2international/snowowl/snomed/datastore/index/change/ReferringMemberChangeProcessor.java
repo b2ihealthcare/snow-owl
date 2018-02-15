@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberCha
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange.MemberChangeKind;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
@@ -55,9 +54,7 @@ final class ReferringMemberChangeProcessor {
 		// process new members
 		filterRefSetMembers(commitChangeSet.getNewComponents(), referencedComponentType)
 			.forEach((newMember) -> {
-				if (newMember.isActive()) {
-					addChange(memberChanges, newMember, MemberChangeKind.ADDED);
-				}
+				addChange(memberChanges, newMember, MemberChangeKind.ADDED);
 			});
 		
 		// process dirty members
@@ -77,10 +74,8 @@ final class ReferringMemberChangeProcessor {
 							throw new RuntimeException("Unknown old value type: " + delta.getOldValue());
 						}
 						final Boolean newValue = (Boolean) delta.getValue();
-						if (Boolean.TRUE == oldValue && Boolean.FALSE == newValue) {
-							addChange(memberChanges, dirtyMember, MemberChangeKind.REMOVED);
-						} else if (Boolean.FALSE == oldValue && Boolean.TRUE == newValue) {
-							addChange(memberChanges, dirtyMember, MemberChangeKind.ADDED);
+						if ((Boolean.TRUE == oldValue && Boolean.FALSE == newValue) || (Boolean.FALSE == oldValue && Boolean.TRUE == newValue)) {
+							addChange(memberChanges, dirtyMember, MemberChangeKind.CHANGED);
 						}
 					}
 				}
@@ -98,7 +93,7 @@ final class ReferringMemberChangeProcessor {
 				final String uuid = doc.getId();
 				final String referencedComponentId = doc.getReferencedComponentId();
 				final String refSetId = doc.getReferenceSetId();
-				memberChanges.put(referencedComponentId, new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, doc.getReferenceSetType()));
+				memberChanges.put(referencedComponentId, new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, doc.isActive()));
 			});
 		
 		return memberChanges;
@@ -114,8 +109,7 @@ final class ReferringMemberChangeProcessor {
 	private void addChange(final Multimap<String, RefSetMemberChange> memberChanges, SnomedRefSetMember member, MemberChangeKind changeKind) {
 		final String uuid = member.getUuid();
 		final String refSetId = member.getRefSetIdentifierId();
-		final SnomedRefSetType refSetType = member.getRefSet().getType();
-		memberChanges.put(member.getReferencedComponentId(), new RefSetMemberChange(uuid, refSetId, changeKind, refSetType));
+		memberChanges.put(member.getReferencedComponentId(), new RefSetMemberChange(uuid, refSetId, changeKind, member.isActive()));
 	}
 
 }

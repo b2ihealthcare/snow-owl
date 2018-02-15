@@ -428,8 +428,8 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 					mapTargetComponentType,
 					refSetStorageKey,
 					structural,
-					referringRefSets,
-					referringMappingRefSets,
+					memberOf,
+					activeMemberOf,
 					descriptions);
 			
 			entry.doi = doi;

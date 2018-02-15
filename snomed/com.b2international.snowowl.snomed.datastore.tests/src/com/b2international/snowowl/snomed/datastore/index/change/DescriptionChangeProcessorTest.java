@@ -72,7 +72,8 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		process(processor);
 		
 		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(description)
-				.referringRefSets(ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
+				.memberOf(ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
+				.activeMemberOf(ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE)
 				.build();
 		final Revision currentDoc = Iterables.getOnlyElement(processor.getNewMappings().values());
@@ -92,7 +93,8 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		process(processor);
 		
 		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(description)
-				.referringRefSets(ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
+				.memberOf(ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
+				.activeMemberOf(ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED)
 				.build();
 		final Revision currentDoc = Iterables.getOnlyElement(processor.getNewMappings().values());
@@ -237,7 +239,8 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry
 				.builder(description)
-				.referringRefSets(Collections.singleton(referringRefSetId))
+				.memberOf(Collections.singleton(referringRefSetId))
+				.activeMemberOf(Collections.singleton(referringRefSetId))
 				.build();
 		
 		final Revision currentDoc = Iterables.getOnlyElement(processor.getNewMappings().values());
@@ -261,7 +264,8 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry
 				.builder(description)
-				.referringRefSets(Collections.singleton(referringRefSetId))
+				.memberOf(Collections.singleton(referringRefSetId))
+				.activeMemberOf(Collections.singleton(referringRefSetId))
 				.build();
 		
 		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
@@ -310,7 +314,8 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		indexRevision(MAIN, CDOIDUtil.getLong(description.cdoID()),
 				SnomedDescriptionIndexEntry.builder(description)
-					.referringRefSets(ImmutableList.of(referringRefSetId, referringRefSetId))
+					.memberOf(ImmutableList.of(referringRefSetId, referringRefSetId))
+					.activeMemberOf(ImmutableList.of(referringRefSetId, referringRefSetId))
 					.build());
 		indexRevision(MAIN, CDOIDUtil.getLong(member1.cdoID()), SnomedRefSetMemberIndexEntry.builder(member1).build());
 		indexRevision(MAIN, CDOIDUtil.getLong(member2.cdoID()), SnomedRefSetMemberIndexEntry.builder(member2).build());
@@ -321,7 +326,8 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry
 				.builder(description)
-				.referringRefSets(Collections.singleton(referringRefSetId))
+				.memberOf(Collections.singleton(referringRefSetId))
+				.activeMemberOf(Collections.singleton(referringRefSetId))
 				.build();
 		
 		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());

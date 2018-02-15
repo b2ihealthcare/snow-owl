@@ -96,7 +96,8 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final SnomedRelationshipIndexEntry expectedDoc = SnomedRelationshipIndexEntry
 				.builder(relationship)
-				.referringRefSets(Collections.singleton(referringRefSetId))
+				.memberOf(Collections.singleton(referringRefSetId))
+				.activeMemberOf(Collections.singleton(referringRefSetId))
 				.build();
 		
 		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
@@ -114,7 +115,10 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(relationship);
 		registerExistingObject(member);
 		indexRevision(MAIN, CDOIDUtil.getLong(relationship.cdoID()),
-				SnomedRelationshipIndexEntry.builder(relationship).referringRefSets(ImmutableList.of(referringRefSetId)).build());
+				SnomedRelationshipIndexEntry.builder(relationship)
+					.memberOf(ImmutableList.of(referringRefSetId))
+					.activeMemberOf(ImmutableList.of(referringRefSetId))
+					.build());
 		indexRevision(MAIN, CDOIDUtil.getLong(member.cdoID()), 
 				SnomedRefSetMemberIndexEntry.builder(member).build());
 		registerDetached(member.cdoID(), member.eClass());
@@ -144,7 +148,10 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(member2);
 		
 		indexRevision(MAIN, CDOIDUtil.getLong(relationship.cdoID()),
-				SnomedRelationshipIndexEntry.builder(relationship).referringRefSets(ImmutableList.of(referringRefSetId, referringRefSetId)).build());
+				SnomedRelationshipIndexEntry.builder(relationship)
+					.memberOf(ImmutableList.of(referringRefSetId, referringRefSetId))
+					.activeMemberOf(ImmutableList.of(referringRefSetId, referringRefSetId))
+					.build());
 		indexRevision(MAIN, CDOIDUtil.getLong(member1.cdoID()), SnomedRefSetMemberIndexEntry.builder(member1).build());
 		indexRevision(MAIN, CDOIDUtil.getLong(member2.cdoID()), SnomedRefSetMemberIndexEntry.builder(member2).build());
 		
@@ -154,7 +161,8 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final SnomedRelationshipIndexEntry expectedDoc = SnomedRelationshipIndexEntry
 				.builder(relationship)
-				.referringRefSets(Collections.singleton(referringRefSetId))
+				.memberOf(Collections.singleton(referringRefSetId))
+				.activeMemberOf(Collections.singleton(referringRefSetId))
 				.build();
 		
 		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
