@@ -213,7 +213,7 @@ public final class ImportUtil {
 			
 			// These paths might turn out to be empty
 			config.setStatedRelationshipsFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, STATED_RELATIONSHIP, contentSubType)));
-			config.setTextDefinitionFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, TEXT_DEFINITION, contentSubType)));
+			config.setTextDefinitionFiles(createTemporaryFile(tempDir, archive, archiveFileSet.getAllFileName(zipFiles, TEXT_DEFINITION, contentSubType)));
 		} catch (IOException e) {
 			throw new ImportException("Failed to extract contents of release archive.", e);
 		}
@@ -351,18 +351,19 @@ public final class ImportUtil {
 				importers.add(new SnomedConceptImporter(context, url.openStream(), configuration.getMappedName(url.getPath())));
 			}
 			
-			if (!configuration.getDescriptionsFiles().isEmpty()) {
-				for (File descriptionFile : configuration.getDescriptionsFiles()) {
-					if (ImportConfiguration.isValidReleaseFile(descriptionFile)) {
-						final URL url = configuration.toURL(descriptionFile);
-						importers.add(new SnomedDescriptionImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.DESCRIPTION));
-					}
+			for (File descriptionFile : configuration.getDescriptionsFiles()) {
+				if (ImportConfiguration.isValidReleaseFile(descriptionFile)) {
+					final URL url = configuration.toURL(descriptionFile);
+					importers.add(new SnomedDescriptionImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.DESCRIPTION));
 				}
 			}
-			
-			if (ImportConfiguration.isValidReleaseFile(configuration.getTextDefinitionFile())) {
-				final URL url = configuration.toURL(configuration.getTextDefinitionFile());
-				importers.add(new SnomedDescriptionImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.TEXT_DEFINITION));
+		
+			for (File textFile : configuration.getTextDefinitionFiles()) {
+				if (ImportConfiguration.isValidReleaseFile(textFile)) {
+					final URL url = configuration.toURL(textFile);
+					importers.add(new SnomedDescriptionImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.TEXT_DEFINITION));
+				}
+				
 			}
 
 			if (ImportConfiguration.isValidReleaseFile(configuration.getRelationshipsFile())) {
