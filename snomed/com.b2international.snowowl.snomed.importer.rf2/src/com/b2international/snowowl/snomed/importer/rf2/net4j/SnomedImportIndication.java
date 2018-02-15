@@ -89,44 +89,26 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 			importConfiguration.setCodeSystemShortName(codeSystemShortName);
 			
 			monitor.worked();
+			
 			int descriptionFilesSize = in.readInt();
-			
-			final Set<File> descriptionFiles = Sets.newHashSet();
-			final Set<File> languageRefSetFiles = Sets.newHashSet();
-			
-			for (int i= 0; i < descriptionFilesSize; i++) {
-				readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() {
-					@Override
-					public void setFile(final File f) {
-						descriptionFiles.add(f);
-					}
-				}, monitor.fork());
-			}
 
-			importConfiguration.setDescriptionsFiles(descriptionFiles);
+			importConfiguration.setDescriptionsFiles(readComponents(in, monitor, importConfiguration, descriptionFilesSize));
 			
 			int languageRefSetFilesSize = in.readInt();
 			
-			for (int i =0; i < languageRefSetFilesSize; i++) {
-				readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() {
-					@Override
-					public void setFile(final File f) {
-						languageRefSetFiles.add(f);
-					}
-				}, monitor.fork());
-			}
+			importConfiguration.setLanguageRefSetFiles(readComponents(in, monitor, importConfiguration, languageRefSetFilesSize));
 			
-			importConfiguration.setLanguageRefSetFiles(languageRefSetFiles);
+			int textDefinitionFilesSize = in.readInt();
+			
+			importConfiguration.setTextDefinitionFiles(readComponents(in, monitor, importConfiguration, textDefinitionFilesSize));
 			
 			receivedFilesDirectory = Files.createTempDir();
 			receivedFilesDirectory.deleteOnExit();
 			
 			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setConceptsFile(f); }}, monitor.fork());
-			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setTextDefinitionFile(f); }}, monitor.fork());
 			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setRelationshipsFile(f); }}, monitor.fork());
 			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setStatedRelationshipsFile(f); }}, monitor.fork());
 			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setDescriptionType(f); }}, monitor.fork());
-			
 			
 			final int refSetUrlCount = in.readInt();
 			
@@ -148,6 +130,22 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 			
 			monitor.done();
 		}
+	}
+
+	private Set<File> readComponents(final ExtendedDataInputStream in, final OMMonitor monitor, final ImportConfiguration importConfiguration, int numberOfFiles) throws IOException {
+		OMMonitor subMonitor = monitor.fork();
+		subMonitor.begin();
+		Set<File> releaseFiles = Sets.newHashSet();
+		for (int i = 0; i < numberOfFiles; i++) {
+			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() {
+				@Override
+				public void setFile(File f) {
+					releaseFiles.add(f);
+				}
+			}, subMonitor.fork());
+		}
+		subMonitor.done();
+		return releaseFiles;
 	}
 
 	private void addRefSetUrl(final ImportConfiguration importConfiguration, final File f) {
