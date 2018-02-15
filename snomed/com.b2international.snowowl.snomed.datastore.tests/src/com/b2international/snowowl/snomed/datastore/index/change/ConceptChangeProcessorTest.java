@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateDescriptionId;
 import static com.google.common.collect.Sets.newHashSet;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -463,6 +463,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		memberToInactivate.setActive(false);
 		registerDirty(memberToInactivate);
+		registerSetRevisionDelta(memberToInactivate, SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__ACTIVE, true, false);
 		
 		final ConceptChangeProcessor processor = process();
 		
@@ -497,6 +498,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		memberToChange.setAcceptabilityId(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE);
 		registerDirty(memberToChange);
+		registerSetRevisionDelta(memberToChange, SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER__ACCEPTABILITY_ID, null /*unused*/, null /*unused*/);
 		
 		final ConceptChangeProcessor processor = process();
 		

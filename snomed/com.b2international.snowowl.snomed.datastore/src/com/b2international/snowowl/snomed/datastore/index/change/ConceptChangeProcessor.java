@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,17 +28,6 @@ import java.util.stream.Collectors;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
-import org.eclipse.emf.cdo.common.revision.delta.CDOAddFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOClearFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOContainerFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDeltaVisitor;
-import org.eclipse.emf.cdo.common.revision.delta.CDOListFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOMoveFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDORemoveFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOUnsetFeatureDelta;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import com.b2international.collections.longs.LongCollection;
@@ -75,7 +64,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -91,6 +79,26 @@ import com.google.common.collect.Ordering;
  */
 public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 
+	private static final Set<EStructuralFeature> ALLOWED_CONCEPT_CHANGE_FEATURES = ImmutableSet.<EStructuralFeature>builder()
+			.add(SnomedPackage.Literals.COMPONENT__ACTIVE)
+			.add(SnomedPackage.Literals.COMPONENT__EFFECTIVE_TIME)
+			.add(SnomedPackage.Literals.COMPONENT__RELEASED)
+			.add(SnomedPackage.Literals.COMPONENT__MODULE)
+			.add(SnomedPackage.Literals.CONCEPT__DEFINITION_STATUS)
+			.add(SnomedPackage.Literals.CONCEPT__EXHAUSTIVE)
+			.add(SnomedPackage.Literals.CONCEPT__DESCRIPTIONS)
+			.build();
+	private static final Set<EStructuralFeature> ALLOWED_DESCRIPTION_CHANGE_FEATURES = ImmutableSet.<EStructuralFeature>builder()
+			.add(SnomedPackage.Literals.COMPONENT__ACTIVE)
+			.add(SnomedPackage.Literals.DESCRIPTION__TERM)
+			.add(SnomedPackage.Literals.DESCRIPTION__TYPE)
+			.add(SnomedPackage.Literals.DESCRIPTION__LANGUAGE_REF_SET_MEMBERS)
+			.build();
+	private static final Set<EStructuralFeature> ALLOWED_LANG_MEMBER_CHANGE_FEATURES = ImmutableSet.<EStructuralFeature>builder()
+			.add(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__ACTIVE)
+			.add(SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER__ACCEPTABILITY_ID)
+			.build();
+	
 	private static final Ordering<SnomedDescriptionFragment> DESCRIPTION_FRAGMENT_ORDER = Ordering.natural()
 			.onResultOf(SnomedDescriptionFragment::getStorageKey)
 			.compound(Ordering.natural().<SnomedDescriptionFragment>onResultOf(description -> description.getTypeId()))
@@ -216,22 +224,12 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	private Iterable<Description> getDirtyDescriptions(ICDOCommitChangeSet commitChangeSet) {
 		final Set<Description> dirtyDescriptions = newHashSet();
 		// add dirty descriptions from transaction
-		FluentIterable.from(commitChangeSet.getDirtyComponents(Description.class))
-			.filter(new Predicate<Description>() {
-				@Override
-				public boolean apply(Description input) {
-					final DirtyDescriptionFeatureDeltaVisitor visitor = new DirtyDescriptionFeatureDeltaVisitor();
-					final CDORevisionDelta revisionDelta = commitChangeSet.getRevisionDeltas().get(input.cdoID());
-					if (revisionDelta != null) {
-						revisionDelta.accept(visitor);
-						return visitor.hasAllowedChanges();
-					} else {
-						return false;
-					}
-				}
-			}).copyInto(dirtyDescriptions);
+		FluentIterable
+			.from(commitChangeSet.getDirtyComponents(Description.class, ALLOWED_DESCRIPTION_CHANGE_FEATURES))
+			.copyInto(dirtyDescriptions);
 		// register descriptions as dirty for each dirty lang. member
-		FluentIterable.from(commitChangeSet.getDirtyComponents(SnomedLanguageRefSetMember.class))
+		FluentIterable
+			.from(commitChangeSet.getDirtyComponents(SnomedLanguageRefSetMember.class, ALLOWED_LANG_MEMBER_CHANGE_FEATURES))
 			.transform(SnomedLanguageRefSetMember::eContainer)
 			.filter(Description.class)
 			.copyInto(dirtyDescriptions);
@@ -317,20 +315,10 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		final Set<String> dirtyConceptIds = newHashSet();
 		
 		// collect relevant concept changes
-		FluentIterable.from(commitChangeSet.getDirtyComponents(Concept.class))
-			.filter(new Predicate<Concept>() {
-				@Override
-				public boolean apply(Concept input) {
-					final DirtyConceptFeatureDeltaVisitor visitor = new DirtyConceptFeatureDeltaVisitor();
-					final CDORevisionDelta revisionDelta = commitChangeSet.getRevisionDeltas().get(input.cdoID());
-					if (revisionDelta != null) {
-						revisionDelta.accept(visitor);
-						return visitor.hasAllowedChanges();
-					} else {
-						return false;
-					}
-				}
-			}).transform(Concept::getId).copyInto(dirtyConceptIds);
+		FluentIterable
+			.from(commitChangeSet.getDirtyComponents(Concept.class, ALLOWED_CONCEPT_CHANGE_FEATURES))
+			.transform(Concept::getId)
+			.copyInto(dirtyConceptIds);
 
 		// collect dirty concepts due to change in hierarchy
 		dirtyConceptIds.addAll(referringRefSets.keySet());
@@ -444,132 +432,5 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 //			return iconsByIds;
 //		}
 // 	}
-
-	private static class DirtyDescriptionFeatureDeltaVisitor implements CDOFeatureDeltaVisitor {
-		
-		private static final Set<EStructuralFeature> ALLOWED_CONCEPT_CHANGE_FEATURES = ImmutableSet.<EStructuralFeature>builder()
-				.add(SnomedPackage.Literals.COMPONENT__ACTIVE)
-				.add(SnomedPackage.Literals.DESCRIPTION__TERM)
-				.add(SnomedPackage.Literals.DESCRIPTION__TYPE)
-				.add(SnomedPackage.Literals.DESCRIPTION__LANGUAGE_REF_SET_MEMBERS)
-				.build();
-		private boolean hasAllowedChanges;
-
-		@Override
-		public void visit(CDOSetFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOListFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOAddFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOClearFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOMoveFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDORemoveFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOUnsetFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOContainerFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		private void visitDelta(CDOFeatureDelta delta) {
-			hasAllowedChanges |= ALLOWED_CONCEPT_CHANGE_FEATURES.contains(delta.getFeature());
-		}
-
-		public boolean hasAllowedChanges() {
-			return hasAllowedChanges;
-		}
-		
-	}
-	
-	
-	/**
-	 * @since 4.3
-	 */
-	private static class DirtyConceptFeatureDeltaVisitor implements CDOFeatureDeltaVisitor {
-		
-		private static final Set<EStructuralFeature> ALLOWED_CONCEPT_CHANGE_FEATURES = ImmutableSet.<EStructuralFeature>builder()
-				.add(SnomedPackage.Literals.COMPONENT__ACTIVE)
-				.add(SnomedPackage.Literals.COMPONENT__EFFECTIVE_TIME)
-				.add(SnomedPackage.Literals.COMPONENT__RELEASED)
-				.add(SnomedPackage.Literals.COMPONENT__MODULE)
-				.add(SnomedPackage.Literals.CONCEPT__DEFINITION_STATUS)
-				.add(SnomedPackage.Literals.CONCEPT__EXHAUSTIVE)
-				.add(SnomedPackage.Literals.CONCEPT__DESCRIPTIONS)
-				.build();
-		private boolean hasAllowedChanges;
-
-		@Override
-		public void visit(CDOSetFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOListFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOAddFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOClearFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOMoveFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDORemoveFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOUnsetFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOContainerFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		private void visitDelta(CDOFeatureDelta delta) {
-			hasAllowedChanges |= ALLOWED_CONCEPT_CHANGE_FEATURES.contains(delta.getFeature());
-		}
-
-		public boolean hasAllowedChanges() {
-			return hasAllowedChanges;
-		}
-		
-	}
 
 }
