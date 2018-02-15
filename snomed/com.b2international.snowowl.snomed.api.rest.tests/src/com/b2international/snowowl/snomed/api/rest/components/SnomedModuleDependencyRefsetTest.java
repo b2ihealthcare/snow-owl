@@ -17,9 +17,7 @@ import java.util.Map;
 
 import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -39,7 +37,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 
 	private static final String ICD_10_MAPPING_MODULE = "449080006";
@@ -94,7 +91,7 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void moduleDependecyMemberEffectiveTimeUpdateTest() {
+	public void moduleDependencyMemberEffectiveTimeUpdateTest() {
 
 		final String shortName = "SNOMEDCT-MODULEDEPENDENCY";
 		createCodeSystem(branchPath, shortName).statusCode(201);
@@ -130,11 +127,11 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 		// create both inferred and stated relationships
 		Map<?, ?> inferredRelationshipRequestBody = SnomedRestFixtures
 				.createRelationshipRequestBody(NORWEGIAN_MODULE_CONCEPT_ID, Concepts.IS_A, Concepts.MODULE_ROOT, NORWEGIAN_MODULE_CONCEPT_ID, CharacteristicType.INFERRED_RELATIONSHIP, 0)
-				.put("commitComment", "Created inferred is_a from the norwegian rule to SCT_MODULE_CORE").build();
+				.put("commitComment", "Created inferred is_a from the norwegian module concept to SCT_MODULE_CORE").build();
 		
 		Map<?, ?> statedRelationshipRequestBody = SnomedRestFixtures
 				.createRelationshipRequestBody(NORWEGIAN_MODULE_CONCEPT_ID, Concepts.IS_A, Concepts.MODULE_ROOT, NORWEGIAN_MODULE_CONCEPT_ID, CharacteristicType.STATED_RELATIONSHIP, 0)
-				.put("commitComment", "Created state is_a from the norwegian rule to SCT_MODULE_CORE").build();
+				.put("commitComment", "Created state is_a from the norwegian module concept to SCT_MODULE_CORE").build();
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, inferredRelationshipRequestBody).statusCode(201);
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, statedRelationshipRequestBody).statusCode(201);
@@ -164,6 +161,7 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 		
 		SnomedReferenceSetMembers moduleDependencyMembersAfterVersioning = SnomedRequests.prepareSearchMember()
 				.all()
+				.filterByActive(true)
 				.filterByRefSet(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getBus())
@@ -172,9 +170,8 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 		moduleDependencyMembersAfterVersioning.forEach(member-> {
 			final Pair<String, String> pair = Tuples.pair(member.getModuleId(), member.getReferencedComponent().getId());
 			final Date originalMemberEffectiveTime = moduleToReferencedComponentAndEffectiveDateMap.get(pair);
-			if(originalMemberEffectiveTime != null) {
-				assertEquals("Effective dates on existing module dependency members shouldn't be updated after versioning" , originalMemberEffectiveTime,  member.getEffectiveTime());
-				moduleToReferencedComponentAndEffectiveDateMap.remove(pair);
+			if (originalMemberEffectiveTime != null) {
+				assertEquals("Effective dates on unaffected existing module dependency members shouldn't be updated after versioning" , originalMemberEffectiveTime,  member.getEffectiveTime());
 			} else {
 				assertEquals("The new members effective time should match the versionDate", effectiveDate, member.getEffectiveTime());
 			}
