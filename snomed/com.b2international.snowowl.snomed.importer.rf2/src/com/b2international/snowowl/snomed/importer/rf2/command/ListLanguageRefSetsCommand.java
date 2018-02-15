@@ -112,30 +112,26 @@ public class ListLanguageRefSetsCommand extends AbstractRf2ImporterCommand {
 		
 		config.setDescriptionsFiles(descriptionFileNames);
 		
+		final SnomedRefSetNameCollector provider = new SnomedRefSetNameCollector(config, new NullProgressMonitor(), "");
+		
 		for (final File languageRefSetFile : languageRefSetFiles) {
 		
 			interpreter.println("Searching for language type reference sets in '" + languageRefSetFile.getName() + "'...");
-			
 	
 			// Setting up configuration only with the required fields
 			config.setSourceKind(ImportSourceKind.ARCHIVE);
 			config.setArchiveFile(archiveFile);
 	
-			final SnomedRefSetNameCollector provider = new SnomedRefSetNameCollector(config, new NullProgressMonitor(), "");
-	
 			try {
-				for (File langFile : config.getLanguageRefSetFiles()) {
-					provider.parse(config.toURL(langFile));
-				}
+				provider.parse(config.toURL(languageRefSetFile));
 			} catch (final IOException e) {
 				interpreter.println(e);
 				return;
 			}
-
-			for (final Entry<String, String> label : provider.getAvailableLabels().entrySet()) {
-				$.put(label.getKey(), label.getValue());
-			}
 			
+		}
+		for (final Entry<String, String> label : provider.getAvailableLabels().entrySet()) {
+			$.put(label.getKey(), label.getValue());
 		}
 		
 		if ($.isEmpty()) {
