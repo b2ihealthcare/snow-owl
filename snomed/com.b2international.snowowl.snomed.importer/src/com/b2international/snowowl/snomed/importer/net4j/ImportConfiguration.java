@@ -48,7 +48,7 @@ public final class ImportConfiguration {
 	public static final String LANGUAGE_REF_SET_ID_PROPERTY = "languageRefSetId";
 	public static final String IMPORT_SOURCE_KIND_PROPERTY = "sourceKind";
 	public static final String DESCRIPTION_TYPE_REFSET_FILE_PROPERTY = "descriptionType";
-	public static final String TEXT_DEFINITION_FILE_PROPERTY = "textDefinitionFile";
+	public static final String TEXT_DEFINITION_FILE_PROPERTY = "firstTextDefinitionFile";
 	public static final String VERSION_PROPERTY = "version";
 	public static final String CREATE_VERSIONS_PROPERTY = "createVersions";
 	
@@ -68,7 +68,8 @@ public final class ImportConfiguration {
 	private Collection<File> languageRefSetFiles = Collections.emptySet();
 	private File firstLanguageRefSetFile;
 	private File descriptionType;
-	private File textDefinitionFile;
+	private Collection<File> textDefinitionFiles = Collections.emptySet();
+	private File firstTextDefinitionFile;
 	
 	private ImportSourceKind sourceKind = ImportSourceKind.ARCHIVE;
 	private ContentSubType version = ContentSubType.DELTA;
@@ -170,7 +171,6 @@ public final class ImportConfiguration {
 				firstLanguageRefSetFile = languageRefSetFile;
 			}
 		}
-			
 	}
 	
 	public ImportSourceKind getSourceKind() {
@@ -205,12 +205,18 @@ public final class ImportConfiguration {
 		this.descriptionType = descriptionType;
 	}
 	
-	public File getTextDefinitionFile() {
-		return textDefinitionFile;
+	public Collection<File> getTextDefinitionFiles() {
+		return textDefinitionFiles;
 	}
 
-	public void setTextDefinitionFile(final File textDefinitionFile) {
-		this.textDefinitionFile = textDefinitionFile;
+	public void setTextDefinitionFiles(final Collection<File> textDefinitionFiles) {
+		this.textDefinitionFiles = Collections3.toImmutableSet(textDefinitionFiles);
+		if (!textDefinitionFiles.isEmpty()) {
+			final File textDefinitionFile = textDefinitionFiles.stream().findFirst().get();
+			if (textDefinitionFiles != null) {
+				setFirstTextDefinitionFile(textDefinitionFile);
+			}
+		}
 	}
 
 	public URL toURL(final File releaseFile) throws IOException {
@@ -300,5 +306,13 @@ public final class ImportConfiguration {
 
 	public void setCodeSystemShortName(String codeSystemShortName) {
 		this.codeSystemShortName = codeSystemShortName;
+	}
+
+	public File getFirstTextDefinitionFile() {
+		return firstTextDefinitionFile;
+	}
+
+	public void setFirstTextDefinitionFile(File firstTextDefinitionFile) {
+		this.firstTextDefinitionFile = firstTextDefinitionFile;
 	}
 }
