@@ -226,12 +226,14 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		// add dirty descriptions from transaction
 		FluentIterable
 			.from(commitChangeSet.getDirtyComponents(Description.class, ALLOWED_DESCRIPTION_CHANGE_FEATURES))
+			.filter(desc -> !Concepts.TEXT_DEFINITION.equals(desc.getType().getId()))
 			.copyInto(dirtyDescriptions);
 		// register descriptions as dirty for each dirty lang. member
 		FluentIterable
 			.from(commitChangeSet.getDirtyComponents(SnomedLanguageRefSetMember.class, ALLOWED_LANG_MEMBER_CHANGE_FEATURES))
 			.transform(SnomedLanguageRefSetMember::eContainer)
 			.filter(Description.class)
+			.filter(desc -> !Concepts.TEXT_DEFINITION.equals(desc.getType().getId()))
 			.copyInto(dirtyDescriptions);
 		
 		return dirtyDescriptions;
