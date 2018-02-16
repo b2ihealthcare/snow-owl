@@ -49,6 +49,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
+import org.eclipse.emf.cdo.session.CDORepositoryInfo;
+import org.eclipse.emf.cdo.session.CDOSession;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveSets;
@@ -69,6 +73,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
@@ -312,7 +317,6 @@ public final class ImportUtil {
 				return loadRepositoryState(searcher);
 			}
 		});
-		
 		if (!isContentValid(repositoryState, result, requestingUserId, configuration, branchPath, subMonitor)) {
 			LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import failed due to invalid RF2 release file(s).");
 			return result;
@@ -437,16 +441,16 @@ public final class ImportUtil {
 	}
 
 	private SnomedImportResult doImportLocked(final String requestingUserId, final ImportConfiguration configuration,
-			final SnomedImportResult result, final IBranchPath branchPath, final SnomedImportContext context,
+			final SnomedImportResult result, final IBranchPath branchPath, final SnomedImportContext importContext,
 			final SubMonitor subMonitor, final List<Importer> importers, final SnomedEditingContext editingContext,
 			final CDOBranch branch, final RepositoryState repositoryState) {
 
 		try { 
-
-			final long lastCommitTime = CDOServerUtils.getLastCommitTime(branch);
-			context.setCommitTime(lastCommitTime);
 			
-			final SnomedCompositeImporter importer = new SnomedCompositeImporter(IMPORT_LOGGER, repositoryState, context, importers, ComponentImportUnit.ORDERING);
+			long commitTime = CDOServerUtils.getLastCommitTime(branch);
+			importContext.setCommitTime(commitTime);
+			
+			final SnomedCompositeImporter importer = new SnomedCompositeImporter(IMPORT_LOGGER, repositoryState, importContext, importers, ComponentImportUnit.ORDERING);
 
 			importer.preImport(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 			final SnomedCompositeImportUnit snomedCompositeImportUnit = importer.getCompositeUnit(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
@@ -454,14 +458,23 @@ public final class ImportUtil {
 			importer.postImport(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 
 			// If there were no changes, no need to recreate semantic indexes
-			if (context.getVisitedConcepts().size() == 0 && context.getVisitedRefSets().size() == 0) {
+			if (importContext.getVisitedConcepts().size() == 0 && importContext.getVisitedRefSets().size() == 0) {
 				return result;
+			}
+			
+			if (!importContext.isCommitNotificationEnabled()) {
+				
+				if (importContext.getPreviousTime() < importContext.getCommitTime()) {
+					final CDOCommitInfo commitInfo = createCommitInfo(importContext);
+					CDOServerUtils.sendCommitNotification(commitInfo);
+				}
+				
 			}
 
 			// release specific post processing
-			postProcess(context);
+			postProcess(importContext);
 			
-			result.getVisitedConcepts().addAll(getVisitedConcepts(context.getVisitedConcepts(), branchPath));
+			result.getVisitedConcepts().addAll(getVisitedConcepts(importContext.getVisitedConcepts(), branchPath));
 
 			return result;
 		} finally {
@@ -472,6 +485,20 @@ public final class ImportUtil {
 				LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import finished. No changes could be found.");
 			}
 		}
+	}
+	
+	private CDOCommitInfo createCommitInfo(SnomedImportContext importContext) {
+		
+		final CDOTransaction transaction = importContext.getEditingContext().getTransaction();
+		final CDOSession session = transaction.getSession();
+		final CDORepositoryInfo info = session.getRepositoryInfo();
+		final String repositoryUuid = info.getUUID();
+		final IBranchPath branchPath = BranchPathUtils.createPath(importContext.branch());
+		
+		return CDOCommitInfoUtils.createEmptyCommitInfo(repositoryUuid, branchPath, importContext.getUserId(),
+				String.format("%s%s", importContext.getCommitId(), Strings.nullToEmpty(importContext.getCommitMessage())),
+				importContext.getCommitTime(), importContext.getPreviousTime());
+		
 	}
 
 	private Collection<SnomedConceptDocument> getVisitedConcepts(final LongSet visitedConceptIds, final IBranchPath branchPath) {
