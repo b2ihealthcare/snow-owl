@@ -80,5 +80,4 @@ public class BranchTimestampUpdateTest {
 		assertThat(branchBeforeImport.baseTimestamp(), not(equalTo(branchAfterImport.headTimestamp())));
 	}
 	
-	
 }
