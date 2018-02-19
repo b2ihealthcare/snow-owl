@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
@@ -49,7 +50,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			
 			ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
 
-			if (!severities.isEmpty()) {
+			if (!CompareUtils.isEmpty(severities)) {
 				req.filterBySeverity(severities);
 			}
 			
