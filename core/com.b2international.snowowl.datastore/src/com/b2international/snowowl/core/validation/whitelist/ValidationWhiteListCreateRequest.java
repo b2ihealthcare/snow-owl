@@ -34,13 +34,15 @@ final class ValidationWhiteListCreateRequest implements Request<ServiceProvider,
 
 	@NotEmpty private String ruleId;
 	@NotNull private ComponentIdentifier componentIdentifier;
+	private String reporter;
+	private long createdAt;
 	
 	@Override
 	public String execute(ServiceProvider context) {
 		
 		final String id = UUID.randomUUID().toString();
 		
-		context.service(ValidationRepository.class).save(id, new ValidationWhiteList(id, ruleId, componentIdentifier));
+		context.service(ValidationRepository.class).save(id, new ValidationWhiteList(id, ruleId, componentIdentifier, reporter, createdAt));
 		
 		WhiteListNotification.added(id).publish(context.service(IEventBus.class));
 		
@@ -53,6 +55,14 @@ final class ValidationWhiteListCreateRequest implements Request<ServiceProvider,
 	
 	void setComponentIdentifier(ComponentIdentifier componentIdentifier) {
 		this.componentIdentifier = componentIdentifier;
+	}
+	
+	void setReporter(String reporter) {
+		this.reporter = reporter;
+	}
+	
+	void setCreatedAt(long createdAt) {
+		this.createdAt = createdAt;
 	}
 
 }
