@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Scripting Groovy Module
 Bundle-SymbolicName: com.b2international.scripting.groovy;singleton:=true
-Bundle-Version: 6.2.0
+Bundle-Version: 6.3.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.scripting.api;bundle-version="6.1.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
