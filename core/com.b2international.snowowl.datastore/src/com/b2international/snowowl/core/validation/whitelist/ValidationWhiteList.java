@@ -44,7 +44,7 @@ public final class ValidationWhiteList implements Serializable {
 	private final String ruleId;
 	private final ComponentIdentifier componentIdentifier;
 	private final String reporter;
-	private long  createdAt;
+	private final long  createdAt;
 
 	@JsonCreator
 	public ValidationWhiteList(
