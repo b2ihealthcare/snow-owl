@@ -22,16 +22,28 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestReq
 import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.*;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.request.Branching;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.google.common.collect.ImmutableMap;
 
@@ -50,6 +62,17 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
 		importArchive(fileName, importConfiguration);
 	}
+	
+	private void importArchive(String fileName, String path, boolean createVersion, String releaseType) {
+		final Map<?, ?> importConfiguration = ImmutableMap.builder()
+				.put("type", releaseType)
+				.put("branchPath", path)
+				.put("createVersions", createVersion)
+				.build();
+
+		importArchive(fileName, importConfiguration);
+	}
+
 
 	private void importArchive(final String fileName, Map<?, ?> importConfiguration) {
 		final String importId = lastPathSegment(createImport(importConfiguration).statusCode(201)
@@ -203,5 +226,41 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "555231000005107").statusCode(200);
 		getVersion("SNOMEDCT-NE", "2015-02-05").statusCode(200);
 	}
+	
+	@Test
+	public void import12BranchHeadTimestampUpdateAfterImporting() {
+		final Branching branches = RepositoryRequests.branching();
+		
+		final String repositoryId = SnomedDatastoreActivator.REPOSITORY_UUID;
+		
+		final String branchA = "a";
+		
+		final Branch branchBeforeImport = branches.prepareCreate()
+				.setParent(Branch.MAIN_PATH)
+				.setName(branchA)
+				.build(repositoryId)
+				.execute(getBus())
+				.getSync(1, TimeUnit.MINUTES);
+		
+		assertEquals("After branch creation timestamps should still be equal", branchBeforeImport.baseTimestamp(), branchBeforeImport.headTimestamp());
+		
+		importArchive("SnomedCT_Release_INT_20160131_unique_concept.zip", branchBeforeImport.path(), false, Rf2ReleaseType.DELTA.name());
+	
+		final Branch branchAfterImport = branches.prepareGet(branchBeforeImport.path())
+				.build(repositoryId)
+				.execute(getBus())
+				.getSync(1, TimeUnit.MINUTES);
+		
+		IBranchPath path = BranchPathUtils.createPath(branchAfterImport.path());
+		
+		getComponent(path, SnomedComponentType.CONCEPT, "301795004").statusCode(200);
+		
+		
+		assertThat(branchBeforeImport.baseTimestamp(), not(equalTo(branchAfterImport.headTimestamp())));
+	}
 
+	private IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
+	
 }
