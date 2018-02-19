@@ -447,7 +447,7 @@ public final class ImportUtil {
 
 		try { 
 			
-			long commitTime = CDOServerUtils.getLastCommitTime(branch);
+			final long commitTime = CDOServerUtils.getLastCommitTime(branch);
 			importContext.setCommitTime(commitTime);
 			
 			final SnomedCompositeImporter importer = new SnomedCompositeImporter(IMPORT_LOGGER, repositoryState, importContext, importers, ComponentImportUnit.ORDERING);
