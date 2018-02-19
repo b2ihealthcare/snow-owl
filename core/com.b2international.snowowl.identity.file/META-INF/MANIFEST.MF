@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl File Identity Module
 Bundle-SymbolicName: com.b2international.snowowl.identity.file;singleton:=true
-Bundle-Version: 6.2.0.qualifier
+Bundle-Version: 6.2.0
 Fragment-Host: com.b2international.snowowl.identity
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .,
