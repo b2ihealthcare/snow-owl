@@ -27,7 +27,6 @@ import org.apache.lucene.search.ReferenceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -35,7 +34,6 @@ import com.b2international.snowowl.datastore.index.DocIdCollector;
 import com.b2international.snowowl.datastore.index.DocIdCollector.DocIdsIterator;
 import com.b2international.snowowl.datastore.server.index.IndexServerService;
 import com.b2international.snowowl.snomed.datastore.index.SnomedIndexService;
-import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
 import com.google.common.collect.AbstractIterator;
 
@@ -53,19 +51,18 @@ public class SnomedSubExporter extends AbstractIterator<String> implements Itera
 	private final IBranchPath branchPath;
 
 	protected SnomedSubExporter(final IBranchPath branchPath, final SnomedIndexExporter exporter) {
-		LOGGER.info("Initializing sub exporter for branch path {} with type {}", branchPath.getPath(), exporter.getClass().getSimpleName());
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 		this.exporter = checkNotNull(exporter, "exporter");
-		Stopwatch stopwatch = Stopwatch.createStarted();
 		manager = createReferenceManager();
 		searcher = createIndexSearcher();
 		itr = createDocIdIterator();
-		LOGGER.info("Sub exporter initialization finished in {}", TimeUtil.toString(stopwatch));
+		LOGGER.info("Initialized {} for branch path {}", exporter.getClass().getSimpleName(), branchPath.getPath());
 	}
 
 	@Override
 	public void close() throws IOException {
 		manager.get().release(searcher.get());
+		LOGGER.info("Released {} for branch path: {}", exporter.getClass().getSimpleName(), branchPath.getPath());
 	}
 
 	@Override
