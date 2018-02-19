@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.2.0
+
+### Added
+- Set status of stale remote jobs to FAILED during startup (580d3e3)
+
+### Bugs
+- Fix missing searchAfter argument from revision index searches (56a5e03)
+- Serialize ECL expressions in a synchronized block (5d05844)
+
 ## 6.1.0
 
 ### Added
