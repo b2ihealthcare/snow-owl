@@ -496,7 +496,7 @@ public final class ImportUtil {
 		final IBranchPath branchPath = BranchPathUtils.createPath(importContext.branch());
 		
 		return CDOCommitInfoUtils.createEmptyCommitInfo(repositoryUuid, branchPath, importContext.getUserId(),
-				String.format("%s%s", importContext.getCommitId(), Strings.nullToEmpty(importContext.getCommitMessage())),
+				importContext.getCommitMessage(),
 				importContext.getCommitTime(), importContext.getPreviousTime());
 		
 	}
