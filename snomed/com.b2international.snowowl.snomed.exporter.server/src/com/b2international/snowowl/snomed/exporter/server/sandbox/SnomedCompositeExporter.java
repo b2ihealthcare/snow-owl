@@ -26,6 +26,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterators.concat;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.reverse;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.lucene.search.BooleanClause.Occur.MUST;
@@ -36,6 +37,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
@@ -58,6 +60,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 
 /**
@@ -65,6 +68,16 @@ import com.google.common.collect.Iterators;
  */
 public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 
+	private static final List<String> INT_EFFECTIVE_TIMES = ImmutableList.<String> of(
+			"20020131", "20020731", "20030131", "20030731",
+			"20040131", "20040731", "20050131", "20050731",
+			"20060131", "20060731", "20070131", "20070731",
+			"20080131", "20080731", "20090131", "20090731",
+			"20100131", "20100731", "20110131", "20110731",
+			"20120131", "20120731", "20130131", "20130731",
+			"20140131", "20140731", "20150131", "20150731",
+			"20160131", "20160731", "20170131");
+	
 	private final Iterator<String> itr;
 	private final CloseableList<SnomedSubExporter> closeables;
 	private final SnomedExportConfiguration configuration;
@@ -255,9 +268,19 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 	}
 	
 	private Map<IBranchPath, Long> createBranchPathMap() {
+		
+		Set<Date> intEffectiveDates = newHashSet();
+		
+		for (String intEffectiveTime : INT_EFFECTIVE_TIMES) {
+			intEffectiveDates.add(EffectiveTimes.parse(intEffectiveTime, DateFormats.SHORT));
+		}
+		
 		final Map<IBranchPath, Long> branchPathMap = newLinkedHashMap();
 		for (final ICodeSystemVersion version : getAllVersion()) {
-			branchPathMap.put(createVersionPath(version.getVersionId()), version.getEffectiveDate());
+			Date versionEffectiveDate = new Date(version.getEffectiveDate());
+			if (versionEffectiveDate != null && !intEffectiveDates.contains(versionEffectiveDate)) {
+				branchPathMap.put(createVersionPath(version.getVersionId()), version.getEffectiveDate());
+			}
 		}
 		branchPathMap.put(createMainPath(), UNSET_EFFECTIVE_TIME);
 		return unmodifiableMap(branchPathMap);
