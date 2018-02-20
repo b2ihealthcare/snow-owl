@@ -115,9 +115,16 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 			
 			if (!hasNext) {
 				
-				if (branchesToExport.hasNext()) {
+				while (branchesToExport.hasNext()) {
+					// close current sub exporter
 					subExporter.close();
-					subExporter = new SnomedSubExporter(branchesToExport.next(), this);
+					IBranchPath nextBranchPath = branchesToExport.next();
+					// open sub exporter for the next branch path
+					subExporter = new SnomedSubExporter(nextBranchPath, this);
+					// check if there are any elements on the next branch
+					if (subExporter.hasNext()) {
+						return true;
+					}
 				}
 				
 			}
