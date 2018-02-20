@@ -74,12 +74,12 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 			"20080131", "20080731", "20081031",
 			"20090131", "20090731", "20091031",
 			"20100131", "20100731", "20101001",
-			"20110131",	"20110731", "20111001",
+			"20110131", "20110731", "20111001",
 			"20120131", "20120731",
 			"20130131", "20130731",
 			"20140131", "20140731",
 			"20150131", "20150731",
-			"20160131",	"20160731",
+			"20160131", "20160731",
 			"20170131");
 
 	private SnomedSubExporter subExporter;
@@ -109,9 +109,11 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 	@Override
 	public boolean hasNext() {
 		
+		boolean hasNext = subExporter.hasNext();
+		
 		try {
 			
-			if (!subExporter.hasNext()) {
+			if (!hasNext) {
 				
 				if (branchesToExport.hasNext()) {
 					subExporter.close();
@@ -124,7 +126,7 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 			throw new RuntimeException(e);
 		}
 		
-		return subExporter.hasNext();
+		return hasNext;
 	}
 	
 	@Override
