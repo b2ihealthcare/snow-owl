@@ -30,6 +30,9 @@ import com.b2international.snowowl.core.api.BranchPath;
 import com.b2international.snowowl.datastore.index.IndexUtils;
 import com.b2international.snowowl.datastore.server.internal.lucene.store.CompositeDirectory;
 import com.b2international.snowowl.datastore.server.internal.lucene.store.ReadOnlyDirectory;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -37,6 +40,8 @@ public abstract class AbstractDirectoryManager implements IDirectoryManager {
 
 	protected final String repositoryUuid;
 	protected final File indexPath;
+	private LoadingCache<File, Directory> fileToDirectoryCache;
+	private LoadingCache<Directory, List<IndexCommit>> dirToCommitsCache;
 
 	/**
 	 * @param repositoryUuid the repository identifier
@@ -45,6 +50,21 @@ public abstract class AbstractDirectoryManager implements IDirectoryManager {
 	protected AbstractDirectoryManager(final String repositoryUuid, final File indexPath) {
 		this.repositoryUuid = checkNotNull(repositoryUuid, "repositoryUuid");
 		this.indexPath = checkNotNull(indexPath, "indexPath");
+		
+		fileToDirectoryCache = CacheBuilder.newBuilder().build(new CacheLoader<File, Directory>() {
+			@Override
+			public Directory load(File key) throws Exception {
+				return openWritableLuceneDirectory(key);
+			}
+		});
+		
+		dirToCommitsCache = CacheBuilder.newBuilder().build(new CacheLoader<Directory, List<IndexCommit>>() {
+			@Override
+			public List<IndexCommit> load(Directory key) throws Exception {
+				return DirectoryReader.listCommits(key);
+			}
+		});
+		
 	}
 
 	protected File getIndexSubDirectory(final String subDirectoryPath) throws IOException {
@@ -60,7 +80,7 @@ public abstract class AbstractDirectoryManager implements IDirectoryManager {
 		final File indexSubDirectory = getIndexSubDirectory(branchPath.path());
 
 		if (branchPath.isMain()) {
-			final Directory mainDirectory = openWritableLuceneDirectory(indexSubDirectory);
+			final Directory mainDirectory = fileToDirectoryCache.getUnchecked(indexSubDirectory);
 			return readOnly ? new ReadOnlyDirectory(mainDirectory) : mainDirectory;
 		}
 
@@ -84,7 +104,7 @@ public abstract class AbstractDirectoryManager implements IDirectoryManager {
 		if (readOnly) {
 			return parentCommitDirectory;
 		} else {
-			final Directory writeableDirectory = openWritableLuceneDirectory(indexSubDirectory);
+			final Directory writeableDirectory = fileToDirectoryCache.getUnchecked(indexSubDirectory);
 			return new CompositeDirectory(parentCommitDirectory, writeableDirectory);
 		}
 	}
@@ -92,7 +112,8 @@ public abstract class AbstractDirectoryManager implements IDirectoryManager {
 	protected abstract Directory openWritableLuceneDirectory(final File folderForBranchPath) throws IOException;
 
 	private IndexCommit getParentCommit(final Directory parentDirectory, final BranchPath branchPath) throws IOException {
-		final List<IndexCommit> indexCommits = Lists.<IndexCommit>reverse(DirectoryReader.listCommits(parentDirectory));
+		
+		final List<IndexCommit> indexCommits = Lists.<IndexCommit>reverse(dirToCommitsCache.getUnchecked(parentDirectory));
 		final String path = branchPath.path();
 
 		for (final IndexCommit indexCommit : indexCommits) {
