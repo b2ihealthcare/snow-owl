@@ -20,9 +20,7 @@ import static com.b2international.snowowl.core.date.EffectiveTimes.UNSET_EFFECTI
 import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPath;
 import static com.b2international.snowowl.datastore.BranchPathUtils.createVersionPath;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
-import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.lucene.search.BooleanClause.Occur.MUST;
 import static org.apache.lucene.search.BooleanClause.Occur.SHOULD;
@@ -34,7 +32,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
@@ -51,36 +48,18 @@ import com.b2international.snowowl.snomed.datastore.index.mapping.SnomedMappings
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf1Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRf2Exporter;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Longs;
 
 /**
  *
  */
 public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
-
-	private static final List<String> INT_EFFECTIVE_TIMES = ImmutableList.<String> of(
-			"20020131", "20020731",
-			"20030131", "20030731", "20031031",
-			"20040131", "20040731", "20040930",
-			"20050131", "20050731", "20050930",
-			"20060131", "20060731", "20060930",
-			"20070131", "20070731", "20071001",
-			"20080131", "20080731", "20081031",
-			"20090131", "20090731", "20091031",
-			"20100131", "20100731", "20101001",
-			"20110131", "20110731", "20111001",
-			"20120131", "20120731",
-			"20130131", "20130731",
-			"20140131", "20140731",
-			"20150131", "20150731",
-			"20160131", "20160731",
-			"20170131");
 
 	private SnomedSubExporter subExporter;
 	
@@ -94,7 +73,7 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 		this.configuration = checkNotNull(configuration, "configuration");
 		
 		branchesToEffectiveTimeMap = createBranchPathMap();
-		branchesToExport = newArrayList(branchesToEffectiveTimeMap.keySet()).iterator();
+		branchesToExport = getBranchesToExport();
 		
 		subExporter = createSubExporter(this.configuration);
 		
@@ -300,23 +279,27 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 
 	private Map<IBranchPath, Long> createBranchPathMap() {
 		
-		Set<Date> intEffectiveDates = newHashSet();
-		
-		for (String intEffectiveTime : INT_EFFECTIVE_TIMES) {
-			intEffectiveDates.add(EffectiveTimes.parse(intEffectiveTime, DateFormats.SHORT));
-		}
-		
 		final Map<IBranchPath, Long> branchPathMap = newLinkedHashMap();
+		
 		for (final ICodeSystemVersion version : getAllVersion()) {
-			Date versionEffectiveDate = new Date(version.getEffectiveDate());
-			if (versionEffectiveDate != null && !intEffectiveDates.contains(versionEffectiveDate)) {
-				branchPathMap.put(createVersionPath(version.getVersionId()), version.getEffectiveDate());
-			}
+			branchPathMap.put(createVersionPath(version.getVersionId()), version.getEffectiveDate());
 		}
 		
 		branchPathMap.put(createMainPath(), UNSET_EFFECTIVE_TIME);
 		
 		return unmodifiableMap(branchPathMap);
+	}
+
+	private Iterator<IBranchPath> getBranchesToExport() {
+		return FluentIterable.from(branchesToEffectiveTimeMap.keySet()).transform(new Function<IBranchPath, IBranchPath>() {
+			@Override
+			public IBranchPath apply(IBranchPath input) {
+				if (BranchPathUtils.isMain(input)) {
+					return input;
+				}
+				return BranchPathUtils.convertIntoBasePath(input);
+			}
+		}).toList().iterator();
 	}
 
 	private SnomedSubExporter createSubExporter(final SnomedExportConfiguration configuration) {
