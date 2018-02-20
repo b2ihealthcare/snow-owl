@@ -35,7 +35,7 @@ import com.google.inject.Provider;
  */
 public class SnomedConceptNameProvider extends AbstractIndexNameProvider implements ISnomedConceptNameProvider {
 
-	private static final long NAME_PROVIDER_TIMEOUT = TimeUnit.SECONDS.toMillis(10L);
+	private static final long NAME_PROVIDER_TIMEOUT = TimeUnit.SECONDS.toMillis(30L);
 	
 	private final Provider<IEventBus> bus;
 	private final List<ExtendedLocale> locales;
