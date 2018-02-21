@@ -128,6 +128,7 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		addNamespaceFilter(queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
 		addActiveMemberOfClause(context, queryBuilder);
+		addMemberOfClause(context, queryBuilder);
 		
 		if (containsKey(OptionKey.DEFINITION_STATUS)) {
 			if (Concepts.PRIMITIVE.equals(getString(OptionKey.DEFINITION_STATUS))) {

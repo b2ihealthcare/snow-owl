@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,16 @@
  */
 package com.b2international.snowowl.snomed.importer.net4j;
 
-import java.util.List;
-import java.util.Set;
+import static com.google.common.collect.Sets.newHashSet;
 
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import java.util.Set;
 
 public class SnomedImportResult {
 
-	private final List<SnomedConceptDocument> visitedConcepts = Lists.newArrayList();
-	private final Set<SnomedValidationDefect> validationDefects = Sets.newHashSet();
-	
-	public List<SnomedConceptDocument> getVisitedConcepts() {
+	private final Set<String> visitedConcepts = newHashSet();
+	private final Set<SnomedValidationDefect> validationDefects = newHashSet();
+
+	public Set<String> getVisitedConcepts() {
 		return visitedConcepts;
 	}
 	

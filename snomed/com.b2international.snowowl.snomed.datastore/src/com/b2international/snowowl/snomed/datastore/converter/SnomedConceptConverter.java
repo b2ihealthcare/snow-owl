@@ -21,6 +21,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCon
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedAncestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedParents;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.active;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -29,6 +30,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.functions.LongToStringFunction;
@@ -46,6 +48,7 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
@@ -59,7 +62,6 @@ import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
-import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Functions;
 import com.google.common.collect.FluentIterable;
@@ -74,24 +76,10 @@ import com.google.common.collect.TreeMultimap;
  */
 final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedConceptDocument, SnomedConcept, SnomedConcepts> {
 
-	private DescriptionRequestHelper descriptionHelper;
 	private SnomedReferenceSetConverter referenceSetConverter;
 	
 	SnomedConceptConverter(final BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
-	}
-	
-	private DescriptionRequestHelper getDescriptionHelper() {
-		if (descriptionHelper == null) {
-			descriptionHelper = new DescriptionRequestHelper() {
-				@Override
-				protected SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req) {
-					return req.build().execute(context());
-				}
-			};
-		}
-		
-		return descriptionHelper;
 	}
 	
 	private SnomedReferenceSetConverter getReferenceSetConverter() {
@@ -143,6 +131,19 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		if (input.getStatedAncestors() != null) {
 			result.setStatedAncestorIds(input.getStatedAncestors().toArray());
 		}
+		
+		if (expand().containsKey(SnomedConcept.Expand.PREFERRED_DESCRIPTIONS) || expand().containsKey(SnomedConcept.Expand.PREFERRED_TERM) || expand().containsKey(SnomedConcept.Expand.FULLY_SPECIFIED_NAME)) {
+			List<SnomedDescription> preferredDescriptions = input.getPreferredDescriptions().stream().map(description -> {
+				SnomedDescription preferredDescription = new SnomedDescription(description.getId());
+				preferredDescription.setStorageKey(description.getStorageKey());
+				preferredDescription.setConceptId(result.getId());
+				preferredDescription.setTerm(description.getTerm());
+				preferredDescription.setTypeId(description.getTypeId());
+				preferredDescription.setAcceptabilityMap(Maps.toMap(description.getLanguageRefSetIds(), any -> Acceptability.PREFERRED));
+				return preferredDescription;
+			}).collect(Collectors.toList());
+			result.setPreferredDescriptions(new SnomedDescriptions(preferredDescriptions, null, null, preferredDescriptions.size(), preferredDescriptions.size()));
+		}
 			
 		return result;
 	}
@@ -169,6 +170,15 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		expandDescendants(results, conceptIds, SnomedConcept.Expand.STATED_DESCENDANTS, true);
 		expandAncestors(results, conceptIds, SnomedConcept.Expand.ANCESTORS, false);
 		expandAncestors(results, conceptIds, SnomedConcept.Expand.STATED_ANCESTORS, true);
+		
+		
+		// XXX make sure we set the preferred descriptions field to null if the client did not explicitly request it
+		// it is necessary to expand this field for pt and fsn expand, but do not increase the payload unnecessarily
+		if (!expand().containsKey(SnomedConcept.Expand.PREFERRED_DESCRIPTIONS)) {
+			results.forEach(concept -> {
+				concept.setPreferredDescriptions(null);
+			});
+		}
 	}
 
 	private void expandReferenceSet(List<SnomedConcept> results) {
@@ -206,8 +216,17 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		if (!expand().containsKey(SnomedConcept.Expand.PREFERRED_TERM)) {
 			return;
 		}
-			
-		final Map<String, SnomedDescription> terms = getDescriptionHelper().getPreferredTerms(conceptIds, locales());
+		
+		final List<SnomedDescription> synonyms = newArrayList();
+		for (SnomedConcept result : results) {
+			for (SnomedDescription description : result.getPreferredDescriptions()) {
+				if (!Concepts.FULLY_SPECIFIED_NAME.equals(description.getTypeId())) {
+					synonyms.add(description);
+				}
+			}
+		}
+		
+		final Map<String, SnomedDescription> terms = DescriptionRequestHelper.indexBestPreferredByConceptId(synonyms, locales());
 		for (SnomedConcept concept : results) {
 			concept.setPt(terms.get(concept.getId()));
 		}
@@ -218,9 +237,27 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 			return;
 		}
 		
-		final Map<String, SnomedDescription> terms = getDescriptionHelper().getFullySpecifiedNames(conceptIds, locales());
+		final Map<String, SnomedDescription> firstFsnByConceptId = newHashMap();
+		final List<SnomedDescription> fsns = newArrayList();
 		for (SnomedConcept concept : results) {
-			concept.setFsn(terms.get(concept.getId()));
+			for (SnomedDescription description : concept.getPreferredDescriptions()) {
+				if (Concepts.FULLY_SPECIFIED_NAME.equals(description.getTypeId())) {
+					fsns.add(description);
+					if (!firstFsnByConceptId.containsKey(concept.getId())) {
+						firstFsnByConceptId.put(concept.getId(), description);
+					}
+				}
+			}
+		}
+		
+		final Map<String, SnomedDescription> terms = DescriptionRequestHelper.indexBestPreferredByConceptId(fsns, locales());
+		
+		for (SnomedConcept concept : results) {
+			SnomedDescription fsn = terms.get(concept.getId());
+			if (fsn == null) {
+				fsn = firstFsnByConceptId.get(concept.getId());
+			}
+			concept.setFsn(fsn);
 		}
 	}
 
