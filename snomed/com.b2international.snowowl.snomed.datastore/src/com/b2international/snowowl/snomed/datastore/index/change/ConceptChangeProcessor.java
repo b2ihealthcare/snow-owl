@@ -99,10 +99,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.add(SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER__ACCEPTABILITY_ID)
 			.build();
 	
-	private static final Ordering<SnomedDescriptionFragment> DESCRIPTION_FRAGMENT_ORDER = Ordering.natural()
-			.onResultOf(SnomedDescriptionFragment::getStorageKey)
-			.compound(Ordering.natural().<SnomedDescriptionFragment>onResultOf(description -> description.getTypeId()))
-			.compound(Ordering.natural().<SnomedDescriptionFragment>onResultOf(SnomedDescriptionFragment::getTerm).reverse());
+	private static final Ordering<SnomedDescriptionFragment> DESCRIPTION_FRAGMENT_ORDER = Ordering.natural().onResultOf(SnomedDescriptionFragment::getStorageKey);
 	
 	private final DoiData doiData;
 	private final IconIdUpdater iconId;
