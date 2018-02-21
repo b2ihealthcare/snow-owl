@@ -61,7 +61,7 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 	public void setup() {
 		super.setup();
 		conceptA = concept()
-				.descriptions(
+				.preferredDescriptions(
 					ImmutableList.of(
 						fsn("A (tag)", Concepts.REFSET_LANGUAGE_TYPE_UK), 
 						synonym("A", Concepts.REFSET_LANGUAGE_TYPE_UK),
@@ -70,7 +70,7 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 				)
 				.build();
 		conceptB = concept()
-				.descriptions(
+				.preferredDescriptions(
 					ImmutableList.of(
 						fsn("B (tag)", Concepts.REFSET_LANGUAGE_TYPE_UK), 
 						synonym("B", Concepts.REFSET_LANGUAGE_TYPE_UK),
@@ -79,7 +79,7 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 				)
 				.build();
 		conceptC = concept()
-				.descriptions(
+				.preferredDescriptions(
 					ImmutableList.of(
 						fsn("C (tag)", Concepts.REFSET_LANGUAGE_TYPE_UK), 
 						synonym("C", Concepts.REFSET_LANGUAGE_TYPE_UK),
@@ -88,7 +88,7 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 				)
 				.build();
 		conceptD = concept()
-				.descriptions(
+				.preferredDescriptions(
 					ImmutableList.of(
 						fsn("Alternative Term (tag)", Concepts.REFSET_LANGUAGE_TYPE_UK), 
 						synonym("Description with D start letter and syonym type", Concepts.REFSET_LANGUAGE_TYPE_UK),

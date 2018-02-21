@@ -107,7 +107,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();
@@ -130,7 +130,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK),
 					new SnomedDescriptionFragment(synonym.getId(), CDOIDUtil.getLong(synonym.cdoID()), Concepts.SYNONYM, synonym.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
@@ -154,7 +154,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();
@@ -182,7 +182,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();
@@ -211,7 +211,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(synonym.getId(), CDOIDUtil.getLong(synonym.cdoID()), Concepts.SYNONYM, synonym.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();
@@ -252,7 +252,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
 		registerExistingObject(concept);
 		indexRevision(MAIN, conceptStorageKey, doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(generateDescriptionId(), nextStorageKey(), Concepts.FULLY_SPECIFIED_NAME, "Term", Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build());
@@ -275,7 +275,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
 		registerExistingObject(concept);
 		indexRevision(MAIN, conceptStorageKey, doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(generateDescriptionId(), nextStorageKey(), Concepts.SYNONYM, "Hello", Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build());
@@ -302,7 +302,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(fsn);
 		
 		indexRevision(MAIN, conceptStorageKey, doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build());
@@ -314,7 +314,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();
@@ -334,7 +334,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(fsn);
 		
 		indexRevision(MAIN, conceptStorageKey, doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build());
@@ -362,7 +362,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(fsn);
 		
 		indexRevision(MAIN, conceptStorageKey, doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build());
@@ -387,7 +387,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(description);
 		
 		indexRevision(MAIN, conceptStorageKey, doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build());
@@ -399,7 +399,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.SYNONYM, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();
@@ -419,7 +419,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(description);
 		
 		indexRevision(MAIN, conceptStorageKey, doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build());
@@ -433,7 +433,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
 				))
 				.build();
@@ -456,7 +456,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(memberToInactivate);
 		
 		indexRevision(MAIN, conceptStorageKey, doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
 				))
 				.build());
@@ -468,7 +468,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();
@@ -491,7 +491,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(memberToChange);
 		
 		indexRevision(MAIN, conceptStorageKey, doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
 				))
 				.build());
@@ -503,7 +503,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept)
-				.descriptions(ImmutableList.of(
+				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();

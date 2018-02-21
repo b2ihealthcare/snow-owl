@@ -76,9 +76,8 @@ import com.google.common.collect.ImmutableMap;
 @Script(
 	name="termSort", 
 	script=
-	"String term = \"\";"
 	// select first preferred SYNONYM
-	+ "for (description in params._source.descriptions) {"
+	  "for (description in params._source.preferredDescriptions) {"
 	+ "	if (!params.synonymIds.contains(description.typeId)) {"
 	+ "		continue;"
 	+ "	}"
@@ -89,7 +88,7 @@ import com.google.common.collect.ImmutableMap;
 	+ "	}"
 	+ "}"
 	// if there is no first preferred synonym then select first preferred FSN
-	+ "for (description in params._source.descriptions) {"
+	+ "for (description in params._source.preferredDescriptions) {"
 	+ "	if (!\"900000000000003001\".equals(description.typeId)) {"
 	+ "		continue;"
 	+ "	}"
@@ -100,7 +99,7 @@ import com.google.common.collect.ImmutableMap;
 	+ "	}"
 	+ "}"
 	// if there is no first preferred FSN, then select the first FSN in the list (the index will contain only active description in creation order)
-	+ "for (description in params._source.descriptions) {"
+	+ "for (description in params._source.preferredDescriptions) {"
 	+ "	if (\"900000000000003001\".equals(description.typeId)) {"
 	+ "		return description.term"
 	+ "	}"
@@ -292,7 +291,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		private float doi = DEFAULT_DOI;
 		private long refSetStorageKey = CDOUtils.NO_STORAGE_KEY;
 		private boolean structural = false;
-		private List<SnomedDescriptionFragment> descriptions = Collections.emptyList();
+		private List<SnomedDescriptionFragment> preferredDescriptions = Collections.emptyList();
 
 		@JsonCreator
 		private Builder() {
@@ -408,10 +407,10 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			return getSelf();
 		}
 		
-		public Builder descriptions(List<SnomedDescriptionFragment> descriptions) {
-			this.descriptions = Collections3.toImmutableList(descriptions);
-			for (SnomedDescriptionFragment description : this.descriptions) {
-				checkArgument(!description.getLanguageRefSetIds().isEmpty(), "At least one language reference set ID is required to create a preferred description fragment for description %s.", description.getId());
+		public Builder preferredDescriptions(List<SnomedDescriptionFragment> preferredDescriptions) {
+			this.preferredDescriptions = Collections3.toImmutableList(preferredDescriptions);
+			for (SnomedDescriptionFragment preferredDescription : this.preferredDescriptions) {
+				checkArgument(!preferredDescription.getLanguageRefSetIds().isEmpty(), "At least one language reference set ID is required to create a preferred description fragment for description %s.", preferredDescription.getId());
 			}
 			return getSelf();
 		}
@@ -434,7 +433,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 					structural,
 					memberOf,
 					activeMemberOf,
-					descriptions);
+					preferredDescriptions);
 			
 			entry.doi = doi;
 			entry.setScore(score);
@@ -472,7 +471,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	private final int mapTargetComponentType;
 	private final boolean structural;
 	private final long refSetStorageKey;
-	private final List<SnomedDescriptionFragment> descriptions;
+	private final List<SnomedDescriptionFragment> preferredDescriptions;
 	
 	private LongSet parents;
 	private LongSet ancestors;
@@ -497,7 +496,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			final boolean structural,
 			final List<String> referringRefSets,
 			final List<String> referringMappingRefSets,
-			final List<SnomedDescriptionFragment> descriptions) {
+			final List<SnomedDescriptionFragment> preferredDescriptions) {
 
 		super(id, label, iconId, moduleId, released, active, effectiveTime, namespace, referringRefSets, referringMappingRefSets);
 		this.primitive = primitive;
@@ -507,7 +506,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		this.mapTargetComponentType = mapTargetComponentType;
 		this.refSetStorageKey = refSetStorageKey;
 		this.structural = structural;
-		this.descriptions = descriptions;
+		this.preferredDescriptions = preferredDescriptions;
 	}
 	
 	@Override
@@ -576,8 +575,8 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		return structural;
 	}
 	
-	public List<SnomedDescriptionFragment> getDescriptions() {
-		return descriptions;
+	public List<SnomedDescriptionFragment> getPreferredDescriptions() {
+		return preferredDescriptions;
 	}
 	
 	@Override

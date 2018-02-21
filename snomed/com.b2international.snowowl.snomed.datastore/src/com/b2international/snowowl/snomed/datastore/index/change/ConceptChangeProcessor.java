@@ -150,7 +150,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			if (refSet != null) {
 				doc.refSet(refSet);
 			}
-			doc.descriptions(toDescriptionFragments(concept));
+			doc.preferredDescriptions(toDescriptionFragments(concept));
 			indexNewRevision(concept.cdoID(), doc.build());
 		}
 		
@@ -192,20 +192,20 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				}
 				
 				if (concept != null) {
-					doc.descriptions(toDescriptionFragments(concept));
+					doc.preferredDescriptions(toDescriptionFragments(concept));
 				} else {
 					Collection<Description> dirtyDescriptions = dirtyDescriptionsByConcept.get(id);
 					if (!dirtyDescriptions.isEmpty()) {
-						Multimap<String, SnomedDescriptionFragment> newDescriptions = HashMultimap.create(Multimaps.index(currentDoc.getDescriptions(), SnomedDescriptionFragment::getId));
+						Multimap<String, SnomedDescriptionFragment> newDescriptions = HashMultimap.create(Multimaps.index(currentDoc.getPreferredDescriptions(), SnomedDescriptionFragment::getId));
 						for (Description dirtyDescription : dirtyDescriptions) {
 							newDescriptions.removeAll(dirtyDescription.getId());
 							if (dirtyDescription.isActive() && !getPreferredLanguageMembers(dirtyDescription).isEmpty()) {
 								newDescriptions.put(dirtyDescription.getId(), toDescriptionFragment(dirtyDescription));
 							}
 						}
-						doc.descriptions(newDescriptions.values().stream().sorted(DESCRIPTION_FRAGMENT_ORDER).collect(Collectors.toList()));
+						doc.preferredDescriptions(newDescriptions.values().stream().sorted(DESCRIPTION_FRAGMENT_ORDER).collect(Collectors.toList()));
 					} else {
-						doc.descriptions(currentDoc.getDescriptions());
+						doc.preferredDescriptions(currentDoc.getPreferredDescriptions());
 					}
 				}
 				
