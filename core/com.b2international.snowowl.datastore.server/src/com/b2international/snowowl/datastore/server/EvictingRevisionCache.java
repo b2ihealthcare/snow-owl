@@ -275,9 +275,6 @@ public class EvictingRevisionCache extends Lifecycle implements InternalCDORevis
 		}
 
 		public synchronized boolean addRevision(InternalCDORevision revision) {
-			if (revision.getBranch().getID() == 34 && revision.getVersion() == 2 && revision.getEClass().getName().equals("Concept")) {
-				System.err.println();
-			}
 			int version = revision.getVersion();
 			for (ListIterator<InternalCDORevision> it = listIterator(); it.hasNext();) {
 				InternalCDORevision revisionInList = it.next();
