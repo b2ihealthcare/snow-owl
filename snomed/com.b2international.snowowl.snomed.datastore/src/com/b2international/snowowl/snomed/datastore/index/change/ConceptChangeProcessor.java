@@ -196,9 +196,9 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				} else {
 					Collection<Description> dirtyDescriptions = dirtyDescriptionsByConcept.get(id);
 					if (!dirtyDescriptions.isEmpty()) {
-						Multimap<String, SnomedDescriptionFragment> newDescriptions = HashMultimap.create(Multimaps.index(currentDoc.getPreferredDescriptions(), SnomedDescriptionFragment::getId));
+						Map<String, SnomedDescriptionFragment> newDescriptions = newHashMap(Maps.uniqueIndex(currentDoc.getPreferredDescriptions(), SnomedDescriptionFragment::getId));
 						for (Description dirtyDescription : dirtyDescriptions) {
-							newDescriptions.removeAll(dirtyDescription.getId());
+							newDescriptions.remove(dirtyDescription.getId());
 							if (dirtyDescription.isActive() && !getPreferredLanguageMembers(dirtyDescription).isEmpty()) {
 								newDescriptions.put(dirtyDescription.getId(), toDescriptionFragment(dirtyDescription));
 							}
