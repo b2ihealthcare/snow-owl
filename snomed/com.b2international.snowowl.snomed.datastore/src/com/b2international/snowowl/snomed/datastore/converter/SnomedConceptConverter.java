@@ -62,7 +62,6 @@ import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
-import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Functions;
 import com.google.common.collect.FluentIterable;
@@ -77,24 +76,10 @@ import com.google.common.collect.TreeMultimap;
  */
 final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedConceptDocument, SnomedConcept, SnomedConcepts> {
 
-	private DescriptionRequestHelper descriptionHelper;
 	private SnomedReferenceSetConverter referenceSetConverter;
 	
 	SnomedConceptConverter(final BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
-	}
-	
-	private DescriptionRequestHelper getDescriptionHelper() {
-		if (descriptionHelper == null) {
-			descriptionHelper = new DescriptionRequestHelper() {
-				@Override
-				protected SnomedDescriptions execute(SnomedDescriptionSearchRequestBuilder req) {
-					return req.build().execute(context());
-				}
-			};
-		}
-		
-		return descriptionHelper;
 	}
 	
 	private SnomedReferenceSetConverter getReferenceSetConverter() {
@@ -147,7 +132,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 			result.setStatedAncestorIds(input.getStatedAncestors().toArray());
 		}
 		
-		if (expand().containsKey("preferredDescriptions") || expand().containsKey(SnomedConcept.Expand.PREFERRED_TERM) || expand().containsKey("fsn()")) {
+		if (expand().containsKey(SnomedConcept.Expand.PREFERRED_DESCRIPTIONS) || expand().containsKey(SnomedConcept.Expand.PREFERRED_TERM) || expand().containsKey(SnomedConcept.Expand.FULLY_SPECIFIED_NAME)) {
 			List<SnomedDescription> preferredDescriptions = input.getDescriptions().stream().map(description -> {
 				SnomedDescription preferredDescription = new SnomedDescription(description.getId());
 				preferredDescription.setStorageKey(description.getStorageKey());
