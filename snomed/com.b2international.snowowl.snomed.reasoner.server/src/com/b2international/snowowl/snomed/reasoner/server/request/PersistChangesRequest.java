@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -235,9 +236,9 @@ final class PersistChangesRequest implements Request<ServiceProvider, ApiError> 
 
 	private void fixEquivalences(SnomedEditingContext editingContext) {
 		final IBranchPath branchPath = taxonomy.getBranchPath();
-		final List<LongSet> equivalenciesToFix = Lists.newArrayList();
+		final List<LongCollection> equivalenciesToFix = Lists.newArrayList();
 		
-		for (LongSet equivalentSet : taxonomy.getEquivalentConceptIds()) {
+		for (LongCollection equivalentSet : taxonomy.getEquivalentConceptIds()) {
 			long firstConceptId = equivalentSet.iterator().next();
 			String firstConceptIdString = Long.toString(firstConceptId);
 	

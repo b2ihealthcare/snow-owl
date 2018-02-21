@@ -26,8 +26,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -73,9 +73,9 @@ import com.google.common.collect.Sets;
 public class EquivalentConceptMerger {
 
 	private final SnomedEditingContext editingContext;
-	private final List<LongSet> equivalenciesToFix;
+	private final List<LongCollection> equivalenciesToFix;
 	
-	public EquivalentConceptMerger(final SnomedEditingContext editingContext, final List<LongSet> equivalenciesToFix) {
+	public EquivalentConceptMerger(final SnomedEditingContext editingContext, final List<LongCollection> equivalenciesToFix) {
 		this.editingContext = editingContext;
 		this.equivalenciesToFix = equivalenciesToFix;
 	}
@@ -149,7 +149,7 @@ public class EquivalentConceptMerger {
 	private Multimap<Concept, Concept> resolveEquivalencies() {
 		final Multimap<Concept, Concept> processedEquivalencies = HashMultimap.create();
 		
-		for (final LongSet equivalentSet : equivalenciesToFix) {
+		for (final LongCollection equivalentSet : equivalenciesToFix) {
 			
 			final List<Concept> conceptsToRemove = Lists.newArrayList();
 			
