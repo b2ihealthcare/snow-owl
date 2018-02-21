@@ -160,9 +160,7 @@ public class EvictingRevisionCache extends Lifecycle implements InternalCDORevis
 		CDOBranch branch = branchPoint.getBranch();
 		synchronized (revisionLists) {
 			for (Map.Entry<CDOIDAndBranch, RevisionList> entry : revisionLists.asMap().entrySet()) {
-				if (isKeyInBranch(entry.getKey(), branch))
-				// if (ObjectUtil.equals(entry.getKey().getBranch(), branch))
-				{
+				if (isKeyInBranch(entry.getKey(), branch)) {
 					RevisionList list = entry.getValue();
 					InternalCDORevision revision = list.getRevision(branchPoint.getTimeStamp());
 					if (revision != null) {
@@ -199,10 +197,11 @@ public class EvictingRevisionCache extends Lifecycle implements InternalCDORevis
 		synchronized (revisionLists) {
 			RevisionList list = revisionLists.getIfPresent(key);
 			if (list != null) {
-				list.removeRevision(branchVersion.getVersion());
+				if (list.removeRevision(branchVersion.getVersion())) {
+					typeRefDecrease(id);
+				}
 				if (list.isEmpty()) {
 					revisionLists.invalidate(key);
-					typeRefDecrease(id);
 				}
 			}
 		}
@@ -231,7 +230,7 @@ public class EvictingRevisionCache extends Lifecycle implements InternalCDORevis
 		}
 	}
 
-	protected static final class RevisionList extends LinkedList<InternalCDORevision> {
+	private static final class RevisionList extends LinkedList<InternalCDORevision> {
 		private static final long serialVersionUID = 1L;
 
 		public RevisionList() {
@@ -298,17 +297,18 @@ public class EvictingRevisionCache extends Lifecycle implements InternalCDORevis
 			return true;
 		}
 
-		public synchronized void removeRevision(int version) {
+		public synchronized boolean removeRevision(int version) {
 			for (Iterator<InternalCDORevision> it = iterator(); it.hasNext();) {
 				InternalCDORevision revision = it.next();
 				int v = revision.getVersion();
 				if (v == version) {
 					it.remove();
-					break;
+					return true;
 				} else if (v < version) {
 					break;
 				}
 			}
+			return false;
 		}
 
 		@Override
