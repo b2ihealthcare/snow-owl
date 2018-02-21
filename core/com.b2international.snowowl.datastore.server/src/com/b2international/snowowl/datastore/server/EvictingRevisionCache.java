@@ -40,7 +40,6 @@ import org.eclipse.net4j.util.lifecycle.Lifecycle;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalCause;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 
@@ -59,9 +58,9 @@ public class EvictingRevisionCache extends Lifecycle implements InternalCDORevis
 				.removalListener(new RemovalListener<CDOIDAndBranch, RevisionList>() {
 					@Override
 					public void onRemoval(RemovalNotification<CDOIDAndBranch, RevisionList> entry) {
-						if (entry.getCause() != RemovalCause.EXPLICIT) {
-							typeRefDecrease(entry.getKey().getID());
-						}
+						entry.getValue().forEach(revision -> {
+							typeRefDecrease(revision.getID());
+						});
 					}
 				})
 				.build();
