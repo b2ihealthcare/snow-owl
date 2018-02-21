@@ -52,11 +52,14 @@ public abstract class SortBy {
 	 */
 	public static final SortBy SCORE = SortBy.field(FIELD_SCORE, Order.DESC);
 	
+	/**
+	 * @since 5.0
+	 */
 	public static final class SortByField extends SortBy {
 		private final String field;
 		private final Order order;
 
-		public SortByField(String field, Order order) {
+		private SortByField(String field, Order order) {
 			this.field = checkNotNull(field, "field");
 			this.order = checkNotNull(order, "order");
 		}
@@ -92,13 +95,16 @@ public abstract class SortBy {
 		}
 	}
 	
+	/**
+	 * @since 6.3
+	 */
 	public static final class SortByScript extends SortBy {
 
 		private final Order order;
 		private final String name;
 		private final Map<String, Object> arguments;
 
-		public SortByScript(String name, Map<String, Object> arguments, Order order) {
+		private SortByScript(String name, Map<String, Object> arguments, Order order) {
 			this.name = name;
 			this.arguments = arguments;
 			this.order = order;
@@ -140,10 +146,13 @@ public abstract class SortBy {
 		
 	}
 	
+	/**
+	 * @since 5.0
+	 */
 	public static final class MultiSortBy extends SortBy {
 		private final List<SortBy> items;
 
-		public MultiSortBy(List<SortBy> items) {
+		private MultiSortBy(List<SortBy> items) {
 			this.items = ImmutableList.copyOf(checkNotNull(items, "items"));
 		}
 		
@@ -176,12 +185,12 @@ public abstract class SortBy {
 		private final List<SortBy> sorts = newArrayList();
 		
 		public Builder sortByField(String field, Order order) {
-			sorts.add(new SortByField(field, order));
+			sorts.add(field(field, order));
 			return this;
 		}
 		
-		public Builder byScript(String script, Map<String, Object> arguments, Order order) {
-			sorts.add(SortBy.script(script, arguments, order));
+		public Builder sortByScript(String script, Map<String, Object> arguments, Order order) {
+			sorts.add(script(script, arguments, order));
 			return this;
 		}
 		
@@ -196,14 +205,26 @@ public abstract class SortBy {
 		}
 	}
 	
+	/**
+	 * Creates and returns a new {@link SortBy} instance that sorts matches by the given field in the given order.
+	 * @param field - the field to use for sort
+	 * @param order - the order to use when sorting matches
+	 * @return
+	 */
 	public static SortBy field(String field, Order order) {
 		return new SortByField(field, order);
 	}
 	
+	/**
+	 * @param script
+	 * @param arguments
+	 * @param order
+	 * @return
+	 */
 	public static SortBy script(String script, Map<String, Object> arguments, Order order) {
 		return new SortByScript(script, arguments, order);
 	}
-	
+
 	public static Builder builder() {
 		return new Builder();
 	}

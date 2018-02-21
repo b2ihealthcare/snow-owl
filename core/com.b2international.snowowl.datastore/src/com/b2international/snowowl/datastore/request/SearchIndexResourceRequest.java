@@ -106,7 +106,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 					sortBuilder.sortByField(sortField.getField(), sortField.isAscending() ? Order.ASC : Order.DESC);
 				} else if (sort instanceof SortScript) {
 					SortScript sortScript = (SortScript) sort;
-					sortBuilder.byScript(sortScript.getScript(), sortScript.getArguments(), sortScript.isAscending() ? Order.ASC : Order.DESC);
+					sortBuilder.sortByScript(sortScript.getScript(), sortScript.getArguments(), sortScript.isAscending() ? Order.ASC : Order.DESC);
 				} else {
 					throw new UnsupportedOperationException("Cannot handle sort type " + sort);
 				}
