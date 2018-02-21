@@ -280,7 +280,7 @@ public class EsDocumentSearcher implements DocSearcher {
 				String script = sortByScript.getName();
 				SortOrder sortOrder = order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC;
 				
-				// if this is a named script the get it from the current mapping
+				// if this is a named script then get it from the current mapping
 				if (mapping.getScript(script) != null) {
 					script = mapping.getScript(script).script();
 				}
