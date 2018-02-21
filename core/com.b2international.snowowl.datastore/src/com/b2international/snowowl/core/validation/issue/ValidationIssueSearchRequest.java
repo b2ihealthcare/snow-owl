@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.BRANCH_PATH, getCollection(OptionKey.BRANCH_PATH, String.class)));
 		}
 		
-		final Set<String> filterByRuleIds = newHashSet();
+		Set<String> filterByRuleIds = null;
 		
 		if (containsKey(OptionKey.TOOLING_ID)) {
 			final Collection<String> toolingIds = getCollection(OptionKey.TOOLING_ID, String.class);
@@ -87,15 +87,21 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 			if (ruleIds.isEmpty()) {
 				queryBuilder.filter(Expressions.matchNone());
 			} else {
-				filterByRuleIds.addAll(ruleIds);
+				filterByRuleIds = newHashSet(ruleIds);
 			}
 		}
 		
 		if (containsKey(OptionKey.RULE_ID)) {
-			filterByRuleIds.addAll(getCollection(OptionKey.RULE_ID, String.class));
+			Collection<String> ruleFilter = getCollection(OptionKey.RULE_ID, String.class);
+			if (filterByRuleIds != null) {
+				filterByRuleIds.addAll(ruleFilter);
+			} else {
+				filterByRuleIds = newHashSet(ruleFilter);
+				
+			}
 		}
 		
-		if (!filterByRuleIds.isEmpty()) {
+		if (filterByRuleIds != null) {
 			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.RULE_ID, filterByRuleIds));
 		}
 		

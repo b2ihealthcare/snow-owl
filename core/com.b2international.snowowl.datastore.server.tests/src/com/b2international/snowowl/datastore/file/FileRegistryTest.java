@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.file;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -32,7 +31,6 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.internal.file.DefaultFileRegistry;
 import com.b2international.snowowl.datastore.internal.file.InternalFileRegistry;
@@ -51,15 +49,8 @@ public class FileRegistryTest {
 		this.registry = new DefaultFileRegistry(FOLDER);
 	}
 	
-	@Test(expected = BadRequestException.class)
-	public void uploadNonZip() throws Exception {
-		final UUID id = UUID.randomUUID();
-		upload(id, "invalid-file.txt");
-		assertFalse(exists(id));
-	}
-	
 	@Test
-	public void uploadZip() throws Exception {
+	public void upload() throws Exception {
 		final UUID id = UUID.randomUUID();
 		upload(id, "file-reg-upload.zip");
 		assertTrue(exists(id));
