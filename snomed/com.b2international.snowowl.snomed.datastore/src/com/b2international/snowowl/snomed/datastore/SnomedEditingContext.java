@@ -627,7 +627,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			deletionPlan = canDelete(outboundRelationship, deletionPlan, force);
 		}
 		
-		SnomedRefSet refSet = lookup(concept.getId(), SnomedRefSet.class);
+		SnomedRefSet refSet = lookupIfExists(concept.getId(), SnomedRefSet.class);
 		if (refSet != null) {
 			deletionPlan = canDelete(refSet, deletionPlan, force);
 		}
