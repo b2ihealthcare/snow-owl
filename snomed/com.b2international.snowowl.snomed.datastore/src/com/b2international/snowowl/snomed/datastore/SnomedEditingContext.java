@@ -949,6 +949,22 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				plan.markForInactivation(lookup(member.getId(), SnomedRefSetMember.class));
 			}
 			
+			// inactivate refset members if the inactivated concept is a reference set
+			final SnomedReferenceSetMembers membersOfIdentifierConcept = SnomedRequests.prepareSearchMember()
+					.all()
+					.filterByActive(true)
+					.filterByRefSet(concept.getId())
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync();
+			
+			for (final SnomedReferenceSetMember member : membersOfIdentifierConcept) {
+				if (monitor.isCanceled()) {
+					return SnomedInactivationPlan.NULL_IMPL;
+				}
+				plan.markForInactivation(lookup(member.getId(), SnomedRefSetMember.class));
+			}
+			
 			monitor.worked(1);
 		}
 		return plan;
