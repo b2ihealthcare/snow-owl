@@ -24,7 +24,7 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastP
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertNotEquals;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -256,7 +256,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		getComponent(path, SnomedComponentType.CONCEPT, "301795004").statusCode(200);
 		
 		
-		assertThat(branchBeforeImport.baseTimestamp(), not(equalTo(branchAfterImport.headTimestamp())));
+		assertNotEquals(branchBeforeImport.baseTimestamp(), branchAfterImport.headTimestamp());
 	}
 
 	private IEventBus getBus() {
