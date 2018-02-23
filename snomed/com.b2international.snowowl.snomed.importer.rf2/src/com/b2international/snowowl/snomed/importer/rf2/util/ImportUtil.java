@@ -89,7 +89,6 @@ import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -97,7 +96,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.ImportException;
 import com.b2international.snowowl.snomed.importer.Importer;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
@@ -475,7 +473,7 @@ public final class ImportUtil {
 			// release specific post processing
 			postProcess(context);
 			
-			result.getVisitedConcepts().addAll(getVisitedConcepts(context.getVisitedConcepts(), branchPath));
+			result.getVisitedConcepts().addAll(getAsStringList(context.getVisitedConcepts()));
 
 			return result;
 		} finally {
@@ -502,27 +500,6 @@ public final class ImportUtil {
 		
 	}
 
-	private Collection<SnomedConceptDocument> getVisitedConcepts(final LongSet visitedConceptIds, final IBranchPath branchPath) {
-		if (visitedConceptIds.size() == 0) {
-			return Collections.emptyList();
-		}
-
-		return SnomedRequests.prepareSearchConcept()
-				.all()
-				.setLocales(getLocales())
-				.setExpand("pt()")
-				.filterByIds(getAsStringList(visitedConceptIds))
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-				.execute(getEventBus())
-				.then(new Function<SnomedConcepts, Collection<SnomedConceptDocument>>() {
-					@Override
-					public Collection<SnomedConceptDocument> apply(SnomedConcepts input) {
-						return SnomedConceptDocument.fromConcepts(input);
-					}
-				})
-				.getSync();
-	}
-	
 	private ImmutableList<String> getAsStringList(final LongSet longIds) {
 		final long[] longIdArray = longIds.toArray();
 		Arrays.sort(longIdArray);

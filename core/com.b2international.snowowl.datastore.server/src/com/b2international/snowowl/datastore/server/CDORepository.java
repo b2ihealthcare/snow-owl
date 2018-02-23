@@ -151,7 +151,10 @@ public class CDORepository extends CDOManagedItem<ICDORepository> implements ICD
 		setWriterPoolCapacity(configuration.getWriterPoolCapacity());
 		
 		// disable revision cache by using a NOOP instance
-		if (!configuration.isRevisionCacheEnabled()) {
+		if (configuration.isRevisionCacheEnabled()) {
+			EvictingRevisionCache cache = new EvictingRevisionCache();
+			repository.setRevisionManager((InternalCDORevisionManager) CDORevisionUtil.createRevisionManager(cache));
+		} else {
 			repository.setRevisionManager((InternalCDORevisionManager) CDORevisionUtil.createRevisionManager(CDORevisionCache.NOOP));
 		}
 		

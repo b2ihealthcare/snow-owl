@@ -30,6 +30,8 @@ public final class ValidationWhiteListCreateRequestBuilder
 
 	private String ruleId;
 	private ComponentIdentifier componentIdentifier;
+	private String reporter;
+	private long createdAt;
 	
 	ValidationWhiteListCreateRequestBuilder() {}
 	
@@ -42,12 +44,24 @@ public final class ValidationWhiteListCreateRequestBuilder
 		this.componentIdentifier = componentIdentifier;
 		return getSelf();
 	}
+	
+	public ValidationWhiteListCreateRequestBuilder setReporter(String reporter) {
+		this.reporter = reporter;
+		return getSelf();
+	}
+	
+	public ValidationWhiteListCreateRequestBuilder setCreatedAt(long createdAt) {
+		this.createdAt = createdAt;
+		return getSelf();
+	}
 
 	@Override
 	protected Request<ServiceProvider, String> doBuild() {
 		ValidationWhiteListCreateRequest req = new ValidationWhiteListCreateRequest();
 		req.setRuleId(ruleId);
 		req.setComponentIdentifier(componentIdentifier);
+		req.setReporter(reporter);
+		req.setCreatedAt(createdAt);
 		return req;
 	}
 	

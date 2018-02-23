@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package com.b2international.index.revision;
 
 import java.util.Objects;
 
-import com.b2international.index.Text;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Script;
+import com.b2international.index.Text;
 import com.b2international.index.WithScore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -95,8 +95,8 @@ public class RevisionFixtures {
 	}
 	
 	@Doc
-	@Script(name="doi", script="return doc.doi.value", fields={"doi"})
-	@Script(name="doiFactor", script="return doc.doi.value * params.factor", fields={"doi"})
+	@Script(name="doi", script="return doc.doi.value")
+	@Script(name="doiFactor", script="return doc.doi.value * params.factor")
 	public static class ScoredData extends Data implements WithScore {
 		
 		private float score = 0.0f;

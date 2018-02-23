@@ -32,6 +32,7 @@ import org.eclipse.net4j.util.event.IListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.platform.Extensions;
@@ -436,8 +437,8 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 			results.add(new UnsatisfiableSet(LongSets.toStringList(unsatisfiableConceptIds)));
 		}
 		
-		List<LongSet> equivalentConceptSets = taxonomy.getEquivalentConceptIds();
-		for (LongSet equivalentConceptSet : equivalentConceptSets) {
+		List<LongCollection> equivalentConceptSets = taxonomy.getEquivalentConceptIds();
+		for (LongCollection equivalentConceptSet : equivalentConceptSets) {
 			List<String> equivalentIds = LongSets.toStringList(equivalentConceptSet);
 			String suggestedConcept = equivalentIds.remove(0);
 			results.add(new EquivalenceSet(suggestedConcept, equivalentIds));

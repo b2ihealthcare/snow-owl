@@ -39,6 +39,7 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.tophits.TopHits;
+import org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
@@ -54,6 +55,7 @@ import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.MultiSortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.query.SortBy.SortByField;
+import com.b2international.index.query.SortBy.SortByScript;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -130,7 +132,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		}
 		
 		// sorting
-		addSort(req, query.getSortBy());
+		addSort(mapping, req, query.getSortBy());
 		
 		// scrolling
 		final TimeValue scrollTime = TimeValue.timeValueSeconds(60);
@@ -254,25 +256,47 @@ public class EsDocumentSearcher implements DocSearcher {
 				: mapper.readerFor(select);
 	}
 
-	private void addSort(SearchRequestBuilder req, SortBy sortBy) {
-		for (final SortByField item : getSortFields(sortBy)) {
-            String field = item.getField();
-            SortBy.Order order = item.getOrder();
-            
-			switch (field) {
-            case SortBy.FIELD_SCORE:
-                // XXX: default order for scores is *descending*
-                req.addSort(SortBuilders.scoreSort().order(order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC)); 
-                break;
-            case DocumentMapping._ID: //$FALL-THROUGH$
-            	field = DocumentMapping._ID;
-            default:
-            	req.addSort(SortBuilders.fieldSort(field).order(order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC));
-            }
+	private void addSort(DocumentMapping mapping, SearchRequestBuilder req, SortBy sortBy) {
+		for (final SortBy item : getSortFields(sortBy)) {
+			if (item instanceof SortByField) {
+				SortByField sortByField = (SortByField) item;
+				String field = sortByField.getField();
+				SortBy.Order order = sortByField.getOrder();
+				SortOrder sortOrder = order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC;
+				
+				switch (field) {
+				case SortBy.FIELD_SCORE:
+					// XXX: default order for scores is *descending*
+					req.addSort(SortBuilders.scoreSort().order(sortOrder)); 
+					break;
+				case DocumentMapping._ID: //$FALL-THROUGH$
+					field = DocumentMapping._ID;
+				default:
+					req.addSort(SortBuilders.fieldSort(field).order(sortOrder));
+				}
+			} else if (item instanceof SortByScript) {
+				SortByScript sortByScript = (SortByScript) item;
+				SortBy.Order order = sortByScript.getOrder();
+				String script = sortByScript.getName();
+				SortOrder sortOrder = order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC;
+				
+				// if this is a named script then get it from the current mapping
+				if (mapping.getScript(script) != null) {
+					script = mapping.getScript(script).script();
+				}
+				
+				Map<String, Object> arguments = sortByScript.getArguments();
+				
+				req.addSort(SortBuilders.scriptSort(new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", script, arguments), ScriptSortType.STRING)
+						.order(sortOrder));
+				
+			} else {
+				throw new UnsupportedOperationException("Unsupported SortBy implementation " + item);
+			}
         }
 	}
 
-	private Iterable<SortByField> getSortFields(SortBy sortBy) {
+	private Iterable<SortBy> getSortFields(SortBy sortBy) {
 		final List<SortBy> items = newArrayList();
 
 		// Unpack the top level multi-sort if present
@@ -293,7 +317,7 @@ public class EsDocumentSearcher implements DocSearcher {
 			items.add(SortBy.field(DocumentMapping._ID, Order.DESC));
 		}
 		
-		return Iterables.filter(items, SortByField.class);
+		return Iterables.filter(items, SortBy.class);
 	}
 	
 	@Override

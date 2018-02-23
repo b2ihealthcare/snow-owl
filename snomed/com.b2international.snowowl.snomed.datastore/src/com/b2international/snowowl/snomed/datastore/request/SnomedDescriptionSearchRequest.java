@@ -86,6 +86,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		addLanguageFilter(queryBuilder);
 		addNamespaceFilter(queryBuilder);
 		addActiveMemberOfClause(context, queryBuilder);
+		addMemberOfClause(context, queryBuilder);
 		addLanguageRefSetFilter(queryBuilder);
 		addAcceptableInFilter(queryBuilder);
 		addPreferredInFilter(queryBuilder);

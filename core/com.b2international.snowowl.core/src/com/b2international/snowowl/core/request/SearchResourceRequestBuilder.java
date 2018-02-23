@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.request.SearchResourceRequest.OptionKey;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -118,7 +118,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @param rest - any remaining sort fields (optional)
 	 * @return this builder instance
 	 */
-	public final B sortBy(SortField first, SortField... rest) {
+	public final B sortBy(Sort first, Sort... rest) {
 		return sortBy(Lists.asList(first, rest));
 	}
 
@@ -128,8 +128,8 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @param sortFields - the list of fields to sort by, in order
 	 * @return this builder instance
 	 */
-	public final B sortBy(List<SortField> sortFields) {
-		addOption(OptionKey.SORT_BY, ImmutableList.copyOf(sortFields));
+	public final B sortBy(List<Sort> sorts) {
+		addOption(OptionKey.SORT_BY, ImmutableList.copyOf(sorts));
 		return getSelf();
 	}
 	
@@ -153,7 +153,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	protected final B addOption(String key, Object value) {
 		if (value instanceof Iterable<?>) {
 			for (final Object val : (Iterable<?>)value) {
-				if (val instanceof SearchResourceRequest.SortField) {
+				if (val instanceof SearchResourceRequest.Sort) {
 					// ignore sort fields
 				} else if (val == null) {
 					throw new BadRequestException("%s filter cannot contain null values", key);

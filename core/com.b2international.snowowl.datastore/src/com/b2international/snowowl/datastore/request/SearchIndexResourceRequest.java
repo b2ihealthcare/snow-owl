@@ -98,12 +98,20 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	
 	protected final SortBy sortBy() {
 		if (containsKey(OptionKey.SORT_BY)) {
-			List<SortField> fields = getList(OptionKey.SORT_BY, SortField.class);
-			SortBy.Builder builder = SortBy.builder();
-			for (SortField sortField : fields) {
-				builder.add(sortField.getField(), sortField.isAscending() ? Order.ASC : Order.DESC);
+			List<Sort> sorts = getList(OptionKey.SORT_BY, Sort.class);
+			SortBy.Builder sortBuilder = SortBy.builder();
+			for (Sort sort : sorts) {
+				if (sort instanceof SortField) {
+					SortField sortField = (SortField) sort;
+					sortBuilder.sortByField(sortField.getField(), sortField.isAscending() ? Order.ASC : Order.DESC);
+				} else if (sort instanceof SortScript) {
+					SortScript sortScript = (SortScript) sort;
+					sortBuilder.sortByScript(sortScript.getScript(), sortScript.getArguments(), sortScript.isAscending() ? Order.ASC : Order.DESC);
+				} else {
+					throw new UnsupportedOperationException("Cannot handle sort type " + sort);
+				}
 			}
-			return builder.build();
+			return sortBuilder.build();
 		} else {
 			return SortBy.DOC_ID;
 		}		
