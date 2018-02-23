@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.core.validation.whitelist;
 
+import static com.google.common.collect.Sets.newHashSet;
+
+import java.util.Set;
+
 /**
  * @since 6.1
  */
@@ -27,7 +31,11 @@ public enum ValidationWhiteListRequests {
 	}
 	
 	public ValidationWhiteListDeleteRequestBuilder prepareDelete(String id) {
-		return new ValidationWhiteListDeleteRequestBuilder(id);
+		return prepareDelete(newHashSet(id));
+	}
+
+	public ValidationWhiteListDeleteRequestBuilder prepareDelete(Set<String> ids) {
+		return new ValidationWhiteListDeleteRequestBuilder(ids);
 	}
 
 	public ValidationWhiteListGetRequestBuilder prepareGet(String id) {
