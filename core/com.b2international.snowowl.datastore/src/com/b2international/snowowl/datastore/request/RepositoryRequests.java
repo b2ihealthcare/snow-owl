@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import com.b2international.snowowl.datastore.request.export.ContentExportRequestBuilder;
 import com.b2international.snowowl.datastore.request.repository.RepositoryGetRequestBuilder;
 import com.b2international.snowowl.datastore.request.repository.RepositorySearchRequestBuilder;
 import com.b2international.snowowl.datastore.request.system.ServerInfoGetRequestBuilder;
@@ -72,4 +73,7 @@ public final class RepositoryRequests {
 		return new ServerInfoGetRequestBuilder();
 	}
 
+	public static ContentExportRequestBuilder prepareContentExport() {
+		return new ContentExportRequestBuilder();
+	}
 }

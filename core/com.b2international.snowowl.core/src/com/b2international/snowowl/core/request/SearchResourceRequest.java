@@ -173,7 +173,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		return !Strings.isNullOrEmpty(scrollId());
 	}
 	
-	void setScrollId(String scrollId) {
+	public void setScrollId(String scrollId) {
 		this.scrollId = scrollId;
 	}
 	
