@@ -317,6 +317,7 @@ public final class ImportUtil {
 				return loadRepositoryState(searcher);
 			}
 		});
+		
 		if (!isContentValid(repositoryState, result, requestingUserId, configuration, branchPath, subMonitor)) {
 			LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import failed due to invalid RF2 release file(s).");
 			return result;
@@ -441,16 +442,16 @@ public final class ImportUtil {
 	}
 
 	private SnomedImportResult doImportLocked(final String requestingUserId, final ImportConfiguration configuration,
-			final SnomedImportResult result, final IBranchPath branchPath, final SnomedImportContext importContext,
+			final SnomedImportResult result, final IBranchPath branchPath, final SnomedImportContext context,
 			final SubMonitor subMonitor, final List<Importer> importers, final SnomedEditingContext editingContext,
 			final CDOBranch branch, final RepositoryState repositoryState) {
 
 		try { 
+
+			final long lastCommitTime = CDOServerUtils.getLastCommitTime(branch);
+			context.setCommitTime(lastCommitTime);
 			
-			final long commitTime = CDOServerUtils.getLastCommitTime(branch);
-			importContext.setCommitTime(commitTime);
-			
-			final SnomedCompositeImporter importer = new SnomedCompositeImporter(IMPORT_LOGGER, repositoryState, importContext, importers, ComponentImportUnit.ORDERING);
+			final SnomedCompositeImporter importer = new SnomedCompositeImporter(IMPORT_LOGGER, repositoryState, context, importers, ComponentImportUnit.ORDERING);
 
 			importer.preImport(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 			final SnomedCompositeImportUnit snomedCompositeImportUnit = importer.getCompositeUnit(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
@@ -458,23 +459,23 @@ public final class ImportUtil {
 			importer.postImport(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 
 			// If there were no changes, no need to recreate semantic indexes
-			if (importContext.getVisitedConcepts().size() == 0 && importContext.getVisitedRefSets().size() == 0) {
+			if (context.getVisitedConcepts().size() == 0 && context.getVisitedRefSets().size() == 0) {
 				return result;
 			}
 			
-			if (!importContext.isCommitNotificationEnabled()) {
+			if (!context.isCommitNotificationEnabled()) {
 				
-				if (importContext.getPreviousTime() < importContext.getCommitTime()) {
-					final CDOCommitInfo commitInfo = createCommitInfo(importContext);
+				if (context.getPreviousTime() < context.getCommitTime()) {
+					final CDOCommitInfo commitInfo = createCommitInfo(context);
 					CDOServerUtils.sendCommitNotification(commitInfo);
 				}
 				
 			}
 
 			// release specific post processing
-			postProcess(importContext);
+			postProcess(context);
 			
-			result.getVisitedConcepts().addAll(getVisitedConcepts(importContext.getVisitedConcepts(), branchPath));
+			result.getVisitedConcepts().addAll(getVisitedConcepts(context.getVisitedConcepts(), branchPath));
 
 			return result;
 		} finally {
