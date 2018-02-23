@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,7 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange.MemberChangeKind;
 import com.google.common.collect.HashMultiset;
@@ -30,52 +28,50 @@ import com.google.common.collect.Multiset;
  */
 public class ReferenceSetMembershipUpdater {
 
-	private final Collection<String> currentReferringRefSets;
 	private final Collection<RefSetMemberChange> memberChanges;
-	private final Collection<String> currentReferringMappingRefSets;
+	private final Collection<String> currentMemberOf;
+	private final Collection<String> currentActiveMemberOf;
 	
-	public ReferenceSetMembershipUpdater(final Collection<RefSetMemberChange> memberChanges,
-			final Collection<String> currentReferringRefSets, final Collection<String> currentReferringMappingRefSets) {
+	public ReferenceSetMembershipUpdater(
+			final Collection<RefSetMemberChange> memberChanges,
+			final Collection<String> currentMemberOf, 
+			final Collection<String> currentActiveMemberOf) {
 		this.memberChanges = memberChanges;
-		this.currentReferringRefSets = currentReferringRefSets;
-		this.currentReferringMappingRefSets = currentReferringMappingRefSets;
+		this.currentMemberOf = currentMemberOf;
+		this.currentActiveMemberOf = currentActiveMemberOf;
 	}
 	
-	public void update(SnomedConceptDocument.Builder doc) {
+	public <B extends SnomedComponentDocument.SnomedComponentDocumentBuilder<B>> void update(B doc) {
 		// get reference set membership fields
-		final Multiset<String> referencingRefSetIds = HashMultiset.create(currentReferringRefSets);
-		final Multiset<String> referencingMappingRefSetIds = HashMultiset.create(currentReferringMappingRefSets);
-		processReferencingRefSetIds(referencingRefSetIds, referencingMappingRefSetIds);
+		final Multiset<String> newMemberOf = HashMultiset.create(currentMemberOf);
+		final Multiset<String> newActiveMemberOf = HashMultiset.create(currentActiveMemberOf);
+		processReferencingRefSetIds(newMemberOf, newActiveMemberOf);
 		// re-add reference set membership fields
-		doc.referringRefSets(referencingRefSetIds);
-		doc.referringMappingRefSets(referencingMappingRefSetIds);
+		doc.memberOf(newMemberOf);
+		doc.activeMemberOf(newActiveMemberOf);
 	}
 	
-	public void update(SnomedDescriptionIndexEntry.Builder doc) {
-		final Multiset<String> referencingRefSetIds = HashMultiset.create(currentReferringRefSets);
-		final Multiset<String> referencingMappingRefSetIds = HashMultiset.create(currentReferringMappingRefSets);
-		processReferencingRefSetIds(referencingRefSetIds, referencingMappingRefSetIds);
-		doc.referringRefSets(referencingRefSetIds);
-		doc.referringMappingRefSets(referencingMappingRefSetIds);
-	}
-	
-	public void update(SnomedRelationshipIndexEntry.Builder doc) {
-		final Multiset<String> referencingRefSetIds = HashMultiset.create(currentReferringRefSets);
-		final Multiset<String> referencingMappingRefSetIds = HashMultiset.create(currentReferringMappingRefSets);
-		processReferencingRefSetIds(referencingRefSetIds, referencingMappingRefSetIds);
-		doc.referringRefSets(referencingRefSetIds);
-		doc.referringMappingRefSets(referencingMappingRefSetIds);
-	}
-	
-	private void processReferencingRefSetIds(final Multiset<String> referencingRefSetIds, final Multiset<String> referencingMappingRefSetIds) {
+	private void processReferencingRefSetIds(final Multiset<String> memberOf, final Multiset<String> activeMemberOf) {
 		memberChanges
 			.stream()
 			.filter(c -> c.getChangeKind() == MemberChangeKind.ADDED)
 			.forEach(change -> {
-				if (change.isMap()) {
-					referencingMappingRefSetIds.add(change.getRefSetId());
+				if (change.isActive()) {
+					activeMemberOf.add(change.getRefSetId());
+				}
+				memberOf.add(change.getRefSetId());
+			});
+		
+		memberChanges
+			.stream()
+			.filter(c -> c.getChangeKind() == MemberChangeKind.CHANGED)
+			.forEach(change -> {
+				// if the new state is active, then add it to the activeMemberOf otherwise remove it from that
+				// this state transition won't change the memberOf field were all referring refsets are tracked
+				if (change.isActive()) {
+					activeMemberOf.add(change.getRefSetId());
 				} else {
-					referencingRefSetIds.add(change.getRefSetId());
+					activeMemberOf.remove(change.getRefSetId());
 				}
 			});
 		
@@ -83,11 +79,10 @@ public class ReferenceSetMembershipUpdater {
 			.stream()
 			.filter(c -> c.getChangeKind() == MemberChangeKind.REMOVED)
 			.forEach(change -> {
-				if (change.isMap()) {
-					referencingMappingRefSetIds.remove(change.getRefSetId());
-				} else {
-					referencingRefSetIds.remove(change.getRefSetId());
+				if (change.isActive()) {
+					activeMemberOf.remove(change.getRefSetId());
 				}
+				memberOf.remove(change.getRefSetId());
 			});
 	}
 

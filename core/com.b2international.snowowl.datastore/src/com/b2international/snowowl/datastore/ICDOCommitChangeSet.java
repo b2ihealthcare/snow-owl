@@ -17,12 +17,14 @@ package com.b2international.snowowl.datastore;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EStructuralFeature;
 
 /**
  * Representation of a set of new, dirty and detached components as an outcome of a successful commit into the persistence layer. 
@@ -81,6 +83,8 @@ public interface ICDOCommitChangeSet {
 	
 	<T extends CDOObject> Iterable<T> getDirtyComponents(Class<T> type);
 
+	<T extends CDOObject> Iterable<T> getDirtyComponents(Class<T> type, Set<EStructuralFeature> allowedFeatures);
+	
 	Collection<CDOID> getDetachedComponents(EClass eClass);
-
+	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,40 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedComponentSearc
  */
 public abstract class SnomedComponentSearchRequestBuilder<B extends SnomedComponentSearchRequestBuilder<B, R>, R> extends SnomedSearchRequestBuilder<B, R> {
 	
-	public final B isActiveMemberOf(String refSetId) {
-		return addOption(OptionKey.ACTIVE_MEMBER_OF, refSetId);
+	/**
+	 * Filter matches by their active membership in the given reference set or ECL expression.
+	 * @param referenceSetIdOrECL
+	 * @return
+	 */
+	public final B isActiveMemberOf(String referenceSetIdOrECL) {
+		return addOption(OptionKey.ACTIVE_MEMBER_OF, referenceSetIdOrECL);
 	}
 	
-	public final B isActiveMemberOf(Iterable<String> refSetIds) {
-		return addOption(OptionKey.ACTIVE_MEMBER_OF, refSetIds);
+	/**
+	 * Filter matches by their active membership in any of the given reference sets.
+	 * @param referenceSetIds
+	 * @return
+	 */
+	public final B isActiveMemberOf(Iterable<String> referenceSetIds) {
+		return addOption(OptionKey.ACTIVE_MEMBER_OF, referenceSetIds);
+	}
+	
+	/**
+	 * Filter matches by their membership in the given reference set or ECL expression. Matches both active and inactive memberships.
+	 * @param referenceSetIdOrECL
+	 * @return
+	 */
+	public final B isMemberOf(String referenceSetIdOrECL) {
+		return addOption(OptionKey.MEMBER_OF, referenceSetIdOrECL);
+	}
+	
+	/**
+	 * Filter matches by their membership in any of the given reference sets. Matches both active and inactive memberships.
+	 * @param referenceSetIds
+	 * @return
+	 */
+	public final B isMemberOf(Iterable<String> referenceSetIds) {
+		return addOption(OptionKey.MEMBER_OF, referenceSetIds);
 	}
 	
 	/**

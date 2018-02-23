@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,21 +21,13 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.revision.delta.CDOAddFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOClearFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOContainerFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDeltaVisitor;
-import org.eclipse.emf.cdo.common.revision.delta.CDOListFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOMoveFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDORemoveFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOUnsetFeatureDelta;
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import com.b2international.collections.longs.LongCollection;
@@ -53,38 +45,61 @@ import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.Description;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.update.IconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMembershipUpdater;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.Ordering;
 
 /**
  * @since 4.3
  */
 public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 
-	private static final Function<Concept, String> GET_CONCEPT_ID = new Function<Concept, String>() {
-		@Override
-		public String apply(Concept input) {
-			return input.getId();
-		}
-	};
+	private static final Set<EStructuralFeature> ALLOWED_CONCEPT_CHANGE_FEATURES = ImmutableSet.<EStructuralFeature>builder()
+			.add(SnomedPackage.Literals.COMPONENT__ACTIVE)
+			.add(SnomedPackage.Literals.COMPONENT__EFFECTIVE_TIME)
+			.add(SnomedPackage.Literals.COMPONENT__RELEASED)
+			.add(SnomedPackage.Literals.COMPONENT__MODULE)
+			.add(SnomedPackage.Literals.CONCEPT__DEFINITION_STATUS)
+			.add(SnomedPackage.Literals.CONCEPT__EXHAUSTIVE)
+			.add(SnomedPackage.Literals.CONCEPT__DESCRIPTIONS)
+			.build();
+	private static final Set<EStructuralFeature> ALLOWED_DESCRIPTION_CHANGE_FEATURES = ImmutableSet.<EStructuralFeature>builder()
+			.add(SnomedPackage.Literals.COMPONENT__ACTIVE)
+			.add(SnomedPackage.Literals.DESCRIPTION__TERM)
+			.add(SnomedPackage.Literals.DESCRIPTION__TYPE)
+			.add(SnomedPackage.Literals.DESCRIPTION__LANGUAGE_REF_SET_MEMBERS)
+			.build();
+	private static final Set<EStructuralFeature> ALLOWED_LANG_MEMBER_CHANGE_FEATURES = ImmutableSet.<EStructuralFeature>builder()
+			.add(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__ACTIVE)
+			.add(SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER__ACCEPTABILITY_ID)
+			.build();
+	
+	private static final Ordering<SnomedDescriptionFragment> DESCRIPTION_FRAGMENT_ORDER = Ordering.natural().onResultOf(SnomedDescriptionFragment::getStorageKey);
 	
 	private final DoiData doiData;
 	private final IconIdUpdater iconId;
@@ -135,16 +150,20 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			if (refSet != null) {
 				doc.refSet(refSet);
 			}
+			doc.preferredDescriptions(toDescriptionFragments(concept));
 			indexNewRevision(concept.cdoID(), doc.build());
 		}
 		
 		// collect dirty concepts for reindex
-		final Map<String, Concept> dirtyConceptsById = Maps.uniqueIndex(commitChangeSet.getDirtyComponents(Concept.class), GET_CONCEPT_ID);
+		final Map<String, Concept> dirtyConceptsById = Maps.uniqueIndex(commitChangeSet.getDirtyComponents(Concept.class), Concept::getId);
 		
 		final Set<String> dirtyConceptIds = collectDirtyConceptIds(searcher, commitChangeSet);
 		
+		final Multimap<String, Description> dirtyDescriptionsByConcept = Multimaps.index(getDirtyDescriptions(commitChangeSet), d -> d.getConcept().getId());
+		
 		// remaining new and dirty reference sets should be connected to a non-new concept, so add them here
 		dirtyConceptIds.addAll(newAndDirtyRefSetsById.keySet());
+		dirtyConceptIds.addAll(dirtyDescriptionsByConcept.keySet());
 		
 		if (!dirtyConceptIds.isEmpty()) {
 			// fetch all dirty concept documents by their ID
@@ -171,6 +190,25 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				if (deletedRefSets.contains(currentDoc.getRefSetStorageKey())) {
 					doc.clearRefSet();
 				}
+				
+				if (concept != null) {
+					doc.preferredDescriptions(toDescriptionFragments(concept));
+				} else {
+					Collection<Description> dirtyDescriptions = dirtyDescriptionsByConcept.get(id);
+					if (!dirtyDescriptions.isEmpty()) {
+						Map<String, SnomedDescriptionFragment> newDescriptions = newHashMap(Maps.uniqueIndex(currentDoc.getPreferredDescriptions(), SnomedDescriptionFragment::getId));
+						for (Description dirtyDescription : dirtyDescriptions) {
+							newDescriptions.remove(dirtyDescription.getId());
+							if (dirtyDescription.isActive() && !getPreferredLanguageMembers(dirtyDescription).isEmpty()) {
+								newDescriptions.put(dirtyDescription.getId(), toDescriptionFragment(dirtyDescription));
+							}
+						}
+						doc.preferredDescriptions(newDescriptions.values().stream().sorted(DESCRIPTION_FRAGMENT_ORDER).collect(Collectors.toList()));
+					} else {
+						doc.preferredDescriptions(currentDoc.getPreferredDescriptions());
+					}
+				}
+				
 				if (concept != null) {
 					indexChangedRevision(concept.cdoID(), doc.build());				
 				} else {
@@ -180,6 +218,24 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		}
 	}
 	
+	private Iterable<Description> getDirtyDescriptions(ICDOCommitChangeSet commitChangeSet) {
+		final Set<Description> dirtyDescriptions = newHashSet();
+		// add dirty descriptions from transaction
+		FluentIterable
+			.from(commitChangeSet.getDirtyComponents(Description.class, ALLOWED_DESCRIPTION_CHANGE_FEATURES))
+			.filter(desc -> !Concepts.TEXT_DEFINITION.equals(desc.getType().getId()))
+			.copyInto(dirtyDescriptions);
+		// register descriptions as dirty for each dirty lang. member
+		FluentIterable
+			.from(commitChangeSet.getDirtyComponents(SnomedLanguageRefSetMember.class, ALLOWED_LANG_MEMBER_CHANGE_FEATURES))
+			.transform(SnomedLanguageRefSetMember::eContainer)
+			.filter(Description.class)
+			.filter(desc -> !Concepts.TEXT_DEFINITION.equals(desc.getType().getId()))
+			.copyInto(dirtyDescriptions);
+		
+		return dirtyDescriptions;
+	}
+
 	/*
 	 * Updates already existing concept document with changes from concept and the current revision.
 	 * New concepts does not have currentRevision and dirty concepts may not have a loaded Concept CDOObject, 
@@ -215,12 +271,42 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			inferred.update(id, doc);
 		}
 		
-		final Collection<String> currentReferringRefSets = currentVersion == null ? Collections.<String> emptySet()
-				: currentVersion.getReferringRefSets();
-		final Collection<String> currentReferringMappingRefSets = currentVersion == null ? Collections.<String> emptySet()
-				: currentVersion.getReferringMappingRefSets();
-		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentReferringRefSets, currentReferringMappingRefSets)
+		final Collection<String> currentMemberOf = currentVersion == null ? Collections.<String> emptySet()
+				: currentVersion.getMemberOf();
+		final Collection<String> currentActiveMemberOf = currentVersion == null ? Collections.<String> emptySet()
+				: currentVersion.getActiveMemberOf();
+		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentMemberOf, currentActiveMemberOf)
 				.update(doc);
+	}
+
+	private List<SnomedDescriptionFragment> toDescriptionFragments(Concept concept) {
+		return concept.getDescriptions()
+				.stream()
+				.filter(Description::isActive)
+				.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getType().getId()))
+				.filter(description -> !getPreferredLanguageMembers(description).isEmpty())
+				.map(this::toDescriptionFragment)
+				.sorted(DESCRIPTION_FRAGMENT_ORDER)
+				.collect(Collectors.toList());
+	}
+	
+	private Set<String> getPreferredLanguageMembers(Description description) {
+		return description.getLanguageRefSetMembers()
+			.stream()
+			.filter(SnomedLanguageRefSetMember::isActive)
+			.filter(member -> Acceptability.PREFERRED.getConceptId().equals(member.getAcceptabilityId()))
+			.map(SnomedRefSetMember::getRefSetIdentifierId)
+			.collect(Collectors.toSet());
+	}
+	
+	private SnomedDescriptionFragment toDescriptionFragment(Description description) {
+		return new SnomedDescriptionFragment(
+			description.getId(), 
+			CDOIDUtil.getLong(description.cdoID()),
+			description.getType().getId(), 
+			description.getTerm(), 
+			ImmutableList.copyOf(getPreferredLanguageMembers(description))
+		);
 	}
 
 	private long getEffectiveTime(Concept concept) {
@@ -231,20 +317,10 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		final Set<String> dirtyConceptIds = newHashSet();
 		
 		// collect relevant concept changes
-		FluentIterable.from(commitChangeSet.getDirtyComponents(Concept.class))
-			.filter(new Predicate<Concept>() {
-				@Override
-				public boolean apply(Concept input) {
-					final DirtyConceptFeatureDeltaVisitor visitor = new DirtyConceptFeatureDeltaVisitor();
-					final CDORevisionDelta revisionDelta = commitChangeSet.getRevisionDeltas().get(input.cdoID());
-					if (revisionDelta != null) {
-						revisionDelta.accept(visitor);
-						return visitor.hasAllowedChanges();
-					} else {
-						return false;
-					}
-				}
-			}).transform(GET_CONCEPT_ID).copyInto(dirtyConceptIds);
+		FluentIterable
+			.from(commitChangeSet.getDirtyComponents(Concept.class, ALLOWED_CONCEPT_CHANGE_FEATURES))
+			.transform(Concept::getId)
+			.copyInto(dirtyConceptIds);
 
 		// collect dirty concepts due to change in hierarchy
 		dirtyConceptIds.addAll(referringRefSets.keySet());
@@ -280,7 +356,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		dirtyConceptIds.addAll(hits.getHits());
 		
 		// remove all new concept IDs
-		dirtyConceptIds.removeAll(FluentIterable.from(commitChangeSet.getNewComponents(Concept.class)).transform(GET_CONCEPT_ID).toSet());
+		dirtyConceptIds.removeAll(FluentIterable.from(commitChangeSet.getNewComponents(Concept.class)).transform(Concept::getId).toSet());
 		
 		return dirtyConceptIds;
 	}
@@ -358,70 +434,5 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 //			return iconsByIds;
 //		}
 // 	}
-
-	/**
-	 * @since 4.3
-	 */
-	private static class DirtyConceptFeatureDeltaVisitor implements CDOFeatureDeltaVisitor {
-		
-		private static final Set<EStructuralFeature> ALLOWED_CONCEPT_CHANGE_FEATURES = ImmutableSet.<EStructuralFeature>builder()
-				.add(SnomedPackage.Literals.COMPONENT__ACTIVE)
-				.add(SnomedPackage.Literals.COMPONENT__EFFECTIVE_TIME)
-				.add(SnomedPackage.Literals.COMPONENT__RELEASED)
-				.add(SnomedPackage.Literals.COMPONENT__MODULE)
-				.add(SnomedPackage.Literals.CONCEPT__DEFINITION_STATUS)
-				.add(SnomedPackage.Literals.CONCEPT__EXHAUSTIVE)
-				.build();
-		private boolean hasAllowedChanges;
-
-		@Override
-		public void visit(CDOSetFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOListFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOAddFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOClearFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOMoveFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDORemoveFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOUnsetFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		@Override
-		public void visit(CDOContainerFeatureDelta delta) {
-			visitDelta(delta);
-		}
-		
-		private void visitDelta(CDOFeatureDelta delta) {
-			hasAllowedChanges |= ALLOWED_CONCEPT_CHANGE_FEATURES.contains(delta.getFeature());
-		}
-
-		public boolean hasAllowedChanges() {
-			return hasAllowedChanges;
-		}
-		
-	}
 
 }

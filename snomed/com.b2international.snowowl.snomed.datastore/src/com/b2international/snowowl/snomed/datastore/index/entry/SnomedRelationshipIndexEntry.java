@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.index.Doc;
-import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.IStatement;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -39,9 +38,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.base.Function;
 import com.google.common.base.Objects.ToStringHelper;
-import com.google.common.collect.FluentIterable;
 
 /**
  * A transfer object representing a SNOMED CT description.
@@ -277,8 +274,8 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 					unionGroup, 
 					destinationNegated,
 					namespace,
-					referringRefSets,
-					referringMappingRefSets);
+					memberOf,
+					activeMemberOf);
 			doc.setScore(score);
 			doc.setBranchPath(branchPath);
 			doc.setCommitTimestamp(commitTimestamp);

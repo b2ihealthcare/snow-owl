@@ -392,8 +392,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 					preferredIn, 
 					acceptableIn,
 					namespace,
-					referringRefSets,
-					referringMappingRefSets);
+					memberOf,
+					activeMemberOf);
 			doc.setScore(score);
 			doc.setBranchPath(branchPath);
 			doc.setCommitTimestamp(commitTimestamp);
