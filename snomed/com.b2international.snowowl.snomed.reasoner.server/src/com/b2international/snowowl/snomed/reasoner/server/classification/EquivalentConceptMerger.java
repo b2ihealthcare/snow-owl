@@ -110,7 +110,7 @@ public class EquivalentConceptMerger {
 		final SnomedDeletionPlan deletionPlan = new SnomedDeletionPlan();
 		for (final Concept conceptToKeep : equivalentConcepts.keySet()) {
 			final Collection<Concept> conceptsToRemove = equivalentConcepts.get(conceptToKeep);
-			switchToEquivalentConcept(conceptToKeep, conceptsToRemove, inboundRelationshipMap);
+			switchToEquivalentConcept(conceptToKeep, conceptsToRemove, inboundRelationshipMap, equivalentConcepts);
 			removeOrDeactivate(conceptsToRemove, deletionPlan);
 		}
 		if (!deletionPlan.isEmpty()) {
@@ -173,27 +173,24 @@ public class EquivalentConceptMerger {
 		return processedEquivalencies;
 	}
 	
-	private void switchToEquivalentConcept(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, Multimap<String, Relationship> inboundRelationshipMap) {
+	private void switchToEquivalentConcept(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, Multimap<String, Relationship> inboundRelationshipMap, Multimap<Concept, Concept> equivalentConcepts) {
 		removeDeprecatedRelationships(conceptToKeep, conceptsToRemove, inboundRelationshipMap);
 		for (final Concept conceptToRemove : conceptsToRemove) {
-			switchInboundRelationships(conceptToKeep, conceptsToRemove, conceptToRemove, inboundRelationshipMap);
-			switchOutboundRelationships(conceptToKeep, conceptsToRemove, conceptToRemove, inboundRelationshipMap);
+			switchInboundRelationships(conceptToKeep, conceptsToRemove, conceptToRemove, inboundRelationshipMap, equivalentConcepts);
+			switchOutboundRelationships(conceptToKeep, conceptsToRemove, conceptToRemove, inboundRelationshipMap, equivalentConcepts);
 			switchRefSetMembers(conceptToKeep, conceptToRemove);
 		}
 	}
 	
-	private void switchOutboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, final Concept conceptToRemove, Multimap<String, Relationship> inboundRelationshipMap) {
-		for (final Relationship relationshipToRemove : newArrayList(conceptToRemove.getOutboundRelationships())) {
-			boolean found = false;
-			for (final Relationship replacementOutboundRelationship : conceptToKeep.getOutboundRelationships()) {
-				if (relationshipToRemove.getType().equals(replacementOutboundRelationship.getType())
-						&& relationshipToRemove.getDestination().equals(replacementOutboundRelationship.getDestination())
-						&& relationshipToRemove.getCharacteristicType().equals(replacementOutboundRelationship.getCharacteristicType())
-						&& relationshipToRemove.getModifier().equals(replacementOutboundRelationship.getModifier())) {
-					found = true;
-					break;
+	 private void switchOutboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, final Concept conceptToRemove, Multimap<String, Relationship> inboundRelationshipMap, Multimap<Concept, Concept> equivalentConcepts) {
+			for (final Relationship relationshipToRemove : newArrayList(conceptToRemove.getOutboundRelationships())) {
+				boolean found = false;
+				for (final Relationship replacementOutboundRelationship : conceptToKeep.getOutboundRelationships()) {
+					if (isEquivalentOutboundRelationship(equivalentConcepts, relationshipToRemove, replacementOutboundRelationship)) {
+						found = true;
+						break;
+					}
 				}
-			}
 			
 			if (!found) {
 				if (!conceptsToRemove.contains(relationshipToRemove.getSource())) {
@@ -216,14 +213,11 @@ public class EquivalentConceptMerger {
 		}
 	}
 
-	private void switchInboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, final Concept conceptToRemove, Multimap<String, Relationship> inboundRelationshipMap) {
+	private void switchInboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, final Concept conceptToRemove, Multimap<String, Relationship> inboundRelationshipMap, Multimap<Concept, Concept> equivalentConcepts) {
 		for (final Relationship relationshipToRemove : newArrayList(inboundRelationshipMap.get(conceptToRemove.getId()))) {
 			boolean found = false;
 			for (final Relationship replacementInboundRelationship : Sets.newHashSet(inboundRelationshipMap.get(conceptToKeep.getId()))) {
-				if (relationshipToRemove.getType().equals(replacementInboundRelationship.getType())
-						&& relationshipToRemove.getSource().equals(replacementInboundRelationship.getSource())
-						&& relationshipToRemove.getCharacteristicType().equals(replacementInboundRelationship.getCharacteristicType())
-						&& relationshipToRemove.getModifier().equals(replacementInboundRelationship.getModifier())) {
+				if (isEquivalentInboundRelationship(equivalentConcepts, relationshipToRemove, replacementInboundRelationship)) {
 					found = true;
 					break;
 				}
@@ -373,6 +367,28 @@ public class EquivalentConceptMerger {
 				SnomedModelExtensions.removeOrDeactivate(outboundRelationship);
 			}
 		}
+	}
+	
+	private boolean isEquivalentInboundRelationship(final Multimap<Concept, Concept> equivalentConcepts, Relationship relationshipToRemove, Relationship relationshipToKeep) {
+		Concept sourceToKeep = relationshipToKeep.getSource();
+		Concept sourceToRemove = relationshipToRemove.getSource();
+		
+		equivalentConcepts.get(sourceToKeep);
+		return relationshipToRemove.getType().equals(relationshipToKeep.getType())
+				&& (sourceToRemove.equals(sourceToKeep) || equivalentConcepts.get(sourceToKeep).contains(sourceToRemove))
+				&& relationshipToRemove.getCharacteristicType().equals(relationshipToKeep.getCharacteristicType())
+				&& relationshipToRemove.getModifier().equals(relationshipToKeep.getModifier());
+	}
+	
+	private boolean isEquivalentOutboundRelationship(final Multimap<Concept, Concept> equivalentConcepts, Relationship relationshipToRemove, Relationship relationshipToKeep) {
+		Concept destinationToKeep = relationshipToKeep.getDestination();
+		Concept destinationToRemove = relationshipToRemove.getDestination();
+		
+		equivalentConcepts.get(destinationToKeep);
+		return relationshipToRemove.getType().equals(relationshipToKeep.getType())
+				&& (destinationToRemove.equals(destinationToKeep) || equivalentConcepts.get(destinationToKeep).contains(destinationToRemove))
+				&& relationshipToRemove.getCharacteristicType().equals(relationshipToKeep.getCharacteristicType())
+				&& relationshipToRemove.getModifier().equals(relationshipToKeep.getModifier());
 	}
 	
 }
