@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.SnomedNamespaceAndModuleAssigner;
+import com.b2international.snowowl.snomed.datastore.id.SnomedNamespaceAndModuleAssignerProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.server.classification.EquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
@@ -75,14 +76,13 @@ import com.google.common.collect.Lists;
  */
 final class PersistChangesRequest implements Request<ServiceProvider, ApiError> {
 
-	private static final Logger LOG = LoggerFactory.getLogger(PersistChangesRequest.class);
+	private static final Logger LOG = LoggerFactory.getLogger("reasoner");
 	
 	private static final long LOCK_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(5L);
 
 	@JsonProperty
 	private final String classificationId;
 	private final String userId;
-	private final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner;
 	private final InitialReasonerTaxonomyBuilder taxonomyBuilder;
 
 	private ReasonerTaxonomy taxonomy;
@@ -90,12 +90,11 @@ final class PersistChangesRequest implements Request<ServiceProvider, ApiError> 
 	private IOperationLockTarget lockTarget;
 	private LongSet statedDescendantsOfSmp;
 
-	PersistChangesRequest(String classificationId, ReasonerTaxonomy taxonomy, InitialReasonerTaxonomyBuilder taxonomyBuilder, String userId, SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner) {
+	PersistChangesRequest(String classificationId, ReasonerTaxonomy taxonomy, InitialReasonerTaxonomyBuilder taxonomyBuilder, String userId) {
 		this.classificationId = classificationId;
 		this.taxonomy = taxonomy;
 		this.taxonomyBuilder = taxonomyBuilder;
 		this.userId = userId;
-		this.namespaceAndModuleAssigner = namespaceAndModuleAssigner;
 	}
 	
 	private boolean isConcreteDomainSupported() {
@@ -108,7 +107,7 @@ final class PersistChangesRequest implements Request<ServiceProvider, ApiError> 
 
 		try {
 			lockBeforeChanges();
-			return persistChanges(monitor);
+			return persistChanges(context, monitor);
 		} catch (Exception e) {
 			return createApiError(e);
 		} finally {
@@ -146,7 +145,7 @@ final class PersistChangesRequest implements Request<ServiceProvider, ApiError> 
 		}
 	}
 
-	private ApiError persistChanges(IProgressMonitor monitor) throws CommitException {
+	private ApiError persistChanges(ServiceProvider context, IProgressMonitor monitor) throws CommitException {
 
 		if (null == taxonomy) {
 			throw new IllegalStateException("Tried to run the same persist changes job twice.");
@@ -160,7 +159,9 @@ final class PersistChangesRequest implements Request<ServiceProvider, ApiError> 
 
 			editingContext = new SnomedEditingContext(branchPath);
 
-			applyChanges(subMonitor, editingContext);
+			SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner = context.service(SnomedNamespaceAndModuleAssignerProvider.class).get();
+			LOG.info("Reasoner service will use the {} class for relationship/concrete domain namespace and module assignement.", namespaceAndModuleAssigner.getClass().getSimpleName());
+			applyChanges(subMonitor, editingContext, namespaceAndModuleAssigner);
 			fixEquivalences(editingContext);
 
 			CDOTransaction editingContextTransaction = editingContext.getTransaction();
@@ -186,17 +187,17 @@ final class PersistChangesRequest implements Request<ServiceProvider, ApiError> 
 		}
 	}
 
-	private void applyChanges(SubMonitor subMonitor, SnomedEditingContext editingContext) {
+	private void applyChanges(SubMonitor subMonitor, SnomedEditingContext editingContext, SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner) {
 		final OntologyChangeRecorder<StatementFragment> relationshipRecorder = new OntologyChangeRecorder<>();
 		final OntologyChangeRecorder<ConcreteDomainFragment> concreteDomainRecorder = new OntologyChangeRecorder<>();
 		recordChanges(subMonitor, relationshipRecorder, concreteDomainRecorder);
 	
 		namespaceAndModuleAssigner.allocateRelationshipIdsAndModules(relationshipRecorder.getAddedSubjects().keys(), editingContext);
-		applyRelationshipChanges(editingContext, relationshipRecorder);
+		applyRelationshipChanges(editingContext, relationshipRecorder, namespaceAndModuleAssigner);
 		
 		if (isConcreteDomainSupported()) {
 			namespaceAndModuleAssigner.allocateConcreteDomainModules(concreteDomainRecorder.getAddedSubjects().keySet(), editingContext);
-			applyConcreteDomainChanges(editingContext, concreteDomainRecorder);
+			applyConcreteDomainChanges(editingContext, concreteDomainRecorder, namespaceAndModuleAssigner);
 		}
 	}
 
@@ -210,7 +211,7 @@ final class PersistChangesRequest implements Request<ServiceProvider, ApiError> 
 		conceptConcreteDomainGenerator.collectNormalFormChanges(subMonitor.newChild(1), concreteDomainRecorder);
 	}
 
-	private void applyRelationshipChanges(SnomedEditingContext editingContext, OntologyChangeRecorder<StatementFragment> relationshipRecorder) {
+	private void applyRelationshipChanges(SnomedEditingContext editingContext, OntologyChangeRecorder<StatementFragment> relationshipRecorder, SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner) {
 		final RelationshipPersister relationshipPersister = new RelationshipPersister(editingContext, namespaceAndModuleAssigner);
 		
 		for (Entry<String, StatementFragment> addedFragments : relationshipRecorder.getAddedSubjects().entries()) {
@@ -222,7 +223,7 @@ final class PersistChangesRequest implements Request<ServiceProvider, ApiError> 
 		}
 	}
 
-	private void applyConcreteDomainChanges(SnomedEditingContext editingContext, OntologyChangeRecorder<ConcreteDomainFragment> concreteDomainRecorder) {
+	private void applyConcreteDomainChanges(SnomedEditingContext editingContext, OntologyChangeRecorder<ConcreteDomainFragment> concreteDomainRecorder, SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner) {
 		final ConcreteDomainPersister concreteDomainPersister = new ConcreteDomainPersister(editingContext, namespaceAndModuleAssigner);
 		
 		for (Entry<String, ConcreteDomainFragment> addedFragments : concreteDomainRecorder.getAddedSubjects().entries()) {
