@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,21 @@
 package com.b2international.index.query;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 
 import com.b2international.index.mapping.DocumentMapping;
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 
 /**
  * @since 4.7
  */
-public class SortBy {
+public abstract class SortBy {
 	
 	public static enum Order {
 		ASC, 
@@ -54,11 +52,14 @@ public class SortBy {
 	 */
 	public static final SortBy SCORE = SortBy.field(FIELD_SCORE, Order.DESC);
 	
+	/**
+	 * @since 5.0
+	 */
 	public static final class SortByField extends SortBy {
 		private final String field;
 		private final Order order;
 
-		public SortByField(String field, Order order) {
+		private SortByField(String field, Order order) {
 			this.field = checkNotNull(field, "field");
 			this.order = checkNotNull(order, "order");
 		}
@@ -94,10 +95,64 @@ public class SortBy {
 		}
 	}
 	
+	/**
+	 * @since 6.3
+	 */
+	public static final class SortByScript extends SortBy {
+
+		private final Order order;
+		private final String name;
+		private final Map<String, Object> arguments;
+
+		private SortByScript(String name, Map<String, Object> arguments, Order order) {
+			this.name = name;
+			this.arguments = arguments;
+			this.order = order;
+		}
+		
+		public Order getOrder() {
+			return order;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		public Map<String, Object> getArguments() {
+			return arguments;
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(name, arguments, order);
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) { return true; }
+			if (obj == null) { return false; }
+			if (getClass() != obj.getClass()) { return false; }
+			
+			SortByScript other = (SortByScript) obj;
+			return Objects.equals(name, other.name) 
+					&& Objects.equals(arguments, other.arguments)
+					&& Objects.equals(order, other.order); 
+		}
+		
+		@Override
+		public String toString() {
+			return name + " " + arguments + " " + order;
+		}
+		
+	}
+	
+	/**
+	 * @since 5.0
+	 */
 	public static final class MultiSortBy extends SortBy {
 		private final List<SortBy> items;
 
-		public MultiSortBy(List<SortBy> items) {
+		private MultiSortBy(List<SortBy> items) {
 			this.items = ImmutableList.copyOf(checkNotNull(items, "items"));
 		}
 		
@@ -127,36 +182,51 @@ public class SortBy {
 	}
 	
 	public static final class Builder {
-		private final Map<String, Order> sortOrderMap = Maps.newLinkedHashMap();
+		private final List<SortBy> sorts = newArrayList();
 		
-		public Builder add(String field, Order order) {
-			sortOrderMap.put(field, order);
+		public Builder sortByField(String field, Order order) {
+			sorts.add(field(field, order));
+			return this;
+		}
+		
+		public Builder sortByScript(String script, Map<String, Object> arguments, Order order) {
+			sorts.add(script(script, arguments, order));
 			return this;
 		}
 		
 		public SortBy build() {
-			if (sortOrderMap.isEmpty()) {
+			if (sorts.isEmpty()) {
 				return DOC_ID;
-			} else if (sortOrderMap.size() == 1) {
-				Entry<String, Order> onlyElement = Iterables.getOnlyElement(sortOrderMap.entrySet());
-				return new SortByField(onlyElement.getKey(), onlyElement.getValue());
+			} else if (sorts.size() == 1) {
+				return Iterables.getOnlyElement(sorts);
 			} else {
-				Iterable<SortByField> sortByFieldIterable = Iterables.transform(sortOrderMap.entrySet(), new Function<Entry<String, Order>, SortByField>() {
-					@Override
-					public SortByField apply(Entry<String, Order> input) {
-						return new SortByField(input.getKey(), input.getValue());
-					}
-				});
-				return new MultiSortBy(ImmutableList.<SortBy>copyOf(sortByFieldIterable));
+				return new MultiSortBy(sorts);
 			}
 		}
 	}
 	
+	/**
+	 * Creates and returns a new {@link SortBy} instance that sorts matches by the given field in the given order.
+	 * @param field - the field to use for sort
+	 * @param order - the order to use when sorting matches
+	 * @return
+	 */
 	public static SortBy field(String field, Order order) {
 		return new SortByField(field, order);
 	}
 	
+	/**
+	 * @param script
+	 * @param arguments
+	 * @param order
+	 * @return
+	 */
+	public static SortBy script(String script, Map<String, Object> arguments, Order order) {
+		return new SortByScript(script, arguments, order);
+	}
+
 	public static Builder builder() {
 		return new Builder();
 	}
+
 }

@@ -206,7 +206,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 						.field(Fields.DATA_VALUE, concreteDataTypeMember.getSerializedValue())
 						.field(Fields.CHARACTERISTIC_TYPE_ID, concreteDataTypeMember.getCharacteristicTypeId())
 						.field(Fields.OPERATOR_ID, concreteDataTypeMember.getOperatorComponentId())
-						.field(Fields.UNIT_ID, Strings.nullToEmpty(concreteDataTypeMember.getUomComponentId()));
+						.field(Fields.UNIT_ID, concreteDataTypeMember.getUomComponentId());
 			}
 
 			@Override

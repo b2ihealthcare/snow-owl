@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.index.change;
 
 import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
+import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateDescriptionId;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertEquals;
 
@@ -37,17 +38,21 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
@@ -89,6 +94,422 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getChangedMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void indexConceptWithSingleFsn() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		registerNew(concept);
+		final Description description = createFsnWithTwoAcceptabilityMembers();
+		concept.getDescriptions().add(description);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build();
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getChangedMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void indexConceptWithFsnAndSynonym() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		registerNew(concept);
+		final Description fsn = createFsnWithTwoAcceptabilityMembers();
+		concept.getDescriptions().add(fsn);
+		final Description synonym = createFsnWithTwoAcceptabilityMembers();
+		synonym.setType(getConcept(Concepts.SYNONYM));
+		concept.getDescriptions().add(synonym);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK),
+					new SnomedDescriptionFragment(synonym.getId(), CDOIDUtil.getLong(synonym.cdoID()), Concepts.SYNONYM, synonym.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build();
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getChangedMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void indexConceptWithFsnAndDefinition() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		registerNew(concept);
+		final Description fsn = createFsnWithTwoAcceptabilityMembers();
+		concept.getDescriptions().add(fsn);
+		final Description textDefinition = createFsnWithTwoAcceptabilityMembers();
+		textDefinition.setType(getConcept(Concepts.TEXT_DEFINITION));
+		concept.getDescriptions().add(textDefinition);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build();
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getChangedMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void indexNewFsnForExistingConcept() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		registerExistingObject(concept);
+		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
+		indexRevision(MAIN, conceptStorageKey, doc(concept).build());
+		
+		final Concept changedConcept = createConcept(concept.getId());
+		withCDOID(changedConcept, conceptStorageKey);
+		final Description fsn = createFsnWithTwoAcceptabilityMembers();
+		changedConcept.getDescriptions().add(fsn);
+		registerNew(fsn);
+		registerDirty(changedConcept);
+		registerAddRevisionDelta(changedConcept, SnomedPackage.Literals.CONCEPT__DESCRIPTIONS, 0, fsn);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build();
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void indexNewSynonymForExistingConcept() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		registerExistingObject(concept);
+		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
+		indexRevision(MAIN, conceptStorageKey, doc(concept).build());
+		
+		final Concept changedConcept = createConcept(concept.getId());
+		withCDOID(changedConcept, conceptStorageKey);
+		final Description synonym = createFsnWithTwoAcceptabilityMembers();
+		synonym.setType(getConcept(Concepts.SYNONYM));
+		changedConcept.getDescriptions().add(synonym);
+		registerNew(synonym);
+		registerDirty(changedConcept);
+		registerAddRevisionDelta(changedConcept, SnomedPackage.Literals.CONCEPT__DESCRIPTIONS, 0, synonym);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(synonym.getId(), CDOIDUtil.getLong(synonym.cdoID()), Concepts.SYNONYM, synonym.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build();
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void indexNewTextDefinitionForExistingConcept() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		registerExistingObject(concept);
+		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
+		indexRevision(MAIN, conceptStorageKey, doc(concept).build());
+		
+		final Concept changedConcept = createConcept(concept.getId());
+		withCDOID(changedConcept, conceptStorageKey);
+		final Description textDefinition = createFsnWithTwoAcceptabilityMembers();
+		textDefinition.setType(getConcept(Concepts.TEXT_DEFINITION));
+		changedConcept.getDescriptions().add(textDefinition);
+		registerNew(textDefinition);
+		registerDirty(changedConcept);
+		registerAddRevisionDelta(changedConcept, SnomedPackage.Literals.CONCEPT__DESCRIPTIONS, 0, textDefinition);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(concept).build();
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void removeFsnFromExistingConcept() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
+		registerExistingObject(concept);
+		indexRevision(MAIN, conceptStorageKey, doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(generateDescriptionId(), nextStorageKey(), Concepts.FULLY_SPECIFIED_NAME, "Term", Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build());
+		
+		registerDirty(concept);
+		registerRemoveRevisionDelta(concept, SnomedPackage.Literals.CONCEPT__DESCRIPTIONS, 0);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(concept).build();
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void removeSynonymFromExistingConcept() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
+		registerExistingObject(concept);
+		indexRevision(MAIN, conceptStorageKey, doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(generateDescriptionId(), nextStorageKey(), Concepts.SYNONYM, "Hello", Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build());
+		
+		registerDirty(concept);
+		registerRemoveRevisionDelta(concept, SnomedPackage.Literals.CONCEPT__DESCRIPTIONS, 0);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(concept).build();
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void updateTermOfConceptFsn() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
+		Description fsn = createFsnWithTwoAcceptabilityMembers();
+		fsn.setConcept(concept);
+		registerExistingObject(concept);
+		registerExistingObject(fsn);
+		
+		indexRevision(MAIN, conceptStorageKey, doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build());
+		
+		fsn.setTerm("Term (changed)");
+		registerDirty(fsn);
+		registerSetRevisionDelta(fsn, SnomedPackage.Literals.DESCRIPTION__TERM, "Term", fsn.getTerm());
+		
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build();
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void inactivateFsnOfConcept() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
+		Description fsn = createFsnWithTwoAcceptabilityMembers();
+		fsn.setConcept(concept);
+		registerExistingObject(concept);
+		registerExistingObject(fsn);
+		
+		indexRevision(MAIN, conceptStorageKey, doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build());
+		
+		fsn.setActive(false);
+		registerDirty(fsn);
+		registerSetRevisionDelta(fsn, SnomedPackage.Literals.COMPONENT__ACTIVE, true, false);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(concept).build();
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void updateCaseSignificanceOfConceptDescription() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
+		Description fsn = createFsnWithTwoAcceptabilityMembers();
+		fsn.setConcept(concept);
+		registerExistingObject(concept);
+		registerExistingObject(fsn);
+		
+		indexRevision(MAIN, conceptStorageKey, doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build());
+		
+		registerDirty(fsn);
+		registerSetRevisionDelta(fsn, SnomedPackage.Literals.DESCRIPTION__CASE_SIGNIFICANCE, null /*unused*/, null /*unused*/);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getChangedMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void updateTypeOfConceptDescription() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
+		Description description = createFsnWithTwoAcceptabilityMembers();
+		description.setConcept(concept);
+		registerExistingObject(concept);
+		registerExistingObject(description);
+		
+		indexRevision(MAIN, conceptStorageKey, doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build());
+		
+		description.setType(getConcept(Concepts.SYNONYM));
+		registerDirty(description);
+		registerSetRevisionDelta(description, SnomedPackage.Literals.DESCRIPTION__TYPE, null /*unused*/, null /*unused*/);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.SYNONYM, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build();
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void addAcceptabilityMemberToConceptDescription() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
+		Description description = createFsnWithTwoAcceptabilityMembers();
+		description.setConcept(concept);
+		registerExistingObject(concept);
+		registerExistingObject(description);
+		
+		indexRevision(MAIN, conceptStorageKey, doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build());
+		
+		final SnomedLanguageRefSetMember newMember = createLangMember(description.getId(), Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_US);
+		description.getLanguageRefSetMembers().add(newMember);
+		registerNew(newMember);
+		registerDirty(description);
+		registerAddRevisionDelta(description, SnomedPackage.Literals.DESCRIPTION__LANGUAGE_REF_SET_MEMBERS, 1, newMember);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
+				))
+				.build();
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void inactivateAcceptabilityMemberOfConceptDescription() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
+		Description description = createFsnWithTwoAcceptabilityMembers();
+		SnomedLanguageRefSetMember memberToInactivate = createLangMember(description.getId(), Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_US);
+		description.getLanguageRefSetMembers().add(memberToInactivate);
+		description.setConcept(concept);
+		registerExistingObject(concept);
+		registerExistingObject(description);
+		registerExistingObject(memberToInactivate);
+		
+		indexRevision(MAIN, conceptStorageKey, doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
+				))
+				.build());
+		
+		memberToInactivate.setActive(false);
+		registerDirty(memberToInactivate);
+		registerSetRevisionDelta(memberToInactivate, SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__ACTIVE, true, false);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build();
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void changeAcceptabilityOfConceptDescription() throws Exception {
+		final Concept concept = createConcept(generateConceptId());
+		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
+		Description description = createFsnWithTwoAcceptabilityMembers();
+		SnomedLanguageRefSetMember memberToChange = createLangMember(description.getId(), Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_US);
+		description.getLanguageRefSetMembers().add(memberToChange);
+		description.setConcept(concept);
+		registerExistingObject(concept);
+		registerExistingObject(description);
+		registerExistingObject(memberToChange);
+		
+		indexRevision(MAIN, conceptStorageKey, doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
+				))
+				.build());
+		
+		memberToChange.setAcceptabilityId(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE);
+		registerDirty(memberToChange);
+		registerSetRevisionDelta(memberToChange, SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER__ACCEPTABILITY_ID, null /*unused*/, null /*unused*/);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(concept)
+				.preferredDescriptions(ImmutableList.of(
+					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
+				))
+				.build();
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
@@ -394,7 +815,36 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		// the concept needs to be reindexed with the referring member value
 		final SnomedConceptDocument expected = doc(concept)
-				.referringRefSets(ImmutableSet.of(referringReferenceSetId))
+				.memberOf(ImmutableSet.of(referringReferenceSetId))
+				.activeMemberOf(ImmutableSet.of(referringReferenceSetId))
+				.build();
+		assertEquals(1, processor.getChangedMappings().size());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void addInactiveMemberToExistingConcept() throws Exception {
+		final String conceptId = generateConceptId();
+		final String referringReferenceSetId = generateConceptId();
+		
+		final Concept concept = createConcept(conceptId);
+		final SnomedRefSetMember member = createSimpleMember(conceptId, referringReferenceSetId);
+		member.setActive(false);
+		
+		// set current state
+		registerExistingObject(concept);
+		indexRevision(MAIN, CDOIDUtil.getLong(concept.cdoID()), doc(concept).build());
+		
+		registerNew(member);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		// the concept needs to be reindexed with the referring member value
+		final SnomedConceptDocument expected = doc(concept)
+				.memberOf(ImmutableSet.of(referringReferenceSetId))
 				.build();
 		assertEquals(1, processor.getChangedMappings().size());
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
@@ -419,9 +869,79 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final ConceptChangeProcessor processor = process();
 		
+		// the concept needs to be reindexed with new memberOf array fields
+		final SnomedConceptDocument expected = doc(concept)
+				.memberOf(ImmutableSet.of(referringMappingReferenceSetId))
+				.activeMemberOf(ImmutableSet.of(referringMappingReferenceSetId))
+				.build();
+		assertEquals(1, processor.getChangedMappings().size());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void inactivateSimpleMemberOfConcept() throws Exception {
+		final String conceptId = generateConceptId();
+		final String referringReferenceSetId = generateConceptId();
+		
+		final Concept concept = createConcept(conceptId);
+		final SnomedRefSetMember member = createSimpleMember(conceptId, referringReferenceSetId);
+		
+		// set current state
+		registerExistingObject(concept);
+		registerExistingObject(member);
+		indexRevision(MAIN, CDOIDUtil.getLong(concept.cdoID()), doc(concept)
+				.memberOf(Collections.singleton(referringReferenceSetId))
+				.activeMemberOf(Collections.singleton(referringReferenceSetId))
+				.build());
+		indexRevision(MAIN, CDOIDUtil.getLong(member.cdoID()), SnomedRefSetMemberIndexEntry.builder(member).build());
+		
+		member.setActive(false);
+		registerDirty(member);
+		registerSetRevisionDelta(member, SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__ACTIVE, true, false);
+		
+		final ConceptChangeProcessor processor = process();
+		
 		// the concept needs to be reindexed with the referring member value
 		final SnomedConceptDocument expected = doc(concept)
-				.referringMappingRefSets(ImmutableSet.of(referringMappingReferenceSetId))
+				.memberOf(ImmutableSet.of(referringReferenceSetId))
+				.build();
+		assertEquals(1, processor.getChangedMappings().size());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		assertDocEquals(expected, actual);
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void reactivateSimpleMemberOfConcept() throws Exception {
+		final String conceptId = generateConceptId();
+		final String referringReferenceSetId = generateConceptId();
+		
+		final Concept concept = createConcept(conceptId);
+		final SnomedRefSetMember member = createSimpleMember(conceptId, referringReferenceSetId);
+		member.setActive(false);
+		
+		// set current state
+		registerExistingObject(concept);
+		registerExistingObject(member);
+		indexRevision(MAIN, CDOIDUtil.getLong(concept.cdoID()), doc(concept)
+				.memberOf(Collections.singleton(referringReferenceSetId))
+				.build());
+		indexRevision(MAIN, CDOIDUtil.getLong(member.cdoID()), SnomedRefSetMemberIndexEntry.builder(member).build());
+		
+		member.setActive(true);
+		registerDirty(member);
+		registerSetRevisionDelta(member, SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER__ACTIVE, false, true);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		// the concept needs to be reindexed with the referring member value
+		final SnomedConceptDocument expected = doc(concept)
+				.memberOf(ImmutableSet.of(referringReferenceSetId))
+				.activeMemberOf(ImmutableSet.of(referringReferenceSetId))
 				.build();
 		assertEquals(1, processor.getChangedMappings().size());
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
@@ -442,7 +962,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(concept);
 		registerExistingObject(member);
 		indexRevision(MAIN, CDOIDUtil.getLong(concept.cdoID()), doc(concept)
-				.referringRefSets(ImmutableSet.of(referringReferenceSetId))
+				.memberOf(ImmutableSet.of(referringReferenceSetId))
+				.activeMemberOf(ImmutableSet.of(referringReferenceSetId))
 				.build());
 		indexRevision(MAIN, CDOIDUtil.getLong(member.cdoID()), SnomedRefSetMemberIndexEntry.builder(member).build());
 		
@@ -473,7 +994,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(member2);
 		
 		indexRevision(MAIN, CDOIDUtil.getLong(concept.cdoID()), doc(concept)
-				.referringRefSets(ImmutableList.of(referringReferenceSetId, referringReferenceSetId))
+				.memberOf(ImmutableList.of(referringReferenceSetId, referringReferenceSetId))
+				.activeMemberOf(ImmutableList.of(referringReferenceSetId, referringReferenceSetId))
 				.build());
 		indexRevision(MAIN, CDOIDUtil.getLong(member1.cdoID()), SnomedRefSetMemberIndexEntry.builder(member1).build());
 		indexRevision(MAIN, CDOIDUtil.getLong(member2.cdoID()), SnomedRefSetMemberIndexEntry.builder(member2).build());
@@ -482,8 +1004,11 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final ConceptChangeProcessor processor = process();
 		
-		// the concept needs to be reindexed with the referring member value
-		final SnomedConceptDocument expected = doc(concept).referringRefSets(Collections.singleton(referringReferenceSetId)).build();
+		// the concept needs to be reindexed with the new memberOf and activeMemberOf array field values
+		final SnomedConceptDocument expected = doc(concept)
+				.memberOf(Collections.singleton(referringReferenceSetId))
+				.activeMemberOf(Collections.singleton(referringReferenceSetId))
+				.build();
 		assertEquals(1, processor.getChangedMappings().size());
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
 		assertDocEquals(expected, actual);
@@ -503,7 +1028,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(concept);
 		registerExistingObject(member);
 		indexRevision(MAIN, CDOIDUtil.getLong(concept.cdoID()), doc(concept)
-				.referringMappingRefSets(ImmutableSet.of(referringMappingReferenceSetId))
+				.memberOf(ImmutableSet.of(referringMappingReferenceSetId))
+				.activeMemberOf(ImmutableSet.of(referringMappingReferenceSetId))
 				.build());
 		indexRevision(MAIN, CDOIDUtil.getLong(member.cdoID()), SnomedRefSetMemberIndexEntry.builder(member).build());
 		
@@ -611,9 +1137,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.parents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.ancestors(PrimitiveSets.newLongOpenHashSet())
 				.statedParents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet())
-				.referringRefSets(Collections.<String>emptySet())
-				.referringMappingRefSets(Collections.<String>emptySet());
+				.statedAncestors(PrimitiveSets.newLongOpenHashSet());
 	}
 
 	private Concept createConcept(final String id) {

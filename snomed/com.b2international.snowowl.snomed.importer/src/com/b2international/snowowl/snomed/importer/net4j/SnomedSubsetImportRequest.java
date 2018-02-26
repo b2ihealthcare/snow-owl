@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,11 +40,11 @@ public class SnomedSubsetImportRequest extends RequestWithMonitoring<SnomedUnimp
 
 	private final File importFile;
 	private final SubsetEntry entry;
-	private final String pranchPath;
+	private final String branchPath;
 
 	public SnomedSubsetImportRequest(final String branchPath, final SubsetEntry entry, final SnomedImportClientProtocol protocol, final File importFile) {
 		super(protocol, SnomedImportProtocolConstants.SIGNAL_IMPORT_SUBSET);
-		this.pranchPath = branchPath;
+		this.branchPath = branchPath;
 		this.entry = entry;
 		this.importFile = importFile;
 	}
@@ -71,7 +71,7 @@ public class SnomedSubsetImportRequest extends RequestWithMonitoring<SnomedUnimp
 		importUtil.updateNullProperties(entry);
 
 		//e.g.: MAIN or MAIN/NationalReleaseCenter/TaskId
-		out.writeUTF(pranchPath);
+		out.writeUTF(branchPath);
 
 		//write requesting user ID
 		out.writeUTF(ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId());
@@ -81,11 +81,13 @@ public class SnomedSubsetImportRequest extends RequestWithMonitoring<SnomedUnimp
 		out.writeInt(entry.getIdColumnNumber());
 		out.writeInt(entry.getFirstConceptRowNumber());
 		out.writeInt(entry.getSheetNumber());
-		out.writeInt(entry.getRefSetType());
+		out.writeUTF(entry.getRefSetParent());
 		out.writeUTF(entry.getSubsetName());
 		out.writeUTF(entry.getExtension());
 		out.writeUTF(entry.getEffectiveTime()); 
 		out.writeUTF(entry.getNamespace());
+		out.writeUTF(entry.getModuleId());
+		out.writeUTF(entry.getLanguageRefSetId());
 		out.writeUTF(entry.getFieldSeparator());
 		out.writeUTF(entry.getQuoteCharacter());
 		out.writeUTF(entry.getLineFeedCharacter());

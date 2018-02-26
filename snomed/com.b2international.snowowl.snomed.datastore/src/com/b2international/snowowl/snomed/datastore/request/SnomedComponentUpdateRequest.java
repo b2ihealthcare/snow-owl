@@ -91,7 +91,7 @@ public abstract class SnomedComponentUpdateRequest implements Request<Transactio
 		return CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.one()
 				.filterByCodeSystemShortName(relativeCodeSystem.getShortName())
-				.sortBy(new SearchResourceRequest.SortField(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE, false))
+				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 				.build()
 				.execute(context)
 				.first()

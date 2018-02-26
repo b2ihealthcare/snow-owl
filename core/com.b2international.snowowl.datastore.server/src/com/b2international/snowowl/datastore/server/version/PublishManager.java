@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.STORAGE_KEY_T
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.Boolean.TRUE;
-import static java.text.MessageFormat.format;
 import static org.eclipse.emf.cdo.common.revision.CDORevisionUtil.createDelta;
 import static org.eclipse.emf.ecore.InternalEObject.EStore.NO_INDEX;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -45,7 +44,6 @@ import org.slf4j.Logger;
 
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.branch.Branch;
@@ -77,8 +75,6 @@ public abstract class PublishManager implements IPublishManager {
 	/** Shared logger instance. */
 	protected static final Logger LOGGER = getLogger(PublishManager.class);
 
-	private static final String NEW_VERSION_CREATED_TEMPLATE = "New version ''{0}'' has been successfully created for {1}.";
-
 	private Supplier<CDOEditingContext> editingContextSupplier;
 
 	@Override
@@ -93,7 +89,6 @@ public abstract class PublishManager implements IPublishManager {
 				}
 			});
 			
-			ToolingIdThreadLocal.setToolingId(toolingId);
 			aggregator.add(getTransaction());
 			publishTerminologyChanges(configuration);
 			logWork(monitor);
@@ -102,12 +97,7 @@ public abstract class PublishManager implements IPublishManager {
 
 		} catch (final SnowowlServiceException e) {
 			handleError(e);
-		} finally {
-			ToolingIdThreadLocal.reset();
 		}
-
-		format(NEW_VERSION_CREATED_TEMPLATE, configuration.getVersionId(), getToolingName());
-
 	}
 	
 	@Override
@@ -204,11 +194,6 @@ public abstract class PublishManager implements IPublishManager {
 		LOGGER.info("Effective time adjustment successfully finished.");
 	}
 
-	/** Returns with the primary component ID for the underlying tooling feature. */
-	protected String getPrimaryComponentId() {
-		return CoreTerminologyBroker.getInstance().getPrimaryComponentIdByTerminologyId(getToolingId());
-	}
-
 	/** Loads and returns with the CDO object given by the unique CDO ID argument. */
 	protected CDOObject loadObject(final long storageKey) {
 		return checkNotNull(getObjectIfExists(getTransaction(), storageKey), "Component cannot be found in " + getTransaction() + " with CDOID: "
@@ -293,15 +278,6 @@ public abstract class PublishManager implements IPublishManager {
 		postProcess(config);
 	}
 
-	/** Returns with the current tooling feature ID. */
-	private String getToolingId() {
-		return ToolingIdThreadLocal.getToolingId();
-	}
-
-	private String getToolingName() {
-		return CoreTerminologyBroker.getInstance().getTerminologyName(getToolingId());
-	}
-
 	/** Published a component given by its unique storage key. */
 	private void publishComponent(final CDORevision revision, final Object effectiveTime) {
 		if (!isIgnoredType(revision.getEClass())) {
@@ -354,23 +330,6 @@ public abstract class PublishManager implements IPublishManager {
 	private void handleError(final SnowowlServiceException e) throws SnowowlServiceException {
 		LOGGER.error("Error while performing the publication.", e);
 		throw e;
-	}
-
-	/** Class for storing the configuration in the thread local. */
-	static final class ToolingIdThreadLocal {
-		private static final ThreadLocal<String> TOOLING_ID_THREAD_LOCAL = new ThreadLocal<String>();
-
-		static void setToolingId(final String toolingId) {
-			TOOLING_ID_THREAD_LOCAL.set(toolingId);
-		}
-
-		static String getToolingId() {
-			return TOOLING_ID_THREAD_LOCAL.get();
-		}
-
-		static void reset() {
-			TOOLING_ID_THREAD_LOCAL.set(null);
-		}
 	}
 
 }

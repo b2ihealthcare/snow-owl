@@ -38,9 +38,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.base.Function;
 import com.google.common.base.Objects.ToStringHelper;
-import com.google.common.collect.FluentIterable;
 
 /**
  * A transfer object representing a SNOMED CT description.
@@ -116,15 +114,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				.destinationNegated(input.isDestinationNegated())
 				.moduleId(input.getModuleId())
 				.effectiveTime(input.getEffectiveTime());
-	}
-	
-	public static Collection<SnomedRelationshipIndexEntry> fromRelationships(Iterable<SnomedRelationship> relationships) {
-		return FluentIterable.from(relationships).transform(new Function<SnomedRelationship, SnomedRelationshipIndexEntry>() {
-			@Override
-			public SnomedRelationshipIndexEntry apply(SnomedRelationship input) {
-				return builder(input).build();
-			}
-		}).toSet();
 	}
 	
 	public static final class Expressions extends SnomedComponentDocument.Expressions {
@@ -285,8 +274,8 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 					unionGroup, 
 					destinationNegated,
 					namespace,
-					referringRefSets,
-					referringMappingRefSets);
+					memberOf,
+					activeMemberOf);
 			doc.setScore(score);
 			doc.setBranchPath(branchPath);
 			doc.setCommitTimestamp(commitTimestamp);

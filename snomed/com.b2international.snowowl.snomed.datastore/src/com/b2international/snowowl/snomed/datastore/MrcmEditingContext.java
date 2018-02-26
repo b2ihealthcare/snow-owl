@@ -18,11 +18,11 @@ package com.b2international.snowowl.snomed.datastore;
 import java.util.Collection;
 import java.util.UUID;
 
+import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOState;
-import org.eclipse.emf.ecore.EObject;
 
-import com.b2international.collections.longs.LongValueMap;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.ConceptModel;
@@ -87,8 +87,13 @@ public class MrcmEditingContext extends BaseSnomedEditingContext {
 	}
 
 	@Override
-	protected <T extends EObject> LongValueMap<String> getStorageKeys(Collection<String> componentIds, Class<T> type) {
+	protected <T extends CDOObject> Collection<? extends IComponent> fetchComponents(Collection<String> componentIds, Class<T> type) {
 		throw new UnsupportedOperationException("Cannot fetch storage keys for " + type);
+	}
+	
+	@Override
+	protected String getId(CDOObject component) {
+		throw new UnsupportedOperationException("Cannot get ID for " + component);
 	}
 	
 	/*creates and returns with a new concept model instance.*/

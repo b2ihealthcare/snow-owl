@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.importer;
+package com.b2international.snowowl.datastore.importer;
 
+import java.io.Serializable;
 import java.util.Set;
 
-import org.eclipse.emf.cdo.CDOObject;
-
-import com.b2international.snowowl.datastore.importer.TerminologyImportValidationDefect;
 import com.google.common.collect.Sets;
 
 /**
@@ -28,18 +26,22 @@ import com.google.common.collect.Sets;
  * 
  * @since Snow&nbsp;Owl 3.0.1
  */
-public class TerminologyImportResult {
+public final class TerminologyImportResult implements Serializable {
 	
-	private Set<CDOObject> visitedComponents;
-	private Set<TerminologyImportValidationDefect> validationDefects;
+	private final Set<String> visitedComponentIds;
+	private final Set<TerminologyImportValidationDefect> validationDefects;
 	
 	public TerminologyImportResult() {
-		visitedComponents = Sets.newHashSet();
+		visitedComponentIds = Sets.newHashSet();
 		validationDefects = Sets.newHashSet();
 	}
 	
-	public Set<CDOObject> getVisitedComponents() {
-		return visitedComponents;
+	public void visit(String componentId) {
+		visitedComponentIds.add(componentId);
+	}
+
+	public Set<String> getVisitedComponents() {
+		return visitedComponentIds;
 	}
 	
 	public boolean hasValidationDefects() {

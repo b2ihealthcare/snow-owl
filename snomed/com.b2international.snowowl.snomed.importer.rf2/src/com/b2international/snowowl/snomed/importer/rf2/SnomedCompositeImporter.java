@@ -36,7 +36,6 @@ import org.slf4j.Logger;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.functions.UncheckedCastFunction;
-import com.b2international.index.revision.Purge;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -48,8 +47,6 @@ import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.request.repository.OptimizeRequest;
-import com.b2international.snowowl.datastore.request.repository.PurgeRequest;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder;
 import com.b2international.snowowl.datastore.version.ITagConfiguration;
@@ -386,12 +383,12 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 
 	protected void createSnomedVersionFor(final String lastUnitEffectiveTimeKey) {
 		
-		if (AbstractSnomedImporter.UNPUBLISHED_KEY.equals(lastUnitEffectiveTimeKey)) {
-			return;
-		}
-		
 		try {
 
+			if (AbstractSnomedImporter.UNPUBLISHED_KEY.equals(lastUnitEffectiveTimeKey)) {
+				return;
+			}
+			
 			boolean existingVersionFound = false;
 
 			if (importContext.isVersionCreationEnabled()) {
@@ -417,19 +414,6 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			}
 			
 			if (!existingVersionFound && importContext.isVersionCreationEnabled()) {
-				// purge index
-//				PurgeRequest.builder()
-//					.setBranchPath(getImportBranchPath().getPath())
-//					.setPurge(Purge.LATEST)
-//					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-//					.execute(getEventBus())
-//					.getSync();
-				// optimize index
-//				OptimizeRequest.builder()
-//					.setMaxSegments(8)
-//					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-//					.execute(getEventBus())
-//					.getSync();
 				
 				final IBranchPath snomedBranchPath = getImportBranchPath();
 				final Date effectiveDate = EffectiveTimes.parse(lastUnitEffectiveTimeKey, DateFormats.SHORT);
