@@ -386,11 +386,11 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 
 	protected void createSnomedVersionFor(final String lastUnitEffectiveTimeKey) {
 		
-		if (AbstractSnomedImporter.UNPUBLISHED_KEY.equals(lastUnitEffectiveTimeKey)) {
-			return;
-		}
-		
 		try {
+			
+			if (AbstractSnomedImporter.UNPUBLISHED_KEY.equals(lastUnitEffectiveTimeKey)) {
+				return;
+			}
 
 			boolean existingVersionFound = false;
 
@@ -445,8 +445,8 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			}
 			
 		} finally {
-			importContext.setCommitTime(CDOServerUtils.getLastCommitTime(importContext.getEditingContext().getTransaction().getBranch()));
 			if (!importContext.isCommitNotificationEnabled()) {
+				importContext.setCommitTime(CDOServerUtils.getLastCommitTime(importContext.getEditingContext().getTransaction().getBranch()));
 				final CDOCommitInfo commitInfo = createCommitInfo(importContext.getCommitTime(), importContext.getPreviousTime());
 				CDOServerUtils.sendCommitNotification(commitInfo);
 			}

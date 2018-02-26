@@ -49,6 +49,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
+import org.eclipse.emf.cdo.session.CDORepositoryInfo;
+import org.eclipse.emf.cdo.session.CDOSession;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveSets;
@@ -69,6 +73,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
@@ -455,6 +460,15 @@ public final class ImportUtil {
 			if (context.getVisitedConcepts().size() == 0 && context.getVisitedRefSets().size() == 0) {
 				return result;
 			}
+			
+			if (!context.isCommitNotificationEnabled()) {
+				
+				if (context.getPreviousTime() < context.getCommitTime()) {
+					final CDOCommitInfo commitInfo = createCommitInfo(context);
+					CDOServerUtils.sendCommitNotification(commitInfo);
+				}
+				
+			}
 
 			// release specific post processing
 			postProcess(context);
@@ -470,6 +484,20 @@ public final class ImportUtil {
 				LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "SNOMED CT import finished. No changes could be found.");
 			}
 		}
+	}
+	
+	private CDOCommitInfo createCommitInfo(SnomedImportContext importContext) {
+		
+		final CDOTransaction transaction = importContext.getEditingContext().getTransaction();
+		final CDOSession session = transaction.getSession();
+		final CDORepositoryInfo info = session.getRepositoryInfo();
+		final String repositoryUuid = info.getUUID();
+		final IBranchPath branchPath = BranchPathUtils.createPath(importContext.branch());
+		
+		return CDOCommitInfoUtils.createEmptyCommitInfo(repositoryUuid, branchPath, importContext.getUserId(),
+				importContext.getCommitMessage(),
+				importContext.getCommitTime(), importContext.getPreviousTime());
+		
 	}
 
 	private ImmutableList<String> getAsStringList(final LongSet longIds) {
