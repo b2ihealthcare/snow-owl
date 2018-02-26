@@ -19,9 +19,16 @@ import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getVersion;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
-import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.createImport;
+import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.deleteImport;
+import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.getImport;
+import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.uploadImportFile;
+import static com.b2international.snowowl.snomed.api.rest.SnomedImportRestRequests.waitForImportJob;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Map;
 
@@ -29,11 +36,14 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.google.common.collect.ImmutableMap;
+import com.jayway.restassured.response.ValidatableResponse;
 
 /**
  * @since 2.0
@@ -42,10 +52,15 @@ import com.google.common.collect.ImmutableMap;
 public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
 	private void importArchive(final String fileName) {
+		importArchive(fileName, branchPath, false, Rf2ReleaseType.DELTA);
+	}
+	
+	private void importArchive(String fileName, IBranchPath path, boolean createVersion, Rf2ReleaseType releaseType) {
+		
 		final Map<?, ?> importConfiguration = ImmutableMap.builder()
-				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("branchPath", branchPath.getPath())
-				.put("createVersions", false)
+				.put("type", releaseType.name())
+				.put("branchPath", path.getPath())
+				.put("createVersions", createVersion)
 				.build();
 
 		importArchive(fileName, importConfiguration);
@@ -204,4 +219,103 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		getVersion("SNOMEDCT-NE", "2015-02-05").statusCode(200);
 	}
 
+	@Test
+	public void import12OnlyPubContentWithVersioning() {
+		validateBranchHeadtimestampUpdate(branchPath,
+				"SnomedCT_RF2Release_INT_20180223_content_with_effective_time.zip", true);
+	}
+
+	@Test
+	public void import13OnlyPubContentWithOutVersioning() {
+		validateBranchHeadtimestampUpdate(branchPath,
+				"SnomedCT_RF2Release_INT_20180223_content_with_effective_time.zip", false);
+	}
+
+	@Test
+	public void import14PubAndUnpubContentWithVersioning() {
+		validateBranchHeadtimestampUpdate(branchPath,
+				"SnomedCT_RF2Release_INT_20180223_content_w_and_wo_effective_time.zip", true);
+	}
+
+	@Test
+	public void import15PubAndUnpubContentWithOutVersioning() {
+		validateBranchHeadtimestampUpdate(branchPath,
+				"SnomedCT_RF2Release_INT_20180223_content_w_and_wo_effective_time.zip", false);
+	}
+
+	@Test
+	public void import16OnlyUnpubContentWithoutVersioning() {
+		validateBranchHeadtimestampUpdate(branchPath,
+				"SnomedCT_RF2Release_INT_20180223_content_without_effective_time.zip", false);
+	}
+
+	@Test
+	public void import17OnlyUnpubContentWithVersioning() {
+		validateBranchHeadtimestampUpdate(branchPath,
+				"SnomedCT_RF2Release_INT_20180223_content_without_effective_time.zip", true);
+	}
+
+	@Test
+	public void import18OnlyPubRefsetMembersWithVersioning() {
+		validateBranchHeadtimestampUpdate(branchPath,
+				"SnomedCT_RF2Release_INT_20180223_only_refset_w_effective_time.zip", true);
+	}
+
+	@Test
+	public void import19OnlyPubRefsetMembersWithoutVersioning() {
+		validateBranchHeadtimestampUpdate(branchPath,
+				"SnomedCT_RF2Release_INT_20180223_only_refset_w_effective_time.zip", false);
+	}
+
+	@Test
+	public void import20PubAndUnpubRefsetMembersWithVersioning() {
+		validateBranchHeadtimestampUpdate(branchPath,
+				"SnomedCT_RF2Release_INT_20180223_only_refset_w_and_wo_effective_time.zip", true);
+	}
+
+	@Test
+	public void import21PubAndUnpubRefsetMembersWithoutVersioning() {
+		validateBranchHeadtimestampUpdate(branchPath,
+				"SnomedCT_RF2Release_INT_20180223_only_refset_w_and_wo_effective_time.zip", false);
+	}
+
+	@Test
+	public void import22OnlyUnpubRefsetMembersWithoutVersioning() {
+		validateBranchHeadtimestampUpdate(branchPath,
+				"SnomedCT_RF2Release_INT_20180223_only_refset_wo_effective_time.zip", false);
+	}
+
+	@Test
+	public void import23OnlyUnpubRefsetMembersWithVersioning() {
+		validateBranchHeadtimestampUpdate(branchPath,
+				"SnomedCT_RF2Release_INT_20180223_only_refset_wo_effective_time.zip", true);
+	}
+
+	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,
+			boolean createVersions) {
+
+		ValidatableResponse response = SnomedBranchingRestRequests.getBranch(branch);
+
+		String baseTimestamp = response.extract().jsonPath().getString("baseTimestamp");
+		String headTimestamp = response.extract().jsonPath().getString("headTimestamp");
+
+		assertNotNull(baseTimestamp);
+		assertNotNull(headTimestamp);
+
+		assertEquals("Base and head timestamp must be equal after branch creation", baseTimestamp, headTimestamp);
+
+		importArchive(importArchiveFileName, branch, createVersions, Rf2ReleaseType.DELTA);
+
+		ValidatableResponse response2 = SnomedBranchingRestRequests.getBranch(branch);
+
+		String baseTimestampAfterImport = response2.extract().jsonPath().getString("baseTimestamp");
+		String headTimestampAfterImport = response2.extract().jsonPath().getString("headTimestamp");
+
+		assertNotNull(baseTimestampAfterImport);
+		assertNotNull(headTimestampAfterImport);
+
+		assertNotEquals("Base and head timestamp must differ after import", baseTimestampAfterImport,
+				headTimestampAfterImport);
+	}
+	
 }
