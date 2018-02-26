@@ -36,6 +36,7 @@ import com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiTest;
 import com.b2international.snowowl.snomed.api.rest.classification.SnomedClassificationApiTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedConceptApiTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedDescriptionApiTest;
+import com.b2international.snowowl.snomed.api.rest.components.SnomedModuleDependencyRefsetTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetApiTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetBulkApiTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetMemberApiTest;
@@ -84,6 +85,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedBrowserApiTest.class,
 	SnomedClassificationApiTest.class,
 	SnomedExportApiTest.class,
+	// Module dependecy test cases
+	SnomedModuleDependencyRefsetTest.class,
 	// Extension test cases
 	SnomedExtensionUpgradeTest.class,
 	SnomedExtensionDowngradeTest.class,

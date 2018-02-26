@@ -60,7 +60,6 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.SnomedModuleDependencyRefSetService;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
@@ -538,17 +537,6 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		checkArgument(!StringUtils.isEmpty(identifierConceptId), "Identifier SNOMED CT concept ID cannot be null.");
 
 		return new SnomedRefSetLookupService().getComponent(identifierConceptId, transaction);
-	}
-	
-	@Override
-	public void preCommit() {
-		/*
-		 * Updates the module dependency refset members based on the changes. Source or target
-		 * effective time is set to null if the changed component module id has dependency in
-		 * the refset.
-		 */
-		SnomedModuleDependencyRefSetService dependencyRefSetService = new SnomedModuleDependencyRefSetService();
-		dependencyRefSetService.updateModuleDependenciesDuringPreCommit(getTransaction());
 	}
 	
 	@Override

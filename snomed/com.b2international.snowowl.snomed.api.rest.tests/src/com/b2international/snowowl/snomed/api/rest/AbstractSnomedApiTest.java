@@ -21,9 +21,11 @@ import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * @since 2.0
@@ -96,6 +98,10 @@ public abstract class AbstractSnomedApiTest {
 
 	protected IBranchPath branchPath;
 
+	protected IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
+	
 	@Rule 
 	public final TestWatcher watcher = new CustomTestWatcher();
 

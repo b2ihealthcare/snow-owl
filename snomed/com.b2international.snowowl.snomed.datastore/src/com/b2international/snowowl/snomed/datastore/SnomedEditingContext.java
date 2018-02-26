@@ -87,7 +87,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
-import com.b2international.snowowl.snomed.datastore.services.SnomedModuleDependencyRefSetService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -980,10 +979,12 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		if (deletionPlan != null) {
 			delete(deletionPlan);
 		}
-		/* Ensure that all new components (concepts, descriptions and relationships) have unique 
-		 * IDs both among themselves and the components already persisted in the database.
-		 * Non-unique IDs will be overwritten with ones which are guaranteed to be unique 
-		 * as of the time of this check. */
+		/*
+		 * Ensure that all new components (concepts, descriptions and relationships)
+		 * have unique IDs both among themselves and the components already persisted in
+		 * the database. Non-unique IDs will be overwritten with ones which are
+		 * guaranteed to be unique as of the time of this check.
+		 */
 		if (isUniquenessCheckEnabled()) {
 			List<CDOIDAndVersion> newObjects = transaction.getChangeSetData().getNewObjects();
 			ComponentIdUniquenessValidator uniquenessEnforcer = new ComponentIdUniquenessValidator(this);
@@ -995,14 +996,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				}
 			}
 		}
-		
-		/*
-		 * Updates the module dependency refset members based on the changes. Source or target
-		 * effective time is set to null if the changed component module id has dependency in
-		 * the refset.
-		 */
-		SnomedModuleDependencyRefSetService dependencyRefSetService = new SnomedModuleDependencyRefSetService();
-		dependencyRefSetService.updateModuleDependenciesDuringPreCommit(getTransaction());
 	}
 	
 	public boolean isUniquenessCheckEnabled() {
