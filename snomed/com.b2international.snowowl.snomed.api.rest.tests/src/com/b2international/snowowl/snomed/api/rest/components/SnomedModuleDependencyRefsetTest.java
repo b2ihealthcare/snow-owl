@@ -91,7 +91,7 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void moduleDependencyMemberEffectiveTimeUpdateTest() {
+	public void updateRelevantModDepMembersForExtensionVersions() {
 
 		final String shortName = "SNOMEDCT-MODULEDEPENDENCY";
 		createCodeSystem(branchPath, shortName).statusCode(201);
