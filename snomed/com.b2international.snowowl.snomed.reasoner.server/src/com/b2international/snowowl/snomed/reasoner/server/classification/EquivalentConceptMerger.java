@@ -373,7 +373,6 @@ public class EquivalentConceptMerger {
 		Concept sourceToKeep = relationshipToKeep.getSource();
 		Concept sourceToRemove = relationshipToRemove.getSource();
 		
-		equivalentConcepts.get(sourceToKeep);
 		return relationshipToRemove.getType().equals(relationshipToKeep.getType())
 				&& (sourceToRemove.equals(sourceToKeep) || equivalentConcepts.get(sourceToKeep).contains(sourceToRemove))
 				&& relationshipToRemove.getCharacteristicType().equals(relationshipToKeep.getCharacteristicType())
@@ -384,7 +383,6 @@ public class EquivalentConceptMerger {
 		Concept destinationToKeep = relationshipToKeep.getDestination();
 		Concept destinationToRemove = relationshipToRemove.getDestination();
 		
-		equivalentConcepts.get(destinationToKeep);
 		return relationshipToRemove.getType().equals(relationshipToKeep.getType())
 				&& (destinationToRemove.equals(destinationToKeep) || equivalentConcepts.get(destinationToKeep).contains(destinationToRemove))
 				&& relationshipToRemove.getCharacteristicType().equals(relationshipToKeep.getCharacteristicType())
