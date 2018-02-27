@@ -291,6 +291,15 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 				"SnomedCT_RF2Release_INT_20180223_only_refset_wo_effective_time.zip", true);
 	}
 
+	@Test
+	public void import24IncompleteTaxonomyMustBeImported() {
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "882169191000154107").statusCode(404);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, "955630781000154129").statusCode(404);
+		importArchive("SnomedCT_RF2Release_INT_20180227_incomplete_taxonomy.zip");
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "882169191000154107").statusCode(200);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, "955630781000154129").statusCode(200);
+	}
+	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,
 			boolean createVersions) {
 

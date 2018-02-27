@@ -23,7 +23,19 @@ import com.google.common.base.Objects;
 public final class InvalidRelationship {
 
 	public enum MissingConcept {
-		SOURCE, DESTINATION;
+		
+		SOURCE("source"), DESTINATION("destination");
+		
+		private String label;
+		
+		MissingConcept(String label) {
+			this.label = label;
+		}
+		
+		public String getLabel() {
+			return label;
+		}
+		
 	}
 
 	private final long relationshipId;
