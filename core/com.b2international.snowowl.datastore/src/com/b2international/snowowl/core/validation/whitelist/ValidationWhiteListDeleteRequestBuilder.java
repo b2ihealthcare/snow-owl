@@ -15,26 +15,28 @@
  */
 package com.b2international.snowowl.core.validation.whitelist;
 
-import com.b2international.snowowl.core.ServiceProvider;
+import java.util.Set;
+
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.request.SystemRequestBuilder;
+import com.b2international.snowowl.core.internal.validation.ValidationRepositoryContext;
+import com.b2international.snowowl.core.internal.validation.ValidationRepositoryRequestBuilder;
 
 /**
  * @since 6.1
  */
 public final class ValidationWhiteListDeleteRequestBuilder 
-	extends BaseRequestBuilder<ValidationWhiteListDeleteRequestBuilder, ServiceProvider, Boolean>
-	implements SystemRequestBuilder<Boolean> {
+	extends BaseRequestBuilder<ValidationWhiteListDeleteRequestBuilder, ValidationRepositoryContext, Boolean>
+	implements ValidationRepositoryRequestBuilder<Boolean> {
 
-	private final String id;
+	private final Set<String> ids;
 
-	ValidationWhiteListDeleteRequestBuilder(final String id) {
-		this.id = id;
+	ValidationWhiteListDeleteRequestBuilder(final Set<String> ids) {
+		this.ids = ids;
 	}
 	
 	@Override
-	protected Request<ServiceProvider, Boolean> doBuild() {
-		return new ValidationWhiteListDeleteRequest(id);
+	protected Request<ValidationRepositoryContext, Boolean> doBuild() {
+		return new ValidationWhiteListDeleteRequest(ids);
 	}
 }

@@ -22,15 +22,13 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.internal.validation.ValidationRepository;
-import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.core.internal.validation.ValidationRepositoryContext;
 
 /**
  * @since 6.1
  */
-final class ValidationWhiteListCreateRequest implements Request<ServiceProvider, String> {
+final class ValidationWhiteListCreateRequest implements Request<ValidationRepositoryContext, String> {
 
 	@NotEmpty private String ruleId;
 	@NotNull private ComponentIdentifier componentIdentifier;
@@ -38,14 +36,9 @@ final class ValidationWhiteListCreateRequest implements Request<ServiceProvider,
 	private long createdAt;
 	
 	@Override
-	public String execute(ServiceProvider context) {
-		
+	public String execute(ValidationRepositoryContext context) {
 		final String id = UUID.randomUUID().toString();
-		
-		context.service(ValidationRepository.class).save(id, new ValidationWhiteList(id, ruleId, componentIdentifier, reporter, createdAt));
-		
-		WhiteListNotification.added(id).publish(context.service(IEventBus.class));
-		
+		context.save(new ValidationWhiteList(id, ruleId, componentIdentifier, reporter, createdAt));
 		return id;
 	}
 
