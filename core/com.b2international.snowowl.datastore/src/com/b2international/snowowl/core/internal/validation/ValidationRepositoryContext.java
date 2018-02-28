@@ -62,9 +62,12 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 			
 			if (!newObjects.isEmpty()) {
 				WhiteListNotification.added(newObjects.keySet()).publish(service(IEventBus.class));
-			} else if (!objectsToDelete.isEmpty()) {
+			}
+			
+			if (!objectsToDelete.isEmpty()) {
 				WhiteListNotification.removed(Iterables.getOnlyElement(objectsToDelete.values())).publish(service(IEventBus.class));
 			}
+			
 		}
 	}
 
