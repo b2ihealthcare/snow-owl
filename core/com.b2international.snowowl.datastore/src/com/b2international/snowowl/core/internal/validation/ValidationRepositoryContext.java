@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.domain.DelegatingContext;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.core.validation.whitelist.WhiteListNotification;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 6.3
@@ -32,6 +33,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 public final class ValidationRepositoryContext extends DelegatingContext {
 
 	private final Map<String, ValidationWhiteList> newObjects = newHashMap();
+	private final Map<Class<?>, Set<String>> objectsToDelete = newHashMap();
 	
 	ValidationRepositoryContext(ServiceProvider delegate) {
 		super(delegate);
@@ -44,29 +46,26 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 	public void save(ValidationWhiteList whiteList) {
 		newObjects.put(whiteList.getId(), whiteList);
 	}
+	
+	public void delete(Set<String> ids) {
+		objectsToDelete.put(ValidationWhiteList.class, ids);
+	}
 
 	public void commit() {
-		if (!newObjects.isEmpty()) {
+		if (!newObjects.isEmpty() || !objectsToDelete.isEmpty()) {
 			repository().write(writer -> {
 				writer.putAll(newObjects);
+				writer.removeAll(objectsToDelete);
 				writer.commit();
 				return null;
 			});
-			WhiteListNotification.added(newObjects.keySet()).publish(service(IEventBus.class));
+			
+			if (!newObjects.isEmpty()) {
+				WhiteListNotification.added(newObjects.keySet()).publish(service(IEventBus.class));
+			} else if (!objectsToDelete.isEmpty()) {
+				WhiteListNotification.removed(Iterables.getOnlyElement(objectsToDelete.values())).publish(service(IEventBus.class));
+			}
 		}
 	}
 
-	public void delete(Set<String> ids) {
-		if (!ids.isEmpty()) {
-			repository().write(writer -> {
-				for (String id : ids) {
-					writer.remove(ValidationWhiteList.class, id);
-				}
-				writer.commit();
-				return null;
-			});
-			WhiteListNotification.removed(ids).publish(service(IEventBus.class));
-		}
-	}
-	
 }
