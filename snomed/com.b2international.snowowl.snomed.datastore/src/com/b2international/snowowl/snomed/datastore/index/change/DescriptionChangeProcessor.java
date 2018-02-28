@@ -173,11 +173,11 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 			doc.acceptability(acceptableLanguageRefSet, Acceptability.ACCEPTABLE);
 		}
 		
-		final Collection<String> currentReferringRefSets = currentRevision == null ? Collections.<String> emptySet()
-				: currentRevision.getReferringRefSets();
-		final Collection<String> currentReferringMappingRefSets = currentRevision == null ? Collections.<String> emptySet()
-				: currentRevision.getReferringMappingRefSets();
-		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentReferringRefSets, currentReferringMappingRefSets)
+		final Collection<String> currentMemberOf = currentRevision == null ? Collections.<String> emptySet()
+				: currentRevision.getMemberOf();
+		final Collection<String> currentActiveMemberOf = currentRevision == null ? Collections.<String> emptySet()
+				: currentRevision.getActiveMemberOf();
+		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentMemberOf, currentActiveMemberOf)
 				.update(doc);
 	}
 	

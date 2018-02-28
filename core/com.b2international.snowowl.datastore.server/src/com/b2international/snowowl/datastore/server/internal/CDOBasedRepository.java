@@ -123,7 +123,7 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		initIndex(mapper);
 		initializeBranchingSupport(mergeMaxResults);
 		bind(Repository.class, this);
-		bind(ClassLoader.class, env.service(RepositoryClassLoaderProviderRegistry.class).get(repositoryId).getClassLoader());
+		bind(ClassLoader.class, env.service(RepositoryClassLoaderProviderRegistry.class).getClassLoader());
 		checkHealth();
 	}
 

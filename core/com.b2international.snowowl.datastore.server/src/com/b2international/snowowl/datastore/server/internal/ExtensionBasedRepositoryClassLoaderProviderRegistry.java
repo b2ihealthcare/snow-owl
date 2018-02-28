@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Collection;
 
 import com.b2international.commons.CompositeClassLoader;
 import com.b2international.commons.platform.Extensions;
-import com.b2international.snowowl.core.ClassLoaderProvider;
 import com.b2international.snowowl.datastore.server.RepositoryClassLoaderProvider;
 import com.b2international.snowowl.datastore.server.RepositoryClassLoaderProviderRegistry;
 
@@ -32,16 +31,6 @@ public class ExtensionBasedRepositoryClassLoaderProviderRegistry implements Repo
 
 	public ExtensionBasedRepositoryClassLoaderProviderRegistry() {
 		this.extensions = Extensions.getExtensions("com.b2international.snowowl.datastore.server.classLoaderProvider", RepositoryClassLoaderProvider.class);
-	}
-	
-	@Override
-	public ClassLoaderProvider get(final String repositoryId) {
-		for (RepositoryClassLoaderProvider ext : extensions) {
-			if (ext.belongsTo(repositoryId)) {
-				return ext;
-			}
-		}
-		throw new UnsupportedOperationException("No repository based class loader provider has been registered for repository: " + repositoryId); 
 	}
 	
 	@Override

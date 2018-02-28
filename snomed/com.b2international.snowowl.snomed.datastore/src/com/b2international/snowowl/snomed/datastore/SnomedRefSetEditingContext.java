@@ -28,7 +28,6 @@ import javax.annotation.Nullable;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOState;
-import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.spi.cdo.FSMUtil;
@@ -46,7 +45,6 @@ import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.CdoViewComponentTextProvider;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -62,8 +60,6 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
-import com.b2international.snowowl.snomed.datastore.services.SnomedModuleDependencyRefSetService;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
@@ -123,45 +119,6 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	
 	protected final SnomedEditingContext snomedEditingContext;
 
-	private final CdoViewComponentTextProvider transactionTextProvider;
-
-	/**
-	 * Creates and returns a reference set based on the given values.
-	 * 
-	 * @param parentIdentifierConceptId concept ID the reference set identifier concept's parent. 
-	 * @param label the preferred term for the reference set.
-	 * @param referencedComponentType the referenced component type.
-	 * @param mapTargetType the map target component type. Ignored in case of *NON* mapping {@link SnomedRefSetType reference set type}s.
-	 * @param type the reference set type.
-	 * @return the created reference set
-	 */
-	public SnomedRefSet createReferenceSet(final String parentIdentifierConceptId, final String label, final String referencedComponentType, final short mapTargetType, final SnomedRefSetType type) throws CommitException {
-		switch (type) {
-			case SIMPLE:
-				return createSnomedSimpleTypeRefSet(label, referencedComponentType, parentIdentifierConceptId);
-			case ATTRIBUTE_VALUE:
-				return createSnomedAttributeRefSet(label, referencedComponentType);
-			case SIMPLE_MAP:
-				final SnomedMappingRefSet simpleMap = createSnomedSimpleMapRefSet(label, referencedComponentType, parentIdentifierConceptId);
-				simpleMap.setMapTargetComponentType(mapTargetType);
-				return simpleMap;
-			case EXTENDED_MAP: //$FALL-THROUGH$
-			case COMPLEX_MAP:
-				final SnomedMappingRefSet complexMap = createSnomedComplexMapRefSet(label, referencedComponentType, type);
-				complexMap.setMapTargetComponentType(mapTargetType);
-				return complexMap;
-			case ASSOCIATION: //$FALL-THROUGH$
-			case CONCRETE_DATA_TYPE: //$FALL-THROUGH$
-			case DESCRIPTION_TYPE: //$FALL-THROUGH$
-			case QUERY: //$FALL-THROUGH$ 
-			case LANGUAGE: //$FALL-THROUGH$
-				throw new UnsupportedOperationException("Creating " + type + " reference set is currently not supported.");
-			default:
-				throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + type);
-			
-		} 
-	}
-	
 	@Override
 	protected <T> ILookupService<T, CDOView> getComponentLookupService(Class<T> type) {
 		return getSnomedEditingContext().getComponentLookupService(type);
@@ -180,27 +137,10 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		return ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, descriptionId);
 	}
 
-	public static ComponentIdentifier createRefSetTypePair(final String refSetId) {
-		return ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_NUMBER, refSetId);
-	}
-
-	public static ComponentIdentifier createConceptTypePair(final String conceptId) {
-		return ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, conceptId);
-	}
-	
-	public static ComponentIdentifier createRelationshipTypePair(final String relationshipId) {
-		return ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId);
-	}
-	
-	public static ComponentIdentifier createUnspecifiedTypePair(final String id) {
-		return ComponentIdentifier.of(CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, id);
-	}
-
 	// should be only called from SnomedEditingContext constructor
 	/*default*/ SnomedRefSetEditingContext(final SnomedEditingContext snomedEditingContext) {
 		super(snomedEditingContext.getTransaction());
 		this.snomedEditingContext = snomedEditingContext;
-		this.transactionTextProvider = new CdoViewComponentTextProvider(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class), snomedEditingContext.getTransaction());
 	}
 	
 	@Override
@@ -232,13 +172,6 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		return snomedRefSet;
 	}
 	
-	private SnomedStructuralRefSet createSnomedStructuralRefSet(final short referencedComponentType, final SnomedRefSetType type) {
-		final SnomedStructuralRefSet snomedRefSet = SnomedRefSetFactory.eINSTANCE.createSnomedStructuralRefSet();
-		snomedRefSet.setType(type);
-		snomedRefSet.setReferencedComponentType(referencedComponentType);
-		return snomedRefSet;
-	}
-
 	/**
 	 * Creates a SNOMED CT simple type reference set.
 	 * @param fullySpecifiedName the fully specified name of the reference set identifier concept.
@@ -247,20 +180,6 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 */
 	public SnomedRegularRefSet createSnomedSimpleTypeRefSet(final String fullySpecifiedName, final String referencedComponentType) {
 		return createSnomedSimpleTypeRefSet(fullySpecifiedName, referencedComponentType, Concepts.REFSET_SIMPLE_TYPE);
-	}
-	
-	/**
-	 * Creates a SNOMED&nbsp;CT simple type reference set with the given identifier concept.
-	 * 
-	 * @param identifierConcept the identifier concept of the reference set.
-	 * @param referencedComponentType the unique reference component type as a string literal.
-	 * @return the new SNOMED&nbsp;CT simple type reference set.
-	 */
-	public SnomedRegularRefSet createSnomedSimpleTypeRefSet(final Concept identifierConcept, final String referencedComponentType) {
-		final SnomedRegularRefSet snomedRefSet = createSnomedRegularRefSet(getTerminologyComponentTypeAsShort(referencedComponentType), SnomedRefSetType.SIMPLE);
-		snomedRefSet.setIdentifierId(identifierConcept.getId());
-		add(snomedRefSet);
-		return snomedRefSet;
 	}
 	
 	/**
@@ -276,107 +195,6 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		return snomedRefSet;
 	}
 	
-	/**
-	 * Creates a SNOMED CT concrete domain type reference set.
-	 * @param fullySpecifiedName the fully specified name reference set identifier concept.
-	 * @return the new SNOMED CT simple map type reference set.
-	 * @deprecated - unused, will be removed in 4.4
-	 */
-	public SnomedRefSet createSnomedConcreteDataTypeTypeRefSet(final String fullySpecifiedName, final String referencedComponentType) {
-		final SnomedRefSet snomedRefSet = createSnomedRegularRefSet(getTerminologyComponentTypeAsShort(referencedComponentType), SnomedRefSetType.CONCRETE_DATA_TYPE);
-		createIdentifierAndAddRefSet(snomedRefSet, Concepts.REFSET_SIMPLE_TYPE, fullySpecifiedName);
-		return snomedRefSet;
-	}
-
-	/**
-	 * Creates a SNOMED CT simple map type reference set.
-	 * @param fullySpecifiedName the fully specified name reference set identifier concept.
-	 * @return the new SNOMED CT simple map type reference set.
-	 */
-	public SnomedMappingRefSet createSnomedSimpleMapRefSet(final String fullySpecifiedName, final String referencedComponentType) {
-		return createSnomedSimpleMapRefSet(fullySpecifiedName, referencedComponentType, Concepts.REFSET_SIMPLE_MAP_TYPE);
-	}
-	
-	/**
-	 * Creates a SNOMED&nbsp;CT simple map type reference set.
-	 * 
-	 * @param identifierConcept the identifier concept of the simple map.
-	 * @param referencedComponentType the referenced component type of the simple map.
-	 * @return the new SNOMED&nbsp;CT simple map type reference set.
-	 */
-	public SnomedMappingRefSet createSnomedSimpleMapRefSet(final Concept identifierConcept, final String referencedComponentType) {
-		final SnomedMappingRefSet mappingRefSet = SnomedRefSetFactory.eINSTANCE.createSnomedMappingRefSet();
-		mappingRefSet.setType(SnomedRefSetType.SIMPLE_MAP);
-		mappingRefSet.setReferencedComponentType(getTerminologyComponentTypeAsShort(referencedComponentType));
-		mappingRefSet.setIdentifierId(identifierConcept.getId());
-		add(mappingRefSet);
-		
-		return mappingRefSet;
-	}
-	
-	/**
-	 * Creates a SNOMED CT simple map type reference set with the given typeId.
-	 * @param fullySpecifiedName the fully specified name reference set identifier concept.
-	 * @param referencedComponentType
-	 * @param typeId
-	 * @return the new SNOMED CT simple map type reference set.
-	 */
-	public SnomedMappingRefSet createSnomedSimpleMapRefSet(final String fullySpecifiedName, final String referencedComponentType, final String typeId) {
-		final SnomedMappingRefSet mappingRefSet = SnomedRefSetFactory.eINSTANCE.createSnomedMappingRefSet();
-		mappingRefSet.setType(SnomedRefSetType.SIMPLE_MAP);
-		mappingRefSet.setReferencedComponentType(getTerminologyComponentTypeAsShort(referencedComponentType));
-		createIdentifierAndAddRefSet(mappingRefSet, typeId, fullySpecifiedName);
-		return mappingRefSet;
-	}
-
-	/**
-	 * Creates a SNOMED CT language type reference set.
-	 * @param fullySpecifiedName the fully specified name of the reference set identifier concept.
-	 * @return the new language type SNOMED CT reference set.
-	 */
-	public SnomedStructuralRefSet createSnomedLanguageRefSet(final String fullySpecifiedName) {
-		final SnomedStructuralRefSet snomedRefSet = createSnomedStructuralRefSet(getTerminologyComponentTypeAsShort(SnomedTerminologyComponentConstants.DESCRIPTION), SnomedRefSetType.LANGUAGE); 
-		createIdentifierAndAddRefSet(snomedRefSet, Concepts.REFSET_LANGUAGE_TYPE, fullySpecifiedName);
-		return snomedRefSet;
-	}
-
-	/**
-	 * Creates a new SNOMED CT query type reference set.
-	 * @param fullySpecifiedName the fully specified name of the reference set identifier concept.
-	 * @return the new query type reference set.
-	 */
-	public SnomedRegularRefSet createSnomedQueryRefSet(final String fullySpecifiedName) {
-		final SnomedRegularRefSet snomedRefSet = createSnomedRegularRefSet(getTerminologyComponentTypeAsShort(SnomedTerminologyComponentConstants.REFSET), SnomedRefSetType.QUERY);
-		createIdentifierAndAddRefSet(snomedRefSet, Concepts.REFSET_QUERY_SPECIFICATION_TYPE, fullySpecifiedName);
-		return snomedRefSet;
-	}
-
-	/**
-	 * Creates a new SNOMED CT attribute value type reference set.
-	 * @param fullySpecifiedName the fully specified name of the reference set identifier concept.
-	 * @param referencedComponentType the type of the desired 
-	 * @return the refset with an identifier concept, and which is locally saved
-	 */
-	public SnomedRegularRefSet createSnomedAttributeRefSet(final String fullySpecifiedName, final String referencedComponentType) {
-		final SnomedRegularRefSet snomedRefSet = createSnomedRegularRefSet(getTerminologyComponentTypeAsShort(referencedComponentType), SnomedRefSetType.ATTRIBUTE_VALUE);
-		createIdentifierAndAddRefSet(snomedRefSet, Concepts.REFSET_ATTRIBUTE_VALUE_TYPE, fullySpecifiedName);
-		return snomedRefSet;
-	}
-	
-	/**
-	 * Creates a SNOMED CT complex map type reference set.
-	 * @param fullySpecifiedName the fully specified name reference set identifier concept.
-	 * @return the new SNOMED CT complex map type reference set.
-	 */
-	public SnomedMappingRefSet createSnomedComplexMapRefSet(final String fullySpecifiedName, final String referencedComponentType, final SnomedRefSetType type) {
-		checkArgument(SnomedRefSetUtil.isComplexMapping(type));
-		final SnomedMappingRefSet mappingRefSet = SnomedRefSetFactory.eINSTANCE.createSnomedMappingRefSet();
-		mappingRefSet.setType(type);
-		mappingRefSet.setReferencedComponentType(getTerminologyComponentTypeAsShort(referencedComponentType));
-		createIdentifierAndAddRefSet(mappingRefSet, SnomedRefSetUtil.getConceptId(type), fullySpecifiedName);
-		return mappingRefSet;
-	}
-
 	/**
 	 * Creates a new SNOMED CT <i>simple type</i> reference set member with the specified arguments.
 	 * <p>
@@ -719,17 +537,6 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		checkArgument(!StringUtils.isEmpty(identifierConceptId), "Identifier SNOMED CT concept ID cannot be null.");
 
 		return new SnomedRefSetLookupService().getComponent(identifierConceptId, transaction);
-	}
-	
-	@Override
-	public void preCommit() {
-		/*
-		 * Updates the module dependency refset members based on the changes. Source or target
-		 * effective time is set to null if the changed component module id has dependency in
-		 * the refset.
-		 */
-		SnomedModuleDependencyRefSetService dependencyRefSetService = new SnomedModuleDependencyRefSetService();
-		dependencyRefSetService.updateModuleDependenciesDuringPreCommit(getTransaction());
 	}
 	
 	@Override

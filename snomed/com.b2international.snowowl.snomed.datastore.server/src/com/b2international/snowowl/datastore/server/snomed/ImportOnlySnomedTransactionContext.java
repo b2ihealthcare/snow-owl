@@ -23,6 +23,7 @@ import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.ecore.EObject;
 
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -44,10 +45,12 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 
 	private final String userId;
 	private final SnomedEditingContext editingContext;
+	private final RevisionSearcher searcher;
 	private Branch branch;
 
-	public ImportOnlySnomedTransactionContext(final String userId, final SnomedEditingContext editingContext) {
+	public ImportOnlySnomedTransactionContext(final String userId, final RevisionSearcher searcher, final SnomedEditingContext editingContext) {
 		this.userId = userId;
+		this.searcher = searcher;
 		this.editingContext = editingContext;
 	}
 
@@ -92,7 +95,9 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 
 	@Override
 	public <T> T service(final Class<T> type) {
-		if (type.isAssignableFrom(SnomedEditingContext.class)) {
+		if (type.isAssignableFrom(RevisionSearcher.class)) {
+			return type.cast(searcher);
+		} else if (type.isAssignableFrom(SnomedEditingContext.class)) {
 			return type.cast(editingContext);
 		}
 		return ApplicationContext.getInstance().getServiceChecked(type);

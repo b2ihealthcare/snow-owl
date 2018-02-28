@@ -38,7 +38,7 @@ public class SnomedConcreteDomainRefSetExporter extends SnomedRefSetExporter {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(super.convertToString(doc));
 		sb.append(HT);
-		sb.append(doc.getUnitId());
+		sb.append(nullToEmpty(doc.getUnitId()));
 		sb.append(HT);
 		sb.append(doc.getOperatorId());
 		sb.append(HT);

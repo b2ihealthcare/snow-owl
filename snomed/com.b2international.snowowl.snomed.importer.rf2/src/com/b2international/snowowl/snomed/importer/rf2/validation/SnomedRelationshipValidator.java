@@ -42,7 +42,6 @@ public class SnomedRelationshipValidator extends AbstractSnomedValidator {
 	private final Map<String, List<String>> relationshipIdsWithEffectivetimeStatus = Maps.newHashMap();
 	private Collection<String> relationshipIdNotUnique = Sets.newHashSet();
 	private Collection<String> relationshipSourceAndDestinationAreEqual = Sets.newHashSet();
-	private Collection<String> missingReferencedConcepts = Sets.newHashSet();
 	
 	public SnomedRelationshipValidator(final ImportConfiguration configuration, final SnomedValidationContext context, final File relationshipsFile) throws IOException {
 		super(configuration, configuration.toURL(relationshipsFile), ComponentImportType.RELATIONSHIP, context, SnomedRf2Headers.RELATIONSHIP_HEADER);
@@ -50,6 +49,7 @@ public class SnomedRelationshipValidator extends AbstractSnomedValidator {
 
 	@Override
 	protected void doValidate(final List<String> row) {
+		
 		final String componentId = row.get(0);
 		final String effectiveTime = row.get(1);
 		final boolean active = "1".equals(row.get(2));
@@ -69,14 +69,12 @@ public class SnomedRelationshipValidator extends AbstractSnomedValidator {
 		}
 
 		for (String referencedConcept : ImmutableList.of(source, destination, type, characteristicType, modifier)) {
-			if (!missingReferencedConcepts.contains(referencedConcept)) {
-				if (!isComponentExists(referencedConcept)) {
-					final String missingConceptMessage = String.format("'%s' relationship refers to a non-existent concept '%s' in effective time '%s'", componentId, referencedConcept, effectiveTime);
-					addDefect(DefectType.RELATIONSHIP_REFERENCED_INVALID_CONCEPT, missingConceptMessage);
-				} else if (active && !isComponentActive(referencedConcept)) {
-					final String inactiveConceptMessage = String.format("'%s' relationship refers to an inactive concept '%s' in effective time '%s'", componentId, referencedConcept, effectiveTime);
-					addDefect(DefectType.RELATIONSHIP_REFERENCED_INVALID_CONCEPT, inactiveConceptMessage);
-				}
+			if (!isComponentExists(referencedConcept)) {
+				final String missingConceptMessage = String.format("'%s' relationship refers to a non-existent concept '%s' in effective time '%s'", componentId, referencedConcept, effectiveTime);
+				addDefect(DefectType.RELATIONSHIP_REFERENCED_NONEXISTENT_CONCEPT, missingConceptMessage);
+			} else if (active && !isComponentActive(referencedConcept)) {
+				final String inactiveConceptMessage = String.format("'%s' relationship refers to an inactive concept '%s' in effective time '%s'", componentId, referencedConcept, effectiveTime);
+				addDefect(DefectType.RELATIONSHIP_REFERENCED_INACTIVE_CONCEPT, inactiveConceptMessage);
 			}
 		}
 	}
@@ -84,14 +82,13 @@ public class SnomedRelationshipValidator extends AbstractSnomedValidator {
 	@Override
 	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
 		super.doValidate(effectiveTime, monitor);
+		
 		addDefect(DefectType.NOT_UNIQUE_RELATIONSHIP_ID, relationshipIdNotUnique);
 		addDefect(DefectType.RELATIONSHIP_SOURCE_DESTINATION_EQUALS, relationshipSourceAndDestinationAreEqual);
-		addDefect(DefectType.RELATIONSHIP_REFERENCED_INVALID_CONCEPT, missingReferencedConcepts);
 		
 		relationshipIdsWithEffectivetimeStatus.clear();
 		relationshipIdNotUnique.clear();
 		relationshipSourceAndDestinationAreEqual.clear();
-		missingReferencedConcepts.clear();
 	}
 	
 }

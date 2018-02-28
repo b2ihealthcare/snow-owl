@@ -1,6 +1,66 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.2.0
+
+### Added
+- Set status of stale remote jobs to FAILED during startup (580d3e3)
+
+### Bugs
+- Fix missing searchAfter argument from revision index searches (56a5e03)
+- Serialize ECL expressions in a synchronized block (5d05844)
+
+## 6.1.0
+
+### Added
+- New, generic scripting API module (com.b2international.scripting.api)
+  * Groovy implementation of the new scripting API module (com.b2international.scripting.groovy)
+- SNOMED CT Validation API
+  * Add Groovy based validation rule implementation and execution
+  * Add white list support (#189) 
+- `isActiveMemberOf` filter now supports ECL expressions in SNOMED CT Component search requests
+- Add module and namespace assigner feature from `4.x` branch ()
+- Deleted branches can be reused by creating a branch with the same path (parent + name) (dc53ade) 
+
+### Changed
+- Dependencies:
+  * Kotlin OSGI 1.1.51 has been added
+  * Groovy from `2.0.7` to `2.4.13`
+  * Jackson from `2.8.6` to `2.8.10`
+  * EMF JSON Serializer library has been removed
+
+### Removed
+- Bunch of deprecated, unused API and functionality, related commits:
+  * 1de52b0
+  * 268bc5d
+  * 7a23851
+  * 94db418
+  * 2145d55
+  * 7b63998
+  * bbacfb5
+  * 5d104f8
+  * e8a3323
+  * 6db7221
+  * 4a790d8
+  * a67de24
+  * e274766
+  * 56c9636
+  * 613dd59
+  * b39ffd2
+  * c733563
+  * 3f92263
+- Modules:
+  * `com.b2international.commons.groovy`
+  * `com.b2international.snowowl.scripting.core`
+  * `com.b2international.snowowl.scripting.services`
+  * `com.b2international.snowowl.scripting.server.feature`
+
+### Bugs
+- Fix DSV import bugs (02180b4)
+- Fix component not found exception thrown when trying to look up new components from transaction (97918c5)
+- Fix HTTP method type when communicating with external identifier service (CIS) (32e9e85)
+
+
 ## 6.0.0
 
 ### Breaking changes

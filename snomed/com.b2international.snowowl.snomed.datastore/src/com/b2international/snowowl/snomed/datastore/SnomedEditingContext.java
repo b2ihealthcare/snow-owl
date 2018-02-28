@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,11 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getAttribute;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_INSENSITIVE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_SENSITIVE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.INFERRED_RELATIONSHIP;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFIER_VALUE_TOPLEVEL_CONCEPT;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.QUALIFYING_RELATIONSHIP;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_COMPLEX_MAP_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_SIMPLE_TYPE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.STATED_RELATIONSHIP;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.COMPONENT_IS_RELEASED_MESSAGE;
@@ -46,12 +39,9 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -61,12 +51,9 @@ import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.view.CDOView;
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
-import com.b2international.commons.CompareUtils;
-import com.b2international.commons.Pair;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -79,15 +66,12 @@ import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.Annotatable;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Concepts;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -95,33 +79,24 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.preference.ModulePreference;
-import com.b2international.snowowl.snomed.core.store.SnomedComponentBuilder;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.NormalFormWrapper.AttributeConceptGroupWrapper;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
-import com.b2international.snowowl.snomed.datastore.services.SnomedModuleDependencyRefSetService;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
@@ -139,246 +114,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private boolean uniquenessCheckEnabled = true;
 	private Set<String> newComponentIds = Collections.synchronizedSet(Sets.<String>newHashSet());
 	private SnomedDeletionPlan deletionPlan;
-
-	/**
-	 * Returns with a pair, identifying a preferred term associated with the specified SNOMED&nbsp;CT concept.
-	 * <br>This method may return with {@code null}.
-	 * <ul>
-	 * 	<li>First value of the pair is the SNOMED CT description ID.</li>
-	 * 	<li>Second value of the pair is a pair for identifying the language type reference set member:</li>
-	 * 		<ul>
-	 * 			<li>Language reference set member UUID.</li>
-	 * 			<li>Language reference set member CDO ID.</li>
-	 * 		</ul>
-	 * </ul>
-	 * <p>
-	 * <b>NOTE:&nbsp;</b>This method should not not be called with dirty CDO view.
-	 * @param concept SNOMED&nbsp;CT concept
-	 * @param languageRefSetId 
-	 * @return a pair identifying the preferred term member.
-	 * @deprecated - revise API
-	 */
-	public static Pair<String, IdStorageKeyPair> getPreferredTermMemberFromIndex(final Concept concept, String languageRefSetId) {
-		throw new UnsupportedOperationException("Unsupported API");
-//		checkNotNull(concept, "SNOMED CT concept argument cannot be null.");
-//		checkNotNull(concept.cdoView(), "Underlying CDO view for the SNOMED CT concept argument was null.");
-//		Preconditions.checkArgument(!concept.cdoView().isClosed(), "Underlying CDO view for the SNOMED CT concept argument was closed.");
-//
-//		final Collection<SnomedRefSetMemberIndexEntry> preferredTermMembers = 
-//				new SnomedRefSetMembershipLookupService().getPreferredTermMembers(concept, languageRefSetId);
-//		final SnomedRefSetMemberIndexEntry preferredMember = Iterables.getFirst(preferredTermMembers, null);
-//		
-//		if (null == preferredMember) {
-//			return null;
-//		}
-//
-//		//throw new exception since it should not happen at all
-//		if (preferredTermMembers.size() > 1) {
-//			final String message = "Multiple preferred terms are associated with a SNOMED CT concept: " + concept.getId() + " " + 
-//					concept.getFullySpecifiedName() + "\nMembers: " + Arrays.toString(preferredTermMembers.toArray());
-//			LOGGER.error(message);
-//			//XXX akitta: do not throw exception for now, as the application cannot be tested with the dataset with duplicate preferred term members
-////			throw new IllegalArgumentException(message);
-//		}
-//		
-//		return new Pair<String, IdStorageKeyPair>(preferredMember.getReferencedComponentId(), new IdStorageKeyPair(preferredMember.getId(), preferredMember.getStorageKey()));
-	}
-
-	public Concept buildDraftConceptFromNormalForm(final NormalFormWrapper normalForm) {
-		return buildDraftConceptFromNormalForm(normalForm, null);
-	}
-	
-	/**
-	 * Build a new SNOMED&nbsp;CT concept based on the specified SCG normal form representation.
-	 * @param editingContext the editing concept with an underlying audit CDO view for SNOMED&nbsp;CT concept creation. 
-	 * @param normalForm the SCG normal for representation.
-	 * @param conceptId the unique ID of the concept. Can be {@code null}. If {@code null}, then the ID will be generated via the specified editing context.
-	 * @return the new concept.
-	 */
-	public Concept buildDraftConceptFromNormalForm(final NormalFormWrapper normalForm, @Nullable final String conceptId) {
-		final Concept moduleConcept = getDefaultModuleConcept();
-		final List<Concept> parentConcepts = getConcepts(normalForm.getParentConceptIds());
-		final Concept[] additionalParentConcepts = CompareUtils.isEmpty(parentConcepts) ? new Concept[0] : Iterables.toArray(parentConcepts.subList(1, parentConcepts.size()), Concept.class);
-		final Concept newConcept = buildDefaultConcept("", getNamespace(), moduleConcept, parentConcepts.get(0), additionalParentConcepts);
-		if (null != conceptId) {
-			newConcept.setId(conceptId);
-		}
-		
-		for (final AttributeConceptGroupWrapper extractedGroup : normalForm.getAttributeConceptGroups()) {
-			final Map<String, String> attributeConceptIdMap = extractedGroup.getAttributeConceptIds();
-			final int groupId = extractedGroup.getGroup();
-			for (final Entry<String, String> entry : attributeConceptIdMap.entrySet()) {
-				final Concept type = lookup(entry.getKey(), Concept.class);
-				final Concept destination = lookup(entry.getValue(), Concept.class);
-				final Concept characteristicType = getQualifyingCharacteristicType(destination.getId());
-				
-				buildDefaultRelationship(newConcept, type, destination, characteristicType).setGroup(groupId);
-			}
-		}
-		
-		newConcept.eAdapters().add(new ConceptParentAdapter(Iterables.transform(parentConcepts, new Function<CDOObject, String>() {
-			@Override public String apply(final CDOObject object) {
-				return CDOUtils.getAttribute(object, SnomedPackage.eINSTANCE.getComponent_Id(), String.class);
-			}
-		})));
-		
-		return newConcept;
-	}
-	
-	/**
-	 * @param concreteDomainRefSetMembers
-	 * @param targetSnomedComponent 
-	 */
-	private void copyInferredConcreteDomainMembers(Annotatable sourceSnomedComponent, Annotatable targetSnomedComponent) {
-		
-		EList<SnomedConcreteDataTypeRefSetMember> concreteDomainRefSetMembers = sourceSnomedComponent.getConcreteDomainRefSetMembers();
-		for (SnomedConcreteDataTypeRefSetMember sourceConcreteDataType : concreteDomainRefSetMembers) {
-			
-			//skip inactive
-			if (!sourceConcreteDataType.isActive()) {
-				continue;
-			}
-			
-			//skip non-inferred
-			if (!sourceConcreteDataType.getCharacteristicTypeId().equals(SnomedConstants.Concepts.INFERRED_RELATIONSHIP)) {
-				continue;
-			}
-				
-			SnomedConcreteDataTypeRefSetMember newConcreteDatatype = SnomedRefSetFactory.eINSTANCE.createSnomedConcreteDataTypeRefSetMember();
-			newConcreteDatatype.setUuid(UUID.randomUUID().toString());
-			newConcreteDatatype.setActive(true);
-			newConcreteDatatype.setCharacteristicTypeId(SnomedConstants.Concepts.STATED_RELATIONSHIP);
-			newConcreteDatatype.setLabel(sourceConcreteDataType.getLabel());
-			newConcreteDatatype.setModuleId(getDefaultModuleConcept().getId());
-			newConcreteDatatype.setOperatorComponentId(sourceConcreteDataType.getOperatorComponentId());
-			newConcreteDatatype.setReferencedComponentId(sourceConcreteDataType.getReferencedComponentId());
-			newConcreteDatatype.setRefSet(sourceConcreteDataType.getRefSet());
-			newConcreteDatatype.setReleased(false);
-			newConcreteDatatype.setSerializedValue(sourceConcreteDataType.getSerializedValue());
-			newConcreteDatatype.setUomComponentId(sourceConcreteDataType.getUomComponentId());
-			
-			targetSnomedComponent.getConcreteDomainRefSetMembers().add(newConcreteDatatype);
-		}
-		
-	}
-
-	/**
-	 * @param concept passed in {@link Concept} instance.
-	 * @return the <b>first</b> parent {@link Concept} of the passed in concept.
-	 * @deprecated - unused, will be removed in 4.4
-	 */
-	public static Concept getFirstParentConcept(Concept concept) {
-		Relationship firstOutgoingParentRelationship = getFirstOutgoingParentRelationship(concept);
-		if (firstOutgoingParentRelationship != null)
-			return firstOutgoingParentRelationship.getDestination();
-		throw new IllegalArgumentException("Concept '" + concept.getId() + "' has no parent concept.");
-	}
-
-	/**
-	 * This method returns all the direct parent (IS_A) relationships of the passed concept.
-	 *	
-	 * @return list of the parent concept, <b>empty</b> list otherwise
-	 * @deprecated - unused, will be removed in 4.4
-	 */
-	public static Set<Concept> getDirectParentConcepts(Concept concept) {
-		Set<Concept> parentConcepts = new HashSet<Concept>();
-		
-		EList<Relationship> outboundRelationships = concept.getOutboundRelationships();
-		
-		for (Relationship relationship : outboundRelationships) {
-			if (IS_A.equals(relationship.getType().getId())) {
-				parentConcepts.add(relationship.getDestination());
-			}
-		}
-		
-		return parentConcepts;
-	}
-
-	/**
-	 * Sets the parent concept for the passed in {@link Concept} instance then returns with it.
-	 * 
-	 * @param concept the passed in 'child' concept. 
-	 * @param parentConcept the parent concept to be set.
-	 * @return the passed in 'child' concept with a new parent concept.
-	 * @warning <br/><b>This method should be used only for </b>{@link Component}<b> instances generated by </b> {@link SnomedComponentBuilder}<b>. 
-	 * In other cases invoking this method is discouraged.</b>
-	 * @deprecated - unused, will be removed in 4.4
-	 */
-	public static Concept setParentConcept(Concept concept, Concept parentConcept) {
-		Relationship firstOutgoingParentRelationship = getFirstOutgoingParentRelationship(concept);
-		if (firstOutgoingParentRelationship != null) {
-			firstOutgoingParentRelationship.setDestination(parentConcept);
-		} else {
-			throw new IllegalStateException("No existing parent relationship when trying to set new parent concept on concept '" + concept.getId() + "'.");
-		}
-		return concept;
-	}
-
-	/**
-	 * @param concept the passed {@link Concept} instance.
-	 * @return the first active fully specified name of the passed in concept as a {@link Description} instance. 
-	 * <i>Fallback</i> if there is no active try to get the first inactive. If there no fully specified name at all 
-	 * (which is invalid but can happen with inactive concepts) <b>throws</b> {@link IllegalArgumentException}.
-	 * 
-	 * @throws IllegalArgumentException if there is no fully specified name at all.
-	 * @deprecated - unused, will be removed in 4.4
-	 */
-	public static Description getFirstFullySpecifedNameDescription(Concept concept) {
-		for (Description desc : concept.getDescriptions()) {
-			if (desc.getType() != null && desc.isActive() && desc.getType().getId().equals(FULLY_SPECIFIED_NAME))
-				return desc;
-		}
-		
-		//	fallback, try to get an inactive fullyspec, take the first
-		for (Description desc : concept.getDescriptions()) {
-			if (desc.getType() != null && desc.getType().getId().equals(FULLY_SPECIFIED_NAME))
-				return desc;
-		}
-		
-		throw new IllegalArgumentException("Concept '" + concept.getId() + "' doesn't have fully specified name.");
-	}
-
-	/*returns with a bunch of SNOMED CT concepts opened in the specified CDO view the given unique concept IDs*/
-	private List<Concept> getConcepts(final Iterable<String> conceptIds) {
-		return Lists.newArrayList(Iterables.transform(conceptIds, new Function<String, Concept>() {
-			@Override public Concept apply(final String id) {
-				return lookup(id, Concept.class);
-			}
-		}));
-	}
-	
-	/**
-	 * If the destination concept toplevel is 'Qualifying value', qualifying relationship should be used.
-	 * Can return {@code null}.
-	 * @param editingContext editing context for the concept creation. 
-	 * @param destinationConceptid the unique ID of the destination concept.
-	 * @return SnomedConstants.QUALIFYING_RELATIONSHIP if destination toplevel is 'Qualifying value', {@code null} otherwise.
-	 */
-	private Concept getQualifyingCharacteristicType(final String destinationConceptid) {
-		final boolean isSubTypeOfQualifierValue = SnomedRequests.prepareSearchConcept()
-				.setLimit(0)
-				.filterByAncestor(QUALIFIER_VALUE_TOPLEVEL_CONCEPT)
-				.filterById(destinationConceptid)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.getSync().getTotal() > 0;
-		if (isSubTypeOfQualifierValue) {
-			return findConceptById(QUALIFYING_RELATIONSHIP);
-		}
-		return null;
-	}
-	
-	/**
-	 * @deprecated - unused (transitively), will be removed in 4.4
-	 */
-	private static Relationship getFirstOutgoingParentRelationship(Concept concept) {
-		for (Relationship outgoingRelationship : concept.getOutboundRelationships()) {
-			if (IS_A.equals(outgoingRelationship.getType().getId())) {
-				return outgoingRelationship;
-			}
-		}
-		return null;
-	}
 
 	/**
 	 * Creates a new SNOMED CT core components editing context on the specified branch of the SNOMED CT repository.
@@ -552,17 +287,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	/**
-	 * Builds a new default SNOMED CT concept with a fully specified name description and ISA relationship to the specified parent concept with the given identifier. 
-	 * @param fullySpecifiedName
-	 * @param parentConcept
-	 * @return
-	 * @deprecated - will be removed in 4.5
-	 */
-	public Concept buildDefaultConcept(String fullySpecifiedName, String parentConceptId) {
-		return buildDefaultConcept(generateComponentId(ComponentCategory.CONCEPT, getNamespace()), fullySpecifiedName, findConceptById(parentConceptId));
-	}
-	
-	/**
 	 * @param fullySpecifiedName
 	 * @param parentConcept can not be <tt>null</tt>.
 	 * @return a valid concept populated with default values and the specified properties
@@ -592,160 +316,14 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	
-	/**
-	 * @param fullySpecifiedName the fully specified description's term.
-	 * @param namespace the namespace for the new components.
-	 * @param moduleConcept module concept
-	 * @param parentConcept can not be {@code null}.
-	 * @return a valid concept populated with default values and the specified properties
-	 * @deprecated - will be replaced with new component builder API in 4.4
-	 */
-	private Concept buildDefaultConcept(final String fullySpecifiedName, final String namespace, final Concept moduleConcept, final Concept parentConcept, final Concept... parentConcepts) {
-		
-		checkNotNull(parentConcept, "parentConcept");
-		
-		Concept concept = SnomedFactory.eINSTANCE.createConcept();
-		add(concept);
-		
-		// set concept properties
-		concept.setId(generateComponentId(ComponentCategory.CONCEPT, namespace));
-		concept.setActive(true);
-		concept.setDefinitionStatus(findConceptById(PRIMITIVE));
-		concept.setModule(moduleConcept);
-		
-		// add FSN
-		Description fsn = buildDefaultDescription(fullySpecifiedName, namespace, findConceptById(FULLY_SPECIFIED_NAME), moduleConcept);
-		fsn.setConcept(concept);
-		
-		//add PT
-		Description pt = buildDefaultDescription(fullySpecifiedName, namespace, findConceptById(SYNONYM), moduleConcept);
-		pt.setConcept(concept);
-
-		//create language reference set members for the descriptions.
-		final SnomedStructuralRefSet languageRefSet = getLanguageRefSet();
-		for (final Description description : concept.getDescriptions()) {
-			if (description.isActive()) { //this point all description should be active
-				final String acceptabilityId = REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED;
-				//create language reference set membership
-				final String referencedComponentId = description.getId();
-				final SnomedLanguageRefSetMember member = getRefSetEditingContext().createLanguageRefSetMember(referencedComponentId, acceptabilityId, moduleConcept.getId(), languageRefSet);
-				description.getLanguageRefSetMembers().add(member);
-			}
-		}
-		
-		//add IS_A relationship to parent
-		buildDefaultRelationship(concept, findConceptById(IS_A), parentConcept, 
-				findConceptById(STATED_RELATIONSHIP), moduleConcept, namespace);
-		
-		//add IS_A relationships to optional parent concepts
-		if (!CompareUtils.isEmpty(parentConcepts)) {
-			for (final Concept parent : parentConcepts) {
-				buildDefaultRelationship(concept, findConceptById(IS_A), parent, 
-						findConceptById(STATED_RELATIONSHIP), moduleConcept, namespace);
-			}
-		}
-		
-		return concept;
-	}
-	
 	/**Returns with the currently used language type reference set, falls back to an existing language if the configured identifier can not be resolved.*/
 	public SnomedStructuralRefSet getLanguageRefSet() {
-		final String languageRefSetId = getLanguageRefSetId();
-		final SnomedRefSetLookupService snomedRefSetLookupService = new SnomedRefSetLookupService();
-		return (SnomedStructuralRefSet) snomedRefSetLookupService.getComponent(languageRefSetId, transaction);
+		return lookup(getLanguageRefSetId(), SnomedStructuralRefSet.class);
 	}
 
 	public String getLanguageRefSetId() {
 		return ApplicationContext.getInstance().getServiceChecked(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId(BranchPathUtils.createPath(transaction));
 	}
-	
-	/**
-	 * This method build a concept with Simple type refset concept id. This is used only by the importer to add
-	 * the missing refset concept to the 0531 NEHTA releases
-	 * 
-	 * @param parentConcept
-	 * @return
-	 * @deprecated - unused, will be removed in 4.4
-	 */
-	public Concept buildSimpleTypeConcept(Concept parentConcept) {
-		if (parentConcept == null) {
-			throw new NullPointerException("Parent concept was null");
-		}
-		
-		Concept concept = SnomedFactory.eINSTANCE.createConcept();
-		add(concept);
-		
-		// set concept properties
-		concept.setId(REFSET_SIMPLE_TYPE);
-		concept.setActive(true);
-		concept.setDefinitionStatus(new SnomedConceptLookupService().getComponent(PRIMITIVE, transaction));
-		concept.setModule(getDefaultModuleConcept());
-		
-		// add FSN
-		Description description = SnomedFactory.eINSTANCE.createDescription();
-		description.setId("2879491016");
-		description.setActive(true);
-		description.setCaseSignificance(new SnomedConceptLookupService().getComponent(ENTIRE_TERM_CASE_SENSITIVE, transaction));
-		description.setType(new SnomedConceptLookupService().getComponent(FULLY_SPECIFIED_NAME, transaction));
-		description.setTerm("Simple type reference set");
-		description.setLanguageCode("en");
-		description.setModule(getDefaultModuleConcept());
-		
-		description.setConcept(concept);
-		
-		// add 'Is a' relationship to parent
-		buildDefaultIsARelationship(parentConcept, concept);
-		
-		return concept;
-	}
-	
-	/**
-	 * This method build a concept with Complex map type refset concept id. This is used only by the importer to add
-	 * the missing refset concept to the 0531 NEHTA releases
-	 * 
-	 * @param parentConcept
-	 * @return
-	 * @deprecated - unused, will be removed in 4.4
-	 */
-	public Concept buildComplexMapTypeConcept(Concept parentConcept) {
-		Preconditions.checkNotNull(parentConcept, "Parent concept argument cannot be null.");
-		Concept concept = SnomedFactory.eINSTANCE.createConcept();
-		add(concept);
-		
-		// set concept properties
-		concept.setId(REFSET_COMPLEX_MAP_TYPE);
-		concept.setActive(true);
-		concept.setDefinitionStatus(new SnomedConceptLookupService().getComponent(PRIMITIVE, transaction));
-		concept.setModule(getDefaultModuleConcept());
-		
-		// add FSN
-		Description fsn = SnomedFactory.eINSTANCE.createDescription();
-		fsn.setId("2879500011");
-		fsn.setActive(true);
-		fsn.setCaseSignificance(new SnomedConceptLookupService().getComponent(ENTIRE_TERM_CASE_SENSITIVE, transaction));
-		fsn.setType(new SnomedConceptLookupService().getComponent(FULLY_SPECIFIED_NAME, transaction));
-		fsn.setTerm("Complex map type reference set");
-		fsn.setLanguageCode("en");
-		fsn.setModule(getDefaultModuleConcept());
-		fsn.setConcept(concept);
-		
-		//add synonym
-		Description synonym = SnomedFactory.eINSTANCE.createDescription();
-		synonym.setId("2882969013");
-		synonym.setActive(true);
-		synonym.setCaseSignificance(new SnomedConceptLookupService().getComponent(ENTIRE_TERM_CASE_SENSITIVE, transaction));
-		synonym.setType(new SnomedConceptLookupService().getComponent(SYNONYM, transaction));
-		synonym.setTerm("Complex map type reference set");
-		synonym.setLanguageCode("en");
-		synonym.setModule(getDefaultModuleConcept());
-		synonym.setConcept(concept);
-		
-		// add 'Is a' relationship to parent
-		buildDefaultIsARelationship(parentConcept, concept);
-		
-		return concept;
-	}
-	
 	
 	/**
 	 * @param source can be <tt>null</tt> then source will be an empty concept with empty <tt>String</tt> description.
@@ -779,17 +357,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		relationship.setModifier(findConceptById(EXISTENTIAL_RESTRICTION_MODIFIER));
 		relationship.setModule(module);
 		return relationship;
-	}
-	
-	/**
-	 * Creates a relationship and sets its Id attribute to a new identifier. It is the caller's responsibility to set all other
-	 * attributes. 
-	 * 
-	 * @return a relationship instance that only has a generated component identifier
-	 * @deprecated - unused, will be removed in 4.4
-	 */
-	public Relationship buildEmptyRelationship() {
-		return buildEmptyRelationship();
 	}
 	
 	/**
@@ -893,10 +460,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			
 			final Concept concept = getConceptChecked(cdoId);
 			
-//			if (updateSubtypeRelationships) {
-//				updateChildren(concept, plan);
-//			}
-			
 			if (monitor.isCanceled()) {
 				return SnomedInactivationPlan.NULL_IMPL;
 			}
@@ -949,71 +512,27 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				plan.markForInactivation(lookup(member.getId(), SnomedRefSetMember.class));
 			}
 			
+			// inactivate refset members if the inactivated concept is a reference set
+			final SnomedReferenceSetMembers membersOfIdentifierConcept = SnomedRequests.prepareSearchMember()
+					.all()
+					.filterByActive(true)
+					.filterByRefSet(concept.getId())
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync();
+			
+			for (final SnomedReferenceSetMember member : membersOfIdentifierConcept) {
+				if (monitor.isCanceled()) {
+					return SnomedInactivationPlan.NULL_IMPL;
+				}
+				plan.markForInactivation(lookup(member.getId(), SnomedRefSetMember.class));
+			}
+			
 			monitor.worked(1);
 		}
 		return plan;
 	}
 	
-	private void updateChildren(Concept conceptToInactivate, SnomedInactivationPlan plan) {
-		
-		Iterable<Concept> parents = getStatedParents(conceptToInactivate);
-		Iterable<Concept> children = getStatedChildren(conceptToInactivate);
-		
-		if (Iterables.isEmpty(parents) || Iterables.isEmpty(children)) {
-			return;
-		}
-		
-		final Concept isAConcept = findConceptById(IS_A);
-		final Concept statedRelationshipTypeConcept = findConceptById(STATED_RELATIONSHIP);
-		
-		// connect all former children to the former parents by stated IS_As
-		for (Concept parent : parents) {
-			for (Concept child : children) {
-				final String namespace = SnomedIdentifiers.create(child.getId()).getNamespace();
-				buildDefaultRelationship(child, isAConcept, parent, statedRelationshipTypeConcept, child.getModule(), namespace);
-			}
-		}
-		
-		// inactivate any remaining inferred relationships of the children
-		for (Concept child : children) {
-			Iterable<Relationship> inferredRelationships = Iterables.filter(child.getOutboundRelationships(), new Predicate<Relationship>() {
-				@Override public boolean apply(Relationship input) {
-					return input.isActive() && INFERRED_RELATIONSHIP.equals(input.getCharacteristicType().getId());
-				}
-			});
-			
-			plan.markForInactivation(Iterables.toArray(inferredRelationships, Relationship.class));
-		}
-	}
-
-	private Iterable<Concept> getStatedParents(Concept conceptToInactivate) {
-		Iterable<Relationship> statedActiveOutboundIsaRelationships = filterActiveStatedIsaRelationships(conceptToInactivate.getOutboundRelationships());
-		Iterable<Concept> parents = Iterables.transform(statedActiveOutboundIsaRelationships, new Function<Relationship, Concept>() {
-			@Override public Concept apply(Relationship input) {
-				return input.getDestination();
-			}
-		});
-		return parents;
-	}
-	
-	private Iterable<Concept> getStatedChildren(Concept conceptToInactivate) {
-		Iterable<Relationship> statedActiveInboundIsaRelationships = filterActiveStatedIsaRelationships(getInboundRelationships(conceptToInactivate.getId()));
-		Iterable<Concept> children = Iterables.transform(statedActiveInboundIsaRelationships, new Function<Relationship, Concept>() {
-			@Override public Concept apply(Relationship input) {
-				return input.getSource();
-			}
-		});
-		return children;
-	}
-
-	private Iterable<Relationship> filterActiveStatedIsaRelationships(Collection<Relationship> relationships) {
-		return Iterables.filter(relationships, new Predicate<Relationship>() {
-			@Override public boolean apply(Relationship input) {
-				return input.isActive() && IS_A.equals(input.getType().getId()) && STATED_RELATIONSHIP.equals(input.getCharacteristicType().getId());
-			}
-		});
-	}
-
 	private Concept getConceptChecked(final CDOID cdoId) {
 		final CDOObject object = transaction.getObject(cdoId);
 		Preconditions.checkState(object instanceof Concept, "CDO object must be a SNOMED CT concept with ID: " + cdoId);
@@ -1085,10 +604,12 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		// Also check inbound relationships, as these could have been released with different effective times
 		for (Relationship relationship : getInboundRelationships(concept.getId())) {
-			deletionPlan = canDelete(relationship, deletionPlan, force);
-			if (deletionPlan.isRejected()) {
-				deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_MESSAGE, toString(concept)));
-				return deletionPlan;
+			if (relationship != null) {
+				deletionPlan = canDelete(relationship, deletionPlan, force);
+				if (deletionPlan.getRejectionReasons().size() > 0) {
+					deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_MESSAGE, toString(concept)));
+					return deletionPlan;
+				}
 			}
 		}
 		
@@ -1105,7 +626,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			deletionPlan = canDelete(outboundRelationship, deletionPlan, force);
 		}
 		
-		SnomedRefSet refSet = new SnomedRefSetLookupService().getComponent(concept.getId(), transaction);
+		SnomedRefSet refSet = lookupIfExists(concept.getId(), SnomedRefSet.class);
 		if (refSet != null) {
 			deletionPlan = canDelete(refSet, deletionPlan, force);
 		}
@@ -1179,7 +700,9 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		}
 		
 		deletionPlan.markForDeletion(refSetEditingContext.getReferringMembers(relationship));		
-		deletionPlan.markForDeletion(relationship);
+		if (relationship.getSource() != null) {
+			deletionPlan.markForDeletion(relationship);
+		}
 		return deletionPlan;
 	}
 
@@ -1456,10 +979,12 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		if (deletionPlan != null) {
 			delete(deletionPlan);
 		}
-		/* Ensure that all new components (concepts, descriptions and relationships) have unique 
-		 * IDs both among themselves and the components already persisted in the database.
-		 * Non-unique IDs will be overwritten with ones which are guaranteed to be unique 
-		 * as of the time of this check. */
+		/*
+		 * Ensure that all new components (concepts, descriptions and relationships)
+		 * have unique IDs both among themselves and the components already persisted in
+		 * the database. Non-unique IDs will be overwritten with ones which are
+		 * guaranteed to be unique as of the time of this check.
+		 */
 		if (isUniquenessCheckEnabled()) {
 			List<CDOIDAndVersion> newObjects = transaction.getChangeSetData().getNewObjects();
 			ComponentIdUniquenessValidator uniquenessEnforcer = new ComponentIdUniquenessValidator(this);
@@ -1471,14 +996,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				}
 			}
 		}
-		
-		/*
-		 * Updates the module dependency refset members based on the changes. Source or target
-		 * effective time is set to null if the changed component module id has dependency in
-		 * the refset.
-		 */
-		SnomedModuleDependencyRefSetService dependencyRefSetService = new SnomedModuleDependencyRefSetService();
-		dependencyRefSetService.updateModuleDependenciesDuringPreCommit(getTransaction());
 	}
 	
 	public boolean isUniquenessCheckEnabled() {

@@ -177,8 +177,9 @@ public abstract class AbstractSnomedTaxonomyBuilder implements ISnomedTaxonomyBu
 		if (isEmpty(invalidRelationships)) {
 			result = new SnomedTaxonomyStatus(Statuses.ok());
 		} else {
-			LOGGER.warn("Missing concepts from relationships");
-			result = new SnomedTaxonomyStatus(Statuses.error("Missing concepts from relationships."), invalidRelationships);
+			LOGGER.warn("Taxonomy builder encountered relationships referencing inactive / non-existent concepts");
+			result = new SnomedTaxonomyStatus(
+					Statuses.error("Taxonomy builder encountered relationships referencing inactive / non-existent concepts"), invalidRelationships);
 		}
 
 		dirty = false;

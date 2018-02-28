@@ -94,7 +94,11 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 			final Component component = (Component) t;
 			component.setId(id);
 			component.setActive(active);
-			component.setModule(context.lookup(moduleId, Concept.class));
+ 			if (id.equals(moduleId) && component instanceof Concept) {
+				component.setModule((Concept) component);
+			} else {
+				component.setModule(context.lookup(moduleId, Concept.class));
+			}
 
 			if (effectiveTime == null) {
 				component.unsetEffectiveTime();

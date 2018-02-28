@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import org.eclipse.net4j.util.io.ExtendedDataInputStream;
 import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.io.IOUtil;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
-
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * The client-side Net4J request for SNOMED CT imports.
@@ -188,11 +186,10 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 		try {
 
 			final SnomedImportResult result = new SnomedImportResult();
-			final ClassLoader indexEntryLoader = SnomedConceptDocument.class.getClassLoader();
 			final ClassLoader validationDefectLoader = SnomedValidationDefect.class.getClassLoader();
 			
 			for (int i = 0; i < visitedConceptCount; i++) {
-				result.getVisitedConcepts().add((SnomedConceptDocument) in.readObject(indexEntryLoader));
+				result.getVisitedConcepts().add(in.readUTF());
 			}
 			
 			for (int i = 0; i < validationDefectCount; i++) {

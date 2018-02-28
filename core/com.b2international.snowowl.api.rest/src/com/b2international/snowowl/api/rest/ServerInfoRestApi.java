@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 /**
  * @since 5.8
  */
-@Api("Info")
+@Api("Server Info")
 @Controller
 public class ServerInfoRestApi extends AbstractAdminRestService {
 
@@ -40,7 +40,7 @@ public class ServerInfoRestApi extends AbstractAdminRestService {
 		value="Retrieve server information",
 		notes="Retrieves information about the running server, including version, available repositories, etc."
 	)
-	@RequestMapping(value="/info", produces={MediaType.APPLICATION_JSON_VALUE}, method=RequestMethod.GET)
+	@RequestMapping(value="/info", produces={MediaType.APPLICATION_JSON_VALUE}, method= {RequestMethod.GET, RequestMethod.HEAD})
 	public @ResponseBody DeferredResult<ServerInfo> info() {
 		return DeferredResults.wrap(RepositoryRequests.prepareGetServerInfo().buildAsync().execute(bus));
 	}

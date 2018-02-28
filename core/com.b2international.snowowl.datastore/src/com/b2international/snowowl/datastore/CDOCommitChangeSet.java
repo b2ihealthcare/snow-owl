@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,25 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.revision.delta.CDOAddFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDOClearFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDOContainerFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDeltaVisitor;
+import org.eclipse.emf.cdo.common.revision.delta.CDOListFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDOMoveFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDORemoveFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDOUnsetFeatureDelta;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EStructuralFeature;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -130,17 +139,88 @@ public final class CDOCommitChangeSet implements ICDOCommitChangeSet {
 	
 	@Override
 	public Collection<CDOID> getDetachedComponents(final EClass eClass) {
-		return FluentIterable.from(getDetachedComponents().entrySet()).filter(new Predicate<Entry<CDOID, EClass>>() {
-			@Override
-			public boolean apply(Entry<CDOID, EClass> input) {
-				return eClass.isSuperTypeOf(input.getValue());
-			}
-		}).transform(new Function<Entry<CDOID, EClass>, CDOID>() {
-			@Override
-			public CDOID apply(Entry<CDOID, EClass> input) {
-				return input.getKey();
-			}
-		}).toSet();
+		return FluentIterable.from(getDetachedComponents().entrySet())
+				.filter(input -> eClass.isSuperTypeOf(input.getValue()))
+				.transform(input -> input.getKey())
+				.toSet();
+	}
+	
+	@Override
+	public <T extends CDOObject> Iterable<T> getDirtyComponents(Class<T> type, Set<EStructuralFeature> allowedFeatures) {
+		return FluentIterable.from(getDirtyComponents(type))
+			.filter(input -> {
+				final DirtyFeatureDeltaVisitor visitor = new DirtyFeatureDeltaVisitor(allowedFeatures);
+				final CDORevisionDelta revisionDelta = getRevisionDeltas().get(input.cdoID());
+				if (revisionDelta != null) {
+					revisionDelta.accept(visitor);
+					return visitor.hasAllowedChanges();
+				} else {
+					return false;
+				}
+			});
+	}
+	
+	/**
+	 * @since 6.3
+	 */
+	private final static class DirtyFeatureDeltaVisitor implements CDOFeatureDeltaVisitor {
+		
+		private final Set<EStructuralFeature> allowedFeatures;
+		
+		private boolean hasAllowedChanges;
+		
+		public DirtyFeatureDeltaVisitor(Set<EStructuralFeature> allowedFeatures) {
+			this.allowedFeatures = allowedFeatures;
+		}
+
+		@Override
+		public void visit(CDOSetFeatureDelta delta) {
+			visitDelta(delta);
+		}
+		
+		@Override
+		public void visit(CDOListFeatureDelta delta) {
+			visitDelta(delta);
+		}
+		
+		@Override
+		public void visit(CDOAddFeatureDelta delta) {
+			visitDelta(delta);
+		}
+		
+		@Override
+		public void visit(CDOClearFeatureDelta delta) {
+			visitDelta(delta);
+		}
+		
+		@Override
+		public void visit(CDOMoveFeatureDelta delta) {
+			visitDelta(delta);
+		}
+		
+		@Override
+		public void visit(CDORemoveFeatureDelta delta) {
+			visitDelta(delta);
+		}
+		
+		@Override
+		public void visit(CDOUnsetFeatureDelta delta) {
+			visitDelta(delta);
+		}
+		
+		@Override
+		public void visit(CDOContainerFeatureDelta delta) {
+			visitDelta(delta);
+		}
+		
+		private void visitDelta(CDOFeatureDelta delta) {
+			hasAllowedChanges |= allowedFeatures.contains(delta.getFeature());
+		}
+
+		public boolean hasAllowedChanges() {
+			return hasAllowedChanges;
+		}
+		
 	}
 	
 }

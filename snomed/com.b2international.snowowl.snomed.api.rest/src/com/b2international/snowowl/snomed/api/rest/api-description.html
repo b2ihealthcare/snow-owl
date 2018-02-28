@@ -2,8 +2,8 @@ This describes the resources that make up the official Snow Owl® SNOMED CT Term
 
 <p>
 	<h2>Current Version</h2>
-	<p>SNOMED CT API endpoints currently have version <b>v2</b>. You have to explicitly set the version of the API via path parameter. For example:</p>
-	<pre><code>GET /snomed-ct/v2/branches</code></pre>
+	<p>SNOMED CT API endpoints currently have version <b>v3</b>. You have to explicitly set the version of the API via path parameter. For example:</p>
+	<pre><code>GET /snomed-ct/v3/branches</code></pre>
 </p>
 
 <p>
@@ -35,7 +35,7 @@ This describes the resources that make up the official Snow Owl® SNOMED CT Term
 	<p>All POST requests return <code>Location</code> headers pointing to the created resource instead of including either the identifier or the entire created resource in the response body. 
 	These are meant to provide explicit URLs so that proper API clients don’t need to construct URLs on their own. 
 	It is highly recommended that API clients use these. Doing so will make future upgrades of the API easier for developers. All URLs are expected to be proper RFC 6570 URI templates.</p>
-	<p>Example Location Header: <pre><code class="json">http://example.com/snowowl/snomed-ct/v2/MAIN/concepts/123456789</code></pre></p>
+	<p>Example Location Header: <pre><code class="json">http://example.com/snowowl/snomed-ct/v3/MAIN/concepts/123456789</code></pre></p>
 </p>
 
 <p>
@@ -52,7 +52,7 @@ This describes the resources that make up the official Snow Owl® SNOMED CT Term
 	<p>Expanded properties should be followed by parentheses and separated by commas; any options for 
 	the expanded property should be given within the parentheses, including properties to expand. 
 	Typical values for parameters are given in the "Implementation Notes" section of each endpoint.</p>
-	<pre><code class="json">GET /snowowl/snomed-ct/v2/MAIN/concepts?offset=0&amp;limit=50&amp;expand=fsn(),descriptions()</code></pre>
+	<pre><code class="json">GET /snowowl/snomed-ct/v3/MAIN/concepts?offset=0&amp;limit=50&amp;expand=fsn(),descriptions()</code></pre>
 	<p>Response:</p>
 	<pre><code class="json">{
   "items": [
@@ -218,7 +218,7 @@ This describes the resources that make up the official Snow Owl® SNOMED CT Term
 }</code></pre>
 		<p>Response</p>
 		<pre><code class="json">Status: 201 Created
-Location: http://localhost:8080/snowowl/snomed-ct/v2/branches/MAIN/branchName</code></pre>
+Location: http://localhost:8080/snowowl/snomed-ct/v3/branches/MAIN/branchName</code></pre>
 		<h3>Delete a branch</h3>
 		<pre><code class="json">DELETE /branches/:path</code></pre>
 		<p>Response</p>
@@ -233,7 +233,7 @@ Location: http://localhost:8080/snowowl/snomed-ct/v2/branches/MAIN/branchName</c
 }</code></pre>
 		<p>Response</p>
 		<pre><code class="json">Status: 202 Accepted
-Location: http://localhost:8080/snowowl/snomed-ct/v2/merges/2f4d3b5b-3020-4e8e-b046-b8266967d7dc</code></pre>
+Location: http://localhost:8080/snowowl/snomed-ct/v3/merges/2f4d3b5b-3020-4e8e-b046-b8266967d7dc</code></pre>
 		<h3>Perform a rebase (former synchronization)</h3>
 		<pre><code class="json">POST /merges</code></pre>
 		<p>Input</p>
@@ -243,7 +243,7 @@ Location: http://localhost:8080/snowowl/snomed-ct/v2/merges/2f4d3b5b-3020-4e8e-b
 }</code></pre>
 		<p>Response</p>
 		<pre><code class="json">Status: 202 Accepted
-Location: http://localhost:8080/snowowl/snomed-ct/v2/merges/c82c443d-f3f4-4409-9cdb-a744da336936</code></pre>
+Location: http://localhost:8080/snowowl/snomed-ct/v3/merges/c82c443d-f3f4-4409-9cdb-a744da336936</code></pre>
 		<h3>Perform a merge with review identifier</h3>
 		<pre><code class="json">POST /merges</code></pre>
 		<p>Input</p>
@@ -254,7 +254,7 @@ Location: http://localhost:8080/snowowl/snomed-ct/v2/merges/c82c443d-f3f4-4409-9
 }</code></pre>
 		<p>Successful response</p>
 		<pre><code class="json">Status: 202 Accepted
-Location: http://localhost:8080/snowowl/snomed-ct/v2/merges/0da14d74-f796-409f-900b-b175c0909de1</code></pre>
+Location: http://localhost:8080/snowowl/snomed-ct/v3/merges/0da14d74-f796-409f-900b-b175c0909de1</code></pre>
 		<p>Failure response</p>
 		<pre><code class="json">{
   "status": 409,
@@ -288,7 +288,7 @@ Location: http://localhost:8080/snowowl/snomed-ct/v2/merges/0da14d74-f796-409f-9
 }</code></pre>
 		<p>Response</p>
 		<pre><code class="json">Status: 201 Created
-Location: http://localhost:8080/snowowl/snomed-ct/v2/reviews/b5e8cb6b-419e-4180-9391-b938b50ef18b</code></pre>	
+Location: http://localhost:8080/snowowl/snomed-ct/v3/reviews/b5e8cb6b-419e-4180-9391-b938b50ef18b</code></pre>	
 		<h3>Get a review</h3>
 		<pre><code class="json">GET /reviews/:id</code></pre>
 		<p>Response</p>

@@ -48,7 +48,7 @@ public class DatabaseConfiguration {
 	 * http://www.h2database.com/html/advanced.html#file_system
 	 */
 	@NotEmpty
-	private String scheme = "jdbc:h2:split:24:nio:";
+	private String scheme = "jdbc:h2:split:nio:";
 
 	@NotNull
 	private String location = "";

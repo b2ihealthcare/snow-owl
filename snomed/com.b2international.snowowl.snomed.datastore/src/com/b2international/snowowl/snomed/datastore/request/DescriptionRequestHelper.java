@@ -264,15 +264,14 @@ public abstract class DescriptionRequestHelper {
 				.filterByPreferredIn(locales);
 	}
 
-	private Map<String, SnomedDescription> indexBestPreferredByConceptId(SnomedDescriptions descriptions, List<ExtendedLocale> orderedLocales) {
+	public static Map<String, SnomedDescription> indexBestPreferredByConceptId(Iterable<SnomedDescription> descriptions, List<ExtendedLocale> orderedLocales) {
 		List<String> languageRefSetIds = SnomedDescriptionSearchRequestBuilder.getLanguageRefSetIds(orderedLocales);
 		ExplicitFirstOrdering<String> languageRefSetOrdering = ExplicitFirstOrdering.create(languageRefSetIds);
 		
 		return extractBest(indexByConceptId(descriptions), languageRefSetIds, description -> {
 			Set<String> preferredLanguageRefSetIds = Maps.filterValues(description.getAcceptabilityMap(), Predicates.equalTo(Acceptability.PREFERRED)).keySet();
-			// the explicit first ordering will put the VIP / anticipated / first priority languages codes to the min end. 
-			String firstPriority = languageRefSetOrdering.min(preferredLanguageRefSetIds);
-			return firstPriority;
+			// the explicit first ordering will put the VIP / anticipated / first priority languages codes to the min end.
+			return languageRefSetOrdering.min(preferredLanguageRefSetIds);
 		});
 	}
 	
@@ -284,8 +283,8 @@ public abstract class DescriptionRequestHelper {
 		return extractFirst(indexByConceptId(descriptions));
 	}
 
-	private Multimap<String, SnomedDescription> indexByConceptId(SnomedDescriptions descriptions) {
-		return Multimaps.index(descriptions.getItems(), description -> description.getConceptId());
+	private static Multimap<String, SnomedDescription> indexByConceptId(Iterable<SnomedDescription> descriptions) {
+		return Multimaps.index(descriptions, description -> description.getConceptId());
 	}
 	
 	private Map<String, SnomedDescription> extractFirst(Multimap<String, SnomedDescription> descriptionsByConceptId) {
@@ -293,7 +292,7 @@ public abstract class DescriptionRequestHelper {
 		return ImmutableMap.copyOf(Maps.filterValues(uniqueMap, Predicates.notNull()));
 	}
 	
-	private <T> Map<String, SnomedDescription> extractBest(Multimap<String, SnomedDescription> descriptionsByConceptId, 
+	private static <T> Map<String, SnomedDescription> extractBest(Multimap<String, SnomedDescription> descriptionsByConceptId, 
 			List<T> orderedValues, 
 			Function<SnomedDescription, T> predicateFactory) {
 		

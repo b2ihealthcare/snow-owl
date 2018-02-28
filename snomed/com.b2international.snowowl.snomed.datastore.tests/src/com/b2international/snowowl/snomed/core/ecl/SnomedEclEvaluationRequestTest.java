@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,8 @@ import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilder
 import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.integerMember;
 import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.relationship;
 import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.stringMember;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringMappingRefSet;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringMappingRefSets;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringRefSet;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.referringRefSets;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_MAPPING_REFSETS;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.REFERRING_REFSETS;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.activeMemberOf;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.ACTIVE_MEMBER_OF;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
 import static org.junit.Assert.assertEquals;
@@ -185,20 +181,14 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	@Test
 	public void memberOf() throws Exception {
 		final Expression actual = eval("^"+Concepts.REFSET_DESCRIPTION_TYPE);
-		final Expression expected = Expressions.builder()
-				.should(referringRefSet(Concepts.REFSET_DESCRIPTION_TYPE))
-				.should(referringMappingRefSet(Concepts.REFSET_DESCRIPTION_TYPE))
-				.build();
+		final Expression expected = activeMemberOf(Concepts.REFSET_DESCRIPTION_TYPE);
 		assertEquals(expected, actual);
 	}
 	
 	@Test
 	public void memberOfAny() throws Exception {
 		final Expression actual = eval("^*");
-		final Expression expected = Expressions.builder()
-				.should(Expressions.exists(REFERRING_REFSETS))
-				.should(Expressions.exists(REFERRING_MAPPING_REFSETS))
-				.build();
+		final Expression expected = Expressions.exists(ACTIVE_MEMBER_OF);
 		assertEquals(expected, actual);
 	}
 	
@@ -209,10 +199,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 				.ancestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build());
 		final Expression actual = eval("^(<" + Concepts.REFSET_DESCRIPTION_TYPE + ")");
-		final Expression expected = Expressions.builder()
-				.should(referringRefSets(Collections.singleton(Concepts.SYNONYM)))
-				.should(referringMappingRefSets(Collections.singleton(Concepts.SYNONYM)))
-				.build();
+		final Expression expected = activeMemberOf(Collections.singleton(Concepts.SYNONYM));
 		assertEquals(expected, actual);
 	}
 	
@@ -863,10 +850,10 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		final String member2 = RandomSnomedIdentiferGenerator.generateConceptId();
 		
 		indexRevision(MAIN, nextStorageKey(), concept(member1)
-				.referringRefSets(ImmutableSet.of(refSetId))
+				.activeMemberOf(ImmutableSet.of(refSetId))
 				.build());
 		indexRevision(MAIN, nextStorageKey(), concept(member2)
-				.referringRefSets(ImmutableSet.of(refSetId))
+				.activeMemberOf(ImmutableSet.of(refSetId))
 				.build());
 		
 		final Expression actual = eval(String.format("<^%s", refSetId));

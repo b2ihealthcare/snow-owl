@@ -33,7 +33,6 @@ import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberCha
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange.MemberChangeKind;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
@@ -59,7 +58,7 @@ public class DescriptionAcceptabilityChangeProcessor {
 			if (member.isActive()) {
 				final String uuid = member.getUuid();
 				final String refSetId = member.getRefSetIdentifierId();
-				final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.ADDED, member.getRefSet().getType());
+				final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.ADDED, member.isActive());
 				registerChange(preferredMemberChanges, acceptableMemberChanges, member.getAcceptabilityId(), member.getReferencedComponentId(), change);
 			}
 		}
@@ -79,7 +78,7 @@ public class DescriptionAcceptabilityChangeProcessor {
 		for (SnomedLanguageRefSetMember member : dirtyMembers) {
 			final String uuid = member.getUuid();
 			final String refSetId = member.getRefSetIdentifierId();
-			final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, member.getRefSet().getType());
+			final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, member.isActive());
 			final SnomedRefSetMemberIndexEntry before = currentRevisionsByStorageKey.get(CDOIDUtil.getLong(member.cdoID()));
 			if (before != null) {
 				final String beforeAcceptabilityId = before.getAcceptabilityId();
@@ -105,7 +104,7 @@ public class DescriptionAcceptabilityChangeProcessor {
 				final String refSetId = before.getReferenceSetId();
 				final String referencedComponentId = before.getReferencedComponentId();
 				final String beforeAcceptabilityId = before.getAcceptabilityId();
-				final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, SnomedRefSetType.LANGUAGE);
+				final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, before.isActive());
 				
 				registerChange(preferredMemberChanges, acceptableMemberChanges, beforeAcceptabilityId, referencedComponentId, change);
 			}

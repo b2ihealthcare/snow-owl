@@ -240,13 +240,11 @@ public final class SnomedValidationContext {
 		validationResult.addAll(new SnomedTaxonomyValidator(configuration, repositoryState, Concepts.STATED_RELATIONSHIP).validate());
 		validationResult.addAll(new SnomedTaxonomyValidator(configuration, repositoryState, Concepts.INFERRED_RELATIONSHIP).validate());
 		
-		for (String file : this.defects.keySet()) {
-			final Multimap<DefectType, String> fileDefects = this.defects.get(file);
-			for (DefectType type : fileDefects.keySet()) {
-				final Collection<String> messages = fileDefects.get(type);
+		this.defects.forEach((file, defects) -> {
+			defects.asMap().forEach((type, messages) -> {
 				validationResult.add(new SnomedValidationDefect(file, type, messages));
-			}
-		}
+			});
+		});
 
 		return validationResult;
 	}

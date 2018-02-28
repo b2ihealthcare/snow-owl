@@ -100,9 +100,9 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 				doc = SnomedRelationshipIndexEntry.builder(currentDoc);
 			}
 			
-			final Collection<String> currentReferringRefSets = currentDoc.getReferringRefSets();
-			final Collection<String> currentReferringMappingRefSets = currentDoc.getReferringMappingRefSets();
-			new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentReferringRefSets, currentReferringMappingRefSets)
+			final Collection<String> currentMemberOf = currentDoc.getMemberOf();
+			final Collection<String> currentActiveMemberOf = currentDoc.getActiveMemberOf();
+			new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentMemberOf, currentActiveMemberOf)
 					.update(doc);
 			
 			indexChangedRevision(currentDoc.getStorageKey(), doc.build());

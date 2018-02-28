@@ -131,6 +131,7 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	@Override
 	public Request<TransactionContext, String> toCreateRequest(String containerId) {
 		return SnomedRequests.prepareNewMember()
+				.setId(getId())
 				.setActive(isActive())
 				.setReferencedComponentId(containerId)
 				.setReferenceSetId(getReferenceSetId())
