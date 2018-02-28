@@ -124,10 +124,10 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 			final Multimap<Class<? extends Revision>, Revision.Views.StorageKeyAndHash> deletedOrChangedRevisions = ArrayListMultimap.create();
 			
 			// query all registered revision types for new, changed and deleted components
-			for (Class<? extends Revision> typeToCompare1 : typesToCompare) {
+			for (Class<? extends Revision> typeToCompare : typesToCompare) {
 				final Query<Revision.Views.StorageKeyAndHash> newOrChangedQuery = Query
 						.select(Revision.Views.StorageKeyAndHash.class)
-						.from(typeToCompare1)
+						.from(typeToCompare)
 						.fields(Revision.STORAGE_KEY)
 						.where(Revision.branchSegmentFilter(segmentsToCompare))
 						.scroll(SCROLL_KEEP_ALIVE)
@@ -135,14 +135,14 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 						.build();
 				for (final Hits<Revision.Views.StorageKeyAndHash> newOrChangedHits : searcher.scroll(newOrChangedQuery)) {
 					for (Revision.Views.StorageKeyAndHash newOrChangedHit : newOrChangedHits) {
-						newOrChangedRevisions.put(typeToCompare1, newOrChangedHit);
+						newOrChangedRevisions.put(typeToCompare, newOrChangedHit);
 					}
 				}
 				
 				// any revision counts as changed or deleted which has segmentID in the common path, but replaced in the compared path
 				final Query<Revision.Views.StorageKeyAndHash> deletedOrChangedQuery = Query
 						.select(Revision.Views.StorageKeyAndHash.class)
-						.from(typeToCompare1)
+						.from(typeToCompare)
 						.fields(Revision.STORAGE_KEY)
 						.where(Expressions.builder()
 								.filter(matchAnyInt(Revision.SEGMENT_ID, commonPath))
@@ -153,7 +153,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 						.build();
 				for (Hits<Revision.Views.StorageKeyAndHash> deletedOrChangedHits : searcher.scroll(deletedOrChangedQuery)) {
 					for (Revision.Views.StorageKeyAndHash deletedOrChanged : deletedOrChangedHits) {
-						deletedOrChangedRevisions.put(typeToCompare1, deletedOrChanged);
+						deletedOrChangedRevisions.put(typeToCompare, deletedOrChanged);
 					}
 				}
 			}
