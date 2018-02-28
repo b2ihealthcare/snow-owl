@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
@@ -168,6 +166,8 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			remainderMonitor = monitor.fork(20);
 			remainderMonitor.begin(referencedComponents.getTotal());
 			// write data to the file row by row
+			LinkedHashMap<String, Integer> groupZeroCounts = groupedRelationships.getOrDefault(0, new LinkedHashMap<>());
+			
 			for (SnomedConcept referencedComponent : referencedComponents) {
 				StringBuffer stringBuffer = new StringBuffer();
 
@@ -189,7 +189,8 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						case RELATIONSHIP:
 							final ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
 							final String relationshipTypeId = String.valueOf(relationshipItem.getComponentId());
-							int relationshipOccurrences = exportItemOccurences.get(relationshipTypeId);
+							// Use groupZeroCounts instead of exportItemOccurences here
+							int relationshipOccurrences = groupZeroCounts.get(relationshipTypeId);
 							final Collection<String> relationships = getRelationshipTokens(referencedComponent, relationshipTypeId, 0);
 							stringBuffer.append(joinResultsWithDelimiters(relationships, relationshipOccurrences, delimiter, includeRelationshipId));
 							break;
@@ -250,6 +251,10 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				}
 				
 				for (Integer groupId : groupedRelationships.keySet()) {
+					if (groupId == 0) {
+						continue;
+					}
+					
 					for (String relationshipId : groupedRelationships.get(groupId).keySet()) {
 						stringBuffer.append(delimiter);
 						TreeSet<String> relationships = Sets.newTreeSet();
@@ -418,8 +423,11 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					final String relationshipDisplayName = relationsshipTypeIdToTermMap.getOrDefault(relationshipTypeId, relationshipItem.getDisplayName());
 					
 					// if the relationship occurs as an ungrouped relationship.
-					if (sortToRelationshipGroups(referencedComponents, relationshipTypeId)) {
-						final int relationshipOccurrences = exportItemOccurences.get(relationshipTypeId);
+					sortToRelationshipGroups(referencedComponents, relationshipTypeId);
+					
+					LinkedHashMap<String, Integer> groupZeroCounts = groupedRelationships.getOrDefault(0, new LinkedHashMap<>());
+					final int relationshipOccurrences = groupZeroCounts.getOrDefault(relationshipTypeId, 0);
+					if (relationshipOccurrences > 0) {
 						
 						// only one result
 						if (2 > relationshipOccurrences) {
@@ -494,6 +502,10 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		
 		// add the property group columns to the header
 		for (Integer groupId : groupedRelationships.keySet()) {
+			if (groupId == 0) {
+				continue;
+			}
+			
 			for (String relationshipTypeId : groupedRelationships.get(groupId).keySet()) {
 				String relationshipName = relationsshipTypeIdToTermMap.get(relationshipTypeId);
 				if (1 == groupedRelationships.get(groupId).get(relationshipTypeId)) {
@@ -535,45 +547,25 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						}));
 	}
 
-	private boolean sortToRelationshipGroups(SnomedConcepts referencedComponents, String relationshipTypeId) {
+	private void sortToRelationshipGroups(SnomedConcepts referencedComponents, String relationshipTypeId) {
 		
-		Map<Integer, Integer> groupsAndCounts = Maps.newHashMap();
-
-		AtomicBoolean occursAsUngrouped =  new AtomicBoolean(false);
-		AtomicBoolean noOccurance = new AtomicBoolean(false);
-		
-		referencedComponents.getItems().stream()
-			.forEach(concept -> {
-					AtomicInteger i = new AtomicInteger();
-					
-					concept.getRelationships().getItems().stream()
-						.filter(relationship -> relationship.getType().getId().equals(relationshipTypeId))
-						.forEach(relationship -> {
-
-							if (relationship.getGroup() == 0) {
-								occursAsUngrouped.set(true);
-							} else {
-								groupsAndCounts.merge(relationship.getGroup(), 1, (oldValue, newValue) -> oldValue + newValue);
-							}
-							i.incrementAndGet();
-					});
-					
-					if (i.get() == 1) {
-						noOccurance.set(true);
-					}
-					
-					groupsAndCounts.entrySet().stream().forEach(entry -> {
-						groupedRelationships.compute(entry.getKey(), (key, oldValue) -> {
-							LinkedHashMap<String, Integer> relationshipTypeOccurence = ofNullable(oldValue).orElseGet(LinkedHashMap::new);
-							relationshipTypeOccurence.merge(relationshipTypeId, entry.getValue(), Math::max);
-							return relationshipTypeOccurence;
-						});
-					});
-					
-				} 
-			);
-		
-		return occursAsUngrouped.get() || noOccurance.get();
+		Map<Integer, Integer> groupedRelationshipsForConcept = Maps.newHashMap();
+		for (SnomedConcept concept : referencedComponents) {
+			groupedRelationshipsForConcept.clear();
+			concept.getRelationships().getItems().stream()
+				.filter(relationship -> relationship.getType().getId().equals(relationshipTypeId))
+				.forEach(relationship -> {
+					groupedRelationshipsForConcept.merge(relationship.getGroup(), 1, (oldValue, newValue) -> oldValue + newValue);
+				});
+				
+		groupedRelationshipsForConcept.entrySet().stream().forEach(entry -> {
+			groupedRelationships.compute(entry.getKey(), (key, oldValue) -> {
+				LinkedHashMap<String, Integer> relationshipTypeOccurence = ofNullable(oldValue).orElseGet(LinkedHashMap::new);
+				relationshipTypeOccurence.merge(relationshipTypeId, entry.getValue(), Math::max);
+				return relationshipTypeOccurence;
+			});
+		});
+		}
 	}
 
 	private Map<String, Integer> initOccurrenceMap(SnomedConcepts referencedComponents, Collection<AbstractSnomedDsvExportItem> exportColumns) {
@@ -591,13 +583,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					break;
 				}
 				case RELATIONSHIP: {
-					ComponentIdSnomedDsvExportItem item = (ComponentIdSnomedDsvExportItem) column;
-					Integer count = (int) concept
-									.getRelationships().getItems()
-									.stream()
-									.filter(relationship -> relationship.getTypeId().equals(item.getComponentId()))
-									.count();
-					result.merge(item.getComponentId(), count, Math::max);
+					// Will keep track of occurrences by group and relationship type ID in groupedRelationships (including group 0)
 					break;
 				}
 				case DATAYPE: {
@@ -688,6 +674,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						.all()
 						.filterByActive(true)
 						.filterBySource(conceptIds(concepts))
+						.filterByCharacteristicType(Concepts.INFERRED_RELATIONSHIP)
 						.setExpand("source(),destination(expand(pt())),type(expand(pt())),members(expand(pt()))")
 						.setLocales(locales)
 						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
