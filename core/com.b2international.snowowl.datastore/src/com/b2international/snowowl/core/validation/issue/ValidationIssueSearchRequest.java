@@ -140,7 +140,7 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 				.build()
 				.execute(context)
 				.stream()
-				.map(ValidationWhiteList::getComponentId)
+				.map(whiteList -> whiteList.getComponentIdentifier().getComponentId())
 				.collect(Collectors.toSet());
 			if (!whiteListedIds.isEmpty()) {
 				mustNotComponentIds = whiteListedIds;
