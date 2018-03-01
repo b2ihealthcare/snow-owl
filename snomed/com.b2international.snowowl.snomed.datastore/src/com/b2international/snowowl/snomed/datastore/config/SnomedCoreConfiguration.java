@@ -79,6 +79,9 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	@Valid
 	private SnomedIdentifierConfiguration ids = new SnomedIdentifierConfiguration();
 	
+	@Valid
+	private SnomedExportDefaultConfiguration export = new SnomedExportDefaultConfiguration();
+	
 	private boolean collectSystemChanges = false;
 	
 	private boolean concreteDomainSupport = false;
@@ -208,12 +211,26 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 		this.collectSystemChanges = collectSystemChanges;
 	}
 	
+	/**
+	 * @return the identifier generation sub-section of the SNOMED CT core configuration object
+	 */
 	public SnomedIdentifierConfiguration getIds() {
 		return ids;
 	}
 	
 	public void setIds(SnomedIdentifierConfiguration ids) {
 		this.ids = ids;
+	}
+	
+	/**
+	 * @return the RF2 export defaults sub-section of the SNOMED CT core configuration object
+	 */
+	public SnomedExportDefaultConfiguration getExport() {
+		return export;
+	}
+	
+	public void setExport(SnomedExportDefaultConfiguration export) {
+		this.export = export;
 	}
 
 	/**
