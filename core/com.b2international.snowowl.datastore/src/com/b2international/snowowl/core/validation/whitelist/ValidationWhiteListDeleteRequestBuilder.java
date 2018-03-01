@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.validation.whitelist;
 
 import java.util.Set;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepositoryContext;
@@ -31,8 +32,8 @@ public final class ValidationWhiteListDeleteRequestBuilder
 
 	private final Set<String> ids;
 
-	ValidationWhiteListDeleteRequestBuilder(final Set<String> ids) {
-		this.ids = ids;
+	ValidationWhiteListDeleteRequestBuilder(final Iterable<String> ids) {
+		this.ids = Collections3.toImmutableSet(ids);
 	}
 	
 	@Override
