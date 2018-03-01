@@ -20,6 +20,7 @@ import java.io.Serializable;
 import com.b2international.index.Doc;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
@@ -33,6 +34,8 @@ public final class ValidationIssue implements Serializable {
 		public static final String ID = "id";
 		public static final String RULE_ID = "ruleId";
 		public static final String BRANCH_PATH = "branchPath";
+		public static final String AFFECTED_COMPONENT_ID = "affectedComponentId";
+		public static final String AFFECTED_COMPONENT_TYPE = "affectedComponentType";
 	}
 	
 	private final String id;
@@ -40,24 +43,43 @@ public final class ValidationIssue implements Serializable {
 	private final String branchPath;
 	private final ComponentIdentifier affectedComponent;
 
-	@JsonCreator
 	public ValidationIssue(
-			@JsonProperty("id") final String id,
-			@JsonProperty("ruleId") final String ruleId, 
-			@JsonProperty("branchPath") final String branchPath, 
-			@JsonProperty("affectedComponent") final ComponentIdentifier affectedComponent) {
+			final String id,
+			final String ruleId, 
+			final String branchPath, 
+			final ComponentIdentifier affectedComponent) {
 		this.id = id;
 		this.ruleId = ruleId;
 		this.branchPath = branchPath;
 		this.affectedComponent = affectedComponent;
 	}
 	
+	@JsonCreator
+	public ValidationIssue(
+			@JsonProperty("id") final String id,
+			@JsonProperty("ruleId") final String ruleId, 
+			@JsonProperty("branchPath") final String branchPath, 
+			@JsonProperty("affectedComponentType") final short affectedComponentType,
+			@JsonProperty("affectedComponentId") final String affectedComponentId) {
+		this(id, ruleId, branchPath, ComponentIdentifier.of(affectedComponentType, affectedComponentId));
+	}
+	
 	public String getId() {
 		return id;
 	}
 	
+	@JsonIgnore
 	public ComponentIdentifier getAffectedComponent() {
 		return affectedComponent;
+	}
+	
+	@JsonProperty
+	String getAffectedComponentId() {
+		return affectedComponent.getComponentId();
+	}
+	
+	short getAffectedComponentType() {
+		return affectedComponent.getTerminologyComponentId();
 	}
 	
 	public String getBranchPath() {

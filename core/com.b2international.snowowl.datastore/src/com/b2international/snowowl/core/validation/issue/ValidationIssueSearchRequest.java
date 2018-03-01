@@ -30,7 +30,9 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
+import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 6.0
@@ -51,7 +53,22 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 		/**
 		 * Filter matches by their rule's tooling ID field.
 		 */
-		TOOLING_ID
+		TOOLING_ID,
+		
+		/**
+		 * Filter matches by affected component identifier(s).
+		 */
+		AFFECTED_COMPONENT_ID,
+		
+		/**
+		 * Filter matches by affected component type(s).
+		 */
+		AFFECTED_COMPONENT_TYPE,
+		
+		/**
+		 * Filter matches by their whitelisted state.
+		 */
+		WHITELISTED
 	}
 	
 	@Override
@@ -97,12 +114,48 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 				filterByRuleIds.addAll(ruleFilter);
 			} else {
 				filterByRuleIds = newHashSet(ruleFilter);
-				
 			}
 		}
 		
 		if (filterByRuleIds != null) {
 			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.RULE_ID, filterByRuleIds));
+		}
+		
+		Collection<String> mustComponentIds = null;
+		Collection<String> mustNotComponentIds = null;
+		
+		if (containsKey(OptionKey.AFFECTED_COMPONENT_ID)) {
+			mustComponentIds = getCollection(OptionKey.AFFECTED_COMPONENT_ID, String.class);
+		}
+		
+		if (containsKey(OptionKey.AFFECTED_COMPONENT_TYPE)) {
+			Collection<Integer> affectedComponentTypes = getCollection(OptionKey.AFFECTED_COMPONENT_TYPE, Short.class).stream().map(Integer::new).collect(Collectors.toSet());
+			queryBuilder.filter(Expressions.matchAnyInt(ValidationIssue.Fields.AFFECTED_COMPONENT_TYPE, affectedComponentTypes));
+		}
+		
+		if (containsKey(OptionKey.WHITELISTED)) {
+			final Collection<String> whiteListedIds = ValidationRequests.whiteList().prepareSearch()
+				.all()
+				.setFields(ValidationWhiteList.Fields.ID, ValidationWhiteList.Fields.COMPONENT_ID, ValidationWhiteList.Fields.TERMINOLOGY_COMPONENT_ID)
+				.build()
+				.execute(context)
+				.stream()
+				.map(ValidationWhiteList::getComponentId)
+				.collect(Collectors.toSet());
+			if (!whiteListedIds.isEmpty()) {
+				mustNotComponentIds = whiteListedIds;
+			}
+		}
+		
+		if (mustComponentIds != null || mustNotComponentIds != null) {
+			ExpressionBuilder componentIdFilter = Expressions.builder();
+			if (mustComponentIds != null) {
+				componentIdFilter.filter(Expressions.matchAny(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, mustComponentIds));
+			}
+			if (mustNotComponentIds != null) {
+				componentIdFilter.mustNot(Expressions.matchAny(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, mustNotComponentIds));
+			}
+			queryBuilder.filter(componentIdFilter.build());
 		}
 		
 		return queryBuilder.build();

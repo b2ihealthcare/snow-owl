@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core.validation.whitelist;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.index.Hits;
@@ -24,7 +23,6 @@ import com.b2international.index.Searcher;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
@@ -44,7 +42,12 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 		/**
 		 * Filter matches by component identifier.
 		 */
-		COMPONENT_IDENTIFIER
+		COMPONENT_ID,
+		
+		/**
+		 * Filter matches by component type. 
+		 */
+		COMPONENT_TYPE
 		
 	}
 	
@@ -59,14 +62,19 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 		
 		addIdFilter(queryBuilder, ids -> Expressions.matchAny(ValidationWhiteList.Fields.ID, ids));
 		
-		if(containsKey(OptionKey.RULE_ID)) {
+		if (containsKey(OptionKey.RULE_ID)) {
 			Collection<String> ruleIds = getCollection(OptionKey.RULE_ID, String.class);
 			queryBuilder.filter(Expressions.matchAny(ValidationWhiteList.Fields.RULE_ID, ruleIds));
 		}
 		
-		if(containsKey(OptionKey.COMPONENT_IDENTIFIER)) {
-			Set<String> componentIds = getCollection(OptionKey.COMPONENT_IDENTIFIER, ComponentIdentifier.class).stream().map(ComponentIdentifier::getComponentId).collect(Collectors.toSet());
-			queryBuilder.filter(Expressions.matchAny(ValidationWhiteList.Fields.COMPONENT_IDENTIFIER, componentIds));
+		if (containsKey(OptionKey.COMPONENT_ID)) {
+			Collection<String> componentIds = getCollection(OptionKey.COMPONENT_ID, String.class);
+			queryBuilder.filter(Expressions.matchAny(ValidationWhiteList.Fields.COMPONENT_ID, componentIds));
+		}
+		
+		if (containsKey(OptionKey.COMPONENT_TYPE)) {
+			Collection<Integer> terminologyComponentIds = getCollection(OptionKey.COMPONENT_TYPE, Short.class).stream().map(Integer::new).collect(Collectors.toSet());
+			queryBuilder.filter(Expressions.matchAnyInt(ValidationWhiteList.Fields.TERMINOLOGY_COMPONENT_ID, terminologyComponentIds));
 		}
 		
 		return queryBuilder.build();
