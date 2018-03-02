@@ -32,8 +32,8 @@ public class SnomedExportDefaultConfiguration {
 	@JsonProperty(value = "nrcCountryCode", required = false)
 	private String nrcCountryCode = "";
 
-	@JsonProperty(value = "extensionNamespace", required = false)
-	private String extensionNamespace = "";
+	@JsonProperty(value = "extensionNamespaceId", required = false)
+	private String extensionNamespaceId = "";
 
 	@JsonProperty(value = "refSetLayout", required = false)
 	private Rf2RefSetExportLayout refSetExportLayout = Rf2RefSetExportLayout.COMBINED;
@@ -54,12 +54,12 @@ public class SnomedExportDefaultConfiguration {
 		this.nrcCountryCode = nrcCountryCode;
 	}
 
-	public String getExtensionNamespace() {
-		return extensionNamespace;
+	public String getExtensionNamespaceId() {
+		return extensionNamespaceId;
 	}
 
-	public void setExtensionNamespace(final String extensionNamespace) {
-		this.extensionNamespace = extensionNamespace;
+	public void setExtensionNamespaceId(final String extensionNamespaceId) {
+		this.extensionNamespaceId = extensionNamespaceId;
 	}
 
 	public Rf2RefSetExportLayout getRefSetExportLayout() {
