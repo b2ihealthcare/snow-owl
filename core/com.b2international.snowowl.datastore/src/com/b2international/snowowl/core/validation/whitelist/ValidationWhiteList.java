@@ -46,7 +46,10 @@ public final class ValidationWhiteList implements Serializable {
 	private final String ruleId;
 	private final String reporter;
 	private final long createdAt;
-	private final ComponentIdentifier componentIdentifier;
+	private final String componentId;
+	private final short terminologyComponentId;
+	
+	private transient ComponentIdentifier componentIdentifier;
 	
 	public ValidationWhiteList(
 			final String id,
@@ -54,11 +57,7 @@ public final class ValidationWhiteList implements Serializable {
 			final String reporter,
 			final long createdAt,
 			final ComponentIdentifier componentIdentifier) {
-		this.id = id;
-		this.ruleId = ruleId;
-		this.componentIdentifier = componentIdentifier;
-		this.reporter = reporter;
-		this.createdAt = createdAt;
+		this(id, ruleId, reporter, createdAt, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId());
 	}
 
 	@JsonCreator
@@ -69,7 +68,12 @@ public final class ValidationWhiteList implements Serializable {
 			@JsonProperty("createdAt") final long createdAt,
 			@JsonProperty("terminologyComponentId") final short terminologyComponentId,
 			@JsonProperty("componentId") final String componentId) {
-		this(id, ruleId, reporter, createdAt, ComponentIdentifier.of(terminologyComponentId, componentId));
+		this.id = id;
+		this.ruleId = ruleId;
+		this.reporter = reporter;
+		this.createdAt = createdAt;
+		this.terminologyComponentId = terminologyComponentId;
+		this.componentId = componentId;
 	}
 	
 	public String getId() {
@@ -82,17 +86,20 @@ public final class ValidationWhiteList implements Serializable {
 	
 	@JsonIgnore
 	public ComponentIdentifier getComponentIdentifier() {
+		if (componentIdentifier == null) {
+			componentIdentifier = ComponentIdentifier.of(terminologyComponentId, componentId);
+		}
 		return componentIdentifier;
 	}
 	
 	@JsonProperty
 	String getComponentId() {
-		return componentIdentifier.getComponentId();
+		return componentId;
 	}
 	
 	@JsonProperty
 	short getTerminologyComponentId() {
-		return componentIdentifier.getTerminologyComponentId();
+		return terminologyComponentId;
 	}
 
 	public String getReporter() {
@@ -108,9 +115,9 @@ public final class ValidationWhiteList implements Serializable {
 		return MoreObjects.toStringHelper(getClass())
 			.add("id", id)
 			.add("ruleId", ruleId)
-			.add("componentIdentifier", componentIdentifier)
 			.add("reporter", reporter)
 			.add("createdAt", createdAt)
+			.add("componentIdentifier", getComponentIdentifier())
 			.toString();
 	}
 	

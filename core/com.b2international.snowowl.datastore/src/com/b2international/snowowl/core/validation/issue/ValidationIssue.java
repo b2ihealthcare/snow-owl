@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.validation.issue;
 import java.io.Serializable;
 
 import com.b2international.index.Doc;
+import com.b2international.index.Script;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -28,6 +29,7 @@ import com.google.common.base.MoreObjects;
  * @since 6.0
  */
 @Doc
+@Script(name = ValidationIssue.Scripts.WHITELIST, script="ctx._source.whitelisted = params.whitelisted")
 public final class ValidationIssue implements Serializable {
 
 	public static class Fields {
@@ -36,22 +38,29 @@ public final class ValidationIssue implements Serializable {
 		public static final String BRANCH_PATH = "branchPath";
 		public static final String AFFECTED_COMPONENT_ID = "affectedComponentId";
 		public static final String AFFECTED_COMPONENT_TYPE = "affectedComponentType";
+		public static final String WHITELISTED = "whitelisted";
+	}
+
+	public static class Scripts {
+		public static final String WHITELIST = "whitelist";
 	}
 	
 	private final String id;
 	private final String ruleId;
 	private final String branchPath;
-	private final ComponentIdentifier affectedComponent;
+	private final String affectedComponentId;
+	private final short affectedComponentType;
+	private final boolean whitelisted;
+	
+	private transient ComponentIdentifier affectedComponent;
 
 	public ValidationIssue(
 			final String id,
 			final String ruleId, 
 			final String branchPath, 
-			final ComponentIdentifier affectedComponent) {
-		this.id = id;
-		this.ruleId = ruleId;
-		this.branchPath = branchPath;
-		this.affectedComponent = affectedComponent;
+			final ComponentIdentifier affectedComponent,
+			final boolean whitelisted) {
+		this(id, ruleId, branchPath, affectedComponent.getTerminologyComponentId(), affectedComponent.getComponentId(), whitelisted);
 	}
 	
 	@JsonCreator
@@ -60,8 +69,14 @@ public final class ValidationIssue implements Serializable {
 			@JsonProperty("ruleId") final String ruleId, 
 			@JsonProperty("branchPath") final String branchPath, 
 			@JsonProperty("affectedComponentType") final short affectedComponentType,
-			@JsonProperty("affectedComponentId") final String affectedComponentId) {
-		this(id, ruleId, branchPath, ComponentIdentifier.of(affectedComponentType, affectedComponentId));
+			@JsonProperty("affectedComponentId") final String affectedComponentId,
+			@JsonProperty("whitelisted") final boolean whitelisted) {
+		this.id = id;
+		this.ruleId = ruleId;
+		this.branchPath = branchPath;
+		this.affectedComponentId = affectedComponentId;
+		this.affectedComponentType = affectedComponentType;
+		this.whitelisted = whitelisted;
 	}
 	
 	public String getId() {
@@ -70,16 +85,20 @@ public final class ValidationIssue implements Serializable {
 	
 	@JsonIgnore
 	public ComponentIdentifier getAffectedComponent() {
+		if (affectedComponent == null) {
+			affectedComponent = ComponentIdentifier.of(affectedComponentType, affectedComponentId);
+		}
 		return affectedComponent;
 	}
 	
 	@JsonProperty
 	String getAffectedComponentId() {
-		return affectedComponent.getComponentId();
+		return affectedComponentId;
 	}
 	
+	@JsonProperty
 	short getAffectedComponentType() {
-		return affectedComponent.getTerminologyComponentId();
+		return affectedComponentType;
 	}
 	
 	public String getBranchPath() {
@@ -90,13 +109,17 @@ public final class ValidationIssue implements Serializable {
 		return ruleId;
 	}
 	
+	public boolean isWhitelisted() {
+		return whitelisted;
+	}
+	
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(getClass())
 				.add("id", id)
 				.add("ruleId", ruleId)
 				.add("branchPath", branchPath)
-				.add("affectedComponent", affectedComponent)
+				.add("affectedComponent", getAffectedComponent())
 				.toString();
 	}
 	

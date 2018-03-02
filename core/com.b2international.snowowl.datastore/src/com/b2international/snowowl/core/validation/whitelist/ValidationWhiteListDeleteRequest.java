@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.validation.whitelist;
 
-import java.util.Set;
-
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepositoryContext;
 
@@ -25,15 +23,15 @@ import com.b2international.snowowl.core.internal.validation.ValidationRepository
  */
 final class ValidationWhiteListDeleteRequest implements Request<ValidationRepositoryContext, Boolean> {
 
-	private final Set<String> ids;
+	private final String id;
 
-	ValidationWhiteListDeleteRequest(final Set<String> ids) {
-		this.ids = ids;
+	ValidationWhiteListDeleteRequest(final String id) {
+		this.id = id;
 	}
 	
 	@Override
 	public Boolean execute(ValidationRepositoryContext context) {
-		context.delete(ids);
+		context.delete(ValidationWhiteList.class, id);
 		return Boolean.TRUE;
 	}
 

@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.core.validation.whitelist;
 
-import java.util.Set;
-
-import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepositoryContext;
@@ -30,14 +27,14 @@ public final class ValidationWhiteListDeleteRequestBuilder
 	extends BaseRequestBuilder<ValidationWhiteListDeleteRequestBuilder, ValidationRepositoryContext, Boolean>
 	implements ValidationRepositoryRequestBuilder<Boolean> {
 
-	private final Set<String> ids;
+	private final String id;
 
-	ValidationWhiteListDeleteRequestBuilder(final Iterable<String> ids) {
-		this.ids = Collections3.toImmutableSet(ids);
+	ValidationWhiteListDeleteRequestBuilder(final String id) {
+		this.id = id;
 	}
 	
 	@Override
 	protected Request<ValidationRepositoryContext, Boolean> doBuild() {
-		return new ValidationWhiteListDeleteRequest(ids);
+		return new ValidationWhiteListDeleteRequest(id);
 	}
 }

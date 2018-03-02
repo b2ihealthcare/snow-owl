@@ -70,10 +70,10 @@ public final class ValidationIssueSearchRequestBuilder
 		return addOption(OptionKey.AFFECTED_COMPONENT_TYPE, affectedComponentTypes);
 	}
 	
-	public ValidationIssueSearchRequestBuilder isWhitelisted(boolean isWhitelisted) {
-		return addOption(OptionKey.WHITELISTED, isWhitelisted);
+	public ValidationIssueSearchRequestBuilder isWhitelisted(boolean whitelisted) {
+		return addOption(OptionKey.WHITELISTED, whitelisted);
 	}
- 	
+	
 	@Override
 	protected SearchResourceRequest<ServiceProvider, ValidationIssues> createSearch() {
 		return new ValidationIssueSearchRequest();
