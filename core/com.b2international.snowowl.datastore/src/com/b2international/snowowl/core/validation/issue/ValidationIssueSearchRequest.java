@@ -120,8 +120,8 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 		}
 		
 		if (containsKey(OptionKey.AFFECTED_COMPONENT_ID)) {
-			Collection<String> mustComponentIds = getCollection(OptionKey.AFFECTED_COMPONENT_ID, String.class);
-			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, mustComponentIds));
+			Collection<String> affectedComponentIds = getCollection(OptionKey.AFFECTED_COMPONENT_ID, String.class);
+			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, affectedComponentIds));
 		}
 		
 		if (containsKey(OptionKey.AFFECTED_COMPONENT_TYPE)) {
