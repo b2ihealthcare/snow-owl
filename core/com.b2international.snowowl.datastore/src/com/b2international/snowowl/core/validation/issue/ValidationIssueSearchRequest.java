@@ -125,7 +125,7 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 		}
 		
 		if (containsKey(OptionKey.AFFECTED_COMPONENT_TYPE)) {
-			Collection<Integer> affectedComponentTypes = getCollection(OptionKey.AFFECTED_COMPONENT_TYPE, Short.class).stream().map(Integer::new).collect(Collectors.toSet());
+			Collection<Integer> affectedComponentTypes = getCollection(OptionKey.AFFECTED_COMPONENT_TYPE, Short.class).stream().map(Integer::valueOf).collect(Collectors.toSet());
 			queryBuilder.filter(Expressions.matchAnyInt(ValidationIssue.Fields.AFFECTED_COMPONENT_TYPE, affectedComponentTypes));
 		}
 		

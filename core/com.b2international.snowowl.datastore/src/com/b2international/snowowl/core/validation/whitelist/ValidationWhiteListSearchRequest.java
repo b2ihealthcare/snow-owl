@@ -73,7 +73,7 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 		}
 		
 		if (containsKey(OptionKey.COMPONENT_TYPE)) {
-			Collection<Integer> terminologyComponentIds = getCollection(OptionKey.COMPONENT_TYPE, Short.class).stream().map(Integer::new).collect(Collectors.toSet());
+			Collection<Integer> terminologyComponentIds = getCollection(OptionKey.COMPONENT_TYPE, Short.class).stream().map(Integer::valueOf).collect(Collectors.toSet());
 			queryBuilder.filter(Expressions.matchAnyInt(ValidationWhiteList.Fields.TERMINOLOGY_COMPONENT_ID, terminologyComponentIds));
 		}
 		
