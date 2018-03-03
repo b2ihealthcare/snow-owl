@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
@@ -47,7 +48,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 
 	private static final Joiner TAB_JOINER = Joiner.on('\t');
 	
-	private static final ByteBuffer CR_LF = toByteBuffer("\r\n");
+	private static final String CR_LF = "\r\n";
 
 	private static final int BATCH_SIZE = 1000;
 	
@@ -131,7 +132,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 				// Add a header if the file is empty
 				if (randomAccessFile.length() == 0L) {
 					fileChannel.write(toByteBuffer(TAB_JOINER.join(getHeader())));
-					fileChannel.write(CR_LF);
+					fileChannel.write(toByteBuffer(CR_LF));
 				}
 
 				// We want to append rows, if the file already exists, so jump to the end
@@ -148,9 +149,13 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 					 */
 					final SnomedSearchRequestBuilder<B, R> requestBuilder = createSearchRequestBuilder()
 							.setLimit(BATCH_SIZE)
-							.filterByModules(modules)
-							.setScrollId(scrollId);
-					
+							.filterByModules(modules);
+
+					if (scrollId == null) {
+						requestBuilder.setScroll("15m");
+					} else {
+						requestBuilder.setScrollId(scrollId);
+					}
 					
 					if (effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME) {
 						// If we are in the final "layer", export only components if the effective time is not set
@@ -160,7 +165,8 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 						requestBuilder.filterByEffectiveTime(effectiveTime, Long.MAX_VALUE);
 					}
 
-					final BranchRequest<R> branchRequest = new BranchRequest<R>(branch, requestBuilder.build());
+					final BranchRequest<R> branchRequest = new BranchRequest<R>(branch, 
+							new RevisionIndexReadRequest<>(requestBuilder.build()));
 					results = branchRequest.execute(context);
 
 					results.stream()
@@ -169,7 +175,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 								try {
 									if (!SKIP_ROW.equals(row)) {
 										fileChannel.write(toByteBuffer(TAB_JOINER.join(row)));
-										fileChannel.write(CR_LF);
+										fileChannel.write(toByteBuffer(CR_LF));
 									}
 								} catch (final IOException e) {
 									throw new SnowowlRuntimeException("Failed to write contents for file '" + exportFile.getFileName() + "'.");

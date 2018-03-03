@@ -63,6 +63,7 @@ import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -254,7 +255,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 			
 			// Step 5: export content for each branch
 			final String namespace = getNamespaceFromId();
-			final String latestEffectiveTime = versionsToExport.isEmpty()
+			final String latestEffectiveTime = versionsToExport.isEmpty() || includePreReleaseContent
 					? transientEffectiveTime
 					: EffectiveTimes.format(versionsToExport.last().getEffectiveDate(), DateFormats.SHORT);
 			final Path releaseDirectory = createReleaseDirectory(exportDirectory, latestEffectiveTime);
@@ -262,10 +263,10 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 			for (final Entry<String, Long> pathEntry : pathEffectiveTimeMap.entrySet()) {
 				exportBranch(releaseDirectory, 
 						context, 
-						namespace, 
+						pathEntry.getKey(), 
 						latestEffectiveTime, 
 						pathEntry.getValue(), 
-						pathEntry.getKey());
+						namespace);
 			}
 			
 			// Step 6: compress to archive and upload to the file registry
@@ -311,8 +312,10 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 		final Branch cutoffBranch = getBranch(cutoffPath);
 		final long cutoffBaseTimestamp = getCutoffBaseTimestamp(cutoffBranch, versionParentPath);
 
-		// Remove all code system versions which were created 
-		candidates.removeIf(v -> versionBranchesByName.get(v.getVersionId()).baseTimestamp() > cutoffBaseTimestamp);
+		// Remove all code system versions which were created after the cut-off date, or don't have a corresponding branch 
+		candidates.removeIf(v -> !versionBranchesByName.containsKey(v.getVersionId())
+				|| versionBranchesByName.get(v.getVersionId()).baseTimestamp() > cutoffBaseTimestamp);
+		
 		versionsToExport.addAll(candidates);
 		
 		// Exit early if only an extension code system should be exported, or we are already at the "base" code system
@@ -354,7 +357,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 
 	private Path createExportDirectory(final UUID exportId) {
 		try {
-			return Files.createTempDirectory("export-" + exportId);
+			return Files.createTempDirectory("export-" + exportId + "-");
 		} catch (final IOException e) {
 			throw new SnowowlRuntimeException("Failed to create working directory for export.", e);
 		}
@@ -377,7 +380,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 	}
 
 	private String getNamespaceFromId() {
-		if (namespaceId == null) {
+		if (Strings.isNullOrEmpty(namespaceId)) {
 			return null;
 		}
 		
@@ -489,20 +492,22 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 
 	private Set<String> getLanguageCodes(final RepositoryContext context, final String branch) {
 		final Set<String> languageCodes = newHashSet();
-		
+
 		// TODO: there should be an easier way than trying all possible language codes...
 		for (final String code : Locale.getISOLanguages()) {
 			final Request<BranchContext, SnomedDescriptions> languageCodeRequest = SnomedRequests.prepareSearchDescription()
-				.setLimit(0)
-				.filterByLanguageCodes(ImmutableSet.of(code))
-				.build();
+					.setLimit(0)
+					.filterByLanguageCodes(ImmutableSet.of(code))
+					.build();
 
-			final SnomedDescriptions descriptions = new BranchRequest<>(branch, languageCodeRequest).execute(context);
+			final SnomedDescriptions descriptions = new BranchRequest<>(branch, new RevisionIndexReadRequest<>(languageCodeRequest))
+					.execute(context);
+
 			if (descriptions.getTotal() > 0) {
 				languageCodes.add(code);
 			}
 		}
-		
+
 		return languageCodes;
 	}
 
@@ -575,8 +580,8 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 	}
 	
 	private static Branches getBranches(final String parent, final Collection<String> paths) {
-		return RepositoryRequests.branching()
-				.prepareSearch()
+		return RepositoryRequests.branching().prepareSearch()
+				.all()
 				.filterByParent(parent)
 				.filterByName(paths)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
