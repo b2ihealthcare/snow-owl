@@ -47,7 +47,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.file.FileRegistry;
@@ -239,13 +238,13 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			.setReleaseType(export.getType())
 			.setCodeSystem(export.getCodeSystemShortName())
 			.setExtensionOnly(export.isExtensionOnly())
-			.setIncludeUnpublished(export.isIncludeUnpublished())
+			.setIncludePreReleaseContent(export.isIncludeUnpublished())
 			.setModules(export.getModuleIds())
-			.setNamespace(export.getNamespaceId())
+			.setNamespaceId(export.getNamespaceId())
 			.setTransientEffectiveTime(export.getTransientEffectiveTime())
-			.setStartEffectiveTime(EffectiveTimes.format(export.getStartEffectiveTime(), DateFormats.SHORT))
-			.setEndEffectiveTime(EffectiveTimes.format(export.getEndEffectiveTime(), DateFormats.SHORT))
-			.build(this.repositoryId, export.getBranchPath())
+			.setStartEffectiveTime(export.getStartEffectiveTime())
+			.setEndEffectiveTime(export.getEndEffectiveTime())
+			.build(this.repositoryId)
 			.execute(bus)
 			.getSync();
 		
