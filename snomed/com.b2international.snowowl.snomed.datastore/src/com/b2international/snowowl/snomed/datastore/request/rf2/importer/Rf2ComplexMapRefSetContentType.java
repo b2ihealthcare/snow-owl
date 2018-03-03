@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.request.rf2;
+package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.COMPLEX_MAP_TYPE_HEADER;
 import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_CORRELATION_ID;

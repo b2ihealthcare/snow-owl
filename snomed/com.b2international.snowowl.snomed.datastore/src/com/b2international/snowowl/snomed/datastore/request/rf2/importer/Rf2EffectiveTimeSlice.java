@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.request.rf2;
+package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
@@ -64,7 +64,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 6.0
  */
-final class Rf2EffectiveTimeSlice {
+public final class Rf2EffectiveTimeSlice {
 
 	private static final int BATCH_SIZE = 5000;
 
