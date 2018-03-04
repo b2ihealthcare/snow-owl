@@ -70,6 +70,11 @@ public final class Rf2LanguageRefSetExporter extends Rf2RefSetExporter {
 	}
 
 	@Override
+	protected String getLanguageElement() {
+		return "-" + languageCode;
+	}
+
+	@Override
 	protected Stream<List<String>> getMappedStream(final SnomedReferenceSetMembers results, 
 			final RepositoryContext context,
 			final String branch) {
