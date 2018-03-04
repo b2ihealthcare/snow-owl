@@ -13,28 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.validation.whitelist;
+package com.b2international.snowowl.core.internal.validation;
 
-import java.util.Set;
-
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.internal.validation.ValidationRepositoryContext;
+import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.events.RequestBuilder;
 
 /**
- * @since 6.1
+ *  @since 6.3
  */
-final class ValidationWhiteListDeleteRequest implements Request<ValidationRepositoryContext, Boolean> {
+public interface ValidationRepositoryRequestBuilder<R> extends RequestBuilder<ValidationRepositoryContext, R>{
 
-	private final Set<String> ids;
-
-	ValidationWhiteListDeleteRequest(final Set<String> ids) {
-		this.ids = ids;
+	default AsyncRequest<R> buildAsync() {
+		return new AsyncRequest<>(
+			new ValidationRepositoryRequest<>(build())
+		);
 	}
 	
-	@Override
-	public Boolean execute(ValidationRepositoryContext context) {
-		context.delete(ids);
-		return Boolean.TRUE;
-	}
-
 }
