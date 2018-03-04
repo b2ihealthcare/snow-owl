@@ -35,8 +35,7 @@ public abstract class Rf2CoreComponentExporter<B extends SnomedComponentSearchRe
 			final String nrcCountryCode,
 			final String namespace, 
 			final String latestEffectiveTime, 
-			final String transientEffectiveTime, 
-			final boolean includePreReleaseContent,
+			final boolean includePreReleaseContent, 
 			final Collection<String> modules) {
 
 		super(releaseType, 
@@ -44,7 +43,6 @@ public abstract class Rf2CoreComponentExporter<B extends SnomedComponentSearchRe
 				nrcCountryCode, 
 				namespace, 
 				latestEffectiveTime, 
-				transientEffectiveTime, 
 				includePreReleaseContent, 
 				modules);
 	}

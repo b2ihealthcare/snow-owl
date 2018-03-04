@@ -17,8 +17,9 @@ package com.b2international.snowowl.snomed.datastore.request.rf2.exporter;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
+import java.util.stream.Stream;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -43,8 +44,7 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 			final String nrcCountryCode,
 			final String namespace, 
 			final String latestEffectiveTime, 
-			final String transientEffectiveTime, 
-			final boolean includePreReleaseContent,
+			final boolean includePreReleaseContent, 
 			final Collection<String> modules,
 			final String characteristicTypeExpression) {
 
@@ -53,7 +53,6 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 				nrcCountryCode, 
 				namespace, 
 				latestEffectiveTime, 
-				transientEffectiveTime, 
 				includePreReleaseContent, 
 				modules);
 
@@ -81,16 +80,20 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 	}
 
 	@Override
-	protected Function<SnomedRelationship, List<String>> getMapFunction() {
-		return relationship -> ImmutableList.of(relationship.getId(),	// id
-				getEffectiveTime(relationship),							// effectiveTime 
-				getActive(relationship),								// active
-				relationship.getModuleId(),								// moduleId
-				relationship.getSourceId(),								// sourceId
-				relationship.getDestinationId(),						// destinationId
-				relationship.getGroup().toString(),						// group
-				relationship.getTypeId(),								// typeId
-				relationship.getCharacteristicType().getConceptId(),	// characteristicTypeId
-				relationship.getModifier().getConceptId());				// modifierId
+	protected Stream<List<String>> getMappedStream(final SnomedRelationships results, 
+			final RepositoryContext context, 
+			final String branch) {
+		
+		return results.stream()
+				.map(relationship -> ImmutableList.of(relationship.getId(),	// id
+						getEffectiveTime(relationship),							// effectiveTime 
+						getActive(relationship),								// active
+						relationship.getModuleId(),								// moduleId
+						relationship.getSourceId(),								// sourceId
+						relationship.getDestinationId(),						// destinationId
+						relationship.getGroup().toString(),						// group
+						relationship.getTypeId(),								// typeId
+						relationship.getCharacteristicType().getConceptId(),	// characteristicTypeId
+						relationship.getModifier().getConceptId()));				// modifierId
 	}
 }

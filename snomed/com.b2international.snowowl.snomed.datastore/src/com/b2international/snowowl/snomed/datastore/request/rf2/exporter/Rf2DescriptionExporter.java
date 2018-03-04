@@ -17,8 +17,9 @@ package com.b2international.snowowl.snomed.datastore.request.rf2.exporter;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
+import java.util.stream.Stream;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -44,8 +45,7 @@ public final class Rf2DescriptionExporter extends Rf2CoreComponentExporter<Snome
 			final String nrcCountryCode,
 			final String namespace, 
 			final String latestEffectiveTime, 
-			final String transientEffectiveTime, 
-			final boolean includePreReleaseContent,
+			final boolean includePreReleaseContent, 
 			final Collection<String> modules,
 			final String typeExpression,
 			final String languageCode) {
@@ -55,7 +55,6 @@ public final class Rf2DescriptionExporter extends Rf2CoreComponentExporter<Snome
 				nrcCountryCode, 
 				namespace, 
 				latestEffectiveTime, 
-				transientEffectiveTime, 
 				includePreReleaseContent, 
 				modules);
 
@@ -90,15 +89,19 @@ public final class Rf2DescriptionExporter extends Rf2CoreComponentExporter<Snome
 	}
 
 	@Override
-	protected Function<SnomedDescription, List<String>> getMapFunction() {
-		return description -> ImmutableList.of(description.getId(),	// id
-				getEffectiveTime(description),						// effectiveTime 
-				getActive(description),								// active
-				description.getModuleId(),							// moduleId
-				description.getConceptId(),							// conceptId
-				description.getLanguageCode(),						// languageCode
-				description.getTypeId(),							// typeId
-				description.getTerm(),								// term
-				description.getCaseSignificance().getConceptId());	// caseSignificanceId
+	protected Stream<List<String>> getMappedStream(final SnomedDescriptions results, 
+			final RepositoryContext context, 
+			final String branch) {
+		
+		return results.stream()
+				.map(description -> ImmutableList.of(description.getId(),	// id
+						getEffectiveTime(description),						// effectiveTime 
+						getActive(description),								// active
+						description.getModuleId(),							// moduleId
+						description.getConceptId(),							// conceptId
+						description.getLanguageCode(),						// languageCode
+						description.getTypeId(),							// typeId
+						description.getTerm(),								// term
+						description.getCaseSignificance().getConceptId()));	// caseSignificanceId
 	}
 }

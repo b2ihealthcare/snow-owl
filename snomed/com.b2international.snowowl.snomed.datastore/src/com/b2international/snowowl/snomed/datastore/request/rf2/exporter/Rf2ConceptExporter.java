@@ -17,8 +17,9 @@ package com.b2international.snowowl.snomed.datastore.request.rf2.exporter;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
+import java.util.stream.Stream;
 
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
@@ -40,8 +41,7 @@ public final class Rf2ConceptExporter extends Rf2CoreComponentExporter<SnomedCon
 			final String nrcCountryCode,
 			final String namespace, 
 			final String latestEffectiveTime, 
-			final String transientEffectiveTime, 
-			final boolean includePreReleaseContent,
+			final boolean includePreReleaseContent, 
 			final Collection<String> modules) {
 
 		super(releaseType, 
@@ -49,7 +49,6 @@ public final class Rf2ConceptExporter extends Rf2CoreComponentExporter<SnomedCon
 				nrcCountryCode, 
 				namespace, 
 				latestEffectiveTime, 
-				transientEffectiveTime, 
 				includePreReleaseContent, 
 				modules);
 	}
@@ -72,11 +71,15 @@ public final class Rf2ConceptExporter extends Rf2CoreComponentExporter<SnomedCon
 	}
 
 	@Override
-	protected Function<SnomedConcept, List<String>> getMapFunction() {
-		return concept -> ImmutableList.of(concept.getId(),		// id
-				getEffectiveTime(concept),						// effectiveTime 
-				getActive(concept),								// active
-				concept.getModuleId(),							// moduleId
-				concept.getDefinitionStatus().getConceptId());	// definitionStatus
+	protected Stream<List<String>> getMappedStream(final SnomedConcepts results, 
+			final RepositoryContext context, 
+			final String branch) {
+		
+		return results.stream()
+				.map(concept -> ImmutableList.of(concept.getId(),		// id
+						getEffectiveTime(concept),						// effectiveTime 
+						getActive(concept),								// active
+						concept.getModuleId(),							// moduleId
+						concept.getDefinitionStatus().getConceptId()));	// definitionStatus
 	}
 }

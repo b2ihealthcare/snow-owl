@@ -23,7 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
+import java.util.stream.Stream;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -39,7 +39,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequestB
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @since 6.3
@@ -52,16 +51,12 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 
 	private static final int BATCH_SIZE = 1000;
 	
-	/** Special value that can be returned from the mapping function to indicate that the row should not be exported. */
-	protected static final List<String> SKIP_ROW = ImmutableList.of();
-
 	// Parameters used for file name calculations
 	protected final Rf2ReleaseType releaseType;
 	protected final Rf2MaintainerType maintainerType;
 	protected final String nrcCountryCode;
 	protected final String namespace;
 	protected final String latestEffectiveTime;
-	protected final String transientEffectiveTime;
 	protected final boolean includePreReleaseContent;
 
 	private final Collection<String> modules;
@@ -71,8 +66,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 			final String nrcCountryCode,
 			final String namespace, 
 			final String latestEffectiveTime, 
-			final String transientEffectiveTime, 
-			final boolean includePreReleaseContent,
+			final boolean includePreReleaseContent, 
 			final Collection<String> modules) {
 
 		this.releaseType = releaseType;
@@ -80,7 +74,6 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 		this.nrcCountryCode = nrcCountryCode;
 		this.namespace = namespace;
 		this.latestEffectiveTime = latestEffectiveTime;
-		this.transientEffectiveTime = transientEffectiveTime;
 		this.includePreReleaseContent = includePreReleaseContent;
 		this.modules = modules;
 	}
@@ -93,7 +86,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 
 	protected abstract SnomedSearchRequestBuilder<B, R> createSearchRequestBuilder();
 
-	protected abstract Function<C, List<String>> getMapFunction();
+	protected abstract Stream<List<String>> getMappedStream(R results, RepositoryContext context, String branch);
 
 	protected final String getCountryNamespace() {
 		switch (maintainerType) {
@@ -110,7 +103,8 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 
 	protected final String getEffectiveTime(final SnomedComponent component) {
 		if (component.getEffectiveTime() == null) {
-			return transientEffectiveTime;
+			// FIXME: Should we add a test for unexpected encounters of unversioned content here?
+			return latestEffectiveTime;
 		} else {
 			return EffectiveTimes.format(component.getEffectiveTime(), DateFormats.SHORT); 
 		}
@@ -165,22 +159,18 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 						requestBuilder.filterByEffectiveTime(effectiveTime, Long.MAX_VALUE);
 					}
 
-					final BranchRequest<R> branchRequest = new BranchRequest<R>(branch, 
-							new RevisionIndexReadRequest<>(requestBuilder.build()));
+					final RevisionIndexReadRequest<R> indexReadRequest = new RevisionIndexReadRequest<>(requestBuilder.build());
+					final BranchRequest<R> branchRequest = new BranchRequest<R>(branch, indexReadRequest);
 					results = branchRequest.execute(context);
 
-					results.stream()
-							.map(getMapFunction())
-							.forEachOrdered(row -> {
-								try {
-									if (!SKIP_ROW.equals(row)) {
-										fileChannel.write(toByteBuffer(TAB_JOINER.join(row)));
-										fileChannel.write(toByteBuffer(CR_LF));
-									}
-								} catch (final IOException e) {
-									throw new SnowowlRuntimeException("Failed to write contents for file '" + exportFile.getFileName() + "'.");
-								}
-							});
+					getMappedStream(results, context, branch).forEachOrdered(row -> {
+						try {
+							fileChannel.write(toByteBuffer(TAB_JOINER.join(row)));
+							fileChannel.write(toByteBuffer(CR_LF));
+						} catch (final IOException e) {
+							throw new SnowowlRuntimeException("Failed to write contents for file '" + exportFile.getFileName() + "'.");
+						}
+					});
 
 					scrollId = results.getScrollId();
 				}
