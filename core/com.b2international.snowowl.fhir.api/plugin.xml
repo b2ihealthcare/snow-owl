@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+ 	<extension-point id="provider" name="FHIR API" schema="schema/fhir.exsd"/>
+  <extension
+        point="com.b2international.snowowl.fhir.api.provider">
+     <fhirApiProvider
+           class="com.b2international.snowowl.fhir.api.service.SnomedFhirProvider">
+     </fhirApiProvider>
+  </extension>
+  <extension
+        point="com.b2international.snowowl.fhir.api.provider">
+     <fhirApiProvider
+           class="com.b2international.snowowl.fhir.api.service.AtcFhirProvider">
+     </fhirApiProvider>
+  </extension>
+</plugin>
