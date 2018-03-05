@@ -47,7 +47,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 	
 	private static final String CR_LF = "\r\n";
 
-	private static final int BATCH_SIZE = 1000;
+	private static final int BATCH_SIZE = 10000;
 	
 	// Parameters used for file name calculations
 	protected final Rf2ReleaseType releaseType;
