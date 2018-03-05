@@ -53,22 +53,25 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 	protected final Rf2ReleaseType releaseType;
 	protected final String countryNamespaceElement;
 	protected final String namespaceFilter;
-	protected final String latestEffectiveTime;
+	protected final String archiveEffectiveTime;
 	protected final boolean includePreReleaseContent;
 
+	private final String transientEffectiveTime;
 	private final Collection<String> modules;
 
 	public Rf2Exporter(final Rf2ReleaseType releaseType, 
-			final String coutryNamespaceElement,
+			final String countryNamespaceElement,
 			final String namespaceFilter, 
-			final String latestEffectiveTime, 
+			final String transientEffectiveTime, 
+			final String archiveEffectiveTime, 
 			final boolean includePreReleaseContent, 
 			final Collection<String> modules) {
 
 		this.releaseType = releaseType;
-		this.countryNamespaceElement = coutryNamespaceElement;
+		this.countryNamespaceElement = countryNamespaceElement;
 		this.namespaceFilter = namespaceFilter;
-		this.latestEffectiveTime = latestEffectiveTime;
+		this.transientEffectiveTime = transientEffectiveTime;
+		this.archiveEffectiveTime = archiveEffectiveTime;
 		this.includePreReleaseContent = includePreReleaseContent;
 		this.modules = modules;
 	}
@@ -86,7 +89,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 	protected final String getEffectiveTime(final SnomedComponent component) {
 		if (component.getEffectiveTime() == null) {
 			// FIXME: Should we add a test for unexpected encounters of unversioned content here?
-			return latestEffectiveTime;
+			return transientEffectiveTime;
 		} else {
 			return EffectiveTimes.format(component.getEffectiveTime(), DateFormats.SHORT); 
 		}
@@ -125,7 +128,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 					 */
 					final SnomedSearchRequestBuilder<B, R> requestBuilder = createSearchRequestBuilder()
 							.setLimit(BATCH_SIZE)
-							.filterByModules(modules);
+							.filterByModules(modules); // null value will be ignored
 
 					if (scrollId == null) {
 						requestBuilder.setScroll("15m");
@@ -133,7 +136,9 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 						requestBuilder.setScrollId(scrollId);
 					}
 					
-					if (effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME) {
+					if (effectiveTime == Long.MIN_VALUE) {
+						// For snapshot exports, no effective time-based filtering is needed
+					} else if (effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME) {
 						// If we are in the final "layer", export only components if the effective time is not set
 						requestBuilder.filterByEffectiveTime(effectiveTime);
 					} else {

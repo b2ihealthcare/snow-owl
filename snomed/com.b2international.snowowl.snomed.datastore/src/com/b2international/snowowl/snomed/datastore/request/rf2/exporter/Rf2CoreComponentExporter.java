@@ -32,14 +32,16 @@ public abstract class Rf2CoreComponentExporter<B extends SnomedComponentSearchRe
 	public Rf2CoreComponentExporter(final Rf2ReleaseType releaseType, 
 			final String countryNamespaceElement,
 			final String namespaceFilter, 
-			final String latestEffectiveTime, 
+			final String transientEffectiveTime, 
+			final String archiveEffectiveTime, 
 			final boolean includePreReleaseContent, 
 			final Collection<String> modules) {
 
 		super(releaseType, 
 				countryNamespaceElement, 
 				namespaceFilter, 
-				latestEffectiveTime, 
+				transientEffectiveTime, 
+				archiveEffectiveTime, 
 				includePreReleaseContent, 
 				modules);
 	}
@@ -51,13 +53,12 @@ public abstract class Rf2CoreComponentExporter<B extends SnomedComponentSearchRe
 
 	@Override
 	protected final Path getFileName() {
-		return Paths.get(String.format("%ssct2_%s_%s%s_%s_%s.txt",
-				includePreReleaseContent ? "x" : "",
+		return Paths.get(String.format("sct2_%s_%s%s_%s_%s.txt",
 				getCoreComponentType(),
 				releaseType.toString(),
 				getLanguageElement(),
 				countryNamespaceElement,
-				latestEffectiveTime));
+				archiveEffectiveTime));
 	}
 
 	protected String getLanguageElement() {

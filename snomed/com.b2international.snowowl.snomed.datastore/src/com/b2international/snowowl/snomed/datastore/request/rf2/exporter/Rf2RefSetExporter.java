@@ -58,7 +58,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 	public Rf2RefSetExporter(final Rf2ReleaseType releaseType, 
 			final String countryNamespaceElement,
 			final String namespaceFilter, 
-			final String latestEffectiveTime, 
+			final String transientEffectiveTime, 
+			final String archiveEffectiveTime, 
 			final boolean includePreReleaseContent, 
 			final Collection<String> modules, 
 			final Rf2RefSetExportLayout refSetExportLayout, 
@@ -68,7 +69,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 		super(releaseType, 
 				countryNamespaceElement, 
 				namespaceFilter, 
-				latestEffectiveTime, 
+				transientEffectiveTime, 
+				archiveEffectiveTime, 
 				includePreReleaseContent, 
 				modules);
 
@@ -102,14 +104,13 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 
 	@Override
 	protected final Path getFileName() {
-		return Paths.get(String.format("%sder2_%sRefset_%s%s%s_%s_%s.txt",
-				includePreReleaseContent ? "x" : "",
+		return Paths.get(String.format("der2_%sRefset_%s%s%s_%s_%s.txt",
 				getColumnTypePrefix(),
 				getRefSetName(),
 				releaseType.toString(),
 				getLanguageElement(),
 				countryNamespaceElement,
-				latestEffectiveTime));
+				archiveEffectiveTime));
 	}
 
 	private String getColumnTypePrefix() {

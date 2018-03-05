@@ -41,7 +41,8 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 	public Rf2RelationshipExporter(final Rf2ReleaseType releaseType, 
 			final String countryNamespaceElement,
 			final String namespaceFilter, 
-			final String latestEffectiveTime, 
+			final String transientEffectiveTime, 
+			final String archiveEffectiveTime, 
 			final boolean includePreReleaseContent, 
 			final Collection<String> modules,
 			final String characteristicTypeExpression) {
@@ -49,7 +50,8 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 		super(releaseType, 
 				countryNamespaceElement, 
 				namespaceFilter, 
-				latestEffectiveTime, 
+				transientEffectiveTime, 
+				archiveEffectiveTime, 
 				includePreReleaseContent, 
 				modules);
 

@@ -38,14 +38,16 @@ public final class Rf2ConceptExporter extends Rf2CoreComponentExporter<SnomedCon
 	public Rf2ConceptExporter(final Rf2ReleaseType releaseType, 
 			final String countryNamespaceElement,
 			final String namespaceFilter, 
-			final String latestEffectiveTime, 
+			final String transientEffectiveTime, 
+			final String archiveEffectiveTime, 
 			final boolean includePreReleaseContent, 
 			final Collection<String> modules) {
 
 		super(releaseType, 
 				countryNamespaceElement, 
 				namespaceFilter, 
-				latestEffectiveTime, 
+				transientEffectiveTime,
+				archiveEffectiveTime, 
 				includePreReleaseContent, 
 				modules);
 	}
