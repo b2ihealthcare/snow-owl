@@ -652,6 +652,10 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 			final Set<String> languageCodes, 
 			final Collection<SnomedConcept> languageRefSets) throws IOException {
 
+		if (languageRefSets.isEmpty()) {
+			return;
+		}
+		
 		for (final String languageCode : languageCodes) {
 
 			final Rf2LanguageRefSetExporter languageExporter = new Rf2LanguageRefSetExporter(releaseType, 
