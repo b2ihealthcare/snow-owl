@@ -24,7 +24,6 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
-import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 
@@ -39,10 +38,9 @@ public final class SnomedRf2ExportRequestBuilder
 	private String codeSystem;
 	private String referenceBranch;
 	private Rf2ReleaseType releaseType;
-	private Rf2MaintainerType maintainerType;
 	private Rf2RefSetExportLayout refSetExportLayout;
-	private String nrcCountryCode;
-	private String namespaceId;
+	private String countryNamespaceElement;
+	private String namespaceFilter;
 	private Date startEffectiveTime;
 	private Date endEffectiveTime;
 	private boolean includePreReleaseContent;
@@ -73,26 +71,19 @@ public final class SnomedRf2ExportRequestBuilder
 		this.releaseType = releaseType;
 		return getSelf();
 	}
-
-	public SnomedRf2ExportRequestBuilder setMaintainerType(Rf2MaintainerType maintainerType) {
-		this.maintainerType = maintainerType;
-		return getSelf();
-	}
 	
 	public SnomedRf2ExportRequestBuilder setRefSetExportLayout(Rf2RefSetExportLayout refSetExportLayout) {
 		this.refSetExportLayout = refSetExportLayout;
 		return getSelf();
 	}
-	
-	
 
-	public SnomedRf2ExportRequestBuilder setNrcCountryCode(String nrcCountryCode) {
-		this.nrcCountryCode = nrcCountryCode;
+	public SnomedRf2ExportRequestBuilder setCountryNamespaceElement(String countryNamespaceElement) {
+		this.countryNamespaceElement = countryNamespaceElement;
 		return getSelf();
 	}
 
-	public SnomedRf2ExportRequestBuilder setNamespaceId(String namespace) {
-		this.namespaceId = namespace;
+	public SnomedRf2ExportRequestBuilder setNamespaceFilter(String namespaceFilter) {
+		this.namespaceFilter = namespaceFilter;
 		return getSelf();
 	}
 
@@ -143,10 +134,9 @@ public final class SnomedRf2ExportRequestBuilder
 		req.setCodeSystem(codeSystem);
 		req.setReferenceBranch(referenceBranch);
 		req.setReleaseType(releaseType);
-		req.setMaintainerType(maintainerType);
 		req.setRefSetExportLayout(refSetExportLayout);
-		req.setNrcCountryCode(nrcCountryCode);
-		req.setNamespaceId(namespaceId);
+		req.setCountryNamespaceElement(countryNamespaceElement);
+		req.setNamespaceFilter(namespaceFilter);
 		req.setStartEffectiveTime(startEffectiveTime);
 		req.setEndEffectiveTime(endEffectiveTime);
 		req.setIncludePreReleaseContent(includePreReleaseContent);

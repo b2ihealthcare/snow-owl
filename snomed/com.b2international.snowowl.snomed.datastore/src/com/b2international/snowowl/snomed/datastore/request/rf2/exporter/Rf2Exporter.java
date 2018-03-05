@@ -32,13 +32,11 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
-import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequestBuilder;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 
 /**
  * @since 6.3
@@ -53,26 +51,23 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 	
 	// Parameters used for file name calculations
 	protected final Rf2ReleaseType releaseType;
-	protected final Rf2MaintainerType maintainerType;
-	protected final String nrcCountryCode;
-	protected final String namespace;
+	protected final String countryNamespaceElement;
+	protected final String namespaceFilter;
 	protected final String latestEffectiveTime;
 	protected final boolean includePreReleaseContent;
 
 	private final Collection<String> modules;
 
 	public Rf2Exporter(final Rf2ReleaseType releaseType, 
-			final Rf2MaintainerType maintainerType, 
-			final String nrcCountryCode,
-			final String namespace, 
+			final String coutryNamespaceElement,
+			final String namespaceFilter, 
 			final String latestEffectiveTime, 
 			final boolean includePreReleaseContent, 
 			final Collection<String> modules) {
 
 		this.releaseType = releaseType;
-		this.maintainerType = maintainerType;
-		this.nrcCountryCode = nrcCountryCode;
-		this.namespace = namespace;
+		this.countryNamespaceElement = coutryNamespaceElement;
+		this.namespaceFilter = namespaceFilter;
 		this.latestEffectiveTime = latestEffectiveTime;
 		this.includePreReleaseContent = includePreReleaseContent;
 		this.modules = modules;
@@ -87,19 +82,6 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 	protected abstract SnomedSearchRequestBuilder<B, R> createSearchRequestBuilder();
 
 	protected abstract Stream<List<String>> getMappedStream(R results, RepositoryContext context, String branch);
-
-	protected final String getCountryNamespace() {
-		switch (maintainerType) {
-			case NRC:
-				return nrcCountryCode + Strings.nullToEmpty(namespace);
-			case OTHER_EXTENSION_PROVIDER:
-				return Strings.nullToEmpty(namespace);
-			case SNOMED_INTERNATIONAL:
-				return "INT" + Strings.nullToEmpty(namespace);
-			default:
-				throw new IllegalStateException("Unexpected RF2 maintainer type '" + maintainerType + "'.");
-		}
-	}
 
 	protected final String getEffectiveTime(final SnomedComponent component) {
 		if (component.getEffectiveTime() == null) {

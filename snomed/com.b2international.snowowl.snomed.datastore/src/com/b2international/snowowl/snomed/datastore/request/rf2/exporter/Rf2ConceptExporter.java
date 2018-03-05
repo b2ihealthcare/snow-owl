@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -37,17 +36,15 @@ import com.google.common.collect.ImmutableList;
 public final class Rf2ConceptExporter extends Rf2CoreComponentExporter<SnomedConceptSearchRequestBuilder, SnomedConcepts, SnomedConcept> {
 
 	public Rf2ConceptExporter(final Rf2ReleaseType releaseType, 
-			final Rf2MaintainerType maintainerType, 
-			final String nrcCountryCode,
-			final String namespace, 
+			final String countryNamespaceElement,
+			final String namespaceFilter, 
 			final String latestEffectiveTime, 
 			final boolean includePreReleaseContent, 
 			final Collection<String> modules) {
 
 		super(releaseType, 
-				maintainerType, 
-				nrcCountryCode, 
-				namespace, 
+				countryNamespaceElement, 
+				namespaceFilter, 
 				latestEffectiveTime, 
 				includePreReleaseContent, 
 				modules);

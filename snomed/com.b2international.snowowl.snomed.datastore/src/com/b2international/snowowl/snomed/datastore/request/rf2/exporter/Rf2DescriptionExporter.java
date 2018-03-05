@@ -23,7 +23,6 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -41,9 +40,8 @@ public final class Rf2DescriptionExporter extends Rf2CoreComponentExporter<Snome
 	private final String languageCode;
 
 	public Rf2DescriptionExporter(final Rf2ReleaseType releaseType, 
-			final Rf2MaintainerType maintainerType, 
-			final String nrcCountryCode,
-			final String namespace, 
+			final String countryNamespaceElement,
+			final String namespaceFilter, 
 			final String latestEffectiveTime, 
 			final boolean includePreReleaseContent, 
 			final Collection<String> modules,
@@ -51,9 +49,8 @@ public final class Rf2DescriptionExporter extends Rf2CoreComponentExporter<Snome
 			final String languageCode) {
 
 		super(releaseType, 
-				maintainerType, 
-				nrcCountryCode, 
-				namespace, 
+				countryNamespaceElement, 
+				namespaceFilter, 
 				latestEffectiveTime, 
 				includePreReleaseContent, 
 				modules);

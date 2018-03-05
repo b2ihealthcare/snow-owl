@@ -30,7 +30,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -57,9 +56,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 	protected final Collection<SnomedConcept> referenceSets;
 
 	public Rf2RefSetExporter(final Rf2ReleaseType releaseType, 
-			final Rf2MaintainerType maintainerType, 
-			final String nrcCountryCode,
-			final String namespace, 
+			final String countryNamespaceElement,
+			final String namespaceFilter, 
 			final String latestEffectiveTime, 
 			final boolean includePreReleaseContent, 
 			final Collection<String> modules, 
@@ -68,9 +66,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			final Collection<SnomedConcept> referenceSets) {
 
 		super(releaseType, 
-				maintainerType, 
-				nrcCountryCode, 
-				namespace, 
+				countryNamespaceElement, 
+				namespaceFilter, 
 				latestEffectiveTime, 
 				includePreReleaseContent, 
 				modules);
@@ -111,7 +108,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				getRefSetName(),
 				releaseType.toString(),
 				getLanguageElement(),
-				getCountryNamespace(),
+				countryNamespaceElement,
 				latestEffectiveTime));
 	}
 
@@ -259,7 +256,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			extraColumns.remove(0);
 		}
 		
-		// XXX: Some members use a different property name, translate them at this point
+		// XXX: Some members use a different property name; translate them at this point
 		for (int j = 0; j < extraColumns.size(); j++) {
 			switch (extraColumns.get(j)) {
 				case SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID:

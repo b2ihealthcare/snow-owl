@@ -26,7 +26,6 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
-import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -45,9 +44,8 @@ public final class Rf2LanguageRefSetExporter extends Rf2RefSetExporter {
 	private final String languageCode;
 
 	public Rf2LanguageRefSetExporter(final Rf2ReleaseType releaseType, 
-			final Rf2MaintainerType maintainerType,
-			final String nrcCountryCode, 
-			final String namespace, 
+			final String countrNamespaceElement, 
+			final String namespaceFilter, 
 			final String latestEffectiveTime, 
 			final boolean includePreReleaseContent,
 			final Collection<String> modules,
@@ -56,9 +54,8 @@ public final class Rf2LanguageRefSetExporter extends Rf2RefSetExporter {
 			final String languageCode) {
 
 		super(releaseType, 
-				maintainerType, 
-				nrcCountryCode, 
-				namespace, 
+				countrNamespaceElement, 
+				namespaceFilter, 
 				latestEffectiveTime, 
 				includePreReleaseContent, 
 				modules,

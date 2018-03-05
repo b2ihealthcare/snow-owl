@@ -23,7 +23,6 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
@@ -40,18 +39,16 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 	private final String characteristicTypeExpression;
 
 	public Rf2RelationshipExporter(final Rf2ReleaseType releaseType, 
-			final Rf2MaintainerType maintainerType, 
-			final String nrcCountryCode,
-			final String namespace, 
+			final String countryNamespaceElement,
+			final String namespaceFilter, 
 			final String latestEffectiveTime, 
 			final boolean includePreReleaseContent, 
 			final Collection<String> modules,
 			final String characteristicTypeExpression) {
 
 		super(releaseType, 
-				maintainerType, 
-				nrcCountryCode, 
-				namespace, 
+				countryNamespaceElement, 
+				namespaceFilter, 
 				latestEffectiveTime, 
 				includePreReleaseContent, 
 				modules);

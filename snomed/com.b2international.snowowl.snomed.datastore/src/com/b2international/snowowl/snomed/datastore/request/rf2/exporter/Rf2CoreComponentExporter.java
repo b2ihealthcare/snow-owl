@@ -20,7 +20,6 @@ import java.nio.file.Paths;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.datastore.request.SnomedComponentSearchRequestBuilder;
@@ -31,17 +30,15 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedComponentSearc
 public abstract class Rf2CoreComponentExporter<B extends SnomedComponentSearchRequestBuilder<B, R>, R extends PageableCollectionResource<C>, C extends SnomedCoreComponent> extends Rf2Exporter<B, R, C> {
 
 	public Rf2CoreComponentExporter(final Rf2ReleaseType releaseType, 
-			final Rf2MaintainerType maintainerType, 
-			final String nrcCountryCode,
-			final String namespace, 
+			final String countryNamespaceElement,
+			final String namespaceFilter, 
 			final String latestEffectiveTime, 
 			final boolean includePreReleaseContent, 
 			final Collection<String> modules) {
 
 		super(releaseType, 
-				maintainerType, 
-				nrcCountryCode, 
-				namespace, 
+				countryNamespaceElement, 
+				namespaceFilter, 
 				latestEffectiveTime, 
 				includePreReleaseContent, 
 				modules);
@@ -59,7 +56,7 @@ public abstract class Rf2CoreComponentExporter<B extends SnomedComponentSearchRe
 				getCoreComponentType(),
 				releaseType.toString(),
 				getLanguageElement(),
-				getCountryNamespace(),
+				countryNamespaceElement,
 				latestEffectiveTime));
 	}
 
@@ -72,8 +69,8 @@ public abstract class Rf2CoreComponentExporter<B extends SnomedComponentSearchRe
 	@Override
 	protected final B createSearchRequestBuilder() {
 		final B requestBuilder = createComponentSearchRequestBuilder();
-		if (namespace != null) {
-			requestBuilder.filterByNamespace(namespace);
+		if (namespaceFilter != null) {
+			requestBuilder.filterByNamespace(namespaceFilter);
 		}
 		return requestBuilder;
 	}
