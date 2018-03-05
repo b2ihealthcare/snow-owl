@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newTreeSet;
 
@@ -329,7 +330,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 	}
 
 	private void collectVersionsToExport(final Set<CodeSystemVersionEntry> versionsToExport, final CodeSystemEntry codeSystemEntry, final String cutoffPath) {
-		final Collection<CodeSystemVersionEntry> candidates = getCodeSystemVersions(codeSystemEntry.getShortName());
+		final Collection<CodeSystemVersionEntry> candidates = newArrayList(getCodeSystemVersions(codeSystemEntry.getShortName()));
 		if (candidates.isEmpty()) {
 			return;
 		}
@@ -351,7 +352,8 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 		final long cutoffBaseTimestamp = getCutoffBaseTimestamp(cutoffBranch, versionParentPath);
 
 		// Remove all code system versions which were created after the cut-off date, or don't have a corresponding branch 
-		candidates.removeIf(v -> !versionBranchesByName.containsKey(v.getVersionId())
+		candidates.removeIf(v -> false
+				|| !versionBranchesByName.containsKey(v.getVersionId())
 				|| versionBranchesByName.get(v.getVersionId()).baseTimestamp() > cutoffBaseTimestamp);
 
 		versionsToExport.addAll(candidates);
