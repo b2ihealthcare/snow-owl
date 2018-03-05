@@ -42,12 +42,12 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.FileUtils;
-import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -68,7 +68,10 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2ConceptExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2DescriptionExporter;
@@ -81,6 +84,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 
@@ -188,19 +192,42 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 	}
 
 	void setComponentTypes(final Collection<String> componentTypes) {
-		this.componentTypes = Collections3.toImmutableSet(componentTypes);
+		/*
+		 * All component types should be exported if the input value is null; no
+		 * component type should be exported if the input value is an empty collection.
+		 */
+		this.componentTypes = (componentTypes != null) 
+				? ImmutableSet.copyOf(componentTypes) 
+				: ImmutableSet.of(SnomedTerminologyComponentConstants.CONCEPT, 
+						SnomedTerminologyComponentConstants.DESCRIPTION, 
+						SnomedTerminologyComponentConstants.RELATIONSHIP, 
+						SnomedTerminologyComponentConstants.REFSET_MEMBER);
 	}
 
 	void setModules(final Collection<String> modules) {
-		this.modules = Collections3.toImmutableSet(modules);
+		/*
+		 * All modules should be exported if the input value is null; no module
+		 * should be exported if the input value is an empty collection.
+		 */
+		this.modules = (modules != null) ? ImmutableSet.copyOf(modules) : null;
 	}
 
 	void setRefSets(final Collection<String> refSets) {
-		this.refSets = Collections3.toImmutableSet(refSets);
+		/*
+		 * All reference sets should be exported if the input value is null; no component
+		 * should be exported if the input value is an empty collection.
+		 */
+		this.refSets = (refSets != null) ? ImmutableSet.copyOf(refSets) : null;
 	}
 
 	void setTransientEffectiveTime(final String transientEffectiveTime) {
-		this.transientEffectiveTime = transientEffectiveTime;
+		if (Strings.isNullOrEmpty(transientEffectiveTime)) {
+			this.transientEffectiveTime = "";
+		} else if ("NOW".equals(transientEffectiveTime)) {
+			this.transientEffectiveTime = EffectiveTimes.format(Dates.todayGmt(), DateFormats.SHORT);
+		} else {
+			this.transientEffectiveTime = transientEffectiveTime;
+		}
 	}
 
 	void setExtensionOnly(final boolean extensionOnly) {
@@ -233,7 +260,18 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 						(u,v) -> { throw new IllegalStateException(String.format("Duplicate value: %s", u)); },
 						LinkedHashMap::new));
 
-		if (includePreReleaseContent) {
+		if (Rf2ReleaseType.SNAPSHOT.equals(releaseType) && includePreReleaseContent) {
+			// Export all visible components from the reference branch (remove single existing map entry)
+			final String singleVersionBranch = Iterables.getOnlyElement(pathEffectiveTimeMap.keySet());
+			pathEffectiveTimeMap.remove(singleVersionBranch);
+			pathEffectiveTimeMap.put(referenceBranch, Long.MIN_VALUE);
+		} else if (Rf2ReleaseType.SNAPSHOT.equals(releaseType)) {
+			// Export all visible components from the reference branch, skip unpublished components (remove single existing map entry)
+			final String singleVersionBranch = Iterables.getOnlyElement(pathEffectiveTimeMap.keySet());
+			pathEffectiveTimeMap.remove(singleVersionBranch);
+			pathEffectiveTimeMap.put(referenceBranch, 0L);
+		} else if (includePreReleaseContent) {
+			// Export pre-release components from the reference branch (add map entry)
 			pathEffectiveTimeMap.put(referenceBranch, EffectiveTimes.UNSET_EFFECTIVE_TIME);
 		}
 
@@ -245,17 +283,27 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 			exportDirectory = createExportDirectory(exportId);
 
 			// Step 5: export content for each branch
-			final String latestEffectiveTime = versionsToExport.isEmpty() || includePreReleaseContent
-					? transientEffectiveTime
-					: EffectiveTimes.format(versionsToExport.last().getEffectiveDate(), DateFormats.SHORT);
+			String archiveEffectiveTime;
 			
-			final Path releaseDirectory = createReleaseDirectory(exportDirectory, latestEffectiveTime);
+			if (versionsToExport.isEmpty() || includePreReleaseContent) {
+				
+				if (transientEffectiveTime.isEmpty()) {
+					archiveEffectiveTime = EffectiveTimes.format(Dates.todayGmt(), DateFormats.SHORT);
+				} else {
+					archiveEffectiveTime = transientEffectiveTime;
+				}
+				
+			} else {
+				archiveEffectiveTime = EffectiveTimes.format(versionsToExport.last().getEffectiveDate(), DateFormats.SHORT);
+			}
+			
+			final Path releaseDirectory = createReleaseDirectory(exportDirectory, archiveEffectiveTime);
 
 			for (final Entry<String, Long> pathEntry : pathEffectiveTimeMap.entrySet()) {
 				exportBranch(releaseDirectory, 
 						context, 
 						pathEntry.getKey(), 
-						latestEffectiveTime, 
+						archiveEffectiveTime, 
 						pathEntry.getValue());
 			}
 
@@ -327,11 +375,15 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 		switch (releaseType) {
 			case DELTA:
 				// Delta export: keep versions that fall into the effective time range
-				versionsToExport.removeIf(v -> {
-					return false
-							|| (startEffectiveTime != null && v.getEffectiveDate() < startEffectiveTime.getTime())
-							|| (endEffectiveTime != null && v.getEffectiveDate() > endEffectiveTime.getTime());
-				});
+				if (startEffectiveTime == null && endEffectiveTime == null) {
+					versionsToExport.clear();
+				} else {
+					versionsToExport.removeIf(v -> {
+						return false
+								|| (startEffectiveTime != null && v.getEffectiveDate() < startEffectiveTime.getTime())
+								|| (endEffectiveTime != null && v.getEffectiveDate() > endEffectiveTime.getTime());
+					});
+				}
 				break;
 			case FULL:
 				// Full export: nothing to remove, all versions should be exported
@@ -372,19 +424,19 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 	private void exportBranch(final Path releaseDirectory, 
 			final RepositoryContext context, 
 			final String branch, 
-			final String latestEffectiveTime, 
-			final long effectiveTime) throws IOException {
+			final String archiveEffectiveTime, 
+			final long effectiveTimeFilter) throws IOException {
 
 		final Set<String> languageCodes = getLanguageCodes(context, branch);
-
+		
 		for (final String componentToExport : componentTypes) {
 			switch (componentToExport) {
 				case SnomedTerminologyComponentConstants.CONCEPT:
 					exportConcepts(releaseDirectory, 
 							context, 
 							branch, 
-							latestEffectiveTime, 
-							effectiveTime);
+							archiveEffectiveTime, 
+							effectiveTimeFilter);
 					break;
 	
 				case SnomedTerminologyComponentConstants.DESCRIPTION:
@@ -392,8 +444,8 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 						exportDescriptions(releaseDirectory, 
 								context, 
 								branch, 
-								latestEffectiveTime, 
-								effectiveTime, 
+								archiveEffectiveTime, 
+								effectiveTimeFilter, 
 								languageCode);
 					}
 					break;
@@ -402,8 +454,8 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 					exportRelationships(releaseDirectory, 
 							context, 
 							branch, 
-							latestEffectiveTime, 
-							effectiveTime);
+							archiveEffectiveTime, 
+							effectiveTimeFilter);
 					break;
 	
 				case SnomedTerminologyComponentConstants.REFSET_MEMBER:
@@ -411,15 +463,15 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 						exportCombinedRefSets(releaseDirectory,
 								context,
 								branch,
-								latestEffectiveTime,
-								effectiveTime,
+								archiveEffectiveTime,
+								effectiveTimeFilter,
 								languageCodes);
 					} else {
 						exportIndividualRefSets(releaseDirectory,
 								context,
 								branch,
-								latestEffectiveTime,
-								effectiveTime,
+								archiveEffectiveTime,
+								effectiveTimeFilter,
 								languageCodes);
 					}
 				break;
@@ -433,30 +485,32 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 	private void exportConcepts(final Path releaseDirectory, 
 			final RepositoryContext context, 
 			final String branch,
-			final String latestEffectiveTime, 
-			final long effectiveTime) throws IOException {
+			final String archiveEffectiveTime, 
+			final long effectiveTimeFilter) throws IOException {
 
 		final Rf2ConceptExporter conceptExporter = new Rf2ConceptExporter(releaseType, 
 				countryNamespaceElement, 
-				namespaceFilter, 
-				latestEffectiveTime,
+				namespaceFilter,
+				transientEffectiveTime,
+				archiveEffectiveTime,
 				includePreReleaseContent,
 				modules);
 
-		conceptExporter.exportBranch(releaseDirectory, context, branch, effectiveTime);
+		conceptExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilter);
 	}
 
 	private void exportDescriptions(final Path releaseDirectory, 
 			final RepositoryContext context, 
 			final String branch,
-			final String latestEffectiveTime, 
-			final long effectiveTime, 
+			final String archiveEffectiveTime, 
+			final long effectiveTimeFilter, 
 			final String languageCode) throws IOException {
 
 		final Rf2DescriptionExporter descriptionExporter = new Rf2DescriptionExporter(releaseType, 
 				countryNamespaceElement,
-				namespaceFilter, 
-				latestEffectiveTime, 
+				namespaceFilter,
+				transientEffectiveTime,
+				archiveEffectiveTime, 
 				includePreReleaseContent, 
 				modules, 
 				"<<" + Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT + " MINUS " + Concepts.TEXT_DEFINITION,
@@ -465,26 +519,28 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 		final Rf2DescriptionExporter textDefinitionExporter = new Rf2DescriptionExporter(releaseType, 
 				countryNamespaceElement,
 				namespaceFilter, 
-				latestEffectiveTime, 
+				transientEffectiveTime,
+				archiveEffectiveTime, 
 				includePreReleaseContent, 
 				modules, 
 				Concepts.TEXT_DEFINITION,
 				languageCode);
 
-		descriptionExporter.exportBranch(releaseDirectory, context, branch, effectiveTime);
-		textDefinitionExporter.exportBranch(releaseDirectory, context, branch, effectiveTime);
+		descriptionExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilter);
+		textDefinitionExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilter);
 	}
 
 	private void exportRelationships(final Path releaseDirectory, 
 			final RepositoryContext context, 
 			final String branch,
-			final String latestEffectiveTime, 
-			final long effectiveTime) throws IOException {
+			final String archiveEffectiveTime, 
+			final long effectiveTimeFilter) throws IOException {
 
 		final Rf2RelationshipExporter statedRelationshipExporter = new Rf2RelationshipExporter(releaseType, 
 				countryNamespaceElement, 
 				namespaceFilter, 
-				latestEffectiveTime, 
+				transientEffectiveTime,
+				archiveEffectiveTime, 
 				includePreReleaseContent, 
 				modules, 
 				Concepts.STATED_RELATIONSHIP);
@@ -492,20 +548,21 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 		final Rf2RelationshipExporter relationshipExporter = new Rf2RelationshipExporter(releaseType, 
 				countryNamespaceElement, 
 				namespaceFilter, 
-				latestEffectiveTime, 
+				transientEffectiveTime,
+				archiveEffectiveTime, 
 				includePreReleaseContent, 
 				modules, 
 				"<<" + Concepts.CHARACTERISTIC_TYPE + " MINUS " + Concepts.STATED_RELATIONSHIP);
 
-		statedRelationshipExporter.exportBranch(releaseDirectory, context, branch, effectiveTime);
-		relationshipExporter.exportBranch(releaseDirectory, context, branch, effectiveTime);
+		statedRelationshipExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilter);
+		relationshipExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilter);
 	}
 
 	private void exportCombinedRefSets(final Path releaseDirectory, 
 			final RepositoryContext context, 
 			final String branch,
-			final String latestEffectiveTime, 
-			final long effectiveTime, 
+			final String archiveEffectiveTime, 
+			final long effectiveTimeFilter, 
 			final Set<String> languageCodes) throws IOException {
 
 		final Multimap<SnomedRefSetType, SnomedConcept> referenceSetsByType = FluentIterable.from(getIdentifierConcepts(context, branch))
@@ -522,21 +579,22 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 			final Rf2RefSetExporter refSetExporter = new Rf2RefSetExporter(releaseType, 
 					countryNamespaceElement, 
 					namespaceFilter, 
-					latestEffectiveTime,
+					transientEffectiveTime,
+					archiveEffectiveTime,
 					includePreReleaseContent,
 					modules,
 					refSetExportLayout,
 					refSetType,
 					referenceSetsByType.get(refSetType));
 
-			refSetExporter.exportBranch(releaseDirectory, context, branch, effectiveTime);
+			refSetExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilter);
 		}
 
 		exportLanguageRefSets(releaseDirectory, 
 				context, 
 				branch, 
-				latestEffectiveTime, 
-				effectiveTime, 
+				archiveEffectiveTime, 
+				effectiveTimeFilter, 
 				languageCodes, 
 				referenceSetsByType.get(SnomedRefSetType.LANGUAGE));
 	}
@@ -544,8 +602,8 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 	private void exportIndividualRefSets(final Path releaseDirectory, 
 			final RepositoryContext context, 
 			final String branch,
-			final String latestEffectiveTime, 
-			final long effectiveTime, 
+			final String archiveEffectiveTime, 
+			final long effectiveTimeFilter, 
 			final Set<String> languageCodes) throws IOException {
 
 		final Multimap<SnomedRefSetType, SnomedConcept> referenceSetsByType = FluentIterable.from(getIdentifierConcepts(context, branch))
@@ -565,21 +623,22 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 			final Rf2RefSetExporter refSetExporter = new Rf2RefSetExporter(releaseType, 
 					countryNamespaceElement, 
 					namespaceFilter, 
-					latestEffectiveTime,
+					transientEffectiveTime,
+					archiveEffectiveTime,
 					includePreReleaseContent,
 					modules,
 					refSetExportLayout,
 					entry.getKey(),
 					ImmutableSet.of(entry.getValue()));
 
-			refSetExporter.exportBranch(releaseDirectory, context, branch, effectiveTime);
+			refSetExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilter);
 		}
 
 		exportLanguageRefSets(releaseDirectory, 
 				context, 
 				branch, 
-				latestEffectiveTime, 
-				effectiveTime, 
+				archiveEffectiveTime, 
+				effectiveTimeFilter, 
 				languageCodes, 
 				referenceSetsByType.get(SnomedRefSetType.LANGUAGE));
 	}
@@ -587,8 +646,8 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 	private void exportLanguageRefSets(final Path releaseDirectory, 
 			final RepositoryContext context, 
 			final String branch,
-			final String latestEffectiveTime, 
-			final long effectiveTime, 
+			final String archiveEffectiveTime, 
+			final long effectiveTimeFilter, 
 			final Set<String> languageCodes, 
 			final Collection<SnomedConcept> languageRefSets) throws IOException {
 
@@ -601,14 +660,15 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 			final Rf2LanguageRefSetExporter languageExporter = new Rf2LanguageRefSetExporter(releaseType, 
 					countryNamespaceElement,
 					namespaceFilter,
-					latestEffectiveTime,
+					transientEffectiveTime,
+					archiveEffectiveTime,
 					includePreReleaseContent,
 					modules,
 					SnomedRefSetType.LANGUAGE,
 					languageRefSets,
 					languageCode);
 
-			languageExporter.exportBranch(releaseDirectory, context, branch, effectiveTime);
+			languageExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilter);
 		}
 	}
 
@@ -634,14 +694,33 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 	}
 
 	private List<SnomedConcept> getIdentifierConcepts(final RepositoryContext context, final String branch) {
-
-		final Request<BranchContext, SnomedConcepts> refSetRequest = SnomedRequests.prepareSearchConcept()
+		final Collection<String> refSetsToLoad;
+		
+		if (refSets == null) {
+			// Retrieve all reference sets if refSets is null
+			final Request<BranchContext, SnomedReferenceSets> refSetRequest = SnomedRequests.prepareSearchRefSet()
 				.all()
-				.filterByIds(refSets)
-				.setExpand("pt(),referenceSet()")
 				.build();
 
-		final SnomedConcepts referenceSets = new BranchRequest<>(branch, new RevisionIndexReadRequest<>(refSetRequest))
+			final SnomedReferenceSets allReferenceSets = new BranchRequest<>(branch, new RevisionIndexReadRequest<>(refSetRequest))
+					.execute(context);
+
+			refSetsToLoad = allReferenceSets.stream()
+					.map(r -> r.getId())
+					.collect(Collectors.toSet());
+		} else {
+			refSetsToLoad = refSets;
+		}
+		
+		final LanguageSetting languageSetting = getServiceForClass(LanguageSetting.class);
+		final SnomedConceptSearchRequestBuilder refSetRequestBuilder = SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByIds(refSetsToLoad)
+				.setExpand("pt(),referenceSet()")
+				.setLocales(languageSetting.getLanguagePreference());
+
+		final Request<BranchContext, SnomedConcepts> request = refSetRequestBuilder.build();
+		final SnomedConcepts referenceSets = new BranchRequest<>(branch, new RevisionIndexReadRequest<>(request))
 				.execute(context);
 
 		// Return only the identifier concepts which have an existing reference set on this branch

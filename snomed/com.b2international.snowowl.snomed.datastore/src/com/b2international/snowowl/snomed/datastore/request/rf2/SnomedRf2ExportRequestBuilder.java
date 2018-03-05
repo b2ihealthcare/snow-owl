@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
 
@@ -44,92 +43,92 @@ public final class SnomedRf2ExportRequestBuilder
 	private Date startEffectiveTime;
 	private Date endEffectiveTime;
 	private boolean includePreReleaseContent;
-	private Collection<String> componentTypes = Collections.emptySet();
-	private Collection<String> modules = Collections.emptySet();
-	private Collection<String> refSets = Collections.emptySet();
+	private Collection<String> componentTypes = null;
+	private Collection<String> modules = null;
+	private Collection<String> refSets = null;
 	private String transientEffectiveTime;
 	private boolean extensionOnly;
 	
 	SnomedRf2ExportRequestBuilder() {}
 	
-	public SnomedRf2ExportRequestBuilder setUserId(String userId) {
+	public SnomedRf2ExportRequestBuilder setUserId(final String userId) {
 		this.userId = userId;
 		return getSelf();
 	}
 	
-	public SnomedRf2ExportRequestBuilder setCodeSystem(String codeSystem) {
+	public SnomedRf2ExportRequestBuilder setCodeSystem(final String codeSystem) {
 		this.codeSystem = codeSystem;
 		return getSelf();
 	}
 	
-	public SnomedRf2ExportRequestBuilder setReferenceBranch(String referenceBranch) {
+	public SnomedRf2ExportRequestBuilder setReferenceBranch(final String referenceBranch) {
 		this.referenceBranch = referenceBranch;
 		return getSelf();
 	}
 	
-	public SnomedRf2ExportRequestBuilder setReleaseType(Rf2ReleaseType releaseType) {
+	public SnomedRf2ExportRequestBuilder setReleaseType(final Rf2ReleaseType releaseType) {
 		this.releaseType = releaseType;
 		return getSelf();
 	}
 	
-	public SnomedRf2ExportRequestBuilder setRefSetExportLayout(Rf2RefSetExportLayout refSetExportLayout) {
+	public SnomedRf2ExportRequestBuilder setRefSetExportLayout(final Rf2RefSetExportLayout refSetExportLayout) {
 		this.refSetExportLayout = refSetExportLayout;
 		return getSelf();
 	}
 
-	public SnomedRf2ExportRequestBuilder setCountryNamespaceElement(String countryNamespaceElement) {
+	public SnomedRf2ExportRequestBuilder setCountryNamespaceElement(final String countryNamespaceElement) {
 		this.countryNamespaceElement = countryNamespaceElement;
 		return getSelf();
 	}
 
-	public SnomedRf2ExportRequestBuilder setNamespaceFilter(String namespaceFilter) {
+	public SnomedRf2ExportRequestBuilder setNamespaceFilter(final String namespaceFilter) {
 		this.namespaceFilter = namespaceFilter;
 		return getSelf();
 	}
 
-	public SnomedRf2ExportRequestBuilder setStartEffectiveTime(Date startEffectiveTime) {
+	public SnomedRf2ExportRequestBuilder setStartEffectiveTime(final Date startEffectiveTime) {
 		this.startEffectiveTime = startEffectiveTime;
 		return getSelf();
 	}
 	
-	public SnomedRf2ExportRequestBuilder setEndEffectiveTime(Date endEffectiveTime) {
+	public SnomedRf2ExportRequestBuilder setEndEffectiveTime(final Date endEffectiveTime) {
 		this.endEffectiveTime = endEffectiveTime;
 		return getSelf();
 	}
 	
-	public SnomedRf2ExportRequestBuilder setIncludePreReleaseContent(boolean includePreReleaseContent) {
+	public SnomedRf2ExportRequestBuilder setIncludePreReleaseContent(final boolean includePreReleaseContent) {
 		this.includePreReleaseContent = includePreReleaseContent;
 		return getSelf();
 	}
 
-	public SnomedRf2ExportRequestBuilder setComponentTypes(Collection<String> componentTypes) {
+	public SnomedRf2ExportRequestBuilder setComponentTypes(final Collection<String> componentTypes) {
 		this.componentTypes = componentTypes;
 		return getSelf();
 	}
 
-	public SnomedRf2ExportRequestBuilder setModules(Collection<String> modules) {
+	public SnomedRf2ExportRequestBuilder setModules(final Collection<String> modules) {
 		this.modules = modules;
 		return getSelf();
 	}
 	
-	public SnomedRf2ExportRequestBuilder setRefSets(Collection<String> refSets) {
+	public SnomedRf2ExportRequestBuilder setRefSets(final Collection<String> refSets) {
 		this.refSets = refSets;
 		return getSelf();
 	}
 
-	public SnomedRf2ExportRequestBuilder setTransientEffectiveTime(String transientEffectiveTime) {
+	public SnomedRf2ExportRequestBuilder setTransientEffectiveTime(final String transientEffectiveTime) {
 		this.transientEffectiveTime = transientEffectiveTime;
 		return getSelf();
 	}
 
-	public SnomedRf2ExportRequestBuilder setExtensionOnly(boolean extensionOnly) {
+	public SnomedRf2ExportRequestBuilder setExtensionOnly(final boolean extensionOnly) {
 		this.extensionOnly = extensionOnly;
 		return getSelf();
 	}
 	
 	@Override
 	protected Request<RepositoryContext, UUID> doBuild() {
-		SnomedRf2ExportRequest req = new SnomedRf2ExportRequest();
+		final SnomedRf2ExportRequest req = new SnomedRf2ExportRequest();
 		req.setUserId(userId);
 		req.setCodeSystem(codeSystem);
 		req.setReferenceBranch(referenceBranch);
