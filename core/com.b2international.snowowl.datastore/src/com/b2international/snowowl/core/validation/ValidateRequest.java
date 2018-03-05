@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.validation;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -30,7 +31,6 @@ import com.b2international.snowowl.core.internal.validation.ValidationThreadPool
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
-import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequestBuilder;
 import com.b2international.snowowl.core.validation.rule.ValidationRules;
 
@@ -39,7 +39,7 @@ import com.b2international.snowowl.core.validation.rule.ValidationRules;
  */
 final class ValidateRequest implements Request<BranchContext, ValidationResult> {
 	
-	List<Severity> severities;
+	Collection<String> ruleIds;
 	
 	ValidateRequest() {}
 	
@@ -50,8 +50,8 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			
 			ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
 
-			if (!CompareUtils.isEmpty(severities)) {
-				req.filterBySeverity(severities);
+			if (!CompareUtils.isEmpty(ruleIds)) {
+				req.filterByIds(ruleIds);
 			}
 			
 			final ValidationRules rules = req
@@ -109,8 +109,8 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 		
 	}
 
-	public void setSeverities(List<Severity> severities) {
-		this.severities = severities;
+	public void setRuleIds(Collection<String> ruleIds) {
+		this.ruleIds = ruleIds;
 	}
 	
 }
