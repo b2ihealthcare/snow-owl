@@ -13,11 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.request.rf2;
+package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
+
+import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.EXTENDED_MAP_TYPE_HEADER;
+import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_CORRELATION_ID;
+import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MAP_ADVICE;
+import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MAP_CATEGORY_ID;
+import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MAP_GROUP;
+import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MAP_PRIORITY;
+import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MAP_RULE;
+import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_MAP_TARGET;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -26,36 +34,44 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 6.0.0
  */
-final class Rf2DescriptionTypeRefSetContentType implements Rf2RefSetContentType {
+final class Rf2ExtendedMapRefSetContentType implements Rf2RefSetContentType {
 
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
-		component.setType(SnomedRefSetType.DESCRIPTION_TYPE);
+		component.setType(SnomedRefSetType.EXTENDED_MAP);
 		component.setReferenceSetId(values[4]);
 		// XXX actual type is not relevant here
 		component.setReferencedComponent(new SnomedConcept(values[5]));
-		component.setProperties(ImmutableMap.<String, Object>of(
-			SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, values[6],
-			SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, Integer.parseInt(values[7])
-		));
+		component.setProperties(
+			ImmutableMap.<String, Object>builder()
+				.put(FIELD_MAP_GROUP, Integer.parseInt(values[6]))
+				.put(FIELD_MAP_PRIORITY, Integer.parseInt(values[7])) 
+				.put(FIELD_MAP_RULE, values[8])
+				.put(FIELD_MAP_ADVICE, values[9]) 
+				.put(FIELD_MAP_TARGET, values[10])
+				.put(FIELD_CORRELATION_ID, values[11])
+				.put(FIELD_MAP_CATEGORY_ID, values[12])
+				.build()
+		);
 	}
-
+	
 	@Override
 	public String[] getHeaderColumns() {
-		return SnomedRf2Headers.DESCRIPTION_TYPE_HEADER;
+		return EXTENDED_MAP_TYPE_HEADER;
 	}
-
+	
 	@Override
 	public String getType() {
-		return "description-type-member";
+		return "extended-member";
 	}
 	
 	@Override
 	public LongSet getDependencies(String[] values) {
 		return PrimitiveSets.newLongOpenHashSet(
-			Long.parseLong(values[3]),	
+			Long.parseLong(values[3]),
 			Long.parseLong(values[4]),
-			Long.parseLong(values[6])
+			Long.parseLong(values[11]),
+			Long.parseLong(values[12])
 		);
 	}
 	
