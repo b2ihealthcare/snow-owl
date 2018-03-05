@@ -233,13 +233,14 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			final Principal principal) throws IOException {
 
 		final SnomedExportRestRun export = getExport(exportId);
+		final boolean includeUnpublished = export.isIncludeUnpublished() || isDeltaWithoutRange(export);
 		
 		final UUID exportedFile = SnomedRequests.rf2().prepareExport()
 			.setUserId(principal.getName())
 			.setReleaseType(export.getType())
 			.setCodeSystem(export.getCodeSystemShortName())
 			.setExtensionOnly(export.isExtensionOnly())
-			.setIncludePreReleaseContent(export.isIncludeUnpublished())
+			.setIncludePreReleaseContent(includeUnpublished)
 			.setModules(export.getModuleIds())
 			.setCountryNamespaceElement(export.getNamespaceId())
 			// .setNamespaceFilter(namespaceFilter) is not supported on REST, yet
@@ -265,6 +266,12 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		return new ResponseEntity<>(exportZipResource, httpHeaders, HttpStatus.OK);
 	}
 	
+	private boolean isDeltaWithoutRange(final SnomedExportRestConfiguration export) {
+		return Rf2ReleaseType.DELTA.equals(export.getType())
+				&& export.getStartEffectiveTime() == null
+				&& export.getEndEffectiveTime() == null;
+	}
+
 	private URI getExportRunURI(UUID exportId) {
 		return linkTo(methodOn(SnomedExportRestService.class).getExport(exportId)).toUri();
 	}
