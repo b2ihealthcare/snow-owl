@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestConfiguration;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestRun;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
+import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -240,10 +241,13 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			.setExtensionOnly(export.isExtensionOnly())
 			.setIncludePreReleaseContent(export.isIncludeUnpublished())
 			.setModules(export.getModuleIds())
-			.setNamespaceId(export.getNamespaceId())
+			.setCountryNamespaceElement(export.getNamespaceId())
+			// .setNamespaceFilter(namespaceFilter) is not supported on REST, yet
 			.setTransientEffectiveTime(export.getTransientEffectiveTime())
 			.setStartEffectiveTime(export.getStartEffectiveTime())
 			.setEndEffectiveTime(export.getEndEffectiveTime())
+			.setRefSetExportLayout(Rf2RefSetExportLayout.INDIVIDUAL)
+			.setReferenceBranch(export.getBranchPath())
 			.build(this.repositoryId)
 			.execute(bus)
 			.getSync();
