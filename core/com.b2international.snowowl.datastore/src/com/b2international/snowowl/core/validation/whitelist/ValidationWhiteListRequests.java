@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.core.validation.whitelist;
 
-import java.util.Collections;
-import java.util.Set;
-
 /**
  * @since 6.1
  */
@@ -30,11 +27,7 @@ public enum ValidationWhiteListRequests {
 	}
 	
 	public ValidationWhiteListDeleteRequestBuilder prepareDelete(String id) {
-		return prepareDelete(Collections.singleton(id));
-	}
-
-	public ValidationWhiteListDeleteRequestBuilder prepareDelete(Set<String> ids) {
-		return new ValidationWhiteListDeleteRequestBuilder(ids);
+		return new ValidationWhiteListDeleteRequestBuilder(id);
 	}
 
 	public ValidationWhiteListGetRequestBuilder prepareGet(String id) {

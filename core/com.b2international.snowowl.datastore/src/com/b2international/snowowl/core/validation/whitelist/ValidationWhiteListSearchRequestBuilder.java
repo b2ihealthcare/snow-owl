@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.validation.whitelist;
 
-import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
@@ -39,13 +38,21 @@ public final class ValidationWhiteListSearchRequestBuilder
 		return addOption(OptionKey.RULE_ID, ruleIds);
 	}
 
-	public ValidationWhiteListSearchRequestBuilder filterByComponentIdentifier(ComponentIdentifier componentIdentifier) {
-		return addOption(OptionKey.COMPONENT_IDENTIFIER, componentIdentifier);
+	public ValidationWhiteListSearchRequestBuilder filterByComponentIdentifier(String componentIdentifier) {
+		return addOption(OptionKey.COMPONENT_ID, componentIdentifier);
 	}
 
-	public ValidationWhiteListSearchRequestBuilder filterByComponentIdentifiers(Iterable<ComponentIdentifier> componentIdentifiers) {
-		return addOption(OptionKey.COMPONENT_IDENTIFIER, componentIdentifiers);
+	public ValidationWhiteListSearchRequestBuilder filterByComponentIdentifiers(Iterable<String> componentIdentifiers) {
+		return addOption(OptionKey.COMPONENT_ID, componentIdentifiers);
 	}
+	
+	public ValidationWhiteListSearchRequestBuilder filterByComponentType(short terminologyComponentId) {
+		return addOption(OptionKey.COMPONENT_TYPE, terminologyComponentId);
+	}
+
+	public ValidationWhiteListSearchRequestBuilder filterByComponentType(Iterable<Short> terminologyComponentIds) {
+		return addOption(OptionKey.COMPONENT_TYPE, terminologyComponentIds);
+	}	
 	
 	@Override
 	protected SearchResourceRequest<ServiceProvider, ValidationWhiteLists> createSearch() {
