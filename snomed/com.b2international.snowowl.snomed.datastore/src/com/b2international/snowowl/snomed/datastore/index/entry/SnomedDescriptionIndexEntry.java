@@ -173,9 +173,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		public static final String PREFERRED_IN = "preferredIn";
 		public static final String ACCEPTABLE_IN = "acceptableIn";
 		public static final String SEMANTIC_TAG = "semanticTag";
-		protected static final String ORIGINAL_TERM = Fields.TERM + ".original";
-		protected static final String PREFIX_TERM = Fields.TERM + ".prefix";
-		protected static final String EXACT_TERM = Fields.TERM + ".exact";
+		public static final String ORIGINAL_TERM = Fields.TERM + ".original";
 	}
 	
 	public final static class Expressions extends SnomedComponentDocument.Expressions {
@@ -200,7 +198,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public static Expression matchEntireTerm(String term) {
-			return matchTextAll(Fields.EXACT_TERM, term);
+			return matchTextAll(Fields.TERM + ".exact", term);
 		}
 		
 		public static Expression matchTermOriginal(String term) {
@@ -208,11 +206,11 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public static Expression matchTermRegex(String regex) {
-			return matchTextRegexp(Fields.ORIGINAL_TERM, regex);
+			return matchTextRegexp(Fields.TERM + ".original", regex);
 		}
 		
 		public static Expression allTermPrefixesPresent(String term) {
-			return matchTextAll(Fields.PREFIX_TERM, term);
+			return matchTextAll(Fields.TERM + ".prefix", term);
 		}
 		
 		public static Expression allTermsPresent(String term) {
@@ -221,10 +219,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		
 		public static Expression parsedTerm(String term) {
 			return matchTextParsed(Fields.TERM, term);
-		}
-		
-		public static Expression matchParsedTermPrefix(String term) {
-			return matchTextParsed(Fields.PREFIX_TERM, term);
 		}
 		
 		public static Expression concept(String conceptId) {
