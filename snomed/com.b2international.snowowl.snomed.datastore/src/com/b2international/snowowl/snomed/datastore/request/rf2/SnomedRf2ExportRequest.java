@@ -64,6 +64,7 @@ import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.Rf2ExportResult;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -92,7 +93,7 @@ import com.google.common.collect.Ordering;
 /**
  * @since 5.7
  */
-final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
+final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2ExportResult> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -236,7 +237,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 	}
 
 	@Override
-	public UUID execute(final RepositoryContext context) {
+	public Rf2ExportResult execute(final RepositoryContext context) {
 
 		// Step 1: check if the export reference branch is a working branch path descendant
 		final CodeSystemEntry referenceCodeSystem = getCodeSystem(codeSystem);
@@ -311,7 +312,9 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 			// Step 6: compress to archive and upload to the file registry
 			final FileRegistry fileRegistry = context.service(FileRegistry.class);
 			registerResult(fileRegistry, exportId, exportDirectory);
-
+			final String fileName = releaseDirectory.getFileName() + ".zip";
+			return new Rf2ExportResult(fileName, exportId);
+			
 		} catch (final IOException e) {
 			throw new SnowowlRuntimeException("Failed to export terminology content to RF2.", e);
 		} finally {
@@ -319,8 +322,6 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, UUID> {
 				FileUtils.deleteDirectory(exportDirectory.toFile());
 			}
 		}
-
-		return exportId;
 	}
 
 	private TreeSet<CodeSystemVersionEntry> getVisibleVersions(final CodeSystemEntry codeSystemEntry) {

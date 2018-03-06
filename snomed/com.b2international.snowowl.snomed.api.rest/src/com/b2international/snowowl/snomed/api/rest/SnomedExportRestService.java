@@ -58,6 +58,7 @@ import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestConfiguration;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestRun;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
+import com.b2international.snowowl.snomed.core.domain.Rf2ExportResult;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -235,7 +236,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		final SnomedExportRestRun export = getExport(exportId);
 		final boolean includeUnpublished = export.isIncludeUnpublished() || isDeltaWithoutRange(export);
 		
-		final UUID exportedFile = SnomedRequests.rf2().prepareExport()
+		final Rf2ExportResult exportedFile = SnomedRequests.rf2().prepareExport()
 			.setUserId(principal.getName())
 			.setReleaseType(export.getType())
 			.setCodeSystem(export.getCodeSystemShortName())
@@ -253,7 +254,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			.execute(bus)
 			.getSync();
 		
-		final File file = ((InternalFileRegistry) fileRegistry).getFile(exportedFile);
+		final File file = ((InternalFileRegistry) fileRegistry).getFile(exportedFile.getRegistryId());
 		final Resource exportZipResource = new FileSystemResource(file);
 		
 		final HttpHeaders httpHeaders = new HttpHeaders();
