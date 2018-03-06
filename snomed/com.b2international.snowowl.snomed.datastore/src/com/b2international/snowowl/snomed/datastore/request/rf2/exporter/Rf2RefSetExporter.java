@@ -158,10 +158,9 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 
 	private String getCombinedRefSetName() {
 		switch (refSetType) {
-			case ASSOCIATION:
-				return "AssociationReference";
 			case CONCRETE_DATA_TYPE:
 				return "ConcreteDomainReferenceSet";
+			case ASSOCIATION: //$FALL-THROUGH$
 			case SIMPLE: //$FALL-THROUGH$
 			case QUERY: //$FALL-THROUGH$
 			case ATTRIBUTE_VALUE: //$FALL-THROUGH$
