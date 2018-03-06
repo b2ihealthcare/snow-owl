@@ -52,15 +52,18 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 	@Override
 	protected void requesting(final ExtendedDataOutputStream out, final OMMonitor monitor) throws Exception {
 
-		monitor.begin(1 + importConfiguration.getDescriptionsFiles().size() + importConfiguration.getLanguageRefSetFiles().size()
-				+ importConfiguration.getTextDefinitionFiles().size() + 4 + importConfiguration.getRefSetUrls().size());
-		
+		monitor.begin(1 // set attributes 
+				+ importConfiguration.getDescriptionFiles().size()
+				+ importConfiguration.getTextDefinitionFiles().size() 
+				+ 3 // concept, relationship, stated relationship file
+				+ importConfiguration.getRefSetUrls().size());
+
 		try {
 			
 			//adding requesting branch path to output stream
 			out.writeUTF(importConfiguration.getBranchPath());
 			out.writeString(userId);
-			out.writeEnum(importConfiguration.getVersion());
+			out.writeEnum(importConfiguration.getContentSubType());
 			out.writeBoolean(importConfiguration.isCreateVersions());
 			out.writeInt(importConfiguration.getExcludedRefSetIds().size());
 			
@@ -72,8 +75,7 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 			
 			monitor.worked(); // 1
 			
-			final Collection<File> descriptionsFiles = importConfiguration.getDescriptionsFiles();
-			final Collection<File> languageRefSetFiles = importConfiguration.getLanguageRefSetFiles();
+			final Collection<File> descriptionsFiles = importConfiguration.getDescriptionFiles();
 			final Collection<File> textDefinitionFiles = importConfiguration.getTextDefinitionFiles();
 			
 			out.writeInt(descriptionsFiles.size());
@@ -82,22 +84,15 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 				writeComponent(out, descfile, monitor.fork()); // + getDescriptionFiles().size()
 			}
 			
-			out.writeInt(languageRefSetFiles.size());
-			
-			for (File langFile : languageRefSetFiles) {
-				writeComponent(out, langFile, monitor.fork()); // + getLanguageRefSetFiles().size()
-			}
-			
 			out.writeInt(textDefinitionFiles.size());
 			
 			for (File textFile : textDefinitionFiles) {
 				writeComponent(out, textFile, monitor.fork()); // + getTextDefinitionFiles().size()
 			}
 			
-			writeComponent(out, importConfiguration.getConceptsFile(), monitor.fork());
-			writeComponent(out, importConfiguration.getRelationshipsFile(), monitor.fork());
-			writeComponent(out, importConfiguration.getStatedRelationshipsFile(), monitor.fork());
-			writeComponent(out, importConfiguration.getDescriptionType(), monitor.fork()); // + 4
+			writeComponent(out, importConfiguration.getConceptFile(), monitor.fork());
+			writeComponent(out, importConfiguration.getRelationshipFile(), monitor.fork());
+			writeComponent(out, importConfiguration.getStatedRelationshipFile(), monitor.fork());
 			
 			out.writeInt(importConfiguration.getRefSetUrls().size());
 			
@@ -111,7 +106,7 @@ public class SnomedImportRequest extends RequestWithMonitoring<SnomedImportResul
 	}
 
 	private void writeComponent(final ExtendedDataOutputStream out, final File componentFile, final OMMonitor monitor) throws IOException {
-		if (!ImportConfiguration.isValidReleaseFile(componentFile)) {
+		if (!importConfiguration.isValidReleaseFile(componentFile)) {
 			writeNoFile(out, monitor);
 		} else {
 			final URL componentUrl = importConfiguration.toURL(componentFile);

@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.importer.rf2.command;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -93,7 +94,7 @@ public class ListLanguageRefSetsCommand extends AbstractRf2ImporterCommand {
 			return;
 		}
 
-		final Map<String, String> $ = Maps.newHashMap();
+		final Map<String, String> languageRefsetToLabelMap = Maps.newHashMap();
 		final ImportConfiguration config = new ImportConfiguration(Branch.MAIN_PATH);
 		
 		final Set<File> languageRefSetFiles = archiveFileSet
@@ -102,52 +103,47 @@ public class ListLanguageRefSetsCommand extends AbstractRf2ImporterCommand {
 				.map(fileName -> new File(fileName))
 				.collect(Collectors.toSet());
 		
-		config.setLanguageRefSetFiles(languageRefSetFiles);
-		
-		final Set<File> descriptionFileNames = archiveFileSet
+		final Set<File> descriptionFiles = archiveFileSet
 				.getAllFileName(zipFiles, ReleaseComponentType.DESCRIPTION, contentSubType)
 				.stream()
 				.map(fileName -> new File(fileName))
 				.collect(Collectors.toSet());
+
+		descriptionFiles.forEach(file -> config.addDescriptionFile(file));
 		
-		config.setDescriptionsFiles(descriptionFileNames);
-		
-		final SnomedRefSetNameCollector provider = new SnomedRefSetNameCollector(config, new NullProgressMonitor(), "");
-		
-		for (final File languageRefSetFile : languageRefSetFiles) {
-		
-			interpreter.println("Searching for language type reference sets in '" + languageRefSetFile.getName() + "'...");
-	
-			// Setting up configuration only with the required fields
-			config.setSourceKind(ImportSourceKind.ARCHIVE);
-			config.setArchiveFile(archiveFile);
-	
+		Set<URL> refsetUrls = languageRefSetFiles.stream().map(file -> {
 			try {
-				provider.parse(config.toURL(languageRefSetFile));
-			} catch (final IOException e) {
-				interpreter.println(e);
-				return;
+				return config.toURL(file);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			}
-			
-		}
-		for (final Entry<String, String> label : provider.getAvailableLabels().entrySet()) {
-			$.put(label.getKey(), label.getValue());
+		}).collect(Collectors.toSet());
+		
+		final SnomedRefSetNameCollector provider = new SnomedRefSetNameCollector(refsetUrls, config, new NullProgressMonitor());
+		provider.parse();
+		
+		// Setting up configuration only with the required fields
+		config.setSourceKind(ImportSourceKind.ARCHIVE);
+		config.setArchiveFile(archiveFile);
+		
+		for (final Entry<String, String> label : provider.getRefsetIdToLabelMap().entrySet()) {
+			languageRefsetToLabelMap.put(label.getKey(), label.getValue());
 		}
 		
-		if ($.isEmpty()) {
+		if (languageRefsetToLabelMap.isEmpty()) {
 			interpreter.println("No language reference sets could be found in release archive.");
 			return;
 		}
 
 		interpreter.println("\n---------------------------------------------------------------------\n");
 
-		for (final Entry<String, String> label : $.entrySet()) {
+		for (final Entry<String, String> label : languageRefsetToLabelMap.entrySet()) {
 			final StringBuilder sb = new StringBuilder();
 			sb.append("\t");
 			sb.append(label.getKey());
-			sb.append("|");
+			sb.append(" | ");
 			sb.append(label.getValue().trim());
-			sb.append("|");
+			sb.append(" | ");
 			interpreter.println(sb.toString());
 		}
 		

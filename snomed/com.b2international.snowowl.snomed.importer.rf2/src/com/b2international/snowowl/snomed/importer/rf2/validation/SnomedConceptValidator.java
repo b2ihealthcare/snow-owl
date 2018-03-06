@@ -39,7 +39,7 @@ public class SnomedConceptValidator extends AbstractSnomedValidator {
 	private final Collection<String> requiredDefinitionStatuses = newHashSet();
 	
 	public SnomedConceptValidator(final ImportConfiguration configuration, final SnomedValidationContext context) throws IOException {
-		super(configuration, configuration.toURL(configuration.getConceptsFile()), ComponentImportType.CONCEPT, context, SnomedRf2Headers.CONCEPT_HEADER);
+		super(configuration, configuration.toURL(configuration.getConceptFile()), ComponentImportType.CONCEPT, context, SnomedRf2Headers.CONCEPT_HEADER);
 	}
 
 	@Override

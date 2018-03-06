@@ -66,16 +66,17 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 	@Override
 	protected void indicating(final ExtendedDataInputStream in, final OMMonitor monitor) throws Exception {
 
-		monitor.begin(1 + 7 + 1);
+		monitor.begin(1 + 5 + 1);
 		OMMonitor refSetSubmonitor = null;
 		
-		final ImportConfiguration importConfiguration = new ImportConfiguration(in.readUTF());
+		final ImportConfiguration importConfiguration = new ImportConfiguration(in.readUTF()); // branchPath
 		
 		try {
 			// XXX: source kind is always FILES, since the server just receives a bunch of them
 			importConfiguration.setSourceKind(ImportSourceKind.FILES);
+			
 			userId = in.readString();
-			importConfiguration.setVersion(in.readEnum(ContentSubType.class));
+			importConfiguration.setContentSubType(in.readEnum(ContentSubType.class));
 			importConfiguration.setCreateVersions(in.readBoolean());
 			
 			final int exludedRefSetIdCount = in.readInt();
@@ -87,27 +88,22 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 			String codeSystemShortName = in.readUTF();
 			importConfiguration.setCodeSystemShortName(codeSystemShortName);
 			
-			monitor.worked();
-			
-			int descriptionFilesSize = in.readInt();
-
-			importConfiguration.setDescriptionsFiles(readComponents(in, monitor, importConfiguration, descriptionFilesSize));
-			
-			int languageRefSetFilesSize = in.readInt();
-			
-			importConfiguration.setLanguageRefSetFiles(readComponents(in, monitor, importConfiguration, languageRefSetFilesSize));
-			
-			int textDefinitionFilesSize = in.readInt();
-			
-			importConfiguration.setTextDefinitionFiles(readComponents(in, monitor, importConfiguration, textDefinitionFilesSize));
+			monitor.worked(); // 1
 			
 			receivedFilesDirectory = Files.createTempDir();
 			receivedFilesDirectory.deleteOnExit();
 			
-			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setConceptsFile(f); }}, monitor.fork());
-			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setRelationshipsFile(f); }}, monitor.fork());
-			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setStatedRelationshipsFile(f); }}, monitor.fork());
-			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setDescriptionType(f); }}, monitor.fork());
+			int descriptionFilesSize = in.readInt();
+
+			readComponents(in, monitor, importConfiguration, descriptionFilesSize).forEach(file -> importConfiguration.addDescriptionFile(file));
+			
+			int textDefinitionFilesSize = in.readInt();
+			
+			readComponents(in, monitor, importConfiguration, textDefinitionFilesSize).forEach(file -> importConfiguration.addTextDefinitionFile(file));
+			
+			readComponent(in, importConfiguration, receivedFilesDirectory, f -> importConfiguration.setConceptFile(f), monitor.fork());
+			readComponent(in, importConfiguration, receivedFilesDirectory, f -> importConfiguration.setRelationshipFile(f), monitor.fork());
+			readComponent(in, importConfiguration, receivedFilesDirectory, f -> importConfiguration.setStatedRelationshipFile(f), monitor.fork());
 			
 			final int refSetUrlCount = in.readInt();
 			
@@ -115,8 +111,7 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 			refSetSubmonitor.begin(refSetUrlCount);
 			
 			for (int i = 0; i < refSetUrlCount; i++) {
-				// XXX: assume that for the pre-determined number of additional refsets, a boolean value of "true" will always be sent 
-				readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { addRefSetUrl(importConfiguration, f); }}, refSetSubmonitor.fork());
+				readComponent(in, importConfiguration, receivedFilesDirectory, f -> addRefSetUrl(importConfiguration, f), refSetSubmonitor.fork());
 			}
 			
 			this.configuration = importConfiguration;
@@ -149,7 +144,7 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 
 	private void addRefSetUrl(final ImportConfiguration importConfiguration, final File f) {
 		try {
-			importConfiguration.addRefSetSource(f.toURI().toURL());
+			importConfiguration.addRefSetURL(f.toURI().toURL());
 		} catch (final MalformedURLException e) {
 			throw new IORuntimeException(e);
 		}

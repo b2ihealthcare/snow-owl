@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.importer.release;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -27,7 +28,6 @@ import java.util.regex.Pattern;
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 
 /**
  * Provides a way to validate if a set of relative paths constitute a valid
@@ -186,18 +186,18 @@ public class ReleaseFileSet {
 		
 		Pattern patternToMatch = releaseFile.createPattern(testRelease, contentSubType, releaseIdentifier, relativeRoot);
 		
-		Collection<String> $ = Sets.newHashSet();
+		List<String> fileNames = newArrayList();
 		
 		for (String relativeLocation : relativeLocations) {
 			
 			Matcher matcher = patternToMatch.matcher(relativeLocation);
 			
 			if (matcher.matches()) {
-				$.add(matcher.group());
+				fileNames.add(matcher.group());
 			}
 		}
 
-		return $;
+		return fileNames;
 	}
 	
 	

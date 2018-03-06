@@ -55,7 +55,6 @@ import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.RepositoryState;
 import com.google.common.base.Charsets;
-import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
@@ -133,11 +132,11 @@ public final class SnomedValidationContext {
 	}
 	
 	private void addReleaseFilesForValidating() throws IOException {
-		if (isValidReleaseFile(configuration.getConceptsFile())) {
+		if (isValidReleaseFile(configuration.getConceptFile())) {
 			releaseFileValidators.add(new SnomedConceptValidator(configuration, this));
 		}
 
-		for (File descFile : configuration.getDescriptionsFiles()) {
+		for (File descFile : configuration.getDescriptionFiles()) {
 			if (isValidReleaseFile(descFile)) {
 				releaseFileValidators.add(new SnomedDescriptionValidator(configuration, this, descFile));
 			}
@@ -149,12 +148,12 @@ public final class SnomedValidationContext {
 			}
 		}
 
-		if (isValidReleaseFile(configuration.getRelationshipsFile())) {
-			releaseFileValidators.add(new SnomedRelationshipValidator(configuration, this, configuration.getRelationshipsFile()));
+		if (isValidReleaseFile(configuration.getRelationshipFile())) {
+			releaseFileValidators.add(new SnomedRelationshipValidator(configuration, this, configuration.getRelationshipFile()));
 		}
 		
-		if (isValidReleaseFile(configuration.getStatedRelationshipsFile())) {
-			releaseFileValidators.add(new SnomedRelationshipValidator(configuration, this, configuration.getStatedRelationshipsFile()));
+		if (isValidReleaseFile(configuration.getStatedRelationshipFile())) {
+			releaseFileValidators.add(new SnomedRelationshipValidator(configuration, this, configuration.getStatedRelationshipFile()));
 		}
 	}
 	
@@ -162,16 +161,6 @@ public final class SnomedValidationContext {
 		
 		for (final URL url : configuration.getRefSetUrls()) {
 			addRefSetFile(url);
-		}
-
-		//if the reference file URL set does not contain a language validator yet, specify one 
-		if (!Iterables.any(releaseFileValidators, Predicates.instanceOf(SnomedLanguageRefSetValidator.class))) {
-			Collection<File> languageRefSetFiles = configuration.getLanguageRefSetFiles();
-			for (File langFile : languageRefSetFiles) {
-				if (isValidReleaseFile(langFile)) {
-					releaseFileValidators.add(new SnomedLanguageRefSetValidator(configuration, configuration.toURL(langFile), this));
-				}
-			}
 		}
 		
 	}

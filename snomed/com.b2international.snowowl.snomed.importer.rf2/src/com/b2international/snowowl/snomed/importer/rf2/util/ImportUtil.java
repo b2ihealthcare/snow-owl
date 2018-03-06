@@ -19,7 +19,6 @@ import static com.b2international.commons.CompareUtils.isEmpty;
 import static com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration.ImportSourceKind.FILES;
 import static com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType.CONCEPT;
 import static com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType.DESCRIPTION;
-import static com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType.LANGUAGE_REFERENCE_SET;
 import static com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType.RELATIONSHIP;
 import static com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType.STATED_RELATIONSHIP;
 import static com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType.TEXT_DEFINITION;
@@ -29,11 +28,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,7 +52,6 @@ import org.slf4j.LoggerFactory;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.platform.Extensions;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
@@ -85,7 +81,6 @@ import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -115,13 +110,11 @@ import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRe
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
-import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 import com.google.common.primitives.Longs;
 
@@ -181,7 +174,7 @@ public final class ImportUtil {
 		
 		final ImportConfiguration config = new ImportConfiguration(branchPath.getPath());
 		config.setCodeSystemShortName(codeSystemShortName);
-		config.setVersion(contentSubType);
+		config.setContentSubType(contentSubType);
 		config.setCreateVersions(shouldCreateVersions);
 		config.setArchiveFile(releaseArchive);
 
@@ -195,23 +188,28 @@ public final class ImportUtil {
 		config.setReleaseFileSet(archiveFileSet);
 		
 		for (final URL refSetUrl : collectUrlFromRelease(config)) {
-			config.addRefSetSource(refSetUrl);
+			config.addRefSetURL(refSetUrl);
 		}
 		
 		config.setSourceKind(FILES);
 		
 		final File tempDir = Files.createTempDir();
 		tempDir.deleteOnExit();
-		// read and copy entries to temporary files
+
 		try (final ZipFile archive = new ZipFile(releaseArchive)) {
-			config.setConceptsFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, CONCEPT, contentSubType)));
-			config.setDescriptionsFiles(createTemporaryFile(tempDir, archive, archiveFileSet.getAllFileName(zipFiles, DESCRIPTION, contentSubType)));
-			config.setRelationshipsFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, RELATIONSHIP, contentSubType)));
-			config.setLanguageRefSetFiles(createTemporaryFile(tempDir, archive, archiveFileSet.getAllFileName(zipFiles, LANGUAGE_REFERENCE_SET, contentSubType)));
 			
-			// These paths might turn out to be empty
-			config.setStatedRelationshipsFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, STATED_RELATIONSHIP, contentSubType)));
-			config.setTextDefinitionFiles(createTemporaryFile(tempDir, archive, archiveFileSet.getAllFileName(zipFiles, TEXT_DEFINITION, contentSubType)));
+			config.setConceptFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, CONCEPT, contentSubType)));
+			config.setStatedRelationshipFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, STATED_RELATIONSHIP, contentSubType)));
+			config.setRelationshipFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, RELATIONSHIP, contentSubType)));
+			
+			for (String fileName : archiveFileSet.getAllFileName(zipFiles, DESCRIPTION, contentSubType)) {
+				config.addDescriptionFile(createTemporaryFile(tempDir, archive, fileName));
+			}
+			
+			for (String fileName : archiveFileSet.getAllFileName(zipFiles, TEXT_DEFINITION, contentSubType)) {
+				config.addTextDefinitionFile(createTemporaryFile(tempDir, archive, fileName));
+			}
+			
 		} catch (IOException e) {
 			throw new ImportException("Failed to extract contents of release archive.", e);
 		}
@@ -220,29 +218,9 @@ public final class ImportUtil {
 	}
 	
 	private File createTemporaryFile(final File tmpDir, final ZipFile archive, final String entryPath) throws IOException {
-		if (!Strings.isNullOrEmpty(entryPath)) {
-			final File file = new File(tmpDir, String.format("%s.%s", Files.getNameWithoutExtension(entryPath), Files.getFileExtension(entryPath)));
-			new ByteSource() {
-				@Override
-				public InputStream openStream() throws IOException {
-					return archive.getInputStream(archive.getEntry(entryPath));
-				}
-			}.copyTo(Files.asByteSink(file));
-			return file;
-		}
-		return new File("");
-	}
-	
-	private Collection<File> createTemporaryFile(final File tmpDir, final ZipFile archive, final Collection<String> entryPaths) throws IOException {
-		if (!entryPaths.isEmpty()) {
-			final Collection<File> files = new ArrayList<File>();
-			for (String entryPath : entryPaths) {
-				files.add(createTemporaryFile(tmpDir, archive, entryPath));
-			}
-			return files;
-		}
-		return Collections.emptySet();
-		
+		final File file = new File(tmpDir, String.format("%s.%s", Files.getNameWithoutExtension(entryPath), Files.getFileExtension(entryPath)));
+		java.nio.file.Files.copy(archive.getInputStream(archive.getEntry(entryPath)), file.toPath());
+		return file;
 	}
 
 	private RepositoryState loadRepositoryState(RevisionSearcher searcher) throws IOException {
@@ -338,39 +316,39 @@ public final class ImportUtil {
 		context.setVersionCreationEnabled(configuration.isCreateVersions());
 		context.setLogger(IMPORT_LOGGER);
 		context.setStagingDirectory(stagingDirectoryRoot);
-		context.setContentSubType(configuration.getVersion());
+		context.setContentSubType(configuration.getContentSubType());
 		context.setIgnoredRefSetIds(patchedExcludedRefSetIDs);
 		context.setCodeSystemShortName(configuration.getCodeSystemShortName());
 
 		try {
 
-			if (ImportConfiguration.isValidReleaseFile(configuration.getConceptsFile())) {
-				final URL url = configuration.toURL(configuration.getConceptsFile());
+			if (configuration.isValidReleaseFile(configuration.getConceptFile())) {
+				final URL url = configuration.toURL(configuration.getConceptFile());
 				importers.add(new SnomedConceptImporter(context, url.openStream(), configuration.getMappedName(url.getPath())));
 			}
 			
-			for (File descriptionFile : configuration.getDescriptionsFiles()) {
-				if (ImportConfiguration.isValidReleaseFile(descriptionFile)) {
+			for (File descriptionFile : configuration.getDescriptionFiles()) {
+				if (configuration.isValidReleaseFile(descriptionFile)) {
 					final URL url = configuration.toURL(descriptionFile);
 					importers.add(new SnomedDescriptionImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.DESCRIPTION));
 				}
 			}
 		
 			for (File textFile : configuration.getTextDefinitionFiles()) {
-				if (ImportConfiguration.isValidReleaseFile(textFile)) {
+				if (configuration.isValidReleaseFile(textFile)) {
 					final URL url = configuration.toURL(textFile);
 					importers.add(new SnomedDescriptionImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.TEXT_DEFINITION));
 				}
 				
 			}
 
-			if (ImportConfiguration.isValidReleaseFile(configuration.getRelationshipsFile())) {
-				final URL url = configuration.toURL(configuration.getRelationshipsFile());
+			if (configuration.isValidReleaseFile(configuration.getRelationshipFile())) {
+				final URL url = configuration.toURL(configuration.getRelationshipFile());
 				importers.add(new SnomedRelationshipImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.RELATIONSHIP));
 			}
 
-			if (ImportConfiguration.isValidReleaseFile(configuration.getStatedRelationshipsFile())) {
-				final URL url = configuration.toURL(configuration.getStatedRelationshipsFile());
+			if (configuration.isValidReleaseFile(configuration.getStatedRelationshipFile())) {
+				final URL url = configuration.toURL(configuration.getStatedRelationshipFile());
 				importers.add(new SnomedRelationshipImporter(context, url.openStream(), configuration.getMappedName(url.getPath()), ComponentImportType.STATED_RELATIONSHIP));
 			}
 
@@ -500,10 +478,6 @@ public final class ImportUtil {
 				return String.valueOf(input);
 			}
 		}).toList();
-	}
-
-	private List<ExtendedLocale> getLocales() {
-		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
 	}
 
 	private IEventBus getEventBus() {

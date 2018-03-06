@@ -174,7 +174,7 @@ public abstract class AbstractSnomedValidator {
 	}
 	
 	private String getEffectiveTimeKey(final String effectiveTime) {
-		return ContentSubType.SNAPSHOT.equals(configuration.getVersion()) ? SPECIAL_EFFECTIVE_TIME_KEY : effectiveTime;
+		return ContentSubType.SNAPSHOT.equals(configuration.getContentSubType()) ? SPECIAL_EFFECTIVE_TIME_KEY : effectiveTime;
 	}
 	
 	private Path getEffectiveTimeFile(String effectiveTimeKey) {

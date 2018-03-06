@@ -87,7 +87,7 @@ public class ImportRefSetCommand extends AbstractRf2ImporterCommand {
 			}
 
 			try {
-				configuration.addRefSetSource(refSetFile.toURI().toURL());
+				configuration.addRefSetURL(refSetFile.toURI().toURL());
 			} catch (final MalformedURLException e) {
 				interpreter.println(e);
 			}
@@ -124,7 +124,7 @@ public class ImportRefSetCommand extends AbstractRf2ImporterCommand {
 			return;
 		}
 		
-		configuration.setVersion(contentSubType);
+		configuration.setContentSubType(contentSubType);
 		configuration.setSourceKind(ImportSourceKind.FILES);
 		
 		if ("-x".equals(arg)) {

@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.importer.rf2.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -47,63 +46,20 @@ public class RF2ReleaseRefSetFileCollector {
 			return Collections.<URL>emptySet();
 		}
 		
-		final List<String> refSetsRelativePaths = releaseFileSet.getRefSetPaths();
-		final String relativeRoot = releaseFileSet.getRelativeRoot();
 		final Set<URL> collectedUrlSet = Sets.newHashSet();
 		
-		for(final String refSetPath : refSetsRelativePaths) {
+		if (configuration.getSourceKind().equals(ImportSourceKind.ARCHIVE)) {
 			
-			Set<URL> parsedRefSetUrl = Sets.newHashSet();
+			final List<String> refSetsRelativePaths = releaseFileSet.getRefSetPaths();
+			final String relativeRoot = releaseFileSet.getRelativeRoot();
 			
-			if (configuration.getSourceKind().equals(ImportSourceKind.ARCHIVE)) {
-				parsedRefSetUrl = parseZip(configuration.getArchiveFile(), relativeRoot, refSetPath);
-			} else if (configuration.getSourceKind().equals(ImportSourceKind.ROOT_DIRECTORY)) {
-				parsedRefSetUrl = parseDirectory(configuration.getRootFile(), relativeRoot, refSetPath);
+			for (final String refSetPath : refSetsRelativePaths) {
+				collectedUrlSet.addAll(parseZip(configuration.getArchiveFile(), relativeRoot, refSetPath));
 			}
 			
-			collectedUrlSet.addAll(parsedRefSetUrl);
-		}
-
-		// Add reference set URLs from the first wizard page in case they're not present
-		try {
-			
-			for (File langFiles : configuration.getLanguageRefSetFiles()) {
-				collectedUrlSet.add(configuration.toURL(langFiles));
-			}
-			
-			if (null != configuration.getDescriptionType()) {
-				collectedUrlSet.add(configuration.toURL(configuration.getDescriptionType()));
-			}
-			
-		} catch (final IOException e) {
-			e.printStackTrace();
 		}
 
 		return collectedUrlSet;
-	}
-	
-	private static Set<URL> parseDirectory(final File rootDirectory, final String relativeRoot, final String relativePath) {
-		Set<URL> filesToImport = new HashSet<URL>();
-		
-		final File refSetRootDirectory = new File(rootDirectory, relativeRoot);
-		final File refSetDirectory = new File(refSetRootDirectory, relativePath);
-		
-		final File[] directoryContents = refSetDirectory.listFiles();
-		
-		if (directoryContents != null) {
-			for (final File file : directoryContents) {
-				
-				try {
-					filesToImport.add(file.toURI().toURL());
-				} catch (final MalformedURLException e) {
-					e.printStackTrace();
-				}
-			}
-		} else {
-			filesToImport = Collections.<URL>emptySet();
-		}
-		
-		return filesToImport;
 	}
 	
 	private static Set<URL> parseZip(final File archiveFile, final String relativeRoot, final String relativePath) {
@@ -114,7 +70,7 @@ public class RF2ReleaseRefSetFileCollector {
 			final ZipFile zipFile = new ZipFile(archiveFile);
 			final Enumeration<? extends ZipEntry> entries = zipFile.entries();
 			
-			while(entries.hasMoreElements()) {
+			while (entries.hasMoreElements()) {
 
 				final ZipEntry nextElement = entries.nextElement();
 				if (!nextElement.isDirectory()) {
@@ -131,7 +87,7 @@ public class RF2ReleaseRefSetFileCollector {
 			zipFile.close();
 			
 		} catch (final IOException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		} 
 		
 		return filesToImport;
