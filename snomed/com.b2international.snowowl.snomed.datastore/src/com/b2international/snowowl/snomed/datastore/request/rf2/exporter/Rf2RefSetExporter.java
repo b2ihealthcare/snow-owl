@@ -43,6 +43,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequestBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.CaseFormat;
+import com.google.common.base.CharMatcher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
@@ -51,6 +52,13 @@ import com.google.common.collect.Iterables;
  */
 public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchRequestBuilder, SnomedReferenceSetMembers, SnomedReferenceSetMember> {
 
+	private static final char[] INVALID_RESOURCE_CHARACTERS = { '\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0' };
+	
+	private static final CharMatcher INVALID_RESOURCE_MATCHER = CharMatcher.WHITESPACE
+			.or(CharMatcher.anyOf(String.valueOf(INVALID_RESOURCE_CHARACTERS)))
+			.or(CharMatcher.JAVA_ISO_CONTROL)
+			.precomputed();
+	
 	protected final Rf2RefSetExportLayout refSetExportLayout;
 	protected final SnomedRefSetType refSetType;
 	protected final Collection<SnomedConcept> referenceSets;
@@ -144,11 +152,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 		if (Rf2RefSetExportLayout.COMBINED.equals(refSetExportLayout)) {
 			return getCombinedRefSetName();
 		} else {
-			final SnomedConcept singleReferenceSet = Iterables.getOnlyElement(referenceSets);
-			final SnomedDescription referenceSetPt = singleReferenceSet.getPt();
-			return (referenceSetPt != null)
-					? toCamelCase(referenceSetPt.getTerm())
-					: singleReferenceSet.getId();
+			return getIndividualRefSetName();
 		}
 	}
 
@@ -171,6 +175,17 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			default: 
 				throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + refSetType);
 		}
+	}
+
+	private String getIndividualRefSetName() {
+		final SnomedConcept singleReferenceSet = Iterables.getOnlyElement(referenceSets);
+		final SnomedDescription referenceSetPt = singleReferenceSet.getPt();
+		final String refSetName = (referenceSetPt != null)
+				? toCamelCase(referenceSetPt.getTerm())
+				: singleReferenceSet.getId();
+				
+		// Replace dangerous characters with an underscore
+		return INVALID_RESOURCE_MATCHER.replaceFrom(refSetName, '_');
 	}
 
 	private String toCamelCase(final String term) {
