@@ -22,34 +22,78 @@ import com.b2international.snowowl.fhir.api.model.serialization.FhirParameter;
 
 public class Designation {
 	
-	public Designation(String languageCode, Coding use, String value) {
+	//The language code this designation is defined for (0..1)
+	private String languageCode;
+	
+	//A code that details how this designation would be used (0..1)
+	private Coding use;
+	
+	//The text value for this designation (1..1)
+	private String value;
+	
+	Designation(String languageCode, Coding use, String value) {
 		this.languageCode = languageCode;
 		this.use = use;
 		this.value = value;
 	}
 	
-	//The language code this designation is defined for (0..1)
-	private String languageCode;
-
-	//A code that details how this designation would be used (0..1)
-	private Coding use;
-
-	//The text value for this designation (1..1)
-	private String value;
-	
-	public FhirDesignation toFhirDesignation() throws Exception {
-		
-		FhirDesignation designation = new FhirDesignation();
-		
-		Class clazz = this.getClass();
-		Field[] fields = clazz.getDeclaredFields();
-		for (Field field : fields) {
-			Object value = field.get(this);
-			String type = "value" + field.getType().getSimpleName();
-			FhirParameter parameter = new FhirParameter(field.getName(), type, value);
-			designation.add(parameter);
-		}
-		return designation;
+	public String getLanguageCode() {
+		return languageCode;
 	}
 
+	public Coding getUse() {
+		return use;
+	}
+
+	public String getValue() {
+		return value;
+	}
+	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	public static class Builder {
+		
+		private String languageCode;
+		private Coding use;
+		private String value;
+
+		public Builder langaugeCode(final String languageCode) {
+			this.languageCode = languageCode;
+			return this;
+		}
+		
+		public Builder use(Coding use) {
+			this.use = use;
+			return this;
+		}
+		
+		public Builder value(String value) {
+			this.value = value;
+			return this;
+		}
+
+		public Designation build() {
+			return new Designation(languageCode, use, value);
+		}
+		
+		public FhirDesignation buildSerializableBean() throws Exception {
+			Designation designation = new Designation(languageCode, use, value);
+			
+			FhirDesignation fhirDesignation = new FhirDesignation();
+			
+			Field[] fields = Designation.class.getDeclaredFields();
+			for (Field field : fields) {
+				field.setAccessible(true);
+				Object value = field.get(designation);
+				String type = "value" + field.getType().getSimpleName();
+				FhirParameter parameter = new FhirParameter(field.getName(), type, value);
+				fhirDesignation.add(parameter);
+			}
+			return fhirDesignation;
+		}
+		
+	}
+	
 }

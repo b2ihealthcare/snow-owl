@@ -59,6 +59,9 @@ public class FhirLookupResult {
 	
 	@JsonProperty(value="parameter")
 	private Collection<FhirParameter> parameters = Sets.newHashSet();
+	
+	@JsonProperty
+	private FhirDesignation designation;
 
 	public void add(FhirParameter property) {
 		parameters.add(property);
@@ -67,5 +70,10 @@ public class FhirLookupResult {
 	//header "resourceType" : "Parameters",
 	@JsonProperty
 	private String resourceType = "Parameters";
+
+	public void setDesignation(FhirDesignation fhirDesignation) {
+		this.designation = fhirDesignation;
+		
+	}
 
 }

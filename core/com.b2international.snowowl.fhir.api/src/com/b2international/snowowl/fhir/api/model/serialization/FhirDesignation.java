@@ -23,9 +23,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 
 /**
- * {
-  "resourceType" : "Parameters",
-  "parameter" : [
     {
     		"name" : "languageCode",
     		"valueCode" : "uk"
@@ -34,6 +31,7 @@ import com.google.common.collect.Sets;
     		"name" : "value",
     		"valueString" : "whatever string this is"
   	},
+  	{
   		"name": "use", 
   		"valueCoding" : {
     			"code" : "code",
@@ -42,18 +40,21 @@ import com.google.common.collect.Sets;
     			"display" : null,
     			"userSelected" : false
   		}
-   ]
   }
  */
 @JsonInclude(Include.NON_NULL)
 public class FhirDesignation extends FhirParameters {
 	
-	@JsonProperty(value="part")
+	@JsonProperty(value="partD")
 	private Collection<FhirParameter> parameters = Sets.newHashSet();
 
 	@Override
 	public void add(FhirParameter property) {
 		parameters.add(property);
+	}
+
+	public Collection<FhirParameter> getParameters() {
+		return parameters;
 	}
 	
 }
