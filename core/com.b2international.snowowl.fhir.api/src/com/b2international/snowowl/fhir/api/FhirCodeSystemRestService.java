@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.api;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.http.MediaType;
@@ -25,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponents.UriTemplateVariables;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.platform.Extensions;
@@ -75,31 +75,21 @@ public class FhirCodeSystemRestService {
 		@ApiParam(value="The code system uri") @RequestParam(value="uri") final String uri,
 		@ApiParam(value="The code system version") @RequestParam(value="version", required=false) final String version,
 		@ApiParam(value="Lookup date in datetime format") @RequestParam(value="date", required=false) final String date,
+		@ApiParam(value="Language code for display") @RequestParam(value="displayLanguage", required=false) final String displayLanguage,
 		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required=false) Set<String> properties) {
 		
-		System.err.println("Code: " + code + " uri: " + uri + " version:" + version + " lookup date: " + date);
+		System.err.println("Code: " + code + " uri: " + uri +
+				" version:" + version + " lookup date: " + date + " display Language: " + displayLanguage);
 		
 		if (properties !=null) {
 			System.out.println(" properties: " + Arrays.toString(properties.toArray()));
 		}
 		
 		Coding coding = new Coding(code, uri, version);
-		
-		coding.validate();
-		
-		if (!StringUtils.isEmpty(date) && !date.matches(DATE_TIME_REGEXP)) {
-			throw new BadRequestException("Date format is incorrect.");
-		}
-		
-		Collection<IFhirProvider> fhirProviders = Extensions.getExtensions(FHIR_EXTENSION_POINT, IFhirProvider.class);
-		for (IFhirProvider iTestService : fhirProviders) {
-			if (iTestService.isSupported(uri)) {
-				iTestService.test();
-				break;
-			}
-		}
+		validateParameters(coding, date, displayLanguage);
 		
 		//all good, now do something
+		lookup(coding);
 	}
 	
 	@ApiOperation(
@@ -111,19 +101,46 @@ public class FhirCodeSystemRestService {
 		
 		@ApiParam(value="The coding definition to look up") @RequestBody final Coding coding,
 		@ApiParam(value="Lookup date in datetime format") @RequestParam(value="date", required=false) final String date,
+		@ApiParam(value="Language code for display") @RequestParam(value="displayLanguage", required=false) final String displayLanguage,
 		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required=false) Set<String> properties) {
 		
 		System.err.println("Coding: " + coding + ", lookup date: " + date + " properties: ");
 		if (properties !=null) {
 			System.out.println(" properties: " + Arrays.toString(properties.toArray()));
 		}
+		
+		validateParameters(coding, date, displayLanguage);
+		
+		//all good, now do something
+		lookup(coding);
+	}
+	
+	private void lookup(Coding coding) {
+		
+		Collection<IFhirProvider> fhirProviders = Extensions.getExtensions(FHIR_EXTENSION_POINT, IFhirProvider.class);
+		
+		Optional<IFhirProvider> fhirProviderOptional = fhirProviders.stream().findFirst();
+		
+		fhirProviderOptional.orElseThrow(() -> new BadRequestException("Did not find FHIR provider for URI: " + coding.getSystemUri()));
+		
+		IFhirProvider iFhirProvider = fhirProviderOptional.get();
+		iFhirProvider.lookup(coding.getVersion(), coding.getCode());
+		
+	}
+	
+	private void validateParameters(Coding coding, String date, String displayLanguage) {
 		coding.validate();
 		
 		if (!StringUtils.isEmpty(date) && !date.matches(DATE_TIME_REGEXP)) {
 			throw new BadRequestException("Date format is incorrect.");
 		}
-		System.out.println("Lookup called with coding");
-		//all good, now do something
+		
+		if (!StringUtils.isEmpty(displayLanguage) && displayLanguage.matches(Coding.CODE_REGEXP)) {
+			throw new BadRequestException("Display language code format is incorrect: " + displayLanguage);
+		}
+		
 	}
+
+
 
 }

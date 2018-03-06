@@ -20,9 +20,13 @@ package com.b2international.snowowl.fhir.api.service;
  * @since 6.3
  */
 public class AtcFhirProvider implements IFhirProvider {
+	
+	private static final String CODE_SYSTEM_URI = "http://www.whocc.no/atc";
+	//from the importer
+	public static final String LINK = "http://www.who.int/classifications/atcddd/en/";
 
 	@Override
-	public void test() {
+	public void lookup(String version, String code) {
 		System.out.println("AtcFhirProvider.test()");
 	}
 

@@ -13,25 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.service;
+package com.b2international.snowowl.fhir.api.model.serialization;
 
-/**
- * Extension point interface for code system specific FHIR API support
- * 
- * @see <a href="https://www.hl7.org/fhir/2016May/terminologies.html#system">FHIR:Terminologies:System</a> to determine whether a code system is supported
- *
- * 
- * @see 'com.b2international.snowowl.fhir.provider' for the extension point definition
- * @since 6.3
- */
-public interface IFhirProvider {
+import java.util.Collection;
 
-	/**
-	 * @param uri
-	 * @return true if the code system represented by the URI is supported
-	 */
-	boolean isSupported(String uri);
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Sets;
 
-	void lookup(String version, String code);
+public class FhirParameters {
 	
+	@JsonProperty(value="parameter")
+	private Collection<FhirParameter> parameters = Sets.newHashSet();
+
+	public void add(FhirParameter property) {
+		parameters.add(property);
+	}
+
 }

@@ -13,25 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.service;
+package com.b2international.snowowl.fhir.api.model;
 
-/**
- * Extension point interface for code system specific FHIR API support
- * 
- * @see <a href="https://www.hl7.org/fhir/2016May/terminologies.html#system">FHIR:Terminologies:System</a> to determine whether a code system is supported
- *
- * 
- * @see 'com.b2international.snowowl.fhir.provider' for the extension point definition
- * @since 6.3
- */
-public interface IFhirProvider {
+import java.util.Collection;
 
-	/**
-	 * @param uri
-	 * @return true if the code system represented by the URI is supported
-	 */
-	boolean isSupported(String uri);
-
-	void lookup(String version, String code);
+public class Property {
 	
+	//Identifies the property returned (1..1)
+	private String code;
+	
+	/*
+	 * The value of the property returned (0..1)
+	 * code | Coding | string | integer | boolean | dateTime
+	 */
+	private Object value;
+	
+	//Human Readable representation of the property value (e.g. display for a code) 0..1
+	private String description;
+	
+	private Collection<Property> subProperties;
+
 }

@@ -22,6 +22,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.wordnik.swagger.annotations.ApiModel;
 
 /**
@@ -31,9 +33,10 @@ import com.wordnik.swagger.annotations.ApiModel;
  * @since 6.3
  */
 @ApiModel
+@JsonInclude(Include.NON_NULL)
 public class Coding {
 	
-	private static final String CODE_REGEXP = "[^\\s]+([\\s]?[^\\s]+)*"; //$NON-NLS-N$
+	public static final String CODE_REGEXP = "[^\\s]+([\\s]?[^\\s]+)*"; //$NON-NLS-N$
 	
 	@NotEmpty
 	private String code;

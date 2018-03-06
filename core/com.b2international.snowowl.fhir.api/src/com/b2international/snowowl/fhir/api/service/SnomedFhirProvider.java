@@ -22,7 +22,7 @@ package com.b2international.snowowl.fhir.api.service;
 public class SnomedFhirProvider implements IFhirProvider {
 	
 	@Override
-	public void test() {
+	public void lookup(String version, String code) {
 		System.out.println("SnomedFhirProvider.test()");
 	}
 
