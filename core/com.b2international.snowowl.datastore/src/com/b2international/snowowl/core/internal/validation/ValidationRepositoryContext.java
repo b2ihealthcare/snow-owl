@@ -16,58 +16,130 @@
 package com.b2international.snowowl.core.internal.validation;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.b2international.index.BulkUpdate;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.DelegatingContext;
+import com.b2international.snowowl.core.validation.ValidationRequests;
+import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.core.validation.whitelist.WhiteListNotification;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 6.3
  */
 public final class ValidationRepositoryContext extends DelegatingContext {
 
-	private final Map<String, ValidationWhiteList> newObjects = newHashMap();
-	private final Map<Class<?>, Set<String>> objectsToDelete = newHashMap();
+	// actual raw mapping changes
+	private final Map<String, Object> newObjects = newHashMap();
+	private final Multimap<Class<?>, String> objectsToDelete = HashMultimap.create();
+	
+	// higher level aggregated changes
 	
 	ValidationRepositoryContext(ServiceProvider delegate) {
 		super(delegate);
 	}
 
-	public ValidationRepository repository() {
-		return service(ValidationRepository.class);
+	/**
+	 * Marks the given validation object to save it into the Validation Repository.
+	 * @param id
+	 * @param doc
+	 */
+	public void save(String id, Object doc) {
+		newObjects.put(id, doc);
 	}
 	
-	public void save(ValidationWhiteList whiteList) {
-		newObjects.put(whiteList.getId(), whiteList);
+	/**
+	 * Marks the given validation object for deletion. 
+	 * @param type
+	 * @param ids
+	 */
+	public void delete(Class<?> type, String id) {
+		objectsToDelete.put(type, id);
 	}
 	
-	public void delete(Set<String> ids) {
-		objectsToDelete.put(ValidationWhiteList.class, ids);
-	}
-
-	public void commit() {
+	void commit() {
 		if (!newObjects.isEmpty() || !objectsToDelete.isEmpty()) {
-			repository().write(writer -> {
+			service(ValidationRepository.class).write(writer -> {
 				writer.putAll(newObjects);
-				writer.removeAll(objectsToDelete);
+				
+				final Multimap<String, ComponentIdentifier> addToWhitelist = HashMultimap.create();
+				newObjects.values()
+					.stream()
+					.filter(ValidationWhiteList.class::isInstance)
+					.map(ValidationWhiteList.class::cast)
+					.forEach(whitelist -> addToWhitelist.put(whitelist.getRuleId(), whitelist.getComponentIdentifier()));
+				
+				if (!addToWhitelist.isEmpty()) {
+					ExpressionBuilder filter = Expressions.builder();
+					for (String ruleId : addToWhitelist.keySet()) {
+						filter.should(Expressions.builder()
+							.filter(Expressions.exactMatch(ValidationIssue.Fields.RULE_ID, ruleId))
+							.filter(Expressions.matchAny(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, addToWhitelist.get(ruleId).stream().map(ComponentIdentifier::getComponentId).collect(Collectors.toSet())))
+							.build());
+					}
+					writer.bulkUpdate(new BulkUpdate<>(ValidationIssue.class, filter.build(), ValidationIssue.Fields.ID, ValidationIssue.Scripts.WHITELIST, ImmutableMap.of("whitelisted", true)));
+				}
+				
+				final Multimap<String, ComponentIdentifier> removeFromWhitelist = HashMultimap.create();
+				ValidationRequests.whiteList().prepareSearch()
+					.all()
+					.filterByIds(ImmutableSet.copyOf(objectsToDelete.get(ValidationWhiteList.class)))
+					.build()
+					.execute(this)
+					.forEach(whitelist -> removeFromWhitelist.put(whitelist.getRuleId(), whitelist.getComponentIdentifier()));
+				
+				if (!removeFromWhitelist.isEmpty()) {
+					ExpressionBuilder filter = Expressions.builder();
+					for (String ruleId : removeFromWhitelist.keySet()) {
+						filter.should(Expressions.builder()
+							.filter(Expressions.exactMatch(ValidationIssue.Fields.RULE_ID, ruleId))
+							.filter(Expressions.matchAny(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, removeFromWhitelist.get(ruleId).stream().map(ComponentIdentifier::getComponentId).collect(Collectors.toSet())))
+							.build());
+					}
+					writer.bulkUpdate(new BulkUpdate<>(ValidationIssue.class, filter.build(), ValidationIssue.Fields.ID, ValidationIssue.Scripts.WHITELIST, ImmutableMap.of("whitelisted", false)));
+				}
+				
+				final Map<Class<?>, Set<String>> docsToDelete = newHashMap();
+				objectsToDelete.asMap().forEach((type, ids) -> docsToDelete.put(type, ImmutableSet.copyOf(ids)));
+				writer.removeAll(docsToDelete);
+				
 				writer.commit();
 				return null;
 			});
 			
 			if (!newObjects.isEmpty()) {
-				WhiteListNotification.added(newObjects.keySet()).publish(service(IEventBus.class));
+				// TODO refactor notification validation support
+				final Set<String> addedWhiteLists = newHashSet();
+				newObjects.forEach((id, doc) -> {
+					if (doc instanceof ValidationWhiteList) {
+						addedWhiteLists.add(id);
+					}
+				});
+				if (!addedWhiteLists.isEmpty()) {
+					WhiteListNotification.added(addedWhiteLists).publish(service(IEventBus.class));
+				}
 			}
 			
 			if (!objectsToDelete.isEmpty()) {
-				WhiteListNotification.removed(Iterables.getOnlyElement(objectsToDelete.values())).publish(service(IEventBus.class));
+				final Set<String> removedWhiteLists = ImmutableSet.copyOf(objectsToDelete.get(ValidationWhiteList.class));
+				if (!removedWhiteLists.isEmpty()) {
+					WhiteListNotification.removed(removedWhiteLists).publish(service(IEventBus.class));
+				}
 			}
-			
 		}
 	}
 

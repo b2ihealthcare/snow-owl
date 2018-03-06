@@ -33,6 +33,8 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequestBuilder;
 import com.b2international.snowowl.core.validation.rule.ValidationRules;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 6.0
@@ -61,6 +63,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			
 			// clear all previously reported issues on this branch for each rule
 			final Set<String> ruleIds = rules.stream().map(ValidationRule::getId).collect(Collectors.toSet());
+
 			final Set<String> issuesToDelete = ValidationRequests.issues().prepareSearch()
 					.all()
 					.filterByBranchPath(branchPath)
@@ -76,6 +79,8 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			
 			ValidationThreadPool pool = context.service(ValidationThreadPool.class);
 			
+			final Multimap<String, ComponentIdentifier> newIssuesByRule = HashMultimap.create();
+			
 			// evaluate selected rules
 			for (ValidationRule rule : rules) {
 				ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
@@ -83,12 +88,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 					pool.submit(() -> {
 						try {
 							List<ComponentIdentifier> affectedComponents = evaluator.eval(context, rule);
-							if (!affectedComponents.isEmpty()) {
-								for (ComponentIdentifier affectedComponent : affectedComponents) {
-									String issueId = UUID.randomUUID().toString();
-									index.put(issueId, new ValidationIssue(issueId, rule.getId(), branchPath, affectedComponent));
-								}
-							}
+							newIssuesByRule.putAll(rule.getId(), affectedComponents);
 							// TODO report successfully executed validation rule
 						} catch (Exception e) {
 							// TODO report failed validation rule
@@ -98,6 +98,23 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 					})
 					.getSync();
 					
+				}
+			}
+			
+			// fetch all white list entries to determine whether an issue is whitelisted already or not
+			final Multimap<String, ComponentIdentifier> whiteListedEntries = HashMultimap.create();
+			ValidationRequests.whiteList().prepareSearch()
+				.all()
+				.build()
+				.execute(context)
+				.stream()
+				.forEach(whitelist -> whiteListedEntries.put(whitelist.getRuleId(), whitelist.getComponentIdentifier()));
+			
+			// persist new issues
+			for (String ruleId : newIssuesByRule.keySet()) {
+				for (ComponentIdentifier affectedComponent : newIssuesByRule.get(ruleId)) {
+					String issueId = UUID.randomUUID().toString();
+					index.put(issueId, new ValidationIssue(issueId, ruleId, branchPath, affectedComponent, whiteListedEntries.get(ruleId).contains(affectedComponent)));
 				}
 			}
 			

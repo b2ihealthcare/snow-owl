@@ -51,7 +51,22 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 		/**
 		 * Filter matches by their rule's tooling ID field.
 		 */
-		TOOLING_ID
+		TOOLING_ID,
+		
+		/**
+		 * Filter matches by affected component identifier(s).
+		 */
+		AFFECTED_COMPONENT_ID,
+		
+		/**
+		 * Filter matches by affected component type(s).
+		 */
+		AFFECTED_COMPONENT_TYPE,
+		
+		/**
+		 * Filter matches by that are whitelisted or not. 
+		 */
+		WHITELISTED
 	}
 	
 	@Override
@@ -97,12 +112,26 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 				filterByRuleIds.addAll(ruleFilter);
 			} else {
 				filterByRuleIds = newHashSet(ruleFilter);
-				
 			}
 		}
 		
 		if (filterByRuleIds != null) {
 			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.RULE_ID, filterByRuleIds));
+		}
+		
+		if (containsKey(OptionKey.AFFECTED_COMPONENT_ID)) {
+			Collection<String> affectedComponentIds = getCollection(OptionKey.AFFECTED_COMPONENT_ID, String.class);
+			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, affectedComponentIds));
+		}
+		
+		if (containsKey(OptionKey.AFFECTED_COMPONENT_TYPE)) {
+			Collection<Integer> affectedComponentTypes = getCollection(OptionKey.AFFECTED_COMPONENT_TYPE, Short.class).stream().map(Integer::valueOf).collect(Collectors.toSet());
+			queryBuilder.filter(Expressions.matchAnyInt(ValidationIssue.Fields.AFFECTED_COMPONENT_TYPE, affectedComponentTypes));
+		}
+		
+		if (containsKey(OptionKey.WHITELISTED)) {
+			boolean whitelisted = getBoolean(OptionKey.WHITELISTED);
+			queryBuilder.filter(Expressions.match(ValidationIssue.Fields.WHITELISTED, whitelisted));
 		}
 		
 		return queryBuilder.build();

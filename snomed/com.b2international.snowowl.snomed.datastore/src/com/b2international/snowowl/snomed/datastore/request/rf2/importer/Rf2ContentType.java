@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.request.rf2;
+package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import java.util.Arrays;
 
@@ -25,7 +25,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 /**
  * @param <T>
  */
-interface Rf2ContentType<T extends SnomedComponent> {
+public interface Rf2ContentType<T extends SnomedComponent> {
 
 	default void register(String[] values, Rf2EffectiveTimeSlice slice) {
 		final String containerId = getContainerId(values);

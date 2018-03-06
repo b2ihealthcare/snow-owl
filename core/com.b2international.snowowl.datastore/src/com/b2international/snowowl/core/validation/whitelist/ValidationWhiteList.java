@@ -20,6 +20,7 @@ import java.io.Serializable;
 import com.b2international.index.Doc;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
@@ -35,30 +36,44 @@ public final class ValidationWhiteList implements Serializable {
 	public static final class Fields {
 		public static final String ID = "id";
 		public static final String RULE_ID = "ruleId";
-		public static final String COMPONENT_IDENTIFIER = "componentIdentifier";
+		public static final String COMPONENT_ID = "componentId";
+		public static final String TERMINOLOGY_COMPONENT_ID = "terminologyComponentId";
 		public static final String REPORTER = "reporter";
 		public static final String CREATED_AT = "createdAt";
 	}
 	
 	private final String id;
 	private final String ruleId;
-	private final ComponentIdentifier componentIdentifier;
 	private final String reporter;
-	private final long  createdAt;
+	private final long createdAt;
+	private final String componentId;
+	private final short terminologyComponentId;
+	
+	private transient ComponentIdentifier componentIdentifier;
+	
+	public ValidationWhiteList(
+			final String id,
+			final String ruleId,
+			final String reporter,
+			final long createdAt,
+			final ComponentIdentifier componentIdentifier) {
+		this(id, ruleId, reporter, createdAt, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId());
+	}
 
 	@JsonCreator
 	public ValidationWhiteList(
 			@JsonProperty("id") final String id,
 			@JsonProperty("ruleId") final String ruleId,
-			@JsonProperty("componentIdentifier") final ComponentIdentifier componentIdentifier,
 			@JsonProperty("reporter") final String reporter,
-			@JsonProperty("createdAt") final long createdAt) {
-	
+			@JsonProperty("createdAt") final long createdAt,
+			@JsonProperty("terminologyComponentId") final short terminologyComponentId,
+			@JsonProperty("componentId") final String componentId) {
 		this.id = id;
 		this.ruleId = ruleId;
-		this.componentIdentifier = componentIdentifier;
 		this.reporter = reporter;
 		this.createdAt = createdAt;
+		this.terminologyComponentId = terminologyComponentId;
+		this.componentId = componentId;
 	}
 	
 	public String getId() {
@@ -69,8 +84,22 @@ public final class ValidationWhiteList implements Serializable {
 		return ruleId;
 	}
 	
+	@JsonIgnore
 	public ComponentIdentifier getComponentIdentifier() {
+		if (componentIdentifier == null) {
+			componentIdentifier = ComponentIdentifier.of(terminologyComponentId, componentId);
+		}
 		return componentIdentifier;
+	}
+	
+	@JsonProperty
+	String getComponentId() {
+		return componentId;
+	}
+	
+	@JsonProperty
+	short getTerminologyComponentId() {
+		return terminologyComponentId;
 	}
 
 	public String getReporter() {
@@ -86,9 +115,9 @@ public final class ValidationWhiteList implements Serializable {
 		return MoreObjects.toStringHelper(getClass())
 			.add("id", id)
 			.add("ruleId", ruleId)
-			.add("componentIdentifier", componentIdentifier)
 			.add("reporter", reporter)
 			.add("createdAt", createdAt)
+			.add("componentIdentifier", getComponentIdentifier())
 			.toString();
 	}
 	

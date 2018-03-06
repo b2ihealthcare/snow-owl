@@ -674,7 +674,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						.all()
 						.filterByActive(true)
 						.filterBySource(conceptIds(concepts))
-						.filterByCharacteristicType(Concepts.INFERRED_RELATIONSHIP)
+						.filterByCharacteristicTypes(Sets.newHashSet(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP))
 						.setExpand("source(),destination(expand(pt())),type(expand(pt())),members(expand(pt()))")
 						.setLocales(locales)
 						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())

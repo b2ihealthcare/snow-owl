@@ -13,26 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.validation.whitelist;
-
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.internal.validation.ValidationRepositoryContext;
+package com.b2international.snowowl.snomed.core.domain;
 
 /**
- * @since 6.1
+ * Enumerates available export file layouts for reference sets.
  */
-final class ValidationWhiteListDeleteRequest implements Request<ValidationRepositoryContext, Boolean> {
+public enum Rf2RefSetExportLayout {
 
-	private final String id;
+	/**
+	 * Reference set content for the same type are concatenated into a single file.
+	 */
+	COMBINED("One file per reference set type"),
 
-	ValidationWhiteListDeleteRequest(final String id) {
-		this.id = id;
+	/**
+	 * A separate file is created for each reference set.
+	 */
+	INDIVIDUAL("One file per reference set");
+
+	private String displayLabel;
+
+	private Rf2RefSetExportLayout(final String displayLabel) {
+		this.displayLabel = displayLabel;
 	}
-	
+
 	@Override
-	public Boolean execute(ValidationRepositoryContext context) {
-		context.delete(ValidationWhiteList.class, id);
-		return Boolean.TRUE;
+	public String toString() {
+		return displayLabel;
 	}
-
 }
