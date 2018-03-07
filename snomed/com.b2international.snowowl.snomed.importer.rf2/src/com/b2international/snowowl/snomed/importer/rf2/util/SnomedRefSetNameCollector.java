@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
@@ -49,7 +50,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
-import com.google.common.base.CharMatcher;
 import com.google.common.base.Optional;
 import com.google.common.io.Closeables;
 
@@ -73,13 +73,10 @@ import com.google.common.io.Closeables;
  */
 public class SnomedRefSetNameCollector {
 	
-	private static final String UNLABELED_REFSET_SUFFIX = " (unresolved)";
-	private static final String ESCAPED_UNLABELED_REFSET_SUFFIX = CharMatcher.is(')')
-			.replaceFrom(CharMatcher.is('(').replaceFrom(UNLABELED_REFSET_SUFFIX, "\\("), "\\)");
-	
 	private static final String UNLABELED_REFSET_PREFIX = "Reference set ";
+	private static final String UNLABELED_REFSET_SUFFIX = " (unresolved)";
 	private static final String UNLABELED_REFSET_TEMPLATE = UNLABELED_REFSET_PREFIX + "%s" + UNLABELED_REFSET_SUFFIX;
-	public static final String UNLABELED_REFSET_REGEX = UNLABELED_REFSET_PREFIX + "([\\d]*)" + ESCAPED_UNLABELED_REFSET_SUFFIX;
+	public static final String UNLABELED_REFSET_REGEX = UNLABELED_REFSET_PREFIX + "([\\d]*)" + Pattern.quote(UNLABELED_REFSET_SUFFIX);
 
 	private static final CsvSettings CSV_SETTINGS = new CsvSettings('\0', '\t', EOL.CRLF, true);
 
