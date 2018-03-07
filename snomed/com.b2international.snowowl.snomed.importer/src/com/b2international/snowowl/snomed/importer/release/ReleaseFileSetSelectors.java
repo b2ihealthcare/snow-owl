@@ -113,8 +113,6 @@ public final class ReleaseFileSetSelectors {
 				new DescriptionReleaseFile(terminologyRoot));
 		componentMapBuilder.put(ReleaseComponentType.LANGUAGE_REFERENCE_SET, 
 				new LanguageRefsetReleaseFile(languageRefSetRoot));
-		componentMapBuilder.put(ReleaseComponentType.DESCRIPTION_TYPE_REFERENCE_SET, 
-				new DescriptionTypeRefSetReleaseFile(refSetRoot + "/Metadata"));
 		componentMapBuilder.put(ReleaseComponentType.TEXT_DEFINITION,
 				new TextDefinitionReleaseFile(terminologyRoot));
 		

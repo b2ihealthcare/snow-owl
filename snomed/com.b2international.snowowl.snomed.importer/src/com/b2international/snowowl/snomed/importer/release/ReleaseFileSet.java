@@ -25,9 +25,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.google.common.collect.Iterables;
 
 /**
  * Provides a way to validate if a set of relative paths constitute a valid
@@ -58,7 +59,6 @@ public class ReleaseFileSet {
 		RELATIONSHIP,
 		STATED_RELATIONSHIP,
 		LANGUAGE_REFERENCE_SET,
-		DESCRIPTION_TYPE_REFERENCE_SET,
 		TEXT_DEFINITION
 	}
 	
@@ -158,9 +158,31 @@ public class ReleaseFileSet {
 	 * @return a file path for the component, or an empty string if no matching
 	 * path could be found
 	 */
+	@Nullable
 	public String getFileName(List<String> relativeLocations, ReleaseComponentType type, ContentSubType contentSubType) {
-		final Collection<String> $ = getAllFileName(relativeLocations, type, contentSubType);
-		return CompareUtils.isEmpty($) ? "" : Iterables.getLast($); 
+		
+		if (CompareUtils.isEmpty(relativeLocations)) {
+			return null;
+		}
+		
+		ReleaseFile releaseFile = releaseFiles.get(type);
+		
+		if (releaseFile == null) {
+			return null;
+		}
+		
+		Pattern patternToMatch = releaseFile.createPattern(testRelease, contentSubType, releaseIdentifier, relativeRoot);
+		
+		for (String relativeLocation : relativeLocations) {
+			
+			Matcher matcher = patternToMatch.matcher(relativeLocation);
+			
+			if (matcher.matches()) {
+				return matcher.group();
+			}
+		}
+
+		return null;
 	}
 	
 	/**

@@ -110,6 +110,7 @@ import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRe
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -198,9 +199,20 @@ public final class ImportUtil {
 
 		try (final ZipFile archive = new ZipFile(releaseArchive)) {
 			
-			config.setConceptFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, CONCEPT, contentSubType)));
-			config.setStatedRelationshipFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, STATED_RELATIONSHIP, contentSubType)));
-			config.setRelationshipFile(createTemporaryFile(tempDir, archive, archiveFileSet.getFileName(zipFiles, RELATIONSHIP, contentSubType)));
+			String conceptFilePath = archiveFileSet.getFileName(zipFiles, CONCEPT, contentSubType);
+			if (!Strings.isNullOrEmpty(conceptFilePath)) {
+				config.setConceptFile(createTemporaryFile(tempDir, archive, conceptFilePath));
+			}
+			
+			String statedRelationshipFilePath = archiveFileSet.getFileName(zipFiles, STATED_RELATIONSHIP, contentSubType);
+			if (!Strings.isNullOrEmpty(statedRelationshipFilePath)) {
+				config.setStatedRelationshipFile(createTemporaryFile(tempDir, archive, statedRelationshipFilePath));
+			}
+			
+			String relationshipFilePath = archiveFileSet.getFileName(zipFiles, RELATIONSHIP, contentSubType);
+			if (!Strings.isNullOrEmpty(relationshipFilePath)) {
+				config.setRelationshipFile(createTemporaryFile(tempDir, archive, relationshipFilePath));
+			}
 			
 			for (String fileName : archiveFileSet.getAllFileName(zipFiles, DESCRIPTION, contentSubType)) {
 				config.addDescriptionFile(createTemporaryFile(tempDir, archive, fileName));
