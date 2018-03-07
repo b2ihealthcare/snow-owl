@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.request.rf2;
+package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 6.0.0
  */
-final class Rf2Format {
+public final class Rf2Format {
 	
 	private static final List<Rf2ContentType<?>> CONTENT_TYPES = ImmutableList.<Rf2ContentType<?>>builder()
 			// terminology

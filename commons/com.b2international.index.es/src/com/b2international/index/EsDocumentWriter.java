@@ -212,7 +212,8 @@ public class EsDocumentWriter implements Writer {
 			ubqrb.source()
 				.setSize(BATCHS_SIZE)
 				.setIndices(admin.getTypeIndex(mapping))
-				.setTypes(mapping.typeAsString());
+				.setTypes(mapping.typeAsString())
+				.setVersion(false);
 			BulkByScrollResponse r = ubqrb
 				.script(script)
 				.setSlices(getConcurrencyLevel())

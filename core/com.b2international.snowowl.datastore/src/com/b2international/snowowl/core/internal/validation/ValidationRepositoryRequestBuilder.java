@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.filteredrefset;
+package com.b2international.snowowl.core.internal.validation;
 
-import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.events.RequestBuilder;
 
 /**
- * Common interface for mock and regular reference set members.  
- * 
+ *  @since 6.3
  */
-public interface IRefSetMemberNode extends IComponent<String> {
+public interface ValidationRepositoryRequestBuilder<R> extends RequestBuilder<ValidationRepositoryContext, R>{
 
-	boolean isRegularNode();
+	default AsyncRequest<R> buildAsync() {
+		return new AsyncRequest<>(
+			new ValidationRepositoryRequest<>(build())
+		);
+	}
 	
-	IRegularRefSetMemberNode asRegularNode();
-
-	/**
-	 * @return the concept identifier for a mock node, or the referenced component identifier for a regular node
-	 */
-	long getConceptId();
 }

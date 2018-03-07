@@ -15,12 +15,11 @@
  */
 package com.b2international.snowowl.core.validation;
 
-import java.util.List;
+import java.util.Collection;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
 
 /**
@@ -32,17 +31,17 @@ public final class ValidateRequestBuilder
 
 	ValidateRequestBuilder() {}
 	
-	private List<Severity> severities;
+	private Collection<String> ruleIds;
 	
-	public ValidateRequestBuilder setSeverities(List<Severity> severities) {
-		this.severities = severities;
+	public ValidateRequestBuilder setRuleIds(Collection<String> ruleIds) {
+		this.ruleIds = ruleIds;
 		return getSelf();
 	}
 	
 	@Override
 	protected Request<BranchContext, ValidationResult> doBuild() {
 		ValidateRequest validateRequest = new ValidateRequest();
-		validateRequest.setSeverities(severities);
+		validateRequest.setRuleIds(ruleIds);
 		return validateRequest;
 	}
 

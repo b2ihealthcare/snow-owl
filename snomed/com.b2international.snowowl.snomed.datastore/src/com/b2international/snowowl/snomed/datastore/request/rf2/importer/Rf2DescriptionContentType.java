@@ -13,46 +13,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.request.rf2;
+package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 6.0.0
  */
-final class Rf2LanguageRefSetContentType implements Rf2RefSetContentType {
-	
+final class Rf2DescriptionContentType implements Rf2ContentType<SnomedDescription> {
+
+	@Override
+	public SnomedDescription create() {
+		return new SnomedDescription();
+	}
+
+	@Override
+	public void resolve(SnomedDescription component, String[] values) {
+		component.setConceptId(values[4]);
+		component.setLanguageCode(values[5]);
+		component.setTypeId(values[6]);
+		component.setTerm(values[7]);
+		component.setCaseSignificance(CaseSignificance.getByConceptId(values[8]));
+	}
+
+	@Override
+	public String getContainerId(String[] values) {
+		return values[4];
+	}
+
 	@Override
 	public String[] getHeaderColumns() {
-		return SnomedRf2Headers.LANGUAGE_TYPE_HEADER;
+		return SnomedRf2Headers.DESCRIPTION_HEADER;
 	}
-	
-	@Override
-	public void resolve(SnomedReferenceSetMember component, String[] values) {
-		component.setType(SnomedRefSetType.LANGUAGE);
-		component.setReferenceSetId(values[4]);
-		component.setReferencedComponent(new SnomedDescription(values[5]));
-		component.setProperties(ImmutableMap.of(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, values[6]));
-	}
-	
+
 	@Override
 	public String getType() {
-		return "language-member";
+		return "description";
 	}
 	
 	@Override
 	public LongSet getDependencies(String[] values) {
 		return PrimitiveSets.newLongOpenHashSet(
-			Long.parseLong(values[3]),
+			Long.parseLong(values[3]), 
 			Long.parseLong(values[4]),
-			Long.parseLong(values[6])
+			Long.parseLong(values[6]),
+			Long.parseLong(values[8])
 		);
 	}
-	
+
 }
