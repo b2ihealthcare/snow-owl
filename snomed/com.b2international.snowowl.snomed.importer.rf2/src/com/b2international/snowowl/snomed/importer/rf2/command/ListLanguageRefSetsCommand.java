@@ -97,6 +97,8 @@ public class ListLanguageRefSetsCommand extends AbstractRf2ImporterCommand {
 		final Map<String, String> languageRefsetToLabelMap = Maps.newHashMap();
 		final ImportConfiguration config = new ImportConfiguration(Branch.MAIN_PATH);
 		
+		config.setArchiveFile(archiveFile);
+		
 		final Set<File> languageRefSetFiles = archiveFileSet
 				.getAllFileName(zipFiles, ReleaseComponentType.LANGUAGE_REFERENCE_SET, contentSubType)
 				.stream()
