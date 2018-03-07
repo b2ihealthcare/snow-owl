@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification.operation;
 
+import java.util.concurrent.TimeUnit;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 
@@ -33,7 +35,7 @@ import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasoner
  */
 public abstract class ClassifyOperation<T> {
 
-	private static final long CHECK_CANCEL_INTERVAL_MILLIS = 500L;
+	private static final long CHECK_JOB_INTERVAL_SECONDS = 2L;
 
 	protected final ClassificationSettings settings;
 
@@ -82,7 +84,7 @@ public abstract class ClassifyOperation<T> {
 				}
 
 				try {
-					Thread.sleep(CHECK_CANCEL_INTERVAL_MILLIS);
+					TimeUnit.SECONDS.sleep(CHECK_JOB_INTERVAL_SECONDS);
 				} catch (InterruptedException e) {
 					// Nothing to do
 				}
