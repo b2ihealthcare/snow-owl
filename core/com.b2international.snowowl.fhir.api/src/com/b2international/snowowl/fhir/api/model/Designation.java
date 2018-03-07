@@ -15,24 +15,32 @@
  */
 package com.b2international.snowowl.fhir.api.model;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
 import org.springframework.core.annotation.Order;
 
-import com.b2international.snowowl.fhir.api.model.serialization.FhirParameter;
-import com.google.common.collect.Lists;
-
 /**
- * 
+ * This class represents a FHIR designation.
+ * The class is capable of providing a bean that will be serialized into:
+ * <pre>{@code
+ *	{"name" : "languageCode", "valueCode" : "uk"},
+ *	   	{"name" : "value", "valueString" : "whatever string this is"},
+ *		{"name": "use", 
+ *		"valueCoding" : {
+ *			"code" : "code",
+ *			"systemUri" : "systemUri",
+ *			"version" : "version",
+ *			"display" : null,
+ *			"userSelected" : false
+ *		}
+ *	</pre>
+ *
+ * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#4.7.15.2.1">FHIR:CodeSystem:Operations</a>
  * @since 6.3
  */
-public class Designation {
+public class Designation extends FhirModel {
 	
 	//The language code this designation is defined for (0..1)
 	@Order(value=1)
+	@FhirDataType(type = FhirType.CODE)
 	private String language;
 	
 	//A code that details how this designation would be used (0..1)
@@ -61,42 +69,6 @@ public class Designation {
 		return value;
 	}
 	
-	/**
-	 * This method builds the object of the serialized representation
-	 * of a designation:
-	 * <pre>{@code
-	   	{"name" : "languageCode", "valueCode" : "uk"},
-		   	{"name" : "value", "valueString" : "whatever string this is"},
-			{"name": "use", 
-			"valueCoding" : {
-				"code" : "code",
-				"systemUri" : "systemUri",
-				"version" : "version",
-				"display" : null,
-				"userSelected" : false
-			}
-			</pre>
-		 *  @return
-	 * @throws Exception
-	 */
-	public Collection<FhirParameter> toSerializedBean() throws Exception {
-		//Designation designation = new Designation(language, use, value);
-		
-		List<FhirParameter> designationParameters = Lists.newArrayList();
-		
-		Field[] fields = Designation.class.getDeclaredFields();
-		Arrays.sort(fields, new FieldOrderComparator());
-		
-		for (Field field : fields) {
-			//field.setAccessible(true);
-			Object value = field.get(this);
-			String type = "value" + field.getType().getSimpleName();
-			FhirParameter parameter = new FhirParameter(field.getName(), type, value);
-			designationParameters.add(parameter);
-		}
-		return designationParameters;
-	}
-	
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -107,7 +79,7 @@ public class Designation {
 		private Coding use;
 		private String value;
 
-		public Builder langaugeCode(final String languageCode) {
+		public Builder languageCode(final String languageCode) {
 			this.languageCode = languageCode;
 			return this;
 		}

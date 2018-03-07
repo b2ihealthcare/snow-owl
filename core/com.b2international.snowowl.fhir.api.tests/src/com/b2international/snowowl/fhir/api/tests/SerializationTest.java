@@ -20,15 +20,15 @@ import java.util.Collection;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.api.model.serialization.FhirLookupResult;
-import com.b2international.snowowl.fhir.api.model.serialization.FhirParameter;
+import com.b2international.snowowl.fhir.api.model.serialization.SerializableLookupResult;
+import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.google.common.collect.Sets;
 
 public class SerializationTest extends FhirTest {
 	
 	//@Test
 	public void fhirParameterTest() throws Exception {
-		FhirParameter parameter = new FhirParameter("parameterName", "valueString", "test");
+		SerializableParameter parameter = new SerializableParameter("parameterName", "valueString", "test");
 		
 		printJson(parameter);
 		
@@ -38,36 +38,36 @@ public class SerializationTest extends FhirTest {
 	
 	@Test
 	public void fhirLookupResultsTest() throws Exception {
-		FhirLookupResult lookupResults = new FhirLookupResult();
-		FhirParameter parameter = new FhirParameter("fieldName", "type", "value");
+		SerializableLookupResult lookupResults = new SerializableLookupResult();
+		SerializableParameter parameter = new SerializableParameter("fieldName", "type", "value");
 		lookupResults.add(parameter);
-		parameter = new FhirParameter("fieldName2", "type2", "value2");
+		parameter = new SerializableParameter("fieldName2", "type2", "value2");
 		lookupResults.add(parameter);
 		
-		Collection<FhirParameter> designationParameters = Sets.newHashSet();
-		FhirParameter designationParameter = new FhirParameter("dFieldName2", "dType2", "dValue2");
+		Collection<SerializableParameter> designationParameters = Sets.newHashSet();
+		SerializableParameter designationParameter = new SerializableParameter("dFieldName2", "dType2", "dValue2");
 		designationParameters.add(designationParameter);
 
-		FhirParameter dParameter = new FhirParameter("designation", "part", designationParameters);
+		SerializableParameter dParameter = new SerializableParameter("designation", "part", designationParameters);
 		lookupResults.add(dParameter);
 		printJson(lookupResults);
 	}
 	
 	//@Test
 	public void lookupResultsTest3() throws Exception {
-		FhirLookupResult lookupResults = new FhirLookupResult();
-		FhirParameter parameter = new FhirParameter("fieldName", "type", "value");
+		SerializableLookupResult lookupResults = new SerializableLookupResult();
+		SerializableParameter parameter = new SerializableParameter("fieldName", "type", "value");
 		lookupResults.add(parameter);
-		parameter = new FhirParameter("fieldName2", "type2", "value2");
+		parameter = new SerializableParameter("fieldName2", "type2", "value2");
 		lookupResults.add(parameter);
 		
-		Collection<FhirParameter> designationParameters = Sets.newHashSet();
-		FhirParameter designationParameter = new FhirParameter("dFieldName", "dType", "dValue");
+		Collection<SerializableParameter> designationParameters = Sets.newHashSet();
+		SerializableParameter designationParameter = new SerializableParameter("dFieldName", "dType", "dValue");
 		designationParameters.add(designationParameter);
-		designationParameter = new FhirParameter("dFieldName2", "dType2", "dValue2");
+		designationParameter = new SerializableParameter("dFieldName2", "dType2", "dValue2");
 		designationParameters.add(designationParameter);
 		
-		FhirParameter lookupParameter = new FhirParameter("designation", "part", designationParameters);
+		SerializableParameter lookupParameter = new SerializableParameter("designation", "part", designationParameters);
 		lookupResults.add(lookupParameter);
 		printJson(lookupResults);
 	}

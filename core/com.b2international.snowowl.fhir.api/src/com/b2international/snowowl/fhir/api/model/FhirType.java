@@ -15,25 +15,29 @@
  */
 package com.b2international.snowowl.fhir.api.model;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
 /**
- * Annotation to indicate the FHIR datatype of a particular FHIR parameter.
- * @see FhirType
+ * FHIR datatypes
  * 
+ * @see <a href="https://www.hl7.org/fhir/datatypes.html">FHIR:Data Types</a>
  * @since 6.3
- *
  */
-@Documented
-@Retention(RUNTIME)
-@Target(FIELD)
-public @interface FhirDataType {
+public enum FhirType {
 	
-	FhirType type();
-
+	URI("Uri"),
+	CODE("Code"),
+	DECIMAL("Decimal"),
+	INTEGER("Integer"),
+	DATE("Date"),
+	DATETIME("DateTime"),
+	OID("Oid");
+	
+	private String serializedName;
+	
+	FhirType(String serializedName) {
+		this.serializedName = serializedName;
+	}
+	
+	public String getSerializedName() {
+		return serializedName;
+	}
 }

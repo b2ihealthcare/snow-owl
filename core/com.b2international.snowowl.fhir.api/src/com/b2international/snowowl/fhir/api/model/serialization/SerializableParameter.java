@@ -17,6 +17,8 @@ package com.b2international.snowowl.fhir.api.model.serialization;
 
 import java.io.IOException;
 
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -60,8 +62,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 }
  *
  */
-@JsonSerialize(using = FhirParameter.class)
-public class FhirParameter extends JsonSerializer<FhirParameter> {
+@JsonSerialize(using = SerializableParameter.class)
+public class SerializableParameter extends JsonSerializer<SerializableParameter> {
 
 	@JsonProperty
 	private String name;
@@ -70,20 +72,21 @@ public class FhirParameter extends JsonSerializer<FhirParameter> {
 	private String type;
 	
 	@JsonProperty
+	@NotNull
 	private Object value;
 
 	//For Jackson
-	private FhirParameter() {
+	private SerializableParameter() {
 	}
 
-	public FhirParameter(String name, String type, Object value) {
+	public SerializableParameter(String name, String type, Object value) {
 		this.name = name;
 		this.type = type;
 		this.value = value;
 	}
 
 	@Override
-	public void serialize(FhirParameter parameter, JsonGenerator jGen, SerializerProvider provider)
+	public void serialize(SerializableParameter parameter, JsonGenerator jGen, SerializerProvider provider)
 			throws IOException, JsonProcessingException {
 
 		jGen.writeStartObject();

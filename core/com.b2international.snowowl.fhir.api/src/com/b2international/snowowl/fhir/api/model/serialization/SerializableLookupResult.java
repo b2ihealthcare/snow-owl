@@ -56,21 +56,24 @@ import com.google.common.collect.Lists;
  *
  */
 @JsonInclude(Include.NON_EMPTY) //covers nulls as well
-public class FhirLookupResult {
+public class SerializableLookupResult {
 	
 	@JsonProperty(value="parameter")
-	private List<FhirParameter> parameters = Lists.newArrayList();
-	
-	public void add(FhirParameter parameter) {
-		parameters.add(parameter);
-	}
+	private List<SerializableParameter> parameters = Lists.newArrayList();
 	
 	//header "resourceType" : "Parameters",
 	@JsonProperty
 	private String resourceType = "Parameters";
 
-	public void addAll(Collection<FhirParameter> parameters) {
-		parameters.addAll(parameters);
-		
+	public void add(SerializableParameter parameter) {
+		parameters.add(parameter);
+	}
+
+	public void addAll(Collection<SerializableParameter> fhirParameters) {
+		this.parameters.addAll(fhirParameters);
+	}
+
+	public Collection<SerializableParameter> getParameters() {
+		return parameters;
 	}
 }

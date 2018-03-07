@@ -15,48 +15,34 @@
  */
 package com.b2international.snowowl.fhir.api.model;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.Collection;
 
-import com.b2international.snowowl.fhir.api.model.serialization.FhirLookupResult;
-import com.b2international.snowowl.fhir.api.model.serialization.FhirParameter;
+import org.springframework.core.annotation.Order;
+
+import com.b2international.snowowl.fhir.api.model.serialization.SerializableLookupResult;
+import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.google.common.collect.Lists;
 
 /**
  * 
- * @author bbanfai
- *
+ * @since 6.3
  */
-public class LookupResult {
-	
-	public enum FhirType {
-		
-		URI("Uri"),
-		CODE("Code");
-		
-		private String serializedName;
-		
-		FhirType(String serializedName) {
-			this.serializedName = serializedName;
-		}
-		
-		public String getSerializedName() {
-			return serializedName;
-		}
-	}
+public class LookupResult extends FhirModel {
 	
 	//A display name for the code system (1..1)
-	@FhirDataType(type = FhirType.URI)
+	@Order(value=1)
 	private String name;
 	
 	//The version that these details are based on (0..1)
+	@Order(value=2)
 	private String version;
 	
 	//The preferred display for this concept (1..1)
+	@Order(value=3)
 	private String display;
 	
 	//Additional representations for this concept (0..*)
+	@Order(value=4)
 	private Collection<Designation> designations = Lists.newArrayList();   
 	
 	/*
@@ -64,13 +50,20 @@ public class LookupResult {
 	 * including status. For complex terminologies (e.g. SNOMED CT, LOINC, medications), these properties serve to decompose the code
 	 * 0..*
 	 */
-	private Collection<Property> properties = Lists.newArrayList();;
+	@Order(value=5)
+	private Collection<Property> properties = Lists.newArrayList();
 	
-	private LookupResult(final String name, final String version, final String display, Collection<Designation> designations) {
+	private LookupResult(final String name, 
+			final String version, 
+			final String display, 
+			Collection<Designation> designations,
+			Collection<Property> properties) {
+		
 		this.name = name;
 		this.version = version;
 		this.display = display;
 		this.designations = designations;
+		this.properties = properties;
 	}
 	
 	public static Builder builder() {
@@ -83,8 +76,9 @@ public class LookupResult {
 		private String version;
 		private String display;
 		
-		//Additional representations for this concept (0..*)
-		private Collection<Designation> designations = Lists.newArrayList();   
+		private Collection<Designation> designations = Lists.newArrayList();
+		
+		private Collection<Property> properties = Lists.newArrayList();;
 
 		public Builder name(final String name) {
 			this.name = name;
@@ -106,60 +100,51 @@ public class LookupResult {
 			return this;
 		}
 
-		public LookupResult build() {
-			return new LookupResult(name, version, display, designations);
+		public Builder addProperty(Property property) {
+			properties.add(property);
+			return this;
 		}
-		
-		/**
-		 * This method builds the object of the serialized representation
-		 * of a lookup result:
-		 * <pre>{@code
+		public LookupResult build() {
+			return new LookupResult(name, version, display, designations, properties);
+		}
+	}
+	
+	/**
+	 * This method builds the object of the serialized representation
+	 * of a lookup result:
+	 * <pre>{@code
   			}
   			</pre>
-  		 *  @return
-		 * @throws Exception
-		 */
-		public FhirLookupResult buildSerializableBean() throws Exception {
-			LookupResult result =  new LookupResult(name, version, display, designations);
-			
-			FhirLookupResult lookupResult = new FhirLookupResult();
-			
-			Field[] fields = LookupResult.class.getDeclaredFields();
-			Arrays.sort(fields, new FieldOrderComparator());
-			
-			for (Field field : fields) {
-				field.setAccessible(true);
-				if (field.getType().equals(Collection.class)) {
-					System.out.println("Collection " + field.getName());
-					Collection values = (Collection) field.get(result);
-					for (Object object : values) {
-						if (object instanceof Designation) {
-							Collection<FhirParameter> designationParams = ((Designation) object).toSerializedBean();
-							FhirParameter fhirParam = new FhirParameter("designation", "part", designationParams);
-							lookupResult.add(fhirParam);
-						}
-					}
-				} else {
-					Object value = field.get(result);
-					
-					String type = getDataType(field);
-					FhirParameter parameter = new FhirParameter(field.getName(), type, value);
-					lookupResult.add(parameter);
-				}
-			}
-			return lookupResult;
-		}
+	 *  @return
+	 * @throws Exception
+	 */
+	public SerializableLookupResult toSerializesBean() throws Exception {
+		SerializableLookupResult fhirLookupResult = new SerializableLookupResult();
+		Collection<SerializableParameter> parameters = toParameters();
+		fhirLookupResult.addAll(parameters);
+		return fhirLookupResult;
+	}
 
-		private String getDataType(Field field) {
-			FhirDataType fhirDataType = field.getAnnotation(FhirDataType.class);
-			String typePostFix = null;
-			if (fhirDataType == null) {
-				typePostFix = field.getType().getSimpleName();
-			} else {
-				typePostFix = fhirDataType.type().getSerializedName();
+	@Override
+	protected Collection<SerializableParameter> getCollectionParameters(Object value) throws Exception {
+		
+		Collection<SerializableParameter> collectionParameters = Lists.newArrayList();
+
+		@SuppressWarnings("rawtypes")
+		Collection values = (Collection) value;
+		
+		for (Object object : values) {
+			if (object instanceof Designation) {
+				Collection<SerializableParameter> designationParams = ((Designation) object).toParameters();
+				SerializableParameter fhirParam = new SerializableParameter("designation", "part", designationParams);
+				collectionParameters.add(fhirParam);
+			} else if (object instanceof Property) {
+				Collection<SerializableParameter> propertyParams = ((Property) object).toParameters();
+				SerializableParameter fhirParam = new SerializableParameter("property", "part", propertyParams);
+				collectionParameters.add(fhirParam);
 			}
-			return "value" + typePostFix;
 		}
+		return collectionParameters;
 	}
 	
 }
