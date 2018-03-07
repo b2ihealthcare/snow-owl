@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.model.serialization;
+package com.b2international.snowowl.fhir.api.tests;
 
-import java.util.Collection;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Sets;
-
-public class FhirParameters {
+@RunWith(Suite.class)
+@SuiteClasses({ 
+	SerializationTest.class,
+	ModelSerializationTest.class
 	
-	@JsonProperty(value="parameter")
-	private Collection<FhirParameter> parameters = Sets.newHashSet();
-
-	public void add(FhirParameter property) {
-		parameters.add(property);
-	}
-
+})
+public class AllFhirTests {
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 
 /**
- * {@link RestApiError} represents a generic multi purpose user AND developer friendly error/exception representation, which should be used in all
- * cases when mapping various exceptions to responses.
+ * {@link RestApiError} represents a generic multi-purpose user AND developer friendly error/exception representation,
+ * which should be used in all cases when mapping various exceptions to responses.
  * 
  * @since 3.7
  */

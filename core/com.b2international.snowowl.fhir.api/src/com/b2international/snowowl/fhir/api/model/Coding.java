@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public class Coding {
 	private String code;
 	
 	@NotEmpty
-	private String systemUri;
+	private String system;
 	
 	private String version;
 	
@@ -56,14 +56,14 @@ public class Coding {
 	
 	/**
 	 * @param code
-	 * @param systemUri
+	 * @param system
 	 * @param version
 	 * @param isUserSelected
 	 * @param display
 	 */
-	public Coding(String code, String systemUri, String version, boolean isUserSelected, String display) {
+	public Coding(String code, String system, String version, boolean isUserSelected, String display) {
 		this.code = code;
-		this.systemUri = systemUri;
+		this.system = system;
 		this.version = version;
 		this.isUserSelected = isUserSelected;
 		this.display = display;
@@ -71,14 +71,14 @@ public class Coding {
 	
 	/**
 	 * @param code
-	 * @param systemUri
+	 * @param system
 	 * @param version
 	 * @param isUserSelected
 	 * @param display
 	 */
-	public Coding(String code, String systemUri, String version) {
+	public Coding(String code, String system, String version) {
 		this.code = code;
-		this.systemUri = systemUri;
+		this.system = system;
 		this.version = version;
 	}
 
@@ -90,10 +90,10 @@ public class Coding {
 	}
 
 	/**
-	 * @return the systemUri
+	 * @return the system
 	 */
-	public String getSystemUri() {
-		return systemUri;
+	public String getSystem() {
+		return system;
 	}
 
 	/**
@@ -122,7 +122,7 @@ public class Coding {
 			throw new BadRequestException("Code is not specified.");
 		}
 		
-		if (StringUtils.isEmpty(systemUri)) {
+		if (StringUtils.isEmpty(system)) {
 			throw new BadRequestException("Code system is not specified.");
 		}
 		
@@ -131,16 +131,16 @@ public class Coding {
 		}
 		
 		try {
-			new URI(systemUri);
+			new URI(system);
 		} catch (URISyntaxException e) {
-			throw new BadRequestException("URI format is incorrect: " + systemUri);
+			throw new BadRequestException("URI format is incorrect: " + system);
 		}
 		
 	}
 	
 	@Override
 	public String toString() {
-		return "Coding [code=" + code + ", systemUri=" + systemUri + ", version=" + version + ", isUserSelected=" + isUserSelected + ", display="
+		return "Coding [code=" + code + ", systemUri=" + system + ", version=" + version + ", isUserSelected=" + isUserSelected + ", display="
 				+ display + "]";
 	}
 

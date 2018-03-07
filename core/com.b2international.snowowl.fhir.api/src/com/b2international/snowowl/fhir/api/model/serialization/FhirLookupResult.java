@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
 package com.b2international.snowowl.fhir.api.model.serialization;
 
 import java.util.Collection;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 /**
  * {
@@ -54,26 +55,22 @@ import com.google.common.collect.Sets;
   ]
  *
  */
-@JsonInclude(Include.NON_NULL)
+@JsonInclude(Include.NON_EMPTY) //covers nulls as well
 public class FhirLookupResult {
 	
 	@JsonProperty(value="parameter")
-	private Collection<FhirParameter> parameters = Sets.newHashSet();
+	private List<FhirParameter> parameters = Lists.newArrayList();
 	
-	@JsonProperty
-	private FhirDesignation designation;
-
-	public void add(FhirParameter property) {
-		parameters.add(property);
+	public void add(FhirParameter parameter) {
+		parameters.add(parameter);
 	}
 	
 	//header "resourceType" : "Parameters",
 	@JsonProperty
 	private String resourceType = "Parameters";
 
-	public void setDesignation(FhirDesignation fhirDesignation) {
-		this.designation = fhirDesignation;
+	public void addAll(Collection<FhirParameter> parameters) {
+		parameters.addAll(parameters);
 		
 	}
-
 }

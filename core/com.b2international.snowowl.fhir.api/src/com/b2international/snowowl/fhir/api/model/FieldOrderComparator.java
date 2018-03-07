@@ -13,26 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.service;
+package com.b2international.snowowl.fhir.api.model;
 
-/**
- *
- * @since 6.3
- */
-public class AtcFhirProvider implements IFhirProvider {
-	
-	private static final String CODE_SYSTEM_URI = "http://www.whocc.no/atc";
-	//from the importer
-	public static final String LINK = "http://www.who.int/classifications/atcddd/en/";
+import java.lang.reflect.Field;
+import java.util.Comparator;
+
+import org.springframework.core.annotation.Order;
+
+public class FieldOrderComparator implements Comparator<Field> {
 
 	@Override
-	public void lookup(String version, String code) {
-		System.out.println("AtcFhirProvider.test()");
-	}
-
-	@Override
-	public boolean isSupported(String uri) {
-		return true;
+	public int compare(Field o1, Field o2) {
+		Order or1 = o1.getAnnotation(Order.class);
+		Order or2 = o2.getAnnotation(Order.class);
+		if (or1 != null && or2 != null) {
+			return or1.value() - or2.value();
+		} else if (or1 != null && or2 == null) {
+			return -1;
+		} else if (or1 == null && or2 != null) {
+			return 1;
+		}
+		return o1.getName().compareTo(o2.getName());
 	}
 
 }

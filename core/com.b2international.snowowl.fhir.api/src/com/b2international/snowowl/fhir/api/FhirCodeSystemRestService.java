@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ public class FhirCodeSystemRestService {
 		
 		Optional<IFhirProvider> fhirProviderOptional = fhirProviders.stream().findFirst();
 		
-		fhirProviderOptional.orElseThrow(() -> new BadRequestException("Did not find FHIR provider for URI: " + coding.getSystemUri()));
+		fhirProviderOptional.orElseThrow(() -> new BadRequestException("Did not find FHIR provider for URI: " + coding.getSystem()));
 		
 		IFhirProvider iFhirProvider = fhirProviderOptional.get();
 		iFhirProvider.lookup(coding.getVersion(), coding.getCode());

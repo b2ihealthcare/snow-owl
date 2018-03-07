@@ -13,26 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.service;
+package com.b2international.snowowl.fhir.api.model;
+
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import com.b2international.snowowl.fhir.api.model.LookupResult.FhirType;
 
 /**
- *
+ * Annotation to indicate the FHIR datatype of a particular FHIR parameter
+ * 
  * @since 6.3
+ *
  */
-public class AtcFhirProvider implements IFhirProvider {
+@Documented
+@Retention(RUNTIME)
+@Target(FIELD)
+public @interface FhirDataType {
 	
-	private static final String CODE_SYSTEM_URI = "http://www.whocc.no/atc";
-	//from the importer
-	public static final String LINK = "http://www.who.int/classifications/atcddd/en/";
-
-	@Override
-	public void lookup(String version, String code) {
-		System.out.println("AtcFhirProvider.test()");
-	}
-
-	@Override
-	public boolean isSupported(String uri) {
-		return true;
-	}
+	FhirType type();
 
 }
