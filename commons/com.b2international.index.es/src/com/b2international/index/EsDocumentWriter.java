@@ -212,8 +212,7 @@ public class EsDocumentWriter implements Writer {
 			ubqrb.source()
 				.setSize(BATCHS_SIZE)
 				.setIndices(admin.getTypeIndex(mapping))
-				.setTypes(mapping.typeAsString())
-				.setVersion(false);
+				.setTypes(mapping.typeAsString());
 			BulkByScrollResponse r = ubqrb
 				.script(script)
 				.setSlices(getConcurrencyLevel())
@@ -276,6 +275,7 @@ public class EsDocumentWriter implements Writer {
 				--attempts;
 				try {
 					Thread.sleep(100 + random.nextInt(900));
+					admin.refresh(Collections.singleton(mapping));
 				} catch (InterruptedException e) {
 					throw new IndexException("Interrupted", e);
 				}
