@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.importer.release;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -24,10 +25,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.snomed.common.ContentSubType;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 
 /**
  * Provides a way to validate if a set of relative paths constitute a valid
@@ -58,7 +59,6 @@ public class ReleaseFileSet {
 		RELATIONSHIP,
 		STATED_RELATIONSHIP,
 		LANGUAGE_REFERENCE_SET,
-		DESCRIPTION_TYPE_REFERENCE_SET,
 		TEXT_DEFINITION
 	}
 	
@@ -158,9 +158,31 @@ public class ReleaseFileSet {
 	 * @return a file path for the component, or an empty string if no matching
 	 * path could be found
 	 */
+	@Nullable
 	public String getFileName(List<String> relativeLocations, ReleaseComponentType type, ContentSubType contentSubType) {
-		final Collection<String> $ = getAllFileName(relativeLocations, type, contentSubType);
-		return CompareUtils.isEmpty($) ? "" : Iterables.getLast($); 
+		
+		if (CompareUtils.isEmpty(relativeLocations)) {
+			return null;
+		}
+		
+		ReleaseFile releaseFile = releaseFiles.get(type);
+		
+		if (releaseFile == null) {
+			return null;
+		}
+		
+		Pattern patternToMatch = releaseFile.createPattern(testRelease, contentSubType, releaseIdentifier, relativeRoot);
+		
+		for (String relativeLocation : relativeLocations) {
+			
+			Matcher matcher = patternToMatch.matcher(relativeLocation);
+			
+			if (matcher.matches()) {
+				return matcher.group();
+			}
+		}
+
+		return null;
 	}
 	
 	/**
@@ -186,18 +208,18 @@ public class ReleaseFileSet {
 		
 		Pattern patternToMatch = releaseFile.createPattern(testRelease, contentSubType, releaseIdentifier, relativeRoot);
 		
-		Collection<String> $ = Sets.newHashSet();
+		List<String> fileNames = newArrayList();
 		
 		for (String relativeLocation : relativeLocations) {
 			
 			Matcher matcher = patternToMatch.matcher(relativeLocation);
 			
 			if (matcher.matches()) {
-				$.add(matcher.group());
+				fileNames.add(matcher.group());
 			}
 		}
 
-		return $;
+		return fileNames;
 	}
 	
 	
