@@ -19,7 +19,6 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -63,6 +62,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.google.common.base.Function;
+import com.google.common.collect.Multimap;
 
 
 /**
@@ -79,7 +79,7 @@ public class SnomedPublishManager extends PublishManager {
 	private Set<String> componentIdsToPublish = newHashSet();
 
 	// sourceModuleId to targetModuleId map
-	private Map<String, String> moduleDependencies;
+	private Multimap<String, String> moduleDependencies;
 	
 	@Override
 	protected LongSet getUnversionedComponentStorageKeys(final String branch) {
@@ -237,7 +237,9 @@ public class SnomedPublishManager extends PublishManager {
 		// Update existing, add new members to moduleDependencyRefSet
 		if (!CompareUtils.isEmpty(moduleDependencies)) {
 			final SnomedRegularRefSet moduleDependencyRefSet = getEditingContext().lookup(REFSET_MODULE_DEPENDENCY_TYPE, SnomedRegularRefSet.class);
-			moduleDependencies.forEach((source, target) -> {
+			moduleDependencies.entries().forEach((entry) -> {
+				final String source = entry.getKey();
+				final String target = entry.getValue();
 				final SnomedRefSetMember lastMember = moduleDependencyRefSet.getMembers()
 					.stream()
 					.filter(member -> source.equals(member.getModuleId()))

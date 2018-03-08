@@ -15,12 +15,8 @@
  */
 package com.b2international.snowowl.datastore.server.snomed;
 
-import static com.google.common.collect.Maps.newHashMap;
-
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
@@ -32,6 +28,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
@@ -46,13 +43,13 @@ public final class ModuleDependencyCollector {
 		this.searcher = searcher;
 	}
 	
-	public Map<String, String> getModuleDependencies(Iterable<Long> storageKeys) throws IOException {
+	public Multimap<String, String> getModuleDependencies(Iterable<Long> storageKeys) throws IOException {
 		if (Iterables.isEmpty(storageKeys)) {
-			return Collections.emptyMap();
+			return ImmutableMultimap.of();
 		}
 
-		final Map<String, String> moduleDependencies = newHashMap();
-		
+		final Multimap<String, String> moduleDependencies = HashMultimap.create();
+
 		final Multimap<String, String> conceptsByReferringModule = HashMultimap.create();
 		collectConceptModuleDependencies(storageKeys, conceptsByReferringModule);
 		collectDescriptionModuleDependencies(storageKeys, conceptsByReferringModule);
@@ -61,7 +58,7 @@ public final class ModuleDependencyCollector {
 		
 		// iterate over each module and get modules of all dependencies
 		for (String module : conceptsByReferringModule.keySet()) {
-			final Collection<String> dependencies = conceptsByReferringModule.get(module);
+			final Collection<String> dependencies = conceptsByReferringModule.removeAll(module);
 			Query<String[]> dependencyQuery = Query.select(String[].class)
 					.from(SnomedConceptDocument.class)
 					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.MODULE_ID)
