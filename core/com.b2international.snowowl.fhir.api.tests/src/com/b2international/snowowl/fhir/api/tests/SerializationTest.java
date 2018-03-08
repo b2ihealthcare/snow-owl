@@ -53,7 +53,7 @@ public class SerializationTest extends FhirTest {
 		printPrettyJson(lookupResults);
 	}
 	
-	//@Test
+	@Test
 	public void lookupResultsTest3() throws Exception {
 		SerializableLookupResult lookupResults = new SerializableLookupResult();
 		SerializableParameter parameter = new SerializableParameter("fieldName", "type", "value");
@@ -70,13 +70,6 @@ public class SerializationTest extends FhirTest {
 		SerializableParameter lookupParameter = new SerializableParameter("designation", "part", designationParameters);
 		lookupResults.add(lookupParameter);
 		printPrettyJson(lookupResults);
-	}
-	
-	//@Test
-	public void lookupResultsTest2() throws Exception {
-		
-		//LookupResult lookupResults = new LookupResult();
-		
 	}
 	
 }

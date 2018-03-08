@@ -21,6 +21,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wordnik.swagger.annotations.ApiModel;
 
 /**
@@ -46,6 +47,7 @@ public class Coding {
 	
 	private String version;
 	
+	@JsonProperty("userSelected")
 	private boolean isUserSelected;
 	
 	private String display;

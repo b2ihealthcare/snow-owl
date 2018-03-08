@@ -87,6 +87,19 @@ public class SerializableParameter extends JsonSerializer<SerializableParameter>
 		this.type = type;
 		this.value = value;
 	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public String getType() {
+		return type;
+	}
+	
+	public Object getValue() {
+		return value;
+	}
+	
 
 	@Override
 	public void serialize(SerializableParameter parameter, JsonGenerator jGen, SerializerProvider provider)
@@ -108,8 +121,8 @@ public class SerializableParameter extends JsonSerializer<SerializableParameter>
 	 * For testing only.
 	 * @return
 	 */
-	public Class getType() {
+	public Class getValueType() {
 		return value.getClass();
 	}
-	
+
 }

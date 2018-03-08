@@ -19,11 +19,16 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+/**
+ * 
+ * FHIR test suite.
+ * @since 6.3
+ */
 @RunWith(Suite.class)
 @SuiteClasses({ 
 	SerializationTest.class,
+	DeserializationTest.class,
 	ModelSerializationTest.class
-	
 })
 public class AllFhirTests {
 }

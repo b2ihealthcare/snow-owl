@@ -16,16 +16,22 @@
 package com.b2international.snowowl.fhir.api.model.serialization;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
 
+import com.b2international.snowowl.fhir.api.model.Coding;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.google.common.collect.Lists;
 
 /**
+ * Jackson custom deserializer for FHIR parameters.
+ * 
  * @since 6.3
  */
 public class ParameterDeserializer extends JsonDeserializer<SerializableParameter> {
@@ -36,26 +42,69 @@ public class ParameterDeserializer extends JsonDeserializer<SerializableParamete
 		ObjectCodec oc = jsonParser.getCodec();
 		JsonNode node = oc.readTree(jsonParser);
 		
-		Iterator<String> fieldNames = node.fieldNames();
+		SerializableParameter parameter = parseNode(node, oc);
+		return parameter;
+	}
+
+	private SerializableParameter parseNode(JsonNode node, ObjectCodec oc) throws JsonProcessingException {
+
 		String type = null;
 		Object value = null;
+		
+		Iterator<String> fieldNames = node.fieldNames();
+		
 		while (fieldNames.hasNext()) {
 			String fieldName = fieldNames.next();
-			if (fieldName.startsWith("value")) {
-				String typeString = fieldName.replaceAll("value", "");
-				JsonNode valueNode = node.get(fieldName);
-				
-				if (typeString.equals("Boolean")) {
-					value = valueNode.asBoolean();
-				} else {
-					value = valueNode.asText();
-				}
+			
+			JsonNode valueNode = node.get(fieldName);
+			
+			System.out.println("Json node: " + valueNode.getNodeType());
+			
+			//simple fields - everything is a string "" really
+			if (valueNode.getNodeType() == JsonNodeType.STRING) {
 				type = fieldName;
+				value = getTypedValue(fieldName, valueNode);
+				
+			//embedded params
+			} else if (valueNode.getNodeType() == JsonNodeType.OBJECT) {
+				
+				System.out.println(valueNode);
+				type = fieldName;
+				value = oc.treeToValue(valueNode, Coding.class);
+			
+				//embedded collection parameters
+			} else if (valueNode.getNodeType() == JsonNodeType.ARRAY) {
+				Collection<SerializableParameter> embeddedParameters = Lists.newArrayList();
+				
+				Iterator<JsonNode> elements = valueNode.elements();
+				while (elements.hasNext()) {
+					JsonNode childNode = elements.next();
+					embeddedParameters.add(parseNode(childNode, oc));
+				}
+				value = embeddedParameters;
+				type = "part";
 			}
 		}
 		final String name = node.get("name").asText();
-		SerializableParameter parameter = new SerializableParameter(name, type, value);
-		return parameter;
+		return new SerializableParameter(name, type, value);
+	}
+
+	/**
+	 * @param typeString
+	 * @param valueNode
+	 * @return
+	 */
+	private Object getTypedValue(String fieldName, JsonNode valueNode) {
+		Object value = null;
+		
+		String typeString = fieldName.replaceAll("value", "");
+		
+		if (typeString.equals("Boolean")) {
+			value = valueNode.asBoolean();
+		} else {
+			value = valueNode.asText();
+		}
+		return value;
 	}
 
 }
