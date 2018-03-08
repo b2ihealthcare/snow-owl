@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -33,7 +34,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -224,10 +227,14 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 
 	void setTransientEffectiveTime(final String transientEffectiveTime) {
 		if (Strings.isNullOrEmpty(transientEffectiveTime)) {
+			// Effective time columns should be left blank
 			this.transientEffectiveTime = "";
 		} else if ("NOW".equals(transientEffectiveTime)) {
+			// Special flag indicating "today"
 			this.transientEffectiveTime = EffectiveTimes.format(Dates.todayGmt(), DateFormats.SHORT);
 		} else {
+			// Otherwise, it should be a valid short date
+			Dates.parse(transientEffectiveTime, DateFormats.SHORT);
 			this.transientEffectiveTime = transientEffectiveTime;
 		}
 	}
@@ -250,7 +257,8 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 
 		// Step 2: retrieve code system versions that are visible from the reference branch
 		final TreeSet<CodeSystemVersionEntry> versionsToExport = getVisibleVersions(referenceCodeSystem);
-
+		final Optional<CodeSystemVersionEntry> latestVersion = Optional.ofNullable(versionsToExport.pollLast());
+		
 		// Step 3: determine which versions to keep for the export
 		filterVersions(versionsToExport);
 
@@ -284,23 +292,10 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 
 			exportDirectory = createExportDirectory(exportId);
 
-			// Step 5: export content for each branch
-			String archiveEffectiveTime;
-			
-			if (versionsToExport.isEmpty() || includePreReleaseContent) {
-				
-				if (transientEffectiveTime.isEmpty()) {
-					archiveEffectiveTime = EffectiveTimes.format(Dates.todayGmt(), DateFormats.SHORT);
-				} else {
-					archiveEffectiveTime = transientEffectiveTime;
-				}
-				
-			} else {
-				archiveEffectiveTime = EffectiveTimes.format(versionsToExport.last().getEffectiveDate(), DateFormats.SHORT);
-			}
-			
+			final String archiveEffectiveTime = getArchiveEffectiveTime(versionsToExport, latestVersion);
 			final Path releaseDirectory = createReleaseDirectory(exportDirectory, archiveEffectiveTime);
 
+			// Step 5: export content for each branch
 			for (final Entry<String, Long> pathEntry : pathEffectiveTimeMap.entrySet()) {
 				exportBranch(releaseDirectory, 
 						context, 
@@ -322,6 +317,43 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 				FileUtils.deleteDirectory(exportDirectory.toFile());
 			}
 		}
+	}
+
+	private String getArchiveEffectiveTime(final TreeSet<CodeSystemVersionEntry> versionsToExport, final Optional<CodeSystemVersionEntry> latestVersion) {
+
+		if (includePreReleaseContent) {
+
+			if (!transientEffectiveTime.isEmpty()) {
+				return transientEffectiveTime;
+			} else if (!versionsToExport.isEmpty()) {
+				return getNextEffectiveDate(versionsToExport.last().getEffectiveDate());
+			} else if (latestVersion.isPresent()) {
+				return getNextEffectiveDate(latestVersion.get().getEffectiveDate());
+			}
+			
+		} else {
+			
+			if (!versionsToExport.isEmpty()) {
+				return EffectiveTimes.format(versionsToExport.last().getEffectiveDate(), DateFormats.SHORT);
+			} else if (latestVersion.isPresent()) {
+				return EffectiveTimes.format(latestVersion.get().getEffectiveDate(), DateFormats.SHORT);
+			}
+		}
+		
+		return EffectiveTimes.format(Dates.todayGmt(), DateFormats.SHORT);
+	}
+
+	private String getNextEffectiveDate(final long time) {
+		final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+		
+		calendar.setTimeInMillis(time);
+		calendar.add(Calendar.DATE, 1);
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+
+		return EffectiveTimes.format(calendar.getTimeInMillis(), DateFormats.SHORT);
 	}
 
 	private TreeSet<CodeSystemVersionEntry> getVisibleVersions(final CodeSystemEntry codeSystemEntry) {
