@@ -32,6 +32,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
@@ -65,7 +66,7 @@ public final class ModuleDependencyCollector {
 		collectMemberModuleDependencies(storageKeys, componentIdsByReferringModule);
 		
 		// iterate over each module and get modules of all components registered to componentsByReferringModule
-		for (String module : componentIdsByReferringModule.keySet()) {
+		for (String module : ImmutableSet.copyOf(componentIdsByReferringModule.keySet())) {
 			final Collection<String> dependencies = componentIdsByReferringModule.removeAll(module);
 			for (Class<? extends SnomedComponentDocument> type : CORE_COMPONENT_TYPES) {
 				Query<String[]> dependencyQuery = Query.select(String[].class)
