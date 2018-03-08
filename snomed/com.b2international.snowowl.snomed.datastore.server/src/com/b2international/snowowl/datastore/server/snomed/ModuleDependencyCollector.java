@@ -17,17 +17,20 @@ package com.b2international.snowowl.datastore.server.snomed;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -37,6 +40,11 @@ import com.google.common.collect.Multimap;
  */
 public final class ModuleDependencyCollector {
 
+	private static final List<Class<? extends SnomedComponentDocument>> CORE_COMPONENT_TYPES = ImmutableList.of(
+		SnomedConceptDocument.class,
+		SnomedDescriptionIndexEntry.class, 
+		SnomedRelationshipIndexEntry.class
+	);
 	private final RevisionSearcher searcher;
 
 	public ModuleDependencyCollector(RevisionSearcher searcher) {
@@ -50,26 +58,28 @@ public final class ModuleDependencyCollector {
 
 		final Multimap<String, String> moduleDependencies = HashMultimap.create();
 
-		final Multimap<String, String> conceptsByReferringModule = HashMultimap.create();
-		collectConceptModuleDependencies(storageKeys, conceptsByReferringModule);
-		collectDescriptionModuleDependencies(storageKeys, conceptsByReferringModule);
-		collectRelationshipModuleDependencies(storageKeys, conceptsByReferringModule);
-		collectMemberModuleDependencies(storageKeys, conceptsByReferringModule);
+		final Multimap<String, String> componentIdsByReferringModule = HashMultimap.create();
+		collectConceptModuleDependencies(storageKeys, componentIdsByReferringModule);
+		collectDescriptionModuleDependencies(storageKeys, componentIdsByReferringModule);
+		collectRelationshipModuleDependencies(storageKeys, componentIdsByReferringModule);
+		collectMemberModuleDependencies(storageKeys, componentIdsByReferringModule);
 		
-		// iterate over each module and get modules of all dependencies
-		for (String module : conceptsByReferringModule.keySet()) {
-			final Collection<String> dependencies = conceptsByReferringModule.removeAll(module);
-			Query<String[]> dependencyQuery = Query.select(String[].class)
-					.from(SnomedConceptDocument.class)
-					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.MODULE_ID)
-					.where(SnomedConceptDocument.Expressions.ids(dependencies))
-					.limit(10000)
-					.build();
-			for (Hits<String[]> dependencyHits : searcher.scroll(dependencyQuery)) {
-				for (String[] idAndModule : dependencyHits) {
-					String targetModule = idAndModule[1];
-					if (!module.equals(targetModule)) {
-						moduleDependencies.put(module, targetModule);
+		// iterate over each module and get modules of all components registered to componentsByReferringModule
+		for (String module : componentIdsByReferringModule.keySet()) {
+			final Collection<String> dependencies = componentIdsByReferringModule.removeAll(module);
+			for (Class<? extends SnomedComponentDocument> type : CORE_COMPONENT_TYPES) {
+				Query<String[]> dependencyQuery = Query.select(String[].class)
+						.from(type)
+						.fields(SnomedComponentDocument.Fields.ID, SnomedComponentDocument.Fields.MODULE_ID)
+						.where(SnomedComponentDocument.Expressions.ids(dependencies))
+						.limit(10000)
+						.build();
+				for (Hits<String[]> dependencyHits : searcher.scroll(dependencyQuery)) {
+					for (String[] idAndModule : dependencyHits) {
+						String targetModule = idAndModule[1];
+						if (!module.equals(targetModule)) {
+							moduleDependencies.put(module, targetModule);
+						}
 					}
 				}
 			}
@@ -78,48 +88,49 @@ public final class ModuleDependencyCollector {
 		return moduleDependencies;
 	}
 
-	private void collectConceptModuleDependencies(Iterable<Long> storageKeys, Multimap<String, String> conceptsByReferringModule) throws IOException {
+	private void collectConceptModuleDependencies(Iterable<Long> storageKeys, Multimap<String, String> componentIdsByReferringModule) throws IOException {
 		for (SnomedConceptDocument doc : searcher.get(SnomedConceptDocument.class, storageKeys)) {
-			conceptsByReferringModule.put(doc.getModuleId(), doc.isPrimitive() ? Concepts.PRIMITIVE : Concepts.FULLY_DEFINED);
+			componentIdsByReferringModule.put(doc.getModuleId(), doc.isPrimitive() ? Concepts.PRIMITIVE : Concepts.FULLY_DEFINED);
 		}
 	}
 	
-	private void collectDescriptionModuleDependencies(Iterable<Long> storageKeys, Multimap<String, String> conceptsByReferringModule) throws IOException {
+	private void collectDescriptionModuleDependencies(Iterable<Long> storageKeys, Multimap<String, String> componentIdsByReferringModule) throws IOException {
 		for (SnomedDescriptionIndexEntry doc : searcher.get(SnomedDescriptionIndexEntry.class, storageKeys)) {
-			conceptsByReferringModule.put(doc.getModuleId(), doc.getConceptId());
-			conceptsByReferringModule.put(doc.getModuleId(), doc.getTypeId());
-			conceptsByReferringModule.put(doc.getModuleId(), doc.getCaseSignificanceId());
+			componentIdsByReferringModule.put(doc.getModuleId(), doc.getConceptId());
+			componentIdsByReferringModule.put(doc.getModuleId(), doc.getTypeId());
+			componentIdsByReferringModule.put(doc.getModuleId(), doc.getCaseSignificanceId());
 		}
 	}
 	
-	private void collectRelationshipModuleDependencies(Iterable<Long> storageKeys, Multimap<String, String> conceptsByReferringModule) throws IOException {
+	private void collectRelationshipModuleDependencies(Iterable<Long> storageKeys, Multimap<String, String> componentIdsByReferringModule) throws IOException {
 		for (SnomedRelationshipIndexEntry doc : searcher.get(SnomedRelationshipIndexEntry.class, storageKeys)) {
-			conceptsByReferringModule.put(doc.getModuleId(), doc.getSourceId());
-			conceptsByReferringModule.put(doc.getModuleId(), doc.getTypeId());
-			conceptsByReferringModule.put(doc.getModuleId(), doc.getDestinationId());
-			conceptsByReferringModule.put(doc.getModuleId(), doc.getModifierId());
-			conceptsByReferringModule.put(doc.getModuleId(), doc.getCharacteristicTypeId());
+			componentIdsByReferringModule.put(doc.getModuleId(), doc.getSourceId());
+			componentIdsByReferringModule.put(doc.getModuleId(), doc.getTypeId());
+			componentIdsByReferringModule.put(doc.getModuleId(), doc.getDestinationId());
+			componentIdsByReferringModule.put(doc.getModuleId(), doc.getModifierId());
+			componentIdsByReferringModule.put(doc.getModuleId(), doc.getCharacteristicTypeId());
 		}
 	}
 	
-	private void collectMemberModuleDependencies(Iterable<Long> storageKeys, Multimap<String, String> conceptsByReferringModule) throws IOException {
+	private void collectMemberModuleDependencies(Iterable<Long> storageKeys, Multimap<String, String> componentIdsByReferringModule) throws IOException {
 		for (SnomedRefSetMemberIndexEntry doc : searcher.get(SnomedRefSetMemberIndexEntry.class, storageKeys)) {
-			conceptsByReferringModule.put(doc.getModuleId(), doc.getReferenceSetId());
-			registerIfConcept(conceptsByReferringModule, doc.getModuleId(), doc.getAcceptabilityId());
-			registerIfConcept(conceptsByReferringModule, doc.getModuleId(), doc.getCharacteristicTypeId());
-			registerIfConcept(conceptsByReferringModule, doc.getModuleId(), doc.getCorrelationId());
-			registerIfConcept(conceptsByReferringModule, doc.getModuleId(), doc.getDescriptionFormat());
-			registerIfConcept(conceptsByReferringModule, doc.getModuleId(), doc.getOperatorId());
-			registerIfConcept(conceptsByReferringModule, doc.getModuleId(), doc.getValueId());
-			registerIfConcept(conceptsByReferringModule, doc.getModuleId(), doc.getUnitId());
-			registerIfConcept(conceptsByReferringModule, doc.getModuleId(), doc.getTargetComponent());
-			registerIfConcept(conceptsByReferringModule, doc.getModuleId(), doc.getMapCategoryId());
+			componentIdsByReferringModule.put(doc.getModuleId(), doc.getReferenceSetId());
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getReferencedComponentId());
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getAcceptabilityId());
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getCharacteristicTypeId());
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getCorrelationId());
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getDescriptionFormat());
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getOperatorId());
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getValueId());
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getUnitId());
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getTargetComponent());
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getMapCategoryId());
 		}
 	}
 
-	private void registerIfConcept(Multimap<String, String> conceptsByReferringModule, String moduleId, String dependency) {
-		if (SnomedIdentifiers.isConceptIdentifier(dependency)) {
-			conceptsByReferringModule.put(moduleId, dependency);
+	private void registerIfConcept(Multimap<String, String> componentIdsByReferringModule, String moduleId, String dependency) {
+		if (SnomedIdentifiers.isValid(dependency)) {
+			componentIdsByReferringModule.put(moduleId, dependency);
 		}
 	}
 	
