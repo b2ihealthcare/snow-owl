@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api;
+package com.b2international.snowowl.fhir.api.service;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,7 +31,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.api.model.Coding;
-import com.b2international.snowowl.fhir.api.service.IFhirProvider;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -64,6 +63,15 @@ public class FhirCodeSystemRestService {
 		return "Ping!";
 	}
 	
+	/**
+	 * GET-based lookup endpoint.
+	 * @param code
+	 * @param uri
+	 * @param version
+	 * @param date
+	 * @param displayLanguage
+	 * @param properties
+	 */
 	@ApiOperation(
 			value="Concept lookup",
 			notes="Given a code/system, or a Coding, get additional details about the concept.\n"
@@ -79,25 +87,38 @@ public class FhirCodeSystemRestService {
 		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required=false) Set<String> properties) {
 		
 		System.err.println("Code: " + code + " uri: " + uri +
-				" version:" + version + " lookup date: " + date + " display Language: " + displayLanguage);
+				" version:" + version + " lookup date: " + date + " display language: " + displayLanguage);
 		
 		if (properties !=null) {
 			System.out.println(" properties: " + Arrays.toString(properties.toArray()));
 		}
 		
-		Coding coding = new Coding(code, uri, version);
-		validateParameters(coding, date, displayLanguage);
+		Coding coding = Coding.builder()
+			.code(code)
+			.system(uri)
+			.version(version)
+			.build();
+		
+		//validateParameters(coding, date, displayLanguage);
 		
 		//all good, now do something
 		lookup(coding);
 	}
 	
+	/**
+	 * POST-based 'mixed' lookup endpoint.
+	 * TODO: This should probably be removed.
+	 * @param coding
+	 * @param date
+	 * @param displayLanguage
+	 * @param properties
+	 */
 	@ApiOperation(
 			value="Concept lookup",
 			notes="Given a code/system, or a Coding, get additional details about the concept.\n"
 					+ "https://www.hl7.org/fhir/2016May/datatypes.html#dateTime")
-	@RequestMapping(value="/$lookup", method=RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void lookupViaCoding(
+	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public void lookupViaCodingAndParameters(
 		
 		@ApiParam(value="The coding definition to look up") @RequestBody final Coding coding,
 		@ApiParam(value="Lookup date in datetime format") @RequestParam(value="date", required=false) final String date,
@@ -109,7 +130,7 @@ public class FhirCodeSystemRestService {
 			System.out.println(" properties: " + Arrays.toString(properties.toArray()));
 		}
 		
-		validateParameters(coding, date, displayLanguage);
+		//validateParameters(coding, date, displayLanguage);
 		
 		//all good, now do something
 		lookup(coding);
@@ -128,18 +149,18 @@ public class FhirCodeSystemRestService {
 		
 	}
 	
-	private void validateParameters(Coding coding, String date, String displayLanguage) {
-		coding.validate();
-		
-		if (!StringUtils.isEmpty(date) && !date.matches(DATE_TIME_REGEXP)) {
-			throw new BadRequestException("Date format is incorrect.");
-		}
-		
-		if (!StringUtils.isEmpty(displayLanguage) && displayLanguage.matches(Coding.CODE_REGEXP)) {
-			throw new BadRequestException("Display language code format is incorrect: " + displayLanguage);
-		}
-		
-	}
+//	private void validateParameters(Coding coding, String date, String displayLanguage) {
+//		coding.validate();
+//		
+//		if (!StringUtils.isEmpty(date) && !date.matches(DATE_TIME_REGEXP)) {
+//			throw new BadRequestException("Date format is incorrect.");
+//		}
+//		
+//		if (!StringUtils.isEmpty(displayLanguage) && displayLanguage.matches(Coding.CODE_REGEXP)) {
+//			throw new BadRequestException("Display language code format is incorrect: " + displayLanguage);
+//		}
+//		
+//	}
 
 
 

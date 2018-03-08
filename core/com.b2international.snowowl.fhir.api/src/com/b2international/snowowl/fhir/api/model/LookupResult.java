@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.api.model;
 
 import java.util.Collection;
 
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.core.annotation.Order;
 
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableLookupResult;
@@ -31,6 +32,7 @@ public class LookupResult extends FhirModel {
 	
 	//A display name for the code system (1..1)
 	@Order(value=1)
+	@NotEmpty
 	private String name;
 	
 	//The version that these details are based on (0..1)

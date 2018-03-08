@@ -16,29 +16,14 @@
 package com.b2international.snowowl.fhir.api.model;
 
 /**
- * FHIR datatypes
+ * Regexp validation constraints
  * 
- * @see <a href="https://www.hl7.org/fhir/datatypes.html">FHIR:Data Types</a>
  * @since 6.3
  */
-public enum FhirType {
+public abstract class ValidationConstraints {
 	
-	URI("Uri"),
-	CODE("Code"),
-	DECIMAL("Decimal"),
-	INTEGER("Integer"),
-	DATE("Date"),
-	DATETIME("DateTime"),
-	OID("Oid"),
-	OBJECT("Object"); //to determine by type checking
+	public static final String CODE_REGEXP = "[^\\s]+([\\s]?[^\\s]+)*"; //$NON-NLS-N$
 	
-	private String serializedName;
-	
-	FhirType(String serializedName) {
-		this.serializedName = serializedName;
-	}
-	
-	public String getSerializedName() {
-		return serializedName;
-	}
+	private ValidationConstraints() {}
+
 }

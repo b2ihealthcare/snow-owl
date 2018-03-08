@@ -30,7 +30,7 @@ public class SerializationTest extends FhirTest {
 	public void fhirParameterTest() throws Exception {
 		SerializableParameter parameter = new SerializableParameter("parameterName", "valueString", "test");
 		
-		printJson(parameter);
+		printPrettyJson(parameter);
 		
 		String expected = "{\"name\":\"parameterName\",\"valueString\":\"test\"}";
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(parameter));
@@ -50,7 +50,7 @@ public class SerializationTest extends FhirTest {
 
 		SerializableParameter dParameter = new SerializableParameter("designation", "part", designationParameters);
 		lookupResults.add(dParameter);
-		printJson(lookupResults);
+		printPrettyJson(lookupResults);
 	}
 	
 	//@Test
@@ -69,7 +69,7 @@ public class SerializationTest extends FhirTest {
 		
 		SerializableParameter lookupParameter = new SerializableParameter("designation", "part", designationParameters);
 		lookupResults.add(lookupParameter);
-		printJson(lookupResults);
+		printPrettyJson(lookupResults);
 	}
 	
 	//@Test

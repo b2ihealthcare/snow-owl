@@ -15,30 +15,38 @@
  */
 package com.b2international.snowowl.fhir.api.model;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+
 /**
- * FHIR datatypes
+ * Uri validator for the {@link Uri} annotation
  * 
- * @see <a href="https://www.hl7.org/fhir/datatypes.html">FHIR:Data Types</a>
  * @since 6.3
  */
-public enum FhirType {
-	
-	URI("Uri"),
-	CODE("Code"),
-	DECIMAL("Decimal"),
-	INTEGER("Integer"),
-	DATE("Date"),
-	DATETIME("DateTime"),
-	OID("Oid"),
-	OBJECT("Object"); //to determine by type checking
-	
-	private String serializedName;
-	
-	FhirType(String serializedName) {
-		this.serializedName = serializedName;
+public class UriValidator implements ConstraintValidator<Uri, String> {
+
+	// private Uri uri;
+
+	@Override
+	public void initialize(Uri constraintAnnotation) {
 	}
-	
-	public String getSerializedName() {
-		return serializedName;
+
+	@Override
+	public boolean isValid(String object, ConstraintValidatorContext constraintContext) {
+
+		//use @NotNull for null validation
+		if (object == null) {
+			return true;
+		}
+		try {
+			new URI(object);
+		} catch (URISyntaxException e) {
+
+			return false;
+		}
+		return true;
 	}
 }

@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -63,6 +64,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  *
  */
 @JsonSerialize(using = SerializableParameter.class)
+@JsonDeserialize(using = ParameterDeserializer.class)
 public class SerializableParameter extends JsonSerializer<SerializableParameter> {
 
 	@JsonProperty
@@ -76,6 +78,7 @@ public class SerializableParameter extends JsonSerializer<SerializableParameter>
 	private Object value;
 
 	//For Jackson
+	@SuppressWarnings("unused")
 	private SerializableParameter() {
 	}
 
@@ -98,6 +101,15 @@ public class SerializableParameter extends JsonSerializer<SerializableParameter>
 	@Override
 	public String toString() {
 		return "FhirParameter [name=" + name + ", type=" + type + ", value=" + value + "]";
+	}
+	
+	/**
+	 * Returns the type of the parameter value.
+	 * For testing only.
+	 * @return
+	 */
+	public Class getType() {
+		return value.getClass();
 	}
 	
 }

@@ -39,11 +39,16 @@ public class FhirTest {
 		System.out.println("--- Test method completed: " + this.getClass().getSimpleName() + ":" + testName.getMethodName() + " ---\n");
 	}
 	
-	protected void printJson(Object object) throws Exception {
+	protected void printPrettyJson(Object object) throws Exception {
 		String result = objectMapper.writeValueAsString(object);
 		Object json = objectMapper.readValue(result, Object.class);
 		String prettyPrint = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
 		System.out.println(prettyPrint);
+	}
+	
+	protected void printJson(Object object) throws Exception {
+		String result = objectMapper.writeValueAsString(object);
+		System.out.println(result);
 	}
 
 }

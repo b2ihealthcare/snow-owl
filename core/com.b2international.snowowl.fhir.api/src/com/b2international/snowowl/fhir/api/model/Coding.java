@@ -15,19 +15,19 @@
  */
 package com.b2international.snowowl.fhir.api.model;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import javax.validation.constraints.Pattern;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.wordnik.swagger.annotations.ApiModel;
 
 /**
- * Class to represent the FHIR Coding
+ * Class to represent the FHIR Coding.
+ * Note that this class is not turned into a collection of parameters but kept in its
+ * normal serialization form.
+ * 
  * @see <a href="https://www.hl7.org/fhir/2016May/datatypes.html#Coding">FHIR:Datatypes:Coding</a>
  * 
  * @since 6.3
@@ -36,12 +36,12 @@ import com.wordnik.swagger.annotations.ApiModel;
 @JsonInclude(Include.NON_NULL)
 public class Coding {
 	
-	public static final String CODE_REGEXP = "[^\\s]+([\\s]?[^\\s]+)*"; //$NON-NLS-N$
-	
 	@NotEmpty
+	@Pattern(regexp = ValidationConstraints.CODE_REGEXP)
 	private String code;
 	
 	@NotEmpty
+	@Uri
 	private String system;
 	
 	private String version;
@@ -61,25 +61,12 @@ public class Coding {
 	 * @param isUserSelected
 	 * @param display
 	 */
-	public Coding(String code, String system, String version, boolean isUserSelected, String display) {
+	Coding(String code, String system, String version, boolean isUserSelected, String display) {
 		this.code = code;
 		this.system = system;
 		this.version = version;
 		this.isUserSelected = isUserSelected;
 		this.display = display;
-	}
-	
-	/**
-	 * @param code
-	 * @param system
-	 * @param version
-	 * @param isUserSelected
-	 * @param display
-	 */
-	public Coding(String code, String system, String version) {
-		this.code = code;
-		this.system = system;
-		this.version = version;
 	}
 
 	/**
@@ -117,23 +104,46 @@ public class Coding {
 		return display;
 	}
 	
-	public void validate() {
-		if (StringUtils.isEmpty(code)) {
-			throw new BadRequestException("Code is not specified.");
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	public static class Builder extends ModelValidator<Coding> {
+		
+		private String code;
+		private String system;
+		private String version;
+		private boolean isUserSelected;
+		private String display;
+
+		public Builder code(final String code) {
+			this.code = code;
+			return this;
 		}
 		
-		if (StringUtils.isEmpty(system)) {
-			throw new BadRequestException("Code system is not specified.");
+		public Builder system(final String system) {
+			this.system = system;
+			return this;
+		}
+
+		public Builder version(final String version) {
+			this.version = version;
+			return this;
+		}
+
+		
+		public Builder isUserSelected(final boolean isUserSelected) {
+			this.isUserSelected = isUserSelected;
+			return this;
+		}
+
+		public Builder display(final String display) {
+			this.display = display;
+			return this;
 		}
 		
-		if (!code.matches(CODE_REGEXP)) {
-			throw new BadRequestException("Code format is incorrect: " + code);
-		}
-		
-		try {
-			new URI(system);
-		} catch (URISyntaxException e) {
-			throw new BadRequestException("URI format is incorrect: " + system);
+		protected Coding doBuild() {
+			return new Coding(code, system, version, isUserSelected, display);
 		}
 		
 	}

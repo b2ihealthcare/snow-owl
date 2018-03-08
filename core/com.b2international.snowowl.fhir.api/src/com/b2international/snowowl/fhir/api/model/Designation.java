@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.api.model;
 
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.core.annotation.Order;
 
 /**
@@ -48,6 +49,7 @@ public class Designation extends FhirModel {
 	private Coding use;
 	
 	//The text value for this designation (1..1)
+	@NotEmpty
 	@Order(value=3)
 	private String value;
 	
@@ -73,7 +75,7 @@ public class Designation extends FhirModel {
 		return new Builder();
 	}
 	
-	public static class Builder {
+	public static class Builder extends ModelValidator<Designation>{
 		
 		private String languageCode;
 		private Coding use;
@@ -94,7 +96,7 @@ public class Designation extends FhirModel {
 			return this;
 		}
 
-		public Designation build() {
+		protected Designation doBuild() {
 			return new Designation(languageCode, use, value);
 		}
 	}

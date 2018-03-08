@@ -18,46 +18,15 @@ package com.b2international.snowowl.fhir.api.model.serialization;
 import java.util.Collection;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
 /**
- * The serializable representation of the lookup response.
- * {
-  "resourceType" : "Parameters",
-  "parameter" : [
-    {
-    "name" : "name",
-    "valueString" : "LOINC"
-  },
-  {
-    "name" : "version",
-    "valueString" : "2.48"
-  },
-  {
-    "name" : "designation",
-    "valueString" : "Bicarbonate [Moles/volume] in Serum"
-  },
-  {
-    "name" : "abstract",
-    "valueString" : "false"
-  },
-  {
-      "name" : "designation",
-    "part" : [
-    {
-      "name" : "value",
-      "valueString" : "Bicarbonate [Moles/volume] in Serum "
-    }
-    ]
-  }
-  ]
+ * The de-serializable representation of the lookup response.
+ * 
  * @since 6.3
  */
-@JsonInclude(Include.NON_EMPTY) //covers nulls as well
-public class SerializableLookupResult {
+public class DeserializableLookupRequest {
 	
 	@JsonProperty(value="parameter")
 	private List<SerializableParameter> parameters = Lists.newArrayList();
@@ -77,4 +46,5 @@ public class SerializableLookupResult {
 	public Collection<SerializableParameter> getParameters() {
 		return parameters;
 	}
+
 }

@@ -15,15 +15,12 @@
  */
 package com.b2international.snowowl.fhir.api.model;
 
-import java.util.Collection;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.core.annotation.Order;
 
-import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
-import com.google.common.collect.Lists;
-
-public class Property extends FhirModel {
+public class SubProperty extends FhirModel {
 	
 	//Identifies the property returned (1..1)
 	@Order(value=1)
@@ -36,6 +33,7 @@ public class Property extends FhirModel {
 	 * code | Coding | string | integer | boolean | dateTime
 	 */
 	@Order(value=2)
+	@NotNull //only subproperty value is 1..1, property.value is 0..1 (?)
 	@FhirDataType(type = FhirType.OBJECT)
 	private Object value;
 	
@@ -43,14 +41,10 @@ public class Property extends FhirModel {
 	@Order(value=3)
 	private String description;
 	
-	@Order(value=4)
-	private Collection<SubProperty> subProperties = Lists.newArrayList();
-	
-	Property(final String code, final Object value, final String description, Collection<SubProperty> subproperties) {
+	SubProperty(final String code, final Object value, final String description) {
 		this.code = code;
 		this.value = value;
 		this.description = description;
-		this.subProperties = subproperties;
 	}
 	
 	public String getCode() {
@@ -69,38 +63,15 @@ public class Property extends FhirModel {
 		return description;
 	}
 	
-	public Collection<SubProperty> getSubProperties() {
-		return subProperties;
-	}
-	
-	@Override
-	protected Collection<SerializableParameter> getCollectionParameters(Object value) throws Exception {
-		
-		Collection<SerializableParameter> collectionParameters = Lists.newArrayList();
-
-		@SuppressWarnings("rawtypes")
-		Collection values = (Collection) value;
-		
-		for (Object object : values) {
-			if (object instanceof SubProperty) {
-				Collection<SerializableParameter> propertyParams = ((SubProperty) object).toParameters();
-				SerializableParameter fhirParam = new SerializableParameter("subproperty", "part", propertyParams);
-				collectionParameters.add(fhirParam);
-			}
-		}
-		return collectionParameters;
-	}
-	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
-	public static class Builder extends ModelValidator<Property> {
+	public static class Builder extends ModelValidator<SubProperty> {
 		
 		private String code;
 		private Object value;
 		private String description;
-		private Collection<SubProperty> subProperties = Lists.newArrayList();
 
 		public Builder code(final String code) {
 			this.code = code;
@@ -117,13 +88,8 @@ public class Property extends FhirModel {
 			return this;
 		}
 		
-		public Builder addSubProperty(final SubProperty subProperty) {
-			subProperties.add(subProperty);
-			return this;
-		}
-		
-		protected Property doBuild() {
-			return new Property(code, value, description, subProperties);
+		protected SubProperty doBuild() {
+			return new SubProperty(code, value, description);
 		}
 	}
 
