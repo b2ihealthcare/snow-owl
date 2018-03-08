@@ -257,7 +257,9 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 
 		// Step 2: retrieve code system versions that are visible from the reference branch
 		final TreeSet<CodeSystemVersionEntry> versionsToExport = getVisibleVersions(referenceCodeSystem);
-		final Optional<CodeSystemVersionEntry> latestVersion = Optional.ofNullable(versionsToExport.pollLast());
+		final Optional<CodeSystemVersionEntry> latestVersion = versionsToExport.isEmpty()
+				? Optional.empty()
+				: Optional.of(versionsToExport.last());
 		
 		// Step 3: determine which versions to keep for the export
 		filterVersions(versionsToExport);
