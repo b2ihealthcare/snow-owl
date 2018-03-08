@@ -26,11 +26,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.b2international.snowowl.fhir.api.model.Coding;
 import com.b2international.snowowl.fhir.api.model.Designation;
 import com.b2international.snowowl.fhir.api.model.LookupResult;
 import com.b2international.snowowl.fhir.api.model.Property;
 import com.b2international.snowowl.fhir.api.model.SubProperty;
+import com.b2international.snowowl.fhir.api.model.dt.Coding;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableLookupResult;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 

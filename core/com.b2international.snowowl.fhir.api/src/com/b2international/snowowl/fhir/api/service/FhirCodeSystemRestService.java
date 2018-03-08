@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.api.model.Coding;
+import com.b2international.snowowl.fhir.api.model.dt.Coding;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;

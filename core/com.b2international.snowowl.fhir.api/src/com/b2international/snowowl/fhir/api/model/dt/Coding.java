@@ -13,19 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.model;
+package com.b2international.snowowl.fhir.api.model.dt;
 
 import javax.validation.constraints.Pattern;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.fhir.api.model.ModelValidator;
+import com.b2international.snowowl.fhir.api.model.Uri;
+import com.b2international.snowowl.fhir.api.model.ValidationConstraints;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wordnik.swagger.annotations.ApiModel;
 
 /**
- * Class to represent the FHIR Coding.
+ * FHIR Coding complex datatype.
  * Note that this class is not turned into a collection of parameters but kept in its
  * normal serialization form.
  * 

@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
-import com.b2international.snowowl.fhir.api.model.Coding;
+import com.b2international.snowowl.fhir.api.model.dt.Coding;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;

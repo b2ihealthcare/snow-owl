@@ -18,6 +18,8 @@ package com.b2international.snowowl.fhir.api.model;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.core.annotation.Order;
 
+import com.b2international.snowowl.fhir.api.model.dt.Coding;
+
 /**
  * This class represents a FHIR designation.
  * The class is capable of providing a bean that will be serialized into:
