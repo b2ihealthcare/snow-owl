@@ -48,7 +48,7 @@ import com.b2international.snowowl.internal.eventbus.HandlerChangedEvent;
  */
 public class EventBusProtocol extends SignalProtocol<IEventBus> implements IEventBusProtocol, IListener {
 
-	private static final int ADDRESS_BOOK_REQ_TIMEOUT = 60 * 1000;
+	static final int ADDRESS_BOOK_REQ_TIMEOUT = 60 * 1000;
 	private static final Logger LOG = LoggerFactory.getLogger(EventBusProtocol.class);
 	private final IRequestFactory factory;
 	private Set<String> remoteAddresses = Collections.synchronizedSet(new HashSet<String>());
