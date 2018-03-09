@@ -319,10 +319,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return matchAny(Fields.ACCEPTABILITY_ID, acceptabilityIds);
 		}
 		
-		public static Expression query(String query) {
-			return exactMatch(Fields.QUERY, query);
-		}
-		
 		public static Expression characteristicTypeIds(Collection<String> characteristicTypeIds) {
 			return matchAny(Fields.CHARACTERISTIC_TYPE_ID, characteristicTypeIds);
 		}
