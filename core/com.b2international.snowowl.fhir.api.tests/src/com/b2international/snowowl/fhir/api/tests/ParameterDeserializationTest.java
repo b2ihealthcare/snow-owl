@@ -25,9 +25,9 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.b2international.snowowl.fhir.api.model.FhirModel;
 import com.b2international.snowowl.fhir.api.model.LookupRequest;
 import com.b2international.snowowl.fhir.api.model.dt.Code;
-import com.b2international.snowowl.fhir.api.model.serialization.SerializableLookupResult;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -170,17 +170,19 @@ public class ParameterDeserializationTest extends FhirTest {
 		
 		String jsonMini = "{\"resourceType\":\"Parameters\","
 				+ "\"parameter\":["
-					+ "{\"name\":\"paramName\",\"valueString\":\"LOINC\"},"
+					+ "{\"name\":\"system\",\"valueUri\":\"LOINC\"},"
 					+ "{\"name\":\"version\",\"valueString\":\"20180131\"},"
-					+ "{\"name\":\"abstract\",\"valueBoolean\":\"false\"}"
+					+ "{\"name\":\"code\",\"valuecode\":\"1234\"}"
 					+ "]}";
 		
 		LookupRequest request = objectMapper.readValue(jsonMini, LookupRequest.class);
 		
-		Optional<SerializableParameter> optionalParameter = request.getParameters().stream().filter(p -> p.getName().equals("paramName")).findFirst();
+		Optional<SerializableParameter> optionalParameter = request.getParameters().stream()
+				.filter(p -> p.getName().equals("system"))
+				.findFirst();
 		assertTrue(optionalParameter.isPresent());
 		SerializableParameter param = optionalParameter.get();
-		assertEquals("valueString", param.getType());
+		assertEquals("valueUri", param.getType());
 		assertEquals("LOINC", param.getValue());
 		assertEquals(String.class, param.getValueType());
 	}
@@ -196,11 +198,10 @@ public class ParameterDeserializationTest extends FhirTest {
 						+ "]}"
 					+ "]}";
 		
-		SerializableLookupResult parameterModel = objectMapper.readValue(json, SerializableLookupResult.class);
+		FhirModel parameterModel = objectMapper.readValue(json, FhirModel.class);
 		String serializedModel = objectMapper.writeValueAsString(parameterModel);
 		Assert.assertEquals(json, serializedModel);
 	}
-
 	
 }
 

@@ -16,11 +16,14 @@
 package com.b2international.snowowl.fhir.api.model.serialization;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Iterator;
 
 import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.dt.Coding;
+import com.b2international.snowowl.fhir.api.model.dt.DateFormats;
 import com.b2international.snowowl.fhir.api.model.dt.FhirType;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -92,6 +95,7 @@ public class ParameterDeserializer extends JsonDeserializer<SerializableParamete
 	 * @param oc 
 	 * @return
 	 * @throws JsonProcessingException 
+	 * @throws ParseException 
 	 */
 	private Object getTypedValue(String fieldName, JsonNode valueNode, ObjectCodec oc) throws JsonProcessingException {
 		Object value = null;
@@ -112,6 +116,15 @@ public class ParameterDeserializer extends JsonDeserializer<SerializableParamete
 			break;
 		case STRING:
 			value = valueNode.asText();
+			break;
+		case DATETIME:
+			String dateText = valueNode.asText();
+			SimpleDateFormat sdf = new SimpleDateFormat(DateFormats.DATE_TIME_FORMAT);
+			try {
+				value = sdf.parse(dateText);
+			} catch (ParseException e) {
+				throw new IllegalArgumentException("Could not parse date string '"+ dateText + "'.", e);
+			}
 			break;
 		case CODE:
 			value = new Code(valueNode.asText());

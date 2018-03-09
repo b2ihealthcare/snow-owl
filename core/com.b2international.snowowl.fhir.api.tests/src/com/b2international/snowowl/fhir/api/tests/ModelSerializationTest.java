@@ -34,7 +34,6 @@ import com.b2international.snowowl.fhir.api.model.Property.Builder;
 import com.b2international.snowowl.fhir.api.model.SubProperty;
 import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.dt.Coding;
-import com.b2international.snowowl.fhir.api.model.serialization.SerializableLookupResult;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 
 /**
@@ -320,7 +319,7 @@ public class ModelSerializationTest extends FhirTest {
 	
 	@Test
 	public void lookupResultTest() throws Exception {
-		SerializableLookupResult fhirLookupResult = LookupResult.builder()
+		LookupResult lookupResult = LookupResult.builder()
 			.name("test")
 			.addDesignation(Designation.builder()
 					.value("dValue")
@@ -335,11 +334,10 @@ public class ModelSerializationTest extends FhirTest {
 						.value(1)
 						.build())
 					.build())
-			.build()
-			.toSerializableBean();
+			.build();
 		
-		printJson(fhirLookupResult);
-		printPrettyJson(fhirLookupResult);
+		printJson(lookupResult);
+		printPrettyJson(lookupResult);
 	}
 
 }

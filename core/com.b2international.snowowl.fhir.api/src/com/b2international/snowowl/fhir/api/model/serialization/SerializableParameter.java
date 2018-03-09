@@ -23,30 +23,79 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * 
- * @author bbanfai
- *
+  "resourceType" : "Parameters",
+  // from Resource: id, meta, implicitRules, and language
+  "parameter" : [{ // Operation Parameter
+    "name" : "<string>", // R!  Name from the definition
+    // value[x]: If parameter is a data type. One of these 23:
+    "valueInteger" : <integer>,
+    "valueDecimal" : <decimal>,
+    "valueDateTime" : "<dateTime>",
+    "valueDate" : "<date>",
+    "valueInstant" : "<instant>",
+    "valueString" : "<string>",
+    "valueUri" : "<uri>",
+    "valueBoolean" : <boolean>,
+    "valueCode" : "<code>",
+    "valueBase64Binary" : "<base64Binary>",
+    "valueCoding" : { Coding },
+    "valueCodeableConcept" : { CodeableConcept },
+    "valueAttachment" : { Attachment },
+    "valueIdentifier" : { Identifier },
+    "valueQuantity" : { Quantity },
+    "valueRange" : { Range },
+    "valuePeriod" : { Period },
+    "valueRatio" : { Ratio },
+    "valueHumanName" : { HumanName },
+    "valueAddress" : { Address },
+    "valueContactPoint" : { ContactPoint },
+    "valueSchedule" : { Schedule },
+    "valueReference" : { Reference },
+    "resource" : { Resource }, // C? If parameter is a whole resource
+    "part" : [{ Content as for Parameters.parameter }] // Named part of a multi-part parameter
+  }]
+}
+ * @since 6.3
  */
 @JsonSerialize(using = ParameterSerializer.class)
 @JsonDeserialize(using = ParameterDeserializer.class)
-public class SerializableParameter extends TypedSerializableParameter<Object> {
+public class SerializableParameter {
 
+	@JsonProperty
+	private String name;
+	
+	@JsonProperty
+	private String type;
+	
 	@JsonProperty
 	@NotNull
 	private Object value;
 	
+	//For Jackson
+	@SuppressWarnings("unused")
+	private SerializableParameter() {}
+	
 	public SerializableParameter(String name, String type, Object value) {
-		super(name, type);
+		this.name = name;
+		this.type = type;
 		this.value = value;
 	}
 	
-	@Override
+	public String getName() {
+		return name;
+	}
+	
+	public String getType() {
+		return type;
+	}
+	
 	public Object getValue() {
 		return value;
 	}
 	
 	@Override
 	public String toString() {
-		return "FhirParameter [name=" + getName() + ", type=" + getType() + ", value=" + getValue() + "]";
+		return "FhirParameter [name=" + name + ", type=" + type + ", value=" + value + "]";
 	}
 	
 	/**
@@ -58,4 +107,5 @@ public class SerializableParameter extends TypedSerializableParameter<Object> {
 	public Class getValueType() {
 		return value.getClass();
 	}
+	
 }

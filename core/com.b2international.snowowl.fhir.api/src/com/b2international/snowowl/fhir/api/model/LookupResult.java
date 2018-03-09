@@ -20,7 +20,6 @@ import java.util.Collection;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.core.annotation.Order;
 
-import com.b2international.snowowl.fhir.api.model.serialization.SerializableLookupResult;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.google.common.collect.Lists;
 
@@ -28,6 +27,7 @@ import com.google.common.collect.Lists;
  * 
  * @since 6.3
  */
+//@JsonSubTypes
 public class LookupResult extends FhirModel {
 	
 	//A display name for the code system (1..1)
@@ -67,6 +67,20 @@ public class LookupResult extends FhirModel {
 		this.designations = designations;
 		this.properties = properties;
 	}
+	
+	/*
+	public void add(SerializableParameter parameter) {
+		parameters.add(parameter);
+	}
+
+	public void addAll(Collection<SerializableParameter> fhirParameters) {
+		this.parameters.addAll(fhirParameters);
+	}
+
+	public Collection<SerializableParameter> getParameters() {
+		return parameters;
+	}
+	*/
 	
 	public static Builder builder() {
 		return new Builder();
@@ -111,22 +125,6 @@ public class LookupResult extends FhirModel {
 		}
 	}
 	
-	/**
-	 * This method builds the object of the serialized representation
-	 * of a lookup result:
-	 * <pre>{@code
-  			}
-  			</pre>
-	 *  @return
-	 * @throws Exception
-	 */
-	public SerializableLookupResult toSerializableBean() throws Exception {
-		SerializableLookupResult fhirLookupResult = new SerializableLookupResult();
-		Collection<SerializableParameter> parameters = toParameters();
-		fhirLookupResult.addAll(parameters);
-		return fhirLookupResult;
-	}
-
 	@Override
 	protected Collection<SerializableParameter> getCollectionParameters(Object value) throws Exception {
 		

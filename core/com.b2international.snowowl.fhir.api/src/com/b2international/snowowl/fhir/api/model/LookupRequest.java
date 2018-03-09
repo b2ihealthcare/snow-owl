@@ -29,10 +29,30 @@ import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.dt.Coding;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.util.StdConverter;
 import com.google.common.collect.Lists;
+import com.wordnik.swagger.annotations.ApiModel;
 
-public class LookupRequest {
-
+/**
+ * This class represents a FHIR lookup operation request.
+ * This domain model class is capable of building itself from a collection of
+ * serialized parameters. See {@link #toModelObject()}.
+ * 
+ * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#lookup">FHIR:CodeSystem:Operations:lookup</a>
+ * @since 6.3
+ */
+@ApiModel
+@JsonDeserialize(converter=LookupRequest.class)
+public class LookupRequest extends StdConverter<LookupRequest,LookupRequest> {
+	
+	//FHIR header "resourceType" : "Parameters",
+	@JsonProperty
+	private String resourceType = "Parameters";
+	
+	@JsonProperty(value="parameter")
+	private List<SerializableParameter> parameters = Lists.newArrayList();
+	
 	// The code that is to be located. If a code is provided, a system must be provided (0..1)
 	@Order(value = 1)
 	@NotEmpty
@@ -47,7 +67,7 @@ public class LookupRequest {
 	@Order(value = 3)
 	private String version;
 
-	// The cooding to look up (0..1)
+	// The coding to look up (0..1)
 	@Order(value = 4)
 	private Coding coding;
 	
@@ -80,49 +100,66 @@ public class LookupRequest {
 	@Order(value = 7)
 	private Collection<Property> properties = Lists.newArrayList();
 	
-	@JsonProperty(value="parameter")
-	private List<SerializableParameter> parameters = Lists.newArrayList();
-	
-	//header "resourceType" : "Parameters",
-	@JsonProperty
-	private String resourceType = "Parameters";
-
-	public void add(SerializableParameter parameter) {
-		parameters.add(parameter);
+	public Code getCode() {
+		return code;
 	}
 
-	public void addAll(Collection<SerializableParameter> fhirParameters) {
-		this.parameters.addAll(fhirParameters);
+	public String getSystem() {
+		return system;
 	}
 
+	public String getVersion() {
+		return version;
+	}
+
+	public Coding getCoding() {
+		return coding;
+	}
+
+	public Date getDate() {
+		return date;
+	}
+
+	public Code getDisplayLanguage() {
+		return displayLanguage;
+	}
+
+	public Collection<Property> getProperties() {
+		return properties;
+	}
+
+	//for testing only
 	public Collection<SerializableParameter> getParameters() {
 		return parameters;
 	}
 
-	public void toModelObject() throws IllegalArgumentException, IllegalAccessException {
-		
-		for (SerializableParameter serializableParameter : parameters) {
-			System.out.println(serializableParameter);
-			
-			String fieldName = serializableParameter.getName();
-			System.out.println("Name: " + fieldName + " : " + serializableParameter.getValue());
-			
-			Field[] fields = LookupRequest.class.getDeclaredFields();
-			for (Field field : fields) {
-				System.out.println("Field" + field);
+
+	/**
+	 * Converts the set of parameters into this populated domain object.
+	 * This method is called right after the deserialization.
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 */
+	@Override
+	public LookupRequest convert(LookupRequest lookupRequest) {
+		try {
+			for (SerializableParameter serializableParameter : lookupRequest.parameters) {
+				
+				String fieldName = serializableParameter.getName();
+				
+				Field[] fields = LookupRequest.class.getDeclaredFields();
+				Optional<Field> fieldOptional = Arrays.stream(fields)
+					.filter(f -> f.getName().equals(fieldName))
+					.findFirst();
+				
+				fieldOptional.orElseThrow(() -> new NullPointerException("Could not find field '" + fieldName + "'."));
+				Field field = fieldOptional.get();
+				field.set(lookupRequest, serializableParameter.getValue());
 			}
-			
-			Optional<Field> fieldOptional = Arrays.stream(fields)
-				.filter(f -> {
-					//f.setAccessible(true);
-					return f.getName().equals(fieldName);
-				})
-				.findFirst();
-			
-			fieldOptional.orElseThrow(() -> new NullPointerException("Could not find field '" + fieldName + "'."));
-			Field field = fieldOptional.get();
-			field.set(this, serializableParameter.getValue());
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new IllegalArgumentException("Error when converting lookup request." + e);
 		}
+		return lookupRequest;
 	}
 
 	@Override
@@ -130,5 +167,4 @@ public class LookupRequest {
 		return "LookupRequest [code=" + code + ", system=" + system + ", version=" + version + ", coding=" + coding
 				+ ", date=" + date + ", displayLanguage=" + displayLanguage + ", properties=" + Arrays.toString(properties.toArray()) + "]";
 	}
-
 }

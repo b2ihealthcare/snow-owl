@@ -28,7 +28,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({ 
 	ParameterSerializationTest.class,
 	ParameterDeserializationTest.class,
-	ModelSerializationTest.class
+	ModelSerializationTest.class,
+	ModelDeserializationTest.class
 })
 public class AllFhirTests {
 }

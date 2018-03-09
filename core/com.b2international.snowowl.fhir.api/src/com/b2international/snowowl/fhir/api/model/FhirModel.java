@@ -29,12 +29,28 @@ import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.dt.Coding;
 import com.b2international.snowowl.fhir.api.model.dt.DateFormats;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.util.StdConverter;
 import com.google.common.collect.Lists;
 
 /**
  * @since 6.3
  */
-public class FhirModel {
+@JsonDeserialize(converter=FhirModel.class)
+@JsonInclude(Include.NON_EMPTY) //covers nulls as well
+public class FhirModel extends StdConverter<FhirModel, FhirModel> {
+	
+	//the serializable format
+	
+	//header "resourceType" : "Parameters",
+	@JsonProperty
+	private String resourceType = "Parameters";
+		
+	@JsonProperty(value="parameter")
+	private List<SerializableParameter> parameters = Lists.newArrayList();
 	
 	/**
 	 *  Method to build a the collection of serializable parameters in the format of:
@@ -46,7 +62,7 @@ public class FhirModel {
 		 *  @return
 	 * @throws Exception
 	 */
-	public Collection<SerializableParameter> toParameters() throws Exception {
+	public List<SerializableParameter> toParameters() throws Exception {
 		
 		List<SerializableParameter> parameters = Lists.newArrayList();
 		
@@ -110,5 +126,16 @@ public class FhirModel {
 
 	protected Collection<SerializableParameter> getCollectionParameters(Object value) throws Exception {
 		return Collections.emptySet();
+	}
+
+	@Override
+	public FhirModel convert(FhirModel fhirModel) {
+		try {
+			parameters = fhirModel.toParameters();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return fhirModel;
 	}
 }
