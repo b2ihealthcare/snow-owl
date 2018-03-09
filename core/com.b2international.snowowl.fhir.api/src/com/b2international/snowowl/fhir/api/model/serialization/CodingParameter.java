@@ -17,30 +17,22 @@ package com.b2international.snowowl.fhir.api.model.serialization;
 
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.fhir.api.model.dt.Coding;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-/**
- * 
- * @author bbanfai
- *
- */
-@JsonSerialize(using = ParameterSerializer.class)
-@JsonDeserialize(using = ParameterDeserializer.class)
-public class SerializableParameter extends TypedSerializableParameter<Object> {
+public class CodingParameter extends TypedSerializableParameter<Coding> {
 
 	@JsonProperty
 	@NotNull
-	private Object value;
+	private Coding value;
 	
-	public SerializableParameter(String name, String type, Object value) {
+	public CodingParameter(String name, String type, Coding value) {
 		super(name, type);
 		this.value = value;
 	}
 	
 	@Override
-	public Object getValue() {
+	public Coding getValue() {
 		return value;
 	}
 	
@@ -54,8 +46,8 @@ public class SerializableParameter extends TypedSerializableParameter<Object> {
 	 * For testing only.
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
 	public Class getValueType() {
 		return value.getClass();
 	}
+
 }

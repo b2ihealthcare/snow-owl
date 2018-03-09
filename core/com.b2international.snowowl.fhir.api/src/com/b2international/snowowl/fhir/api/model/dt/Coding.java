@@ -19,7 +19,7 @@ import javax.validation.constraints.Pattern;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.fhir.api.model.ModelValidator;
+import com.b2international.snowowl.fhir.api.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.api.model.Uri;
 import com.b2international.snowowl.fhir.api.model.ValidationConstraints;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -113,7 +113,7 @@ public class Coding {
 		return new Builder();
 	}
 	
-	public static class Builder extends ModelValidator<Coding> {
+	public static class Builder extends ValidatingBuilder<Coding> {
 		
 		private String code;
 		private String system;

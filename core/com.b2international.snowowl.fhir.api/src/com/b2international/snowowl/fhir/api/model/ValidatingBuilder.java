@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.exceptions.ValidationException;
  * Annotation based validator superclass for FHIR model classes and data types. 
  * @since 6.3
  */
-public abstract class ModelValidator<T> {
+public abstract class ValidatingBuilder<T> {
 	
 	public void validateModel(T model) {
 		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();

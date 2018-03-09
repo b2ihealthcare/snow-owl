@@ -120,7 +120,7 @@ public class LookupResult extends FhirModel {
 	 *  @return
 	 * @throws Exception
 	 */
-	public SerializableLookupResult toSerializesBean() throws Exception {
+	public SerializableLookupResult toSerializableBean() throws Exception {
 		SerializableLookupResult fhirLookupResult = new SerializableLookupResult();
 		Collection<SerializableParameter> parameters = toParameters();
 		fhirLookupResult.addAll(parameters);

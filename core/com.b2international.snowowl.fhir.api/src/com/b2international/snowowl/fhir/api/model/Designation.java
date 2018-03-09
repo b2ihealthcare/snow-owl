@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.api.model;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.core.annotation.Order;
 
+import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.dt.Coding;
 
 /**
@@ -43,8 +44,8 @@ public class Designation extends FhirModel {
 	
 	//The language code this designation is defined for (0..1)
 	@Order(value=1)
-	@FhirDataType(type = FhirType.CODE)
-	private String language;
+	//@FhirDataType(type = FhirType.CODE)
+	private Code language;
 	
 	//A code that details how this designation would be used (0..1)
 	@Order(value=2)
@@ -55,13 +56,13 @@ public class Designation extends FhirModel {
 	@Order(value=3)
 	private String value;
 	
-	Designation(final String language, final Coding use, final String value) {
+	Designation(final Code language, final Coding use, final String value) {
 		this.language = language;
 		this.use = use;
 		this.value = value;
 	}
 	
-	public String getLanguage() {
+	public Code getLanguage() {
 		return language;
 	}
 
@@ -77,14 +78,14 @@ public class Designation extends FhirModel {
 		return new Builder();
 	}
 	
-	public static class Builder extends ModelValidator<Designation>{
+	public static class Builder extends ValidatingBuilder<Designation>{
 		
-		private String languageCode;
+		private Code languageCode;
 		private Coding use;
 		private String value;
 
 		public Builder languageCode(final String languageCode) {
-			this.languageCode = languageCode;
+			this.languageCode = new Code(languageCode);
 			return this;
 		}
 		
@@ -98,6 +99,7 @@ public class Designation extends FhirModel {
 			return this;
 		}
 
+		@Override
 		protected Designation doBuild() {
 			return new Designation(languageCode, use, value);
 		}

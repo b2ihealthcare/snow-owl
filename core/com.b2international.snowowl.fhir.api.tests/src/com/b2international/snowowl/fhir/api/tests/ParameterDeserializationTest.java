@@ -18,7 +18,6 @@ package com.b2international.snowowl.fhir.api.tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -26,17 +25,20 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.api.model.serialization.DeserializableLookupRequest;
+import com.b2international.snowowl.fhir.api.model.LookupRequest;
+import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableLookupResult;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
-public class DeserializationTest extends FhirTest {
+/**
+ * @since 6.3
+ *
+ */
+public class ParameterDeserializationTest extends FhirTest {
 	
 	@Test
-	public void parameterTest() throws Exception {
+	public void stringParameterTest() throws Exception {
 		
 		String jsonParam = "{\"name\":\"paramName\",\"valueString\":\"LOINC\"}";
 		
@@ -44,10 +46,59 @@ public class DeserializationTest extends FhirTest {
 		assertEquals("valueString", param.getType());
 		assertEquals("LOINC", param.getValue());
 		assertEquals(String.class, param.getValueType());
+		System.out.println(param);
 	}
 	
 	@Test
-	public void parameterWithPartsTest() throws Exception {
+	public void booleanParameterTest() throws Exception {
+		
+		String jsonParam = "{\"name\":\"booleanParameter\",\"valueBoolean\":true}";
+		
+		SerializableParameter param = objectMapper.readValue(jsonParam, SerializableParameter.class);
+		System.out.println(param);
+		assertEquals("valueBoolean", param.getType());
+		assertEquals(true, param.getValue());
+		assertEquals(Boolean.class, param.getValueType());
+	}
+	
+	@Test
+	public void integerParameterTest() throws Exception {
+		
+		String jsonParam = "{\"name\":\"integerParameter\",\"valueInteger\":1}";
+		
+		SerializableParameter param = objectMapper.readValue(jsonParam, SerializableParameter.class);
+		System.out.println(param);
+		assertEquals("valueInteger", param.getType());
+		assertEquals(1, param.getValue());
+		assertEquals(Integer.class, param.getValueType());
+	}
+	
+	@Test
+	public void decimalParameterTest() throws Exception {
+		
+		String jsonParam = "{\"name\":\"decimalParameter\",\"valueDecimal\":1.21}";
+		
+		SerializableParameter param = objectMapper.readValue(jsonParam, SerializableParameter.class);
+		System.out.println(param);
+		assertEquals("valueDecimal", param.getType());
+		assertEquals(1.21, param.getValue());
+		assertEquals(Double.class, param.getValueType());
+	}
+	
+	@Test
+	public void codeParameterTest() throws Exception {
+		
+		String jsonParam = "{\"name\":\"codeParameter\",\"valueCode\":\"abcd\"}";
+		
+		SerializableParameter param = objectMapper.readValue(jsonParam, SerializableParameter.class);
+		System.out.println(param);
+		assertEquals("valueCode", param.getType());
+		assertEquals(new Code("abcd"), param.getValue());
+		assertEquals(Code.class, param.getValueType());
+	}
+	
+	@Test
+	public void arrayParameterTest() throws Exception {
 		
 		String jsonParams = "[{\"name\":\"paramName\",\"valueString\":\"LOINC\"},"
 						 + "{\"name\":\"designation\",\"part\":["
@@ -108,46 +159,14 @@ public class DeserializationTest extends FhirTest {
 		System.out.println(params);
 		
 		Optional<SerializableParameter> optionalParameter = params.stream()
-				.filter(p -> p.getName().equals("paramName"))
+				.filter(p -> p.getName().equals("language"))
 				.findFirst();
 		
 		assertTrue(optionalParameter.isPresent());
-		
-		SerializableParameter param = optionalParameter.get();
-
-		assertEquals("valueString", param.getType());
-		assertEquals("LOINC", param.getValue());
-		assertEquals(String.class, param.getValueType());
-		
-		optionalParameter = params.stream()
-				.filter(p -> p.getName().equals("designation"))
-				.findFirst();
-		
-		assertTrue(optionalParameter.isPresent());
-		param = optionalParameter.get();
-		
-		System.out.println(param);
-		assertEquals("part", param.getType());
-		
-		@SuppressWarnings("unchecked")
-		Collection<SerializableParameter> embeddedParams = (Collection) param.getValue();
-		Optional<SerializableParameter> optionalEmbeddedParameter = embeddedParams.stream()
-				.filter(p -> p.getName().equals("value"))
-				.findFirst();
-		
-		assertTrue(optionalEmbeddedParameter.isPresent());
-		
-		SerializableParameter embeddedParam = optionalEmbeddedParameter.get();
-		
-		assertEquals("Bicarbonate [Moles/volume] in Serum", embeddedParam.getValue());
-		assertTrue(Collection.class.isAssignableFrom(param.getValueType()));
-		
-		System.out.println(params);
 	}
 	
-	
 	@Test
-	public void lookupRequestTest() throws JsonParseException, JsonMappingException, IOException {
+	public void lookupParametersTest() throws Exception {
 		
 		String jsonMini = "{\"resourceType\":\"Parameters\","
 				+ "\"parameter\":["
@@ -156,8 +175,7 @@ public class DeserializationTest extends FhirTest {
 					+ "{\"name\":\"abstract\",\"valueBoolean\":\"false\"}"
 					+ "]}";
 		
-		DeserializableLookupRequest request = objectMapper.readValue(jsonMini, DeserializableLookupRequest.class);
-		Collection<SerializableParameter> parameters = request.getParameters();
+		LookupRequest request = objectMapper.readValue(jsonMini, LookupRequest.class);
 		
 		Optional<SerializableParameter> optionalParameter = request.getParameters().stream().filter(p -> p.getName().equals("paramName")).findFirst();
 		assertTrue(optionalParameter.isPresent());
@@ -165,37 +183,10 @@ public class DeserializationTest extends FhirTest {
 		assertEquals("valueString", param.getType());
 		assertEquals("LOINC", param.getValue());
 		assertEquals(String.class, param.getValueType());
-		
-		//assertEquals(, actual);
-		
-		
-		parameters.forEach(p -> {
-			System.out.println(p);
-			System.out.println(p.getValueType());
-		});
 	}
 	
 	@Test
-	public void lookupRequestTest2() throws JsonParseException, JsonMappingException, IOException {
-		String json = "{\"resourceType\":\"Parameters\","
-				+ "\"parameter\":["
-					+ "{\"name\":\"name\",\"valueString\":\"LOINC\"},"
-					+ "{\"name\":\"designation\",\"part\":["
-						+ "{\"name\":\"value\",\"valueString\":\"Bicarbonate [Moles/volume] in Serum\"},"
-						+ "{\"name\":\"language\",\"valueString\":\"en_uk\"}"
-						+ "]}"
-					+ "]}";
-		
-		DeserializableLookupRequest request = objectMapper.readValue(json, DeserializableLookupRequest.class);
-		Collection<SerializableParameter> parameters = request.getParameters();
-		parameters.forEach(p -> {
-			System.out.println(p);
-			//System.out.println(p.getType());
-		});
-	}
-	
-	@Test
-	public void lookupRoundTrip() throws Exception {
+	public void lookupParametersRoundTrip() throws Exception {
 		String json = "{\"resourceType\":\"Parameters\","
 				+ "\"parameter\":["
 					+ "{\"name\":\"name\",\"valueString\":\"LOINC\"},"
@@ -209,6 +200,7 @@ public class DeserializationTest extends FhirTest {
 		String serializedModel = objectMapper.writeValueAsString(parameterModel);
 		Assert.assertEquals(json, serializedModel);
 	}
+
 	
 }
 

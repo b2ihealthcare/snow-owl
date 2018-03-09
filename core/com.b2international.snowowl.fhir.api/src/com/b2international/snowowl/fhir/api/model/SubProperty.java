@@ -15,18 +15,20 @@
  */
 package com.b2international.snowowl.fhir.api.model;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.core.annotation.Order;
+
+import com.b2international.snowowl.fhir.api.model.dt.Code;
 
 public class SubProperty extends FhirModel {
 	
 	//Identifies the property returned (1..1)
 	@Order(value=1)
-	@FhirDataType(type = FhirType.CODE)
-	@NotEmpty
-	private String code;
+	@NotNull
+	@Valid
+	private Code code;
 	
 	/*
 	 * The value of the property returned (0..1)
@@ -34,21 +36,24 @@ public class SubProperty extends FhirModel {
 	 */
 	@Order(value=2)
 	@NotNull //only subproperty value is 1..1, property.value is 0..1 (?)
-	@FhirDataType(type = FhirType.OBJECT)
 	private Object value;
 	
 	//Human Readable representation of the property value (e.g. display for a code) 0..1
 	@Order(value=3)
 	private String description;
 	
-	SubProperty(final String code, final Object value, final String description) {
+	SubProperty(final Code code, final Object value, final String description) {
 		this.code = code;
 		this.value = value;
 		this.description = description;
 	}
 	
-	public String getCode() {
+	public Code getCode() {
 		return code;
+	}
+	
+	public String getCodeValue() {
+		return code.getCodeValue();
 	}
 
 	/**
@@ -67,14 +72,14 @@ public class SubProperty extends FhirModel {
 		return new Builder();
 	}
 	
-	public static class Builder extends ModelValidator<SubProperty> {
+	public static class Builder extends ValidatingBuilder<SubProperty> {
 		
-		private String code;
+		private Code code;
 		private Object value;
 		private String description;
 
 		public Builder code(final String code) {
-			this.code = code;
+			this.code = new Code(code);
 			return this;
 		}
 		
@@ -88,6 +93,7 @@ public class SubProperty extends FhirModel {
 			return this;
 		}
 		
+		@Override
 		protected SubProperty doBuild() {
 			return new SubProperty(code, value, description);
 		}

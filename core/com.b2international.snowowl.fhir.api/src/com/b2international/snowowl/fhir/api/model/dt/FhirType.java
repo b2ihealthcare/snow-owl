@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.model;
+package com.b2international.snowowl.fhir.api.model.dt;
 
 /**
  * FHIR datatypes
@@ -23,14 +23,18 @@ package com.b2international.snowowl.fhir.api.model;
  */
 public enum FhirType {
 	
+	BOOLEAN("Boolean"),
+	INTEGER("Integer"),
+	DECIMAL("Decimal"),
+	STRING("String"),
 	URI("Uri"),
 	CODE("Code"),
-	DECIMAL("Decimal"),
-	INTEGER("Integer"),
 	DATE("Date"),
 	DATETIME("DateTime"),
 	OID("Oid"),
-	OBJECT("Object"); //to determine by type checking
+	
+	//complex types
+	CODING("Coding");
 	
 	private String serializedName;
 	
@@ -40,5 +44,22 @@ public enum FhirType {
 	
 	public String getSerializedName() {
 		return serializedName;
+	}
+
+	/**
+	 * Returns the FHIR datatype enum for a given serialized representation
+	 * @param typeString
+	 * @return
+	 */
+	public static FhirType fhirTypeOf(String typeString) {
+		
+		if (typeString == null) throw new NullPointerException("Type parameter is null.");
+		
+		for (FhirType fhirType : FhirType.values()) {
+			if (fhirType.serializedName.equalsIgnoreCase(typeString)) {
+				return fhirType;
+			}
+		}
+		throw new IllegalArgumentException("Could not find FHIR data type for serialized representation '" + typeString + "'");
 	}
 }

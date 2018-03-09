@@ -26,8 +26,8 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
-	SerializationTest.class,
-	DeserializationTest.class,
+	ParameterSerializationTest.class,
+	ParameterDeserializationTest.class,
 	ModelSerializationTest.class
 })
 public class AllFhirTests {

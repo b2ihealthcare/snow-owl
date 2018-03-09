@@ -24,10 +24,10 @@ import com.b2international.snowowl.fhir.api.model.serialization.SerializableLook
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.google.common.collect.Sets;
 
-public class SerializationTest extends FhirTest {
+public class ParameterSerializationTest extends FhirTest {
 	
-	//@Test
-	public void fhirParameterTest() throws Exception {
+	@Test
+	public void parameterTest() throws Exception {
 		SerializableParameter parameter = new SerializableParameter("parameterName", "valueString", "test");
 		
 		printPrettyJson(parameter);
@@ -50,26 +50,16 @@ public class SerializationTest extends FhirTest {
 
 		SerializableParameter dParameter = new SerializableParameter("designation", "part", designationParameters);
 		lookupResults.add(dParameter);
-		printPrettyJson(lookupResults);
-	}
-	
-	@Test
-	public void lookupResultsTest3() throws Exception {
-		SerializableLookupResult lookupResults = new SerializableLookupResult();
-		SerializableParameter parameter = new SerializableParameter("fieldName", "type", "value");
-		lookupResults.add(parameter);
-		parameter = new SerializableParameter("fieldName2", "type2", "value2");
-		lookupResults.add(parameter);
 		
-		Collection<SerializableParameter> designationParameters = Sets.newHashSet();
-		SerializableParameter designationParameter = new SerializableParameter("dFieldName", "dType", "dValue");
-		designationParameters.add(designationParameter);
-		designationParameter = new SerializableParameter("dFieldName2", "dType2", "dValue2");
-		designationParameters.add(designationParameter);
+		String expectedJson = "{\"resourceType\":\"Parameters\","
+				+ "\"parameter\":[{\"name\":\"fieldName\",\"type\":\"value\"},"
+				+ "{\"name\":\"fieldName2\",\"type2\":\"value2\"},"
+				+ "{\"name\":\"designation\",\"part\":["
+					+ "{\"name\":\"dFieldName2\",\"dType2\":\"dValue2\"}]"
+					+ "}"
+				+ "]}";
 		
-		SerializableParameter lookupParameter = new SerializableParameter("designation", "part", designationParameters);
-		lookupResults.add(lookupParameter);
-		printPrettyJson(lookupResults);
+		Assert.assertEquals(expectedJson, objectMapper.writeValueAsString(lookupResults));
 	}
 	
 }

@@ -15,12 +15,13 @@
  */
 package com.b2international.snowowl.fhir.api.tests;
 
+import static org.hamcrest.core.StringEndsWith.endsWith;
+import static org.hamcrest.core.StringStartsWith.startsWith;
+
 import java.util.Collection;
 
 import javax.validation.ValidationException;
 
-import static org.hamcrest.core.StringStartsWith.startsWith;
-import static org.hamcrest.core.StringEndsWith.endsWith;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +30,9 @@ import org.junit.rules.ExpectedException;
 import com.b2international.snowowl.fhir.api.model.Designation;
 import com.b2international.snowowl.fhir.api.model.LookupResult;
 import com.b2international.snowowl.fhir.api.model.Property;
+import com.b2international.snowowl.fhir.api.model.Property.Builder;
 import com.b2international.snowowl.fhir.api.model.SubProperty;
+import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.dt.Coding;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableLookupResult;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
@@ -113,28 +116,18 @@ public class ModelSerializationTest extends FhirTest {
 	public void subPropertyMissingValueTest() throws Exception {
 		
 		exception.expect(ValidationException.class);
-		exception.expectMessage(startsWith("{violations=['code' may not be empty (was 'null'), 'value' may not be null (was 'null')]}"));
+		exception.expectMessage(startsWith("{violations=['code' may not be null (was 'null'), 'value' may not be null (was 'null')]}"));
 		
-		Collection<SerializableParameter> parameters = SubProperty.builder()
+		SubProperty.builder()
 			//.code("123")
 			//.value(2.1)
 			.description("propertyDescription")
 			.build()
 			.toParameters();
-		
-		printPrettyJson(parameters);
-		
-		String jsonString = objectMapper.writeValueAsString(parameters);
-		System.out.println(jsonString);
-		String expected = "[{\"name\":\"code\",\"valueCode\":\"123\"},"
-				+ "{\"name\":\"value\",\"valueDecimal\":2.1},"
-				+ "{\"name\":\"description\",\"valueString\":\"propertyDescription\"}]";
-		
-		Assert.assertEquals(expected, jsonString);
 	}
 	
 	@Test
-	public void propertyTest() throws Exception {
+	public void propertyDecimalValueTest() throws Exception {
 
 		Collection<SerializableParameter> parameters = Property.builder()
 			.code("123")
@@ -164,45 +157,88 @@ public class ModelSerializationTest extends FhirTest {
 		Assert.assertEquals(expected, jsonString);
 	}
 	
+	/**
+	 * /*
+	 * The value of the property can be code | Coding | string | integer | boolean | dateTime
+	 * @throws Exception
+	 */
 	@Test
-	public void propertyObjectTest() throws Exception {
+	public void propertyValueTypeTest() throws Exception {
+
+		Builder basePropertyBuilder = Property.builder()
+			.code("123");
 		
-		Collection<SerializableParameter> parameters = Property.builder()
-			.code("123")
-			.value(false)
-			.description("propertyDescription")
-			.addSubProperty(SubProperty.builder()
-				.code("subCode")
-				.description("subDescription")
-				.value("string")
-				.build())
-			.build()
-			.toParameters();
-		
-		printPrettyJson(parameters);
-		
+		//value = null
+		Collection<SerializableParameter> parameters = basePropertyBuilder.build().toParameters();
 		String jsonString = objectMapper.writeValueAsString(parameters);
-		System.out.println(jsonString);
-		String expected = "[{\"name\":\"code\",\"valueCode\":\"123\"},"
-				+ "{\"name\":\"value\",\"valueBoolean\":false},"
-				+ "{\"name\":\"description\",\"valueString\":\"propertyDescription\"},"
-				+ "{\"name\":\"subproperty\","
-				+ "\"part\":[{\"name\":\"code\",\"valueCode\":\"subCode\"},"
-					+ "{\"name\":\"value\",\"valueString\":\"string\"},"
-					+ "{\"name\":\"description\",\"valueString\":\"subDescription\"}]"
-				+ "}]";
 		
+		String expected = "[{\"name\":\"code\",\"valueCode\":\"123\"}]";
 		Assert.assertEquals(expected, jsonString);
+		
+		parameters = basePropertyBuilder.value(true).build().toParameters();
+		jsonString = objectMapper.writeValueAsString(parameters);
+		
+		expected = "[{\"name\":\"code\",\"valueCode\":\"123\"},"
+				+ "{\"name\":\"value\",\"valueBoolean\":true}]";
+		Assert.assertEquals(expected, jsonString);
+		
+		parameters = basePropertyBuilder.value(1).build().toParameters();
+		jsonString = objectMapper.writeValueAsString(parameters);
+		
+		expected = "[{\"name\":\"code\",\"valueCode\":\"123\"},"
+				+ "{\"name\":\"value\",\"valueInteger\":1}]";
+		
+		parameters = basePropertyBuilder.value(1l).build().toParameters();
+		jsonString = objectMapper.writeValueAsString(parameters);
+		
+		expected = "[{\"name\":\"code\",\"valueCode\":\"123\"},"
+				+ "{\"name\":\"value\",\"valueDecimal\":1}]";
+		Assert.assertEquals(expected, jsonString);
+		
+		parameters = basePropertyBuilder.value("test").build().toParameters();
+		jsonString = objectMapper.writeValueAsString(parameters);
+		
+		expected = "[{\"name\":\"code\",\"valueCode\":\"123\"},"
+				+ "{\"name\":\"value\",\"valueString\":\"test\"}]";
+		Assert.assertEquals(expected, jsonString);
+		
+		parameters = basePropertyBuilder.value(new Code("code")).build().toParameters();
+		jsonString = objectMapper.writeValueAsString(parameters);
+		
+		expected = "[{\"name\":\"code\",\"valueCode\":\"123\"},"
+				+ "{\"name\":\"value\",\"valueCode\":\"code\"}]";
+		Assert.assertEquals(expected, jsonString);
+		
+		System.out.println(jsonString);
 	}
 	
 	@Test
 	public void propertyMissingCodeTest() throws Exception {
 
 		exception.expect(ValidationException.class);
-		exception.expectMessage(startsWith("{violations=['code' may not be empty"));
+		exception.expectMessage(startsWith("{violations=['code' may not be null"));
 		
 		Property.builder()
 			//.code("123")
+			.value(2)
+			.description("propertyDescription")
+			.addSubProperty(SubProperty.builder()
+				.code("subCode")
+				.description("subDescription")
+				.value(1)
+				.build())
+			.build()
+			.toParameters();
+	}
+	
+	@Test
+	public void propertyEmptyCodeTest() throws Exception {
+
+		exception.expect(ValidationException.class);
+		exception.expectMessage(startsWith("{violations=['code.codeValue' may not be empty"));
+		
+		Property.builder()
+			.code("")
 			.value(2)
 			.description("propertyDescription")
 			.addSubProperty(SubProperty.builder()
@@ -300,7 +336,7 @@ public class ModelSerializationTest extends FhirTest {
 						.build())
 					.build())
 			.build()
-			.toSerializesBean();
+			.toSerializableBean();
 		
 		printJson(fhirLookupResult);
 		printPrettyJson(fhirLookupResult);

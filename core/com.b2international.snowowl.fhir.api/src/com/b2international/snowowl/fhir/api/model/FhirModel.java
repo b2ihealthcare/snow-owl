@@ -17,15 +17,23 @@ package com.b2international.snowowl.fhir.api.model;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
+import com.b2international.snowowl.fhir.api.model.dt.Code;
+import com.b2international.snowowl.fhir.api.model.dt.Coding;
+import com.b2international.snowowl.fhir.api.model.dt.DateFormats;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.google.common.collect.Lists;
 
+/**
+ * @since 6.3
+ */
 public class FhirModel {
 	
 	/**
@@ -49,45 +57,58 @@ public class FhirModel {
 			field.setAccessible(true);
 			Object value = field.get(this);
 			
-			//simple fields
-			if (!field.getType().equals(Collection.class)) {
-				String type = getDataType(field, value);
-				SerializableParameter parameter = new SerializableParameter(field.getName(), type, value);
-				parameters.add(parameter);
-			} else {
-				//embedded collections
+			//embedded collections
+			if (field.getType().equals(Collection.class)) {
 				parameters.addAll(getCollectionParameters(value));
+			
+			//simple fields first
+			} else {
+				if (value!=null) { //TODO: Should we serialize null values?
+					SerializableParameter parameter = createSerializableParameter(field, value);
+					parameters.add(parameter);
+				}
 			}
 		}
 		return parameters;
 	}
 
-	protected String getDataType(Field field, Object value) {
-		FhirDataType fhirDataType = field.getAnnotation(FhirDataType.class);
-		String typePostFix = null;
-		if (fhirDataType == null) {
-			typePostFix = field.getType().getSimpleName();
-		} else if (fhirDataType.type()==FhirType.OBJECT) {
-			if (value instanceof Boolean) {
-				typePostFix = "Boolean";
-			} else if (value instanceof Integer) {
-				typePostFix = "Integer";
-			} else if (value instanceof Date) {
-				typePostFix ="DateTime";
-			} else if (value instanceof BigDecimal || value instanceof Float || value instanceof Double) {
-				typePostFix = "Decimal";
-			} else {
-				typePostFix = "String";
-			}
+	/*
+	 * Creates a parameter based on the field (type, name and value)
+	 * To avoid the type-based switch, SerializableParameter could be made typed.
+	 */
+	private SerializableParameter createSerializableParameter(Field field, Object value) {
+		
+		SerializableParameter parameter = null;
+		String type = null;
+		
+		if (value instanceof Boolean) {
+			type = "valueBoolean";
+		} else if (value instanceof Integer) {
+			type = "valueInteger";
+		} else if (value instanceof Date) {
+			SimpleDateFormat formatter = new SimpleDateFormat(DateFormats.DATE_TIME_FORMAT);
+			String formattedDate = formatter.format((Date) value);
+			formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+			value = formattedDate;
+			type ="valueDateTime";
+		} else if (value instanceof BigDecimal || 
+				value instanceof Float || 
+				value instanceof Double || 
+				value instanceof Long) {
+			type = "valueDecimal";
+		} else if (value instanceof Code) {
+			type = "valueCode";
+			value = ((Code) value).getCodeValue();
+		} else if (value instanceof Coding) {
+				type = "valueCoding";
 		} else {
-			typePostFix = fhirDataType.type().getSerializedName();
+			type = "valueString";
 		}
-		return "value" + typePostFix;
+		parameter = new SerializableParameter(field.getName(), type, value);
+		return parameter;
 	}
-	
+
 	protected Collection<SerializableParameter> getCollectionParameters(Object value) throws Exception {
 		return Collections.emptySet();
 	}
-	
-
 }

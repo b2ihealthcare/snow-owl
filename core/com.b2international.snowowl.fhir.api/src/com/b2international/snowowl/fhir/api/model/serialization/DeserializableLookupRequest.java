@@ -15,9 +15,13 @@
  */
 package com.b2international.snowowl.fhir.api.model.serialization;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
+import com.b2international.snowowl.fhir.api.model.LookupRequest;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
@@ -45,6 +49,36 @@ public class DeserializableLookupRequest {
 
 	public Collection<SerializableParameter> getParameters() {
 		return parameters;
+	}
+
+	public LookupRequest toModelObject() throws IllegalArgumentException, IllegalAccessException {
+		
+		LookupRequest request = new LookupRequest();
+		
+		for (SerializableParameter serializableParameter : parameters) {
+			System.out.println(serializableParameter);
+			
+			String fieldName = serializableParameter.getName();
+			System.out.println("Name: " + fieldName + " : " + serializableParameter.getValue());
+			
+			Field[] fields = LookupRequest.class.getDeclaredFields();
+			for (Field field : fields) {
+				System.out.println("Field" + field);
+			}
+			
+			Optional<Field> fieldOptional = Arrays.stream(fields)
+				.filter(f -> {
+					f.setAccessible(true);
+					return f.getName().equals(fieldName);
+				})
+				.findFirst();
+			
+			fieldOptional.orElseThrow(() -> new NullPointerException("Could not find field '" + fieldName + "'."));
+			Field field = fieldOptional.get();
+			field.set(request, serializableParameter.getValue());
+			
+		}
+		return request;
 	}
 
 }

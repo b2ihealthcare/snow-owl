@@ -17,9 +17,12 @@ package com.b2international.snowowl.fhir.api.model;
 
 import java.util.Collection;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import org.springframework.core.annotation.Order;
 
+import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.google.common.collect.Lists;
 
@@ -27,16 +30,15 @@ public class Property extends FhirModel {
 	
 	//Identifies the property returned (1..1)
 	@Order(value=1)
-	@FhirDataType(type = FhirType.CODE)
-	@NotEmpty
-	private String code;
+	@Valid
+	@NotNull
+	private Code code;
 	
 	/*
 	 * The value of the property returned (0..1)
 	 * code | Coding | string | integer | boolean | dateTime
 	 */
 	@Order(value=2)
-	@FhirDataType(type = FhirType.OBJECT)
 	private Object value;
 	
 	//Human Readable representation of the property value (e.g. display for a code) 0..1
@@ -46,15 +48,19 @@ public class Property extends FhirModel {
 	@Order(value=4)
 	private Collection<SubProperty> subProperties = Lists.newArrayList();
 	
-	Property(final String code, final Object value, final String description, Collection<SubProperty> subproperties) {
+	Property(final Code code, final Object value, final String description, Collection<SubProperty> subproperties) {
 		this.code = code;
 		this.value = value;
 		this.description = description;
 		this.subProperties = subproperties;
 	}
 	
-	public String getCode() {
+	public Code getCode() {
 		return code;
+	}
+	
+	public String getCodeValue() {
+		return code.getCodeValue();
 	}
 
 	/**
@@ -95,15 +101,15 @@ public class Property extends FhirModel {
 		return new Builder();
 	}
 	
-	public static class Builder extends ModelValidator<Property> {
+	public static class Builder extends ValidatingBuilder<Property> {
 		
-		private String code;
+		private Code code;
 		private Object value;
 		private String description;
 		private Collection<SubProperty> subProperties = Lists.newArrayList();
 
 		public Builder code(final String code) {
-			this.code = code;
+			this.code = new Code(code);
 			return this;
 		}
 		
@@ -122,6 +128,7 @@ public class Property extends FhirModel {
 			return this;
 		}
 		
+		@Override
 		protected Property doBuild() {
 			return new Property(code, value, description, subProperties);
 		}
