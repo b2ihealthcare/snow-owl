@@ -16,7 +16,9 @@
 package com.b2international.index;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -30,6 +32,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.bytes.BytesReference;
+import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.script.ScriptType;
@@ -43,6 +46,7 @@ import org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
+import com.b2international.collections.PrimitiveCollection;
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.aggregations.Aggregation;
@@ -121,13 +125,25 @@ public class EsDocumentSearcher implements DocSearcher {
 			.setTrackScores(esQueryBuilder.needsScoring());
 		
 		// field selection
+		final boolean fetchSource; 
 		if (query.getFields().isEmpty()) {
 			req.setFetchSource(true);
+			fetchSource = true;
 		} else {
 			if (query.isDocIdOnly()) {
 				req.setFetchSource(false);
+				fetchSource = false;
 			} else {
-				req.setFetchSource(query.getFields().toArray(new String[]{}), null);
+				
+				if (requiresDocumentSourceField(mapping, query.getFields())) {
+					req.setFetchSource(query.getFields().toArray(new String[]{}), null);
+					fetchSource = true;
+				} else {
+					query.getFields().stream().forEach(req::addDocValueField);
+					req.setFetchSource(false);
+					fetchSource = false;
+				}
+				
 			}
 		}
 		
@@ -183,7 +199,21 @@ public class EsDocumentSearcher implements DocSearcher {
 		final Class<T> select = query.getSelect();
 		final Class<?> from = query.getFrom();
 		
-		return toHits(select, from, query.getFields(), limit, totalHits, response.getScrollId(), query.getSortBy(), allHits.build());
+		return toHits(select, from, query.getFields(), fetchSource, limit, totalHits, response.getScrollId(), query.getSortBy(), allHits.build());
+	}
+
+	private boolean requiresDocumentSourceField(DocumentMapping mapping, List<String> fields) {
+		return fields
+			.stream()
+			.filter(field -> {
+				Class<?> fieldType = mapping.getFieldType(field);
+				return mapping.isText(field)
+						|| Iterable.class.isAssignableFrom(fieldType) 
+						|| PrimitiveCollection.class.isAssignableFrom(fieldType) 
+						|| fieldType.getClass().isArray();
+			})
+			.findFirst()
+			.isPresent();
 	}
 
 	@Override
@@ -192,7 +222,10 @@ public class EsDocumentSearcher implements DocSearcher {
 				.prepareSearchScroll(scroll.getScrollId())
 				.setScroll(scroll.getKeepAlive())
 				.get();
-		return toHits(scroll.getSelect(), scroll.getFrom(), scroll.getFields(), response.getHits().getHits().length, (int) response.getHits().getTotalHits(), response.getScrollId(), null, response.getHits());
+		
+		final DocumentMapping mapping = admin.mappings().getMapping(scroll.getFrom());
+		final boolean fetchSource = requiresDocumentSourceField(mapping, scroll.getFields());
+		return toHits(scroll.getSelect(), scroll.getFrom(), scroll.getFields(), fetchSource, response.getHits().getHits().length, (int) response.getHits().getTotalHits(), response.getScrollId(), null, response.getHits());
 	}
 	
 	@Override
@@ -204,6 +237,7 @@ public class EsDocumentSearcher implements DocSearcher {
 			Class<T> select, 
 			Class<?> from, 
 			final List<String> fields, 
+			final boolean fetchSource,
 			final int limit, 
 			final int totalHits, 
 			final String scrollId,
@@ -217,24 +251,56 @@ public class EsDocumentSearcher implements DocSearcher {
 			// if this was the last value then collect the sort values for searchAfter
 			final T value;
 			if (Primitives.isWrapperType(select) || String.class.isAssignableFrom(select)) {
-				final Map<String, Object> source = hit.getSourceAsMap();
+				checkState(!fetchSource, "Single field fetching is not supported when it requires to load the source of the document.");
+				final Map<String, DocumentField> source = hit.getFields();
 				if (CompareUtils.isEmpty(source)) {
-					value = (T) hit.getId();
+					value = select.cast(hit.getId());
 				} else {
-					value = (T) source.get(Iterables.getOnlyElement(source.keySet()));
+					Object fieldValue = source.get(Iterables.getOnlyElement(source.keySet())).<T>getValue();
+					if (Integer.class == select && fieldValue instanceof Long) {
+						value = (T) Integer.valueOf(Ints.checkedCast(((Long) fieldValue).longValue()));
+					} else {
+						value = select.cast(fieldValue);
+					}
 				}
 			} else if (Map.class.isAssignableFrom(select)) {
-				value = select.cast(hit.getSourceAsMap());
+				if (fetchSource) {
+					value = select.cast(hit.getSourceAsMap());
+				} else {
+					final Map<String, Object> val = newHashMap();
+					hit.getFields().forEach((field, docField) -> {
+						val.put(field, docField.getValue());
+					});
+					value = select.cast(val);
+				}
 			} else if (String[].class.isAssignableFrom(select)) {
 				final String[] val = new String[fields.size()];
 				for (int i = 0; i < fields.size(); i++) {
 					String field = fields.get(i);
-					val[i] = String.valueOf(hit.getSourceAsMap().get(field));
+					if (fetchSource) {
+						val[i] = String.valueOf(hit.getSourceAsMap().get(field));
+					} else {
+						DocumentField docField = hit.getFields().get(field);
+						if (docField != null) {
+							Object fieldValue = docField.getValue();
+							val[i] = String.valueOf(fieldValue);
+						} else {
+							val[i] = null;							
+						}
+					}
 				}
 				value = select.cast(val);
 			} else {
-				final byte[] bytes = BytesReference.toBytes(hit.getSourceRef());
-				value = reader.readValue(bytes, 0, bytes.length);
+				if (fetchSource) {
+					final byte[] bytes = BytesReference.toBytes(hit.getSourceRef());
+					value = reader.readValue(bytes, 0, bytes.length);
+				} else {
+					final Map<String, Object> val = newHashMap();
+					hit.getFields().forEach((field, docField) -> {
+						val.put(field, docField.getValue());
+					});
+					value = mapper.convertValue(val, select);
+				}
 			}
 			if (value instanceof WithId) {
 				((WithId) value).set_id(hit.getId());

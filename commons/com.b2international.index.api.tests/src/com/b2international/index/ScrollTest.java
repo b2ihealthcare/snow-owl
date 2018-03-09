@@ -70,6 +70,21 @@ public class ScrollTest extends BaseIndexTest {
 	}
 	
 	@Test
+	public void searchAndReturnAllPartialHits() throws Exception {
+		indexDocs(100_000);
+		// return all hits within the first page
+		Stopwatch w = Stopwatch.createStarted();
+		Hits<String> hits = search(Query.select(String.class)
+				.from(Data.class)
+				.fields("field1")
+				.where(Expressions.matchAll())
+				.limit(100_000)
+				.build());
+		System.err.println("ReturnAllPartialHitsWithLimit took " + w);
+		assertThat(hits).hasSize(100_000);
+	}
+	
+	@Test
 	public void searchAndReturnAllHitsWithScroll() throws Exception {
 		indexDocs(100_000);
 		// return all hits within the first page
@@ -94,6 +109,7 @@ public class ScrollTest extends BaseIndexTest {
 		for (int i = 0; i < numberOfDocs; i++) {
 			Data doc = new Data();
 			doc.setAnalyzedField(RandomStringUtils.randomAlphabetic(20));
+			doc.setField1("field1" + i);
 			doc.setFloatField(rnd.nextFloat());
 			doc.setIntField(rnd.nextInt());
 			docsToIndex.put("key"+i, doc);
