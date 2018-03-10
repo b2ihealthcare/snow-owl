@@ -74,6 +74,11 @@ public class ModelSerializationTest extends FhirTest {
 			.version("20180131")
 			.build();
 		
+		//ObjectMapper om = new ObjectMapper();
+//		SimpleModule testModule = new SimpleModule("MyModule");
+//	    testModule.addSerializer(Code.class, new MyCustomSerializer(Code.class));
+//	    testModule.addSerializer(Code.class, new ToStringSerializer(Code.class));
+		
 		String jsonString = objectMapper.writeValueAsString(coding);
 		
 		String expected = "{\"code\":\"1234\","
@@ -87,7 +92,7 @@ public class ModelSerializationTest extends FhirTest {
 	public void codingEmptyParametersTest() throws Exception {
 		
 		exception.expect(ValidationException.class);
-		exception.expectMessage(startsWith("{violations=['code' may not be empty (was ''),"));
+		exception.expectMessage(startsWith("{violations=['code.codeValue' may not be empty (was ''),"));
 		exception.expectMessage(endsWith("'system' may not be empty (was 'null')]}"));
 		
 		Coding.builder()

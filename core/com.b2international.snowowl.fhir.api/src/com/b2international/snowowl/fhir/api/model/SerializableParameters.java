@@ -39,9 +39,9 @@ import com.google.common.collect.Lists;
 /**
  * @since 6.3
  */
-@JsonDeserialize(converter=FhirModel.class)
+@JsonDeserialize(converter=SerializableParameters.class)
 @JsonInclude(Include.NON_EMPTY) //covers nulls as well
-public class FhirModel extends StdConverter<FhirModel, FhirModel> {
+public class SerializableParameters extends StdConverter<SerializableParameters, SerializableParameters> {
 	
 	//the serializable format
 	
@@ -129,12 +129,11 @@ public class FhirModel extends StdConverter<FhirModel, FhirModel> {
 	}
 
 	@Override
-	public FhirModel convert(FhirModel fhirModel) {
+	public SerializableParameters convert(SerializableParameters fhirModel) {
 		try {
 			parameters = fhirModel.toParameters();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new IllegalArgumentException("Could not convert.");
 		}
 		return fhirModel;
 	}

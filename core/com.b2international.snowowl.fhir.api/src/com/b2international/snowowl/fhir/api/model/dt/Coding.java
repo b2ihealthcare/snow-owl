@@ -15,13 +15,13 @@
  */
 package com.b2international.snowowl.fhir.api.model.dt;
 
-import javax.validation.constraints.Pattern;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.fhir.api.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.api.model.Uri;
-import com.b2international.snowowl.fhir.api.model.ValidationConstraints;
+import com.b2international.snowowl.fhir.api.model.ValidatingBuilder;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -40,9 +40,9 @@ import com.wordnik.swagger.annotations.ApiModel;
 @JsonInclude(Include.NON_NULL)
 public class Coding {
 	
-	@NotEmpty
-	@Pattern(regexp = ValidationConstraints.CODE_REGEXP)
-	private String code;
+	@Valid
+	@NotNull
+	private Code code;
 	
 	@NotEmpty
 	@Uri
@@ -66,7 +66,7 @@ public class Coding {
 	 * @param isUserSelected
 	 * @param display
 	 */
-	Coding(String code, String system, String version, boolean isUserSelected, String display) {
+	Coding(Code code, String system, String version, boolean isUserSelected, String display) {
 		this.code = code;
 		this.system = system;
 		this.version = version;
@@ -77,7 +77,7 @@ public class Coding {
 	/**
 	 * @return the code
 	 */
-	public String getCode() {
+	public Code getCode() {
 		return code;
 	}
 
@@ -115,14 +115,14 @@ public class Coding {
 	
 	public static class Builder extends ValidatingBuilder<Coding> {
 		
-		private String code;
+		private Code code;
 		private String system;
 		private String version;
 		private boolean isUserSelected;
 		private String display;
 
 		public Builder code(final String code) {
-			this.code = code;
+			this.code = new Code(code);
 			return this;
 		}
 		
@@ -147,6 +147,7 @@ public class Coding {
 			return this;
 		}
 		
+		@Override
 		protected Coding doBuild() {
 			return new Coding(code, system, version, isUserSelected, display);
 		}

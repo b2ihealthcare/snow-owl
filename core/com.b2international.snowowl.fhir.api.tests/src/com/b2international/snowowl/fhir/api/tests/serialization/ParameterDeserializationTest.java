@@ -25,7 +25,7 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.api.model.FhirModel;
+import com.b2international.snowowl.fhir.api.model.SerializableParameters;
 import com.b2international.snowowl.fhir.api.model.LookupRequest;
 import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
@@ -199,7 +199,7 @@ public class ParameterDeserializationTest extends FhirTest {
 						+ "]}"
 					+ "]}";
 		
-		FhirModel parameterModel = objectMapper.readValue(json, FhirModel.class);
+		SerializableParameters parameterModel = objectMapper.readValue(json, SerializableParameters.class);
 		String serializedModel = objectMapper.writeValueAsString(parameterModel);
 		Assert.assertEquals(json, serializedModel);
 	}

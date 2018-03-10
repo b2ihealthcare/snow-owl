@@ -13,16 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.model;
+package com.b2international.snowowl.fhir.api.model.dt;
 
-/**
- * Regexp validation constraints
- * 
- * @since 6.3
- */
-public abstract class ValidationConstraints {
-	
-	
-	private ValidationConstraints() {}
+public interface JsonStringProvider {
+
+	String toJsonString();
 
 }

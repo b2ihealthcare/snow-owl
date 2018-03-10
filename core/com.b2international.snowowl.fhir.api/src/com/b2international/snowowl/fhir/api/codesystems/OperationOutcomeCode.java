@@ -20,18 +20,18 @@ import com.b2international.snowowl.fhir.api.model.dt.Code;
 /**
  * Operation outcome codesystem.
  * 
- * @see <a href="http://hl7.org/fhir/operationoutcome-definitions.html#OperationOutcome.issue">FHIR:OperationOutcome:issue</a>
+ * @see <a href="http://hl7.org/fhir/operationoutcome-definitions.html#OperationOutcome.issue">FHIR:Operation Outcome:issue</a>
  *  
  * @since 6.3
  */
-public enum OperationOutcome implements FhirCodeSystem {
+public enum OperationOutcomeCode implements FhirCodeSystem {
 	
 	MSG_AUTH_REQUIRED("You must authenticate before you can use this service");
 	
 	public final String CODE_SYSTEM_URI = "http://hl7.org/fhir/operation-outcome";
 	private String displayName;
 	
-	private OperationOutcome(String displayName) {
+	private OperationOutcomeCode(String displayName) {
 		this.displayName = displayName;
 	}
 	

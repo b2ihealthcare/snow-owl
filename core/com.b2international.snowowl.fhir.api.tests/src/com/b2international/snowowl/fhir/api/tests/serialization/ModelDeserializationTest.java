@@ -62,7 +62,7 @@ public class ModelDeserializationTest extends FhirTest {
 		assertEquals("http://snomed.info/sct", request.getSystem());
 		assertEquals("20180131", request.getVersion());
 		assertEquals(new SimpleDateFormat(DateFormats.DATE_TIME_FORMAT).parse("2018-03-09T20:50:21+0100"), request.getDate());
-		assertEquals("1234", request.getCoding().getCode());
+		assertEquals(new Code("1234"), request.getCoding().getCode());
 	}
 	
 	//@Test

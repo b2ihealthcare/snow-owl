@@ -39,6 +39,7 @@ public class FhirTest {
 	
 	@BeforeClass
 	public static void setup() {
+		System.out.println(" --- Setting up object mapper --- ");
 		objectMapper.setVisibility(PropertyAccessor.CREATOR, Visibility.ANY);
 		objectMapper.registerModule(new GuavaModule());
 		objectMapper.setSerializationInclusion(Include.NON_EMPTY);

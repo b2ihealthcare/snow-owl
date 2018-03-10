@@ -22,7 +22,7 @@ import org.springframework.core.annotation.Order;
 
 import com.b2international.snowowl.fhir.api.model.dt.Code;
 
-public class SubProperty extends FhirModel {
+public class SubProperty extends SerializableParameters {
 	
 	//Identifies the property returned (1..1)
 	@Order(value=1)

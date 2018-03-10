@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.api.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.api.codesystems.IssueType;
-import com.b2international.snowowl.fhir.api.codesystems.OperationOutcome;
+import com.b2international.snowowl.fhir.api.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.api.model.dt.Coding;
@@ -121,7 +121,7 @@ public class Issue {
 			return this;
 		}
 		
-		public Builder codeableConcept(OperationOutcome operationOutcome) {
+		public Builder codeableConcept(OperationOutcomeCode operationOutcome) {
 			Coding coding = Coding.builder().code(operationOutcome.getCodeValue())
 				.display(operationOutcome.displayName())
 				.build();

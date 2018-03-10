@@ -15,44 +15,40 @@
  */
 package com.b2international.snowowl.fhir.api.model.dt;
 
-import javax.validation.constraints.Pattern;
-
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 /**
- * FHIR Code datatype
+ * FHIR URI datatype
  * 
  * @since 6.3
  */
-@JsonSerialize(using = ToJsonStringSerializer.class)
-public class Code implements JsonStringProvider {
-	
-	private static final String CODE_REGEXP = "[^\\s]+([\\s]?[^\\s]+)*"; //$NON-NLS-N$
+@JsonSerialize(using = ToStringSerializer.class)
+public class Uri implements JsonStringProvider {
 	
 	@NotEmpty
-	@Pattern(regexp = CODE_REGEXP)
-	private String codeValue;
+	private String uriValue;
 
-	public Code(String codeValue) {
-		this.codeValue = codeValue;
+	public Uri(String uriValue) {
+		this.uriValue = uriValue;
 	}
 
-	public String getCodeValue() {
-		return codeValue;
+	public String getUriValue() {
+		return uriValue;
 	}
-	
+
 	@Override
 	public String toJsonString() {
-		return codeValue;
+		return uriValue;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((codeValue == null) ? 0 : codeValue.hashCode());
+		result = prime * result + ((uriValue == null) ? 0 : uriValue.hashCode());
 		return result;
 	}
 
@@ -64,18 +60,19 @@ public class Code implements JsonStringProvider {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Code other = (Code) obj;
-		if (codeValue == null) {
-			if (other.codeValue != null)
+		Uri other = (Uri) obj;
+		if (uriValue == null) {
+			if (other.uriValue != null)
 				return false;
-		} else if (!codeValue.equals(other.codeValue))
+		} else if (!uriValue.equals(other.uriValue))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "Code [codeValue=" + codeValue + "]";
+		return "Uri [uriValue=" + uriValue + "]";
 	}
 
 }
+

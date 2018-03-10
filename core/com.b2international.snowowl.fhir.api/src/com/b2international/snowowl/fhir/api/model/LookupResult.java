@@ -29,7 +29,7 @@ import com.google.common.collect.Lists;
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#lookup">FHIR:CodeSystem:Operations:lookup</a>
  * @since 6.3
  */
-public class LookupResult extends FhirModel {
+public class LookupResult extends SerializableParameters {
 	
 	//A display name for the code system (1..1)
 	@Order(value=1)

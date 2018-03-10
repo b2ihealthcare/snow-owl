@@ -40,11 +40,10 @@ import com.b2international.snowowl.fhir.api.model.dt.Coding;
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#4.7.15.2.1">FHIR:CodeSystem:Operations</a>
  * @since 6.3
  */
-public class Designation extends FhirModel {
+public class Designation extends SerializableParameters {
 	
 	//The language code this designation is defined for (0..1)
 	@Order(value=1)
-	//@FhirDataType(type = FhirType.CODE)
 	private Code language;
 	
 	//A code that details how this designation would be used (0..1)

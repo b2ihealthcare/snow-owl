@@ -39,7 +39,7 @@ import com.google.common.collect.Lists;
  * http://hl7.org/fhir/concept-properties#notSelectable	This concept is a grouping concept and not intended to be used in the normal use of the code system (though my be used for filters etc). This is also known as 'Abstract'
  *
  */
-public class Property extends FhirModel {
+public class Property extends SerializableParameters {
 	
 	//Identifies the property returned (1..1)
 	@Order(value=1)

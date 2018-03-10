@@ -22,13 +22,11 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 /**
- * Uri validator for the {@link Uri} annotation
+ * URI validator for the {@link Uri} annotation
  * 
  * @since 6.3
  */
 public class UriValidator implements ConstraintValidator<Uri, String> {
-
-	// private Uri uri;
 
 	@Override
 	public void initialize(Uri constraintAnnotation) {
@@ -44,7 +42,6 @@ public class UriValidator implements ConstraintValidator<Uri, String> {
 		try {
 			new URI(object);
 		} catch (URISyntaxException e) {
-
 			return false;
 		}
 		return true;
