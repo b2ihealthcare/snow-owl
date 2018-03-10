@@ -24,28 +24,29 @@ import com.b2international.snowowl.fhir.api.model.serialization.SerializablePara
 import com.google.common.collect.Lists;
 
 /**
+ * Model object for the lookup service request response
  * 
+ * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#lookup">FHIR:CodeSystem:Operations:lookup</a>
  * @since 6.3
  */
-//@JsonSubTypes
 public class LookupResult extends FhirModel {
 	
 	//A display name for the code system (1..1)
 	@Order(value=1)
 	@NotEmpty
-	private String name;
+	private final String name;
 	
 	//The version that these details are based on (0..1)
 	@Order(value=2)
-	private String version;
+	private final String version;
 	
 	//The preferred display for this concept (1..1)
 	@Order(value=3)
-	private String display;
+	private final String display;
 	
 	//Additional representations for this concept (0..*)
 	@Order(value=4)
-	private Collection<Designation> designations = Lists.newArrayList();   
+	private final Collection<Designation> designations;   
 	
 	/*
 	 * One or more properties that contain additional information about the code, 
@@ -53,7 +54,7 @@ public class LookupResult extends FhirModel {
 	 * 0..*
 	 */
 	@Order(value=5)
-	private Collection<Property> properties = Lists.newArrayList();
+	private final Collection<Property> properties;
 	
 	private LookupResult(final String name, 
 			final String version, 

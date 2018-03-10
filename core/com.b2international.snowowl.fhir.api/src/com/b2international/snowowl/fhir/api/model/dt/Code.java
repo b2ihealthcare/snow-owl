@@ -19,6 +19,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * FHIR Code datatype
+ * TODO: this probably makes no sense for a simple string
  * @since 6.3
  */
 public class Code {
@@ -59,9 +60,10 @@ public class Code {
 		return true;
 	}
 
+	//Do not change it
 	@Override
 	public String toString() {
-		return "Code [codeValue=" + codeValue + "]";
+		return codeValue;
 	}
 
 }

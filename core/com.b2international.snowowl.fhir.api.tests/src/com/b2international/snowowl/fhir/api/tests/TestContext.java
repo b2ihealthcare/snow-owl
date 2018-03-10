@@ -17,13 +17,14 @@ package com.b2international.snowowl.fhir.api.tests;
 
 import java.util.TimeZone;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestName;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersionProperties;
+import com.b2international.snowowl.fhir.api.AntPathWildcardMatcher;
 import com.b2international.snowowl.fhir.api.ICodeSystemVersionPropertiesMixin;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -33,12 +34,21 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 
-public class FhirTest {
+
+@Configuration
+@EnableWebMvc
+public class TestContext extends WebMvcConfigurerAdapter {
 	
-	protected static ObjectMapper objectMapper = new ObjectMapper();
-	
-	@BeforeClass
-	public static void setup() {
+	//private ServletContext servletContext;
+
+	//@Autowired
+	//public void setServletContext(final ServletContext servletContext) {
+	//	this.servletContext = servletContext;
+	//}
+
+	@Bean
+	public ObjectMapper objectMapper() {
+		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.setVisibility(PropertyAccessor.CREATOR, Visibility.ANY);
 		objectMapper.registerModule(new GuavaModule());
 		objectMapper.setSerializationInclusion(Include.NON_EMPTY);
@@ -47,31 +57,29 @@ public class FhirTest {
 		objectMapper.setDateFormat(df);
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		objectMapper.addMixIn(ICodeSystemVersionProperties.class, ICodeSystemVersionPropertiesMixin.class);
-	}
-	
-	@Rule 
-	public TestName testName = new TestName();
-	
-	@Before
-	public void dmdTestSetup() throws Exception {
-		System.out.println("--- Test method started: " + this.getClass().getSimpleName() + ":" + testName.getMethodName() + " ---");
+		return objectMapper;
 	}
 
-	@After
-	public void dmdTearDown() throws Exception {
-		System.out.println("--- Test method completed: " + this.getClass().getSimpleName() + ":" + testName.getMethodName() + " ---\n");
+	/*
+	@Override
+	public void configureMessageConverters(final List<HttpMessageConverter<?>> converters) {
+		final StringHttpMessageConverter stringConverter = new StringHttpMessageConverter();
+		stringConverter.setWriteAcceptCharset(false);
+		converters.add(stringConverter);
+
+		converters.add(new ByteArrayHttpMessageConverter());
+		converters.add(new ResourceHttpMessageConverter());
+
+		final MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
+		jacksonConverter.setObjectMapper(objectMapper());
+		converters.add(jacksonConverter);
 	}
-	
-	protected void printPrettyJson(Object object) throws Exception {
-		String result = objectMapper.writeValueAsString(object);
-		Object json = objectMapper.readValue(result, Object.class);
-		String prettyPrint = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
-		System.out.println(prettyPrint);
-	}
-	
-	protected void printJson(Object object) throws Exception {
-		String result = objectMapper.writeValueAsString(object);
-		System.out.println(result);
+	*/
+
+	@Override
+	public void configurePathMatch(final PathMatchConfigurer configurer) {
+		configurer.setUseRegisteredSuffixPatternMatch(true);
+		configurer.setPathMatcher(new AntPathWildcardMatcher());
 	}
 
 }
