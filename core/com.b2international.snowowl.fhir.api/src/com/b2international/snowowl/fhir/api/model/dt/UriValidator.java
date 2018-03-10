@@ -15,27 +15,35 @@
  */
 package com.b2international.snowowl.fhir.api.model.dt;
 
-<<<<<<< Upstream, based on branch 'feature/fhir_api' of https://github.com/b2ihealthcare/snow-owl.git
-public interface JsonStringProvider {
+import java.net.URI;
+import java.net.URISyntaxException;
 
-=======
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
 /**
- * Classes implementing this interface will be serialized based on
- * the returns string of their {@link #toJsonString()} method.
+ * URI validator for the {@link ValidUri} annotation
  * 
  * @since 6.3
  */
-@JsonSerialize(using = ToJsonStringSerializer.class)
-public interface JsonStringProvider {
+public class UriValidator implements ConstraintValidator<ValidUri, String> {
 
-	/**
-	 * Returns the string to be serialized which will represent this object.
-	 * Most of the time the simple string value of the data type.
-	 * @return
-	 */
->>>>>>> 3acbefb SO-2917 URI references replaced.
-	String toJsonString();
+	@Override
+	public void initialize(ValidUri constraintAnnotation) {
+	}
 
+	@Override
+	public boolean isValid(String object, ConstraintValidatorContext constraintContext) {
+
+		//use @NotNull for null validation
+		if (object == null) {
+			return true;
+		}
+		try {
+			new URI(object);
+		} catch (URISyntaxException e) {
+			return false;
+		}
+		return true;
+	}
 }

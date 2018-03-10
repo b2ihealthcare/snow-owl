@@ -17,10 +17,16 @@ package com.b2international.snowowl.fhir.api.model.dt;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+<<<<<<< Upstream, based on branch 'feature/fhir_api' of https://github.com/b2ihealthcare/snow-owl.git
 
 import org.hibernate.validator.constraints.NotEmpty;
+=======
+>>>>>>> 3acbefb SO-2917 URI references replaced.
 
+<<<<<<< Upstream, based on branch 'feature/fhir_api' of https://github.com/b2ihealthcare/snow-owl.git
 import com.b2international.snowowl.fhir.api.model.Uri;
+=======
+>>>>>>> 3acbefb SO-2917 URI references replaced.
 import com.b2international.snowowl.fhir.api.model.ValidatingBuilder;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -44,9 +50,9 @@ public class Coding {
 	@NotNull
 	private Code code;
 	
-	@NotEmpty
-	@Uri
-	private String system;
+	@Valid
+	@NotNull
+	private Uri system;
 	
 	private String version;
 	
@@ -66,7 +72,11 @@ public class Coding {
 	 * @param isUserSelected
 	 * @param display
 	 */
+<<<<<<< Upstream, based on branch 'feature/fhir_api' of https://github.com/b2ihealthcare/snow-owl.git
 	Coding(Code code, String system, String version, boolean isUserSelected, String display) {
+=======
+	Coding(Code code, Uri system, String version, boolean isUserSelected, String display) {
+>>>>>>> 3acbefb SO-2917 URI references replaced.
 		this.code = code;
 		this.system = system;
 		this.version = version;
@@ -84,7 +94,7 @@ public class Coding {
 	/**
 	 * @return the system
 	 */
-	public String getSystem() {
+	public Uri getSystem() {
 		return system;
 	}
 
@@ -116,7 +126,11 @@ public class Coding {
 	public static class Builder extends ValidatingBuilder<Coding> {
 		
 		private Code code;
+<<<<<<< Upstream, based on branch 'feature/fhir_api' of https://github.com/b2ihealthcare/snow-owl.git
 		private String system;
+=======
+		private Uri system;
+>>>>>>> 3acbefb SO-2917 URI references replaced.
 		private String version;
 		private boolean isUserSelected;
 		private String display;
@@ -127,7 +141,7 @@ public class Coding {
 		}
 		
 		public Builder system(final String system) {
-			this.system = system;
+			this.system = new Uri(system);
 			return this;
 		}
 

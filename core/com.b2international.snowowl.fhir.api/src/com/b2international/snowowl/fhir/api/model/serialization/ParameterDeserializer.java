@@ -25,6 +25,7 @@ import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.dt.Coding;
 import com.b2international.snowowl.fhir.api.model.dt.DateFormats;
 import com.b2international.snowowl.fhir.api.model.dt.FhirType;
+import com.b2international.snowowl.fhir.api.model.dt.Uri;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
@@ -128,6 +129,9 @@ public class ParameterDeserializer extends JsonDeserializer<SerializableParamete
 			break;
 		case CODE:
 			value = new Code(valueNode.asText());
+			break;
+		case URI:
+			value = new Uri(valueNode.asText());
 			break;
 		case CODING:
 			value = oc.treeToValue(valueNode, Coding.class);

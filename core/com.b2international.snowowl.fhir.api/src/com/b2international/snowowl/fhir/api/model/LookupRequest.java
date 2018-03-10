@@ -25,12 +25,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.core.annotation.Order;
 
 import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.dt.Coding;
 import com.b2international.snowowl.fhir.api.model.dt.DateFormats;
+import com.b2international.snowowl.fhir.api.model.dt.Uri;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -59,13 +59,13 @@ public class LookupRequest extends StdConverter<LookupRequest,LookupRequest> {
 	
 	// The code that is to be located. If a code is provided, a system must be provided (0..1)
 	@Order(value = 1)
-	@NotEmpty
+	//@NotEmpty
 	private Code code;
 
 	// The system for the code that is to be located (0..1)
 	@Order(value = 2)
-	@Uri
-	private String system;
+	//@NotNull
+	private Uri system;
 	
 	// The version that these details are based on (0..1)
 	@Order(value = 3)
@@ -112,7 +112,7 @@ public class LookupRequest extends StdConverter<LookupRequest,LookupRequest> {
 			Collection<String> properties) throws ParseException {
 		
 		this.code = new Code(code);
-		this.system = system;
+		this.system = new Uri(system);
 		this.version = version;
 		this.date = new SimpleDateFormat(DateFormats.DATE_TIME_FORMAT).parse(dateString);
 		this.displayLanguage = new Code(displayLanguage);
@@ -123,7 +123,7 @@ public class LookupRequest extends StdConverter<LookupRequest,LookupRequest> {
 		return code;
 	}
 
-	public String getSystem() {
+	public Uri getSystem() {
 		return system;
 	}
 

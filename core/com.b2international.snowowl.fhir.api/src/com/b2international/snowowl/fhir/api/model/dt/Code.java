@@ -26,7 +26,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * 
  * @since 6.3
  */
+<<<<<<< Upstream, based on branch 'feature/fhir_api' of https://github.com/b2ihealthcare/snow-owl.git
 @JsonSerialize(using = ToJsonStringSerializer.class)
+=======
+//@JsonSerialize(using = ToJsonStringSerializer.class)
+>>>>>>> 3acbefb SO-2917 URI references replaced.
 public class Code implements JsonStringProvider {
 	
 	private static final String CODE_REGEXP = "[^\\s]+([\\s]?[^\\s]+)*"; //$NON-NLS-N$

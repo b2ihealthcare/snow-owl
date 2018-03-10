@@ -28,6 +28,7 @@ import com.b2international.snowowl.fhir.api.model.LookupRequest;
 import com.b2international.snowowl.fhir.api.model.LookupResult;
 import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.dt.DateFormats;
+import com.b2international.snowowl.fhir.api.model.dt.Uri;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 
@@ -59,7 +60,7 @@ public class ModelDeserializationTest extends FhirTest {
 		
 		System.out.println("Request: " + request);
 		assertEquals(new Code("abcd"), request.getCode());
-		assertEquals("http://snomed.info/sct", request.getSystem());
+		assertEquals(new Uri("http://snomed.info/sct"), request.getSystem());
 		assertEquals("20180131", request.getVersion());
 		assertEquals(new SimpleDateFormat(DateFormats.DATE_TIME_FORMAT).parse("2018-03-09T20:50:21+0100"), request.getDate());
 		assertEquals(new Code("1234"), request.getCoding().getCode());

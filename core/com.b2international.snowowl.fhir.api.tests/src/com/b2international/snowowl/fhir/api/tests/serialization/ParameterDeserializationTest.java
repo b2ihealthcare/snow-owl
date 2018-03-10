@@ -25,9 +25,14 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 
+<<<<<<< Upstream, based on branch 'feature/fhir_api' of https://github.com/b2ihealthcare/snow-owl.git
 import com.b2international.snowowl.fhir.api.model.SerializableParameters;
+=======
+>>>>>>> 3acbefb SO-2917 URI references replaced.
 import com.b2international.snowowl.fhir.api.model.LookupRequest;
+import com.b2international.snowowl.fhir.api.model.SerializableParameters;
 import com.b2international.snowowl.fhir.api.model.dt.Code;
+import com.b2international.snowowl.fhir.api.model.dt.Uri;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -184,8 +189,8 @@ public class ParameterDeserializationTest extends FhirTest {
 		assertTrue(optionalParameter.isPresent());
 		SerializableParameter param = optionalParameter.get();
 		assertEquals("valueUri", param.getType());
-		assertEquals("LOINC", param.getValue());
-		assertEquals(String.class, param.getValueType());
+		assertEquals(new Uri("LOINC"), param.getValue());
+		assertEquals(Uri.class, param.getValueType());
 	}
 	
 	@Test

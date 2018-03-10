@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.model;
+package com.b2international.snowowl.fhir.api.model.dt;
 
 import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.FIELD;
@@ -38,7 +38,7 @@ import javax.validation.Payload;
 @Retention(RUNTIME)
 @Constraint(validatedBy = UriValidator.class)
 @Documented
-public @interface Uri {
+public @interface ValidUri {
 
 	String message() default "uri is invalid";
 
@@ -52,7 +52,7 @@ public @interface Uri {
 	@Retention(RUNTIME)
 	@Documented
 	@interface List {
-		Uri[] value();
+		ValidUri[] value();
 	}
 
 }
