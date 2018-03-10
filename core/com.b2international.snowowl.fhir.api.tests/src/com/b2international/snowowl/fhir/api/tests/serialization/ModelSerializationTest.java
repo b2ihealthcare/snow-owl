@@ -27,27 +27,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-<<<<<<< Upstream, based on branch 'feature/fhir_api' of https://github.com/b2ihealthcare/snow-owl.git
-import com.b2international.snowowl.fhir.api.model.Designation;
-import com.b2international.snowowl.fhir.api.model.LookupResult;
-import com.b2international.snowowl.fhir.api.model.Property;
-import com.b2international.snowowl.fhir.api.model.Property.Builder;
-import com.b2international.snowowl.fhir.api.model.SubProperty;
-import com.b2international.snowowl.fhir.api.model.dt.Code;
-import com.b2international.snowowl.fhir.api.model.dt.Coding;
-import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
-import com.b2international.snowowl.fhir.api.tests.FhirTest;
-
-/**
- * 
- * Test for checking the serialization from model->JSON.
- * @since 6.3
- */
-public class ModelSerializationTest extends FhirTest {
-	
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-=======
 import com.b2international.snowowl.fhir.api.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.api.codesystems.IssueType;
 import com.b2international.snowowl.fhir.api.model.Designation;
@@ -85,7 +64,6 @@ public class ModelSerializationTest extends FhirTest {
 		
 		printPrettyJson(ou);
 	}
->>>>>>> 5bc8690 SO-2917 Operation outcome added.
 	
 	@Test
 	public void codingTest() throws Exception {
