@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.api.service;
 
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
@@ -27,13 +28,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.api.model.dt.Coding;
+import com.b2international.snowowl.fhir.api.RestApiError;
+import com.b2international.snowowl.fhir.api.model.LookupRequest;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * 
@@ -51,7 +54,6 @@ import com.wordnik.swagger.annotations.ApiParam;
 @RequestMapping(value="/CodeSystem")
 public class FhirCodeSystemRestService {
 	
-	private static final String DATE_TIME_REGEXP = "-?[0-9]{4}(-(0[1-9]|1[0-2])(-(0[0-9]|[1-2][0-9]|3[0-1]))?)?"; //$NON-NLS-N$
 	private static final String FHIR_EXTENSION_POINT = "com.b2international.snowowl.fhir.api.provider"; //$NON-NLS-N$
 	
 	@ApiOperation(
@@ -59,7 +61,7 @@ public class FhirCodeSystemRestService {
 			notes="This is only an FHIR ping test.")
 	@RequestMapping(value="/ping", method=RequestMethod.GET)
 	public String ping() {
-		System.err.println("FHIR Rest service called.");
+		System.out.println("FhirCodeSystemRestService.ping()");
 		return "Ping!";
 	}
 	
@@ -71,11 +73,16 @@ public class FhirCodeSystemRestService {
 	 * @param date
 	 * @param displayLanguage
 	 * @param properties
+	 * @throws ParseException 
 	 */
 	@ApiOperation(
 			value="Concept lookup",
 			notes="Given a code/system, or a Coding, get additional details about the concept.\n"
 					+ "https://www.hl7.org/fhir/2016May/datatypes.html#dateTime")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = 404, message = "Code system not found", response = RestApiError.class)
+	})
 	@RequestMapping(value="/$lookup", method=RequestMethod.GET)
 	public void lookupViaParameters(
 		
@@ -84,7 +91,7 @@ public class FhirCodeSystemRestService {
 		@ApiParam(value="The code system version") @RequestParam(value="version", required=false) final String version,
 		@ApiParam(value="Lookup date in datetime format") @RequestParam(value="date", required=false) final String date,
 		@ApiParam(value="Language code for display") @RequestParam(value="displayLanguage", required=false) final String displayLanguage,
-		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required=false) Set<String> properties) {
+		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required=false) Set<String> properties) throws ParseException {
 		
 		System.err.println("Code: " + code + " uri: " + uri +
 				" version:" + version + " lookup date: " + date + " display language: " + displayLanguage);
@@ -93,21 +100,15 @@ public class FhirCodeSystemRestService {
 			System.out.println(" properties: " + Arrays.toString(properties.toArray()));
 		}
 		
-		Coding coding = Coding.builder()
-			.code(code)
-			.system(uri)
-			.version(version)
-			.build();
-		
-		//validateParameters(coding, date, displayLanguage);
+		LookupRequest lookupRequest = new LookupRequest(code, uri, version, date, displayLanguage, properties);
 		
 		//all good, now do something
-		lookup(coding);
+		lookup(lookupRequest);
 	}
 	
 	/**
-	 * POST-based 'mixed' lookup endpoint.
-	 * TODO: This should probably be removed.
+	 * POST-based lookup endpoint.
+	 * All parameters are in the request body.
 	 * @param coding
 	 * @param date
 	 * @param displayLanguage
@@ -119,49 +120,27 @@ public class FhirCodeSystemRestService {
 					+ "https://www.hl7.org/fhir/2016May/datatypes.html#dateTime")
 	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public void lookupViaCodingAndParameters(
-		
-		@ApiParam(value="The coding definition to look up") @RequestBody final Coding coding,
-		@ApiParam(value="Lookup date in datetime format") @RequestParam(value="date", required=false) final String date,
-		@ApiParam(value="Language code for display") @RequestParam(value="displayLanguage", required=false) final String displayLanguage,
-		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required=false) Set<String> properties) {
-		
-		System.err.println("Coding: " + coding + ", lookup date: " + date + " properties: ");
-		if (properties !=null) {
-			System.out.println(" properties: " + Arrays.toString(properties.toArray()));
-		}
-		
-		//validateParameters(coding, date, displayLanguage);
+		@ApiParam(value="The lookup request parameters") @RequestBody final LookupRequest lookupRequest) {
 		
 		//all good, now do something
-		lookup(coding);
+		lookup(lookupRequest);
 	}
 	
-	private void lookup(Coding coding) {
+	private void lookup(LookupRequest lookupRequest) {
+		
+		if (false) {
+			throw new BadRequestException("Display language code format is incorrect..");
+		}
 		
 		Collection<IFhirProvider> fhirProviders = Extensions.getExtensions(FHIR_EXTENSION_POINT, IFhirProvider.class);
 		
 		Optional<IFhirProvider> fhirProviderOptional = fhirProviders.stream().findFirst();
 		
-		fhirProviderOptional.orElseThrow(() -> new BadRequestException("Did not find FHIR provider for URI: " + coding.getSystem()));
+		fhirProviderOptional.orElseThrow(() -> new BadRequestException("Did not find FHIR provider for URI: " + lookupRequest.getSystem()));
 		
 		IFhirProvider iFhirProvider = fhirProviderOptional.get();
-		iFhirProvider.lookup(coding.getVersion(), coding.getCode());
+		iFhirProvider.lookup(lookupRequest.getVersion(), lookupRequest.getCode().getCodeValue());
 		
 	}
-	
-//	private void validateParameters(Coding coding, String date, String displayLanguage) {
-//		coding.validate();
-//		
-//		if (!StringUtils.isEmpty(date) && !date.matches(DATE_TIME_REGEXP)) {
-//			throw new BadRequestException("Date format is incorrect.");
-//		}
-//		
-//		if (!StringUtils.isEmpty(displayLanguage) && displayLanguage.matches(Coding.CODE_REGEXP)) {
-//			throw new BadRequestException("Display language code format is incorrect: " + displayLanguage);
-//		}
-//		
-//	}
-
-
 
 }

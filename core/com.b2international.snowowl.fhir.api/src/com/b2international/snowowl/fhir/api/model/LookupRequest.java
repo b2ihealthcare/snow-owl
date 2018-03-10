@@ -16,17 +16,21 @@
 package com.b2international.snowowl.fhir.api.model;
 
 import java.lang.reflect.Field;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.core.annotation.Order;
 
 import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.dt.Coding;
+import com.b2international.snowowl.fhir.api.model.dt.DateFormats;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -98,8 +102,23 @@ public class LookupRequest extends StdConverter<LookupRequest,LookupRequest> {
 	 * group
 	 */
 	@Order(value = 7)
-	private Collection<Property> properties = Lists.newArrayList();
+	private Collection<Code> properties = Lists.newArrayList();
 	
+	//For Jackson
+	@SuppressWarnings("unused")
+	private LookupRequest() {}
+	
+	public LookupRequest(String code, String system, String version, String dateString, String displayLanguage,
+			Collection<String> properties) throws ParseException {
+		
+		this.code = new Code(code);
+		this.system = system;
+		this.version = version;
+		this.date = new SimpleDateFormat(DateFormats.DATE_TIME_FORMAT).parse(dateString);
+		this.displayLanguage = new Code(displayLanguage);
+		this.properties = properties.stream().map(p-> new Code(p)).collect(Collectors.toSet());;
+	}
+
 	public Code getCode() {
 		return code;
 	}
@@ -124,7 +143,7 @@ public class LookupRequest extends StdConverter<LookupRequest,LookupRequest> {
 		return displayLanguage;
 	}
 
-	public Collection<Property> getProperties() {
+	public Collection<Code> getProperties() {
 		return properties;
 	}
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.tests;
+package com.b2international.snowowl.fhir.api.tests.serialization;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -29,6 +29,7 @@ import com.b2international.snowowl.fhir.api.model.FhirModel;
 import com.b2international.snowowl.fhir.api.model.LookupRequest;
 import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
+import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**

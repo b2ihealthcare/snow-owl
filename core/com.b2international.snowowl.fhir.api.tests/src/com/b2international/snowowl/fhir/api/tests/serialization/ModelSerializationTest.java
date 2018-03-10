@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.tests;
+package com.b2international.snowowl.fhir.api.tests.serialization;
 
 import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.hamcrest.core.StringStartsWith.startsWith;
@@ -35,6 +35,7 @@ import com.b2international.snowowl.fhir.api.model.SubProperty;
 import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.dt.Coding;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
+import com.b2international.snowowl.fhir.api.tests.FhirTest;
 
 /**
  * 

@@ -19,6 +19,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import com.b2international.snowowl.fhir.api.tests.serialization.ModelDeserializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.ModelSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.ParameterDeserializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.ParameterSerializationTest;
+
 /**
  * 
  * FHIR test suite.

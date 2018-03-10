@@ -68,20 +68,6 @@ public class LookupResult extends FhirModel {
 		this.properties = properties;
 	}
 	
-	/*
-	public void add(SerializableParameter parameter) {
-		parameters.add(parameter);
-	}
-
-	public void addAll(Collection<SerializableParameter> fhirParameters) {
-		this.parameters.addAll(fhirParameters);
-	}
-
-	public Collection<SerializableParameter> getParameters() {
-		return parameters;
-	}
-	*/
-	
 	public static Builder builder() {
 		return new Builder();
 	}

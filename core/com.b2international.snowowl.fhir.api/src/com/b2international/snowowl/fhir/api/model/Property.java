@@ -26,6 +26,19 @@ import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.google.common.collect.Lists;
 
+/**
+ * http://hl7.org/fhir/concept-properties#status	A property that indicates the status of the concept. If the property is identified by this URL, then it SHALL use at least these status values (where appropriate):
+ * active - the concept is for normal use (this is the default value)
+ * experimental - provided for trial, but may be removed in the future
+ * deprecated - planned to be removed from use
+ * retired - still present for historical reasons, but no longer allowed to be used
+ * http://hl7.org/fhir/concept-properties#retirementDate	Date Concept was retired
+ * http://hl7.org/fhir/concept-properties#deprecationDate	Date Concept was deprecated
+ * http://hl7.org/fhir/concept-properties#parent	An immediate parent of the concept in the hierarchy
+ * http://hl7.org/fhir/concept-properties#child	An immediate child of the concept in the hierarchy
+ * http://hl7.org/fhir/concept-properties#notSelectable	This concept is a grouping concept and not intended to be used in the normal use of the code system (though my be used for filters etc). This is also known as 'Abstract'
+ *
+ */
 public class Property extends FhirModel {
 	
 	//Identifies the property returned (1..1)

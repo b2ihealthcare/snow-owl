@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.tests;
+package com.b2international.snowowl.fhir.api.tests.serialization;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -29,6 +29,7 @@ import com.b2international.snowowl.fhir.api.model.LookupResult;
 import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.dt.DateFormats;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
+import com.b2international.snowowl.fhir.api.tests.FhirTest;
 
 public class ModelDeserializationTest extends FhirTest {
 	
