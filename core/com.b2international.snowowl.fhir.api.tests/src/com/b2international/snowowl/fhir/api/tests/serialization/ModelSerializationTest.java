@@ -93,11 +93,7 @@ public class ModelSerializationTest extends FhirTest {
 		
 		exception.expect(ValidationException.class);
 		exception.expectMessage(startsWith("{violations=['code.codeValue' may not be empty (was ''),"));
-<<<<<<< Upstream, based on branch 'feature/fhir_api' of https://github.com/b2ihealthcare/snow-owl.git
-		exception.expectMessage(endsWith("'system' may not be empty (was 'null')]}"));
-=======
 		exception.expectMessage(endsWith("'system' may not be null (was 'null')]}"));
->>>>>>> 3acbefb SO-2917 URI references replaced.
 		
 		Coding.builder()
 			.code("")

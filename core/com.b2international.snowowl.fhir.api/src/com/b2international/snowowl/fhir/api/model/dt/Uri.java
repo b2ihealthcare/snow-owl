@@ -17,20 +17,6 @@ package com.b2international.snowowl.fhir.api.model.dt;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-<<<<<<< Upstream, based on branch 'feature/fhir_api' of https://github.com/b2ihealthcare/snow-owl.git
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-
-/**
- * FHIR URI datatype
- * 
- * @since 6.3
- */
-@JsonSerialize(using = ToStringSerializer.class)
-public class Uri implements JsonStringProvider {
-	
-	@NotEmpty
-=======
 /**
  * FHIR URI datatype
  * 
@@ -40,7 +26,6 @@ public class Uri implements JsonStringProvider {
 	
 	@NotEmpty
 	@ValidUri
->>>>>>> 3acbefb SO-2917 URI references replaced.
 	private String uriValue;
 
 	public Uri(String uriValue) {
@@ -87,4 +72,3 @@ public class Uri implements JsonStringProvider {
 	}
 
 }
-

@@ -15,10 +15,6 @@
  */
 package com.b2international.snowowl.fhir.api.model.dt;
 
-<<<<<<< Upstream, based on branch 'feature/fhir_api' of https://github.com/b2ihealthcare/snow-owl.git
-public interface JsonStringProvider {
-
-=======
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -35,7 +31,6 @@ public interface JsonStringProvider {
 	 * Most of the time the simple string value of the data type.
 	 * @return
 	 */
->>>>>>> 3acbefb SO-2917 URI references replaced.
 	String toJsonString();
 
 }

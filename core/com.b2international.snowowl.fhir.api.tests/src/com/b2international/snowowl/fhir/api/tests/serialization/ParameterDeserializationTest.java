@@ -25,10 +25,6 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 
-<<<<<<< Upstream, based on branch 'feature/fhir_api' of https://github.com/b2ihealthcare/snow-owl.git
-import com.b2international.snowowl.fhir.api.model.SerializableParameters;
-=======
->>>>>>> 3acbefb SO-2917 URI references replaced.
 import com.b2international.snowowl.fhir.api.model.LookupRequest;
 import com.b2international.snowowl.fhir.api.model.SerializableParameters;
 import com.b2international.snowowl.fhir.api.model.dt.Code;
