@@ -152,16 +152,18 @@ public class EsDocumentSearcher implements DocSearcher {
 		
 		// scrolling
 		final TimeValue scrollTime = TimeValue.timeValueSeconds(60);
+		final boolean isLocalScroll = limit > resultWindow;
 		final boolean isScrolled = !Strings.isNullOrEmpty(query.getScrollKeepAlive());
-		if (limit > resultWindow) {
+		final boolean isLiveScrolled = query.getSearchAfter() != null;
+		if (isLocalScroll) {
 			checkArgument(!isScrolled, "Cannot fetch more than '%s' items when scrolling is specified. You requested '%s' items.", resultWindow, limit);
+			checkArgument(!isLiveScrolled, "Cannot use search after when requesting more number of items (%s) than the max result window (%s).", limit, resultWindow);
 			req.setScroll(scrollTime);
 		} else if (isScrolled) {
+			checkArgument(!isLiveScrolled, "Cannot scroll and live scroll at the same time");
 			req.setScroll(query.getScrollKeepAlive());
-		}
-		
-		// search after
-		if (query.getSearchAfter() != null) {
+		} else if (isLiveScrolled) {
+			checkArgument(!isScrolled, "Cannot scroll and live scroll at the same time");
 			req.searchAfter(query.getSearchAfter());
 		}
 		
@@ -175,13 +177,12 @@ public class EsDocumentSearcher implements DocSearcher {
 		}
 		
 		final int totalHits = (int) response.getHits().getTotalHits();
-
-		int numDocsToFetch = query.getLimit() - response.getHits().getHits().length;
+		int numDocsToFetch = Math.min(limit, totalHits) - response.getHits().getHits().length;
 		
 		final Builder<SearchHit> allHits = ImmutableList.builder();
 		allHits.add(response.getHits().getHits());
 
-		while (numDocsToFetch > 0 && limit > resultWindow) {
+		while (isLocalScroll && numDocsToFetch > 0) {
 			response = client.prepareSearchScroll(response.getScrollId()).setScroll(scrollTime).get();
 			int fetchedDocs = response.getHits().getHits().length;
 			if (fetchedDocs == 0) {
@@ -192,7 +193,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		}
 		
 		// clear the custom local scroll
-		if (limit > resultWindow) {
+		if (isLocalScroll) {
 			client.prepareClearScroll().addScrollId(response.getScrollId()).get();
 		}
 		
