@@ -74,11 +74,6 @@ public class ModelSerializationTest extends FhirTest {
 			.version("20180131")
 			.build();
 		
-		//ObjectMapper om = new ObjectMapper();
-//		SimpleModule testModule = new SimpleModule("MyModule");
-//	    testModule.addSerializer(Code.class, new MyCustomSerializer(Code.class));
-//	    testModule.addSerializer(Code.class, new ToStringSerializer(Code.class));
-		
 		String jsonString = objectMapper.writeValueAsString(coding);
 		
 		String expected = "{\"code\":\"1234\","

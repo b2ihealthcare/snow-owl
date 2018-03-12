@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.validation.Valid;
+
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -119,7 +121,11 @@ public class FhirCodeSystemRestService {
 			notes="Given a code/system, or a Coding, get additional details about the concept.\n"
 					+ "https://www.hl7.org/fhir/2016May/datatypes.html#dateTime")
 	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void lookupViaCodingAndParameters(@ApiParam(value="The lookup request parameters") @RequestBody final LookupRequest lookupRequest) {
+	public void lookupViaCodingAndParameters(@ApiParam(value="The lookup request parameters") 
+	
+		@Valid 
+		@RequestBody 
+		final LookupRequest lookupRequest) {
 		
 		//all good, now do something
 		lookup(lookupRequest);

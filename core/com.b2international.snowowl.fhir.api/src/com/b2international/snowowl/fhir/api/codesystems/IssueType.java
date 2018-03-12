@@ -20,14 +20,6 @@ import com.b2international.snowowl.fhir.api.model.dt.Code;
 /**
  * Issue type codesystem
  * 
-Lvl	Code	Display	Definition
-1	invalid	Invalid Content	Content invalid against the specification or a profile.
-2	  structure	Structural Issue	A structural issue in the content such as wrong namespace, or unable to parse the content completely, or invalid json syntax.
-2	  required	Required element missing	A required element is missing.
-2	  value	Element value invalid	An element value is invalid.
-2	  invariant	Validation rule failed	A content validation rule failed - e.g. a schematron rule.
-1	security	Security Problem	An authentication/authorization/permissions issue of some kind.
-2	  login	Login Required	The client needs to initiate an authentication process.
 2	  unknown	Unknown User	The user or system was not able to be authenticated (either there is no process, or the proferred token is unacceptable).
 2	  expired	Session Expired	User session expired; a login may be required.
 2	  forbidden	Forbidden	The user does not have the rights to perform this action.
@@ -55,7 +47,62 @@ Lvl	Code	Display	Definition
  */
 public enum IssueType implements FhirCodeSystem {
 	
-	REQUIRED;
+	/**
+	 * Content invalid against the specification or a profile.
+	 */
+	INVALID,
+	
+	/**
+	 * A structural issue in the content such as wrong namespace, or unable to parse the content completely, or invalid json syntax.
+	 */
+	STRUCTURE,
+	
+	/**
+	 * A required element is missing.
+	 */
+	REQUIRED,
+	
+	/**
+	 * An element value is invalid.
+	 */
+	VALUE,
+	
+	/**
+	 * A content validation rule failed - e.g. a schematron rule.
+	 */
+	INVARIANT,
+	
+	/**
+	 * An authentication/authorization/permissions issue of some kind.
+	 */
+	SECURITY,
+	
+	/**
+	 * The client needs to initiate an authentication process.
+	 */
+	LOGIN,
+	UNKNOWN,
+	EXPIRED,
+	FORBIDDEN,
+	SUPPRESSED,
+	PROCESSING,
+	NOT_SUPPORTED,
+	DUPLICATE,
+	NOT_FOUND,
+	TOO_LONG,
+	CODE_INVALID,
+	EXTENSION,
+	TOO_COSTLY,
+	BUSINESS_RULE,
+	CONFLICT,
+	INCOMPLETE,
+	TRANSIENT,
+	LOCK_ERROR,
+	NO_STORE,
+	EXCEPTION,
+	TIMEOUT,
+	THROTTLED,
+	INFORMATIONAL;
 	
 	public final String CODE_SYSTEM_URI = "http://hl7.org/fhir/issue-type";
 	

@@ -19,20 +19,92 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.text.SimpleDateFormat;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.b2international.snowowl.fhir.api.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.api.model.LookupRequest;
 import com.b2international.snowowl.fhir.api.model.LookupResult;
 import com.b2international.snowowl.fhir.api.model.dt.Code;
+import com.b2international.snowowl.fhir.api.model.dt.Coding;
 import com.b2international.snowowl.fhir.api.model.dt.DateFormats;
 import com.b2international.snowowl.fhir.api.model.dt.Uri;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 
 public class ModelDeserializationTest extends FhirTest {
+	
+	@Test
+	public void codingTest() throws Exception {
+		
+		String jsonCoding = "{\"code\":\"1234\","
+				+ "\"system\":\"http://snomed.info/sct\","
+				+ "\"version\":\"20180131\",\"userSelected\":false}";
+		
+		Coding coding = objectMapper.readValue(jsonCoding, Coding.class);
+		
+		Assert.assertEquals(new Code("1234"), coding.getCode());
+		Assert.assertEquals(new Uri("http://snomed.info/sct"), coding.getSystem());
+		Assert.assertEquals("20180131", coding.getVersion());
+	}
+	
+	/**
+	 * Validates this operation outcome.
+	 * @throws ValidationException
+	 */
+	public void validate(Coding object) {
+		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+		Validator validator = factory.getValidator();
+		Set<ConstraintViolation<Coding>> violations = validator.validate(object);
+			if (!violations.isEmpty()) {
+				
+				violations.forEach(cv -> {
+					System.out.println(cv.toString());
+					System.out.println("Message: " + cv.getMessage());
+					System.out.println(" xMessage template: " + cv.getMessageTemplate());
+					System.out.println("Invalid value: " + cv.getInvalidValue());
+					System.out.println("Leaf bean: " + cv.getLeafBean());
+					System.out.println("Property path: " + cv.getPropertyPath());
+					System.out.println("Root bean (Coding): " + cv.getRootBean());
+					System.out.println("Root bean class: " + cv.getRootBeanClass());
+					System.out.println(" xConstraint descriptor: " + cv.getConstraintDescriptor());
+					System.out.println(" xExec parameters: " + cv.getExecutableParameters());
+					System.out.println(" xExec return value: " + cv.getExecutableReturnValue());
+					
+				});
+				
+				//bit of a hack
+				ValidationException validationException = new ValidationException(violations);
+				validationException.toOperationOutcome();
+				//Map<String, Object> additionalInfo = validationException.toApiError().getAdditionalInfo();
+				//throw new javax.validation.ValidationException(additionalInfo.toString());
+			}
+	}
+
+	
+	@Test
+	public void codingMissingSystemTest() throws Exception {
+		
+		String jsonCoding = "{\"code\":\"1234\","
+				//+ "\"system\":\"http://snomed.info/sct\","
+				+ "\"version\":\"20180131\",\"userSelected\":false}";
+		
+		Coding coding = objectMapper.readValue(jsonCoding, Coding.class);
+		validate(coding);
+		
+		Assert.assertEquals(new Code("1234"), coding.getCode());
+		//Assert.assertEquals(new Uri("http://snomed.info/sct"), coding.getSystem());
+		Assert.assertEquals("20180131", coding.getVersion());
+	}
 	
 	@Test
 	public void lookupRequestTest() throws Exception {

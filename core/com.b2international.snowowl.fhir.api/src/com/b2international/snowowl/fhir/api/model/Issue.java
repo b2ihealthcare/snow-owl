@@ -29,43 +29,61 @@ import com.b2international.snowowl.fhir.api.model.dt.Coding;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.google.common.collect.Lists;
 
 /**
- * "Throughout this specification, coded values are always treated as a pair composed of "system" and "code",
- *  where the system is a URL that identifies the code system that defines the codes."
- *  Except here.
- *  
- * @see <a href="http://hl7.org/fhir/operationoutcome-definitions.html#OperationOutcome.issue">FHIR:OperationOutcome:issue</a>
- *  
+ * "Throughout this specification, coded values are always treated as a pair
+ * composed of "system" and "code", where the system is a URL that identifies
+ * the code system that defines the codes." Except here.
+ * 
+ * @see <a href=
+ *      "http://hl7.org/fhir/operationoutcome-definitions.html#OperationOutcome.issue">FHIR:OperationOutcome:issue</a>
+ * 
  * @since 6.3
  *
  */
 public class Issue {
-	
+
 	@NotNull
 	@Valid
 	@JsonSerialize(using = ToStringSerializer.class)
 	private final Code severity;
-	
+
 	@NotNull
 	@Valid
 	@JsonSerialize(using = ToStringSerializer.class)
 	private final Code code;
-	
+
 	@JsonProperty("details")
 	private final CodeableConcept codeableConcept;
-	
+
+	/*
+	 * Additional diagnostic information about the issue. Typically, this may be a
+	 * description of how a value is erroneous, or a stack dump to help trace the
+	 * issue.
+	 */
 	private final String diagnostics;
-	
+
+	/*
+	 * For resource issues, this will be a simple XPath limited to element names,
+	 * repetition indicators and the default child access that identifies one of the
+	 * elements in the resource that caused this issue to be raised. For HTTP
+	 * errors, will be "http." + the parameter name.
+	 */
 	@JsonProperty("location")
 	private final Collection<String> locations;
-	
+
+	/*
+	 * A simple FHIRPath limited to element names, repetition indicators and the
+	 * default child access that identifies one of the elements in the resource that
+	 * caused this issue to be raised.
+	 */
 	@JsonProperty("expression")
 	private final Collection<String> expressions;
-	
-	Issue(Code severity, Code code, CodeableConcept codeableConcept, String diagnostics,
-			Collection<String> locations, Collection<String> expressions) {
-		
+
+	Issue(Code severity, Code code, CodeableConcept codeableConcept, String diagnostics, Collection<String> locations,
+			Collection<String> expressions) {
+
 		this.severity = severity;
 		this.code = code;
 		this.codeableConcept = codeableConcept;
@@ -73,7 +91,7 @@ public class Issue {
 		this.locations = locations;
 		this.expressions = expressions;
 	}
-	
+
 	public Code getSeverity() {
 		return severity;
 	}
@@ -101,34 +119,37 @@ public class Issue {
 	public static Builder builder() {
 		return new Builder();
 	}
-	
+
 	public static class Builder extends ValidatingBuilder<Issue> {
-		
+
 		private Code severity;
 		private Code code;
 		private CodeableConcept codeableConcept;
 		private String diagnostics;
-		private Collection<String> locations;
-		private Collection<String> expressions;		
+		private Collection<String> locations = Lists.newArrayList();
+		private Collection<String> expressions = Lists.newArrayList();
 
 		public Builder severity(final IssueSeverity severity) {
 			this.severity = severity.getCode();
 			return this;
 		}
-		
+
 		public Builder code(final IssueType issueType) {
 			this.code = issueType.getCode();
 			return this;
 		}
-		
-		public Builder codeableConcept(OperationOutcomeCode operationOutcome) {
-			Coding coding = Coding.builder().code(operationOutcome.getCodeValue())
-				.display(operationOutcome.displayName())
-				.build();
-			this.codeableConcept = new CodeableConcept(coding, operationOutcome.displayName());
+
+		public Builder codeableConcept(OperationOutcomeCode operationOutcomeCode) {
+			Coding coding = Coding.builder().code(operationOutcomeCode.getCodeValue()).display(operationOutcomeCode.displayName()).build();
+			this.codeableConcept = new CodeableConcept(coding, operationOutcomeCode.displayName());
 			return this;
 		}
-		
+
+		public Builder codeableConcept(CodeableConcept codeableConcept) {
+			this.codeableConcept = codeableConcept;
+			return this;
+		}
+
 		public Builder diagnostics(String diagnostics) {
 			this.diagnostics = diagnostics;
 			return this;
@@ -138,7 +159,7 @@ public class Issue {
 			locations.add(location);
 			return this;
 		}
-		
+
 		@Override
 		protected Issue doBuild() {
 			return new Issue(severity, code, codeableConcept, diagnostics, locations, expressions);
@@ -148,10 +169,8 @@ public class Issue {
 
 	@Override
 	public String toString() {
-		return "Issue [severity=" + severity + ", code=" + code + ", codeableConcept=" + codeableConcept
-				+ ", diagnostics=" + diagnostics + ", locations=" + locations + ", expressions=" + expressions + "]";
+		return "Issue [severity=" + severity + ", code=" + code + ", codeableConcept=" + codeableConcept + ", diagnostics=" + diagnostics
+				+ ", locations=" + locations + ", expressions=" + expressions + "]";
 	}
-	
-	
 
 }

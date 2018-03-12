@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.api.tests;
 
+/*
 import java.util.TimeZone;
 
 import org.springframework.context.annotation.Bean;
@@ -60,21 +61,19 @@ public class TestContext extends WebMvcConfigurerAdapter {
 		return objectMapper;
 	}
 
-	/*
-	@Override
-	public void configureMessageConverters(final List<HttpMessageConverter<?>> converters) {
-		final StringHttpMessageConverter stringConverter = new StringHttpMessageConverter();
-		stringConverter.setWriteAcceptCharset(false);
-		converters.add(stringConverter);
-
-		converters.add(new ByteArrayHttpMessageConverter());
-		converters.add(new ResourceHttpMessageConverter());
-
-		final MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
-		jacksonConverter.setObjectMapper(objectMapper());
-		converters.add(jacksonConverter);
-	}
-	*/
+//	@Override
+//	public void configureMessageConverters(final List<HttpMessageConverter<?>> converters) {
+//		final StringHttpMessageConverter stringConverter = new StringHttpMessageConverter();
+//		stringConverter.setWriteAcceptCharset(false);
+//		converters.add(stringConverter);
+//
+//		converters.add(new ByteArrayHttpMessageConverter());
+//		converters.add(new ResourceHttpMessageConverter());
+//
+//		final MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
+//		jacksonConverter.setObjectMapper(objectMapper());
+//		converters.add(jacksonConverter);
+//	}
 
 	@Override
 	public void configurePathMatch(final PathMatchConfigurer configurer) {
@@ -83,3 +82,4 @@ public class TestContext extends WebMvcConfigurerAdapter {
 	}
 
 }
+*/

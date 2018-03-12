@@ -16,9 +16,17 @@
 package com.b2international.snowowl.fhir.api.model;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.core.exceptions.ValidationException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import com.wordnik.swagger.annotations.Api;
@@ -58,6 +66,22 @@ public class OperationOutcome {
 	
 	public Collection<Issue> getIssues() {
 		return issues;
+	}
+	
+	/**
+	 * Validates this operation outcome.
+	 * @throws ValidationException
+	 */
+	public void validate() {
+		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+		Validator validator = factory.getValidator();
+		Set<ConstraintViolation<OperationOutcome>> violations = validator.validate(this);
+			if (!violations.isEmpty()) {
+				//bit of a hack
+				ValidationException validationException = new ValidationException(violations);
+				Map<String, Object> additionalInfo = validationException.toApiError().getAdditionalInfo();
+				throw new javax.validation.ValidationException(additionalInfo.toString());
+			}
 	}
 
 }
