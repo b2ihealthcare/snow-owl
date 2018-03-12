@@ -34,10 +34,12 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.base.Strings;
 import com.google.common.base.Objects.ToStringHelper;
 
 /**
@@ -57,9 +59,11 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	}
 
 	public static Builder builder(final SnomedRelationship input) {
+		String id = input.getId();
 		final Builder builder = builder()
 				.storageKey(input.getStorageKey())
-				.id(input.getId())
+				.id(id)
+				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.sourceId(input.getSourceId())
 				.typeId(input.getTypeId())
 				.destinationId(input.getDestinationId())
@@ -81,9 +85,11 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	}
 	
 	public static Builder builder(Relationship relationship) {
+		String id = relationship.getId();
 		return builder()
 				.storageKey(CDOIDUtils.asLong(relationship.cdoID()))
-				.id(relationship.getId())
+				.id(id)
+				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.active(relationship.isActive())
 				.sourceId(relationship.getSource().getId())
 				.typeId(relationship.getType().getId())
@@ -99,9 +105,11 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	}
 	
 	public static Builder builder(SnomedRelationshipIndexEntry input) {
+		String id = input.getId();
 		return builder()
 				.storageKey(CDOIDUtils.asLong(input.cdoID()))
-				.id(input.getId())
+				.id(id)
+				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.active(input.isActive())
 				.sourceId(input.getSourceId())
 				.typeId(input.getTypeId())
