@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,10 @@ import java.util.Collection;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.ecl.EclExpression;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.ecl.Ecl;
 import com.google.common.base.Function;
@@ -115,13 +113,7 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument> extends S
 				}
 				
 				// TODO replace sync call to concept search with async promise
-				SnomedConcepts matchingConcepts = SnomedRequests.prepareSearchConcept()
-					.all()
-					.filterByEcl(expression)
-					.setFields(SnomedConceptDocument.Fields.ID)
-					.build()
-					.execute(context);
-				idFilter = FluentIterable.from(matchingConcepts).transform(IComponent.ID_FUNCTION).toSet();
+				idFilter = EclExpression.of(expression).resolve(context).getSync();
 				if (idFilter.isEmpty()) {
 					throw new SearchResourceRequest.NoResultException();
 				}
