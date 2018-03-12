@@ -107,7 +107,9 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B filterByIds(Collection<String> ids) {
-		this.componentIds = ImmutableSet.copyOf(ids);
+		if (ids != null) {
+			this.componentIds = ImmutableSet.copyOf(ids);
+		}
 		return getSelf();
 	}
 	
