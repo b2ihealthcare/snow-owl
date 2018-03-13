@@ -24,8 +24,8 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	
 	@Test
-	public void rule1() throws Exception {
-		final String ruleId = "1";
+	public void ruleSnomedCommon1() throws Exception {
+		final String ruleId = "snomed-common-1";
 		indexRule(ruleId);
 		
 		SnomedConceptDocument inactiveDestinationConcept = concept(generateConceptId()).active(false).build();
