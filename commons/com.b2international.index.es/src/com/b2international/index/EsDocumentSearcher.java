@@ -16,9 +16,7 @@
 package com.b2international.index;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -32,7 +30,6 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.bytes.BytesReference;
-import org.elasticsearch.common.document.DocumentField;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.script.ScriptType;
@@ -47,7 +44,6 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
 import com.b2international.collections.PrimitiveCollection;
-import com.b2international.commons.CompareUtils;
 import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
@@ -60,16 +56,15 @@ import com.b2international.index.query.SortBy.MultiSortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.query.SortBy.SortByField;
 import com.b2international.index.query.SortBy.SortByScript;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Ints;
-import com.google.common.primitives.Primitives;
 
 /**
  * @since 5.10
@@ -147,6 +142,15 @@ public class EsDocumentSearcher implements DocSearcher {
 			}
 		}
 		
+		// this won't load fields like _parent, _routing, _uid at all
+		// and _id in cases where we explicitly require the _source
+		// ES internals require loading the _id field when we require the _source
+		if (fetchSource	|| query.isDocIdOnly()) {
+			req.storedFields("_id");
+		} else {
+			req.storedFields("_none_");
+		}
+		
 		// sorting
 		addSort(mapping, req, query.getSortBy());
 		
@@ -166,6 +170,11 @@ public class EsDocumentSearcher implements DocSearcher {
 			checkArgument(!isScrolled, "Cannot scroll and live scroll at the same time");
 			req.searchAfter(query.getSearchAfter());
 		}
+		
+		// disable explain explicitly, just in case
+		req.setExplain(false);
+		// disable version field explicitly, just in case
+		req.setVersion(false);
 		
 		// fetch phase
 		SearchResponse response = null; 
@@ -244,65 +253,13 @@ public class EsDocumentSearcher implements DocSearcher {
 			final String scrollId,
 			final SortBy sortBy,
 			final Iterable<SearchHit> hits) throws IOException {
-		final ObjectReader reader = getResultObjectReader(select, from);
+		final HitConverter<T> hitConverter = HitConverter.getConverter(mapper, select, from, fetchSource, fields);
 		Object[] searchAfterSortValues = null;
 		final ImmutableList.Builder<T> result = ImmutableList.builder();
 		for (Iterator<SearchHit> iterator = hits.iterator(); iterator.hasNext();) {
 			SearchHit hit = iterator.next();
 			// if this was the last value then collect the sort values for searchAfter
-			final T value;
-			if (Primitives.isWrapperType(select) || String.class.isAssignableFrom(select)) {
-				checkState(!fetchSource, "Single field fetching is not supported when it requires to load the source of the document.");
-				final Map<String, DocumentField> source = hit.getFields();
-				if (CompareUtils.isEmpty(source)) {
-					value = select.cast(hit.getId());
-				} else {
-					Object fieldValue = source.get(Iterables.getOnlyElement(source.keySet())).<T>getValue();
-					if (Integer.class == select && fieldValue instanceof Long) {
-						value = (T) Integer.valueOf(Ints.checkedCast(((Long) fieldValue).longValue()));
-					} else {
-						value = select.cast(fieldValue);
-					}
-				}
-			} else if (Map.class.isAssignableFrom(select)) {
-				if (fetchSource) {
-					value = select.cast(hit.getSourceAsMap());
-				} else {
-					final Map<String, Object> val = newHashMap();
-					hit.getFields().forEach((field, docField) -> {
-						val.put(field, docField.getValue());
-					});
-					value = select.cast(val);
-				}
-			} else if (String[].class.isAssignableFrom(select)) {
-				final String[] val = new String[fields.size()];
-				for (int i = 0; i < fields.size(); i++) {
-					String field = fields.get(i);
-					if (fetchSource) {
-						val[i] = String.valueOf(hit.getSourceAsMap().get(field));
-					} else {
-						DocumentField docField = hit.getFields().get(field);
-						if (docField != null) {
-							Object fieldValue = docField.getValue();
-							val[i] = String.valueOf(fieldValue);
-						} else {
-							val[i] = null;							
-						}
-					}
-				}
-				value = select.cast(val);
-			} else {
-				if (fetchSource) {
-					final byte[] bytes = BytesReference.toBytes(hit.getSourceRef());
-					value = reader.readValue(bytes, 0, bytes.length);
-				} else {
-					final Map<String, Object> val = newHashMap();
-					hit.getFields().forEach((field, docField) -> {
-						val.put(field, docField.getValue());
-					});
-					value = mapper.convertValue(val, select);
-				}
-			}
+			final T value = hitConverter.convert(hit);
 			if (value instanceof WithId) {
 				((WithId) value).set_id(hit.getId());
 			}
@@ -315,12 +272,6 @@ public class EsDocumentSearcher implements DocSearcher {
 			}
 		}
 		return new Hits<T>(result.build(), scrollId, searchAfterSortValues, limit, totalHits);
-	}
-
-	private <T> ObjectReader getResultObjectReader(Class<T> select, Class<?> from) {
-		return select != from 
-				? mapper.readerFor(select).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) 
-				: mapper.readerFor(select);
 	}
 
 	private void addSort(DocumentMapping mapping, SearchRequestBuilder req, SortBy sortBy) {
@@ -411,7 +362,7 @@ public class EsDocumentSearcher implements DocSearcher {
 			throw new IndexException("Couldn't execute aggregation: " + e.getMessage(), null);
 		}
 		
-		final ObjectReader reader = getResultObjectReader(aggregation.getFrom(), aggregation.getFrom());
+		final ObjectReader reader = HitConverter.getResultObjectReader(mapper, aggregation.getFrom(), aggregation.getFrom());
 		
 		ImmutableMap.Builder<Object, Bucket<T>> buckets = ImmutableMap.builder();
 		Terms aggregationResult = response.getAggregations().<Terms>get(aggregationName);
