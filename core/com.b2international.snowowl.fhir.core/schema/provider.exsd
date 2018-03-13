@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="com.b2international.snowowl.fhir.api" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="com.b2international.snowowl.fhir.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="com.b2international.snowowl.fhir.api" id="com.b2international.snowowl.fhir" name="FHIR API"/>
+         <meta.schema plugin="com.b2international.snowowl.fhir.core" id="provider" name="provider"/>
       </appinfo>
       <documentation>
          Extension point for the code system specific implementations for the Snow Owl FHIR API.
@@ -55,7 +55,7 @@
                   Implementation for the code system specific FHIR API provider.
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn=":com.b2international.snowowl.fhir.api.service.IFhirProvider"/>
+                  <meta.attribute kind="java" basedOn=":com.b2international.snowowl.fhir.core.service.IFhirProvider"/>
                </appinfo>
             </annotation>
          </attribute>
