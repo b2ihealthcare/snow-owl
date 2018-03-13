@@ -1,0 +1,10 @@
+[
+  {
+  	"id": "1",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Relationships must not have inactive source, destination or type concepts",
+    "severity": "ERROR",
+    "type": "script-groovy",
+    "implementation": "scripts/rule1.groovy"
+  }
+]
