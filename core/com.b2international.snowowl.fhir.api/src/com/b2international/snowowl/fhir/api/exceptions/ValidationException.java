@@ -42,10 +42,6 @@ public final class ValidationException extends BadRequestException {
 		this.violations = violations;
 	}
 
-	private Object invalidValue;
-
-	private Path propertyPath;
-
 	/**
 	 * Creates an OperationOutcome representation from this exception. Useful when
 	 * the exception must be propagated through protocols where Java serialization
@@ -66,25 +62,31 @@ public final class ValidationException extends BadRequestException {
 		
 		for (ConstraintViolation<?> violation : violations) {
 				
-			String issueDetails = String.format(getOperationOutcomeCode().displayName(), propertyPath) + " [" + invalidValue + "].";
-	
+			String issueDetails = String.format(getOperationOutcomeCode().displayName(), violation.getPropertyPath());
+			StringBuilder builder = new StringBuilder(issueDetails);
+			builder.append(" [");
+			builder.append(violation.getInvalidValue());
+			builder.append("]. Violation: ");
+			builder.append(violation.getMessage());
+			builder.append(".");
+			
 			Coding coding = Coding.builder().
-					code(getOperationOutcomeCode().getCodeValue())
-					.system(OperationOutcomeCode.CODE_SYSTEM_URI)
-					.display(issueDetails)
-					.build();
+				code(getOperationOutcomeCode().getCodeValue())
+				.system(OperationOutcomeCode.CODE_SYSTEM_URI)
+				.display(builder.toString())
+				.build();
 	
-			CodeableConcept codeableConcept = new CodeableConcept(coding, issueDetails);
+			CodeableConcept codeableConcept = new CodeableConcept(coding, builder.toString());
 	
 			String location = violation.getRootBean().getClass().getSimpleName() 
-					+ "/" + violation.getPropertyPath().toString();
+					+ "." + violation.getPropertyPath().toString();
 			
 			Issue issue = Issue.builder()
 					.severity(IssueSeverity.ERROR)
 					.code(IssueType.INVALID)
 					.codeableConcept(codeableConcept)
 					.diagnostics(getMessage())
-					.addLocations(location)
+					.addLocation(location)
 					.build();
 	
 				operationOutcome.addIssue(issue);
@@ -96,5 +98,12 @@ public final class ValidationException extends BadRequestException {
 	@Override
 	public OperationOutcomeCode getOperationOutcomeCode() {
 		return OperationOutcomeCode.MSG_PARAM_INVALID;
+	}
+	
+	/**
+	 * @return the violations
+	 */
+	public Collection<? extends ConstraintViolation<?>> getViolations() {
+		return violations;
 	}
 }

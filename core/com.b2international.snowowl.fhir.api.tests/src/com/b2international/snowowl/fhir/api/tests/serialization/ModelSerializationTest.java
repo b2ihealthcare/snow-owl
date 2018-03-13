@@ -84,32 +84,6 @@ public class ModelSerializationTest extends FhirTest {
 	}
 	
 	@Test
-	public void codingEmptyParametersTest() throws Exception {
-		
-		exception.expect(ValidationException.class);
-		exception.expectMessage(startsWith("{violations=['code.codeValue' may not be empty (was ''),"));
-		exception.expectMessage(endsWith("'system' may not be null (was 'null')]}"));
-		
-		Coding.builder()
-			.code("")
-			.version("20180131")
-			.build();
-	}
-	
-	@Test
-	public void codingInvalidSystemTest() throws Exception {
-		
-		exception.expect(ValidationException.class);
-		exception.expectMessage(startsWith("{violations=['system.uriValue' uri is invalid (was 'sys tem')]}"));
-		
-		Coding.builder()
-			.code("1233")
-			.system("sys tem")
-			.version("20180131")
-			.build();
-	}
-	
-	@Test
 	public void subPropertyTest() throws Exception {
 
 		Collection<SerializableParameter> parameters = SubProperty.builder()
@@ -128,20 +102,6 @@ public class ModelSerializationTest extends FhirTest {
 				+ "{\"name\":\"description\",\"valueString\":\"propertyDescription\"}]";
 		
 		Assert.assertEquals(expected, jsonString);
-	}
-	
-	@Test
-	public void subPropertyMissingValueTest() throws Exception {
-		
-		exception.expect(ValidationException.class);
-		exception.expectMessage(startsWith("{violations=['code' may not be null (was 'null'), 'value' may not be null (was 'null')]}"));
-		
-		SubProperty.builder()
-			//.code("123")
-			//.value(2.1)
-			.description("propertyDescription")
-			.build()
-			.toParameters();
 	}
 	
 	@Test
@@ -231,44 +191,6 @@ public class ModelSerializationTest extends FhirTest {
 	}
 	
 	@Test
-	public void propertyMissingCodeTest() throws Exception {
-
-		exception.expect(ValidationException.class);
-		exception.expectMessage(startsWith("{violations=['code' may not be null"));
-		
-		Property.builder()
-			//.code("123")
-			.value(2)
-			.description("propertyDescription")
-			.addSubProperty(SubProperty.builder()
-				.code("subCode")
-				.description("subDescription")
-				.value(1)
-				.build())
-			.build()
-			.toParameters();
-	}
-	
-	@Test
-	public void propertyEmptyCodeTest() throws Exception {
-
-		exception.expect(ValidationException.class);
-		exception.expectMessage(startsWith("{violations=['code.codeValue' may not be empty"));
-		
-		Property.builder()
-			.code("")
-			.value(2)
-			.description("propertyDescription")
-			.addSubProperty(SubProperty.builder()
-				.code("subCode")
-				.description("subDescription")
-				.value(1)
-				.build())
-			.build()
-			.toParameters();
-	}
-	
-	@Test
 	public void designationTest() throws Exception {
 		
 		Coding coding = Coding.builder()
@@ -295,45 +217,6 @@ public class ModelSerializationTest extends FhirTest {
 				+ "{\"name\":\"value\",\"valueString\":\"dValue\"}]";
 		
 		Assert.assertEquals(expected, jsonString);
-	}
-	
-	@Test
-	public void designationMissingValueTest() throws Exception {
-		
-		exception.expect(ValidationException.class);
-		exception.expectMessage(startsWith("{violations=['value' may not be empty"));
-		
-		Coding coding = Coding.builder()
-			.code("1234")
-			.system("http://snomed.info/sct")
-			.version("20180131")
-			.build();
-		
-		Designation.builder()
-			.languageCode("en_uk")
-			.use(coding)
-			//.value("dValue")
-			.build().toParameters();
-	}
-	
-	@Test
-	public void designationEmptyValueTest() throws Exception {
-		
-		exception.expect(ValidationException.class);
-		exception.expectMessage(startsWith("{violations=['value' may not be empty"));
-		
-		Coding coding = Coding.builder()
-			.code("1234")
-			.system("http://snomed.info/sct")
-			.version("20180131")
-			.build();
-		
-		Designation.builder()
-			.languageCode("en_uk")
-			.use(coding)
-			.value("")
-			.build()
-			.toParameters();
 	}
 	
 	@Test

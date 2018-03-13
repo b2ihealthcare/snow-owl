@@ -17,8 +17,6 @@ package com.b2international.snowowl.fhir.api.model.dt;
 
 import javax.validation.constraints.Pattern;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 /**
  * FHIR Code datatype
  * 
@@ -28,8 +26,7 @@ public class Code implements JsonStringProvider {
 	
 	private static final String CODE_REGEXP = "[^\\s]+([\\s]?[^\\s]+)*"; //$NON-NLS-N$
 	
-	@NotEmpty
-	@Pattern(regexp = CODE_REGEXP)
+	@Pattern(regexp = CODE_REGEXP) //not empty is included
 	private String codeValue;
 
 	public Code(String codeValue) {

@@ -141,7 +141,6 @@ public class Issue {
 
 		public Builder codeableConcept(OperationOutcomeCode operationOutcomeCode) {
 			
-			//Displayname %s substitution missing
 			Coding coding = Coding.builder()
 					.code(operationOutcomeCode.getCodeValue())
 					.system(OperationOutcomeCode.CODE_SYSTEM_URI)
@@ -151,10 +150,9 @@ public class Issue {
 			return this;
 		}
 		
-		public Builder codeableConcept(OperationOutcomeCode operationOutcomeCode, Object... args) {
+		public Builder codeableConceptWithDisplayArgs(OperationOutcomeCode operationOutcomeCode, Object... args) {
 			
 			String substitutedDisplayName = String.format(operationOutcomeCode.displayName(), args);
-			System.err.println("SDN: " + substitutedDisplayName);
 			
 			Coding coding = Coding.builder()
 					.code(operationOutcomeCode.getCodeValue())
@@ -163,6 +161,18 @@ public class Issue {
 					.build();
 			
 			this.codeableConcept = new CodeableConcept(coding, substitutedDisplayName);
+			return this;
+		}
+		
+		public Builder codeableConceptWithDisplay(OperationOutcomeCode operationOutcomeCode, String display) {
+			
+			Coding coding = Coding.builder()
+					.code(operationOutcomeCode.getCodeValue())
+					.system(OperationOutcomeCode.CODE_SYSTEM_URI)
+					.display(display)
+					.build();
+			
+			this.codeableConcept = new CodeableConcept(coding, display);
 			return this;
 		}
 
@@ -176,8 +186,13 @@ public class Issue {
 			return this;
 		}
 
-		public Builder addLocations(String location) {
+		public Builder addLocation(String location) {
 			locations.add(location);
+			return this;
+		}
+		
+		public Builder addExpression(String expression) {
+			expressions.add(expression);
 			return this;
 		}
 

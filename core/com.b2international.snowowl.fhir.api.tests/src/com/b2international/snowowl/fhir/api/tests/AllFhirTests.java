@@ -23,6 +23,10 @@ import com.b2international.snowowl.fhir.api.tests.serialization.ModelDeserializa
 import com.b2international.snowowl.fhir.api.tests.serialization.ModelSerializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.ParameterDeserializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.ParameterSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.validation.CodingValidationTest;
+import com.b2international.snowowl.fhir.api.tests.validation.DesignationValidationTest;
+import com.b2international.snowowl.fhir.api.tests.validation.PropertyValidationTest;
+import com.b2international.snowowl.fhir.api.tests.validation.SubPropertyValidationTest;
 
 /**
  * 
@@ -34,7 +38,11 @@ import com.b2international.snowowl.fhir.api.tests.serialization.ParameterSeriali
 	ParameterSerializationTest.class,
 	ParameterDeserializationTest.class,
 	ModelSerializationTest.class,
-	ModelDeserializationTest.class
+	ModelDeserializationTest.class,
+	CodingValidationTest.class,
+	DesignationValidationTest.class,
+	PropertyValidationTest.class,
+	SubPropertyValidationTest.class
 })
 public class AllFhirTests {
 }

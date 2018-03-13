@@ -44,6 +44,14 @@ public class CodeableConcept {
 		this.codings.add(coding);
 		this.text = text;
 	}
+	
+	public Collection<Coding> getCodings() {
+		return codings;
+	}
+	
+	public String getText() {
+		return text;
+	}
 
 	@Override
 	public String toString() {
