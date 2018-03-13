@@ -39,8 +39,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.base.Strings;
 import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.Strings;
 
 /**
  * A transfer object representing a SNOMED CT description.
@@ -333,8 +333,8 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				referringMappingRefSets);
 
 		// XXX -1 is the default value
-		checkArgument(group >= -1, String.format("Group number '%s' may not be negative (relationship ID: %s).", group, id));
-		checkArgument(unionGroup >= -1, String.format("Union group number '%s' may not be negative (relationship ID: %s).", unionGroup, id));
+		checkArgument(group >= -1, "Group number '%s' may not be negative (relationship ID: %s).", group, id);
+		checkArgument(unionGroup >= -1, "Union group number '%s' may not be negative (relationship ID: %s).", unionGroup, id);
 
 		this.sourceId = sourceId;
 		this.typeId = typeId;
