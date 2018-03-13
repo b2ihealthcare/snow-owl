@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.api.service;
 
+import com.b2international.snowowl.fhir.core.IFhirProvider;
+
 /**
  *
  */

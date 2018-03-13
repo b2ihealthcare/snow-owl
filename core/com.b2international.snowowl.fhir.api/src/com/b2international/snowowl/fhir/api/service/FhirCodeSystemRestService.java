@@ -39,6 +39,7 @@ import com.b2international.snowowl.fhir.api.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.api.model.LookupRequest;
 import com.b2international.snowowl.fhir.api.model.OperationOutcome;
 import com.b2international.snowowl.fhir.api.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.IFhirProvider;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
