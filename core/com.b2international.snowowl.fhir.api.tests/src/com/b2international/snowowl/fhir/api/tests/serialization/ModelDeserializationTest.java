@@ -30,19 +30,19 @@ import javax.validation.ValidatorFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.api.codesystems.IssueSeverity;
-import com.b2international.snowowl.fhir.api.codesystems.IssueType;
-import com.b2international.snowowl.fhir.api.codesystems.OperationOutcomeCode;
-import com.b2international.snowowl.fhir.api.exceptions.ValidationException;
-import com.b2international.snowowl.fhir.api.model.Issue;
-import com.b2international.snowowl.fhir.api.model.LookupRequest;
-import com.b2international.snowowl.fhir.api.model.LookupResult;
-import com.b2international.snowowl.fhir.api.model.dt.Code;
-import com.b2international.snowowl.fhir.api.model.dt.Coding;
-import com.b2international.snowowl.fhir.api.model.dt.DateFormats;
-import com.b2international.snowowl.fhir.api.model.dt.Uri;
-import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
+import com.b2international.snowowl.fhir.core.codesystems.IssueType;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
+import com.b2international.snowowl.fhir.core.model.Issue;
+import com.b2international.snowowl.fhir.core.model.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.LookupResult;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.DateFormats;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
 import com.b2international.snowowl.fhir.api.tests.FhirExceptionIssueMatcher;
 
 public class ModelDeserializationTest extends FhirTest {

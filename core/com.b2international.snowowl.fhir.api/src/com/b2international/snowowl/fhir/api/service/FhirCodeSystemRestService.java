@@ -35,11 +35,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.platform.Extensions;
-import com.b2international.snowowl.fhir.api.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.api.model.LookupRequest;
-import com.b2international.snowowl.fhir.api.model.OperationOutcome;
-import com.b2international.snowowl.fhir.api.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.IFhirProvider;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.model.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.OperationOutcome;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;

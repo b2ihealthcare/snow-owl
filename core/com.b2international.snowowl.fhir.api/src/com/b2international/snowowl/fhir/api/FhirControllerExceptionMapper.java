@@ -24,9 +24,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.b2international.snowowl.fhir.api.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.api.exceptions.FhirException;
-import com.b2international.snowowl.fhir.api.model.OperationOutcome;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
+import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**

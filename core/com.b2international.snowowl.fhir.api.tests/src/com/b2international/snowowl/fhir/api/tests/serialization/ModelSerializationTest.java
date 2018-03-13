@@ -27,19 +27,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.b2international.snowowl.fhir.api.codesystems.IssueSeverity;
-import com.b2international.snowowl.fhir.api.codesystems.IssueType;
-import com.b2international.snowowl.fhir.api.model.Designation;
-import com.b2international.snowowl.fhir.api.model.Issue;
-import com.b2international.snowowl.fhir.api.model.LookupResult;
-import com.b2international.snowowl.fhir.api.model.OperationOutcome;
-import com.b2international.snowowl.fhir.api.model.Property;
-import com.b2international.snowowl.fhir.api.model.Property.Builder;
-import com.b2international.snowowl.fhir.api.model.SubProperty;
-import com.b2international.snowowl.fhir.api.model.dt.Code;
-import com.b2international.snowowl.fhir.api.model.dt.Coding;
-import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
+import com.b2international.snowowl.fhir.core.codesystems.IssueType;
+import com.b2international.snowowl.fhir.core.model.Designation;
+import com.b2international.snowowl.fhir.core.model.Issue;
+import com.b2international.snowowl.fhir.core.model.LookupResult;
+import com.b2international.snowowl.fhir.core.model.OperationOutcome;
+import com.b2international.snowowl.fhir.core.model.Property;
+import com.b2international.snowowl.fhir.core.model.SubProperty;
+import com.b2international.snowowl.fhir.core.model.Property.Builder;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
 
 /**
  * 

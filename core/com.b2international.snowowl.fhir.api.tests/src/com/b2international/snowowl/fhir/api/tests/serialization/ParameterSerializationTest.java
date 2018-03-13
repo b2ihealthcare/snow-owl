@@ -18,8 +18,8 @@ package com.b2international.snowowl.fhir.api.tests.serialization;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
 
 public class ParameterSerializationTest extends FhirTest {
 	

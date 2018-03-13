@@ -1,0 +1,75 @@
+/*
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.snowowl.fhir.core.model.dt;
+
+import javax.validation.constraints.Pattern;
+
+/**
+ * FHIR Code datatype
+ * 
+ * @since 6.3
+ */
+public class Code implements JsonStringProvider {
+	
+	private static final String CODE_REGEXP = "[^\\s]+([\\s]?[^\\s]+)*"; //$NON-NLS-N$
+	
+	@Pattern(regexp = CODE_REGEXP) //not empty is included
+	private String codeValue;
+
+	public Code(String codeValue) {
+		this.codeValue = codeValue;
+	}
+
+	public String getCodeValue() {
+		return codeValue;
+	}
+	
+	@Override
+	public String toJsonString() {
+		return codeValue;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((codeValue == null) ? 0 : codeValue.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Code other = (Code) obj;
+		if (codeValue == null) {
+			if (other.codeValue != null)
+				return false;
+		} else if (!codeValue.equals(other.codeValue))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "Code [codeValue=" + codeValue + "]";
+	}
+
+}

@@ -19,15 +19,15 @@ import static org.hamcrest.core.StringStartsWith.startsWith;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.api.codesystems.IssueSeverity;
-import com.b2international.snowowl.fhir.api.codesystems.IssueType;
-import com.b2international.snowowl.fhir.api.codesystems.OperationOutcomeCode;
-import com.b2international.snowowl.fhir.api.exceptions.ValidationException;
-import com.b2international.snowowl.fhir.api.model.Designation;
-import com.b2international.snowowl.fhir.api.model.Issue;
-import com.b2international.snowowl.fhir.api.model.Issue.Builder;
-import com.b2international.snowowl.fhir.api.model.dt.Coding;
 import com.b2international.snowowl.fhir.api.tests.FhirExceptionIssueMatcher;
+import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
+import com.b2international.snowowl.fhir.core.codesystems.IssueType;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
+import com.b2international.snowowl.fhir.core.model.Designation;
+import com.b2international.snowowl.fhir.core.model.Issue;
+import com.b2international.snowowl.fhir.core.model.Issue.Builder;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
 
 /**
  * Deserialized designation validation tests

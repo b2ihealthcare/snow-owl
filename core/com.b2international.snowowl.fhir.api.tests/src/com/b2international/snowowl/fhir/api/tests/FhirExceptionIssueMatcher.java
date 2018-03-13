@@ -20,11 +20,11 @@ import java.util.Collection;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
-import com.b2international.snowowl.fhir.api.exceptions.FhirException;
-import com.b2international.snowowl.fhir.api.model.Issue;
-import com.b2international.snowowl.fhir.api.model.OperationOutcome;
-import com.b2international.snowowl.fhir.api.model.dt.CodeableConcept;
-import com.b2international.snowowl.fhir.api.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
+import com.b2international.snowowl.fhir.core.model.Issue;
+import com.b2international.snowowl.fhir.core.model.OperationOutcome;
+import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.google.common.collect.HashMultiset;
 
 /**

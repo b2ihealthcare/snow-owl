@@ -19,14 +19,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.b2international.snowowl.fhir.api.codesystems.IssueSeverity;
-import com.b2international.snowowl.fhir.api.codesystems.IssueType;
-import com.b2international.snowowl.fhir.api.codesystems.OperationOutcomeCode;
-import com.b2international.snowowl.fhir.api.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.api.exceptions.FhirException;
-import com.b2international.snowowl.fhir.api.model.Issue;
-import com.b2international.snowowl.fhir.api.model.Issue.Builder;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
+import com.b2international.snowowl.fhir.core.codesystems.IssueType;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
+import com.b2international.snowowl.fhir.core.model.Issue;
+import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.api.tests.FhirExceptionIssueMatcher;
 
 /**

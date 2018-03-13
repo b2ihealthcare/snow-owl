@@ -25,8 +25,8 @@ import javax.validation.ValidatorFactory;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 
-import com.b2international.snowowl.fhir.api.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 
 /**
  * @since 6.3
