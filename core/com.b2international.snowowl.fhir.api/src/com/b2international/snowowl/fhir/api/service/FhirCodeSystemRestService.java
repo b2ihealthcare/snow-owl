@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.fhir.api.service;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_OK;
+
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,10 +33,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.commons.platform.Extensions;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.api.RestApiError;
+import com.b2international.snowowl.fhir.api.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.api.model.LookupRequest;
+import com.b2international.snowowl.fhir.api.model.OperationOutcome;
+import com.b2international.snowowl.fhir.api.model.dt.Coding;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -41,13 +46,17 @@ import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
- * 
  *  Code system resource operations:
  *  <ul>
  *  <li>Concept lookup and decomposition</li>
  *  <li>Subsumption testing</li>
  *  <li>Code composition based on supplied properties</li>
  *  </ul>
+ *  
+ *  200 - OK
+ *  400 - Bad Request
+ *  
+ *  
  *  @see <a href="https://www.hl7.org/fhir/codesystem-operations.html">FHIR:CodeSystem:Operations</a>
  * 
  */
@@ -82,8 +91,9 @@ public class FhirCodeSystemRestService {
 			notes="Given a code/system, or a Coding, get additional details about the concept.\n"
 					+ "https://www.hl7.org/fhir/2016May/datatypes.html#dateTime")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Code system not found", response = RestApiError.class)
+		@ApiResponse(code = HTTP_OK, message = "OK"),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
+		@ApiResponse(code = 404, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/$lookup", method=RequestMethod.GET)
 	public void lookupViaParameters(
@@ -102,7 +112,14 @@ public class FhirCodeSystemRestService {
 			System.out.println(" properties: " + Arrays.toString(properties.toArray()));
 		}
 		
-		LookupRequest lookupRequest = new LookupRequest(code, uri, version, date, displayLanguage, properties);
+		LookupRequest lookupRequest = LookupRequest.builder()
+			.code(code)
+			.system(uri)
+			.version(version)
+			.date(date)
+			.displayLanguage(displayLanguage)
+			.properties(properties)
+			.build();
 		
 		//all good, now do something
 		lookup(lookupRequest);
@@ -116,26 +133,28 @@ public class FhirCodeSystemRestService {
 	 * @param displayLanguage
 	 * @param properties
 	 */
-	@ApiOperation(
-			value="Concept lookup",
-			notes="Given a code/system, or a Coding, get additional details about the concept.\n"
+	@ApiOperation(value="Concept lookup", notes="Given a code/system, or a Coding, get additional details about the concept.\n"
 					+ "https://www.hl7.org/fhir/2016May/datatypes.html#dateTime")
-	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void lookupViaCodingAndParameters(@ApiParam(value="The lookup request parameters") 
 	
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = 404, message = "Code system not found", response = OperationOutcome.class)
+	})
+	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public void lookupViaCodingAndParameters(
+		@ApiParam(value="The lookup request parameters") 
 		@Valid 
 		@RequestBody 
 		final LookupRequest lookupRequest) {
+		
+		//validate the code/system/version parameters BOTH in the request as well as possibly in the coding
+		crossFieldValidate(lookupRequest);
 		
 		//all good, now do something
 		lookup(lookupRequest);
 	}
 	
 	private void lookup(LookupRequest lookupRequest) {
-		
-		if (false) {
-			throw new BadRequestException("Display language code format is incorrect..");
-		}
 		
 		Collection<IFhirProvider> fhirProviders = Extensions.getExtensions(FHIR_EXTENSION_POINT, IFhirProvider.class);
 		
@@ -146,6 +165,32 @@ public class FhirCodeSystemRestService {
 		IFhirProvider iFhirProvider = fhirProviderOptional.get();
 		iFhirProvider.lookup(lookupRequest.getVersion(), lookupRequest.getCode().getCodeValue());
 		
+	}
+	
+	/**
+	 * @param lookupRequest
+	 */
+	private void crossFieldValidate(LookupRequest lookupRequest) {
+		if (lookupRequest.getCode()!=null && lookupRequest.getSystem() == null) {
+			throw new BadRequestException("Parameter 'system' is not specified while code is present in the request.", "LookupRequest.system");
+		}
+		
+		if (lookupRequest.getCode() !=null && lookupRequest.getCoding() !=null) {
+			Coding coding = lookupRequest.getCoding();
+			if (!coding.getCode().equals(lookupRequest.getCode())) {
+				throw new BadRequestException("Code and Coding.code are different. Probably would make sense to specify only one of them.", "LookupRequest");
+			}
+			
+			if (!coding.getSystem().equals(lookupRequest.getSystem())) {
+				throw new BadRequestException("System and Coding.system are different. Probably would make sense to specify only one of them.", "LookupRequest");
+			}
+			
+			if (coding.getVersion() != null && lookupRequest.getVersion() == null || 
+					coding.getVersion() == null && lookupRequest.getVersion() != null ||
+					!coding.getVersion().equals(lookupRequest.getVersion())) {
+				throw new BadRequestException("Version and Coding.version are different. Probably would make sense to specify only one of them.", "LookupRequest");
+			}
+		}
 	}
 
 }

@@ -43,7 +43,7 @@ import com.b2international.snowowl.fhir.api.model.dt.DateFormats;
 import com.b2international.snowowl.fhir.api.model.dt.Uri;
 import com.b2international.snowowl.fhir.api.model.serialization.SerializableParameter;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
-import com.b2international.snowowl.fhir.api.tests.ValidationExceptionIssueMatcher;
+import com.b2international.snowowl.fhir.api.tests.FhirExceptionIssueMatcher;
 
 public class ModelDeserializationTest extends FhirTest {
 	

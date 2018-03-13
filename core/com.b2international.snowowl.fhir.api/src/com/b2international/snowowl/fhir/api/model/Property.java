@@ -45,23 +45,23 @@ public class Property extends SerializableParameters {
 	@Order(value=1)
 	@Valid
 	@NotNull
-	private Code code;
+	private final Code code;
 	
 	/*
 	 * The value of the property returned (0..1)
 	 * code | Coding | string | integer | boolean | dateTime
 	 */
 	@Order(value=2)
-	private Object value;
+	private final Object value;
 	
 	//Human Readable representation of the property value (e.g. display for a code) 0..1
 	@Order(value=3)
-	private String description;
+	private final String description;
 	
 	@Order(value=4)
-	private Collection<SubProperty> subProperties = Lists.newArrayList();
+	private final Collection<SubProperty> subProperties;
 	
-	Property(final Code code, final Object value, final String description, Collection<SubProperty> subproperties) {
+	Property(final Code code, final Object value, final String description, final Collection<SubProperty> subproperties) {
 		this.code = code;
 		this.value = value;
 		this.description = description;

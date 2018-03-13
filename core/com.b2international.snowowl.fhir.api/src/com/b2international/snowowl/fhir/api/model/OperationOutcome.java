@@ -29,27 +29,26 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.snowowl.core.exceptions.ValidationException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
-import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiModel;
 
 /**
- * {doco
-  "resourceType" : "OperationOutcome",
-  // from Resource: id, meta, implicitRules, and language
-  // from DomainResource: text, contained, extension, and modifierExtension
-  "issue" : [{ // R!  A single issue associated with the action
-    "severity" : "<code>", // R!  fatal | error | warning | information
-    "code" : "<code>", // R!  Error or warning code
-    "details" : { CodeableConcept }, // Additional details about the error
-    "diagnostics" : "<string>", // Additional diagnostic information about the issue
-    "location" : ["<string>"], // Path of element(s) related to issue
-    "expression" : ["<string>"] // FHIRPath of element(s) related to issue
-  }]
-}
+ *  "resourceType" : "OperationOutcome",
+ * // from Resource: id, meta, implicitRules, and language
+ * // from DomainResource: text, contained, extension, and modifierExtension
+ * "issue" : [{ // R!  A single issue associated with the action
+ *   "severity" : "<code>", // R!  fatal | error | warning | information
+ *   "code" : "<code>", // R!  Error or warning code
+ *   "details" : { CodeableConcept }, // Additional details about the error
+ *   "diagnostics" : "<string>", // Additional diagnostic information about the issue
+ *   "location" : ["<string>"], // Path of element(s) related to issue
+ *   "expression" : ["<string>"] // FHIRPath of element(s) related to issue
+ * }]
+ * }
  * 
  * @see <a href="http://hl7.org/fhir/operationoutcome.html">FHIR:OperationOutcome</a>
  * @since 6.3
  */
-@Api("Operation outcome")
+@ApiModel("Operation outcome")
 public class OperationOutcome {
 	
 	//FHIR header "resourceType" : "Parameters",

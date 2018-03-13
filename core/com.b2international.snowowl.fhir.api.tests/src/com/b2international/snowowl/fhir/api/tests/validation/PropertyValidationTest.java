@@ -25,7 +25,7 @@ import com.b2international.snowowl.fhir.api.model.Issue;
 import com.b2international.snowowl.fhir.api.model.Issue.Builder;
 import com.b2international.snowowl.fhir.api.model.Property;
 import com.b2international.snowowl.fhir.api.model.SubProperty;
-import com.b2international.snowowl.fhir.api.tests.ValidationExceptionIssueMatcher;
+import com.b2international.snowowl.fhir.api.tests.FhirExceptionIssueMatcher;
 
 /**
  * Deserialized property validation tests
@@ -48,7 +48,7 @@ public class PropertyValidationTest extends ValidatorTest<Property> {
 		
 		exception.expect(ValidationException.class);
 		exception.expectMessage("1 validation error");
-		exception.expect(ValidationExceptionIssueMatcher.issue(expectedIssue));
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
 
 		Property.builder()
 			//.code("123")
@@ -72,7 +72,7 @@ public class PropertyValidationTest extends ValidatorTest<Property> {
 		
 		exception.expect(ValidationException.class);
 		exception.expectMessage("1 validation error");
-		exception.expect(ValidationExceptionIssueMatcher.issue(expectedIssue));
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
 		
 		Property.builder()
 			.code("")

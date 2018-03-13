@@ -27,7 +27,7 @@ import com.b2international.snowowl.fhir.api.model.Designation;
 import com.b2international.snowowl.fhir.api.model.Issue;
 import com.b2international.snowowl.fhir.api.model.Issue.Builder;
 import com.b2international.snowowl.fhir.api.model.dt.Coding;
-import com.b2international.snowowl.fhir.api.tests.ValidationExceptionIssueMatcher;
+import com.b2international.snowowl.fhir.api.tests.FhirExceptionIssueMatcher;
 
 /**
  * Deserialized designation validation tests
@@ -51,7 +51,7 @@ public class DesignationValidationTest extends ValidatorTest<Designation> {
 		
 		exception.expect(ValidationException.class);
 		exception.expectMessage("1 validation error");
-		exception.expect(ValidationExceptionIssueMatcher.issue(expectedIssue));
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
 		
 		Coding coding = Coding.builder()
 			.code("1234")
@@ -75,7 +75,7 @@ public class DesignationValidationTest extends ValidatorTest<Designation> {
 		
 		exception.expect(ValidationException.class);
 		exception.expectMessage("1 validation error");
-		exception.expect(ValidationExceptionIssueMatcher.issue(expectedIssue));
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
 		
 		Coding coding = Coding.builder()
 			.code("1234")

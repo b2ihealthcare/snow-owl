@@ -25,15 +25,18 @@ import com.b2international.snowowl.fhir.api.codesystems.IssueType;
 public class BadRequestException extends FhirException {
 
 	private static final long serialVersionUID = 1L;
-
+	
 	public BadRequestException(final String message, final Object...args) {
 		super(message, args);
+	}
+	
+	public BadRequestException(final String message, String location, final Object...args) {
+		super(message, location, args);
 	}
 	
 	@Override
 	public IssueType getIssueType() {
 		return IssueType.INVALID;
 	}
-	
 	
 }

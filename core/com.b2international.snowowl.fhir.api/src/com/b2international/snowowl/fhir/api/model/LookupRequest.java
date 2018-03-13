@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.core.annotation.Order;
 
+import com.b2international.snowowl.fhir.api.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.api.model.dt.Code;
 import com.b2international.snowowl.fhir.api.model.dt.Coding;
 import com.b2international.snowowl.fhir.api.model.dt.DateFormats;
@@ -59,12 +60,10 @@ public class LookupRequest extends StdConverter<LookupRequest,LookupRequest> {
 	
 	// The code that is to be located. If a code is provided, a system must be provided (0..1)
 	@Order(value = 1)
-	//@NotEmpty
 	private Code code;
 
 	// The system for the code that is to be located (0..1)
 	@Order(value = 2)
-	//@NotNull
 	private Uri system;
 	
 	// The version that these details are based on (0..1)
@@ -108,15 +107,16 @@ public class LookupRequest extends StdConverter<LookupRequest,LookupRequest> {
 	@SuppressWarnings("unused")
 	private LookupRequest() {}
 	
-	public LookupRequest(String code, String system, String version, String dateString, String displayLanguage,
-			Collection<String> properties) throws ParseException {
+	LookupRequest(Code code, Uri system, String version, Coding coding, Date date, Code displayLanguage,
+			Collection<Code> properties) {
 		
-		this.code = new Code(code);
-		this.system = new Uri(system);
+		this.code = code;
+		this.system = system;
 		this.version = version;
-		this.date = new SimpleDateFormat(DateFormats.DATE_TIME_FORMAT).parse(dateString);
-		this.displayLanguage = new Code(displayLanguage);
-		this.properties = properties.stream().map(p-> new Code(p)).collect(Collectors.toSet());;
+		this.coding = coding;
+		this.date = date;
+		this.displayLanguage = displayLanguage;
+		this.properties = properties;
 	}
 
 	public Code getCode() {
@@ -152,7 +152,6 @@ public class LookupRequest extends StdConverter<LookupRequest,LookupRequest> {
 		return parameters;
 	}
 
-
 	/**
 	 * Converts the set of parameters into this populated domain object.
 	 * This method is called right after the deserialization.
@@ -186,4 +185,100 @@ public class LookupRequest extends StdConverter<LookupRequest,LookupRequest> {
 		return "LookupRequest [code=" + code + ", system=" + system + ", version=" + version + ", coding=" + coding
 				+ ", date=" + date + ", displayLanguage=" + displayLanguage + ", properties=" + Arrays.toString(properties.toArray()) + "]";
 	}
+	
+	public static Builder builder() {
+		return new Builder();
+	}
+
+	public static class Builder extends ValidatingBuilder<LookupRequest> {
+
+		private Code code;
+		private Uri system;
+		private String version;
+		private Coding coding;
+		private Date date;
+		private Code displayLanguage;
+		private Collection<Code> properties = Lists.newArrayList();
+		
+		public Builder code(final Code code) {
+			this.code = code;
+			return this;
+		}
+
+		public Builder code(final String codeValue) {
+			this.code = new Code(codeValue);
+			return this;
+		}
+		
+		public Builder system(final Uri system) {
+			this.system = system;
+			return this;
+		}
+
+		public Builder system(final String systemValue) {
+			this.system = new Uri(systemValue);
+			return this;
+		}
+		
+		public Builder version(final String version) {
+			this.version = version;
+			return this;
+		}
+
+		public Builder coding(Coding coding) {
+			this.coding = coding;
+			return this;
+		}
+		
+		public Builder coding(String code, String system, String display) {
+			Coding coding = Coding.builder()
+				.code(code)
+				.system(system)
+				.display(display).build();
+			
+			this.coding = coding;
+			return this;
+		}
+		
+		public Builder date(Date date) {
+			this.date = date;
+			return this;
+		}
+		
+		public Builder date(String dateString) {
+			try {
+				this.date = new SimpleDateFormat(DateFormats.DATE_TIME_FORMAT).parse(dateString);
+			} catch (ParseException e) {
+				throw new BadRequestException("Incorrect date format '%s'.", dateString);
+			}
+			return this;
+		}
+		
+		public Builder displayLanguage(final Code displayLanguage) {
+			this.displayLanguage = displayLanguage;
+			return this;
+		}
+
+		public Builder displayLanguage(final String displayLanguage) {
+			this.displayLanguage = new Code(displayLanguage);
+			return this;
+		}
+
+		public Builder addProperty(String property) {
+			properties.add(new Code(property));
+			return this;
+		}
+
+		public Builder properties(Collection<String> properties) {
+			this.properties = properties.stream().map(p-> new Code(p)).collect(Collectors.toSet());
+			return this;
+		}
+
+		@Override
+		protected LookupRequest doBuild() {
+			return new LookupRequest(code, system, version, coding, date, displayLanguage, properties);
+		}
+
+	}
+	
 }

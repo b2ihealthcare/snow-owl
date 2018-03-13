@@ -24,7 +24,7 @@ import com.b2international.snowowl.fhir.api.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.api.model.Issue;
 import com.b2international.snowowl.fhir.api.model.Issue.Builder;
 import com.b2international.snowowl.fhir.api.model.dt.Coding;
-import com.b2international.snowowl.fhir.api.tests.ValidationExceptionIssueMatcher;
+import com.b2international.snowowl.fhir.api.tests.FhirExceptionIssueMatcher;
 
 /**
  * Deserialized coding validation tests
@@ -47,7 +47,7 @@ public class CodingValidationTest extends ValidatorTest<Coding> {
 		
 		exception.expect(ValidationException.class);
 		exception.expectMessage("1 validation error");
-		exception.expect(ValidationExceptionIssueMatcher.issue(expectedIssue));
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
 
 		String jsonCoding = "{\"code\":\"1234\","
 				//+ "\"system\":\"http://snomed.info/sct\","
@@ -67,7 +67,7 @@ public class CodingValidationTest extends ValidatorTest<Coding> {
 			
 		exception.expect(ValidationException.class);
 		exception.expectMessage("1 validation error");
-		exception.expect(ValidationExceptionIssueMatcher.issue(expectedIssue));
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
 		
 		Coding.builder()
 			.code("")
@@ -85,7 +85,7 @@ public class CodingValidationTest extends ValidatorTest<Coding> {
 				
 		exception.expect(ValidationException.class);
 		exception.expectMessage("1 validation error");
-		exception.expect(ValidationExceptionIssueMatcher.issue(expectedIssue));
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
 		
 		Coding.builder()
 			.code("1233")

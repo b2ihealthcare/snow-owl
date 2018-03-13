@@ -20,7 +20,7 @@ import java.util.Collection;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
-import com.b2international.snowowl.fhir.api.exceptions.ValidationException;
+import com.b2international.snowowl.fhir.api.exceptions.FhirException;
 import com.b2international.snowowl.fhir.api.model.Issue;
 import com.b2international.snowowl.fhir.api.model.OperationOutcome;
 import com.b2international.snowowl.fhir.api.model.dt.CodeableConcept;
@@ -29,10 +29,10 @@ import com.google.common.collect.HashMultiset;
 
 /**
  * Matcher to check operation outcome for validation exceptions
- * @see ValidationExceptionIssueMatcher
+ * @see FhirExceptionIssueMatcher
  * @since 6.3
  */
-public class ValidationExceptionIssueMatcher extends TypeSafeMatcher<ValidationException> {
+public class FhirExceptionIssueMatcher extends TypeSafeMatcher<FhirException> {
 	
 	private Issue expectedIssue;
 	private Issue foundIssue;
@@ -41,11 +41,11 @@ public class ValidationExceptionIssueMatcher extends TypeSafeMatcher<ValidationE
 	 * @param expectedIssue
 	 * @return
 	 */
-	public static ValidationExceptionIssueMatcher issue(Issue expectedIssue) {
-		return new ValidationExceptionIssueMatcher(expectedIssue);
+	public static FhirExceptionIssueMatcher issue(Issue expectedIssue) {
+		return new FhirExceptionIssueMatcher(expectedIssue);
 	}
 	
-	public ValidationExceptionIssueMatcher(Issue expectedIssue) {
+	public FhirExceptionIssueMatcher(Issue expectedIssue) {
 		this.expectedIssue = expectedIssue;
 	}
 
@@ -58,7 +58,7 @@ public class ValidationExceptionIssueMatcher extends TypeSafeMatcher<ValidationE
 	}
 
 	@Override
-	protected boolean matchesSafely(ValidationException validationException) {
+	protected boolean matchesSafely(FhirException validationException) {
 		OperationOutcome operationOutcome = validationException.toOperationOutcome();
 		Collection<Issue> issues = operationOutcome.getIssues();
 		

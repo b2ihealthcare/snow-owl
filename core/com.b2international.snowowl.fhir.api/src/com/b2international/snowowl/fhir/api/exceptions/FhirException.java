@@ -20,6 +20,7 @@ import com.b2international.snowowl.fhir.api.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.api.codesystems.IssueType;
 import com.b2international.snowowl.fhir.api.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.api.model.Issue;
+import com.b2international.snowowl.fhir.api.model.Issue.Builder;
 import com.b2international.snowowl.fhir.api.model.OperationOutcome;
 
 /**
@@ -29,12 +30,23 @@ public class FhirException extends FormattedRuntimeException {
 
 	private static final long serialVersionUID = 1L;
 	
+	private String location;
+	
 	/**
 	 * @param template
 	 * @param args
 	 */
-	public FhirException(String template, Object[] args) {
+	public FhirException(String template, Object... args) {
 		super(template, args);
+	}
+	
+	/**
+	 * @param template
+	 * @param args
+	 */
+	public FhirException(String template, String location, Object... args) {
+		super(template, args);
+		this.location = location;
 	}
 	
 	/**
@@ -52,7 +64,7 @@ public class FhirException extends FormattedRuntimeException {
 	 * @return
 	 */
 	public OperationOutcomeCode getOperationOutcomeCode() {
-		return OperationOutcomeCode.MSG_UNKNOWN_CONTENT;
+		return OperationOutcomeCode.MSG_BAD_SYNTAX;
 	}
 	
 	/**
@@ -64,14 +76,17 @@ public class FhirException extends FormattedRuntimeException {
 	public OperationOutcome toOperationOutcome() {
 		
 		OperationOutcome operationOutcome = new OperationOutcome();
-		Issue issue = Issue.builder()
-				.severity(IssueSeverity.ERROR)
-				.code(getIssueType())
-				.codeableConcept(getOperationOutcomeCode())
-				.diagnostics(getMessage())
-				.build();
+		Builder builder = Issue.builder()
+			.severity(IssueSeverity.ERROR)
+			.code(getIssueType())
+			.codeableConceptWithDisplayArgs(getOperationOutcomeCode(), location)
+			.diagnostics(getMessage());
 		
-		operationOutcome.addIssue(issue);
+		if (location != null) {
+			builder.addLocation(location);
+		}
+		
+		operationOutcome.addIssue(builder.build());
 		return operationOutcome;
 	}
 
