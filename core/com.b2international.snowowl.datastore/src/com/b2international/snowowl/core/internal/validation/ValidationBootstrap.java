@@ -18,9 +18,12 @@ package com.b2international.snowowl.core.internal.validation;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +47,7 @@ import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -76,48 +80,64 @@ public final class ValidationBootstrap extends DefaultBootstrapFragment implemen
 			int numberOfValidationThreads = Math.max(2, Runtime.getRuntime().availableProcessors() / 2);
 			env.services().registerService(ValidationThreadPool.class, new ValidationThreadPool(numberOfValidationThreads));
 
-			// synchronize rules from a default validation-rules file
-			final File validationRulesFile = env.getConfigDirectory().toPath().resolve("validation-rules.json").toFile();
-			if (validationRulesFile.exists()) {
-				LOG.info("Synchronizing validation rules from file: " + validationRulesFile);
-				final List<ValidationRule> availableRules = mapper.readValue(validationRulesFile, new TypeReference<List<ValidationRule>>() {});
+			
+			final List<File> listOfFiles = Arrays.asList(env.getConfigDirectory().listFiles());
+			final Set<File> validationRuleFiles = Sets.newHashSet();
+			final Pattern regex = Pattern.compile("(validation-rules)-(\\w+).(json)");
+			for (File file : listOfFiles) {
+				final String fileName = file.getName();
+				final Matcher match = regex.matcher(fileName);
+				if (match.matches()) {
+					validationRuleFiles.add(file);
+				}
+			}
+			
+			final List<ValidationRule> availableRules = Lists.newArrayList();
+			for (File validationRulesFile : validationRuleFiles) {
+				if (validationRulesFile.exists()) {
+					LOG.info("Synchronizing validation rules from file: " + validationRulesFile);
+					availableRules.addAll(mapper.readValue(validationRulesFile, new TypeReference<List<ValidationRule>>() {}));
+					 
+				}
+			}
+			
+			repository.write(writer -> {
 				final Map<String, ValidationRule> existingRules = Maps.uniqueIndex(ValidationRequests.rules().prepareSearch()
 						.all()
 						.buildAsync()
 						.getRequest()
 						.execute(env), ValidationRule::getId);
 				
-				repository.write(writer -> {
-					
-					// index all rules from the file, this will update existing rules as well
-					final Set<String> ruleIds = newHashSet();
-					for (ValidationRule rule : availableRules) {
-						writer.put(rule.getId(), rule);
-						ruleIds.add(rule.getId());
-					}
-					
-					// delete rules and associated issues
-					Set<String> rulesToDelete = Sets.difference(existingRules.keySet(), ruleIds);
-					if (!rulesToDelete.isEmpty()) {
-						final Set<String> issuesToDelete = newHashSet(writer.searcher().search(Query.select(String.class)
-								.from(ValidationIssue.class)
-								.fields(ValidationIssue.Fields.ID)
-								.where(Expressions.builder()
-										.filter(Expressions.matchAny(ValidationIssue.Fields.RULE_ID, rulesToDelete))
-										.build())
-								.limit(Integer.MAX_VALUE)
-								.build())
-								.getHits());
-						writer.removeAll(ImmutableMap.<Class<?>, Set<String>>of(
+				// index all rules from the file, this will update existing rules as well
+				final Set<String> ruleIds = newHashSet();
+				for (ValidationRule rule : availableRules) {
+					writer.put(rule.getId(), rule);
+					ruleIds.add(rule.getId());
+				}
+				
+				
+				// delete rules and associated issues
+				Set<String> rulesToDelete = Sets.difference(existingRules.keySet(), ruleIds);
+				if (!rulesToDelete.isEmpty()) {
+					final Set<String> issuesToDelete = newHashSet(writer.searcher().search(Query.select(String.class)
+							.from(ValidationIssue.class)
+							.fields(ValidationIssue.Fields.ID)
+							.where(Expressions.builder()
+									.filter(Expressions.matchAny(ValidationIssue.Fields.RULE_ID, rulesToDelete))
+									.build())
+							.limit(Integer.MAX_VALUE)
+							.build())
+							.getHits());
+					writer.removeAll(ImmutableMap.<Class<?>, Set<String>>of(
 							ValidationRule.class, rulesToDelete,
 							ValidationIssue.class, issuesToDelete
-						));
-					}
-					
-					writer.commit();
-					return null;
-				});
-			}
+							));
+				}
+				
+				writer.commit();
+				return null;
+			});
+				
 		}
 	}
 	
