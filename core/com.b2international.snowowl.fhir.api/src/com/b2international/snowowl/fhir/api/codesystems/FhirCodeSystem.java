@@ -25,7 +25,22 @@ import com.b2international.snowowl.fhir.api.model.dt.Code;
  */
 public interface FhirCodeSystem {
 	
+	/**
+	 * Returns the code from this code system.
+	 * @return
+	 */
 	Code getCode();
+	
+	/**
+	 * Returns the code value of the code
+	 * @return
+	 */
 	String getCodeValue();
+	
+	/**
+	 * Returns the code system URI as a string of this code system
+	 * @return
+	 */
+	String getCodeSystemUri();
 
 }

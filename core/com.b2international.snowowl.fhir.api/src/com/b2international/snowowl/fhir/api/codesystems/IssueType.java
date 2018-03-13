@@ -104,7 +104,7 @@ public enum IssueType implements FhirCodeSystem {
 	THROTTLED,
 	INFORMATIONAL;
 	
-	public final String CODE_SYSTEM_URI = "http://hl7.org/fhir/issue-type";
+	public static final String CODE_SYSTEM_URI = "http://hl7.org/fhir/issue-type";
 	
 	@Override
 	public Code getCode() {
@@ -114,6 +114,11 @@ public enum IssueType implements FhirCodeSystem {
 	@Override
 	public String getCodeValue() {
 		return name().toLowerCase();
+	}
+	
+	@Override
+	public String getCodeSystemUri() {
+		return CODE_SYSTEM_URI;
 	}
 
 

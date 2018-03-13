@@ -31,7 +31,7 @@ public enum IssueSeverity implements FhirCodeSystem {
 	WARNING("Warning"),
 	INFORMATION("Information");
 	
-	public final String CODE_SYSTEM_URI = "http://hl7.org/fhir/issue-severity";
+	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/issue-severity";
 	
 	private String displayName;
 
@@ -51,6 +51,11 @@ public enum IssueSeverity implements FhirCodeSystem {
 	@Override
 	public String getCodeValue() {
 		return name().toLowerCase();
+	}
+	
+	@Override
+	public String getCodeSystemUri() {
+		return CODE_SYSTEM_URI;
 	}
 
 }

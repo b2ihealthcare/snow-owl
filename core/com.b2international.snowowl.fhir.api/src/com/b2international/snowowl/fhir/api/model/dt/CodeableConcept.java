@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.api.model.dt;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -44,4 +45,9 @@ public class CodeableConcept {
 		this.text = text;
 	}
 
+	@Override
+	public String toString() {
+		return "CodeableConcept [codings=" + Arrays.toString(codings.toArray()) + ", text=" + text + "]";
+	}
+	
 }

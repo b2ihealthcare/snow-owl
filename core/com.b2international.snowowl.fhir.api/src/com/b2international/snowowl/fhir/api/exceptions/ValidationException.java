@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.api.exceptions;
 import java.util.Collection;
 
 import javax.validation.ConstraintViolation;
+import javax.validation.Path;
 
 import com.b2international.snowowl.fhir.api.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.api.codesystems.IssueType;
@@ -27,59 +28,73 @@ import com.b2international.snowowl.fhir.api.model.OperationOutcome;
 import com.b2international.snowowl.fhir.api.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.api.model.dt.Coding;
 
-
 /**
- * @since 4.1.1
+ * @since 6.3
  */
 public final class ValidationException extends BadRequestException {
 
+	private static final long serialVersionUID = 1L;
+
+	private Collection<? extends ConstraintViolation<?>> violations;
+
 	public ValidationException(Collection<? extends ConstraintViolation<?>> violations) {
 		super("%s validation error%s", violations.size(), violations.size() == 1 ? "" : "s");
-		//final Builder<String, Object> builder = ImmutableMap.<String, Object>builder();
-		//this.additionalInfo = builder.put("violations", ConstraintViolations.format(violations)).build();
+		this.violations = violations;
 	}
-	
+
 	private Object invalidValue;
-	
-	private String parameterName;
-	
+
+	private Path propertyPath;
+
 	/**
-	 * Creates an OperationOutcome representation from this exception. Useful when the exception must be propagated through protocols where Java serialization
-	 * cannot be used (eg. HTTP), or the possible receiver cannot understand serialized Java class and object byte sequences.
+	 * Creates an OperationOutcome representation from this exception. Useful when
+	 * the exception must be propagated through protocols where Java serialization
+	 * cannot be used (eg. HTTP), or the possible receiver cannot understand
+	 * serialized Java class and object byte sequences.
 	 * 
-	 * @return {@link OperationOutcome} representation of this {@link FhirException}, never <code>null</code>.
+	 * @return {@link OperationOutcome} representation of this
+	 *         {@link FhirException}, never <code>null</code>.
 	 */
+	@Override
 	public OperationOutcome toOperationOutcome() {
-		OperationOutcomeCode operationOutcomeCode = OperationOutcomeCode.MSG_PARAM_INVALID;
-		String text = null;
-		
-		if (invalidValue ==null) {
-			text = String.format(operationOutcomeCode.displayName(), parameterName);
+
+		if (violations.isEmpty()) {
+			throw new IllegalArgumentException("There are no violations to report");
 		}
-		//operationOutcomeCode.getCodeValue()
-		Coding coding = Coding.builder()
-			.code(operationOutcomeCode.getCodeValue())	
-			.display(text)
-			.build();
-		
-		System.out.println("Coding " + coding);
-		CodeableConcept codeableConcept = new CodeableConcept(coding, text);
 		
 		OperationOutcome operationOutcome = new OperationOutcome();
-		Issue issue = Issue.builder()
-				.severity(IssueSeverity.ERROR)
-				.code(IssueType.INVALID)
-				.codeableConcept(getOperationOutcomeCode())
-				.diagnostics(getMessage())
-				.build();
 		
-		operationOutcome.addIssue(issue);
+		for (ConstraintViolation<?> violation : violations) {
+				
+			String issueDetails = String.format(getOperationOutcomeCode().displayName(), propertyPath) + " [" + invalidValue + "].";
+	
+			Coding coding = Coding.builder().
+					code(getOperationOutcomeCode().getCodeValue())
+					.system(OperationOutcomeCode.CODE_SYSTEM_URI)
+					.display(issueDetails)
+					.build();
+	
+			CodeableConcept codeableConcept = new CodeableConcept(coding, issueDetails);
+	
+			String location = violation.getRootBean().getClass().getSimpleName() 
+					+ "/" + violation.getPropertyPath().toString();
+			
+			Issue issue = Issue.builder()
+					.severity(IssueSeverity.ERROR)
+					.code(IssueType.INVALID)
+					.codeableConcept(codeableConcept)
+					.diagnostics(getMessage())
+					.addLocations(location)
+					.build();
+	
+				operationOutcome.addIssue(issue);
+			}
+		
 		return operationOutcome;
 	}
-	
-//	@Override
-//	protected Map<String, Object> getAdditionalInfo() {
-//		return additionalInfo;
-//	}
-//	
+
+	@Override
+	public OperationOutcomeCode getOperationOutcomeCode() {
+		return OperationOutcomeCode.MSG_PARAM_INVALID;
+	}
 }

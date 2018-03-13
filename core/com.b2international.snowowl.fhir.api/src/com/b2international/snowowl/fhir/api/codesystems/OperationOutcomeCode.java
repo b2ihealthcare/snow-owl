@@ -77,8 +77,7 @@ public enum OperationOutcomeCode implements FhirCodeSystem {
 	DELETE_MULTIPLE_MATCHES("Error: Multiple matches exist for the conditional delete"),	
 	SEARCH_NONE("Error: no processable search found for %s search parameters '%s'");
 	
-	
-	public final String CODE_SYSTEM_URI = "http://hl7.org/fhir/operation-outcome";
+	public static final String CODE_SYSTEM_URI = "http://hl7.org/fhir/operation-outcome";
 	
 	private String displayName;
 	
@@ -99,6 +98,11 @@ public enum OperationOutcomeCode implements FhirCodeSystem {
 	
 	public String displayName() {
 		return displayName;
+	}
+
+	@Override
+	public String getCodeSystemUri() {
+		return CODE_SYSTEM_URI;
 	}
 
 }

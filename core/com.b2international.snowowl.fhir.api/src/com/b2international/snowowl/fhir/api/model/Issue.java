@@ -140,8 +140,29 @@ public class Issue {
 		}
 
 		public Builder codeableConcept(OperationOutcomeCode operationOutcomeCode) {
-			Coding coding = Coding.builder().code(operationOutcomeCode.getCodeValue()).display(operationOutcomeCode.displayName()).build();
+			
+			//Displayname %s substitution missing
+			Coding coding = Coding.builder()
+					.code(operationOutcomeCode.getCodeValue())
+					.system(OperationOutcomeCode.CODE_SYSTEM_URI)
+					.display(operationOutcomeCode.displayName()).build();
+			
 			this.codeableConcept = new CodeableConcept(coding, operationOutcomeCode.displayName());
+			return this;
+		}
+		
+		public Builder codeableConcept(OperationOutcomeCode operationOutcomeCode, Object... args) {
+			
+			String substitutedDisplayName = String.format(operationOutcomeCode.displayName(), args);
+			System.err.println("SDN: " + substitutedDisplayName);
+			
+			Coding coding = Coding.builder()
+					.code(operationOutcomeCode.getCodeValue())
+					.system(OperationOutcomeCode.CODE_SYSTEM_URI)
+					.display(substitutedDisplayName)
+					.build();
+			
+			this.codeableConcept = new CodeableConcept(coding, substitutedDisplayName);
 			return this;
 		}
 

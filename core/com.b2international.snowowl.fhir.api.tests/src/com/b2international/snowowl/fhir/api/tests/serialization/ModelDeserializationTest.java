@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.text.SimpleDateFormat;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -68,6 +67,7 @@ public class ModelDeserializationTest extends FhirTest {
 			if (!violations.isEmpty()) {
 				
 				violations.forEach(cv -> {
+					/*
 					System.out.println(cv.toString());
 					System.out.println("Message: " + cv.getMessage());
 					System.out.println(" xMessage template: " + cv.getMessageTemplate());
@@ -79,14 +79,11 @@ public class ModelDeserializationTest extends FhirTest {
 					System.out.println(" xConstraint descriptor: " + cv.getConstraintDescriptor());
 					System.out.println(" xExec parameters: " + cv.getExecutableParameters());
 					System.out.println(" xExec return value: " + cv.getExecutableReturnValue());
+					*/
 					
+					ValidationException validationException = new ValidationException(violations);
+					validationException.toOperationOutcome();
 				});
-				
-				//bit of a hack
-				ValidationException validationException = new ValidationException(violations);
-				validationException.toOperationOutcome();
-				//Map<String, Object> additionalInfo = validationException.toApiError().getAdditionalInfo();
-				//throw new javax.validation.ValidationException(additionalInfo.toString());
 			}
 	}
 
