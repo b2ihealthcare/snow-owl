@@ -74,7 +74,7 @@ public class EventBusNet4jUtil {
 	 * @param numberOfWorkers
 	 * @return
 	 */
-	private static IEventBus getBus(IManagedContainer container, int numberOfWorkers) {
+	public static IEventBus getBus(IManagedContainer container, int numberOfWorkers) {
 		return getBus(container, EventBusConstants.GLOBAL_BUS, numberOfWorkers, true);
 	}
 
