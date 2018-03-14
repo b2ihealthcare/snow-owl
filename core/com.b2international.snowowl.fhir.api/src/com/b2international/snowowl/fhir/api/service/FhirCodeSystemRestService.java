@@ -15,14 +15,17 @@
  */
 package com.b2international.snowowl.fhir.api.service;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -33,8 +36,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.commons.platform.Extensions;
+import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryInfo;
+import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.datastore.CodeSystems;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.IFhirProvider;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -43,6 +53,7 @@ import com.b2international.snowowl.fhir.core.model.LookupRequest.Builder;
 import com.b2international.snowowl.fhir.core.model.LookupResult;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -79,6 +90,50 @@ public class FhirCodeSystemRestService {
 		System.out.println("FhirCodeSystemRestService.ping()");
 		return "Ping!";
 	}
+	
+	//TODO: provide FHIR doc
+	@ApiOperation(
+			value="Retrieve all code systems",
+			notes="Returns a list containing generic information about registered code systems.")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK")
+	})
+	@RequestMapping(method=RequestMethod.GET)
+	public CollectionResource<ICodeSystem> getCodeSystems() {
+		
+		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
+		
+		for (String repositoryId : getRepositoryIds()) {
+			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().build(repositoryId).execute(getBus()));
+		}
+		return null;
+		/*
+		return Promise.all(getAllCodeSystems)
+				.then(results -> {
+					final List<ICodeSystem> codeSystems = newArrayList();
+					for (CodeSystems result : Iterables.filter(results, CodeSystems.class)) {
+						codeSystems.addAll(Lists.transform(result.getItems(), input -> CodeSystem.builder(input).build()));
+					}
+					return SHORT_NAME_ORDERING.immutableSortedCopy(codeSystems);
+				})
+				.getSync();
+				*/
+	}
+	
+	private List<String> getRepositoryIds() {
+		return RepositoryRequests.prepareSearch()
+			.all()
+			.buildAsync()
+			.execute(getBus())
+			.then(repos -> repos.stream().map(RepositoryInfo::id).collect(Collectors.toList()))
+			.getSync();
+	}
+	
+	private IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
+	
+
 	
 	/**
 	 * GET-based lookup endpoint.
