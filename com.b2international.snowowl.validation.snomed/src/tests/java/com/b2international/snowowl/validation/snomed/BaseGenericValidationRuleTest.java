@@ -140,7 +140,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 	}
 
 	protected final void indexRule(String ruleId) throws Exception {
-		URL rulesJson = getClass().getClassLoader().getResource("validation-rules.json");
+		URL rulesJson = getClass().getClassLoader().getResource("validation-rules-common.json");
 		try (InputStream in = rulesJson.openStream()) {
 			MappingIterator<ValidationRule> it = context.service(ObjectMapper.class).readerFor(ValidationRule.class).readValues(in);
 			while (it.hasNext()) {
